@@ -370,6 +370,7 @@ bool GLOAdaptor::CreateTexture( int* a_pData, char* a_pName, int a_flags, int a_
     pkMaterial->m_kBlendMode.Set( BlendMode::DECAL );   // decal means BlendMode::SRC_SRCALPHA | BlendMode::DEST_ONEMINUSSRCALPHA
     pkMaterial->m_kZBufferMode.Set( ZBufferMode::ALWAYSNOWRITE );
     pkMaterial->m_pkTexture = pkTex;
+    pkMaterial->m_uiUVAddress = TextureLayer::CLAMP;
 
     NeoTexWrapper *pkTexWrapper = new NeoTexWrapper;
     pkTexWrapper->m_pkMaterial  = pkMaterial;
