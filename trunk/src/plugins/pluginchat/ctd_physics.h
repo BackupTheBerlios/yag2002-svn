@@ -92,11 +92,6 @@ class WalkPhysics
         */
         bool                                        MoveBody( NeoEngine::Vector3d &kPosition, const NeoEngine::Vector3d &kMoveVector, float fDeltaTime );
 
-        /**
-        * Update physics, call this method in every game step
-        */
-        void                                        Update(  );
-
     protected:
 
         //! Room containing the level geometry and objects

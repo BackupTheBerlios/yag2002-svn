@@ -86,6 +86,9 @@ int Message( int iMsgId, void *pMsgStruct )
 		case CTD_PLUGIN_MSG_INIZIALIZE:
 		{
 
+            // store the current levelset
+            SetLevelSet( Framework::Get()->GetCurrentLevelSet() );
+
             if ( Framework::Get()->GetGameMode() != stateSERVER ) {
 
 			    // setup fog
@@ -105,7 +108,7 @@ int Message( int iMsgId, void *pMsgStruct )
 
             }
 
-			// init ctd printf device
+            // init ctd printf device
 			CTDPRINTF_INIT( g_CTDPrintf, 10, 10, false );
 			CTDPRINTF_INIT( g_CTDPrintfNwStats, 500, 10, false );
 

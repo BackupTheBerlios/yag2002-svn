@@ -61,9 +61,6 @@ CTDGui::CTDGui()
 
     CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Chat) entity ' Gui ' created " );
 
-    // activate networking as client object
-    SetNetworkingType( CTD::stateNONE );
-
     // set the entity ( node ) name
     //  for client objects it is essential that the entity name is set in constructor
     SetName( CTD_ENTITY_NAME_Gui );
@@ -107,6 +104,17 @@ void CTDGui::PostInitialize()
 
 void CTDGui::SetupGuiSystem() 
 {
+
+    // get the chat member entity, we need it for sending messages over network, etc.
+    m_pkChatMember = Framework::Get()->GetPlayer();
+    assert( m_pkChatMember && " 'CTDGui::NetworkMessage' player is not set in framework!" );
+
+    // setup the gui system only once
+    static bool s_bAlreadySetup = false;
+    if ( s_bAlreadySetup ) {
+        return;
+    }
+    s_bAlreadySetup = true;
 
     // configure the widget system
     Widgets::Get()->Activate();
@@ -346,51 +354,17 @@ void CTDGui::OnActivateWalkMode( CB_Imp_GuiC_Callback* pkCallback, guiCBase* pkC
     }
 }
 
-void CTDGui::UpdateEntity( float fDeltaTime ) 
-{ 
+void CTDGui::AppendText( const string& strText )
+{
+
+    static wchar_t  s_pcWMsg[ 256 ];
+    mbstowcs( s_pcWMsg, strText.c_str(), 256 );
+    AddMessage( s_pcWMsg );
 
 }
 
-// incomming network messages
-void CTDGui::NetworkMessage( int iMsgId, void *pkMsgStruct )
-{
-    
-    // wait until we have been integrated into network session
-    switch ( iMsgId ) {
-        
-        case CTD_NM_SYSTEM_NOTIFY_CONNECTION_ESTABLISHED:
-        {
-
-            // get the chat member entity, we need it for sending messages over network, etc.
-            //-------------------------------//
-            m_pkChatMember = Framework::Get()->GetPlayer();
-            assert( m_pkChatMember && " 'CTDGui::NetworkMessage' player is not set in framework!" );
-
-            // setup the gui system
-            SetupGuiSystem();
-
-        }
-        break;
-
-        case CTD_NM_SYSTEM_NOTIFY_CONNECTION_LOST:
-        {
-        }
-        break;
-
-        case CTD_NM_SYSTEM_NOTIFY_CONNECTION_RESUMED:
-        {
-        }
-        break;
-
-        case CTD_NM_SYSTEM_NOTIFY_DISCONNECTED:
-        {
-        }
-        break;
-
-        default:
-            // unexpected message type!
-            ;
-    }
+void CTDGui::UpdateEntity( float fDeltaTime ) 
+{ 
 
 }
 
@@ -417,7 +391,7 @@ int CTDGui::Message( int iMsgId, void *pMsgStruct )
         case CTD_ENTITY_CHATMEMBER_ADD_MSG:
         {
 
-            char            *pcMsg = ( char* )pMsgStruct;
+            char *pcMsg = ( char* )pMsgStruct;
             // convert the multi-byte character sting to wide characher string
             static wchar_t  s_pcWMsg[ 256 ];
             mbstowcs( s_pcWMsg, pcMsg, 256 );

@@ -64,16 +64,6 @@ class CTDGui : public CTD::BaseEntity, public CTD::WidgetInput
         //******************************* override some functions **********************************//
 
         /**
-        * Get network type of this entity ( see BaseEntity for more details ).
-        * Return always the type using BaseEntity::GetNetworkingType() and set
-        * your desired type in ctor ( as a client object can get remote client object through the framework ).
-        */
-        CTD::tCTDNetworkingType                     GetNetworkingType() 
-                                                    { 
-                                                        return BaseEntity::GetNetworkingType();
-                                                    }
-
-        /**
         * Initializing function
         */
         void                                        Initialize();
@@ -98,14 +88,6 @@ class CTDGui : public CTD::BaseEntity, public CTD::WidgetInput
         */
         int                                         Message( int iMsgId, void *pMsgStruct );
 
-
-        /**
-        * Messaging function for incomming network pakets. This function is called by framework.
-        * \param   iMsgId                           Message ID
-        * \param   pMsgStruct                       Message specific data structure
-        */
-        void                                        NetworkMessage( int iMsgId, void *pMsgStruct );
-
         /**
         * Entity parameter description function.
         */
@@ -120,16 +102,20 @@ class CTDGui : public CTD::BaseEntity, public CTD::WidgetInput
 
         // is called when the text area is clicked
         void                                        OnActivateEditText( CB_Imp_GuiC_Callback* pkCallback, guiCBase* pkControl, void* pkData );
+
         // is called when the check box for walk mode is clicked
         void                                        OnActivateWalkMode( CB_Imp_GuiC_Callback* pkCallback, guiCBase* pkControl, void* pkData );
 
         // is called when a key is pressed
         void                                        OnInput( const NeoEngine::InputEvent *pkEvent );
 
-    protected:
-
         // setup the gui system when a connection with server has been established
         void                                        SetupGuiSystem();
+
+        // append new text into message area
+        void                                        AppendText( const std::string& strText );
+
+    protected:
 
         // add message to message window
         void                                        AddMessage( wchar_t *pcMsg );

@@ -43,13 +43,23 @@ using namespace CTD;
 namespace CTD_IPluginChat {
 
 //----------------------------------------------------------------//
-#define  CTD_KEYFLAG_ARRAY_NUM	10
-
-int								g_aiKeys[ CTD_KEYFLAG_ARRAY_NUM ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+int								g_aiKeys[ CTD_KEYFLAG_ARRAY_NUM ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0 };
 InputGroup						*g_pkInputGroup		= NULL;
 CTDInputListener				*g_pkInputListener	= NULL;
 bool							g_bLockMovementInut = false;
+
+LevelSet*                       s_pkLevelSet        = NULL;
 //----------------------------------------------------------------//
+
+void SetLevelSet( CTD::LevelSet* pkLevelSet )
+{
+    s_pkLevelSet = pkLevelSet;
+}
+
+CTD::LevelSet* GetLevelSet()
+{
+    return s_pkLevelSet;
+}
 
 // clear movement flags
 void ClearMovementFlags()
@@ -200,6 +210,34 @@ void CTDInputListener::Input( const InputEvent *pkEvent )
 		return;
 
 	}
+
+    if( pkEvent->m_iType == IE_MOUSEMOVE ) {
+        
+        static int s_iPosX = 0,  s_iLastPosX = 0;
+        static int s_iPosY = 0,  s_iLastPosY = 0;
+
+        s_iLastPosX = s_iPosX;
+        s_iPosX = pkEvent->m_aArgs[0].m_iData;
+
+        s_iLastPosY = s_iPosY;
+        s_iPosY = pkEvent->m_aArgs[1].m_iData;
+
+        if ( ( s_iPosX -  s_iLastPosX ) != 0 ) {
+            if ( ( s_iPosX -  s_iLastPosX ) > 0 ) {		
+                g_aiKeys[ MOUSE_RIGHT ] = 1;
+            } else {            
+                g_aiKeys[ MOUSE_LEFT ]  = 1;
+            }
+        } 
+        if ( ( s_iPosY -  s_iLastPosY ) != 0 ) {
+            if ( ( s_iPosY -  s_iLastPosY ) > 0 ) {
+                g_aiKeys[ MOUSE_UP ]   = 1;
+            } else {
+                g_aiKeys[ MOUSE_DOWN ] = 1;
+            }
+        } 
+
+    }
 
 	// handle character control keys
 	if ( iKeyData == m_iKeyCodeRotUp ) {
