@@ -64,10 +64,18 @@ inline void BaseEntity::setTransformationNode( osg::PositionAttitudeTransform* p
     _p_transformNode = p_trans;
 }
 
-inline void BaseEntity::addTransformableNode( osg::Node* p_node )
+inline void BaseEntity::addToTransformableNode( osg::Node* p_node )
 {
     assert( _p_transformNode && "this entity has no transformation node!" );
     _p_transformNode->addChild( p_node );
+}
+
+inline void BaseEntity::removeFromTransformationNode( osg::Node* p_node )
+{
+    if ( _p_transformNode )
+    {
+        _p_transformNode->removeChild( p_node );
+    }
 }
 
 inline void BaseEntity::setPosition( const osg::Vec3d &pos )

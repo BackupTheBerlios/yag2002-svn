@@ -39,12 +39,6 @@ using namespace CTD;
 BaseEntity::~BaseEntity()
 {
     if ( _p_transformNode )
-        removeTransformationNode();
-}
-
-void BaseEntity::removeTransformationNode()
-{
-    if ( _p_transformNode )
     {
         _p_transformNode->getParent( 0 )->removeChild( _p_transformNode );
         _p_transformNode = NULL;

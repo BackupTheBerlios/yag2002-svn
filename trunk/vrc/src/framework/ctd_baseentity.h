@@ -136,13 +136,6 @@ class BaseEntity : public osg::Node
         */
         void                                        setTransformationNode( osg::PositionAttitudeTransform* p_trans );
 
-
-        /**
-        * Remove transformation node. You can remove a transformation node before application exit using this mehtod.
-        * For example it can be used to remove destroyable simulation objects such as projectiles.
-        */
-        void                                        removeTransformationNode();
-
         /** 
         * Set position of the transform node
         */
@@ -195,7 +188,16 @@ class BaseEntity : public osg::Node
 
     protected:
 
-        void                                        addTransformableNode( osg::Node* p_node );
+        /**
+        * Add a node to our transformation node, assume that we use a transform node
+        */
+        void                                        addToTransformableNode( osg::Node* p_node );
+
+        /**
+        * Remove a node from our transformation node, assume that we use a transform node
+        * For example it can be used to remove dynamically attached nodes such as rucksack, etc..
+        */
+        void                                        removeFromTransformationNode( osg::Node* p_node );
 
         //! Entity attribute manager
         AttributeManager                            _attributeManager;
