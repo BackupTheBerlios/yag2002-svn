@@ -1,0 +1,12 @@
+# key bindings
+
+# chat key bindings
+chat_rotate_up = KC_UP
+chat_rotate_down = KC_DOWN
+chat_rotate_right = KC_RIGHT
+chat_rotate_left = KC_LEFT
+chat_move_forward = KC_W
+chat_move_backward = KC_S
+chat_move_side_left = KC_A
+chat_move_side_right = KC_D
+chat_change_mode = KC_F1
