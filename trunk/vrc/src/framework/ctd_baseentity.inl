@@ -29,6 +29,16 @@
  #
  ################################################################*/
 
+inline void BaseEntity::setAutoDelete( bool autoDel )
+{
+    _autoDelete = autoDel;
+}
+
+inline bool BaseEntity::getAutoDelete()
+{
+    return _autoDelete;
+}
+
 inline const std::string& BaseEntity::getTypeName() 
 { 
     return _typeName; 

@@ -38,6 +38,8 @@ using namespace CTD;
  
 BaseEntity::~BaseEntity()
 {
+    if ( _p_transformNode )
+        removeTransformationNode();
 }
 
 void BaseEntity::removeTransformationNode()

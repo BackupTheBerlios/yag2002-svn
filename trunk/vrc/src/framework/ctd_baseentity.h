@@ -113,6 +113,18 @@ class BaseEntity : public osg::Node
         void                                        activate( bool active ) { _active = active; }
 
         /**
+        * Set auto deletion flag.
+        * \param autoDel                            Set to false when you are going to delete the entity manually.
+        */
+        void                                        setAutoDelete( bool autoDel );
+
+        /**
+        * Get auto delete flag.
+        * \return                                   Auto delete flag
+        */
+        bool                                        getAutoDelete();
+
+        /**
         * Override and return false if the entitiy does not need transformation.
         * This method is called during entity creation by the level loader.
         */
@@ -154,8 +166,8 @@ class BaseEntity : public osg::Node
         /**
         * Clone this entity and name it instanceName.
         * Cloning an entity means that also the accociated scenegraph node is cloned.
-        * If p_scenegroup is not NULL then the cloned scene node will be added this group.
-        * If p_scenegroup is NULL then the cloned scene node will be added clonee's parent group.
+        * If p_scenegroup is not NULL then the cloned scene node will be added to this group.
+        * If p_scenegroup is NULL then the cloned scene node will be added to clonee's parent group thus getting a sibling.
         */
         virtual BaseEntity*                         clone( const std::string& instanceName, osg::Group* p_scenegroup = NULL );
 
@@ -188,7 +200,7 @@ class BaseEntity : public osg::Node
         //! Entity attribute manager
         AttributeManager                            _attributeManager;
 
-        //! Deletion managed by Application?        
+        //! Deletion managed by Application or by game code?        
         bool                                        _autoDelete;
 
         //! Is entity active?
