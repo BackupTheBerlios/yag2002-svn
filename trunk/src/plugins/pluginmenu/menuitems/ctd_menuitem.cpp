@@ -46,13 +46,13 @@ namespace CTD_IPluginMenu
 CTDMenuItem::CTDMenuItem()
 {
 
-	m_kPosition					= Vector3d( 0, 0, 0 );
-	m_kRotation					= Vector3d( 0, 0, 0 );
-	m_pkMesh					= NULL;
-	m_uiGroupID					= 0;
-	m_uiSelectionOrder			= 0;
-	m_strParameterName			= CTD_MENUITEM_UNKNOWN_PARAM_NAME;
-	m_bIsFocused				= false;
+    m_kPosition                 = Vector3d( 0, 0, 0 );
+    m_kRotation                 = Vector3d( 0, 0, 0 );
+    m_pkMesh                    = NULL;
+    m_uiGroupID                 = 0;
+    m_uiSelectionOrder          = 0;
+    m_strParameterName          = CTD_MENUITEM_UNKNOWN_PARAM_NAME;
+    m_bIsFocused                = false;
 
 }
 
@@ -65,64 +65,64 @@ CTDMenuItem::~CTDMenuItem()
 void CTDMenuItem::Initialize() 
 { 
 
-	if ( m_pkMesh == NULL ) {
+    if ( m_pkMesh == NULL ) {
 
-		string strMsg = " (Plugin Menu) entity ' " + GetName() + "::" + GetInstanceName() + " ' has no mesh assigned, deactivated!";
-		CTDCONSOLE_PRINT( LogLevel( INFO ), strMsg );
-		Deactivate();
+        string strMsg = " (Plugin Menu) entity ' " + GetName() + "::" + GetInstanceName() + " ' has no mesh assigned, deactivated!";
+        CTDCONSOLE_PRINT( LogLevel( INFO ), strMsg );
+        Deactivate();
 
-	}
+    }
 
-	SetEntity( m_pkMesh );
+    SetEntity( m_pkMesh );
 
 }
 
 bool CTDMenuItem::Render( Frustum *pkFrustum, bool bForce ) 
 {
 
-	// render the mesh
-	m_pkMesh->Render();
+    // render the mesh
+    m_pkMesh->Render();
 
-	return true;
+    return true;
 
 }
 
-int	CTDMenuItem::ParameterDescription( int iParamIndex, ParameterDescriptor *pkDesc )
+int CTDMenuItem::ParameterDescription( int iParamIndex, ParameterDescriptor *pkDesc )
 {
 
-	int iParamCount = 3;
+    int iParamCount = 3;
 
-	if (pkDesc == NULL) {
+    if (pkDesc == NULL) {
 
-		return iParamCount;
-	}
+        return iParamCount;
+    }
 
-	switch( iParamIndex ) 
-	{
-	case 0:
-		pkDesc->SetName( "Position" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
-		pkDesc->SetVar( &m_kPosition );
-		
-		break;
-	case 1:
-		pkDesc->SetName( "Rotation" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
-		pkDesc->SetVar( &m_kRotation );
-		
-		break;
+    switch( iParamIndex ) 
+    {
+    case 0:
+        pkDesc->SetName( "Position" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
+        pkDesc->SetVar( &m_kPosition );
+        
+        break;
+    case 1:
+        pkDesc->SetName( "Rotation" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
+        pkDesc->SetVar( &m_kRotation );
+        
+        break;
 
-	case 2:
-		pkDesc->SetName( "Mesh" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_STATIC_MESH );
-		pkDesc->SetVar( &m_pkMesh );
-		break;
+    case 2:
+        pkDesc->SetName( "Mesh" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_STATIC_MESH );
+        pkDesc->SetVar( &m_pkMesh );
+        break;
 
-	default:
-		return -1;
-	}
+    default:
+        return -1;
+    }
 
-	return iParamCount;
+    return iParamCount;
 
 }
 
