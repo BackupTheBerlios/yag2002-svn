@@ -234,8 +234,9 @@ void EntityManager::deregisterUpdate( BaseEntity* p_entity )
 //! TODO implement a real adding functionality basing on spatial partitioning
 void EntityManager::addToScene( BaseEntity* p_entity, osg::Group *p_scenegr )
 {
+    assert( p_entity && p_entity->_p_transformNode && "adding to scene requires a transformation node in entity!" );
     osg::Group *p_grp = p_scenegr ? p_scenegr : ( osg::Group* )Application::get()->getViewer()->getTopMostSceneData();
-    p_grp->addChild( p_entity );
+    p_grp->addChild( p_entity->_p_transformNode );
 }
 
 void EntityManager::addToEntityPool( BaseEntity* p_entity )
