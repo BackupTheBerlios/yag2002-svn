@@ -768,7 +768,7 @@ void PluginManager::SendPluginMessage( int iMsgId, void *pMsgStruct, const strin
 }
 
 // be aware that sending messages to entites does not consider entity's state active/inactive
-void PluginManager::SendEntityMessage( int iMsgId, void *pMsgStruct, const string &strPluginName, bool bNetworkMessage )
+void PluginManager::SendEntityMessage( int iMsgId, void *pMsgStruct, const string &strPluginName )
 {
 
     bool bBoradcast     = ( strPluginName.length() == 0 );
@@ -804,16 +804,7 @@ void PluginManager::SendEntityMessage( int iMsgId, void *pMsgStruct, const strin
 
         while ( pkEntiy != pkEntiyEnd ) {
 
-            if ( bNetworkMessage == true ) {
-
-                ( *pkEntiy )->NetworkMessage( iMsgId, pMsgStruct );
-
-            } else {
-
-                ( *pkEntiy )->Message( iMsgId, pMsgStruct );
-
-            }
-
+            ( *pkEntiy )->Message( iMsgId, pMsgStruct );
             pkEntiy++;
 
         }

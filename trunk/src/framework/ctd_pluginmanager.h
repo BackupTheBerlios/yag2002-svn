@@ -287,9 +287,8 @@ class PluginManager
         * \param    iMsgId              Message ID
         * \param    pMsgStruct          Message specific data
         * \param    strPluginName       Plugin name, let it empty to send the message to all plugins' entities.
-        * \param    bNetworkMessage     If true then the NetworkMessage method of entities is called.
         */
-        void                            SendEntityMessage( int iMsgId, void *pMsgStruct, const std::string &strPluginName = "", bool bNetworkMessage = false );
+        void                            SendEntityMessage( int iMsgId, void *pMsgStruct, const std::string &strPluginName = "" );
 
         /**
         * Initialize plugins' entities.
