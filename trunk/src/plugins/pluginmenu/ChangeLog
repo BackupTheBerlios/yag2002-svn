@@ -1,4 +1,8 @@
 
+boto ( 10/13/2004 )
+
+- small bugfix in menuconrol: switching between menu and game using esc key
+
 boto ( 10/08/2004 )
 
 - adaptations to new framework completed
