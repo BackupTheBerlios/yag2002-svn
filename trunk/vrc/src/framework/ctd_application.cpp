@@ -146,11 +146,20 @@ bool Application::initialize( int argc, char **argv )
 
     // initialize sound manager
     _p_soundManager = osgAL::SoundManager::instance();
-    _p_soundManager->init( 16 );
-    _p_soundManager->getEnvironment()->setDistanceModel( openalpp::InverseDistance );
-    _p_soundManager->getEnvironment()->setDopplerFactor( 1 );
-    osgAL::SoundRoot* p_soundRoot = new osgAL::SoundRoot;
-    sceneroot->addChild( p_soundRoot );
+    try 
+    {
+        _p_soundManager->init( 16 );
+        _p_soundManager->getEnvironment()->setDistanceModel( openalpp::InverseDistance );
+        _p_soundManager->getEnvironment()->setDopplerFactor( 1 );
+        osgAL::SoundRoot* p_soundRoot = new osgAL::SoundRoot;
+        sceneroot->addChild( p_soundRoot );
+    }
+    catch( openalpp::InitError e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "*** cannot initialize sound device openAL. reason: '" << e.what() << "'" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "***   have you already installed the openAL drivers?" << endl;
+        return false;
+    }
 
     log << Log::LogLevel( Log::L_INFO ) << "initializing entities..." << endl;
     // setup entities
