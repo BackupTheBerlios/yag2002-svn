@@ -63,97 +63,89 @@ namespace CTD_IPluginMenu
 class CTDMenuChangeGroupItem: public CTDMenuItem
 {
 
-	public:
+    public:
 
-													CTDMenuChangeGroupItem();
-													~CTDMenuChangeGroupItem();
+                                                    CTDMenuChangeGroupItem();
+                                                    ~CTDMenuChangeGroupItem();
 
-		//******************************* override some functions **********************************//
+        //******************************* override some functions **********************************//
 
-		/**
-		* Initializing function
-		*/
-		void										Initialize();
+        /**
+        * Initializing function
+        */
+        void                                        Initialize();
 
-		/**
-		* Post-initializing function, this is called after all plugins' entities are initilized.
-		* One important usage of this function is to search and attach entities to eachother, after all entities are initialized.
-		*/
-		 void										PostInitialize();
+        /**
+        * Post-initializing function, this is called after all plugins' entities are initilized.
+        * One important usage of this function is to search and attach entities to eachother, after all entities are initialized.
+        */
+         void                                       PostInitialize();
 
-		/**
-		* Call back funtion for beginning with focus state. This function is called when 
-		*  the user activates an item.
-		*/
-		void										OnBeginFocus();
+        /**
+        * Call back funtion for beginning with focus state. This function is called when 
+        *  the user activates an item.
+        */
+        void                                        OnBeginFocus();
 
-		/**
-		* Call back funtion for ending with focus state. This function is called when 
-		*  the user changes the focus to another item.
-		*/
-		void										OnEndFocus();
+        /**
+        * Call back funtion for ending with focus state. This function is called when 
+        *  the user changes the focus to another item.
+        */
+        void                                        OnEndFocus();
 
-		/**
-		* Call back funtion for getting activated. This function is called when 
-		*  the user activates an item, e.g. by pressing enter for a focused item.
-		*/
-		void										OnActivate();
+        /**
+        * Call back funtion for getting activated. This function is called when 
+        *  the user activates an item, e.g. by pressing enter for a focused item.
+        */
+        void                                        OnActivate();
 
-		/**
-		* Update object
-		* \param fDeltaTime                         Time passed since last update
-		*/
-		void									    UpdateEntity( float fDeltaTime );
+        /**
+        * Update object
+        * \param fDeltaTime                         Time passed since last update
+        */
+        void                                        UpdateEntity( float fDeltaTime );
 
-		/**
-		* Render object
-		* \param pkFrustum                          Current view frustum (if any)
-		* \param bForce                             Render even if rendered previously this frame or deactivated (default false)
-		* \return                                   true if we were rendered, false if not (already rendered, not forced)
-		*/
-		bool										Render( NeoEngine::Frustum *pkFrustum = 0, bool bForce = false );
+        /**
+        * Render object
+        * \param pkFrustum                          Current view frustum (if any)
+        * \param bForce                             Render even if rendered previously this frame or deactivated (default false)
+        * \return                                   true if we were rendered, false if not (already rendered, not forced)
+        */
+        bool                                        Render( NeoEngine::Frustum *pkFrustum = 0, bool bForce = false );
 
-		/**
-		* Messaging function.
-		* \param  iMsgId                            Message ID
-		* \param  pMsgStruct                        Message specific data structure
-		* \return                                   This return value is message specific.
-		*/
-		int											Message( int iMsgId, void *pkMsgStruct );
+        /**
+        * Messaging function.
+        * \param  iMsgId                            Message ID
+        * \param  pMsgStruct                        Message specific data structure
+        * \return                                   This return value is message specific.
+        */
+        int                                         Message( int iMsgId, void *pkMsgStruct );
 
-		//*******************************************************************************************//
+        //*******************************************************************************************//
 
-		int											ParameterDescription( int iParamIndex, CTD::ParameterDescriptor *pkDesc );
+        int                                         ParameterDescription( int iParamIndex, CTD::ParameterDescriptor *pkDesc );
 
-		//******************************************************************************************//
+        //******************************************************************************************//
 
-		// rotation offset is needed sometimes when the exported anim paths must be tweeked
-		NeoEngine::Vector3d							m_kRotationOffset;
 
-		NeoEngine::Quaternion						m_kRotOffset;
+        std::string                                 m_strPathAnim;
 
-		std::string									m_strPathAnim;
+        // group id to change to
+        int                                         m_iDestGroupID;
 
-		// group id to change to
-		int											m_iDestGroupID;
+    protected:
 
-	private:
+        NeoEngine::Vector3d                         m_kCurrPosition;
 
-		NeoEngine::Vector3d							m_kCurrPosition;
+        float                                       m_fPosVar;
 
-		float										m_fPosVar;
+        CTD::BaseEntity                             *m_pkCamera;
 
-		CTD::BaseEntity							*m_pkCamera;
+        enum { eIdle, eAnim, eFocus }               m_eState;
 
-		enum { eIdle, eAnim, eFocus }				m_eState;
-
-		NeoEngine::AnimatedNode						*m_pkPathAnim;
-		
-		float										m_fAnimBlend;
-
-		// function for setting up a node for key animation given the name of an .nani file
-		NeoEngine::AnimatedNode*					ReadKeyframes( const std::string &strFileName );
-
+        NeoEngine::AnimatedNode                     *m_pkPathAnim;
+        
+        int                                         m_iCheckLastKey;
 
 };
 
@@ -162,12 +154,12 @@ class CTDMenuChangeGroupItem: public CTDMenuItem
 class CTDMenuChangeGroupItemDesc : public CTD::EntityDescriptor
 {
 
-	public:
-													CTDMenuChangeGroupItemDesc() { };
-													~CTDMenuChangeGroupItemDesc() { }
-			
-		const std::string&							GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME_MenuChangeGroupItem ) }
-		CTD::BaseEntity*							CreateEntityInstance() { return (CTD::BaseEntity*) new CTDMenuChangeGroupItem; }
+    public:
+                                                    CTDMenuChangeGroupItemDesc() { };
+                                                    ~CTDMenuChangeGroupItemDesc() { }
+            
+        const std::string&                          GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME_MenuChangeGroupItem ) }
+        CTD::BaseEntity*                            CreateEntityInstance() { return (CTD::BaseEntity*) new CTDMenuChangeGroupItem; }
 
 
 };

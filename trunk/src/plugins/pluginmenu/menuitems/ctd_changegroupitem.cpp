@@ -33,13 +33,12 @@
 #include <base.h>
 #include "ctd_changegroupitem.h"
 #include "../ctd_menucam.h"
-
+#include <ctd_animutil.h>
 #include <ctd_printf.h>
 
 using namespace std;
 using namespace CTD;
 using namespace NeoEngine;
-using namespace NeoChunkIO;
 
 namespace CTD_IPluginMenu
 {
@@ -57,7 +56,7 @@ CTDMenuChangeGroupItem::CTDMenuChangeGroupItem()
     
     m_pkPathAnim    = NULL;
     m_iDestGroupID  = -1;
-    m_fAnimBlend    = 0;
+    m_iCheckLastKey = 1;
     m_eState        = eIdle;
     m_pkCamera      = NULL;
     m_fPosVar       = 0;
@@ -94,22 +93,29 @@ void CTDMenuChangeGroupItem::Initialize()
 
     }
 
-    m_pkPathAnim = ReadKeyframes( m_strPathAnim );
-    if ( m_pkPathAnim == NULL ) {
+    // try to load the animation file
+    KeyFrameAnimUtil    kKfUtil;        
+
+    File* pkFile = NeoEngine::Core::Get()->GetFileManager()->GetByName( m_strPathAnim );
+    if ( !pkFile || ( kKfUtil.Load( pkFile ) == false ) ) {
 
         CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Menu) entity ' MenuChangeGroupItem::" + GetInstanceName() +
             " ', cannot find animation file " );
         Deactivate();
         return;
+
     }
+
+    m_pkPathAnim     = new AnimatedNode( *kKfUtil.GetAnimatedNode() );
+    m_iCheckLastKey  = ( int )m_pkPathAnim->GetAnimation()->m_vpkKeyframes.size() - 1;
 
     // set initial position and orientation
     SetTranslation( m_kPosition );
-    Quaternion  kRot( EulerAngles( m_kRotation.x * PI / 180.0f, m_kRotation.y * PI / 180.0f, m_kRotation.z * PI / 180.0f ) );
-    SetRotation( kRot );
 
-    // set the rotation offset
-    m_kRotOffset    = Quaternion( EulerAngles( m_kRotationOffset.x * PI / 180.0f, m_kRotationOffset.y * PI / 180.0f, m_kRotationOffset.z * PI / 180.0f ) );
+	// set initial position and orientation
+	SetTranslation( m_kPosition );
+	Quaternion	kRot( EulerAngles( m_kRotation.x * PI / 180.0f, m_kRotation.y * PI / 180.0f, m_kRotation.z * PI / 180.0f ) );
+	SetRotation( kRot );
 
 }
 
@@ -117,8 +123,6 @@ void CTDMenuChangeGroupItem::Initialize()
 void CTDMenuChangeGroupItem::PostInitialize()
 {
 
-    // set the initial position of item marker
-    //  attention, you must use menu's framework for finding the camera entity
     m_pkCamera = Framework::Get()->FindEntity( CTD_ENTITY_NAME_MenuCamera );
     if ( m_pkCamera == NULL ) {
 
@@ -158,8 +162,8 @@ void CTDMenuChangeGroupItem::OnActivate()
     }
 
     // begin the path animation
-    m_fAnimBlend    = 0;
     m_eState        = eAnim;
+    m_pkPathAnim->GetAnimation()->m_iNextKeyframe = 1;
 
 }
 
@@ -197,24 +201,17 @@ void CTDMenuChangeGroupItem::UpdateEntity( float fDeltaTime )
         {
             // as neoengine currently does not provide functions to check the current animation blending state so we have to do that manually!
             NodeAnimation* pkNodeAnim = m_pkPathAnim->GetAnimation();
-            m_fAnimBlend += fDeltaTime / pkNodeAnim->m_fLength;         
 
-            if ( m_fAnimBlend < 0.95f ) {
+            if ( pkNodeAnim->m_iNextKeyframe < m_iCheckLastKey ) {
 
                 m_pkPathAnim->Update( fDeltaTime );
                 m_pkCamera->SetTranslation( m_pkPathAnim->GetTranslation() );
-                m_pkCamera->SetRotation( m_kRotOffset * m_pkPathAnim->GetRotation() );
+                m_pkCamera->SetRotation( m_pkPathAnim->GetRotation() );
 
             } else {
 
                 m_eState                        = eIdle;
-                m_fAnimBlend                    = 0;
                 pkNodeAnim->m_fCurTime          = 0;
-
-                // set position and orientation to last key frame
-                NodeKeyframe *pkLastKeyframe    = pkNodeAnim->m_vpkKeyframes[ pkNodeAnim->m_vpkKeyframes.size() - 1 ];
-                m_pkCamera->SetTranslation( pkLastKeyframe->m_kTranslation );
-                m_pkCamera->SetRotation( m_kRotOffset * pkLastKeyframe->m_kRotation );
 
             }
 
@@ -280,159 +277,12 @@ int CTDMenuChangeGroupItem::Message( int iMsgId, void *pkMsgStruct )
 
 }   
 
-// read the keyframes stored in an ".nani" file
-AnimatedNode* CTDMenuChangeGroupItem::ReadKeyframes( const string &strFileName )
-{
-
-    File    *pkFile = NeoEngine::Core::Get()->GetFileManager()->GetByName( strFileName );
-    if ( pkFile == NULL ) {
-
-        pkFile = new File;
-
-    }
-    if ( pkFile->Open( "", strFileName, ios_base::in | ios_base::binary ) == false ) {
-
-        CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Visuals) entity ' AnimatedMesh ': could not find keyframe file! " );
-        delete pkFile;
-        return NULL;
-
-    }
-
-    char   szStr[5];
-    string strMode;
-
-    if( !pkFile->DetermineByteOrder( 0x494e414e ) )
-    {
-        neolog << LogLevel( ERROR ) << "*** Unable to load animation lib: Failed to determine byte order, possible corrupt file" << endl;
-        delete pkFile;
-        return NULL;
-    }
-
-    pkFile->Read( szStr, 4 ); szStr[4] = 0;
-
-    if( string( szStr ) != "NANI" )
-    {
-        neolog << LogLevel( ERROR ) << "*** Unable to load animation lib: Invalid ID" << endl;
-        delete pkFile;
-        return NULL;
-    }
-
-    //Read mode string
-    pkFile->Read( szStr, 4 );
-
-    ChunkIO *pkIO = 0;
-
-    if( string( szStr ) == "!bin" )
-    {
-        pkIO = new ChunkIO( ChunkIO::BINARY );
-        pkFile->SetBinary( true );
-    }
-    else if( string( szStr ) == "!txt" )
-    {
-        pkIO = new ChunkIO( ChunkIO::ASCII );
-        pkFile->SetBinary( false );
-    }
-    else
-    {
-        neolog << LogLevel( ERROR ) << "*** Unable to load animation lib: Unsupported chunk file mode [" << strMode << "]" << endl;
-        delete pkFile;
-        return NULL;
-    }
-
-    *pkFile >> pkIO->m_iMajorVersion >> pkIO->m_iMinorVersion;
-
-    if( !( pkIO->m_iMajorVersion == ChunkIO::MAJORVERSIONREQUIRED ) || ( pkIO->m_iMinorVersion < ChunkIO::MINORVERSIONREQUIRED ) )
-    {
-        neolog << LogLevel( ERROR ) << "*** Unable to load animation lib: Invalid chunk format version " << pkIO->m_iMajorVersion << "." << pkIO->m_iMinorVersion << endl;
-        delete pkFile;
-        delete pkIO;
-        return NULL;
-    }
-
-
-    Chunk               *pkChunk                = NULL;
-    AnimatedNode        *pkAnimNode             = NULL;
-
-    // read in the animation keyframes ( only the first set! )
-    pkChunk = pkIO->ReadChunk( pkFile );
-    if( pkChunk != NULL )
-    {       
-        string  strName;
-        int     iID = -1;
-        float   fLength = 0.0f;
-
-        vector< Chunk* > vpkSubChunks = pkChunk->GetSubChunks();
-        // pick the first chunk attributes: name, id, and length
-        for ( unsigned int uiChunks = 0; uiChunks < 3; uiChunks++ ) {
-
-            Chunk   *pkSChunk = vpkSubChunks[ uiChunks ];
-            
-            if ( ( pkSChunk->GetType() == ChunkType::STRING ) && ( pkSChunk->GetID() == "name" ) ) {
-
-                strName = ( ( StringChunk* )pkSChunk )->m_strData;
-                continue;
-
-            }
-
-            if ( ( pkSChunk->GetType() == ChunkType::INTEGER ) && ( pkSChunk->GetID() == "id" ) ) {
-
-                iID = ( ( IntChunk* )pkSChunk )->m_iData;
-                continue;
-
-            }
-
-            if ( ( pkSChunk->GetType() == ChunkType::FLOAT ) && ( pkSChunk->GetID() == "length" ) ) {
-
-
-                fLength = ( ( FloatChunk* )pkSChunk )->m_fData;
-                continue;
-
-            }
-        }
-
-        if( pkChunk->GetType() == ChunkType::ANIMATEDNODE ) {
-
-            SceneNodeChunk  *pkSceneNode = dynamic_cast< SceneNodeChunk* >( pkChunk );
-            if( pkIO->ParseChunk( pkSceneNode, 0, 0 ) >= 0 ) {
-
-                pkAnimNode = dynamic_cast< AnimatedNode* >(pkSceneNode->m_pkNode);
-
-                // set animation parameters name and length
-                if ( pkAnimNode ) {
-
-                    pkAnimNode->SetAnimation( iID );
-                    NodeAnimation * pkAnimTrack = pkAnimNode->GetAnimation( iID );
-                    pkAnimTrack->m_fLength = fLength;
-                    pkAnimTrack->m_strName = strName;
-
-                }
-
-            }
-            
-        }
-
-    }
-
-    if ( pkAnimNode == NULL ) {
-
-        // error getting the animation and its keyframes
-        CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Visuals) entity ' AnimatedMesh ': no keyframes exist => no animation! " );
-
-    }
-
-    delete pkIO;
-    delete pkFile;
-    
-    return pkAnimNode;
-
-}
-
 int CTDMenuChangeGroupItem::ParameterDescription( int iParamIndex, ParameterDescriptor *pkDesc )
 {
 
     // get the param count of father class
     int iGeneralParamCount = CTDMenuItem::ParameterDescription( 0, NULL );
-    int iParamCount = iGeneralParamCount + 3;
+    int iParamCount = iGeneralParamCount + 2;
 
     if (pkDesc == NULL) {
 
@@ -464,13 +314,6 @@ int CTDMenuChangeGroupItem::ParameterDescription( int iParamIndex, ParameterDesc
         pkDesc->SetName( "Path" );
         pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
         pkDesc->SetVar( &m_strPathAnim );
-        
-        break;
-
-    case 2:
-        pkDesc->SetName( "PathRotationOffset" );
-        pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
-        pkDesc->SetVar( &m_kRotationOffset );
         
         break;
 
