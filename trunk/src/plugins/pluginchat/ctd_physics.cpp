@@ -51,9 +51,7 @@ WalkPhysics::WalkPhysics()
     m_pkBBOX        = NULL;
     m_pkRoom        = NULL;
     m_fGravity      = 0.98f;
-    m_fGroundOffset = 0.3f;
-    m_fStepHeight   = 0.8f;
-    m_fObjectHeight = 0.8f;
+    m_fStepHeight   = 0.5f;
     m_bLastContact  = false;
     m_bHasContact   = false;
 
@@ -64,29 +62,19 @@ WalkPhysics::~WalkPhysics()
 {
 }
 
-void WalkPhysics::Initialize( SceneNode *pkSceneNode, float fGravity )
+void WalkPhysics::Initialize( SceneNode *pkSceneNode, Room *pkRoom, float fMaxStepHeight, float fGravity )
 {
 
     m_pkSceneNode   = pkSceneNode;
     m_pkBBOX        = static_cast< AABB* >( m_pkSceneNode->GetBoundingVolume() );
-    m_pkRoom        = Framework::Get()->GetCurrentLevelSet()->GetRoom();
+    m_pkRoom        = pkRoom;
+    m_fStepHeight   = fMaxStepHeight;
     m_fGravity      = fGravity;
-    m_fObjectHeight = m_pkBBOX->GetRadius();
 
 }
 
-bool WalkPhysics::MoveBody( Vector3d &kPosition, const Vector3d &kMoveVector )
+bool WalkPhysics::MoveBody( Vector3d &kPosition, const Vector3d &kMoveVector, float fDeltaTime )
 {
-
-#ifdef _DEBUG
-    // some printfs into screen
-    char    strBuff[256];
-#endif
-
-    //!FIXME: this should be a parameter of this  method
-    float fDeltaTime      = 0.03f;
-
-    //------------------------------------------------------------------//
 
     Vector3d kCurrPosition = kPosition;
  
@@ -115,9 +103,6 @@ bool WalkPhysics::MoveBody( Vector3d &kPosition, const Vector3d &kMoveVector )
     // store the last contact flag
     m_bLastContact = m_bHasContact;
 
-    // add ground offset
-    kCurrPosition.y -= m_fGroundOffset;
-    
     // move the bbox in xz axes
     m_pkBBOX->SetTranslation( kCurrPosition );
 
@@ -126,69 +111,83 @@ bool WalkPhysics::MoveBody( Vector3d &kPosition, const Vector3d &kMoveVector )
 
         Vector3d kNormalXYZ;
         Vector3d kNormalXZ;
-        Vector3d kNormalY;
-        float    fY = 0;
-        float    fDepthY  = 0.0f;
-        float    fDepthXZ = 0.0f;
+        float    fNormalY           = 0;
+        float    fHighestCollision  = 0;
+        float    fCountY            = 0;
+
         vector< Contact* >::iterator    pkContact    = m_kContactSet.m_vpkContacts.begin();
-        vector< Contact* >::iterator    pkContactEnd = m_kContactSet.m_vpkContacts.end();//MIN( m_kContactSet.m_vpkContacts.end(), pkContact + 10 );
+        vector< Contact* >::iterator    pkContactEnd = MIN( m_kContactSet.m_vpkContacts.end(), pkContact + 50 ); // limit count of considered contacts
         while ( pkContact != pkContactEnd ) {
 
+            Contact*& pkCurrentContact = ( *pkContact );
+            kNormalXYZ   = pkCurrentContact->m_kNormal;
+            float fDepth = pkCurrentContact->m_pfDepths[ 0 ];
+
             // collect and categorize collision normals
-            Contact* pkCurrentContact = ( *pkContact );
-            kNormalXYZ = pkCurrentContact->m_kNormal;
+            //-----------------------------------------
+
             if ( kNormalXYZ.y > 0.8f ) {
 
-                kNormalY += kNormalXYZ;
-                fY       = MAX( fY, pkCurrentContact->m_pkPoints[ 0 ].y );
-                fDepthY  += pkCurrentContact->m_pfDepths[ 0 ];
+                fNormalY            += ( kNormalXYZ.y * fDepth );
+                fHighestCollision   = MAX( fHighestCollision, fDepth );
+                fCountY             += 1.0f;
 
             } else {
 
-                if ( fabs( kNormalXYZ.y ) < 0.1f ) { // we don't want to add y-normals of -1 into xz normals!
+                // try to proof some plausibility in order to detect wall corners ( they make some headache, use some heuristics )
 
-                    kNormalXZ += kNormalXYZ;
-                    fDepthXZ  += pkCurrentContact->m_pfDepths[ 0 ];
+                // don't consider backfacing polygons
+                Vector3d kDir = m_kLastPosition - ( kPosition + kMoveVector ); 
+                bool bBackFacing = ( kDir * kNormalXYZ ) < 0;
+                if  ( bBackFacing ) {
+
+                    pkContact++;
+                    continue;
 
                 }
+
+                float fPlausiOffset2 = kMoveVector.Len2();
+                float fDepth2        = fDepth * fDepth;
+
+                // if we stand and just rotate in the near of a wall then consider the bbox radius for plausi chek
+                if (  fPlausiOffset2 < 0.0001f ) {
+
+                    fPlausiOffset2 = ( m_pkBBOX->GetRealDim().x + m_pkBBOX->GetRealDim().z ) * 0.5f;
+                    fPlausiOffset2 *= fPlausiOffset2;
+
+                }
+
+                // check the contact depth against out plausibility offset
+                if ( fDepth2 < fPlausiOffset2 ) { 
+                
+                    kNormalXZ += ( kNormalXYZ * fDepth );
+                
+                }
             }
-
-#ifdef _DEBUG
-    // print out the contact points
-    sprintf( strBuff, "contact point %0.3f %0.3f %0.3f, max Y %0.3f", 
-        ( *pkContact )->m_pkPoints[ 0 ].x, 
-        ( *pkContact )->m_pkPoints[ 0 ].y, 
-        ( *pkContact )->m_pkPoints[ 0 ].z, fY );
-
-    CTDPRINTF_PRINT( g_CTDPrintf, strBuff );
-#endif
 
             pkContact++;
 
         }
 
-        kNormalXZ.Normalize();
-        kNormalY.Normalize();
+        // average Y normals for a smooth height adaptation
+        if ( fCountY > 0 ) {
+            fNormalY *= ( 1.0f / fCountY );
+        }
 
         // adapt y coordinate
-        if ( fDepthY > 0.1f && fDepthY < m_fStepHeight ) {
+        if ( fHighestCollision < m_fStepHeight ) {
 
-            kNormalY        *= fDepthY;
-            kCurrPosition.y += kNormalY.y;
-            m_bLastContact   = true;
+            kCurrPosition.y += fNormalY;
 
-        } 
-        else
-        // collide with walls
-        if ( ( fabs( kNormalXZ.x ) > 0.8f ) || ( fabs( kNormalXZ.z ) > 0.8f ) ) {
+        } else  {
 
-            //kNormalXZ       *= fDepthXZ;
-            //kNormalXZ.y     = 0;
-            //kCurrPosition   += kNormalXZ;
+            // collide with walls
+            kNormalXZ.y     = 0;
+            kCurrPosition   += kNormalXZ;
 
         }
 
-    }
+    } 
 
     // check for falling
     if ( !m_bLastContact ) {
@@ -202,25 +201,20 @@ bool WalkPhysics::MoveBody( Vector3d &kPosition, const Vector3d &kMoveVector )
 
     }
 
-
     // apply velocity
     kCurrPosition  += m_kVelocity;
 
-    // remove ground offset
-    kCurrPosition.y += m_fGroundOffset;
+    // store last position for later use in next step
+    m_kLastPosition = kPosition;
 
     // set new position
-    kPosition.x    = kCurrPosition.x;
-    kPosition.z    = kCurrPosition.z;
-    kPosition.y    = ( kPosition.y + kCurrPosition.y ) * 0.5f; // smoothly adapt new height avoiding noise
-
+    kPosition       = ( kPosition + kCurrPosition ) * 0.5f; // smoothly adapt new position avoiding noise
    
 #ifdef _DEBUG
+
+    char    strBuff[256];
     // print out the count of collision points
     sprintf( strBuff, "count of contacts %d  ", m_kContactSet.m_vpkContacts.size() );
-    CTDPRINTF_PRINT( g_CTDPrintf, strBuff );
-
-    sprintf( strBuff, "bbox dimensions %0.3f %0.3f %0.3f", m_pkBBOX->GetRealDim().x, m_pkBBOX->GetRealDim().y, m_pkBBOX->GetRealDim().z );
     CTDPRINTF_PRINT( g_CTDPrintf, strBuff );
 
 #endif

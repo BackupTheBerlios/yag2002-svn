@@ -49,6 +49,7 @@ namespace CTD_IPluginChat {
 //! Physics for walking
 /**
 * This class implements simple physics basing on collision detections in order to let a rigid body walk ( it uses scene node's AABB ).
+* The walk physics uses some heuristics to accellerate the calculations. It also handles automatic stairway climbing.
 */
 class WalkPhysics
 {
@@ -59,16 +60,42 @@ class WalkPhysics
 
                                                     ~WalkPhysics();
 
-        //! Initialize the physics
-        void                                        Initialize( NeoEngine::SceneNode *pkSceneNode, float fGravity = 0.98f );
+        /**
+        * Initialize the physics
+        * \param pkSceneNode                        Scene node which bbox is used for collision tests
+        * \param pkRoom                             The room which contains the scene node
+        * \param fMaxStepHeight                     Maximal step height which can be automatically climbed
+        * \param fGravity                           Gravity force used for falling
+        */
+        void                                        Initialize( 
+                                                                NeoEngine::SceneNode *pkSceneNode, 
+                                                                NeoEngine::Room *pkRoom, 
+                                                                float fMaxStepHeight = 0.5f,
+                                                                float fGravity = 0.98f 
+                                                               );
+
+        /**
+        * Change the room where scene node resides
+        * \param pkRoom                             The new room which contains the scene node
+        */
+        void                                        ChangeRoom( NeoEngine::Room *pkRoom )
+                                                    {
+                                                        m_pkRoom = pkRoom;
+                                                    }
 
         /**
         * Move the body from position pkCurrentPosition to ( pkCurrentPosition + pkMoveVector ) considering all effects of possible collisions
         * \param kPosition                          Current position of object, after calling this method it contains the new position.
         * \param kMoveVector                        The vector describing where to move the object
+        * \param fDeltaTime                         Time past since last update
         * \return                                   true if a collision occured, otherwise false
         */
-        bool                                        MoveBody( NeoEngine::Vector3d &kPosition, const NeoEngine::Vector3d &kMoveVector );
+        bool                                        MoveBody( NeoEngine::Vector3d &kPosition, const NeoEngine::Vector3d &kMoveVector, float fDeltaTime );
+
+        /**
+        * Update physics, call this method in every game step
+        */
+        void                                        Update(  );
 
     protected:
 
@@ -87,14 +114,8 @@ class WalkPhysics
         //! Gravity
         float                                       m_fGravity;
 
-        //! Ground offset
-        float                                       m_fGroundOffset;
-
         //! Maximal height of a step which can be automatically climbed
         float                                       m_fStepHeight;
-
-        //! BBox radius
-        float                                       m_fObjectHeight;
 
         //! Flag indicating that during last update a collision occured
         bool                                        m_bLastContact;
@@ -104,6 +125,9 @@ class WalkPhysics
 
         //! Last move vector before begin of falling
         NeoEngine::Vector3d                         m_kLastMoveVector;
+
+        //! Last calculated position
+        NeoEngine::Vector3d                         m_kLastPosition;
 
         //! Current velocity
         NeoEngine::Vector3d                         m_kVelocity;
