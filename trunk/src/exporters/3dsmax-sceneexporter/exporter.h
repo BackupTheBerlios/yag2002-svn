@@ -60,7 +60,7 @@
 #include "vertex.h"
 
 #define NSCEEXPORTER_CLASSNAME         "CTD NSCEExporter ( Lightmaps support )"
-#define NSCEEXPORTER_CLASSID           Class_ID(0x5b5b7c58, 0x26380e7e)
+#define NSCEEXPORTER_CLASSID           Class_ID(0x3cfa620c, 0x4c5a7191)
 
 
 /*! External classes */
@@ -72,37 +72,55 @@ class IGameUVGen;
 namespace NeoMaxExporter
 {
 
-/*! External classes */	
+/*! External classes */ 
 class MaxBone;
 
 // new vertex type supporting base and lightmap textures
 class NormalDiffuseLightmapTexVertex
 {
-	public:
+    public:
 
-		/*! Position */
-		NeoEngine::Vector3d                           m_kPosition;
+        /*! Position */
+        NeoEngine::Vector3d                           m_kPosition;
 
-		/*! Normal */
-		NeoEngine::Vector3d                           m_kNormal;
+        /*! Normal */
+        NeoEngine::Vector3d                           m_kNormal;
 
-		/*! Base texture coordinate */
-		float                                         m_afBaseTexCoord[2];
+        /*! Base texture coordinate */
+        float                                         m_afBaseTexCoord[2];
 
-		/*! Lightmap texture coordinate */
-		float                                         m_afLmTexCoord[2];
+        /*! Lightmap texture coordinate */
+        float                                         m_afLmTexCoord[2];
 
 
-		/*! Vertex declaration */
-		static NeoEngine::VertexDeclaration           s_kDecl;
+        /*! Vertex declaration */
+        static NeoEngine::VertexDeclaration           s_kDecl;
 };
 
-class TextureLayers 
+//! Material definition
+class MaterialDefinition 
 {
-	public:
+    public:
 
-		std::string			m_strBaseTexture;
-		std::string			m_strLightmapTexture;
+                                    MaterialDefinition() { m_eDefinitionType = eInline; }
+
+        //! Material name
+        std::string                 m_strMaterialName;
+
+        //! Material file name for those materials which are not inlined
+        std::string                 m_strMaterialFileName;
+
+        //! Base texture
+        std::string                 m_strBaseTexture;
+
+        //! Lightmap texture
+        std::string                 m_strLightmapTexture;
+
+        //! Heighttmap texture
+        std::string                 m_strHeightmapTexture;
+
+        //! Inline material definition ( inside of nsce file ) or extern material lib definition
+        enum { eInline, eFile }     m_eDefinitionType;
 
 };
 
@@ -113,147 +131,147 @@ ClassDesc2                            *GetExporterDesc();
 
 class Exporter : public SceneExport
 {
-	public:
+    public:
 
-		/*! NSCE file major version */
-		static int                                              s_iMajorNSCEVersion;
+        /*! NSCE file major version */
+        static int                                              s_iMajorNSCEVersion;
 
-		/*! NSCE file minor version */
-		static int                                              s_iMinorNSCEVersion;
+        /*! NSCE file minor version */
+        static int                                              s_iMinorNSCEVersion;
 
-		/*! NANI file major version */
-		static int                                              s_iMajorNANIVersion;
+        /*! NANI file major version */
+        static int                                              s_iMajorNANIVersion;
 
-		/*! NANI file minor version */
-		static int                                              s_iMinorNANIVersion;
+        /*! NANI file minor version */
+        static int                                              s_iMinorNANIVersion;
 
-		/*! IGame scene object */
-		IGameScene                                             *m_pkIGameScene;
-
-
-		float                                                   m_fFramesPerSecond;
-		int                                                     m_iTicksPerFrame;
-		float                                                   m_fTicksPerSecond;
-
-		int                                                     m_iStartFrame;
-		int                                                     m_iEndFrame;
+        /*! IGame scene object */
+        IGameScene                                             *m_pkIGameScene;
 
 
-		/*! Bones */
-		std::vector< MaxBone* >                                 m_vpkBones;
+        float                                                   m_fFramesPerSecond;
+        int                                                     m_iTicksPerFrame;
+        float                                                   m_fTicksPerSecond;
 
-		/*! Blueprints */
-		std::vector< NeoChunkIO::Chunk* >                       m_vpkBlueprints;
+        int                                                     m_iStartFrame;
+        int                                                     m_iEndFrame;
 
-		/*! Animations */
-		std::vector< NeoChunkIO::Chunk* >                       m_vpkAnimations;
 
-		/*! Vertices */
-		std::vector< std::vector< MaxVertex* > >                m_vvpkMeshVertices;
+        /*! Bones */
+        std::vector< MaxBone* >                                 m_vpkBones;
 
-		/*! Polygons */
-		std::vector< std::vector< NeoEngine::Polygon   > >      m_vvkMeshPolygons;
+        /*! Blueprints */
+        std::vector< NeoChunkIO::Chunk* >                       m_vpkBlueprints;
 
-		/*! Texture names */
-		std::vector< TextureLayers >                            m_vstrTextures;
+        /*! Animations */
+        std::vector< NeoChunkIO::Chunk* >                       m_vpkAnimations;
 
-		/*! Texture matrices */
-		std::vector< IGameUVGen* >                              m_vpkTexGen;
+        /*! Vertices */
+        std::vector< std::vector< MaxVertex* > >                m_vvpkMeshVertices;
 
-		/*! Lightmap Texture matrices */
-		std::vector< IGameUVGen* >                              m_vpkLmTexGen;
+        /*! Polygons */
+        std::vector< std::vector< NeoEngine::Polygon   > >      m_vvkMeshPolygons;
 
-		/**
-		* \return                                               Number of extensions supported
-		*/
-		int                                                     ExtCount();
+        /*! Material definitions */
+        std::vector< MaterialDefinition >                       m_vMaterialDefinitions;
 
-		/**
-		* \param iExtID                                         Extension string number
-		* \return                                               Extensions string
-		*/
-		const TCHAR                                            *Ext( int iExtID );
+        /*! Texture matrices */
+        std::vector< IGameUVGen* >                              m_vpkTexGen;
 
-		/**
-		* \return                                               Long ASCII description
-		*/
-		const TCHAR                                            *LongDesc();
+        /*! Lightmap Texture matrices */
+        std::vector< IGameUVGen* >                              m_vpkLmTexGen;
 
-		/**
-		* \return                                               Short ASCII description
-		*/
-		const TCHAR                                            *ShortDesc();
+        /**
+        * \return                                               Number of extensions supported
+        */
+        int                                                     ExtCount();
 
-		/**
-		* \return                                               ASCII author name
-		*/
-		const TCHAR                                            *AuthorName();
+        /**
+        * \param iExtID                                         Extension string number
+        * \return                                               Extensions string
+        */
+        const TCHAR                                            *Ext( int iExtID );
 
-		/**
-		* \return                                               ASCII copyright message
-		*/
-		const TCHAR                                            *CopyrightMessage();
+        /**
+        * \return                                               Long ASCII description
+        */
+        const TCHAR                                            *LongDesc();
 
-		/**
-		* \return                                               Other ASCII message #1
-		*/
-		const TCHAR                                            *OtherMessage1();
+        /**
+        * \return                                               Short ASCII description
+        */
+        const TCHAR                                            *ShortDesc();
 
-		/**
-		* \return                                               Other ASCII message #2
-		*/
-		const TCHAR                                            *OtherMessage2();
+        /**
+        * \return                                               ASCII author name
+        */
+        const TCHAR                                            *AuthorName();
 
-		/**
-		* \return                                               Version number * 100 (i.e v3.01 = 301 )
-		*/
-		unsigned int                                            Version();
+        /**
+        * \return                                               ASCII copyright message
+        */
+        const TCHAR                                            *CopyrightMessage();
 
-		/**
-		* Show DLL's About box
-		* \param hWnd                                           Parent window
-		*/
-		void                                                    ShowAbout( HWND hWnd );
+        /**
+        * \return                                               Other ASCII message #1
+        */
+        const TCHAR                                            *OtherMessage1();
 
-		/**
-		* Query if support options
-		* \param iExtID                                         Extension number
-		* \param ulOptions                                      Options
-		* \return                                               TRUE if supported, FALSE if not
-		*/
-		BOOL                                                    SupportsOptions( int iExtID, unsigned long ulOptions );
+        /**
+        * \return                                               Other ASCII message #2
+        */
+        const TCHAR                                            *OtherMessage2();
 
-		/**
-		* Export scene
-		* \param pszName                                        File name
-		* \param pExpInterface                                  Exporting interface
-		* \param pInterface                                     Interface
-		* \param bSuppressPrompts                               Suppress prompts flag
-		* \param ulOptions                                      Options
-		* \return                                               TRUE if success, FALSE if error
-		*/
-		int                                                     DoExport( const TCHAR *pszName, ExpInterface *pExpInterface, Interface *pInterface, BOOL bSuppressPrompts = FALSE, unsigned long ulOptions = 0 );
+        /**
+        * \return                                               Version number * 100 (i.e v3.01 = 301 )
+        */
+        unsigned int                                            Version();
 
-		/**
-		* Export node
-		* \param pkNode                                         Node
-		* \param iCurNode                                       Node counter
-		*/
-		void                                                    ExportNodeInfo( IGameNode *pkNode, int &iCurNode );
+        /**
+        * Show DLL's About box
+        * \param hWnd                                           Parent window
+        */
+        void                                                    ShowAbout( HWND hWnd );
 
-		/**
-		* Add a bone to skeletal hierarchy
-		* \param pkBone                                         Bone object
-		*/
-		void                                                    AddBone( IGameNode *pkBone );
+        /**
+        * Query if support options
+        * \param iExtID                                         Extension number
+        * \param ulOptions                                      Options
+        * \return                                               TRUE if supported, FALSE if not
+        */
+        BOOL                                                    SupportsOptions( int iExtID, unsigned long ulOptions );
 
-		/**
-		*/
-		                                                        Exporter();
+        /**
+        * Export scene
+        * \param pszName                                        File name
+        * \param pExpInterface                                  Exporting interface
+        * \param pInterface                                     Interface
+        * \param bSuppressPrompts                               Suppress prompts flag
+        * \param ulOptions                                      Options
+        * \return                                               TRUE if success, FALSE if error
+        */
+        int                                                     DoExport( const TCHAR *pszName, ExpInterface *pExpInterface, Interface *pInterface, BOOL bSuppressPrompts = FALSE, unsigned long ulOptions = 0 );
 
-		/**
-		*/
-		virtual                                                ~Exporter();
+        /**
+        * Export node
+        * \param pkNode                                         Node
+        * \param iCurNode                                       Node counter
+        */
+        void                                                    ExportNodeInfo( IGameNode *pkNode, int &iCurNode );
+
+        /**
+        * Add a bone to skeletal hierarchy
+        * \param pkBone                                         Bone object
+        */
+        void                                                    AddBone( IGameNode *pkBone );
+
+        /**
+        */
+                                                                Exporter();
+
+        /**
+        */
+        virtual                                                ~Exporter();
 };
 
 
