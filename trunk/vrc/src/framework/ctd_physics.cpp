@@ -81,7 +81,7 @@ void* physicsAlloc( int sizeInBytes )
 }
 
 // memory de-allocation for Newton
-void physicsFree( void *ptr, int sizeInBytes )
+void physicsFree( void* ptr, int sizeInBytes )
 {
 	free( ptr );
 }
