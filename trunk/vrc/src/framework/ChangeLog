@@ -1,3 +1,11 @@
+
+boto ( 04/04/2005 )
+
+- the new framework basing on openscenegraph is in progress
+- also physics simulation using Newton has been integrated
+- for gui CEGUI is used
+- implementation of game entities in progress
+
 boto ( 02/17/2005 )
 
 - stoped the work on Ogre integration
