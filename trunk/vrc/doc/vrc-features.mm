@@ -71,6 +71,7 @@
 </node>
 <node TEXT="settings manager" POSITION="left">
 <node TEXT="loading/storing float, int, bool, vector3 setting elements">
+<icon BUILTIN="messagebox_warning"/>
 <node TEXT="100%">
 <icon BUILTIN="button_ok"/>
 </node>
@@ -284,13 +285,25 @@
 <icon BUILTIN="help"/>
 </node>
 </node>
+<node TEXT="gui">
+<node TEXT="game settings">
+<node TEXT="5%">
+<icon BUILTIN="messagebox_warning"/>
+</node>
+</node>
+<node TEXT="start up gui">
+<node TEXT="0%">
+<icon BUILTIN="messagebox_warning"/>
+</node>
+</node>
+</node>
 </node>
 <node TEXT="menu system" POSITION="right">
 <cloud COLOR="#ccff99"/>
 <node TEXT="crazy eddie&apos;s gui">
 <edge WIDTH="thin"/>
 <font NAME="SansSerif" SIZE="12"/>
-<node TEXT="70%">
+<node TEXT="80%">
 <icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
