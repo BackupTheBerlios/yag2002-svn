@@ -1,7 +1,7 @@
 <map version="0.7.1">
 <node TEXT="framework">
 <cloud COLOR="#ffff66"/>
-<node TEXT="entity mananger" FOLDED="true" POSITION="right">
+<node TEXT="entity mananger" POSITION="right">
 <node TEXT="entity factory">
 <node TEXT="100%">
 <icon BUILTIN="button_ok"/>
@@ -32,7 +32,7 @@
 </node>
 </node>
 </node>
-<node TEXT="level loader" FOLDED="true" POSITION="left">
+<node TEXT="level loader" POSITION="left">
 <node TEXT="loader for level file ( .lvl in xml )">
 <node TEXT="100%">
 <icon BUILTIN="button_ok"/>
@@ -52,7 +52,7 @@
 <icon BUILTIN="help"/>
 </node>
 </node>
-<node TEXT="log system" FOLDED="true" POSITION="right">
+<node TEXT="log system" POSITION="right">
 <node TEXT="support for multiple sinks as stdio and files">
 <node TEXT="100%">
 <icon BUILTIN="button_ok"/>
@@ -69,7 +69,7 @@
 </node>
 </node>
 </node>
-<node TEXT="settings manager" FOLDED="true" POSITION="left">
+<node TEXT="settings manager" POSITION="left">
 <node TEXT="loading/storing float, int, bool, vector3 setting elements">
 <node TEXT="100%">
 <icon BUILTIN="button_ok"/>
@@ -81,7 +81,7 @@
 </node>
 </node>
 </node>
-<node TEXT="physics system (Newton)" FOLDED="true" POSITION="left">
+<node TEXT="physics system (Newton)" POSITION="left">
 <node TEXT="support for automatic creation of static map geometry">
 <node TEXT="on-the-fly creation basing on loaded osg file">
 <node TEXT="100%">
@@ -140,7 +140,7 @@
 <node TEXT="rendering and scene managing" POSITION="right">
 <node TEXT="osg"/>
 </node>
-<node TEXT="networking" FOLDED="true" POSITION="left">
+<node TEXT="networking" POSITION="left">
 <node TEXT="client / server architecture support">
 <node LINK="http://www.replicanet.com/" TEXT="ReplicaNet">
 <edge STYLE="bezier"/>
@@ -150,7 +150,7 @@
 </node>
 </node>
 </node>
-<node TEXT="geometry loading" FOLDED="true" POSITION="right">
+<node TEXT="geometry loading" POSITION="right">
 <node TEXT="osg"/>
 </node>
 <node TEXT="game entities" POSITION="right">
@@ -199,8 +199,8 @@
 </node>
 <node TEXT="physics objects">
 <node TEXT="cylinder">
-<node TEXT="85%, sound incomplete">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="100%, sound completed">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 <node TEXT="box">
@@ -285,17 +285,17 @@
 </node>
 </node>
 </node>
-<node TEXT="menu system" FOLDED="true" POSITION="right">
+<node TEXT="menu system" POSITION="right">
 <cloud COLOR="#ccff99"/>
 <node TEXT="crazy eddie&apos;s gui">
 <edge WIDTH="thin"/>
 <font NAME="SansSerif" SIZE="12"/>
-<node TEXT="5%">
+<node TEXT="70%">
 <icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
 </node>
-<node TEXT="input processing / windowing" FOLDED="true" POSITION="left">
+<node TEXT="input processing / windowing" POSITION="left">
 <edge WIDTH="thin"/>
 <cloud COLOR="#ccffff"/>
 <font NAME="SansSerif" SIZE="12"/>
@@ -303,6 +303,11 @@
 <node TEXT="must be changed to e.g. SDL">
 <icon BUILTIN="messagebox_warning"/>
 </node>
+</node>
+</node>
+<node TEXT="game configuration manager" POSITION="left">
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 </node>
