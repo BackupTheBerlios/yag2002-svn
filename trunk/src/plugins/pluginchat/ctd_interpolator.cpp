@@ -41,7 +41,7 @@ using namespace NeoEngine;
 
 namespace CTD_IPluginChat {
 
-														
+                                                        
 LinearInterpolator::LinearInterpolator()
 {
 }
@@ -54,8 +54,8 @@ LinearInterpolator::~LinearInterpolator()
 void LinearInterpolator::Reset( const Vector3d &kInit )
 {
 
-	m_kLast				        = kInit;
-	m_kCurrent			        = kInit;
+    m_kLast                     = kInit;
+    m_kCurrent                  = kInit;
     m_fPassedTime               = 0;
     m_fMaxTime                  = 1.0f;
     m_fArrivalTime              = 0;
@@ -68,10 +68,10 @@ void LinearInterpolator::Reset( const Vector3d &kInit )
 void LinearInterpolator::AddInterpolationPoint( const Vector3d &kNew, const Vector3d &kVelocity, float fMaxTime )
 {
 
-	m_kLast					    = m_kCurrent;
-	m_kVelocity				    = ( ( kVelocity * 2.0f ) + ( ( kNew - m_kCurrent ) * 3.0f ) ) * 0.5f; // try to compensate the deviation via velocity
-	m_fPassedTime			    = 0.0f;
-	m_fMaxTime      		    = fMaxTime;
+    m_kLast                     = m_kCurrent;
+    m_kVelocity                 = ( ( kVelocity * 2.0f ) + ( ( kNew - m_kCurrent ) * 3.0f ) ) * 0.5f; // try to compensate the deviation via velocity
+    m_fPassedTime               = 0.0f;
+    m_fMaxTime                  = fMaxTime;
     m_bDestinatedInterpolation  = false;
 
 }
@@ -107,19 +107,19 @@ Vector3d& LinearInterpolator::UpdateInterpolation( float fDeltaTime )
     // in timed interpolation we proof the maximal interpolation time
     } else {
 
-	    // don't interpolate / extrapolate more than given period of time!
-	    if ( m_fPassedTime > m_fMaxTime ) {
+        // begin the extrapolation with decreasing velocity
+        if ( m_fPassedTime > m_fMaxTime ) {
 
-		    return m_kCurrent;
+            //!TODO: figure out a good strategy for extrapolating
 
-	    }
+        }
 
     }
 
-	m_fPassedTime += fDeltaTime;
+    m_fPassedTime += fDeltaTime;
     m_kCurrent = m_kLast + m_kVelocity * m_fPassedTime;
 
-	return m_kCurrent;
+    return m_kCurrent;
 
 }
 

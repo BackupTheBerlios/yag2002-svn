@@ -1056,7 +1056,7 @@ void CTDChatMember< InterpolatorT, InterpolatorRotT >::ProcessEntityMessage( voi
                     m_kAvaragePositionUpdatePeriod.AddUpdate();
                     float fAvarageUpdatePeriod = m_kAvaragePositionUpdatePeriod.GetAvarageUpdatePeriod();
                     // add a new point into interpolator, this interpolation time should be adaptive ( depends on ping time, latency etc. )
-                    m_kPositionInterpolator.AddInterpolationPoint( kNewPosition, kVelocity, fAvarageUpdatePeriod );
+                    m_kPositionInterpolator.AddInterpolationPoint( kNewPosition, kVelocity, fAvarageUpdatePeriod + 0.5f ); // we add a tollerance of 0.5 sec
                 }
                 break;
 
@@ -1110,7 +1110,7 @@ void CTDChatMember< InterpolatorT, InterpolatorRotT >::ProcessEntityMessage( voi
                     m_kAvarageRotationUpdatePeriod.AddUpdate();
                     float fAvarageUpdatePeriod = m_kAvarageRotationUpdatePeriod.GetAvarageUpdatePeriod();
                     // add a new point into interpolator, this interpolation time should be adaptive ( depends on ping time, latency etc. )
-                    m_kRotationInterpolator.AddInterpolationPoint( kNewRotation, kVelocity, fAvarageUpdatePeriod );
+                    m_kRotationInterpolator.AddInterpolationPoint( kNewRotation, kVelocity, fAvarageUpdatePeriod + 0.5f ); // we add a tollerance of 0.5 sec
                 }
                 break;
 

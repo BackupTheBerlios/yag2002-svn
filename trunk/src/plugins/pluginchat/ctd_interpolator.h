@@ -48,7 +48,11 @@
 namespace CTD_IPluginChat {
 
 
-//! Base class for all kinds of interpolators for X, Y, Z coordinates representing position or euler angles.
+//! Base class for all kinds of interpolators 
+/**
+* This is the base class for interpolators for X, Y, Z coordinates representing position or euler angles.
+* Actually the most implementations also extrapolate!
+*/
 class InterpolatorBase
 {
 
@@ -63,18 +67,19 @@ class InterpolatorBase
 
         virtual                                     ~InterpolatorBase() {}
 
+        //! Initialize the interpolator
         virtual                                     Initialize( 
                                                                 const NeoEngine::Vector3d &kPoint,
                                                                 const NeoEngine::Vector3d &kVelocity = NeoEngine::Vector3d( 0, 0, 0 ),
-                                                                float fMaxTime = 1.0f 
+                                                                float fMaxTime = 1.0f
                                                                ) 
                                                     {
-                                                        m_kCurrent      = kPoint;
-                                                        m_kLast         = kPoint;
-                                                        m_kDestination  = kPoint;
-                                                        m_kVelocity     = kVelocity;
-                                                        m_fPassedTime   = 0;
-                                                        m_fMaxTime      = fMaxTime;
+                                                        m_kCurrent                  = kPoint;
+                                                        m_kLast                     = kPoint;
+                                                        m_kDestination              = kPoint;
+                                                        m_kVelocity                 = kVelocity;
+                                                        m_fPassedTime               = 0;
+                                                        m_fMaxTime                  = fMaxTime;
                                                     }
 
 
@@ -101,12 +106,16 @@ class InterpolatorBase
 
     protected:
 
+        //! Current point
         NeoEngine::Vector3d                         m_kCurrent;
 
+        //! Last point got at upating
         NeoEngine::Vector3d                         m_kLast;
 
+        //! Velocity
         NeoEngine::Vector3d                         m_kVelocity;
 
+        //! Destination to interpolate to
         NeoEngine::Vector3d                         m_kDestination;
 
         //! Passed time since last update
@@ -144,6 +153,7 @@ class LinearInterpolator: public InterpolatorBase
         void                                        AddInterpolationDestination( const NeoEngine::Vector3d &kDestination, float fSpeed = 1.0f ); 
 
         NeoEngine::Vector3d&                        UpdateInterpolation( float fDeltaTime );
+
 
 };
 
