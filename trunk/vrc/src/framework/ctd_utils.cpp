@@ -65,4 +65,28 @@ string::size_type explode( const string& str, const string& separators, vector< 
 	return( p_result->size() - org );
 }
 
+std::string extractPath( const std::string& fullpath )
+{
+    string res = fullpath;
+    // first clean the path
+    for ( string::iterator i = res.begin(), e = res.end(); i != e; i++ ) if ( *i == '\\') *i = '/';
+    res = res.substr( 0, res.rfind( "/" ) );
+    if ( !res.empty() )
+        return res;
+
+    return "";
+}
+
+std::string extractFileName( const std::string& fullpath )
+{
+    string res = fullpath;
+    // first clean the path
+    for ( string::iterator i = res.begin(), e = res.end(); i != e; i++ ) if ( *i == '\\') *i = '/';
+    res = res.substr( res.rfind( "/" ) );
+    if ( res[ 0 ] == '/' ) res.erase( 0, 1 ); // cut leading slash
+    if ( !res.empty() )
+        return res;
+
+    return "";
+}
 } // namespace CTD

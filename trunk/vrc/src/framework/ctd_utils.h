@@ -40,6 +40,11 @@ namespace CTD
 //! Emplode a given std string into vector elements, borrowed from evoluioN engine
 std::string::size_type explode( const std::string& str, const std::string& separators, std::vector< std::string >* p_result );
 
+//! Given a full path this function extracts the path cutting away the file name
+std::string extractPath( const std::string& fullpath );
+
+//! Given a full path this function extracts the file name
+std::string extractFileName( const std::string& fullpath );
 
 } // namespace CTD
 
