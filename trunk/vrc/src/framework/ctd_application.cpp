@@ -155,7 +155,6 @@ bool Application::initialize( int argc, char **argv )
     // setup entities
     _entityManager->initializeEntities();
     _entityManager->postInitializeEntities();
-    _entityManager->clearInitList();
 
     log << Log::LogLevel( Log::L_INFO ) << "initialization  succeeded" << endl;
 
