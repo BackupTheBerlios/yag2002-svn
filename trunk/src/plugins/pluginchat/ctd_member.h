@@ -49,7 +49,7 @@
 #include "../share/ctd_chat_defs.h"
 #include "ctd_interpolator.h"
 #include "ctd_networkingutils.h"
-#include <string>
+#include "ctd_physics.h"
 
 
 namespace CTD_IPluginChat {
@@ -175,6 +175,9 @@ class CTDChatMember : public CTD::BaseEntity
         // process inputs
         void                                        ProcessInput( float fDeltaTime );
 
+        // physics for moving the body
+        WalkPhysics                                 m_kPhysics;
+
         // position interpolator object
         InterpolatorPosT                            m_kPositionInterpolator;
 
@@ -236,7 +239,7 @@ class CTDChatMember : public CTD::BaseEntity
         CTD::NetworkDevice                          *m_pkNetworkDevice;
         CTD::NetworkServer                          *m_pkNetworkServer;
         CTD::NetworkClient                          *m_pkNetworkClient;
-
+        NeoEngine::Room                             *m_pkRoom;
 };
 
 typedef CTDChatMember< LinearInterpolator, LinearInterpolator > CTDChatMemberLinearPosLinearRot;

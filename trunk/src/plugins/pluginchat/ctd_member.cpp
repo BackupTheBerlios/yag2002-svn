@@ -37,6 +37,8 @@
 #include "ctd_setup.h"
 #include <ctd_printf.h>
 #include <ctd_settings.h>
+#include "ctd_physics.h"
+
 
 using namespace std;
 using namespace CTD;
@@ -58,6 +60,11 @@ CTDPrintf           g_CTDPrintf;
 CTDPrintf           g_CTDPrintfNwStats;
 //-------------------------------------------//
 
+// maximal step height which can be automatically climbed by player
+#define CTD_MAX_STEPHEIGHT      0.7f
+// gravity force
+#define CTD_PLAYER_GRAVITY      0.98f
+
 template< class InterpolatorT, class InterpolatorRotT >
 CTDChatMember< InterpolatorT, InterpolatorRotT >::CTDChatMember()
 {
@@ -77,6 +84,7 @@ CTDChatMember< InterpolatorT, InterpolatorRotT >::CTDChatMember()
     m_pkNetworkDevice           = NULL;
     m_pkChatMember              = NULL;
     m_pkEntityGui               = NULL;
+    m_pkRoom                    = NULL;
 
     m_fPassedPosSendTime        = 0;
     m_fPassedRotSendTime        = 0;
@@ -189,6 +197,12 @@ void CTDChatMember< InterpolatorT, InterpolatorRotT >::Initialize()
 
     // get player name
     Framework::Get()->GetGameSettings()->GetValue( CTD_STOKEN_PLAYERNAME, m_strPlayerName );
+
+    // store our room for later use ( e.g. for collision checks )
+    m_pkRoom = Framework::Get()->GetCurrentLevelSet()->GetRoom();
+
+    // setup the physics
+    m_kPhysics.Initialize( this, Framework::Get()->GetCurrentLevelSet()->GetRoom(), CTD_MAX_STEPHEIGHT, CTD_PLAYER_GRAVITY );
 
 }
 // post-init entity
@@ -414,6 +428,13 @@ template< class InterpolatorT, class InterpolatorRotT >
 void CTDChatMember< InterpolatorT, InterpolatorRotT >::UpdateEntity( float fDeltaTime ) 
 { 
 
+    // limit delta time
+    if ( fDeltaTime > 0.06f ) {
+
+        fDeltaTime = 0.06f;
+
+    }
+
     // in server mode or stand alone we get input commands from keyboard
     //  in client mode we get the current state of remote ChatMember via networking
     switch ( m_eGameMode ) {
@@ -500,7 +521,7 @@ void CTDChatMember< InterpolatorT, InterpolatorRotT >::UpdateClientObject( float
     if ( m_eTranslationState != stateTranslationIdle ) {
 
         m_kLastPosition     = m_kActualPosition;
-        Vector3d kMoveVec   = m_kActualRotationQ * m_kMove;
+        Vector3d kMoveVec   = m_kActualRotationQ * m_kMove;        
         m_kActualPosition   += kMoveVec;
 
     }
@@ -541,14 +562,12 @@ void CTDChatMember< InterpolatorT, InterpolatorRotT >::UpdateClientObject( float
 
         skNetMsgPos.m_stateTranslation      = ( unsigned char )m_eTranslationState;
 
-        // we need reliable sending for start / stop moving message
-        //bool bReliable = ( m_eTranslationState == stateTranslationStartMoving ) || ( m_eTranslationState == stateTranslationStopMoving );
+        // send the message
         bool bSuccess = m_pkNetworkDevice->SendClient(                  
                                                         usNetworkID,
                                                         ( char* )&skNetMsgPos, 
                                                         sizeof( tCTD_NM_ChatMemberPosition ), 
                                                         HIGH_PRIORITY, 
-//                                                        bReliable ? RELIABLE_ORDERED : RELIABLE_SEQUENCED, 
                                                         RELIABLE_ORDERED, 
                                                         0
                                                       );              
@@ -590,14 +609,12 @@ void CTDChatMember< InterpolatorT, InterpolatorRotT >::UpdateClientObject( float
 
         skNetMsgRot.m_stateRotation         = ( unsigned char )m_eRotationState;
 
-        // we need reliable sending for start / stop moving message
-       // bool bReliable = ( m_eRotationState == stateRotationStartMoving ) || ( m_eRotationState == stateRotationStopMoving );
+        // send the message now
         bool bSuccess = m_pkNetworkDevice->SendClient(                  
                                                         usNetworkID,
                                                         ( char* )&skNetMsgRot, 
                                                         sizeof( tCTD_NM_ChatMemberRotation ), 
                                                         HIGH_PRIORITY, 
- //                                                       bReliable ? RELIABLE_SEQUENCED : UNRELIABLE_SEQUENCED, 
                                                         RELIABLE_ORDERED, 
                                                         0
                                                       );
@@ -692,7 +709,9 @@ void CTDChatMember< InterpolatorT, InterpolatorRotT >::UpdateStandaloneObject( f
 
     // calculate position depending on local inputs
     Vector3d kMoveVec        = m_kActualRotationQ * m_kMove;
-    m_kActualPosition       += kMoveVec;
+
+    // move the body considering collisions
+    m_kPhysics.MoveBody( m_kActualPosition, kMoveVec, fDeltaTime );
 
     SetRotation( m_kActualRotationQ );
     SetTranslation( m_kActualPosition );
@@ -725,6 +744,10 @@ bool CTDChatMember< InterpolatorT, InterpolatorRotT >::Render( Frustum *pkFrustu
         m_pkMesh->Render( pkFrustum, bForce );
 
     }
+
+#ifdef _DEBUG
+    GetBoundingVolume()->RenderOutlines( Color::BLUE );
+#endif
 
     return true;
 
@@ -853,6 +876,9 @@ void CTDChatMember< InterpolatorT, InterpolatorRotT >::ProcessSystemMessage( voi
 
             m_kPositionInterpolator.Initialize( m_kActualPosition );
             m_kRotationInterpolator.Initialize( m_kActualRotation );
+
+            // setup the physics
+            m_kPhysics.Initialize( this, Framework::Get()->GetCurrentLevelSet()->GetRoom(), CTD_MAX_STEPHEIGHT, CTD_PLAYER_GRAVITY );
 
             // now we can get activated
             Activate();
