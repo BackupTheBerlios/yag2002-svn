@@ -35,10 +35,7 @@
 #include "ctd_application.h"
 #include "ctd_attributemanager.h"
 #include "ctd_entitymanager.h"
-
-
-#define TIXML_USE_STL
-#include "tinyxml.h"
+#include <tinyxml.h>
 
 using namespace std;
 using namespace CTD;
