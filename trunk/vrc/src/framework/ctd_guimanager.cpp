@@ -120,9 +120,8 @@ CTD_SINGLETON_IMPL( GuiManager );
 // implementation of GuiManager
 GuiManager::GuiManager() :
 _p_renderer( NULL ),
-_screenWidth( 600 ),
-_screenHeight( 400 ),
-_mouseSensivity( 1.0f ),
+_windowWidth( 600 ),
+_windowHeight( 400 ),
 _p_root( NULL )
 {
 }
@@ -167,12 +166,8 @@ void GuiManager::doInitialize()
     unsigned int width, height;
     Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  width );
     Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, height );
-    _screenWidth = float( width );
-    _screenHeight = float( height );
-
-    float mouseSens;
-    Configuration::get()->getSettingValue( CTD_GS_MOUSESENS,  mouseSens );
-    _mouseSensivity = mouseSens;
+    _windowWidth = float( width );
+    _windowHeight = float( height );
 
     // create a renderer
     _p_renderer = new CTDGuiRenderer( 0, width, height );    
@@ -195,9 +190,12 @@ void GuiManager::doInitialize()
 
     // create the root window called 'Root'.
     _p_root = static_cast< DefaultWindow* >( WindowManager::getSingleton().createWindow("DefaultWindow", "Root") );
+    _p_root->setMetricsMode( CEGUI::Absolute );
+    _p_root->setPosition( CEGUI::Point( 0, 0 ) );
+    _p_root->setSize( CEGUI::Size( _windowWidth, _windowHeight ) );
 
-    // set the GUI root window (also known as the GUI "sheet"), so the gui we set up
-    // will be visible.
+
+    // set the GUI root window (also known as the GUI "sheet"), all layout will be added to this root for showing up
     System::getSingleton().setGUISheet( _p_root );
 
     // create input handler
@@ -338,22 +336,26 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
         mbtn_down = false;
     }
 
-    //!TODO: mouse scroll handling
-
-    // we need absolute mouse coords for CEGUI
-    float x =   ea.getX() * _p_guiMgr->_screenWidth  * _p_guiMgr->_mouseSensivity;
-    float y = - ea.getY() * _p_guiMgr->_screenHeight * _p_guiMgr->_mouseSensivity;
-
+    // adjust the pointer position
+    float x = ea.getX();
+    float y = -ea.getY();
+    // we need absolute mouse coords in range [ 0..1 ] for CEGUI
+    x = ( 0.5f * x + 0.5f ) * _p_guiMgr->_windowWidth;
+    y = ( 0.5f * y + 0.5f ) * _p_guiMgr->_windowHeight;
     CEGUI::System::getSingleton().injectMousePosition( x, y );
 
-    //! TODO
-    //// handle app's window reshaping
-    //if ( eventType == osgGA::GUIEventAdapter::RESIZE ) // this event never comes!?
-    //{
-    //    _p_guiMgr->_p_renderer->changeDisplayResolution( ?, ? );
-    //}
+    //!TODO: mouse scroll handling
 
-    return ret;
+    //! FIXME: app window resising and fullscreen toggling does not work as we get no RESIZE event !?
+    // handle app's window reshaping
+    if ( eventType == osgGA::GUIEventAdapter::RESIZE ) // this event never comes!?
+    {
+        //Producer::Camera *p_cam = Application::get()->getViewer()->getCamera(0);
+        //Producer::RenderSurface* p_rs = p_cam->getRenderSurface();    
+        //_p_guiMgr->_p_renderer->changeDisplayResolution( float( p_rs->getWindowWidth() ), float( p_rs->getWindowHeight() ) );
+    }
+  
+     return ret;
 }
 
 }

@@ -104,16 +104,14 @@ class GuiManager : public Singleton< GuiManager >
 
         osg::ref_ptr< InputHandler >            _inputHandler;
 
-        float                                   _screenWidth;
+        float                                   _windowWidth;
 
-        float                                   _screenHeight;
-
-        float                                   _mouseSensivity;
+        float                                   _windowHeight;
 
         osg::ref_ptr< GuiRenderCallback >       _guiRenderCallback;
 
         //! Root window of cegui where all other windows are placed
-        CEGUI::DefaultWindow*                  _p_root;
+        CEGUI::DefaultWindow*                   _p_root;
 
     friend class Singleton< GuiManager >;
     friend class GuiRenderCallback;

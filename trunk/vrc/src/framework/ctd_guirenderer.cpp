@@ -284,6 +284,8 @@ void CTDGuiRenderer::initPerFrameStates()
     glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
     glPushAttrib(GL_ALL_ATTRIB_BITS);
 
+    glViewport( 0, 0, _display_area.d_right, _display_area.d_bottom );
+
     glPolygonMode(GL_FRONT, GL_FILL);
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
