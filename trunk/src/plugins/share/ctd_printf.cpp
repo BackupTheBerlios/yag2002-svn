@@ -24,7 +24,7 @@
  #
  #
  #   date of creation:  05/30/2002
- #   last change:		12/16/2002
+ #   last change:       12/16/2002
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
@@ -42,16 +42,16 @@ using namespace std;
 CTDPrintf::CTDPrintf(unsigned int x, unsigned int y) 
 {
 
-	m_bNullPrintf		= false;
-	m_bEnable			= true;
-	m_nFontSize			= 10;
-	m_nX				= x;
-	m_nY				= y;
-	m_nOffsetY			= 0;
-	m_nRejectedLines	= 0;
-	m_bMsgBuffering		= false;	// default is no text buffering
+    m_bNullPrintf       = false;
+    m_bEnable           = true;
+    m_nFontSize         = 10;
+    m_nX                = x;
+    m_nY                = y;
+    m_nOffsetY          = 0;
+    m_nRejectedLines    = 0;
+    m_bMsgBuffering     = false;    // default is no text buffering
 
-	m_pkFont			= NULL;
+    m_pkFont            = NULL;
 
 }
 
@@ -63,49 +63,49 @@ CTDPrintf::~CTDPrintf()
 void CTDPrintf::Init(unsigned int x, unsigned int y)
 {
 
-	m_bNullPrintf		= ( CTD::Framework::Get()->GetGameMode() == CTD::stateSERVER );
+    m_bNullPrintf       = ( CTD::Framework::Get()->GetGameMode() == CTD::stateSERVER );
 
-	if ( m_bNullPrintf ) {
+    if ( m_bNullPrintf ) {
 
-		return;
+        return;
 
-	}
+    }
 
-	m_nX = x;
-	m_nY = y;
+    m_nX = x;
+    m_nY = y;
 
-	m_pkFont		= NeoEngine::Core::Get()->GetConsole()->GetDefaultFont();
-	// get screen' height
-	m_uiScreenSizeY = NeoEngine::Core::Get()->GetRenderDevice()->GetHeight();
-	// set font size
-	m_nFontSize		= m_pkFont->GetLineHeight();
+    m_pkFont        = NeoEngine::Core::Get()->GetConsole()->GetDefaultFont();
+    // get screen' height
+    m_uiScreenSizeY = NeoEngine::Core::Get()->GetRenderDevice()->GetHeight();
+    // set font size
+    m_nFontSize     = m_pkFont->GetLineHeight();
 
 }
 
 bool CTDPrintf::AddOutput(const std::string &strOutput) 
 {
 
-	// if disabled not output is desired
-	if ( ( m_bEnable == false ) || ( m_bNullPrintf ) ) {
+    // if disabled not output is desired
+    if ( ( m_bEnable == false ) || ( m_bNullPrintf ) ) {
 
-		return true;
+        return true;
 
-	}
+    }
 
-	m_nOffsetY += m_nFontSize;
+    m_nOffsetY += m_nFontSize;
 
-	// check whether there is enough space for printing a new debug line in Print() later
-	if (m_nOffsetY > ( m_uiScreenSizeY - m_nFontSize ) )
-	{
+    // check whether there is enough space for printing a new debug line in Print() later
+    if (m_nOffsetY > ( m_uiScreenSizeY - m_nFontSize ) )
+    {
 
-		m_nRejectedLines++;
+        m_nRejectedLines++;
 
-		return false;
+        return false;
 
-	}
-	
-	m_OutputBuffer.push_back(strOutput);
-	return true;
+    }
+    
+    m_OutputBuffer.push_back(strOutput);
+    return true;
 
 }
 
@@ -113,47 +113,47 @@ bool CTDPrintf::AddOutput(const std::string &strOutput)
 void CTDPrintf::Print() 
 {
 
-	// if disabled not output is desired
-	if ( ( m_bEnable == false ) || ( m_bNullPrintf ) ) {
+    // if disabled not output is desired
+    if ( ( m_bEnable == false ) || ( m_bNullPrintf ) ) {
 
-		return;
+        return;
 
-	}
+    }
 
-	int lineoffset = m_nY;
+    int lineoffset = m_nY;
 
-	for (unsigned int num = 0; num < m_OutputBuffer.size(); num++) 
-	{
+    for (unsigned int num = 0; num < m_OutputBuffer.size(); num++) 
+    {
 
-		m_pkFont->Printf( m_nX, lineoffset, m_OutputBuffer[num].c_str() );
-		lineoffset += m_nFontSize;
+        m_pkFont->Printf( m_nX, lineoffset, m_OutputBuffer[num].c_str() );
+        lineoffset += m_nFontSize;
 
-	}
+    }
 
-	// check whether any lines have been rejected due to limited screen size
-	if (m_nRejectedLines != 0) 
-	{
-	
-		std::string	str;
-		char pcBuff[10];
+    // check whether any lines have been rejected due to limited screen size
+    if (m_nRejectedLines != 0) 
+    {
+    
+        std::string str;
+        char pcBuff[10];
 
-		str = "Attention: no space for debug output on the screen. \n"
-			  "Increase screen size!\n";
-		
-		str += itoa(m_nRejectedLines, pcBuff, 10);
-		str += " lines rejected";
-		
-		m_pkFont->Printf( 0, 0, str.c_str() );
+        str = "Attention: no space for debug output on the screen. \n"
+              "Increase screen size!\n";
+        
+        str += itoa(m_nRejectedLines, pcBuff, 10);
+        str += " lines rejected";
+        
+        m_pkFont->Printf( 0, 0, str.c_str() );
 
-	}
+    }
 
-	// clear the text buffer for next frame
-	m_nOffsetY = 0;
-	m_nRejectedLines = 0;
+    // clear the text buffer for next frame
+    m_nOffsetY = 0;
+    m_nRejectedLines = 0;
 
-	if (m_bMsgBuffering == false) {
-		m_OutputBuffer.clear();
-	}
+    if (m_bMsgBuffering == false) {
+        m_OutputBuffer.clear();
+    }
 
 }
 

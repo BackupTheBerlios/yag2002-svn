@@ -38,15 +38,15 @@ namespace CTD_IPluginVisuals
 
 class Link
 {
-	public:
+    public:
 
-		Link();
+        Link();
 };
 
 
 #ifndef PLUGIN_INTERNALS
 
-	Link g_kLink;
+    Link g_kLink;
 
 #endif
 

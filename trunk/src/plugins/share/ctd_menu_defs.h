@@ -43,12 +43,12 @@ namespace CTD_IPluginMenu
 {
 
 // plugin name
-#define CTD_PLUGINNAME_MENU							"Plugin - Menu"
+#define CTD_PLUGINNAME_MENU                         "Plugin - Menu"
 
 // versioning constants
-#define CTD_PLUGIN_MENU_VERSION_MAJ					0
-#define CTD_PLUGIN_MENU_VERSION_MIN					4
-#define CTD_PLUGIN_MENU_VERSION_REVISION			0
+#define CTD_PLUGIN_MENU_VERSION_MAJ                 0
+#define CTD_PLUGIN_MENU_VERSION_MIN                 4
+#define CTD_PLUGIN_MENU_VERSION_REVISION            0
 
 
 } // namespace CTD_IPluginMenu
