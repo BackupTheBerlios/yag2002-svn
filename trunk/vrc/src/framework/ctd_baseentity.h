@@ -217,6 +217,7 @@ class BaseEntity : public osg::Node
         osg::PositionAttitudeTransform*             _p_transformNode;
 
     friend class Application;
+    friend class EntityManager;
     friend class BaseEntityFactory;
 };
 
