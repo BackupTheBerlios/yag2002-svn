@@ -364,6 +364,12 @@
 				<File
 					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_skybox.h">
 				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_water.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_water.h">
+				</File>
 			</Filter>
 		</Filter>
 	</Files>
