@@ -62,6 +62,7 @@ class FrameworkImplServer;
 class FrameworkImplStandalone;
 template < class ImplementationT > class FrameworkBuilder;
 class NetworkDevice;
+class Settings;
 
 
 //! Exception class for game framework
@@ -77,7 +78,10 @@ class FrameworkException
         * Contructor
         * \param strMsg                         String describing the reason for exeption.
         */
-                                                FrameworkException( const std::string& strMsg ) { m_strExceptionMsg =std:: string("*** Framework exception: " ) + strMsg; }
+                                                FrameworkException( const std::string& strMsg ) 
+                                                { 
+                                                    m_strExceptionMsg =std:: string("*** Framework exception: " ) + strMsg; 
+                                                }
 
         /**
         * Get the reason for exception.
@@ -131,6 +135,12 @@ class Framework
         * \return                               Absolute root path 
         */
         const std::string&                      GetRootPath();
+
+        /**
+        * Returns the game settings instance
+        * \return                               Game settings instance
+        */
+        Settings*                               GetGameSettings();
 
         /**
         * Get a key code given its name

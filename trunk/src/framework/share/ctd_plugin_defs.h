@@ -46,6 +46,35 @@
 namespace CTD
 {
 
+
+// default game settings
+//--------------------------------------------//
+// default game settings tokens
+#define CTD_STOKEN_PLAYERNAME                                               "playername"
+#define CTD_STOKEN_LEVEL                                                    "level"
+#define CTD_BTOKEN_NETWORKING                                               "networking"
+#define CTD_BTOKEN_SERVER                                                   "server"
+#define CTD_BTOKEN_CLIENT                                                   "client"
+#define CTD_STOKEN_SERVERNAME                                               "servername"
+#define CTD_STOKEN_CLIENTNAME                                               "clientname"
+#define CTD_STOKEN_SERVERIP                                                 "serverip"
+#define CTD_ITOKEN_CLIENTPORT                                               "clientport"
+#define CTD_ITOKEN_SERVERPORT                                               "serverport"
+
+// default settings values
+#define CTD_SVALUE_PLAYERNAME                                               "noname"
+#define CTD_SVALUE_LEVEL                                                    "noname"
+#define CTD_SVALUE_SERVER                                                   "localhost"
+#define CTD_BVALUE_NETWORKING                                               true
+#define CTD_BVALUE_SERVER                                                   false
+#define CTD_BVALUE_CLIENT                                                   true
+#define CTD_SVALUE_SERVERNAME                                               "ctd-server"
+#define CTD_SVALUE_SERVERIP                                                 "localhost"
+#define CTD_SVALUE_CLIENTNAME                                               "ctd-client"
+#define CTD_IVALUE_SERVERPORT                                               32000
+#define CTD_IVALUE_CLIENTPORT                                               32001
+
+
 // plugin message ids
 //------------------------------------------------//
 
