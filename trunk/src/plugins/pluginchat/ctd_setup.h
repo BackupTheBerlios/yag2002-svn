@@ -77,6 +77,9 @@ class CTDInputListener : public NeoEngine::InputEntity
         std::string                 m_strKeyMoveSideRight;
         int                         m_iKeyCodeMoveSideRight;
 
+        std::string                 m_strKeyJump;
+        int                         m_iKeyCodeJump;
+
         std::string                 m_strKeyChangeMode;
         int                         m_iKeyCodeChangeMode;
 
@@ -126,6 +129,9 @@ CTD::LevelSet* GetLevelSet();
 
 #define ROTATE_RIGHT                7
 #define KEY_ROTATE_RIGHT            "chat_rotate_right"
+
+#define JUMP                        9
+#define KEY_JUMP                    "chat_jump"
 
 #define MOUSE_RIGHT                 10
 #define MOUSE_LEFT                  11

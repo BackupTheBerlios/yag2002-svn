@@ -97,6 +97,8 @@ CTDInputListener::CTDInputListener( InputGroup *pkGroup ) : InputEntity( pkGroup
 	m_iKeyCodeMoveSideLeft		= 0;
 	m_strKeyMoveSideRight		= KEY_MOVE_SIDE_RIGHT;
 	m_iKeyCodeMoveSideRight		= 0;
+	m_strKeyJump        		= KEY_JUMP;
+	m_iKeyCodeJump      		= 0;
 	m_strKeyChangeMode			= KEY_CHANGE_MODE;
 	m_iKeyCodeChangeMode		= 0;
 
@@ -165,7 +167,15 @@ CTDInputListener::CTDInputListener( InputGroup *pkGroup ) : InputEntity( pkGroup
 	
 	}
 
-	if ( Framework::Get()->GetKeyCode( m_strKeyChangeMode, m_iKeyCodeChangeMode ) == false ) {
+	if ( Framework::Get()->GetKeyCode( m_strKeyJump, m_iKeyCodeJump ) == false ) {
+
+		neolog << LogLevel( WARNING ) << endl;
+		neolog << LogLevel( WARNING ) << " *** CTD chat could not bind key '" << KEY_JUMP << "'" << endl;
+		neolog << LogLevel( WARNING ) << endl;
+	
+	}
+
+    if ( Framework::Get()->GetKeyCode( m_strKeyChangeMode, m_iKeyCodeChangeMode ) == false ) {
 
 		neolog << LogLevel( WARNING ) << endl;
 		neolog << LogLevel( WARNING ) << " *** CTD chat could not bind key '" << KEY_CHANGE_MODE << "'" << endl;
@@ -285,6 +295,12 @@ void CTDInputListener::Input( const InputEvent *pkEvent )
 	if ( iKeyData == m_iKeyCodeMoveSideRight ) {
 
 		g_aiKeys[ MOVE_SIDE_RIGHT ] = iFlag;
+
+	}
+
+	if ( iKeyData == m_iKeyCodeJump ) {
+
+		g_aiKeys[ JUMP ] = iFlag;
 
 	}
 
