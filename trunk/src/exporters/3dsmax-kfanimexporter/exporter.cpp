@@ -97,7 +97,6 @@ Quaternion GMatrixToQuat( GMatrix &rkMatrix );
 
 HINSTANCE g_hInstance = 0;
 
-Quaternion g_kConvQuat( EulerAngles( -HALF_PI, 0.0f, 0.0f ) );
 Matrix g_kConvMat( Quaternion( EulerAngles( -HALF_PI, 0.0f, 0.0f ) ), Vector3d::ZERO );
 
 class ExporterClassDesc : public ClassDesc2
@@ -423,12 +422,10 @@ int	Exporter::DoExport( const TCHAR *pszName, ExpInterface *pExpInterface, Inter
 			for( ; ppkSrcVertex != ppkSrcVertexEnd; ++ppkSrcVertex, pucVertex += pkVertexBuffer->GetVertexSize() )
 			{
 				NormalVertex *pkVertex = (NormalVertex*)pucVertex;
+				pkVertex->m_kPosition = g_kConvMat * Vector3d( (*ppkSrcVertex)->m_kCoord.x, (*ppkSrcVertex)->m_kCoord.z, -(*ppkSrcVertex)->m_kCoord.y );
+				pkVertex->m_kNormal   = g_kConvMat * Vector3d( (*ppkSrcVertex)->m_kNormal.x, (*ppkSrcVertex)->m_kNormal.z, -(*ppkSrcVertex)->m_kNormal.y );;
 
-				pkVertex->m_kPosition = g_kConvMat * (*ppkSrcVertex)->m_kCoord;
-				pkVertex->m_kNormal   = g_kConvMat * (*ppkSrcVertex)->m_kNormal;
-
-
-				if( bTexCoords )
+                if( bTexCoords )
 				{
 					float *pfUV = (float*)( pucVertex + 24 );
 

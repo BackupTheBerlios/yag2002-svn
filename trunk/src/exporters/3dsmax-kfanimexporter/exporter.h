@@ -66,7 +66,7 @@
 #include "mesh.h"
 
 #define KFANIMEXPORTER_CLASSNAME         "CTD Keyframe Animation Exporter"
-#define KFANIMEXPORTER_CLASSID           Class_ID(0x21b8134e, 0x65b93b28)
+#define KFANIMEXPORTER_CLASSID           Class_ID(0x76f04fb, 0x77f01fb4)
 
 
 /*! External classes */
