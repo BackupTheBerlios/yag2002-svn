@@ -104,13 +104,8 @@ void EnPlayerAnimation::initialize()
     // set the material set of the whole model
     _model->getCalModel()->setMaterialSet( 0 );
 
-    //! FIXME for some reason the extension query returns invalid results! thus we get no hw blending support below
-    //------------------------------------------
-    // osg::VertexProgram::Extensions* p_ext = osg::VertexProgram::getExtensions( 0, true );
-    // p_ext->setupGLExtenions();    
-
-    // enable vertex prog usage
-    _model->setUseVertexProgram( true );
+    //! FIXME: for some reason hw blending makes problems
+    // _model->setUseVertexProgram( true );
     //------------------------------------------
 
     // creating a concrete model using the core template
