@@ -75,15 +75,20 @@ void CTDMenuControlListener::Input( const InputEvent *pkEvent )
         // ESC means activation of menu
         if ( iKeyData == KC_ESCAPE ) {
 
+            // switch to game only if one is loaded
             if ( Framework::Get()->GetCurrentLevelSet() == GetMenuLevelSet() ) {
 
-                // switch to game
-                Framework::Get()->SwitchToLevelSet( GetGameLevelSet() );
-                GetMenuLevelSet()->SetUpdateFlag( false );
-                GetMenuLevelSet()->SetRenderFlag( false );
+                if ( GetGameLevelSet() ) {
 
-                // notify all entities
-                Framework::Get()->SendEntityMessage( CTD_ENTITY_EXIT_MENU, ( void* )NULL );
+                    // switch to game
+                    Framework::Get()->SwitchToLevelSet( GetGameLevelSet() );
+                    GetMenuLevelSet()->SetUpdateFlag( false );
+                    GetMenuLevelSet()->SetRenderFlag( false );
+
+                    // notify all entities
+                    Framework::Get()->SendEntityMessage( CTD_ENTITY_EXIT_MENU, ( void* )NULL );
+
+                }
 
             } else {
 
