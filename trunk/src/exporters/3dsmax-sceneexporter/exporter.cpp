@@ -84,14 +84,15 @@ using namespace NeoChunkIO;
 
 
 #define MAP_CHANNEL_TEXTURE     1
-#define MAP_CHANNEL_LIGHTMAP    3
+#define MAP_CHANNEL_LIGHTMAP    2
 
 
 namespace NeoMaxExporter
 {
 
-// register our new vertex type
+// register our new vertex types
 VertexDeclaration NormalDiffuseLightmapTexVertex::s_kDecl( 4 );
+VertexDeclaration NormalTexTangentVertex::s_kDecl( 4 );
 
 
 //Helper method
@@ -103,6 +104,8 @@ HINSTANCE g_hInstance = 0;
 Quaternion g_kConvQuat( EulerAngles( -HALF_PI, 0.0f, 0.0f ) );
 Matrix g_kConvMat( Quaternion( EulerAngles( -HALF_PI, 0.0f, 0.0f ) ), Vector3d::ZERO );
 
+// helper macro for swapping two ints
+#define SWAP_INTS( a, b ) { int iTmp = b; b = a, a = iTmp; }
 
 class ExporterClassDesc : public ClassDesc2
 {
@@ -188,13 +191,13 @@ const TCHAR *Exporter::Ext( int iExtID )
 
 const TCHAR *Exporter::LongDesc()
 {
-    return _T( "Export to NeoEngine Scene File ( CTD Lightmap support )" );
+    return _T( "Export to NeoEngine Scene File" );
 }
     
 
 const TCHAR *Exporter::ShortDesc() 
 {           
-    return _T( "CTD NSCE exporter (lightmap support)" );
+    return _T( "CTD NSCE exporter" );
 }
 
 
@@ -253,23 +256,41 @@ int Exporter::DoExport( const TCHAR *pszName, ExpInterface *pExpInterface, Inter
 
     // setup our new vertex type
     //*****************************************************************************************//
-    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[0].m_uiType   = VertexElement::FLOAT3;
-    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[0].m_uiUsage  = VertexElement::POSITION;
-    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[0].m_uiOffset = 0;
+    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[0].m_uiType    = VertexElement::FLOAT3;
+    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[0].m_uiUsage   = VertexElement::POSITION;
+    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[0].m_uiOffset  = 0;
 
-    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[1].m_uiType   = VertexElement::FLOAT3;
-    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[1].m_uiUsage  = VertexElement::NORMAL;
-    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[1].m_uiOffset = 12;
+    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[1].m_uiType    = VertexElement::FLOAT3;
+    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[1].m_uiUsage   = VertexElement::NORMAL;
+    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[1].m_uiOffset  = 12;
 
-    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[2].m_uiType   = VertexElement::FLOAT2;
-    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[2].m_uiUsage  = VertexElement::TEXCOORD;
-    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[2].m_uiIndex  = 0;
-    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[2].m_uiOffset = 24;
+    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[2].m_uiType    = VertexElement::FLOAT2;
+    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[2].m_uiUsage   = VertexElement::TEXCOORD;
+    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[2].m_uiIndex   = 0;
+    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[2].m_uiOffset  = 24;
 
-    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[3].m_uiType   = VertexElement::FLOAT2;
-    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[3].m_uiUsage  = VertexElement::TEXCOORD;
-    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[3].m_uiIndex  = 1;
-    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[3].m_uiOffset = 32;
+    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[3].m_uiType    = VertexElement::FLOAT2;
+    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[3].m_uiUsage   = VertexElement::TEXCOORD;
+    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[3].m_uiIndex   = 1;
+    NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[3].m_uiOffset  = 32;
+
+    // vertex format for bumpmapping
+    NormalTexTangentVertex::s_kDecl.m_pkElements[0].m_uiType            = VertexElement::FLOAT3;
+    NormalTexTangentVertex::s_kDecl.m_pkElements[0].m_uiUsage           = VertexElement::POSITION;
+    NormalTexTangentVertex::s_kDecl.m_pkElements[0].m_uiOffset          = 0;
+
+    NormalTexTangentVertex::s_kDecl.m_pkElements[1].m_uiType            = VertexElement::FLOAT3;
+    NormalTexTangentVertex::s_kDecl.m_pkElements[1].m_uiUsage           = VertexElement::NORMAL;
+    NormalTexTangentVertex::s_kDecl.m_pkElements[1].m_uiOffset          = 12;
+
+    NormalTexTangentVertex::s_kDecl.m_pkElements[2].m_uiType            = VertexElement::FLOAT2;
+    NormalTexTangentVertex::s_kDecl.m_pkElements[2].m_uiUsage           = VertexElement::TEXCOORD;
+    NormalTexTangentVertex::s_kDecl.m_pkElements[2].m_uiIndex           = 0;
+    NormalTexTangentVertex::s_kDecl.m_pkElements[2].m_uiOffset          = 24;
+
+    NormalTexTangentVertex::s_kDecl.m_pkElements[3].m_uiType            = VertexElement::COLOR32;
+    NormalTexTangentVertex::s_kDecl.m_pkElements[3].m_uiUsage           = VertexElement::TANGENT;
+    NormalTexTangentVertex::s_kDecl.m_pkElements[3].m_uiOffset          = 32;
     //*****************************************************************************************//
 
 
@@ -419,9 +440,17 @@ int Exporter::DoExport( const TCHAR *pszName, ExpInterface *pExpInterface, Inter
             if( !pvkMeshPolygons->size() )
                 continue;
 
-            bool bSkin      = (*pvpkMeshVertices)[0]->m_pkSkinVertex ? true : false;
-            bool bTexCoords = (*pvpkMeshVertices)[0]->m_bUV;
+            bool bSkin        = (*pvpkMeshVertices)[0]->m_pkSkinVertex ? true : false;
+            bool bTexCoords   = (*pvpkMeshVertices)[0]->m_bUV;
             bool bLmTexCoords = (*pvpkMeshVertices)[0]->m_bLmUV;
+            bool bBumpMapped  = pkMatDef->m_strBumpmapTexture.length() > 0;
+
+            // calculate the tangents for bummap material
+            if ( bBumpMapped ) {
+
+                CalculateTangents( *pvkMeshPolygons, *pvpkMeshVertices );
+
+            }
 
             if( bSkin )
                 bSkeleton = true;
@@ -456,22 +485,32 @@ int Exporter::DoExport( const TCHAR *pszName, ExpInterface *pExpInterface, Inter
             
             } else {
 
-                if ( ( bTexCoords == true ) && ( bLmTexCoords == false ) ) {
+                // vertex with base and bumpmap texture 
+                if ( ( bTexCoords == true ) && ( bBumpMapped == true ) ) {
 
-                    // vertex with only base texture
-                    pkVertexBuffer = new VertexBuffer( Buffer::STATIC | Buffer::READPRIORITIZED, pvpkMeshVertices->size(), &NormalTexVertex::s_kDecl );
+                    pkVertexBuffer = new VertexBuffer( Buffer::STATIC | Buffer::READPRIORITIZED, pvpkMeshVertices->size(), &NormalTexTangentVertex::s_kDecl ); 
 
                 } else {
 
-                    // vertex with base and self-illumination ( lightmap ) texture 
-                    if ( ( bTexCoords == true ) && ( bLmTexCoords == true ) ) {
-  
-                        pkVertexBuffer = new VertexBuffer( Buffer::STATIC | Buffer::READPRIORITIZED, pvpkMeshVertices->size(), &NormalDiffuseLightmapTexVertex::s_kDecl );
-                    
+                    if ( ( bTexCoords == true ) && ( bLmTexCoords == false ) ) {
+
+                        // vertex with only base texture
+                        pkVertexBuffer = new VertexBuffer( Buffer::STATIC | Buffer::READPRIORITIZED, pvpkMeshVertices->size(), &NormalTexVertex::s_kDecl );
+                        
+
                     } else {
 
-                        // vertex color vertex
-                        pkVertexBuffer = new VertexBuffer( Buffer::STATIC | Buffer::READPRIORITIZED, pvpkMeshVertices->size(), &NormalVertex::s_kDecl );
+                        // vertex with base and self-illumination ( lightmap ) texture 
+                        if ( ( bTexCoords == true ) && ( bLmTexCoords == true ) ) {
+
+                            pkVertexBuffer = new VertexBuffer( Buffer::STATIC | Buffer::READPRIORITIZED, pvpkMeshVertices->size(), &NormalDiffuseLightmapTexVertex::s_kDecl );
+
+                        } else {
+
+                            // vertex color vertex
+                            pkVertexBuffer = new VertexBuffer( Buffer::STATIC | Buffer::READPRIORITIZED, pvpkMeshVertices->size(), &NormalVertex::s_kDecl );
+
+                        }
 
                     }
 
@@ -490,7 +529,7 @@ int Exporter::DoExport( const TCHAR *pszName, ExpInterface *pExpInterface, Inter
 
             for( ; ppkSrcVertex != ppkSrcVertexEnd; ++ppkSrcVertex, pucVertex += pkVertexBuffer->GetVertexSize() )
             {
-                NormalVertex *pkVertex = (NormalVertex*)pucVertex;
+                NormalVertex *pkVertex = ( NormalVertex* )pucVertex;
                 pkVertex->m_kPosition = g_kConvMat * Vector3d( (*ppkSrcVertex)->m_kCoord.x, (*ppkSrcVertex)->m_kCoord.z, -(*ppkSrcVertex)->m_kCoord.y );
                 pkVertex->m_kNormal   = g_kConvMat * Vector3d( (*ppkSrcVertex)->m_kNormal.x, (*ppkSrcVertex)->m_kNormal.z, -(*ppkSrcVertex)->m_kNormal.y );;
 
@@ -516,7 +555,16 @@ int Exporter::DoExport( const TCHAR *pszName, ExpInterface *pExpInterface, Inter
                     pfUV[1] = 1.0f - pfUV[1];
                 }
 
-                if( bLmTexCoords )
+                if( bBumpMapped && bTexCoords )
+                {
+                    unsigned char *pucTangent = ( unsigned char * )( pucVertex + 32 );
+                    pucTangent[ 0 ] = ( *ppkSrcVertex )->m_kCompressedTangent[ 0 ];
+                    pucTangent[ 1 ] = ( *ppkSrcVertex )->m_kCompressedTangent[ 1 ];
+                    pucTangent[ 2 ] = ( *ppkSrcVertex )->m_kCompressedTangent[ 2 ];
+                    pucTangent[ 3 ] = ( *ppkSrcVertex )->m_kCompressedTangent[ 3 ];
+                }
+
+                if( bLmTexCoords && !bBumpMapped )
                 {
                     float *pfUV = (float*)( pucVertex + 32 );
 
@@ -600,15 +648,16 @@ int Exporter::DoExport( const TCHAR *pszName, ExpInterface *pExpInterface, Inter
                 StringChunk *pkAlias = new StringChunk( string( "tex_base string " ) + pkMatDef->m_strBaseTexture, "defalias" );
                 pkMatChunk->AttachChunk( pkAlias );
 
-                if ( pkMatDef->m_strLightmapTexture.length() ) {
+                // currently we cannot combine bumpmapping with lightmaps
+                if ( pkMatDef->m_strLightmapTexture.length() && !bBumpMapped ) {
 
                     StringChunk *pkAlias = new StringChunk( string( "tex_lm string " ) + pkMatDef->m_strLightmapTexture, "defalias" );
                     pkMatChunk->AttachChunk( pkAlias );
                 
                 }
-                if ( pkMatDef->m_strBumpmapTexture.length() ) {
+                if ( bBumpMapped ) {
 
-                    StringChunk *pkAlias = new StringChunk( string( "tex_height string " ) + pkMatDef->m_strBumpmapTexture, "defalias" );
+                    StringChunk *pkAlias = new StringChunk( string( "tex_bump string " ) + pkMatDef->m_strBumpmapTexture, "defalias" );
                     pkMatChunk->AttachChunk( pkAlias );
                 
                 }
@@ -779,8 +828,8 @@ int Exporter::DoExport( const TCHAR *pszName, ExpInterface *pExpInterface, Inter
 
         for( ; ppkBlueprint != ppkBlueprintEnd; ++ppkBlueprint )
         {
-            pkIO->WriteChunk( (*ppkBlueprint), pkOutFile );
-            delete (*ppkBlueprint);
+             pkIO->WriteChunk( (*ppkBlueprint), pkOutFile );
+             delete (*ppkBlueprint);
         }
 
         m_vpkBlueprints.clear();
@@ -842,7 +891,6 @@ int Exporter::DoExport( const TCHAR *pszName, ExpInterface *pExpInterface, Inter
         delete pkIO;
         delete pkOutFile;
     }
-
 
     m_pkIGameScene->ReleaseIGame();
 
@@ -1107,7 +1155,7 @@ void Exporter::ExportNodeInfo( IGameNode *pkNode, int &iCurNode )
                     vector< MaterialDefinition >::iterator pkMatDef      = m_vMaterialDefinitions.begin();
                     vector< MaterialDefinition >::iterator pkMatDefEnd   = m_vMaterialDefinitions.end();
 
-                    vector< vector< MaxVertex*   > >::iterator pvpkMeshVertices = m_vvpkMeshVertices.begin();
+                    vector< vector< MaxVertex*   > >::iterator pvpkMeshVertices       = m_vvpkMeshVertices.begin();
                     vector< vector< NeoEngine::Polygon > >::iterator pvkMeshPolygons  = m_vvkMeshPolygons.begin();
 
                     string strBaseTexture, strLmTexture, strBumpTexture;
@@ -1163,16 +1211,20 @@ void Exporter::ExportNodeInfo( IGameNode *pkNode, int &iCurNode )
                     }
 
                     // check for bump map channel
-                    Mtl         *pkMaxMat        = pkMat->GetMaxMaterial();
-                    Texmap      *pkBumpMap       = pkMaxMat->GetSubTexmap( ID_BU );
-                    if( pkBumpMap && pkBumpMap->ClassID() == Class_ID(BMTEX_CLASS_ID, 0 ) ) {
-                        pkBumpTexture = ( BitmapTex* )pkBumpMap;
-                    }
+                    Mtl *pkMaxMat = pkMat->GetMaxMaterial();
+                    if ( pkMaxMat ) {
+
+                        Texmap *pkBumpMap = pkMaxMat->GetSubTexmap( ID_BU );
+                        if( pkBumpMap && pkBumpMap->ClassID() == Class_ID( BMTEX_CLASS_ID, 0 ) ) {
+                            pkBumpTexture = ( BitmapTex* )pkBumpMap;
+                        }
+
+                    } 
 
                     string strMaterialName = pkMat->GetMaterialName();
                        
                     // get base texture name
-                    if( pkBaseTexture && pkBaseTexture->GetBitmapFileName() )
+                    if( pkBaseTexture && pkBaseTexture->GetMaxTexmap()->ClassID() == Class_ID( BMTEX_CLASS_ID, 0 ) )
                     {
 
                         TCHAR   *pcBmpFileName = pkBaseTexture->GetBitmapFileName();
@@ -1197,7 +1249,7 @@ void Exporter::ExportNodeInfo( IGameNode *pkNode, int &iCurNode )
                     }
 
                     // get lightmap texture name
-                    if( pkLmTexture && pkLmTexture->GetBitmapFileName() )
+                    if( pkLmTexture && pkLmTexture->GetMaxTexmap()->ClassID() == Class_ID( BMTEX_CLASS_ID, 0 ) ) 
                     {
 
                         TCHAR   *pcBmpFileName = pkLmTexture->GetBitmapFileName();
@@ -1222,7 +1274,7 @@ void Exporter::ExportNodeInfo( IGameNode *pkNode, int &iCurNode )
                     }
 
                     // get bumptmap texture name
-                    if( pkBumpTexture && pkBumpTexture->GetMapName() )
+                    if( pkBumpTexture )
                     {
 
                         TCHAR   *pcBmpFileName = pkBumpTexture->GetMapName();
@@ -1282,7 +1334,7 @@ void Exporter::ExportNodeInfo( IGameNode *pkNode, int &iCurNode )
                         if ( strMaterialName[ 0 ] == '$' ) {
                          
                             // extract the material name and its material file name
-                            //  deconding following format: $MaterialFileName MaterialName
+                            //  decoding following format: $MaterialFileName MaterialName
                             char pcMatName[ 128 ];
                             char pcMatFileName[ 128 ];
                             sscanf( strMaterialName.c_str(), "%s %s", pcMatFileName, pcMatName );
@@ -1543,6 +1595,95 @@ Quaternion GMatrixToQuat( GMatrix &rkMatrix )
     return kQuat;
 }
 
+void Exporter::CalculateTangents( vector< NeoEngine::Polygon >& rvpkMeshPolygons, vector< MaxVertex* >& rvpkVetrices )
+{
+
+    // calculate normals
+    size_t uiNumPolygons = rvpkMeshPolygons.size();
+    for ( size_t uiPolyCnt = 0; uiPolyCnt < uiNumPolygons; uiPolyCnt++ ) {
+
+        int aiVert[ 3 ] = { 0, 1, 2 };
+        float fInterpolate;
+
+        //Sort vertices in decreasing v texcoord direction
+        if( rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 0 ] ] ]->m_kUV.v < rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 1 ] ] ]->m_kUV.v ) {
+            SWAP_INTS( aiVert[ 0 ], aiVert[ 1 ] );
+        }
+        if( rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 0 ] ] ]->m_kUV.v < rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 2 ] ] ]->m_kUV.v ) {
+            SWAP_INTS( aiVert[ 0 ], aiVert[ 2 ] );
+        }
+        if( rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 1 ] ] ]->m_kUV.v < rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 2 ] ] ]->m_kUV.v ) {
+            SWAP_INTS( aiVert[ 1 ], aiVert[ 2 ] );
+        }
+
+        float fV0 = rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 0 ] ] ]->m_kUV.v;
+        float fV1 = rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 1 ] ] ]->m_kUV.v;
+        float fV2 = rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 2 ] ] ]->m_kUV.v;
+
+        //Calculate factor between edge 0->1 and edge 0->2 in v direction
+        if( fabsf( fV2 - fV0 ) < 0.001f ) {
+
+            fInterpolate = 1.0f;
+
+        } else {
+
+            fInterpolate = ( fV1 - fV0 ) / ( fV2 - fV0 );
+        
+        }
+        
+        //Interpolate vector along 0->2 edge that corresponds to the same offset as middle v coordinate
+        Vector3d kTemp = rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 0 ] ] ]->m_kCoord + 
+                        ( rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 2 ] ] ]->m_kCoord - 
+                          rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 0 ] ] ]->m_kCoord ) * fInterpolate;
+
+
+        //Interpolate u coordinate
+        float fU = rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 0 ] ] ]->m_kUV.u +
+                   ( rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 2 ] ] ]->m_kUV.u - 
+                     rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 0 ] ] ]->m_kUV.u ) * fInterpolate;
+        
+        //Tangent vector points from middle vertex to interpolated vector
+        Vector3d kTangent = kTemp - rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 1 ] ] ]->m_kCoord;
+
+        //Check direction
+        if( fU < rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 1 ] ] ]->m_kUV.u ) {
+            kTangent = -kTangent;
+        }
+
+        // calculate the polygon normal
+        Vector3d kPlaneVec1 = rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 1 ] ] ]->m_kCoord - rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 0 ] ] ]->m_kCoord;
+        Vector3d kPlaneVec2 = rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 2 ] ] ]->m_kCoord - rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 0 ] ] ]->m_kCoord;
+
+        // cross product for calculating the plane normal
+        Vector3d kNormal = kPlaneVec1 % kPlaneVec2;
+
+        //Clean up vector, make sure it's perpendicular to the normal
+        kTangent = ( kTangent - ( kNormal * ( kNormal * kTangent ) ) ).Normalize();
+        rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 0 ] ] ]->m_kTangent += kTangent;
+        rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 1 ] ] ]->m_kTangent += kTangent;
+        rvpkVetrices[ rvpkMeshPolygons[ uiPolyCnt ].v[ aiVert[ 2 ] ] ]->m_kTangent += kTangent;
+
+    }
+
+    // renormalize all tangents to get smooth tangents over neighboring polygons, then compress the tangents
+    size_t uiNumVerts = rvpkVetrices.size();
+    for ( size_t uiVertCnt = 0; uiVertCnt < uiNumVerts; uiVertCnt++ ) {
+        
+        rvpkVetrices[ uiVertCnt ]->m_kTangent.Normalize();
+        
+        // compress
+        Vector3d kCT = rvpkVetrices[ uiVertCnt ]->m_kTangent;
+        kCT *= 0.5f;
+	    kCT += Vector3d( 0.5f, 0.5f, 0.5f );
+	    kCT *= 255.0f;			
+        rvpkVetrices[ uiVertCnt ]->m_kCompressedTangent[ 0 ] = (unsigned char)kCT.x;
+        rvpkVetrices[ uiVertCnt ]->m_kCompressedTangent[ 1 ] = (unsigned char)kCT.y;
+        rvpkVetrices[ uiVertCnt ]->m_kCompressedTangent[ 2 ] = (unsigned char)kCT.z;
+        rvpkVetrices[ uiVertCnt ]->m_kCompressedTangent[ 3 ] = (unsigned char)0;
+
+    }
+
+}
 
 };
 

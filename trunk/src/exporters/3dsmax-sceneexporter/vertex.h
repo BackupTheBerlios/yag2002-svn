@@ -45,25 +45,28 @@ namespace NeoMaxExporter
 
 class MaxVertex
 {
-	public:
-		
-		NeoEngine::Vector3d                           m_kCoord;
+    public:
+        
+        NeoEngine::Vector3d                           m_kCoord;
 
-		NeoEngine::Vector3d                           m_kNormal;
+        NeoEngine::Vector3d                           m_kNormal;
 
-		MaxTexCoord                                   m_kUV;
-		bool                                          m_bUV;
+        NeoEngine::Vector3d                           m_kTangent;
+        NeoEngine::Color32                            m_kCompressedTangent;
 
-		MaxTexCoord                                   m_kLmUV;
-		bool                                          m_bLmUV;
+        MaxTexCoord                                   m_kUV;
+        bool                                          m_bUV;
 
-		NeoEngine::SkinVertex                        *m_pkSkinVertex;
+        MaxTexCoord                                   m_kLmUV;
+        bool                                          m_bLmUV;
 
-		                                              MaxVertex() : m_bUV( false ), m_bLmUV( false ), m_pkSkinVertex( 0 ) {}
+        NeoEngine::SkinVertex                        *m_pkSkinVertex;
 
-		virtual                                      ~MaxVertex() { delete m_pkSkinVertex; }
+                                                      MaxVertex() : m_bUV( false ), m_bLmUV( false ), m_pkSkinVertex( 0 ) {}
 
-		bool                                          operator == ( const MaxVertex &rkVertex ) { return( ( m_kCoord == rkVertex.m_kCoord ) && ( m_kNormal == rkVertex.m_kNormal ) && ( m_kUV == rkVertex.m_kUV ) ); }
+        virtual                                      ~MaxVertex() { delete m_pkSkinVertex; }
+
+        bool                                          operator == ( const MaxVertex &rkVertex ) { return( ( m_kCoord == rkVertex.m_kCoord ) && ( m_kNormal == rkVertex.m_kNormal ) && ( m_kUV == rkVertex.m_kUV ) ); }
 };
 
 

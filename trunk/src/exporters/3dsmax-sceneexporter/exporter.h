@@ -41,7 +41,6 @@
 #include <neoengine/nemath.h>
 
 #include <max.h>
-
 #if (_MSC_VER >= 1300)
 #  include "MAX_Mem.h"
 #endif
@@ -59,7 +58,7 @@
 
 #include "vertex.h"
 
-#define NSCEEXPORTER_CLASSNAME         "CTD NSCEExporter ( Lightmaps support )"
+#define NSCEEXPORTER_CLASSNAME         "CTD NSCEExporter"
 #define NSCEEXPORTER_CLASSID           Class_ID(0x3cfa620c, 0x4c5a7191)
 
 
@@ -97,30 +96,51 @@ class NormalDiffuseLightmapTexVertex
         static NeoEngine::VertexDeclaration           s_kDecl;
 };
 
+// new vertex type supporting base texture and tangent vector
+class NormalTexTangentVertex
+{
+    public:
+
+        /*! Position */
+        NeoEngine::Vector3d                           m_kPosition;
+
+        /*! Normal */
+        NeoEngine::Vector3d                           m_kNormal;
+
+        /*! Texture coordinate */
+        float                                         m_afTexCoord[2];
+
+        /*! Compressed tangent vector ( first three byted )*/
+        NeoEngine::Color32                            m_kTangent;
+
+        /*! Vertex declaration */
+        static NeoEngine::VertexDeclaration           s_kDecl;
+};
+
 //! Material definition
 class MaterialDefinition 
 {
     public:
 
-                                    MaterialDefinition() { m_eDefinitionType = eInline; }
+                                                    MaterialDefinition() { m_eDefinitionType = eInline; }
 
         //! Material name
-        std::string                 m_strMaterialName;
+        std::string                                 m_strMaterialName;
 
         //! Material file name for those materials which are not inlined
-        std::string                 m_strMaterialFileName;
+        std::string                                 m_strMaterialFileName;
 
         //! Base texture
-        std::string                 m_strBaseTexture;
+        std::string                                 m_strBaseTexture;
 
         //! Lightmap texture
-        std::string                 m_strLightmapTexture;
+        std::string                                 m_strLightmapTexture;
 
         //! Heighttmap texture
-        std::string                 m_strBumpmapTexture;
+        std::string                                 m_strBumpmapTexture;
 
         //! Inline material definition ( inside of nsce file ) or extern material lib definition
-        enum { eInline, eFile }     m_eDefinitionType;
+        enum { eInline, eFile }                     m_eDefinitionType;
 
 };
 
@@ -264,6 +284,13 @@ class Exporter : public SceneExport
         * \param pkBone                                         Bone object
         */
         void                                                    AddBone( IGameNode *pkBone );
+
+        /**
+        * Calculate tangent vectors
+        * \param rvpkMeshPolygons                               Mesh polygons
+        * \param rvpkVetrices                                   Vertex array which in enhanced with calculated tangents
+        */
+        void                                                    CalculateTangents( std::vector< NeoEngine::Polygon >& rvpkMeshPolygons, std::vector< MaxVertex* >& rvpkVetrices );
 
         /**
         */
