@@ -553,18 +553,15 @@ int	Exporter::DoExport( const TCHAR *pszName, ExpInterface *pExpInterface, Inter
 			for( int iFrame = 0; iFrame < iNumFrames; ++iFrame )
 			{
 
-				// FIXME: boto 07/27/2004
-				//        after trying a while to solve the problem with wrong exported orientation i let the orientation 
-				//         as it is extracted from local matrix and handle orientation corrections in game code!
 				GMatrix		kLocalMat = (*ppkMesh)->m_pkNode->GetLocalTM( iFrame * m_iTicksPerFrame );
 
 				AffineParts	kParts;
 				Matrix3		kDecompMat = kLocalMat.ExtractMatrix3();
 				decomp_affine( kDecompMat, &kParts );
 
-				Quaternion	kQuat( kParts.q.x, kParts.q.y, kParts.q.z, kParts.q.w );
+				Quaternion	kQuat( -kParts.q.x, -kParts.q.z, -kParts.q.y, kParts.q.w );
 
-				Vector3d kPos( kLocalMat.GetRow( 3 )[0], kLocalMat.GetRow( 3 )[1], kLocalMat.GetRow( 3 )[2] );
+                Vector3d kPos( kLocalMat.GetRow( 3 )[0], kLocalMat.GetRow( 3 )[2], -kLocalMat.GetRow( 3 )[1] );
 
 				Chunk *pkFrameChunk = ChunkFactory::CreateChunk( ChunkType::NODEKEYFRAME, "" );
 
