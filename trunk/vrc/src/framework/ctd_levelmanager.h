@@ -50,6 +50,7 @@ class LevelManager : public Singleton< LevelManager >
         //! Load mesh. Return NULL if somethings goes wrong.
         osg::Node*                                  loadMesh( const std::string& fileName, bool useCache = true );
 
+        //! Get root node of loaded static world geometry
         osg::Node*                                  getStaticMesh();
 
     protected:
