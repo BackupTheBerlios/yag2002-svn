@@ -34,7 +34,7 @@
 
 #include "base.h"
 #include "ctd_menucam.h"
-
+#include <ctd_animutil.h>
 
 using namespace std;
 using namespace CTD;
@@ -46,48 +46,48 @@ namespace CTD_IPluginMenu
 {
 
 // plugin global entity descriptor for menu camera
-CTDMenuCameraDesc	g_pkCTDMenuCameraEntity_desc;
+CTDMenuCameraDesc   g_pkCTDMenuCameraEntity_desc;
 //-------------------------------------------//
 
 
 CTDMenuCamera::CTDMenuCamera()
 {
 
-	CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Menu) entity ' MenuCamera ' created " );
+    CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Menu) entity ' MenuCamera ' created " );
 
-	m_kPosition					= Vector3d( 0, 0, 0 );
-	m_kRotation					= Vector3d( 0, 0, 0 );
-	m_fFOVAngle					= 60.0f;
-	m_fNearplane				= 0.1f;
-	m_fFarplane					= 10000.0f;
-	m_pkPathAnim				= NULL;
-	m_fAnimBlend				= 0;
-	m_eState					= eIdle;
-	m_bHasAnimation				= false;
-	m_fAnimLength				= 0;
+    m_kPosition                 = Vector3d( 0, 0, 0 );
+    m_kRotation                 = Vector3d( 0, 0, 0 );
+    m_fFOVAngle                 = 60.0f;
+    m_fNearplane                = 0.1f;
+    m_fFarplane                 = 10000.0f;
+    m_pkPathAnim                = NULL;
+    m_eState                    = eIdle;
+    m_bHasAnimation             = false;
+    m_fAnimLength               = 0;
+    m_iCheckLastKey             = 1;
 
+    // set the entity ( node ) name
+    SetName( CTD_ENTITY_NAME_MenuCamera );
+    // set the instance name as the entity name in order to be able to search for this camera in other entities
+    //  such as change group entity ( which controls the camera position / rotation )
+    SetInstanceName( CTD_ENTITY_NAME_MenuCamera );
 
-	// set the entity ( node ) name
-	SetName( CTD_ENTITY_NAME_MenuCamera );
-	// set the instance name as the entity name in order to be able to search for this camera in other entities
-	//  such as change group entity ( which controls the camera position / rotation )
-	SetInstanceName( CTD_ENTITY_NAME_MenuCamera );
-
-	// create camera light
-	m_pkLight							= new Light( Light::POINT, Light::CASTSHADOWS );
-	m_pkLight->m_kAmbient				= Color( 0.5f, 0.5f, 0.5f );
-	m_pkLight->m_kDiffuse				= Color( 0.8f, 0.8f, 0.7f );
-	m_pkLight->m_kSpecular				= Color( 0.9f, 0.9f, 0.9f );	
-	m_pkLight->m_fConstantAttenuation	= 0.3f;
-	m_pkLight->m_fLinearAttenuation		= 0.001f;
-	m_pkLight->m_fQuadraticAttenuation	= 0.00001f;
+    // create camera light
+    m_kLightColor                       = Vector3d( 0.9f, 0.9f, 0.9f );
+    m_pkLight                           = new Light( Light::POINT, Light::CASTSHADOWS );
+    m_pkLight->m_kAmbient               = Color( 0.0f, 0.0f, 0.0f );
+    m_pkLight->m_kDiffuse               = Color( m_kLightColor.x, m_kLightColor.y, m_kLightColor.z );
+    m_pkLight->m_kSpecular              = Color( 1.0f, 1.0f, 1.0f );    
+    m_pkLight->m_fConstantAttenuation   = 0.01f;
+    m_pkLight->m_fLinearAttenuation     = 0.01f;
+    m_pkLight->m_fQuadraticAttenuation  = 0.001f;
 
 }
 
 CTDMenuCamera::~CTDMenuCamera()
 {
 
-	CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Menu) entity ' MenuCamera ' destroyed " );
+    CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Menu) entity ' MenuCamera ' destroyed " );
     GetMenuLevelSet()->GetRoom()->DetachGlobalNode( this );
 
 }
@@ -96,340 +96,229 @@ CTDMenuCamera::~CTDMenuCamera()
 void CTDMenuCamera::Initialize() 
 { 
 
-	SetEntity( m_pkLight );
+    SetEntity( m_pkLight );
 
-	// create a bounding volume for camera ( its is used by its light )
-	AABB	kBB;
-	kBB.SetDim( Vector3d( 5.0f, 5.0f, 5.0f ) );
-	GetBoundingVolume()->Generate( &kBB );
+    // create a bounding volume for camera ( its is used by its light )
+    AABB    kBB;
+    kBB.SetDim( Vector3d( 5.0f, 5.0f, 5.0f ) );
+    GetBoundingVolume()->Generate( &kBB );
 
-	// set initial position and orientation
-	SetTranslation( m_kPosition );
-	Quaternion	kRot( EulerAngles( m_kRotation.x * PI / 180.0f, m_kRotation.y * PI / 180.0f, m_kRotation.z * PI / 180.0f ) );
-	SetRotation( kRot );
+    // set initial position and orientation
+    SetTranslation( m_kPosition );
+    Quaternion  kRot( EulerAngles( m_kRotation.x * PI / 180.0f, m_kRotation.y * PI / 180.0f, m_kRotation.z * PI / 180.0f ) );
+    SetRotation( kRot );
 
-	// get menu's camera object created in framework
-	m_pkCamera = GetMenuLevelSet()->GetCamera();
-	assert( m_pkCamera );
-
-	// set initial camera position and orientation
-	m_pkCamera->SetTranslation( GetTranslation() );
-	m_pkCamera->SetRotation( GetRotation() );
-
-	// set fov and near/far distance
-    Framework::Get()->GetRenderDevice()->SetPerspectiveProjection( m_fFOVAngle, m_fNearplane, m_fFarplane );
-
-
-	// attach camera node as global node into menu's room
+    // attach camera node as global node into menu's room
     GetMenuLevelSet()->GetRoom()->AttachGlobalNode( this );
 
-	// setup the menu entrance animation
-	if ( m_strEntranceAnim.length() > 0 ) {
+    // setup the menu entrance animation
+    if ( m_strEntranceAnim.length() > 0 ) {
 
-		m_pkPathAnim = ReadKeyframes( m_strEntranceAnim );
-		if ( m_pkPathAnim == NULL ) {
+        // try to load the animation file
+        KeyFrameAnimUtil    kKfUtil;        
 
-			CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Menu) entity ' CTDMenuCamera::" + GetInstanceName() +
-				" ', cannot find entrance animation file, using fix position." );
+        File* pkFile = NeoEngine::Core::Get()->GetFileManager()->GetByName( m_strEntranceAnim );
+        if ( !pkFile || ( kKfUtil.Load( pkFile ) == false ) ) {
 
-			m_bHasAnimation = false;
-		
-		} else {
+            CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Menu) entity ' CTDMenuCamera::" + GetInstanceName() +
+                " ', cannot find entrance animation file, using fix position." );
 
-			m_bHasAnimation = true;
+            m_bHasAnimation = false;
 
-		}
+        }
 
+        m_pkPathAnim = new AnimatedNode( *kKfUtil.GetAnimatedNode() );
 
-	}
+        if ( m_pkPathAnim == NULL ) {
+
+            CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Menu) entity ' CTDMenuCamera::" + GetInstanceName() +
+                " ', cannot get path animation, using fix position." );
+
+            m_bHasAnimation = false;
+        
+        } else {
+
+            m_bHasAnimation = true;
+
+        }
+
+    }
+
+    // get menu's camera object created in framework
+    m_pkCamera = GetMenuLevelSet()->GetCamera();
+    assert( m_pkCamera );
+
+    // set initial position and orientation to those of last key frame
+    NodeAnimation* pkNodeAnim       = m_pkPathAnim->GetAnimation();
+    NodeKeyframe *pkLastKeyframe    = pkNodeAnim->m_vpkKeyframes[ pkNodeAnim->m_vpkKeyframes.size() - 1 ];
+    m_iCheckLastKey                 = ( int )pkNodeAnim->m_vpkKeyframes.size() - 1;
+
+    SetTranslation( pkLastKeyframe->m_kTranslation );
+    SetRotation( pkLastKeyframe->m_kRotation );
+
+    // set initial camera position and orientation
+    m_pkCamera->SetTranslation( GetTranslation() );
+    m_pkCamera->SetRotation( GetRotation() );
+
+    // assign camera light color
+    m_pkLight->m_kDiffuse               = Color( m_kLightColor.x, m_kLightColor.y, m_kLightColor.z, 1.0f );
+
+    // set fov and near/far distance
+    Framework::Get()->GetRenderDevice()->SetPerspectiveProjection( m_fFOVAngle, m_fNearplane, m_fFarplane );
 
 }
 
 void CTDMenuCamera::UpdateEntity( float fDeltaTime ) 
 { 
 
-	switch ( m_eState ) {
+    switch ( m_eState ) {
 
-		case eIdle:
+        case eIdle:
 
-			break;
+            break;
 
-		// play the entrance animation
-		case eAnim:
-		{
-				
-			// as neoengine currently does not provide functions to check the current animation blending state so we have to do that manually!
-			NodeAnimation* pkNodeAnim =	m_pkPathAnim->GetAnimation();
-			m_fAnimBlend += fDeltaTime / pkNodeAnim->m_fLength;			
+        // play the entrance animation
+        case eAnim:
+        {
+                
+            // as neoengine currently does not provide functions to check the current animation blending state so we have to do that manually!
+            NodeAnimation* pkNodeAnim = m_pkPathAnim->GetAnimation();
 
-			if ( m_fAnimBlend < 0.95f ) {
+            if ( pkNodeAnim->m_iNextKeyframe < m_iCheckLastKey ) {
 
-				m_pkPathAnim->Update( fDeltaTime );
-				SetTranslation( m_pkPathAnim->GetTranslation() );
-				SetRotation( m_pkPathAnim->GetRotation() );
+                m_pkPathAnim->Update( fDeltaTime );
+                SetTranslation( m_pkPathAnim->GetTranslation() );
+                SetRotation( m_pkPathAnim->GetRotation() );
 
-			} else {
+            } else {
 
-				m_eState						= eIdle;
-				m_fAnimBlend					= 0;
-				pkNodeAnim->m_fCurTime			= 0;
+                m_eState                        = eIdle;
+                pkNodeAnim->m_fCurTime          = 0;
 
-				// set position and orientation to last key frame
-				NodeKeyframe *pkLastKeyframe	= pkNodeAnim->m_vpkKeyframes[ pkNodeAnim->m_vpkKeyframes.size() - 1 ];
-				SetTranslation( pkLastKeyframe->m_kTranslation );
-				SetRotation( pkLastKeyframe->m_kRotation );
+            }
+        }
+        break;
 
-			}
-		}
-		break;
+        default:
+            ;
 
-		default:
-			;
+    }
 
-	}
-
-	// update camera position and orientation
-	m_pkCamera->SetTranslation( GetTranslation() );
-	m_pkCamera->SetRotation( GetRotation() );
+    // update camera position and orientation
+    m_pkCamera->SetTranslation( GetTranslation() );
+    m_pkCamera->SetRotation( GetRotation() );
 
 }
 
-int	CTDMenuCamera::Message( int iMsgId, void *pMsgStruct ) 
+// render light
+bool CTDMenuCamera::Render( Frustum *pkFrustum, bool bForce ) 
+{
+
+     m_pkLight->Render();
+     return true;
+
+}
+
+int CTDMenuCamera::Message( int iMsgId, void *pMsgStruct ) 
 { 
 
-	switch ( iMsgId ) {
+    switch ( iMsgId ) {
 
-		// handle pausing ( e.g. when entering the menu )
-		case CTD_ENTITY_ENTER_MENU:
+        // handle pausing ( e.g. when entering the menu )
+        case CTD_ENTITY_ENTER_MENU:
 
-			// reset menu's fov and near/far distance
+            // reset menu's fov and near/far distance
             Framework::Get()->GetRenderDevice()->SetPerspectiveProjection( m_fFOVAngle, m_fNearplane, m_fFarplane );
 
-			if ( m_bHasAnimation == true ) {
+            if ( m_bHasAnimation == true ) {
 
-				m_eState	= eAnim;
+                // begin the path animation
+                m_eState    = eAnim;
+                m_pkPathAnim->GetAnimation()->m_iNextKeyframe = 1;
+                m_pkPathAnim->GetAnimation()->m_fCurTime      = 0;
 
-			} else {
+            } else {
 
-				m_eState	= eIdle;
-			
-			}
-			break;
+                m_eState    = eIdle;
+            
+            }
+            break;
 
-		case CTD_ENTITY_EXIT_MENU:
+        case CTD_ENTITY_EXIT_MENU:
 
-			break;
+            break;
 
-		default:
-			break;
+        default:
+            break;
 
-	}
+    }
 
-	return 0; 
-}	
+    return 0; 
+}   
 
-
-// read the keyframes stored in an ".nani" file
-AnimatedNode* CTDMenuCamera::ReadKeyframes( const string &strFileName )
+int CTDMenuCamera::ParameterDescription( int iParamIndex, ParameterDescriptor *pkDesc )
 {
 
-    File	*pkFile = NeoEngine::Core::Get()->GetFileManager()->GetByName( strFileName );
-	if ( pkFile == NULL ) {
+    int iParamCount = 7;
 
-		pkFile = new File;
+    if (pkDesc == NULL) {
 
-	}
-	if ( pkFile->Open( "", strFileName, ios_base::in | ios_base::binary ) == false ) {
+        return iParamCount;
+    }
 
-		CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Visuals) entity ' AnimatedMesh ': could not find keyframe file! " );
+    switch( iParamIndex ) 
+    {
+    case 0:
+        pkDesc->SetName( "Position" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
+        pkDesc->SetVar( &m_kPosition );
+        
+        break;
 
-		delete pkFile;
-		return NULL;
+    case 1:
+        pkDesc->SetName( "Rotation" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
+        pkDesc->SetVar( &m_kRotation );
+        
+        break;
 
-	}
+    case 2:
+        pkDesc->SetName( "EntranceAnim" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
+        pkDesc->SetVar( &m_strEntranceAnim );
+        
+        break;
 
-	char   szStr[5];
-	string strMode;
+    case 3:
+        pkDesc->SetName( "FOV angle" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_FLOAT );
+        pkDesc->SetVar( &m_fFOVAngle );
+        break;
 
-	if( !pkFile->DetermineByteOrder( 0x494e414e ) )
-	{
-		neolog << LogLevel( ERROR ) << "*** Unable to load animation lib: Failed to determine byte order, possible corrupt file" << endl;
-		return NULL;
-	}
+    case 4:
+        pkDesc->SetName( "Nearplane" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_FLOAT );
+        pkDesc->SetVar( &m_fNearplane );
+        break;
 
-    pkFile->Read( szStr, 4 ); szStr[4] = 0;
+    case 5:
+        pkDesc->SetName( "Farplane" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_FLOAT );
+        pkDesc->SetVar( &m_fFarplane );
+        break;
 
-	if( string( szStr ) != "NANI" )
-	{
-		neolog << LogLevel( ERROR ) << "*** Unable to load animation lib: Invalid ID" << endl;
-		return NULL;
-	}
+    case 6:
+        pkDesc->SetName( "HeadLightColor" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
+        pkDesc->SetVar( &m_kLightColor );
+        
+        break;
 
-	//Read mode string
-	pkFile->Read( szStr, 4 );
+    default:
+        return -1;
+    }
 
-	ChunkIO *pkIO = 0;
-
-	if( string( szStr ) == "!bin" )
-	{
-		pkIO = new ChunkIO( ChunkIO::BINARY );
-		pkFile->SetBinary( true );
-	}
-	else if( string( szStr ) == "!txt" )
-	{
-		pkIO = new ChunkIO( ChunkIO::ASCII );
-		pkFile->SetBinary( false );
-	}
-	else
-	{
-		neolog << LogLevel( ERROR ) << "*** Unable to load animation lib: Unsupported chunk file mode [" << strMode << "]" << endl;
-		return NULL;
-	}
-
-	*pkFile >> pkIO->m_iMajorVersion >> pkIO->m_iMinorVersion;
-
-	if( !( pkIO->m_iMajorVersion == ChunkIO::MAJORVERSIONREQUIRED ) || ( pkIO->m_iMinorVersion < ChunkIO::MINORVERSIONREQUIRED ) )
-	{
-		neolog << LogLevel( ERROR ) << "*** Unable to load animation lib: Invalid chunk format version " << pkIO->m_iMajorVersion << "." << pkIO->m_iMinorVersion << endl;
-		return NULL;
-	}
-
-
-	Chunk				*pkChunk				= NULL;
-	AnimatedNode		*pkAnimNode				= NULL;
-
-	// read in the animation keyframes ( only the first set! )
-	pkChunk = pkIO->ReadChunk( pkFile );
-	if( pkChunk != NULL )
-	{		
-		string	strName;
-		int		iID = -1;
-		float	fLength = 0.0f;
-
-		vector< Chunk* > vpkSubChunks = pkChunk->GetSubChunks();
-		// pick the first chunk attributes: name, id, and length
-		for ( unsigned int uiChunks = 0; uiChunks < 3; uiChunks++ ) {
-
-			Chunk	*pkSChunk = vpkSubChunks[ uiChunks ];
-			
-			if ( ( pkSChunk->GetType() == ChunkType::STRING ) && ( pkSChunk->GetID() == "name" ) ) {
-
-				strName = ( ( StringChunk* )pkSChunk )->m_strData;
-				continue;
-
-			}
-
-			if ( ( pkSChunk->GetType() == ChunkType::INTEGER ) && ( pkSChunk->GetID() == "id" ) ) {
-
-				iID = ( ( IntChunk* )pkSChunk )->m_iData;
-				continue;
-
-			}
-
-			if ( ( pkSChunk->GetType() == ChunkType::FLOAT ) && ( pkSChunk->GetID() == "length" ) ) {
-
-
-				fLength = ( ( FloatChunk* )pkSChunk )->m_fData;
-				continue;
-
-			}
-		}
-
-		if( pkChunk->GetType() == ChunkType::ANIMATEDNODE ) {
-
-			SceneNodeChunk	*pkSceneNode = dynamic_cast< SceneNodeChunk* >( pkChunk );
-			if( pkIO->ParseChunk( pkSceneNode, 0, 0 ) >= 0 ) {
-
-				pkAnimNode = dynamic_cast< AnimatedNode* >(pkSceneNode->m_pkNode);
-
-				// set animation parameters name and length
-				if ( pkAnimNode ) {
-
-					pkAnimNode->SetAnimation( iID );
-					NodeAnimation * pkAnimTrack = pkAnimNode->GetAnimation( iID );
-					pkAnimTrack->m_fLength  = fLength;
-					pkAnimTrack->m_strName  = strName;
-					m_fAnimLength			= fLength;
-
-				}
-
-			}
-			
-		}
-
-	}
-
-	if ( pkAnimNode == NULL ) {
-
-		// error getting the animation and its keyframes
-		CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Visuals) entity ' AnimatedMesh ': no keyframes exist => no animation! " );
-
-	}
-
-	delete pkIO;
-	delete pkFile;
-	
-	return pkAnimNode;
-
-}
-
-int	CTDMenuCamera::ParameterDescription( int iParamIndex, ParameterDescriptor *pkDesc )
-{
-
-	int iParamCount = 6;
-
-	if (pkDesc == NULL) {
-
-		return iParamCount;
-	}
-
-	switch( iParamIndex ) 
-	{
-	case 0:
-		pkDesc->SetName( "Position" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
-		pkDesc->SetVar( &m_kPosition );
-		
-		break;
-
-	case 1:
-		pkDesc->SetName( "EntranceAnim" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
-		pkDesc->SetVar( &m_strEntranceAnim );
-		
-		break;
-
-	case 2:
-		pkDesc->SetName( "Rotation" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
-		pkDesc->SetVar( &m_kRotation );
-		
-		break;
-
-	case 3:
-		pkDesc->SetName( "FOV angle" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_FLOAT );
-		pkDesc->SetVar( &m_fFOVAngle );
-		break;
-
-	case 4:
-		pkDesc->SetName( "Nearplane" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_FLOAT );
-		pkDesc->SetVar( &m_fNearplane );
-		break;
-
-	case 5:
-		pkDesc->SetName( "Farplane" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_FLOAT );
-		pkDesc->SetVar( &m_fFarplane );
-		break;
-
-
-	default:
-		return -1;
-	}
-
-	return iParamCount;
+    return iParamCount;
 
 }
 

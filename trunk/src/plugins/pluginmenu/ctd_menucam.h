@@ -60,7 +60,7 @@ namespace CTD_IPluginMenu
 {
 
 // this is the printf object
-extern CTDPrintf	g_CTDPrintf;
+extern CTDPrintf    g_CTDPrintf;
 
 
 // name of this entity
@@ -69,63 +69,68 @@ extern CTDPrintf	g_CTDPrintf;
 class CTDMenuCamera : public CTD::BaseEntity
 {
 
-	public:
+    public:
 
-													CTDMenuCamera();
-													~CTDMenuCamera();
+                                                    CTDMenuCamera();
+                                                    ~CTDMenuCamera();
 
-		//******************************* override some functions **********************************//
+        //******************************* override some functions **********************************//
 
-		/**
-		* Initializing function
-		*/
-		void										Initialize();
+        /**
+        * Initializing function
+        */
+        void                                        Initialize();
 
-		/**
-		* Update object
-		* \param fDeltaTime                         Time passed since last update
-		*/
-		void									    UpdateEntity( float fDeltaTime );
+        /**
+        * Update object
+        * \param fDeltaTime                         Time passed since last update
+        */
+        void                                        UpdateEntity( float fDeltaTime );
 
-		/**
-		* Messaging function.
-		* \param  iMsgId                            Message ID
-		* \param  pMsgStruct                        Message specific data structure
-		* \return                                   This return value is message specific.
-		*/
-		int											Message( int iMsgId, void *pMsgStruct );
+        /**
+        * Render object
+        * \param pkFrustum                          Current view frustum (if any)
+        * \param bForce                             Render even if rendered previously this frame or deactivated (default false)
+        * \return                                   true if we were rendered, false if not (already rendered, not forced)
+        */
+        bool                                        Render( NeoEngine::Frustum *pkFrustum = 0, bool bForce = false );
 
-		//*******************************************************************************************//
+        /**
+        * Messaging function.
+        * \param  iMsgId                            Message ID
+        * \param  pMsgStruct                        Message specific data structure
+        * \return                                   This return value is message specific.
+        */
+        int                                         Message( int iMsgId, void *pMsgStruct );
 
-		int											ParameterDescription( int iParamIndex, CTD::ParameterDescriptor *pkDesc );
+        //*******************************************************************************************//
 
-		//******************************************************************************************//
+        int                                         ParameterDescription( int iParamIndex, CTD::ParameterDescriptor *pkDesc );
 
-		// entity parameters
-		NeoEngine::Vector3d							m_kPosition;
-		NeoEngine::Vector3d							m_kRotation;
-		std::string									m_strEntranceAnim;
+        //******************************************************************************************//
 
-		// camera settings
-		float										m_fFOVAngle;
-		float										m_fNearplane;
-		float										m_fFarplane;
+        // entity parameters
+        NeoEngine::Vector3d                         m_kPosition;
+        NeoEngine::Vector3d                         m_kRotation;
+        NeoEngine::Vector3d                         m_kLightColor;
+        std::string                                 m_strEntranceAnim;
 
-	private:
+        // camera settings
+        float                                       m_fFOVAngle;
+        float                                       m_fNearplane;
+        float                                       m_fFarplane;
 
-		NeoEngine::Light							*m_pkLight;
-		NeoEngine::Camera							*m_pkCamera;
+    protected:
 
-		NeoEngine::AnimatedNode						*m_pkPathAnim;
-		
-		float										m_fAnimBlend;
-		enum { eIdle, eAnim }						m_eState;
-		bool										m_bHasAnimation;
-		float										m_fAnimLength;
+        NeoEngine::Light                            *m_pkLight;
+        NeoEngine::Camera                           *m_pkCamera;
 
-
-		// function for setting up a node for key animation given the name of an .nani file
-		NeoEngine::AnimatedNode*					ReadKeyframes( const std::string &strFileName );
+        NeoEngine::AnimatedNode                     *m_pkPathAnim;
+        
+        enum { eIdle, eAnim }                       m_eState;
+        bool                                        m_bHasAnimation;
+        float                                       m_fAnimLength;
+        int                                         m_iCheckLastKey;
 
 
 };
@@ -135,12 +140,12 @@ class CTDMenuCamera : public CTD::BaseEntity
 class CTDMenuCameraDesc : public CTD::EntityDescriptor
 {
 
-	public:
-													CTDMenuCameraDesc() { };
-													~CTDMenuCameraDesc() { }
-			
-		const std::string&							GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME_MenuCamera ) }
-		CTD::BaseEntity*							CreateEntityInstance() { return (CTD::BaseEntity*) new CTDMenuCamera; }
+    public:
+                                                    CTDMenuCameraDesc() { };
+                                                    ~CTDMenuCameraDesc() { }
+            
+        const std::string&                          GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME_MenuCamera ) }
+        CTD::BaseEntity*                            CreateEntityInstance() { return (CTD::BaseEntity*) new CTDMenuCamera; }
 
 
 };
