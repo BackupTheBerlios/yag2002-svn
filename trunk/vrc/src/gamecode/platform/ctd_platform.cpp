@@ -79,7 +79,7 @@ void EnPlatform::initialize()
         return;
     }
     // now we add the new mesh into our transformable scene group
-    addTransformableNode( p_mesh );
+    addToTransformableNode( p_mesh );
     setPosition( _position );
 }
 
