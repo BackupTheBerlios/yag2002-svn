@@ -248,7 +248,7 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\ChangeLog">
+			RelativePath="..\..\..\..\src\framework\ChangeLog">
 		</File>
 		<File
 			RelativePath="..\..\..\..\src\framework\ctd_frbase.cpp">
