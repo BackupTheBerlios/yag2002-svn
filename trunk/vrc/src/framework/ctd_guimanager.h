@@ -55,6 +55,11 @@ class GuiManager : public Singleton< GuiManager >
 {
     public:
 
+        //! Load a gui layout ( e.g. a dialog ) from given file.
+        CEGUI::Window*                          loadLayout( const std::string& filename );
+
+        //! Show up given layout in root window.
+        void                                    showLayout( CEGUI::Window* p_layout );
 
     protected:
 
@@ -106,6 +111,9 @@ class GuiManager : public Singleton< GuiManager >
         float                                   _mouseSensivity;
 
         osg::ref_ptr< GuiRenderCallback >       _guiRenderCallback;
+
+        //! Root window of cegui where all other windows are placed
+        CEGUI::DefaultWindow*                  _p_root;
 
     friend class Singleton< GuiManager >;
     friend class GuiRenderCallback;

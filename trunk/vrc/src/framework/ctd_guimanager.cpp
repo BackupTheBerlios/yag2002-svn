@@ -122,7 +122,8 @@ GuiManager::GuiManager() :
 _p_renderer( NULL ),
 _screenWidth( 600 ),
 _screenHeight( 400 ),
-_mouseSensivity( 1.0f )
+_mouseSensivity( 1.0f ),
+_p_root( NULL )
 {
 }
 
@@ -192,28 +193,32 @@ void GuiManager::doInitialize()
     // load scheme
     SchemeManager::getSingleton().loadScheme( "gui/schemes/TaharezLookWidgets.scheme" );
 
-    // All windows and widgets are created via the WindowManager singleton.
-    WindowManager& winMgr = WindowManager::getSingleton();
-
     // create the root window called 'Root'.
-    DefaultWindow* p_root = (DefaultWindow*)winMgr.createWindow("DefaultWindow", "Root");
+    _p_root = static_cast< DefaultWindow* >( WindowManager::getSingleton().createWindow("DefaultWindow", "Root") );
 
     // set the GUI root window (also known as the GUI "sheet"), so the gui we set up
     // will be visible.
-    System::getSingleton().setGUISheet( p_root );
+    System::getSingleton().setGUISheet( _p_root );
 
     // create input handler
     _inputHandler = new InputHandler( this );
 
-
     //! TODO: remove the rest here ( it's just for testing the hello world )
-    FrameWindow* wnd = (FrameWindow*)winMgr.createWindow("TaharezLook/FrameWindow", "Demo Window");
-    p_root->addChildWindow(wnd);
-    wnd->setPosition(Point(0.25f, 0.25f));
-    wnd->setSize(Size(1.0f, 1.0f));
-    wnd->setMaximumSize(Size(0.5f, 0.5f));
-    wnd->setMinimumSize(Size(0.1f, 0.1f));
-    wnd->setText("Hello World!");
+    CEGUI::Window* p_test = loadLayout( "gui/settings.xml" );
+    showLayout( p_test );
+}
+
+CEGUI::Window* GuiManager::loadLayout( const string& filename )
+{
+    assert( _p_root && " gui system is not initialized!" );
+    Window* p_layout = WindowManager::getSingleton().loadWindowLayout( filename.c_str() );
+    return p_layout;
+}
+
+void GuiManager::showLayout( Window* p_layout )
+{
+    assert( _p_root && "gui system is not initialized!" );
+    _p_root->addChildWindow( p_layout );
 }
 
 void GuiManager::update( float deltaTime )
