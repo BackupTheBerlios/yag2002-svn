@@ -60,6 +60,7 @@ namespace CTD
 #define CTD_STOKEN_SERVERIP                                                 "serverip"
 #define CTD_ITOKEN_CLIENTPORT                                               "clientport"
 #define CTD_ITOKEN_SERVERPORT                                               "serverport"
+#define CTD_FTOKEN_MOUSE_SENSITIVITY                                        "mouse_sensitivity"
 
 // default settings values
 #define CTD_SVALUE_PLAYERNAME                                               "noname"
@@ -73,6 +74,7 @@ namespace CTD
 #define CTD_SVALUE_CLIENTNAME                                               "ctd-client"
 #define CTD_IVALUE_SERVERPORT                                               32000
 #define CTD_IVALUE_CLIENTPORT                                               32001
+#define CTD_FVALUE_MOUSE_SENSITIVITY                                        1.0
 
 
 // plugin message ids
