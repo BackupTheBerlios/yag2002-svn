@@ -51,7 +51,7 @@ class Application;
 class BaseEntityFactory;
 
 //! Base of all game entities
-class BaseEntity : public osg::Node
+class BaseEntity
 {
 
     public:
