@@ -96,7 +96,7 @@ class EnPhysicsCylinder : public BaseEntity
         float                                       _height;
 
         //! 4 Sound entities can be used for playing different sounds on collisions
-        std::string                                 _soundEntities[ 4 ];        
+        std::string                                 _soundEntities[ 4 ];
         //--------------------------------------------------------//
 
     protected:
@@ -110,6 +110,19 @@ class EnPhysicsCylinder : public BaseEntity
         NewtonBody*                                 _p_body;
 
         NewtonWorld*                                _p_world;
+
+        float                                       _pastTime;
+
+    public:
+
+        // contact information
+        float                                       _contactMaxNormalSpeed;
+
+        float                                       _contactMaxTangentSpeed;
+
+        //!Note: entity attribute declared as public for faster access in static functions
+        // Threshold for normal speed for playing a sound in case of a collision
+        float                                       _playThreshold;
 };
 
 //! Entity type definition used for type registry

@@ -85,9 +85,7 @@ int cylinderContactProcessLevel( const NewtonMaterial* p_material, const NewtonC
     // set right parameters for predfined materials
     Physics::levelContactProcess( p_material, p_contact );
 
-    float force[ 4 ];
-
-    // determine which body is the player physics's one
+    // determine which body is the cylinder entity
 	NewtonBody*        p_body = s_colStruct->_p_body1;
     EnPhysicsCylinder* p_cyl  = NULL;
     void*              p_userData = NewtonBodyGetUserData( p_body );
@@ -98,22 +96,22 @@ int cylinderContactProcessLevel( const NewtonMaterial* p_material, const NewtonC
         if ( !p_cyl )
         {
             p_cyl = static_cast< EnPhysicsCylinder* >( NewtonBodyGetUserData( s_colStruct->_p_body0 ) );
-            NewtonBodySetForce( s_colStruct->_p_body0, force );
         }
-        else
-            NewtonBodySetForce( s_colStruct->_p_body1, force );
 
 	} 
     else // level collision
     {
         p_cyl = static_cast< EnPhysicsCylinder* >( NewtonBodyGetUserData( s_colStruct->_p_body0 ) );
-        NewtonBodySetForce( s_colStruct->_p_body1, force );
     }
 
-    bool isInEquilibrum = ( ( force[ 0 ] == 0 ) && ( force[ 1 ] == 0 ) && ( force[ 2 ] == 0 ) );
+    // let the phyiscs core calculate the tangent and normal speeds
+    Physics::genericContactProcess( p_material, p_contact );
+    CollisionStruct* p_colStruct = Physics::getCollisionStruct();
+    p_cyl->_contactMaxNormalSpeed  = p_colStruct->_contactMaxNormalSpeed;
+    p_cyl->_contactMaxTangentSpeed = p_colStruct->_contactMaxTangentSpeed;
 
-    // play appropriate sound only if the cylinder is moving
-    if ( !isInEquilibrum )
+    // play appropriate sound only if the cylinder bumps to something
+    if ( p_colStruct->_contactMaxNormalSpeed > p_cyl->_playThreshold )
     {
         unsigned int attribute = ( unsigned int )( NewtonMaterialGetContactFaceAttribute( p_material ) );
         unsigned int materialType = attribute & 0xFF;
@@ -159,17 +157,20 @@ EnPhysicsCylinder::EnPhysicsCylinder():
 _mass(10.0f),
 _radius(2.0f),
 _height(4.0f),
+_playThreshold( 10.0f ),
+_pastTime( 0 ),
 _p_body(NULL),
 _p_world( Physics::get()->getWorld() )
 {
     EntityManager::get()->registerUpdate( this );     // register entity in order to get updated per simulation step
 
     // register entity attributes
-    _attributeManager.addAttribute( "meshFile"   , _meshFile   );
-    _attributeManager.addAttribute( "position"   , _position   );
-    _attributeManager.addAttribute( "mass"       , _mass       );
-    _attributeManager.addAttribute( "radius"     , _radius     );
-    _attributeManager.addAttribute( "height"     , _height     );
+    _attributeManager.addAttribute( "meshFile"      , _meshFile      );
+    _attributeManager.addAttribute( "position"      , _position      );
+    _attributeManager.addAttribute( "mass"          , _mass          );
+    _attributeManager.addAttribute( "radius"        , _radius        );
+    _attributeManager.addAttribute( "height"        , _height        );
+    _attributeManager.addAttribute( "playThreshold" , _playThreshold );
     // 3d sound entities
     _attributeManager.addAttribute( "enSndWood"  , _soundEntities[ 0 ]  );
     _attributeManager.addAttribute( "enSndMetal" , _soundEntities[ 1 ]  );
@@ -186,7 +187,6 @@ _p_world( Physics::get()->getWorld() )
         //  it is important that own materials are created in constructor!
         //-------------------------------------------------------------------
         unsigned int cylinderID = Physics::get()->createMaterialID( "cylinder" );
-        unsigned int playerID   = Physics::get()->getMaterialId( "player" );
         unsigned int defaultID  = Physics::get()->getMaterialId( "default" );
         unsigned int levelID    = Physics::get()->getMaterialId( "level" );
         unsigned int woodID     = Physics::get()->getMaterialId( "wood" );
@@ -243,8 +243,8 @@ _p_world( Physics::get()->getWorld() )
 
 EnPhysicsCylinder::~EnPhysicsCylinder()
 {
-    // deregister entity, it is not necessary for entities which 'die' at application exit time
-    //  as the entity manager clears the entity list on app exit
+    // deregister entity, it is not necessary for entities which 'die' at application exit time or which are removed by the 
+    // the mean of entity manager's deleteEntity method, as the entity manager clears the entity list on app exit
     EntityManager::get()->registerUpdate( this, false );
 
     // remove physics body
@@ -253,6 +253,10 @@ EnPhysicsCylinder::~EnPhysicsCylinder()
         NewtonBodySetUserData( _p_body, NULL );
         NewtonDestroyBody( Physics::get()->getWorld(), _p_body );
     }
+
+    // remove all sound entities
+    for ( unsigned int cnt = 0; cnt < 4; cnt++ )
+        EntityManager::get()->deleteEntity( _pp_sounds[ cnt ] );
 }
 
 // some physics system callback functions
@@ -261,8 +265,8 @@ EnPhysicsCylinder::~EnPhysicsCylinder()
 void EnPhysicsCylinder::physicsBodyDestructor( const NewtonBody* body )
 {
 	EnPhysicsCylinder* p_node = ( EnPhysicsCylinder* )NewtonBodyGetUserData( body );
-    if (p_node)
-	    delete( p_node );
+    if ( p_node )
+        EntityManager::get()->deleteEntity( p_node );
 }
 
 // transformation callback
@@ -404,22 +408,49 @@ En3DSound* EnPhysicsCylinder::getSoundEntity( const string& name )
 
 void EnPhysicsCylinder::updateEntity( float deltaTime )
 {
-
+    _pastTime += deltaTime;
 }
 
 //! TODO: sound playing methods
+// evaluate: play sound depending on normal and tangent speeds!?
+
 void EnPhysicsCylinder::playSoundColMetal()
 {
+    // avoid short intervalls for playing as several collisions can some in smal amount of time
+    if ( _pastTime > 0.5f )
+    {
+        _pastTime = 0;
+        if ( _pp_sounds[ 0 ] )
+            _pp_sounds[ 0 ]->startPlaying();
+    }
 }
 
 void EnPhysicsCylinder::playSoundColWood()
 {
+    if ( _pastTime > 0.5f )
+    {
+        _pastTime = 0;
+        if ( _pp_sounds[ 1 ] )
+            _pp_sounds[ 1 ]->startPlaying();
+    }
 }
 
 void EnPhysicsCylinder::playSoundColStone()
 {
+    if ( _pastTime > 0.5f )
+    {
+        _pastTime = 0;
+        if ( _pp_sounds[ 2 ] )
+            _pp_sounds[ 2 ]->startPlaying();
+    }
 }
 
 void EnPhysicsCylinder::playSoundColGrass()
 {
+    if ( _pastTime > 0.5f )
+    {
+        _pastTime = 0;
+        if ( _pp_sounds[ 3 ] )
+            _pp_sounds[ 3 ]->startPlaying();
+    }
 }
