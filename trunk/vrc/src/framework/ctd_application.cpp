@@ -184,15 +184,23 @@ bool Application::initialize( int argc, char **argv )
         return false;
     }
 
-    log << Log::LogLevel( Log::L_INFO ) << "initializing entities..." << endl;
-    // setup entities
-    _entityManager->initializeEntities();
-    _entityManager->postInitializeEntities();
-
     log << Log::LogLevel( Log::L_INFO ) << "initializing gui system..." << endl;
     // initialize the gui system
     _p_guiManager = GuiManager::get();
     _p_guiManager->initialize();
+
+    // we must draw at least one frame in order to get the gui system initialized ( see gui wrapper's hook into post draw callback in 'ctd_guimanager.cpp' ).
+    // the gui system must be initialized before the entities are initialized ( because of gui entities ).
+    {
+        _p_viewer->realize();
+        _p_viewer->frame();
+        _p_viewer->sync();
+    }
+
+    log << Log::LogLevel( Log::L_INFO ) << "initializing entities..." << endl;
+    // setup entities
+    _entityManager->initializeEntities();
+    _entityManager->postInitializeEntities();
 
     log << Log::LogLevel( Log::L_INFO ) << "initialization  succeeded" << endl;
     return true;
@@ -201,9 +209,6 @@ bool Application::initialize( int argc, char **argv )
 void Application::run()
 {
     _running = true;
-
-    // create the windows and run the threads.
-    _p_viewer->realize();
 
     osg::Timer       timer;
     float            deltaTime = 0;
