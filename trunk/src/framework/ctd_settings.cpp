@@ -96,10 +96,11 @@ bool Settings::Load( File *pkFile )
 
     // load the settings into the file buffer
     m_strFileBuffer = "";
-    char*    pcBuffer = new char[ m_pkFile->GetSize() * sizeof( char ) + 1 ];
+    char*    pcBuffer = new char[ m_pkFile->GetSize() * sizeof( char ) + 2 ];
     m_pkFile->Read( pcBuffer, m_pkFile->GetSize() );
     m_strFileBuffer   = pcBuffer;
-    m_strFileBuffer[ m_pkFile->GetSize() ] = 0; // terminate the buffer string
+    m_strFileBuffer[ m_pkFile->GetSize() ]     = 13; // terminate the buffer string
+    m_strFileBuffer[ m_pkFile->GetSize() + 1 ] = 0;
     delete[] pcBuffer;
 
     m_pkFile->Close();
