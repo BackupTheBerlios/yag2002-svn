@@ -52,6 +52,9 @@
 
 #include "ctd_glo-adaptor.h"
 
+#pragma warning(disable : 4311)
+#pragma warning(disable : 4312)
+
 
 using namespace NeoEngine;
 using namespace NeoChunkIO;
