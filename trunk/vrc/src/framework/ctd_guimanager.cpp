@@ -157,7 +157,8 @@ void GuiManager::initialize()
     // register the post render callback where also the CEGUI initialization happens
     osgProducer::Viewer* p_viewer = Application::get()->getViewer();
     Producer::Camera* p_cam = p_viewer->getCamera( 0 );
-    p_cam->addPostDrawCallback( new GuiRenderCallback );
+    _guiRenderCallback = new GuiRenderCallback;
+    p_cam->addPostDrawCallback( _guiRenderCallback.get() );
 }
 
 void GuiManager::doInitialize()

@@ -105,6 +105,8 @@ class GuiManager : public Singleton< GuiManager >
 
         float                                   _mouseSensivity;
 
+        osg::ref_ptr< GuiRenderCallback >       _guiRenderCallback;
+
     friend class Singleton< GuiManager >;
     friend class GuiRenderCallback;
     friend class Application;
