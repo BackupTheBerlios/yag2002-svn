@@ -57,23 +57,24 @@ namespace CTD_IPluginVisuals {
 CTDSkyBox::CTDSkyBox()
 {
 
-	CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Visuals) entity ' SkyBox ' created " );
+    CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Visuals) entity ' SkyBox ' created " );
 
-	m_pkSkyBox = NULL;
+    m_pkSkyBox  = NULL;
+    m_pkRoom    = NULL;
 
 }
 
 CTDSkyBox::~CTDSkyBox()
 {
 
-	CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Visuals) entity ' SkyBox ' destroyed " );
+    CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Visuals) entity ' SkyBox ' destroyed " );
 
-	// check for valid initialization
-	if ( IsActive() == true ) {
+    // check for valid initialization
+    if ( IsActive() == true ) {
 
-		Framework::Get()->GetCurrentLevelSet()->GetRoom()->DetachGlobalNode( this );
+        m_pkRoom->DetachGlobalNode( this );
 
-	}
+    }
 
 }
 
@@ -81,136 +82,139 @@ CTDSkyBox::~CTDSkyBox()
 void CTDSkyBox::Initialize() 
 { 
 
-	// set the entity ( node ) name
-	SetName( CTD_ENTITY_NAME_SkyBox );
+    // set the entity ( node ) name
+    SetName( CTD_ENTITY_NAME_SkyBox );
 
-	// check wether all textures are valid
-	if ( 
-		!m_strTextureUP.length()    || 
-		!m_strTextureDown.length()  ||
-		!m_strTextureLeft.length()  ||
-		!m_strTextureRight.length() ||
-		!m_strTextureFront.length() ||
-		!m_strTextureBack.length()
-		) {
-		
-		Deactivate();
-		CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Visuals) entity ' SkyBox ': missing texture parameter (s), entity deactivated! " );
-		return;
-	}
+    // check wether all textures are valid
+    if ( 
+        !m_strTextureUP.length()    || 
+        !m_strTextureDown.length()  ||
+        !m_strTextureLeft.length()  ||
+        !m_strTextureRight.length() ||
+        !m_strTextureFront.length() ||
+        !m_strTextureBack.length()
+        ) {
+        
+        Deactivate();
+        CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Visuals) entity ' SkyBox ': missing texture parameter (s), entity deactivated! " );
+        return;
+    }
 
-	string              astrName[] = { m_strTextureUP, m_strTextureDown, m_strTextureLeft, m_strTextureRight, m_strTextureFront, m_strTextureBack };
-	SkyBox::SKYBOXPLANE aePlane[]  = { SkyBox::UP, SkyBox::DOWN, SkyBox::LEFT, SkyBox::RIGHT, SkyBox::FRONT, SkyBox::BACK };
+    string              astrName[] = { m_strTextureUP, m_strTextureDown, m_strTextureLeft, m_strTextureRight, m_strTextureFront, m_strTextureBack };
+    SkyBox::SKYBOXPLANE aePlane[]  = { SkyBox::UP, SkyBox::DOWN, SkyBox::LEFT, SkyBox::RIGHT, SkyBox::FRONT, SkyBox::BACK };
 
-	m_pkSkyBox = new SkyBox;
+    m_pkSkyBox = new SkyBox;
 
-	// load textures and assign them to skybox
-	for( int i = 0; i < 6; ++i )
-	{
+    // load textures and assign them to skybox
+    for( int i = 0; i < 6; ++i )
+    {
 
-		MaterialPtr pkMat = new Material( "skydome_" + astrName[i] );
+        MaterialPtr pkMat = new Material( "skydome_" + astrName[i] );
 
-		pkMat->m_pkTexture			= Framework::Get()->GetRenderDevice()->LoadTexture( astrName[i] );
-		pkMat->m_uiUVAddress		= TextureLayer::CLAMP;
+        pkMat->m_pkTexture          = Framework::Get()->GetRenderDevice()->LoadTexture( astrName[i] );
+        pkMat->m_uiUVAddress        = TextureLayer::CLAMP;
 
-		m_pkSkyBox->SetMaterial( aePlane[i], pkMat );
+        m_pkSkyBox->SetMaterial( aePlane[i], pkMat );
 
-	}
-		
+    }
+        
 
-	// set the skybox into this node and attach it to room manager as global node
-	SetEntity( m_pkSkyBox );
-	
-	Framework::Get()->GetCurrentLevelSet()->GetRoom()->AttachGlobalNode( this );
+    // set the skybox into this node and attach it to room manager as global node
+    SetEntity( m_pkSkyBox );
+
+    // store the current level set room for later detaching light and sprite nodes
+    m_pkRoom = Framework::Get()->GetCurrentLevelSet()->GetRoom();
+    
+    m_pkRoom->AttachGlobalNode( this );
 
 }
 
 bool CTDSkyBox::Render( Frustum *pkFrustum, bool bForce ) 
 {
 
-	 if( bForce ) {
-		 
-		 m_uiLastFrame = s_uiFrameCount; 
-		 return true; 
-	 } 
-	 
-	 if( !m_bActive || ( m_uiLastFrame >= s_uiFrameCount ) ) 
-		 return false; 
-	 
-	 m_uiLastFrame = s_uiFrameCount; 
+     if( bForce ) {
+         
+         m_uiLastFrame = s_uiFrameCount; 
+         return true; 
+     } 
+     
+     if( !m_bActive || ( m_uiLastFrame >= s_uiFrameCount ) ) 
+         return false; 
+     
+     m_uiLastFrame = s_uiFrameCount; 
 
-	 m_pkSkyBox->Render();
+     m_pkSkyBox->Render();
 
-	 return true;
+     return true;
 }
 
-int	CTDSkyBox::ParameterDescription( int iParamIndex, ParameterDescriptor *pkDesc )
+int CTDSkyBox::ParameterDescription( int iParamIndex, ParameterDescriptor *pkDesc )
 {
 
-	int iParamCount = 6;
+    int iParamCount = 6;
 
-	if (pkDesc == NULL) {
+    if (pkDesc == NULL) {
 
-		return iParamCount;
-	}
+        return iParamCount;
+    }
 
-	switch( iParamIndex ) 
-	{
-	case 0:
+    switch( iParamIndex ) 
+    {
+    case 0:
 
-		pkDesc->SetName( "TextureUp" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
-		pkDesc->SetVar( &m_strTextureUP );
-		
-		break;
+        pkDesc->SetName( "TextureUp" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
+        pkDesc->SetVar( &m_strTextureUP );
+        
+        break;
 
-	case 1:
+    case 1:
 
-		pkDesc->SetName( "TextureDown" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
-		pkDesc->SetVar( &m_strTextureDown );
-		
-		break;
+        pkDesc->SetName( "TextureDown" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
+        pkDesc->SetVar( &m_strTextureDown );
+        
+        break;
 
-	case 2:
+    case 2:
 
-		pkDesc->SetName( "TextureLeft" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
-		pkDesc->SetVar( &m_strTextureLeft );
-		
-		break;
+        pkDesc->SetName( "TextureLeft" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
+        pkDesc->SetVar( &m_strTextureLeft );
+        
+        break;
 
-	case 3:
+    case 3:
 
-		pkDesc->SetName( "TextureRight" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
-		pkDesc->SetVar( &m_strTextureRight );
-		
-		break;
+        pkDesc->SetName( "TextureRight" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
+        pkDesc->SetVar( &m_strTextureRight );
+        
+        break;
 
-	case 4:
+    case 4:
 
-		pkDesc->SetName( "TextureFront" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
-		pkDesc->SetVar( &m_strTextureFront );
-		
-		break;
+        pkDesc->SetName( "TextureFront" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
+        pkDesc->SetVar( &m_strTextureFront );
+        
+        break;
 
-	case 5:
+    case 5:
 
-		pkDesc->SetName( "TextureBack" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
-		pkDesc->SetVar( &m_strTextureBack );
-		
-		break;
+        pkDesc->SetName( "TextureBack" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
+        pkDesc->SetVar( &m_strTextureBack );
+        
+        break;
 
-	default:
+    default:
 
-		return -1;
+        return -1;
 
-	}
+    }
 
-	return iParamCount;
+    return iParamCount;
 
 }
 

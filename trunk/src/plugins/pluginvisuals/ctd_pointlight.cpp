@@ -44,41 +44,42 @@ using namespace NeoEngine;
 namespace CTD_IPluginVisuals {
 
 // plugin global entity descriptor for point light
-CTDPointLightDesc	g_pkPointLightEntity_desc;
+CTDPointLightDesc   g_pkPointLightEntity_desc;
 //-------------------------------------------//
 
 CTDPointLight::CTDPointLight()
 {
 
-	CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Lights) entity ' PointLight ' created " );
+    CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Lights) entity ' PointLight ' created " );
 
-	m_pkSprite			= NULL;
-	m_pkSpriteFactory	= NULL;
+    m_pkSprite          = NULL;
+    m_pkSpriteFactory   = NULL;
+    m_pkRoom            = NULL;
 
-	m_fRadius			= 5.0f;
+    m_fRadius           = 5.0f;
 
-	// create light object
-	m_pkLight							= new Light( Light::POINT, Light::CASTSHADOWS );
-	m_pkLight->m_kAmbient				= Color( 0.1f, 0.1f, 0.1f );
-	m_pkLight->m_kDiffuse				= Color( 0.7f, 0.7f, 0.7f );
-	m_pkLight->m_kSpecular				= Color( 0.9f, 0.9f, 0.9f );	
-	m_pkLight->m_fConstantAttenuation	= 0.9f;
-	m_pkLight->m_fLinearAttenuation		= 0.001f;
-	m_pkLight->m_fQuadraticAttenuation	= 0.00001f;
+    // create light object
+    m_pkLight                           = new Light( Light::POINT, Light::CASTSHADOWS );
+    m_pkLight->m_kAmbient               = Color( 0.1f, 0.1f, 0.1f );
+    m_pkLight->m_kDiffuse               = Color( 0.7f, 0.7f, 0.7f );
+    m_pkLight->m_kSpecular              = Color( 0.9f, 0.9f, 0.9f );    
+    m_pkLight->m_fConstantAttenuation   = 0.9f;
+    m_pkLight->m_fLinearAttenuation     = 0.001f;
+    m_pkLight->m_fQuadraticAttenuation  = 0.00001f;
 
 }
 
 CTDPointLight::~CTDPointLight()
 {
 
-	CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Lights) entity ' PointLight ' destroyed " );
-	if ( m_pkSprite != NULL ) {
+    CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Lights) entity ' PointLight ' destroyed " );
+    if ( m_pkSprite != NULL ) {
 
-		Framework::Get()->GetCurrentLevelSet()->GetRoom()->DetachNode( m_pkSprite );
+        m_pkRoom->DetachNode( m_pkSprite );
 
-	}
+    }
 
-	Framework::Get()->GetCurrentLevelSet()->GetRoom()->DetachGlobalNode( this );
+    m_pkRoom->DetachGlobalNode( this );
 
 }
 
@@ -87,56 +88,59 @@ CTDPointLight::~CTDPointLight()
 void CTDPointLight::Initialize() 
 { 
 
-	// set the entity ( node ) name
-	SetName( CTD_ENTITY_NAME_PointLight );
+    // set the entity ( node ) name
+    SetName( CTD_ENTITY_NAME_PointLight );
 
-	SetEntity( m_pkLight );
+    SetEntity( m_pkLight );
 
-	// create a bbox for rendering ( only for debugging )
-	Sphere kSphere;
-	kSphere.m_fRadius = m_fRadius;
-	GetBoundingVolume()->Generate( &kSphere );
-	GetBoundingVolume()->SetTranslation( m_vPosition );
+    // create a bbox for rendering ( only for debugging )
+    Sphere kSphere;
+    kSphere.m_fRadius = m_fRadius;
+    GetBoundingVolume()->Generate( &kSphere );
+    GetBoundingVolume()->SetTranslation( m_vPosition );
 
-	SetTranslation( m_vPosition );
-	Framework::Get()->GetCurrentLevelSet()->GetRoom()->AttachGlobalNode( this );
+    SetTranslation( m_vPosition );
+    
+    // store the current level set room for later detaching light and sprite nodes
+    m_pkRoom = Framework::Get()->GetCurrentLevelSet()->GetRoom();
 
+    m_pkRoom->AttachGlobalNode( this );
 
 }
 
 void CTDPointLight::PostInitialize() 
 { 
 
-	// assign sprite entity
-	if ( m_strSprite.length() == 0 ) {
-	
-		CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Lights) entity ' PointLight::" + GetInstanceName() + " ' missing sprite entity parameter! " );
+    // assign sprite entity
+    if ( m_strSprite.length() == 0 ) {
+    
+        CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Lights) entity ' PointLight::" + GetInstanceName() + " ' missing sprite entity parameter! " );
 
-	}
-		
-	m_pkSpriteFactory	= Framework::Get()->FindEntity( m_strSprite, CTD_PLUGINNAME_VISUALS );
+    }
+        
+    m_pkSpriteFactory   = Framework::Get()->FindEntity( m_strSprite, CTD_PLUGINNAME_VISUALS );
 
-	if ( m_pkSpriteFactory == NULL ) {
+    if ( m_pkSpriteFactory == NULL ) {
 
-		CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Lights) entity ' PointLight::" + GetInstanceName() + " ' cannot find sprite entity! " );
+        CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Lights) entity ' PointLight::" + GetInstanceName() + " ' cannot find sprite entity! " );
 
-	} else {
+    } else {
 
-		m_pkSprite = NULL;
-		if ( m_pkSpriteFactory->Message( CTD_ENTITY_SPRITE_MSG_CREATE, &m_pkSprite ) == -1 ) {
+        m_pkSprite = NULL;
+        if ( m_pkSpriteFactory->Message( CTD_ENTITY_SPRITE_MSG_CREATE, &m_pkSprite ) == -1 ) {
 
-			//unexpected return value
-			return;
+            //unexpected return value
+            return;
 
-		}
-	
-		// set sprite position
-		m_pkSprite->SetTranslation( GetTranslation() );
-		// set sprite color
-		Color	kColor( m_pkLight->m_kDiffuse );
-		m_pkSprite->Message( CTD_ENTITY_SPRITE_MSG_SET_COLOR, &kColor );
+        }
+    
+        // set sprite position
+        m_pkSprite->SetTranslation( GetTranslation() );
+        // set sprite color
+        Color   kColor( m_pkLight->m_kDiffuse );
+        m_pkSprite->Message( CTD_ENTITY_SPRITE_MSG_SET_COLOR, &kColor );
 
-	}
+    }
 
 }
  
@@ -144,101 +148,101 @@ void CTDPointLight::PostInitialize()
 bool CTDPointLight::Render( Frustum *pkFrustum, bool bForce ) 
 {
 
-	 m_pkLight->Render();
+     m_pkLight->Render();
 
-	 return true;
+     return true;
 
 }
 
-int	CTDPointLight::ParameterDescription( int iParamIndex, ParameterDescriptor *pkDesc )
+int CTDPointLight::ParameterDescription( int iParamIndex, ParameterDescriptor *pkDesc )
 {
 
-	int iParamCount = 9;
+    int iParamCount = 9;
 
-	if (pkDesc == NULL) {
+    if (pkDesc == NULL) {
 
-		return iParamCount;
-	}
+        return iParamCount;
+    }
 
-	switch( iParamIndex ) 
-	{
-	case 0:
+    switch( iParamIndex ) 
+    {
+    case 0:
 
-		pkDesc->SetName( "Position" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
-		pkDesc->SetVar( &m_vPosition );
-		
-		break;
+        pkDesc->SetName( "Position" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
+        pkDesc->SetVar( &m_vPosition );
+        
+        break;
 
-	case 1:
+    case 1:
 
-		pkDesc->SetName( "Radius" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_FLOAT );
-		pkDesc->SetVar( &m_fRadius );
-		
-		break;
+        pkDesc->SetName( "Radius" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_FLOAT );
+        pkDesc->SetVar( &m_fRadius );
+        
+        break;
 
-	case 2:
+    case 2:
 
-		pkDesc->SetName( "AmbientColor" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
-		pkDesc->SetVar( &m_pkLight->m_kAmbient );
-		
-		break;
+        pkDesc->SetName( "AmbientColor" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
+        pkDesc->SetVar( &m_pkLight->m_kAmbient );
+        
+        break;
 
-	case 3:
+    case 3:
 
-		pkDesc->SetName( "DiffuseColor" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
-		pkDesc->SetVar( &m_pkLight->m_kDiffuse );
-		
-		break;
+        pkDesc->SetName( "DiffuseColor" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
+        pkDesc->SetVar( &m_pkLight->m_kDiffuse );
+        
+        break;
 
-	case 4:
+    case 4:
 
-		pkDesc->SetName( "SpecularColor" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
-		pkDesc->SetVar( &m_pkLight->m_kSpecular );
-		
-		break;
+        pkDesc->SetName( "SpecularColor" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
+        pkDesc->SetVar( &m_pkLight->m_kSpecular );
+        
+        break;
 
-	case 5:
+    case 5:
 
-		pkDesc->SetName( "AttenuationConstant" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_FLOAT );
-		pkDesc->SetVar( &m_pkLight->m_fConstantAttenuation );
-		
-		break;
+        pkDesc->SetName( "AttenuationConstant" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_FLOAT );
+        pkDesc->SetVar( &m_pkLight->m_fConstantAttenuation );
+        
+        break;
 
-	case 6:
+    case 6:
 
-		pkDesc->SetName( "AttenuationLinear" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_FLOAT );
-		pkDesc->SetVar( &m_pkLight->m_fLinearAttenuation );
-		
-		break;
+        pkDesc->SetName( "AttenuationLinear" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_FLOAT );
+        pkDesc->SetVar( &m_pkLight->m_fLinearAttenuation );
+        
+        break;
 
-	case 7:
+    case 7:
 
-		pkDesc->SetName( "AttenuationQuadratic" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_FLOAT );
-		pkDesc->SetVar( &m_pkLight->m_fQuadraticAttenuation );
-		
-		break;
+        pkDesc->SetName( "AttenuationQuadratic" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_FLOAT );
+        pkDesc->SetVar( &m_pkLight->m_fQuadraticAttenuation );
+        
+        break;
 
-	case 8:
+    case 8:
 
-		pkDesc->SetName( "Sprite" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
-		pkDesc->SetVar( &m_strSprite );
-		
-		break;
+        pkDesc->SetName( "Sprite" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
+        pkDesc->SetVar( &m_strSprite );
+        
+        break;
 
-	default:
-		return -1;
-	}
+    default:
+        return -1;
+    }
 
-	return iParamCount;
+    return iParamCount;
 
 }
 

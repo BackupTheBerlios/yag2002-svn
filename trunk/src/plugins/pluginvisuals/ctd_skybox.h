@@ -59,44 +59,46 @@ namespace CTD_IPluginVisuals {
 class CTDSkyBox : public CTD::BaseEntity
 {
 
-	public:
+    public:
 
-													CTDSkyBox();
-		virtual										~CTDSkyBox();
+                                                    CTDSkyBox();
+        virtual                                     ~CTDSkyBox();
 
-		//******************************* override some functions **********************************//
+        //******************************* override some functions **********************************//
 
-		/**
-		* Initializing function
-		*/
-		void										Initialize();
+        /**
+        * Initializing function
+        */
+        void                                        Initialize();
 
-		/**
-		* Render object
-		* \param pkFrustum                          Current view frustum (if any)
-		* \param bForce                             Render even if rendered previously this frame or deactivated (default false)
-		* \return                                   true if we were rendered, false if not (already rendered, not forced)
-		*/
-		bool										Render( NeoEngine::Frustum *pkFrustum = 0, bool bForce = false );
+        /**
+        * Render object
+        * \param pkFrustum                          Current view frustum (if any)
+        * \param bForce                             Render even if rendered previously this frame or deactivated (default false)
+        * \return                                   true if we were rendered, false if not (already rendered, not forced)
+        */
+        bool                                        Render( NeoEngine::Frustum *pkFrustum = 0, bool bForce = false );
 
 
-		//*******************************************************************************************//
+        //*******************************************************************************************//
 
-		int											ParameterDescription( int param_index, CTD::ParameterDescriptor *pd );
+        int                                         ParameterDescription( int param_index, CTD::ParameterDescriptor *pd );
 
-		//******************************************************************************************//
+        //******************************************************************************************//
 
-		// entity parameters: texture names of six sky planes
-		std::string									m_strTextureUP,
-													m_strTextureDown,
-													m_strTextureLeft,
-													m_strTextureRight,
-													m_strTextureFront,
-													m_strTextureBack;
+        // entity parameters: texture names of six sky planes
+        std::string                                 m_strTextureUP,
+                                                    m_strTextureDown,
+                                                    m_strTextureLeft,
+                                                    m_strTextureRight,
+                                                    m_strTextureFront,
+                                                    m_strTextureBack;
 
-	private:
+    protected:
 
-		NeoEngine::SkyBox							*m_pkSkyBox;
+        NeoEngine::Room                             *m_pkRoom;
+
+        NeoEngine::SkyBox                           *m_pkSkyBox;
 
 
 };
@@ -106,12 +108,12 @@ class CTDSkyBox : public CTD::BaseEntity
 class CTDSkyBoxDesc : public CTD::EntityDescriptor
 {
 
-	public:
-													CTDSkyBoxDesc() { };
-													~CTDSkyBoxDesc() { }
-			
-		const std::string&							GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME_SkyBox ) }
-		CTD::BaseEntity*							CreateEntityInstance() { return (CTD::BaseEntity*) new CTDSkyBox; };
+    public:
+                                                    CTDSkyBoxDesc() { };
+                                                    ~CTDSkyBoxDesc() { }
+            
+        const std::string&                          GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME_SkyBox ) }
+        CTD::BaseEntity*                            CreateEntityInstance() { return (CTD::BaseEntity*) new CTDSkyBox; };
 
 };
 
