@@ -66,6 +66,20 @@ Settings* SettingsManager::createProfile( const string& profilename, const strin
     return p_settings;
 }
 
+void SettingsManager::destroyProfile( const std::string& profilename )
+{
+    map< string, Settings* >::iterator pp_profile = NULL, pp_profileEnd = _profiles.end();
+    pp_profile = _profiles.find( profilename );
+    if ( pp_profile == pp_profileEnd )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "*** profile '" << profilename << "' does not exist!" << endl;
+        return;
+    }
+
+    delete pp_profile->second;
+    _profiles.erase( pp_profile );
+}
+
 bool SettingsManager::loadProfile( const string& profilename )
 {
     map< string, Settings* >::iterator pp_profile = NULL, pp_profileEnd = _profiles.end();

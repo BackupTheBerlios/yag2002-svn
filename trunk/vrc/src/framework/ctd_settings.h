@@ -54,6 +54,9 @@ class SettingsManager : public Singleton< SettingsManager >
         //! Create a new named profile and its associated file.
         Settings*                               createProfile( const std::string& profilename, const std::string& filename );
 
+        //! Destroy given profile if it exists.
+        void                                    destroyProfile( const std::string& profilename );
+
         //! Load an already created profile.
         bool                                    loadProfile( const std::string& profilename );
 
