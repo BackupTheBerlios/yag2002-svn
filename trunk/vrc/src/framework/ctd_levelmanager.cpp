@@ -148,6 +148,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
                 {
                     p_staticnode->setName( p_bufName );
                     mainGroup->addChild( p_staticnode );
+                    _staticMesh = p_staticnode;
                 }
                 else
                     return false;
@@ -240,7 +241,6 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
     return mainGroup;
 }
 
-//! TODO setup physics
 osg::Node* LevelManager::loadStaticWorld( const string& fileName )
 {
     // start timer

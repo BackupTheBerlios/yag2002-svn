@@ -50,6 +50,8 @@ class LevelManager : public Singleton< LevelManager >
         //! Load mesh. Return NULL if somethings goes wrong.
         osg::Node*                                  loadMesh( const std::string& fileName, bool useCache = true );
 
+        osg::Node*                                  getStaticMesh();
+
     protected:
 
 
@@ -67,12 +69,20 @@ class LevelManager : public Singleton< LevelManager >
         //! Load static world geometry. Return NULL if somethings goes wrong.
         osg::Node*                                  loadStaticWorld( const std::string& fileName );
 
+        //! Static level mesh
+        osg::ref_ptr< osg::Node >                   _staticMesh;
+
         //! Cache for loaded meshes ( filename / node pairs )
         std::map< std::string, osg::ref_ptr< osg::Node > > _meshCache;
 
     friend class Singleton< LevelManager >;
     friend class Application;
 };
+
+inline osg::Node* LevelManager::getStaticMesh()
+{
+    return _staticMesh.get();
+}
 
 }
 
