@@ -68,7 +68,7 @@ class LevelManager : public Singleton< LevelManager >
         osg::Node*                                  loadStaticWorld( const std::string& fileName );
 
         //! Cache for loaded meshes ( filename / node pairs )
-        std::map< std::string, osg::Node* >         _meshCache;
+        std::map< std::string, osg::ref_ptr< osg::Node > > _meshCache;
 
     friend class Singleton< LevelManager >;
     friend class Application;

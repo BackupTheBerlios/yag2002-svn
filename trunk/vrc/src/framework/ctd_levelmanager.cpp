@@ -265,9 +265,9 @@ osg::Node* LevelManager::loadMesh( const string& fileName, bool useCache )
     // first lookup in cache
     if ( useCache )
     {
-        map< std::string, osg::Node* >::iterator pp_mesh = _meshCache.find( fileName );
+        map< std::string, osg::ref_ptr< osg::Node > >::iterator pp_mesh = _meshCache.find( fileName );
         if ( pp_mesh != _meshCache.end() )
-            return pp_mesh->second;
+            return pp_mesh->second.get();
     }
 
     // read given file
