@@ -210,6 +210,12 @@
 			Name="visulas"
 			Filter="">
 			<File
+				RelativePath="..\..\..\..\..\src\plugins\pluginmenu\visuals\ctd_menupointlight.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\plugins\pluginmenu\visuals\ctd_menupointlight.h">
+			</File>
+			<File
 				RelativePath="..\..\..\..\..\src\plugins\pluginmenu\visuals\ctd_menuskybox.cpp">
 			</File>
 			<File
