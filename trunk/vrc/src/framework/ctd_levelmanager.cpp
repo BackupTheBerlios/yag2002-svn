@@ -171,11 +171,15 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
         string entitytype, instancename;
         // get entity name
         p_bufName = ( char* )p_entityElement->Attribute( CTD_LVL_ENTITY_TYPE );
+        string enttype;
         if ( !p_bufName ) 
         {
             cout << "  **** entity has no type, skipping" << endl;
             continue;       
         }
+        else
+            enttype = p_bufName;
+
         entitytype = p_bufName;
         p_bufName = ( char* )p_entityElement->Attribute( CTD_LVL_ENTITY_INST_NAME );
         if ( !p_bufName ) 
@@ -189,7 +193,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
             cout << "  *** could not find entity type ' " << p_bufName << " '" << endl;
             continue;
         }
-        cout << "entity created, type: '" << p_bufName << " '" << endl;
+        cout << "entity created, type: '" << enttype << " '" << endl;
         // get instance name if one provided
         p_bufName = ( char* )p_entityElement->Attribute( CTD_LVL_ENTITY_INST_NAME );
         if ( p_bufName ) {
