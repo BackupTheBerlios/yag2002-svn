@@ -112,6 +112,23 @@ bool FrameworkImplClient::Initialize( int iArgc, char** ppcArgv )
 
     //--------------------------------------------------------//
 
+
+    // attach log file sink
+    string strCfgAttribute;
+    NeoEngine::Config *pkConfig = m_pkCore->GetConfig();
+    if( pkConfig->GetValue( CTD_CFG_ATTR_LOGOUTPUT, &strCfgAttribute ) )
+    {
+
+        if( strCfgAttribute.find( "file" ) != string::npos ) {
+
+            string strLogFile;
+            strLogFile = CTD_LOG_FILE_CLIENT;
+            m_pkLogFile = new LogFileSink( strLogFile );
+            neolog.AttachSink( m_pkLogFile );
+       }
+
+    }
+
     // initialze the widget system
     m_pkWidgets = Widgets::Get();
     m_pkWidgets->Initialize();

@@ -57,6 +57,20 @@ namespace CTD
 #define CTD_LOG_FILE_CLIENT         "client.log"
 #define CTD_CONFIG_FILE_NAME        "./engine.cfg"
 
+#define CTD_CFG_ATTR_LOGLEVEL       "LogLevel"
+#define CTD_CFG_ATTR_LOGOUTPUT      "LogOutput"
+#define CTD_CFG_ATTR_PACKAGES       "Packages"
+#define CTD_CFG_ATTR_KEY_CONFIG     "KeyConfigFile"
+#define CTD_CFG_ATTR_RENDER_DEVICE  "RenderDevice"
+#define CTD_CFG_ATTR_SCREEN_W       "RenderWidth"
+#define CTD_CFG_ATTR_SCREEN_H       "RenderHeight"
+#define CTD_CFG_ATTR_COLOR_DEPTH    "RenderDepth"
+#define CTD_CFG_ATTR_FULLSCREEN     "RenderFullscreen"
+#define CTD_CFG_ATTR_STENCILBUFF    "StencilBuffer"
+#define CTD_CFG_ATTR_SHADOW_DEPTH   "ShadowDepth"
+#define CTD_CFG_ATTR_REFRESHRATE    "Refreshrate"
+
+
 class LevelSet;
 class LevelManager;
 

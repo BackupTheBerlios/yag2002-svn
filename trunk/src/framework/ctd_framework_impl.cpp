@@ -84,23 +84,6 @@ VertexDeclaration NormalDiffuseLightmapTexVertex::s_kDecl( 4 );
 namespace CTD
 {
 
-#define CTD_CFG_ATTR_LOGLEVEL       "LogLevel"
-#define CTD_CFG_ATTR_LOGOUTPUT      "LogOutput"
-#define CTD_CFG_ATTR_PACKAGES       "Packages"
-#define CTD_CFG_ATTR_KEY_CONFIG     "KeyConfigFile"
-
-#define CTD_CFG_ATTR_RENDER_DEVICE  "RenderDevice"
-#define CTD_CFG_ATTR_SCREEN_W       "RenderWidth"
-#define CTD_CFG_ATTR_SCREEN_H       "RenderHeight"
-#define CTD_CFG_ATTR_COLOR_DEPTH    "RenderDepth"
-#define CTD_CFG_ATTR_FULLSCREEN     "RenderFullscreen"
-#define CTD_CFG_ATTR_STENCILBUFF    "StencilBuffer"
-#define CTD_CFG_ATTR_SHADOW_DEPTH   "ShadowDepth"
-#define CTD_CFG_ATTR_REFRESHRATE    "Refreshrate"
-
-// engine's config file related defines
-#define CTD_CONFIG_FILE_NAME        "./engine.cfg"
-
 FrameworkImpl::FrameworkImpl()
 {
 
@@ -296,23 +279,6 @@ void FrameworkImpl::LoadConfig( const string& strFileName )
         if( strCfgAttribute.find( "stdout" ) != string::npos )
             neolog.AttachSink( m_pkCore->GetStdoutSink() );
         
-        if( strCfgAttribute.find( "file" ) != string::npos ) {
-
-            string strLogFile;
-            if ( m_eGameMode == stateSERVER ) {
-
-                strLogFile = CTD_LOG_FILE_SERVER;
-
-            } else {
-
-                strLogFile = CTD_LOG_FILE_CLIENT;
-
-            }
-
-            m_pkLogFile = new LogFileSink( strLogFile );
-            neolog.AttachSink( m_pkLogFile );
-        }
-
         if( strCfgAttribute.find( "console" ) != string::npos )
             neolog.AttachSink( ( LogSink* )m_pkCore->GetConsole() );
     }   
