@@ -103,9 +103,12 @@ void EnPlayerAnimation::initialize()
         _p_node = new PositionAttitudeTransform;
         _p_node->addChild( p_osgBody );
 
-        //! TODO: implement support for offesting position and roations in rbody file
+        //! TODO: implement support for offesting position and rotations in rbody file
         float offset = p_osgBody->getBody()->getCoreBody()->getFootOffset();
         _p_node->setPosition( Vec3f( 0, 0, offset ) );
+
+        // we are updated by player entity, so disable getting updated by the entity system
+        activate( false );
     }
     catch ( std::exception& e ) 
     {
@@ -116,8 +119,16 @@ void EnPlayerAnimation::initialize()
     }
 }
 
-void EnPlayerAnimation::destroyPhysics()
+void EnPlayerAnimation::setPlayer( EnPlayer* p_player )
 {
+    _p_player = p_player;
+    // add the new mesh into player's transformable scene group
+    _p_player->addToTransformableNode( _p_node );
+}
+
+void EnPlayerAnimation::destroy()
+{
+    _p_player->removeFromTransformationNode( _p_node );
 }
 
 void EnPlayerAnimation::update( float deltaTime )

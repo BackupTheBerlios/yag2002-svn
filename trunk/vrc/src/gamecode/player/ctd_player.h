@@ -52,6 +52,7 @@ namespace CTD
 
 class EnPlayerAnimation;
 class EnPlayerPhysics;
+class EnPlayerSound;
 
 //! Player entity
 class EnPlayer : public BaseEntity
@@ -80,6 +81,9 @@ class EnPlayer : public BaseEntity
         */
         void                                        updateEntity( float deltaTime );
 
+        //! Return player's sound component, used by physics component
+        EnPlayerSound*                              getPlayerSound() { return _p_playerSound; }
+
     protected:
 
         // entity attributes
@@ -93,6 +97,9 @@ class EnPlayer : public BaseEntity
 
         //! Animation entity's instance name which will be attached to player
         std::string                                 _animationEntity;
+
+        //! Sound entity's instance name which will be attached to player
+        std::string                                 _soundEntity;
 
         //! initial position
         osg::Vec3f                                  _position;
@@ -108,6 +115,9 @@ class EnPlayer : public BaseEntity
 
         //! Animation control component
         EnPlayerAnimation*                          _p_playerAnimation;
+
+        //! Sound control component
+        EnPlayerSound*                              _p_playerSound;
 
         //! Movement direction
         osg::Vec3f                                  _moveDir;
@@ -142,6 +152,7 @@ class EnPlayer : public BaseEntity
 
     friend class EnPlayerPhysics;
     friend class EnPlayerAnimation;
+    friend class EnPlayerSound;
     friend class InputHandler;
 };
 

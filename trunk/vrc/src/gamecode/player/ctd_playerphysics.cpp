@@ -35,6 +35,7 @@
 #include <ctd_base.h>
 #include <ctd_physics.h>
 #include "ctd_playerphysics.h"
+#include "ctd_playersound.h"
 #include "ctd_player.h"
 
 using namespace osg;
@@ -130,6 +131,36 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
     }
     s_colStruct->_p_otherEntity = NULL;
     s_colStruct->_p_physics     = p_phys;
+
+    // play appropriate sound only if we are moving
+    if ( p_phys->isMoving() )
+    {
+        unsigned int attribute = ( unsigned int )( NewtonMaterialGetContactFaceAttribute( p_material ) );
+        unsigned int materialType = attribute & 0xFF;
+        switch ( materialType )
+        {
+            case Physics::MAT_DEFAULT:
+            case Physics::MAT_STONE:
+                p_phys->getPlayer()->getPlayerSound()->playWalkGround();
+                break;
+
+            case Physics::MAT_WOOD:
+                p_phys->getPlayer()->getPlayerSound()->playWalkWood();
+                break;
+
+            case Physics::MAT_METALL:
+                p_phys->getPlayer()->getPlayerSound()->playWalkMetal();
+                break;
+
+            case Physics::MAT_GRASS:
+                p_phys->getPlayer()->getPlayerSound()->playWalkGrass();
+                break;
+
+            default:
+                ;
+        }
+    }
+
     return p_phys->collideWithLevel( p_material, p_contact );
 }
 
@@ -414,7 +445,7 @@ void EnPlayerPhysics::setPlayer( EnPlayer* p_player )
     _p_player = p_player;
 }
 
-void EnPlayerPhysics::destroyPhysics()
+void EnPlayerPhysics::destroy()
 {
     NewtonDestroyBody( Physics::get()->getWorld(), _p_body );
 }
@@ -463,6 +494,8 @@ void EnPlayerPhysics::initialize()
     Vec3f upDirection (0.0f, 0.0f, 1.0f);
     _upVectorJoint = NewtonConstraintCreateUpVector( _p_world, &upDirection._v[ 0 ], _p_body ); 
 
+    // we are updated by player entity, so disable getting updated by the entity system
+    activate( false );
 }
 
 void EnPlayerPhysics::postInitialize()

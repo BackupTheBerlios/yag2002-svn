@@ -39,6 +39,7 @@
 #include "ctd_player.h"
 #include "ctd_playerphysics.h"
 #include "ctd_playeranim.h"
+#include "ctd_playersound.h"
 
 using namespace osg;
 using namespace std;
@@ -53,6 +54,7 @@ namespace CTD
 EnPlayer::EnPlayer() :
 _p_playerPhysics( NULL ),
 _p_playerAnimation( NULL ),
+_p_playerSound( NULL ),
 _playerName( "noname" ),
 _rotation( 0 ),
 _moveDir( Vec3f( 0, 1, 0 ) ),
@@ -63,6 +65,7 @@ _p_inputHandler( NULL )
     getAttributeManager().addAttribute( "name"            , _playerName       );
     getAttributeManager().addAttribute( "physicsentity"   , _physicsEntity    );
     getAttributeManager().addAttribute( "animationentity" , _animationEntity  );
+    getAttributeManager().addAttribute( "soundentity"     , _soundEntity      );
     getAttributeManager().addAttribute( "position"        , _position         );
     getAttributeManager().addAttribute( "rotation"        , _rotation         );
 
@@ -75,13 +78,19 @@ EnPlayer::~EnPlayer()
     if ( _p_playerPhysics )
     {
         EntityManager::get()->deleteEntity( _p_playerPhysics );
-        _p_playerPhysics->destroyPhysics();
+        _p_playerPhysics->destroy();
     }
 
     if ( _p_playerAnimation )
     {
         EntityManager::get()->deleteEntity( _p_playerAnimation );
-        _p_playerAnimation->destroyPhysics();
+        _p_playerAnimation->destroy();
+    }
+
+    if ( _p_playerSound )
+    {
+        EntityManager::get()->deleteEntity( _p_playerSound );
+        _p_playerSound->destroy();
     }
 
     // delete input handler immediately
@@ -106,15 +115,19 @@ void EnPlayer::postInitialize()
 {
     // find and attach physics component
     _p_playerPhysics = dynamic_cast< EnPlayerPhysics* >( EntityManager::get()->findEntity( ENTITY_NAME_PLPHYS, _physicsEntity ) );
-    assert( _p_playerPhysics && "given instance name does not belong to a player physics entity type!" );
+    assert( _p_playerPhysics && "given instance name does not belong to a EnPlayerPhysics entity type!" );
     _p_playerPhysics->setPlayer( this );
 
     // find and attach animation component
     _p_playerAnimation = dynamic_cast< EnPlayerAnimation* >( EntityManager::get()->findEntity( ENTITY_NAME_PLANIM, _animationEntity ) );
-    assert( _p_playerAnimation && "given instance name does not belong to a player animation entity type!" );
+    assert( _p_playerAnimation && "given instance name does not belong to a EnPlayerAnimation entity type!" );
+    _p_playerAnimation->setPlayer( this );
 
-    // now we add the new mesh into our transformable scene group
-    addTransformableNode( _p_playerAnimation->getNode() );
+    // find and attach sound component
+    _p_playerSound = dynamic_cast< EnPlayerSound* >( EntityManager::get()->findEntity( ENTITY_NAME_PLSOUND, _soundEntity ) );
+    assert( _p_playerAnimation && "given instance name does not belong to a EnPayerSound entity type!" );
+    _p_playerSound->setPlayer( this );
+
     setPosition( _position );
 }
 
@@ -226,7 +239,10 @@ bool EnPlayer::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GU
     }
 
     if ( !_moveForward && !_moveBackward )
+    {
         _p_player->_p_playerAnimation->actionIdle();
+        _p_player->getPlayerSound()->stopPlayingAll();
+    }
 
     return ret;
 }

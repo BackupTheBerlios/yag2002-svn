@@ -71,7 +71,7 @@ class EnPlayerPhysics : public BaseEntity
         /**
         * Destroy physics. This must be called during Player's destruction.
         */
-        void                                        destroyPhysics();
+        void                                        destroy();
 
         /**
         * Initializing function
@@ -128,6 +128,12 @@ class EnPlayerPhysics : public BaseEntity
 
         //! Handle collisions with other entities, called in collision callback function
         int                                         collideWithOtherEntities( const NewtonMaterial* p_material, const NewtonContact* p_contact );
+ 
+        //! Return player, used in static mehods
+        EnPlayer*                                   getPlayer() { return _p_player; }
+
+        //! Returns true if we are moving
+        bool                                        isMoving() { return !_isStopped; }
         //-------------------------------------------------------------------------------------------------//
 
     protected:
@@ -200,7 +206,6 @@ inline void EnPlayerPhysics::setForce( float x, float y )
 {
     _force._v[ 0 ] = x * _linearForce;
     _force._v[ 1 ] = y * _linearForce;
-
 }
 
 inline float EnPlayerPhysics::getAngularForce()

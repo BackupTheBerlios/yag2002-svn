@@ -63,6 +63,15 @@ class EnPlayerAnimation  : public BaseEntity
 
         virtual                                     ~EnPlayerAnimation();
 
+        //! This entity does not need a transform node, which would be created by level manager on loading
+        bool                                        needTransformation() { return false; }
+
+        /**
+        * Set player association, player must call this in post-initialize phase
+        * \param p_player                           Player instance
+        */
+        void                                        setPlayer( EnPlayer* p_player );
+
         /**
         * Initializing function
         */
@@ -71,16 +80,13 @@ class EnPlayerAnimation  : public BaseEntity
         /**
         * Destroy animation system. This must be called during Player's destruction.
         */
-        void                                        destroyPhysics();
+        void                                        destroy();
 
         /**
         * Update called by EnPlayer entity. Note: this is not the framework update method!
         * \param deltaTime                          Time passed since last update
         */
         void                                        update( float deltaTime );
-
-        //! Returns the osg node where the character is attached to
-        osg::Node*                                  getNode();
 
         //! Trigger idle animation
         void                                        actionIdle();
@@ -119,12 +125,6 @@ class EnPlayerAnimation  : public BaseEntity
         }                                           _action;
 
 };
-
-inline osg::Node* EnPlayerAnimation::getNode()
-{
-    return _p_node;
-}
-
 
 //! Entity type definition used for type registry
 class PlayerAnimationEntityFactory : public BaseEntityFactory
