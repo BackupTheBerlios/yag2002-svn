@@ -200,16 +200,18 @@ void GuiManager::doInitialize()
 
     // create input handler
     _inputHandler = new InputHandler( this );
-
-    //! TODO: remove the rest here ( it's just for testing the hello world )
-    CEGUI::Window* p_test = loadLayout( "gui/settings.xml" );
-    showLayout( p_test );
 }
 
 CEGUI::Window* GuiManager::loadLayout( const string& filename )
 {
     assert( _p_root && " gui system is not initialized!" );
-    Window* p_layout = WindowManager::getSingleton().loadWindowLayout( filename.c_str() );
+
+    // create an auto-incremented prefix, so we can load several layouts
+    static int prefix = 0;
+    stringstream pref;
+    pref << "l" << prefix << "_";
+    prefix++;
+    Window* p_layout = WindowManager::getSingleton().loadWindowLayout( filename.c_str(), pref.str() );
     return p_layout;
 }
 
