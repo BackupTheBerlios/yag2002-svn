@@ -1,6 +1,6 @@
 /****************************************************************
  *  3D Game 'Capture The Diamond'
- *  Copyright (C) 2002-2004, Ali Botorabi
+ *  Copyright (C) 2004-2006, Ali Botorabi
  *
  *  This program is free software; you can redistribute it and/or 
  *  modify it under the terms of the GNU General Public License 
@@ -44,27 +44,42 @@
 #  include <windows.h>
 #endif
 
+// osg headers
 #include <osgDB/ReadFile>
-#include <osgUtil/Optimizer>
-#include <osgProducer/Viewer>
 #include <osg/CoordinateSystemNode>
+#include <osg/Depth>
+#include <osg/ShapeDrawable>
+#include <osg/Texture>
+#include <osg/Texture2D>
+#include <osg/TexMat>
+#include <osg/TexGen>
+#include <osg/TexEnvCombine>
+#include <osg/TextureCubeMap>
 #include <osg/Transform>
-#include <osg/MatrixTransform>
 #include <osg/PositionAttitudeTransform>
 #include <osg/Math>
 #include <osg/Matrix>
+#include <osg/MatrixTransform>
 #include <osg/Vec4>
 #include <osg/Vec3>
 #include <osg/Vec2>
+#include <osg/VertexProgram>
+
 #include <osgGA/guiactionadapter>
 #include <osgGA/guieventadapter>
+
 #include <osgAL/SoundNode>
 #include <osgAL/SoundRoot>
 #include <osgAL/SoundManager>
 #include <osgAL/SoundState>
 
+#include <osgUtil/Optimizer>
+#include <osgProducer/Viewer>
+
+// Physics library header
 #include <Newton.h>
 
+// stl headers
 #include <string>
 #include <vector>
 #include <iostream>

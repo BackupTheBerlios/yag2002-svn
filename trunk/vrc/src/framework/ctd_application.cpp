@@ -1,6 +1,6 @@
 /****************************************************************
  *  3D Game 'Capture The Diamond'
- *  Copyright (C) 2002-2004, Ali Botorabi
+ *  Copyright (C) 2004-2006, Ali Botorabi
  *
  *  This program is free software; you can redistribute it and/or 
  *  modify it under the terms of the GNU General Public License 
@@ -36,6 +36,7 @@
 #include "ctd_physics.h"
 #include "ctd_log.h"
 
+#include <osg/VertexProgram>
 #include <Producer/Camera>
 
 using namespace std;
