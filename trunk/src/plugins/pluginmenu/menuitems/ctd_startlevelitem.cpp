@@ -132,7 +132,7 @@ void CTDMenuStartLevelItem::OnActivate()
 	string strLevelFile;
     bool   bClient = false;
 
-    Settings::Get()->GetValue( CTD_BTOKEN_CLIENT, bClient );
+    Framework::Get()->GetGameSettings()->GetValue( CTD_BTOKEN_CLIENT, bClient );
 
     if ( bClient ) {
 
@@ -147,7 +147,7 @@ void CTDMenuStartLevelItem::OnActivate()
 
     } else {
 
-        Settings::Get()->GetValue( CTD_STOKEN_LEVEL, strLevelFile );
+        Framework::Get()->GetGameSettings()->GetValue( CTD_STOKEN_LEVEL, strLevelFile );
 
     }
 
@@ -191,10 +191,10 @@ string CTDMenuStartLevelItem::StartNetworking()
     string          strServerIP;
     string          strNodeName;
 
-    Settings::Get()->GetValue( CTD_ITOKEN_CLIENTPORT, iClientPort );
-    Settings::Get()->GetValue( CTD_ITOKEN_SERVERPORT, iServerPort );
-    Settings::Get()->GetValue( CTD_STOKEN_SERVERIP,   strServerIP );
-    Settings::Get()->GetValue( CTD_STOKEN_PLAYERNAME, strNodeName );
+    Framework::Get()->GetGameSettings()->GetValue( CTD_ITOKEN_CLIENTPORT, iClientPort );
+    Framework::Get()->GetGameSettings()->GetValue( CTD_ITOKEN_SERVERPORT, iServerPort );
+    Framework::Get()->GetGameSettings()->GetValue( CTD_STOKEN_SERVERIP,   strServerIP );
+    Framework::Get()->GetGameSettings()->GetValue( CTD_STOKEN_PLAYERNAME, strNodeName );
 
 
     if ( Framework::Get()->InitiateClientNetworking( iClientPort, iServerPort, strServerIP, strNodeName, strLevelName ) == false ) {
