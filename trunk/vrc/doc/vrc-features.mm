@@ -252,8 +252,8 @@
 </node>
 </node>
 <node TEXT="water">
-<node TEXT="80%">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 <node TEXT="animated tree">
