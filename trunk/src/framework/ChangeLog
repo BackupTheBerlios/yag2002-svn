@@ -1,4 +1,10 @@
 
+boto ( 10/14/2004 )
+
+- todo 
+
+ server client versioning check
+
 boto ( 10/08/2004 )
 
 - small bugfix in send plugin and entity message method
