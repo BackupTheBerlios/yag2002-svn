@@ -150,19 +150,33 @@ const char vpstr[] =
 
 
 EnWater::EnWater() :
-_sizeX( 100.0f ),
-_sizeY( 100.0f ),
-_subDevisionsX( 10 ),
-_subDevisionsY( 10 ),
-_height( 0.0f )
+_sizeX( 5000.0f ),
+_sizeY( 5000.0f ),
+_subDevisionsX( 100 ),
+_subDevisionsY( 100 ),
+_height( 0.0f ),
+_viscosity( 0.005f ), 
+_speed( 100.0f ),
+_stimulationRate( 3 ),
+_amplitude( 0.02f ),
+_pastTime( 0 ),
+_primaryPosBuffer( true ),
+_p_geom( NULL )
 {
+    EntityManager::get()->registerUpdate( this );     // register entity in order to get updated per simulation step
+
     // register entity attributes
-    _attributeManager.addAttribute( "sizeX"    , _sizeX                 );
-    _attributeManager.addAttribute( "sizeY"    , _sizeY                 );
-    _attributeManager.addAttribute( "subdivX"  , _subDevisionsX         );
-    _attributeManager.addAttribute( "subdivY"  , _subDevisionsY         );
-    _attributeManager.addAttribute( "height"   , _height                );
-    _attributeManager.addAttribute( "texture"  , _texFile               );
+    _attributeManager.addAttribute( "sizeX"                 , _sizeX                 );
+    _attributeManager.addAttribute( "sizeY"                 , _sizeY                 );
+    _attributeManager.addAttribute( "subdivX"               , _subDevisionsX         );
+    _attributeManager.addAttribute( "subdivY"               , _subDevisionsY         );
+    _attributeManager.addAttribute( "height"                , _height                );
+    _attributeManager.addAttribute( "viscosity"             , _viscosity             );
+    _attributeManager.addAttribute( "waveSpeed"             , _speed                 );
+    _attributeManager.addAttribute( "stimulationAmplitude"  , _amplitude             );
+    _attributeManager.addAttribute( "stimulationRate"       , _stimulationRate       );
+
+    _attributeManager.addAttribute( "texture"  , _texFile                );
 
     _attributeManager.addAttribute( "right"    , _cubeMapTextures[ 0 ]  );
     _attributeManager.addAttribute( "left"     , _cubeMapTextures[ 1 ]  );
@@ -178,7 +192,12 @@ EnWater::~EnWater()
 
 void EnWater::initialize()
 {
-     static_cast< Group* >( Application::get()->getSceneRootNode() )->addChild( makeMesh() );
+    static_cast< Group* >( Application::get()->getSceneRootNode() )->addChild( makeMesh() );
+
+    _stimulationPeriod = 1.0f / _stimulationRate;
+
+    // calculate the liquid equation constants
+    calcConstants( 0.03f );
 }
 
 TextureCubeMap* EnWater::readCubeMap()
@@ -282,17 +301,20 @@ osg::Node* EnWater::addRefractStateSet(osg::Node* node)
 Node* EnWater::makeMesh()
 {
     _geode  = new Geode();
-    Geometry* p_geom = new Geometry();
+    _p_geom = new Geometry();
 
     unsigned int gridx = ( unsigned int )( _sizeX / _subDevisionsX );
     unsigned int gridy = ( unsigned int )( _sizeY / _subDevisionsY );
 
-    _posArray     = new Vec3Array();
+    _posArray1     = new Vec3Array();
+    _posArray2     = new Vec3Array();
     _normArray    = new Vec3Array();
-    Vec3Array*  p_posArray     = _posArray.get();
+    Vec3Array*  p_posArray1     = _posArray1.get();
+    Vec3Array*  p_posArray2     = _posArray2.get();
     Vec3Array*  p_normArray    = _normArray.get();
     Vec2Array*  p_tcoordArray  = new Vec2Array();
-    p_posArray->resize( _subDevisionsX * _subDevisionsY );
+    p_posArray1->resize( _subDevisionsX * _subDevisionsY );
+    p_posArray2->resize( _subDevisionsX * _subDevisionsY );
     p_normArray->resize( _subDevisionsX * _subDevisionsY );
     p_tcoordArray->resize( _subDevisionsX * _subDevisionsY );
 
@@ -301,20 +323,21 @@ Node* EnWater::makeMesh()
     {
         for( int x = 0; x < _subDevisionsX; ++x )
         {
-            ( *p_posArray )[ y * _subDevisionsX + x ].set
+            ( *p_posArray1 )[ y * _subDevisionsX + x ].set
                 (
                     ( float( x ) - float( _subDevisionsX - 1 ) * 0.5f ) * gridx, 
                     ( float( y ) - float( _subDevisionsY - 1 ) * 0.5f ) * gridy,
-                    _height + ( ( float )( rand() % 20 ) / 10.0f ) // add a little random, TODO, remove this later, the water equation will stimulate the vert positions
+                    0
                 );
 
+            ( *p_posArray2 )[ y * _subDevisionsX + x ] = ( *p_posArray1 )[ y * _subDevisionsX + x ];
             ( *p_normArray )[ y * _subDevisionsX + x ].set( 0, 0, -1.0f );
             ( *p_tcoordArray)[ y * _subDevisionsX + x ].set( float( gridx * x ) / _sizeX, float( gridy * y ) / _sizeY );  
         }
     }
-    p_geom->setVertexArray( p_posArray );
-    p_geom->setNormalArray( p_normArray );
-    p_geom->setTexCoordArray( 2, p_tcoordArray );
+    _p_geom->setVertexArray( p_posArray1 );
+    _p_geom->setNormalArray( p_normArray );
+    _p_geom->setTexCoordArray( 2, p_tcoordArray );
 
     // create indices for triangle strips
     for( int y = 0; y < _subDevisionsY - 1; ++y )
@@ -328,18 +351,98 @@ Node* EnWater::makeMesh()
             *p_curindex = ( y + 0 ) * _subDevisionsX + x;
             p_curindex++;
         }
-        p_geom->addPrimitiveSet( new DrawElementsUInt( PrimitiveSet::TRIANGLE_STRIP, _subDevisionsX * 2, p_indices ) );
+        _p_geom->addPrimitiveSet( new DrawElementsUInt( PrimitiveSet::TRIANGLE_STRIP, _subDevisionsX * 2, p_indices ) );
     }
 
-    p_geom->setNormalBinding( Geometry::AttributeBinding::BIND_PER_VERTEX );
-    p_geom->setUseDisplayList( false );     
-    p_geom->dirtyBound();
-    _geode->addDrawable( p_geom );
+    _p_geom->setNormalBinding( Geometry::AttributeBinding::BIND_PER_VERTEX );
+    _p_geom->setUseDisplayList( false );     
+    _p_geom->dirtyBound();
+    _geode->addDrawable( _p_geom );
 
     return addRefractStateSet( _geode.get() );
 }
 
 void EnWater::updateEntity( float deltaTime )
+{// reference: ISBN 1-58450-277-0, thanks to eric
+    
+    Vec3Array*  p_posArray1 = _primaryPosBuffer ? _posArray1.get() : _posArray2.get();
+    Vec3Array*  p_posArray2 = _primaryPosBuffer ? _posArray2.get() : _posArray1.get();
+    Vec3Array*  p_normArray = _normArray.get();
+
+    // calculate vertex positions
+    for( int y = 1; y < _subDevisionsY - 1; ++y )
+    {
+        Vec3f* p_curPos   = &( ( *p_posArray1 )[ y * _subDevisionsX ] );
+        Vec3f* p_prevPos  = &( ( *p_posArray2 )[ y * _subDevisionsX ] );
+        for( int x = 1; x < _subDevisionsX - 1; ++x )
+        {
+           float newZ =
+                _k1 * p_curPos[ x ]._v[ 2 ]  + 
+                _k2 * p_prevPos[ x ]._v[ 2 ] + 
+                _k3 * 
+                ( 
+                    p_curPos[ x + 1 ]._v[ 2 ] + p_curPos[ x - 1 ]._v[ 2 ] + 
+                    p_curPos[ x + _subDevisionsX ]._v[ 2 ] + p_curPos[ x - _subDevisionsX ]._v[ 2 ]
+                );
+
+           p_prevPos[ x ]._v[ 2 ] = newZ;
+        }
+    }
+
+    // calculate vertex normals
+    for( int y = 1; y < _subDevisionsY - 1; ++y )
+    {
+        Vec3f* p_norm     = &( ( *p_normArray )[ y * _subDevisionsX ] );
+        Vec3f* p_nextPos  = &( ( *p_posArray2 )[ y * _subDevisionsX ] );
+        for( int x = 1; x < _subDevisionsX - 1; ++x )
+        {
+            p_norm[ x ]._v[ 0 ] = p_nextPos[ x - 1 ]._v[ 2 ] - p_nextPos[ x + 1 ]._v[ 2 ];
+            p_norm[ x ]._v[ 1 ] = p_nextPos[ x - _subDevisionsX ]._v[ 2 ] - p_nextPos[ x + _subDevisionsX ]._v[ 2 ];
+            p_norm[ x ].normalize();
+            Vec3f n = p_norm[ x ];
+            int i = 0;
+        }
+    }
+
+    // adapt the liquid equation constants to changing framerate
+    static float lastDeltaTime = 0;
+    if ( abs( lastDeltaTime - deltaTime ) > 0.015f ) 
+        calcConstants( deltaTime );
+    lastDeltaTime = deltaTime;
+
+    // create random z-position offset
+    static float ltime = 0;
+    ltime += deltaTime;
+    float stimulus = _amplitude * sinf( ltime );
+    if ( ltime > 2.0f * PI )
+        ltime -= 2.0f * PI;
+
+    // create stimulations considering the rate
+    _pastTime += deltaTime;
+    while ( _pastTime > 0 ) 
+    {
+        if ( ( _pastTime - _stimulationPeriod ) < 0 )
+        {
+            break;
+        }
+        _pastTime -= _stimulationPeriod;
+        // create a random coordinate
+        unsigned int randcoord = ( unsigned int )( ( rand() % _subDevisionsY ) * _subDevisionsY + ( rand() % _subDevisionsX ) );
+        ( *p_posArray2 )[ randcoord ]._v[ 2 ] += stimulus;
+    }
+
+    // swap vertex position buffers
+    _p_geom->setVertexArray( _primaryPosBuffer ? p_posArray2 : p_posArray1 );
+    _primaryPosBuffer = !_primaryPosBuffer;
+}
+
+void EnWater::calcConstants( float stepWidth )
 {
-    //! TODO implementation of wave equation
+    float distance = _sizeX / ( float )_subDevisionsX;
+    // setup water equation constants
+    float f1 = _speed * _speed * stepWidth * stepWidth / ( distance * distance );
+    float f2 = 1.0f / ( _viscosity * stepWidth + 2 );
+    _k1 = ( 4.0f - 8.0f * f1 ) * f2;
+    _k2 = ( _viscosity * stepWidth - 2 ) * f2;
+    _k3 = 2.0f * f1 * f2;
 }

@@ -37,6 +37,7 @@
 #include <ctd_base.h>
 #include <ctd_baseentity.h>
 #include <ctd_entitymanager.h>
+#include <ctd_utils.h>
 
 namespace CTD
 {
@@ -73,48 +74,16 @@ class EnSkyBox :  public BaseEntity
 
         //! Entity parameter for texnames (6)
         std::string                                 _texNames[ 6 ];
-
-    private:
-
-        class EyeTransform : public osg::Transform
-        {
-            public:
-
-            /** Get the transformation matrix which moves from local coords to world coords.*/
-            virtual bool                            computeLocalToWorldMatrix( osg::Matrix& matrix, osg::NodeVisitor* nv ) const 
-            {
-                osgUtil::CullVisitor* cv = dynamic_cast< osgUtil::CullVisitor* >( nv );
-                if ( cv )
-                {
-                    osg::Vec3 eyePointLocal = cv->getEyeLocal();
-                    matrix.preMult( osg::Matrix::translate( eyePointLocal.x(), eyePointLocal.y(), eyePointLocal.z() ) );
-                    // matrix.preMult(osg::Matrix::rotate(osg::DegreesToRadians(-mAzimuth-90.f), 0.f, 0.f, 1.f));
-                }
-                return true;
-            }
-
-            /** Get the transformation matrix which moves from world coords to local coords.*/
-            virtual bool                            computeWorldToLocalMatrix( osg::Matrix& matrix, osg::NodeVisitor* nv ) const
-            {    
-                osgUtil::CullVisitor* cv = dynamic_cast< osgUtil::CullVisitor* >( nv );
-                if ( cv )
-                {
-                    osg::Vec3 eyePointLocal = cv->getEyeLocal();
-                    matrix.postMult( osg::Matrix::translate( -eyePointLocal.x(), -eyePointLocal.y(), -eyePointLocal.z() ) );
-                }
-                return true;
-            }
-        };
+          
+        EyeTransform*                               _p_transformEyePoint;
            
-        EyeTransform*                                _xform;
+        osg::ref_ptr< osg::Group >                  _node;
            
-        osg::ref_ptr< osg::Group >                   _node;
-           
-        osg::ref_ptr< osg::Geode >                   _geode;
+        osg::ref_ptr< osg::Geode >                  _geode;
 
-        osg::Node*                                   makeBox();
+        osg::Node*                                  makeBox();
 
-        std::map< short, std::string >               _textureFilenameMap;
+        std::map< short, std::string >              _textureFilenameMap;
 };
 
 //! Entity type definition used for type registry

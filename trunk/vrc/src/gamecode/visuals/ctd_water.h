@@ -86,6 +86,18 @@ class EnWater :  public BaseEntity
         //! Walter height (z value)
         float                                       _height;
 
+        //! Fluid viscosity
+        float                                       _viscosity;
+
+        //! Wave distribution speed
+        float                                       _speed;
+
+        //! Stimulation rate ( per sec )
+        float                                       _stimulationRate;
+
+        //! Stimulus amplitude
+        float                                       _amplitude;
+
         //! Water texture
         std::string                                 _texFile;
 
@@ -93,6 +105,9 @@ class EnWater :  public BaseEntity
         std::string                                 _cubeMapTextures[ 6 ];
 
         //--------------------------------------------------------//
+
+        //! Given the step width calculate the liquid equation constants
+        void                                        calcConstants( float stepWidth );
 
         //! Create the water surface mesh
         osg::Node*                                  makeMesh();
@@ -109,9 +124,26 @@ class EnWater :  public BaseEntity
            
         osg::ref_ptr< osg::Geode >                  _geode;
 
-        osg::ref_ptr< osg::Vec3Array >              _posArray;
+        // vertex position array ( two buffers for fast switching )
+        osg::ref_ptr< osg::Vec3Array >              _posArray1;
+
+        osg::ref_ptr< osg::Vec3Array >              _posArray2;
     
+        bool                                        _primaryPosBuffer;
+
+        // water geometry
+        osg::Geometry*                              _p_geom;
+
         osg::ref_ptr< osg::Vec3Array >              _normArray;
+
+        // some internal vaiables
+        float                                       _k1;
+        float                                       _k2;
+        float                                       _k3;
+
+        float                                       _stimulationPeriod;
+        float                                       _pastTime;
+
 };
 
 //! Entity type definition used for type registry

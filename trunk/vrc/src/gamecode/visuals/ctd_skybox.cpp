@@ -33,13 +33,6 @@
 
 #include <ctd_base.h>
 #include <ctd_application.h>
-#include <ctd_levelmanager.h>
-#include <osg/ShapeDrawable>
-#include <osg/Depth>
-#include <osg/PolygonMode>
-#include <osg/Texture2D>
-#include <osgDB/ReadFile>
-#include <osg/Texture>
 #include "ctd_skybox.h"
 
 using namespace std;
@@ -61,8 +54,8 @@ EnSkyBox::EnSkyBox()
     _attributeManager.addAttribute( "right"    , _texNames[ 1 ] );
     _attributeManager.addAttribute( "back"     , _texNames[ 2 ] );
     _attributeManager.addAttribute( "left"     , _texNames[ 3 ] );
-    _attributeManager.addAttribute( "top"      , _texNames[ 4 ] );
-    _attributeManager.addAttribute( "buttom"   , _texNames[ 5 ] );
+    _attributeManager.addAttribute( "up"       , _texNames[ 4 ] );
+    _attributeManager.addAttribute( "down"     , _texNames[ 5 ] );
 }
 
 EnSkyBox::~EnSkyBox()
@@ -80,10 +73,11 @@ void EnSkyBox::initialize()
     _textureFilenameMap.insert( make_pair( 5, _texNames[ 5 ] ) );
 
     osg::Group* p_group = new osg::Group();
-    _xform = new EyeTransform();
-    _xform->setCullingActive( false );
-    _xform->addChild( makeBox() );
-    p_group->addChild( _xform );
+    p_group->setName( "_skybox_" );
+    _p_transformEyePoint = new EyeTransform();
+    _p_transformEyePoint->setCullingActive( false );
+    _p_transformEyePoint->addChild( makeBox() );
+    p_group->addChild( _p_transformEyePoint );
 
     static_cast< Group* >( Application::get()->getSceneRootNode() )->addChild( p_group );
 }
