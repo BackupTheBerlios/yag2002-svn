@@ -50,6 +50,7 @@
 #include "menuitems/ctd_exitgameitem.h"
 #include "menuitems/ctd_inputitem.h"
 #include "menuitems/ctd_changegroupitem.h"
+#include "menuitems/ctd_selectplayeritem.h"
 #include "3dfonts/ctd_fontmgr.h"
 
 #include <string>
@@ -187,7 +188,7 @@ int Message( int iMsgId, void *pMsgStruct )
 int NumEntities()
 {
 
-    return 12;
+    return 13;
 
 }
 
@@ -246,6 +247,10 @@ EntityDescriptor* GetEntityDescriptor( int iNum )
         break;
     case    11:
         kDesc = &g_pkCTDMenuExitGameItemEntity_desc;
+
+        break;
+    case    12:
+        kDesc = &g_pkCTDMenuSelectPlayerItemEntity_desc;
 
         break;
 
