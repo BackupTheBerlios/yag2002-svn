@@ -101,6 +101,8 @@ class Application : public Singleton< Application >
 
         std::string                                 _mediaPath;
 
+        float                                       _mouseSensivity;
+
     friend class Singleton< Application >;
 };
 

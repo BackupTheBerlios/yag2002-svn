@@ -107,8 +107,10 @@ bool Application::initialize( int argc, char **argv )
 
     // load the settings
     //-------------------
-    Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  _screenWidth );
-    Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, _screenHeight );
+    Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  _screenWidth    );
+    Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, _screenHeight   );
+    Configuration::get()->getSettingValue( CTD_GS_MOUSESENS,    _mouseSensivity );
+
     //-------------------
 
     // setup log system
@@ -124,6 +126,13 @@ bool Application::initialize( int argc, char **argv )
     // set up the value with sensible default event handlers.
     unsigned int opt = osgProducer::Viewer::STANDARD_SETTINGS;
     opt &= ~osgProducer::Viewer::HEAD_LIGHT_SOURCE;
+
+    // setup input processor
+    //osgProducer::KeyboardMouseCallback *p_kbm = new osgProducer::KeyboardMouseCallback( 
+    //    new Producer::KeyboardMouse( _p_viewer->getCamera( 0 )->getRenderSurface() ), _running );
+    //_p_viewer->setKeyboardMouseCallback( p_kbm );
+    
+    // now setup the viewer
     _p_viewer->setUpViewer( osgProducer::Viewer::SKY_LIGHT_SOURCE | opt );
 
     // set fullscreen / windowed mode
