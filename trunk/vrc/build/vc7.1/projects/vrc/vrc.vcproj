@@ -180,6 +180,12 @@
 				RelativePath="..\..\..\..\src\framework\ctd_guimanager.h">
 			</File>
 			<File
+				RelativePath="..\..\..\..\src\framework\ctd_guimsgbox.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\ctd_guimsgbox.h">
+			</File>
+			<File
 				RelativePath="..\..\..\..\src\framework\ctd_guirenderer.cpp">
 			</File>
 			<File
@@ -394,6 +400,22 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_water.h">
+				</File>
+			</Filter>
+			<Filter
+				Name="gui"
+				Filter="">
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gui\ctd_dialogsettings.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gui\ctd_dialogsettings.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gui\ctd_gamesettings.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gui\ctd_gamesettings.h">
 				</File>
 			</Filter>
 		</Filter>
