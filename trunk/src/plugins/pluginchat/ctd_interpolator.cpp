@@ -60,16 +60,16 @@ void LinearInterpolator::Reset( const Vector3d &kInit )
     m_fMaxTime                  = 1.0f;
     m_fArrivalTime              = 0;
     m_bDestinatedInterpolation  = false;
-    m_kVelocity.Reset();
+    m_kMoveDir.Reset();
     m_kDestination.Reset();
 
 }
 
-void LinearInterpolator::AddInterpolationPoint( const Vector3d &kNew, const Vector3d &kVelocity, float fMaxTime )
+void LinearInterpolator::AddInterpolationPoint( const Vector3d &kNew, const Vector3d &kMoveDir, float fMaxTime )
 {
 
     m_kLast                     = m_kCurrent;
-    m_kVelocity                 = ( ( kVelocity * 2.0f ) + ( ( kNew - m_kCurrent ) * 3.0f ) ) * 0.5f; // try to compensate the deviation via velocity
+    m_kMoveDir                  = ( ( kMoveDir * 2.0f ) + ( ( kNew - m_kCurrent ) * 3.0f ) ) * 0.5f; // try to compensate the deviation via move direction
     m_fPassedTime               = 0.0f;
     m_fMaxTime                  = fMaxTime;
     m_bDestinatedInterpolation  = false;
@@ -82,7 +82,7 @@ void LinearInterpolator::AddInterpolationDestination( const NeoEngine::Vector3d 
     m_bDestinatedInterpolation  = true;
     m_kDestination              = kDestination;
     m_fPassedTime               = 0;
-    m_kVelocity                 = ( kDestination - m_kCurrent ) * fSpeed;
+    m_kMoveDir                  = ( kDestination - m_kCurrent ) * fSpeed;
     m_fArrivalTime              = 1.0f / fSpeed;
     m_kLast                     = m_kCurrent;
 
@@ -107,7 +107,6 @@ Vector3d& LinearInterpolator::UpdateInterpolation( float fDeltaTime )
     // in timed interpolation we proof the maximal interpolation time
     } else {
 
-        // begin the extrapolation with decreasing velocity
         if ( m_fPassedTime > m_fMaxTime ) {
 
             //!TODO: figure out a good strategy for extrapolating
@@ -117,7 +116,7 @@ Vector3d& LinearInterpolator::UpdateInterpolation( float fDeltaTime )
     }
 
     m_fPassedTime += fDeltaTime;
-    m_kCurrent = m_kLast + m_kVelocity * m_fPassedTime;
+    m_kCurrent = m_kLast + m_kMoveDir * m_fPassedTime;
 
     return m_kCurrent;
 

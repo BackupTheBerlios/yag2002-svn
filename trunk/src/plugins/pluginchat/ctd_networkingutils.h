@@ -46,7 +46,7 @@
 namespace CTD {
 
 
-//! small ring buffer class holding obejcts of type TypeT with a depth of BufferDepthT
+//! Simple ring buffer class holding objects of type TypeT with a depth of BufferDepthT
 //!  note: this class is optimized for primitive types ( i.e. TypeT should be bool, float, int, etc.  )
 template< typename TypeT, unsigned int BufferDepthT >
 class RingBuffer
@@ -96,7 +96,7 @@ class RingBuffer
 
 };
 
-//! this class calculates the avarage update period of incomming net pakets
+//! This class calculates the avarage update period of incomming net pakets
 template < unsigned int HistoryDepthT >
 class AvarageUpdatePeriod {
 

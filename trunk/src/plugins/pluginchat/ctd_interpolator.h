@@ -70,14 +70,14 @@ class InterpolatorBase
         //! Initialize the interpolator
         virtual void                                Initialize( 
                                                                 const NeoEngine::Vector3d &kPoint,
-                                                                const NeoEngine::Vector3d &kVelocity = NeoEngine::Vector3d( 0, 0, 0 ),
+                                                                const NeoEngine::Vector3d &kMoveDir = NeoEngine::Vector3d( 0, 0, 0 ),
                                                                 float fMaxTime = 1.0f
                                                                ) 
                                                     {
                                                         m_kCurrent                  = kPoint;
                                                         m_kLast                     = kPoint;
                                                         m_kDestination              = kPoint;
-                                                        m_kVelocity                 = kVelocity;
+                                                        m_kMoveDir                  = kMoveDir;
                                                         m_fPassedTime               = 0;
                                                         m_fMaxTime                  = fMaxTime;
                                                     }
@@ -90,7 +90,7 @@ class InterpolatorBase
         //! Add a new incoming update information for a maximal interpolation time of fMaxTime
         virtual void                                AddInterpolationPoint(  
                                                                             const NeoEngine::Vector3d &kNew, 
-                                                                            const NeoEngine::Vector3d &kVelocity, 
+                                                                            const NeoEngine::Vector3d &kMoveDir, 
                                                                             float fMaxTime = 1.0f 
                                                                           ) = 0;
 
@@ -102,7 +102,10 @@ class InterpolatorBase
         virtual NeoEngine::Vector3d&                UpdateInterpolation( float fDeltaTime ) = 0;
 
         //! Get current interpolated point
-        NeoEngine::Vector3d&                        GetCurrentPoint() { return m_kCurrent; }
+        const NeoEngine::Vector3d&                  GetCurrentPoint() { return m_kCurrent; }
+
+        //! Get current move direction
+        const NeoEngine::Vector3d&                  GetCurrentMoveDir() { return m_kMoveDir; }
 
     protected:
 
@@ -112,8 +115,8 @@ class InterpolatorBase
         //! Last point got at upating
         NeoEngine::Vector3d                         m_kLast;
 
-        //! Velocity
-        NeoEngine::Vector3d                         m_kVelocity;
+        //! Current move direction
+        NeoEngine::Vector3d                         m_kMoveDir;
 
         //! Destination to interpolate to
         NeoEngine::Vector3d                         m_kDestination;
@@ -146,7 +149,7 @@ class LinearInterpolator: public InterpolatorBase
 
         void                                        AddInterpolationPoint(  
                                                                             const NeoEngine::Vector3d &kNew, 
-                                                                            const NeoEngine::Vector3d &kVelocity, 
+                                                                            const NeoEngine::Vector3d &kMoveDir, 
                                                                             float fMaxTime = 1.0f 
                                                                           );
 
