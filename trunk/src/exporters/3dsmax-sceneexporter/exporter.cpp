@@ -33,13 +33,15 @@
 //                                     -  base texture on diffuse map and uv channel 1
 //                                     -  lightmap texture on self-illumination map and channel 3
 //
+//###################################
 // boto ( 11/03/ 2004 )              : further extension for supporting bump channel and chunk aliases
 //                                     in order to export bump map channel 
-
+//
 //                                     1. use the bump map in your material and assign a bitmap with a valid image
 //                                     2. give your material following name: $bumpshadername material name
 //                                         e.g. $bump_spacular dirty_asphalt
-
+//
+//                                      note that the bump map does not contain an own uv channel!
 
 #include "exporter.h"
 #include "bone.h"
@@ -1156,7 +1158,7 @@ void Exporter::ExportNodeInfo( IGameNode *pkNode, int &iCurNode )
                     // check for bump map channel
                     Mtl         *pkMaxMat        = pkMat->GetMaxMaterial();
                     Texmap      *pkBumpMap       = pkMaxMat->GetSubTexmap( ID_BU );
-                    if( pkBumpMap->ClassID() == Class_ID(BMTEX_CLASS_ID, 0 ) ) {
+                    if( pkBumpMap && pkBumpMap->ClassID() == Class_ID(BMTEX_CLASS_ID, 0 ) ) {
                         pkBumpTexture = ( BitmapTex* )pkBumpMap;
                     }
 
