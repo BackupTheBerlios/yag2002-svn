@@ -237,6 +237,9 @@
 			RelativePath="..\..\..\..\..\src\plugins\pluginmenu\base.h">
 		</File>
 		<File
+			RelativePath="..\..\..\..\..\src\plugins\pluginmenu\ChangeLog">
+		</File>
+		<File
 			RelativePath="..\..\..\..\..\src\plugins\pluginmenu\ctd_itemmarker.cpp">
 			<FileConfiguration
 				Name="Debug|Win32">
