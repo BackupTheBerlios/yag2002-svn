@@ -199,7 +199,7 @@
 </node>
 <node TEXT="physics objects">
 <node TEXT="cylinder">
-<node TEXT="70%, sound is missing">
+<node TEXT="85%, sound incomplete">
 <icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
@@ -252,7 +252,7 @@
 </node>
 </node>
 <node TEXT="water">
-<node TEXT="0%">
+<node TEXT="80%">
 <icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
