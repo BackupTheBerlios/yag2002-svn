@@ -117,7 +117,7 @@ class MaterialDefinition
         std::string                 m_strLightmapTexture;
 
         //! Heighttmap texture
-        std::string                 m_strHeightmapTexture;
+        std::string                 m_strBumpmapTexture;
 
         //! Inline material definition ( inside of nsce file ) or extern material lib definition
         enum { eInline, eFile }     m_eDefinitionType;

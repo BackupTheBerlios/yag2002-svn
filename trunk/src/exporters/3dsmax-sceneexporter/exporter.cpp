@@ -41,7 +41,7 @@
 //                                     2. give your material following name: $bumpshadername material name
 //                                         e.g. $bump_spacular dirty_asphalt
 //
-//                                      note that the bump map does not contain an own uv channel!
+//                                      note that the bump map does not contain an own uv channel, it uses that one of base map!
 
 #include "exporter.h"
 #include "bone.h"
@@ -606,9 +606,9 @@ int Exporter::DoExport( const TCHAR *pszName, ExpInterface *pExpInterface, Inter
                     pkMatChunk->AttachChunk( pkAlias );
                 
                 }
-                if ( pkMatDef->m_strHeightmapTexture.length() ) {
+                if ( pkMatDef->m_strBumpmapTexture.length() ) {
 
-                    StringChunk *pkAlias = new StringChunk( string( "tex_height string " ) + pkMatDef->m_strHeightmapTexture, "defalias" );
+                    StringChunk *pkAlias = new StringChunk( string( "tex_height string " ) + pkMatDef->m_strBumpmapTexture, "defalias" );
                     pkMatChunk->AttachChunk( pkAlias );
                 
                 }
@@ -745,7 +745,14 @@ int Exporter::DoExport( const TCHAR *pszName, ExpInterface *pExpInterface, Inter
         }
 
         //Write ID and version
-        ChunkIO::CHUNKIOMODE eMode = ChunkIO::ASCII;
+        ChunkIO::CHUNKIOMODE eMode = ChunkIO::BINARY;
+
+        // ask for output format
+        if ( MessageBox( 0, "Export in binary format? Click No to export in ASCII format.", "nsce exporter", MB_YESNO | MB_ICONQUESTION ) == IDNO ) {           
+
+            eMode = ChunkIO::ASCII;
+
+        }
         
         if( eMode == ChunkIO::BINARY )
         {
@@ -1239,11 +1246,26 @@ void Exporter::ExportNodeInfo( IGameNode *pkNode, int &iCurNode )
                         }
                     }
 
+                    // merge meshes with same samplers
                     for( ; pkMatDef != pkMatDefEnd; ++pkMatDef, ++pvpkMeshVertices, ++pvkMeshPolygons ) {
 
-                        if( ( pkMatDef->m_strBaseTexture == strBaseTexture ) && ( pkMatDef->m_strLightmapTexture == strLmTexture ) ) {
+                        if ( pkMatDef->m_strBumpmapTexture.length() ) {
 
-                            break;
+                            if( ( pkMatDef->m_strBaseTexture == strBaseTexture ) && ( pkMatDef->m_strLightmapTexture == strLmTexture ) ) {
+
+                                break;
+
+                            }
+
+                        } else {
+
+                            if( ( pkMatDef->m_strBaseTexture == strBaseTexture )   && 
+                                ( pkMatDef->m_strLightmapTexture == strLmTexture ) && 
+                                ( pkMatDef->m_strBumpmapTexture == strBumpTexture ) ) {
+
+                                break;
+
+                            }
 
                         }
                     }
@@ -1274,7 +1296,7 @@ void Exporter::ExportNodeInfo( IGameNode *pkNode, int &iCurNode )
                         }
                         kMaterialDef.m_strBaseTexture      = strBaseTexture;
                         kMaterialDef.m_strLightmapTexture  = strLmTexture;
-                        kMaterialDef.m_strHeightmapTexture = strBumpTexture;
+                        kMaterialDef.m_strBumpmapTexture   = strBumpTexture;
                         m_vMaterialDefinitions.push_back( kMaterialDef );
 
                         // note: we assume that the bump channel has the same uv as base channel!
