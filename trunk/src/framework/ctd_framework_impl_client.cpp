@@ -69,6 +69,7 @@ FrameworkImplClient::FrameworkImplClient()
     m_eGameMode         = stateCLIENT;
     m_eClientNetworking = stateOff;
     m_pkWidgets         = NULL;
+    m_bFullScreen       = false;
 }
 
 FrameworkImplClient::~FrameworkImplClient()
@@ -308,7 +309,7 @@ void FrameworkImplClient::GameLoop()
 
         }
 
-        // now dras all widgets, if there are any
+        // now draw all widgets, if there are any
         m_pkWidgets->Update();
         //----------------------//
 
@@ -323,6 +324,11 @@ void FrameworkImplClient::GameLoop()
 
         // do input processing at last, so shutdown requests can be immediately processed
         pkInputMgr->Process();
+
+        // if not in full windowed mode then lets other applications live!
+        if ( !m_bFullScreen ) {
+            Sleep( 5 );
+        }
 
     }
 
@@ -381,20 +387,6 @@ bool FrameworkImplClient::StartClientNetworking()
         return false;
 
     }
-
-    // do last tasks to activate networking
-    //-------------------------------------------------------------------------------//
-    // request server to send the client list
-    m_pkNetworkDevice->GetRemoteClients();
-
-    // activate all client objects, they get created on server and all connected clients
-    m_pkNetworkDevice->ActivateClientObjects();
-
-    // activate server objects  
-    m_pkNetworkDevice->ActivateServerObjects();
-
-    // activate the client core for dispatching plugin messages
-    m_pkNetworkDevice->ActivateClientNetworking();
 
     m_eClientNetworking = stateStarted;
 

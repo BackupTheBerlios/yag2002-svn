@@ -130,10 +130,6 @@ void FrameworkImplServer::StartGame()
 
     neolog << LogLevel( INFO ) << "starting game" << endl << endl;
 
-    // activate all server objects
-    m_pkNetworkDevice->ActivateServerObjects();
-    //-------------------------------------------------------------------------------//
-
     // enter the game loop  
     GameLoop();
 
@@ -189,7 +185,7 @@ void FrameworkImplServer::GameLoop()
         //----------------------------------------------------------------//
 
         // yield processor time
-        Sleep( 50 );
+        Sleep( 5 );
 
     }
 
