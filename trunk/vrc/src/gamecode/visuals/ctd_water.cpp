@@ -31,6 +31,7 @@
 
 #include <ctd_base.h>
 #include <ctd_application.h>
+#include <ctd_log.h>
 #include "ctd_water.h"
 
 #include <osg/BlendFunc>
@@ -149,6 +150,8 @@ const char vpstr[] =
     "END                                                        \n";
 
 
+// Implementation of water entity
+
 EnWater::EnWater() :
 _sizeX( 5000.0f ),
 _sizeY( 5000.0f ),
@@ -195,7 +198,6 @@ void EnWater::initialize()
     static_cast< Group* >( Application::get()->getSceneRootNode() )->addChild( makeMesh() );
 
     _stimulationPeriod = 1.0f / _stimulationRate;
-
     // calculate the liquid equation constants
     calcConstants( 0.03f );
 }
@@ -211,7 +213,7 @@ TextureCubeMap* EnWater::readCubeMap()
     Image* imagePosZ = osgDB::readImageFile( mediapath + _cubeMapTextures[ 4 ] );
     Image* imageNegZ = osgDB::readImageFile( mediapath + _cubeMapTextures[ 5 ] );
 
-    if (imagePosX && imageNegX && imagePosY && imageNegY && imagePosZ && imageNegZ)
+    if ( imagePosX && imageNegX && imagePosY && imageNegY && imagePosZ && imageNegZ )
     {
         p_cubemap->setImage(TextureCubeMap::POSITIVE_X, imagePosX);
         p_cubemap->setImage(TextureCubeMap::NEGATIVE_X, imageNegX);
@@ -227,12 +229,16 @@ TextureCubeMap* EnWater::readCubeMap()
         p_cubemap->setFilter(Texture::MIN_FILTER, Texture::LINEAR_MIPMAP_LINEAR);
         p_cubemap->setFilter(Texture::MAG_FILTER, Texture::LINEAR);
     }
+    else
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "*** Entity Water: could not setup all cubemap images" << endl;
+    }
 
     return p_cubemap;
 }
 
 // this code is basing on osg's vertexprogram example
-osg::Node* EnWater::addRefractStateSet(osg::Node* node)
+osg::Node* EnWater::addRefractStateSet( osg::Node* node )
 {
     osg::StateSet* stateset = new osg::StateSet();
 
@@ -246,11 +252,17 @@ osg::Node* EnWater::addRefractStateSet(osg::Node* node)
     // ---------------------------------------------------
     // Vertex Program
     // ---------------------------------------------------
-    osg::VertexProgram* vp = new osg::VertexProgram();
-    vp->setVertexProgram( vpstr );
-    vp->setProgramLocalParameter( 0, osg::Vec4( fresnel, fresnel, fresnel, 1.0f ) );
-    vp->setProgramLocalParameter( 1, osg::Vec4( refract, refract*refract, 0.0f, 0.0f ) );
-    stateset->setAttributeAndModes( vp, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
+
+    //! TODO: implementation of a gpu program cache
+    static osg::VertexProgram* p_vp = 0;
+    if ( !p_vp )
+    {
+        p_vp = new osg::VertexProgram();
+        p_vp->setVertexProgram( vpstr );
+        p_vp->setProgramLocalParameter( 0, osg::Vec4( fresnel, fresnel, fresnel, 1.0f ) );
+        p_vp->setProgramLocalParameter( 1, osg::Vec4( refract, refract*refract, 0.0f, 0.0f ) );
+    }
+    stateset->setAttributeAndModes( p_vp, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
 
     // ---------------------------------------------------
     // fragment = refraction*(1-fresnel) + reflection*fresnel
@@ -284,16 +296,17 @@ osg::Node* EnWater::addRefractStateSet(osg::Node* node)
     stateset->setTextureAttributeAndModes(0, te0, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
     stateset->setTextureAttributeAndModes(1, te1, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
 
-    osg::Group* group = new osg::Group;
-    group->addChild(node);
-    group->setCullCallback(new TexMatCallback(*texMat));
-    group->setStateSet( stateset );
-
     // set blending for transparency
-    BlendFunc* blend = new osg::BlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    stateset->setAttribute( blend );
-	stateset->setMode(GL_BLEND,osg::StateAttribute::ON);		
-	stateset->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+    BlendFunc* p_blend = new osg::BlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    stateset->setAttribute( p_blend );
+	stateset->setMode( GL_BLEND,osg::StateAttribute::ON );		
+	stateset->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
+    stateset->setRenderBinDetails( -1, "RenderBin" );
+
+    osg::Group* group = new osg::Group;
+    group->addChild( node );
+    group->setCullCallback( new TexMatCallback( *texMat ) );
+    group->setStateSet( stateset );
 
     return group;
 }

@@ -50,10 +50,10 @@ EnSkyBox::EnSkyBox()
     activate( false );
 
     // register entity attributes
-    _attributeManager.addAttribute( "front"    , _texNames[ 0 ] );
-    _attributeManager.addAttribute( "right"    , _texNames[ 1 ] );
-    _attributeManager.addAttribute( "back"     , _texNames[ 2 ] );
-    _attributeManager.addAttribute( "left"     , _texNames[ 3 ] );
+    _attributeManager.addAttribute( "right"    , _texNames[ 0 ] );
+    _attributeManager.addAttribute( "left"     , _texNames[ 1 ] );
+    _attributeManager.addAttribute( "front"    , _texNames[ 2 ] );
+    _attributeManager.addAttribute( "back"     , _texNames[ 3 ] );
     _attributeManager.addAttribute( "up"       , _texNames[ 4 ] );
     _attributeManager.addAttribute( "down"     , _texNames[ 5 ] );
 }
@@ -65,12 +65,12 @@ EnSkyBox::~EnSkyBox()
 void EnSkyBox::initialize()
 {
     // setup texture side names
-    _textureFilenameMap.insert( make_pair( 0, _texNames[ 0 ] ) );
-    _textureFilenameMap.insert( make_pair( 1, _texNames[ 1 ] ) );
-    _textureFilenameMap.insert( make_pair( 2, _texNames[ 2 ] ) );
-    _textureFilenameMap.insert( make_pair( 3, _texNames[ 3 ] ) );
-    _textureFilenameMap.insert( make_pair( 4, _texNames[ 4 ] ) );
-    _textureFilenameMap.insert( make_pair( 5, _texNames[ 5 ] ) );
+    _textureFilenameMap.insert( make_pair( TextureCubeMap::NEGATIVE_X, _texNames[ 0 ] ) );
+    _textureFilenameMap.insert( make_pair( TextureCubeMap::NEGATIVE_Y, _texNames[ 1 ] ) );
+    _textureFilenameMap.insert( make_pair( TextureCubeMap::NEGATIVE_Z, _texNames[ 2 ] ) );
+    _textureFilenameMap.insert( make_pair( TextureCubeMap::POSITIVE_Z, _texNames[ 3 ] ) );
+    _textureFilenameMap.insert( make_pair( TextureCubeMap::POSITIVE_X, _texNames[ 4 ] ) );
+    _textureFilenameMap.insert( make_pair( TextureCubeMap::POSITIVE_Y, _texNames[ 5 ] ) );
 
     osg::Group* p_group = new osg::Group();
     p_group->setName( "_skybox_" );
