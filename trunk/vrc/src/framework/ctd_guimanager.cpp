@@ -44,9 +44,6 @@ using namespace CEGUI;
 namespace CTD
 {
 
-// some definitions
-#define CTD_GUI_MSGBOX_PREFIX   "_msgbox_"
-//-----------------
 
 //! Post-render callback, here the complete gui is initialized and drawn
 class GuiRenderCallback : public Producer::Camera::Callback
@@ -126,8 +123,7 @@ GuiManager::GuiManager() :
 _p_renderer( NULL ),
 _windowWidth( 600 ),
 _windowHeight( 400 ),
-_p_root( NULL ),
-_p_msgDialog( NULL )
+_p_root( NULL )
 {
 }
 
@@ -188,23 +184,16 @@ void GuiManager::doInitialize()
     System::getSingleton().setDefaultMouseCursor( &p_taharezImages->getImage( "MouseArrow" ) );
 
     // load font
-    FontManager::getSingleton().createFont( "gui/fonts/Commonwealth-10.font" );
+    FontManager::getSingleton().createFont( string( "gui/fonts/" CTD_GUI_FONT ".font" ) );
 
     // load scheme
-    SchemeManager::getSingleton().loadScheme( "gui/schemes/TaharezLookWidgets.scheme" );
+    SchemeManager::getSingleton().loadScheme( string( "gui/schemes/" CTD_GUI_SCHEME ".scheme" ) );
 
     // create the root window called 'Root'.
     _p_root = static_cast< DefaultWindow* >( WindowManager::getSingleton().createWindow("DefaultWindow", "Root") );
     _p_root->setMetricsMode( CEGUI::Absolute );
     _p_root->setPosition( CEGUI::Point( 0, 0 ) );
     _p_root->setSize( CEGUI::Size( _windowWidth, _windowHeight ) );
-
-    string msgBox( "gui/messagebox.xml" );
-    _p_msgDialog = GuiManager::get()->loadLayout( msgBox, CTD_GUI_MSGBOX_PREFIX ); // _msgbox_ is the handle of message box
-    if ( !_p_msgDialog )
-    {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** GuiManager: cannot find layout: " << msgBox << endl;
-    }
 
     // set the GUI root window (also known as the GUI "sheet"), all layout will be added to this root for showing up
     System::getSingleton().setGUISheet( _p_root );
@@ -213,7 +202,7 @@ void GuiManager::doInitialize()
     _inputHandler = new InputHandler( this );
 }
 
-CEGUI::Window* GuiManager::loadLayout( const string& filename, const string& handle )
+CEGUI::Window* GuiManager::loadLayout( const string& filename, CEGUI::Window* p_parent, const string& handle )
 {
     assert( _p_root && " gui system is not initialized!" );
 
@@ -230,26 +219,21 @@ CEGUI::Window* GuiManager::loadLayout( const string& filename, const string& han
         pref << handle;
 
     Window* p_layout = WindowManager::getSingleton().loadWindowLayout( filename.c_str(), pref.str() );
+
+    if ( !p_parent )
+        _p_root->addChildWindow( p_layout );
+    else
+        p_parent->addChildWindow( p_layout );
+
+    p_layout->show();
+
     return p_layout;
 }
 
-void GuiManager::showLayout( Window* p_layout )
+void GuiManager::getGuiArea( float& width, float& height )
 {
-    assert( _p_root && "gui system is not initialized!" );
-    _p_root->addChildWindow( p_layout );
-}
-
-void GuiManager::messageBox( const string& title, const string& message )
-{
-    if ( !_p_msgDialog )
-        return;
-
-    _p_msgDialog->setText( title );
-    Window* p_msgtext = _p_msgDialog->getChild( string( CTD_GUI_MSGBOX_PREFIX "msgtext" ) );
-    p_msgtext->setText( message );
-
-    //! TODO: resizing the message box in order to fit to the message text
-    showLayout( _p_msgDialog );
+    width  = _p_renderer->getWidth();
+    height = _p_renderer->getHeight();
 }
 
 void GuiManager::update( float deltaTime )
@@ -379,14 +363,14 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
 
     //!TODO: mouse scroll handling
 
-    //! FIXME: app window resising and fullscreen toggling does not work as we get no RESIZE event !?
+    //!TODO: app window resising and fullscreen toggling does not work as we get no RESIZE event. we have to hook into os
     // handle app's window reshaping
-    if ( eventType == osgGA::GUIEventAdapter::RESIZE ) // this event never comes!?
-    {
+    //if ( eventType == osgGA::GUIEventAdapter::RESIZE )
+    //{
         //Producer::Camera *p_cam = Application::get()->getViewer()->getCamera(0);
         //Producer::RenderSurface* p_rs = p_cam->getRenderSurface();    
         //_p_guiMgr->_p_renderer->changeDisplayResolution( float( p_rs->getWindowWidth() ), float( p_rs->getWindowHeight() ) );
-    }
+    //}
   
      return ret;
 }

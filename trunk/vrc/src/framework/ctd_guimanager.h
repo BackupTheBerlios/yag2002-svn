@@ -47,6 +47,10 @@ class Application;
 class CTDGuiRenderer;
 class GuiRenderCallback;
 
+// some definitions
+#define CTD_GUI_FONT            "Commonwealth-10"
+#define CTD_GUI_SCHEME          "TaharezLookWidgets"
+
 // Graphical User Interface
 /**
    Actually this class is a wrapper around CEGUI system ( http://www.cegui.org.uk )
@@ -62,14 +66,15 @@ class GuiManager : public Singleton< GuiManager >
         *   CEGUI::Window* p_wnd = loadlayout( mylayoutfile, "myhanlde" )
         *   CEGUI::WIndow* p_btn = p_wnd->getChild( "myhandle" + "OK_BUTTON" );
         * where OK_BUTTON is defined in layout file.
+        * If p_parent is NULL then the layout will be appended to the root window.
         */
-        CEGUI::Window*                          loadLayout( const std::string& filename, const std::string& handle = "" );
-
-        //! Show up given layout in root window.
-        void                                    showLayout( CEGUI::Window* p_layout );
+        CEGUI::Window*                          loadLayout( const std::string& filename, CEGUI::Window* p_parent = NULL, const std::string& handle = "" );
 
         //! Show a message dialog
         void                                    messageBox( const std::string& title, const std::string& message );
+
+        //! Get the render area of gui.
+        void                                    getGuiArea( float& width, float& height );
 
     protected:
 
@@ -92,8 +97,6 @@ class GuiManager : public Singleton< GuiManager >
         //! Shutdown gui manager
         void                                    shutdown();
 
-        CTDGuiRenderer*                         _p_renderer;
-
         //! Input handler, inputs are forwarded to gui system
         class InputHandler : public osgGA::GUIEventHandler
         {
@@ -112,6 +115,8 @@ class GuiManager : public Singleton< GuiManager >
                 GuiManager*                     _p_guiMgr;
         };
 
+        CTDGuiRenderer*                         _p_renderer;
+
         osg::ref_ptr< InputHandler >            _inputHandler;
 
         float                                   _windowWidth;
@@ -122,8 +127,6 @@ class GuiManager : public Singleton< GuiManager >
 
         //! Root window of cegui where all other windows are placed
         CEGUI::DefaultWindow*                   _p_root;
-
-        CEGUI::Window*                          _p_msgDialog;
 
     friend class Singleton< GuiManager >;
     friend class GuiRenderCallback;
