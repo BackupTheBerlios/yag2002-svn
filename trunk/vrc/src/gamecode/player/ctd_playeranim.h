@@ -43,8 +43,9 @@
 #include <ctd_base.h>
 #include <ctd_baseentity.h>
 #include <ctd_entitymanager.h>
-#include <rbody/osg/ReplicantBodyMgr.h>
-#include <rbody/osg/OsgBody.h>
+
+#include <osgCal/CoreModel>
+#include <osgCal/Model>
 
 namespace CTD
 {
@@ -64,6 +65,7 @@ class EnPlayerAnimation  : public BaseEntity
         virtual                                     ~EnPlayerAnimation();
 
         //! This entity does not need a transform node, which would be created by level manager on loading
+        //!   We create an own one which is given to player after initialization ( see setPlayer ).
         bool                                        needTransformation() { return false; }
 
         /**
@@ -78,15 +80,14 @@ class EnPlayerAnimation  : public BaseEntity
         void                                        initialize();
 
         /**
+        * Returns true if the initialization was successful.
+        */
+        bool                                        isReady() { return _ready; }
+
+        /**
         * Destroy animation system. This must be called during Player's destruction.
         */
         void                                        destroy();
-
-        /**
-        * Update called by EnPlayer entity. Note: this is not the framework update method!
-        * \param deltaTime                          Time passed since last update
-        */
-        void                                        update( float deltaTime );
 
         //! Trigger idle animation
         void                                        actionIdle();
@@ -99,6 +100,13 @@ class EnPlayerAnimation  : public BaseEntity
 
     protected:
 
+        //! Read config file and setup animation
+        /**
+        * \param rootDir                            The relative directory path to media directory which must contain all animation files and textures
+        * \param configfilename                     Cfg file name
+        */
+        bool                                        setupAnimation( const std::string& rootDir, const std::string& configfilename );
+
         // entity attributes
         //----------------------------------------------------------//
 
@@ -107,15 +115,18 @@ class EnPlayerAnimation  : public BaseEntity
 
         //----------------------------------------------------------//
 
+        //! Shows whether inititialization was successful
+        bool                                        _ready;
+
         EnPlayer*                                   _p_player;
 
-        osg::Group*                                 _p_characterGrp;
+        osg::ref_ptr< osgCal::Model >               _model;
 
-        rbody::ReplicantBodyMgr*                    _p_replicantBodyMgr;
-        
-        rbody::OsgBodyNode*                         _p_body;
+        osg::ref_ptr< osgCal::CoreModel >           _coreModel;
 
-        osg::PositionAttitudeTransform*             _p_node;
+        CalCoreModel*                               _p_calCoreModel;
+
+        osg::ref_ptr< osg::PositionAttitudeTransform > _animNode;
 
         enum 
         {
@@ -124,6 +135,20 @@ class EnPlayerAnimation  : public BaseEntity
             eJump
         }                                           _action;
 
+        //! offset position
+        osg::Vec3f                                  _position;
+
+        //! offset rotation
+        osg::Vec3f                                  _rotation;
+
+        float                                       _scale;
+
+        // animation ids
+        int                                         _IdAnimIdle;
+        int                                         _IdAnimWalk;
+        int                                         _IdAnimRun;
+        int                                         _IdAnimJump;
+        int                                         _IdAnimLand;        
 };
 
 //! Entity type definition used for type registry
