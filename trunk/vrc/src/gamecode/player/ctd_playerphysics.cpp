@@ -412,25 +412,25 @@ _gravity( Physics::get()->getWorldGravity() )
 
         // set the material properties for player on wood
         NewtonMaterialSetDefaultElasticity( _p_world, playerID, woodID, 0.5f );
-        NewtonMaterialSetDefaultSoftness( _p_world, playerID, levelID, 0.5f );
+        NewtonMaterialSetDefaultSoftness( _p_world, playerID, woodID, 0.5f );
         NewtonMaterialSetDefaultFriction( _p_world, playerID, woodID, 0.6f, 0.4f);
         NewtonMaterialSetCollisionCallback( _p_world, playerID, woodID, &player_woodCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
 
-        // set the material properties for level on metal
+        // set the material properties for player on metal
         NewtonMaterialSetDefaultElasticity( _p_world, playerID, metalID, 0.7f );
-        NewtonMaterialSetDefaultSoftness( _p_world, playerID, levelID, 0.9f );
+        NewtonMaterialSetDefaultSoftness( _p_world, playerID, metalID, 0.9f );
         NewtonMaterialSetDefaultFriction( _p_world, playerID, metalID, 0.8f, 0.6f );
         NewtonMaterialSetCollisionCallback( _p_world, playerID, metalID, &player_metalCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
 
-        // set the material properties for level on grass
+        // set the material properties for player on grass
         NewtonMaterialSetDefaultElasticity( _p_world, playerID, grassID, 0.2f );
-        NewtonMaterialSetDefaultSoftness( _p_world, playerID, levelID, 0.3f );
+        NewtonMaterialSetDefaultSoftness( _p_world, playerID, grassID, 0.3f );
         NewtonMaterialSetDefaultFriction( _p_world, playerID, grassID, 0.8f, 0.7f );
         NewtonMaterialSetCollisionCallback( _p_world, playerID, grassID, &player_grassCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
 
-        // set the material properties for level on stone
+        // set the material properties for player on stone
         NewtonMaterialSetDefaultElasticity( _p_world, playerID, stoneID, 0.45f );
-        NewtonMaterialSetDefaultSoftness( _p_world, playerID, levelID, 0.9f );
+        NewtonMaterialSetDefaultSoftness( _p_world, playerID, stoneID, 0.9f );
         NewtonMaterialSetDefaultFriction( _p_world, playerID, stoneID, 0.9f, 0.7f );
         NewtonMaterialSetCollisionCallback( _p_world, playerID, stoneID, &player_stoneCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
     }
