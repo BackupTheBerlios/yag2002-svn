@@ -68,10 +68,7 @@ CTDGui::CTDGui()
     //  for client objects it is essential that the entity name is set in constructor
     SetName( CTD_ENTITY_NAME_Gui );
     
-    m_kConfigFile   = "index.xml";
-
     m_pkChatMember  = NULL;
-
     m_pcPlayerName  = NULL;
 
 }
@@ -112,18 +109,45 @@ void CTDGui::SetupGuiSystem()
 {
 
     // configure the widget system
-    //Widgets::Get()->Initialize();
     Widgets::Get()->Activate();
-    Widgets::Get()->Load( m_kConfigFile );
+
+    // determine the resolution and load the gui xml
+    //------------------------------------------------------------------------
+    string strXmlFile( "index-" );
+    string strRes;
+    int iScreenHeight = NeoEngine::Core::Get()->GetRenderDevice()->GetHeight();
+    int iScreenWidth  = NeoEngine::Core::Get()->GetRenderDevice()->GetWidth();
+    // default resolution
+    m_eResolution = e1024x768;
+    strRes        = "1024x768";
+    if ( ( iScreenWidth == 800 ) && ( iScreenHeight == 600 ) ) {
+        m_eResolution = e800x600;
+        strRes        = "800x600";
+    } else
+    if ( ( iScreenWidth == 1600 ) && ( iScreenHeight == 1200 ) ) {
+        m_eResolution = e1600x1200;
+        strRes        = "1600x1200";
+    }
+    
+    strXmlFile += string( strRes + ".xml" );
+
+    if ( !Widgets::Get()->Load( strXmlFile ) ) {
+
+        CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Chat) entity ' Gui ' cannot find gui xml file '" + strXmlFile + "', entity deactivated." );
+        Deactivate();
+        return;
+
+    }
+    //------------------------------------------------------------------------
 
     m_bEditText = false;
 
     // set a callback for walk mode button
-    guiCButton*  pkWalkModeBtn   = ( guiCButton* )dataManager_S::SearchWidget("WalkMode");
-    assert( ( pkWalkModeBtn != NULL ) && "'WalkMode' button is not defined in gui definition file!" );
+    m_pkWalkModeCheckbox   = ( guiCCheckBox* )dataManager_S::SearchWidget("WalkMode");
+    assert( ( m_pkWalkModeCheckbox != NULL ) && "'WalkMode' button is not defined in gui definition file!" );
 
     CB_Imp_GuiC_Callback* pkGLOActivateWalkModeButtonCallback = new GuiC_Callback< CTDGui >( this, OnActivateWalkMode, CM_GUI );
-    pkWalkModeBtn->AddCallback( pkGLOActivateWalkModeButtonCallback, eGuiCBase::CB_ON_CHANGE );
+    m_pkWalkModeCheckbox->AddCallback( pkGLOActivateWalkModeButtonCallback, eGuiCBase::CB_ON_CHANGE );
 
     // set a callback for chat message editbox
     m_pkEditBox   = ( guiCEdit* )dataManager_S::SearchWidget("EditArea");
@@ -155,13 +179,23 @@ void CTDGui::SetupGuiSystem()
     // calculate the available lines in message window
     //--------------------------------------------------//
     m_uiMsgTotalLines   = 0;
+    switch ( m_eResolution ) {
 
-    // get  message window font size
-    utlVector kSize;
-    m_pkMsgFont         = ( dataFont* )dataManager_S::SearchDataFont( "MsgFont" );
-    m_pkMsgFont->GetSize ( "A", 1, kSize );
-    m_fMsgFontHeight    = kSize.y;
+        case e1600x1200:
+            m_uiMsgMaxLines = 6;
+            break;
+        
+        case e1024x768:
+            m_uiMsgMaxLines = 4;
+            break;
+        
+        case e800x600:
+            m_uiMsgMaxLines = 3;
+            break;
 
+        default:
+            ;
+    }
     // add this object to callback list so the widget system will notify us on new inputs
     //-------------------------------//
     Widgets::Get()->AddInputCallback( this );
@@ -208,7 +242,7 @@ void CTDGui::OnInput( const NeoEngine::InputEvent *pkEvent )
         m_pkChatMember->Message( CTD_ENTITY_GUI_SEND_TEXT, s_pcText );
 
         // set caret to position 0
-        int     iLen = utlStringLength( s_pcText );
+        int iLen = utlStringLength( s_pcText );
         m_pkEditBox->MoveCaret( -iLen );
 
         // add the message to message window
@@ -228,12 +262,6 @@ void CTDGui::AddMessage( wchar_t *pcMsg )
     wchar_t *pcMsgText = m_pkMsgBox->StringRef();
     utlStringConcat( pcMsgText, pcMsg );
     utlStringConcat( pcMsgText, ( wchar_t* )"\n" );
-
-    // get message window height
-    utlVector kSize;
-    rendCBase   *pkRenderPrimitive = m_pkMsgBox->GetRender();
-    pkRenderPrimitive->GetCurrentOrNormalDraw()->GetSize( kSize );
-    m_uiMsgMaxLines     = ( unsigned int )( kSize.y / m_fMsgFontHeight );
 
     // fit the message lines into message box
     if ( m_uiMsgTotalLines > m_uiMsgMaxLines ) {
@@ -288,7 +316,8 @@ void CTDGui::OnActivateEditText( CB_Imp_GuiC_Callback* pkCallback, guiCBase* pkC
     guiCWidget* pkParent = ( guiCWidget* )m_pkEditBox->Parent();
     pkParent->ChangeState( eGuiWidget::CB_WIDGET_FOCUS );
 
-    //! TODO: update the walk mode button to edit mode ( set its state to eGuiCBase::CB_NORMAL, see below )
+    // update the walk mode checkbox to edit mode
+    m_pkWalkModeCheckbox->ChangeState( eGuiCBase::CB_SELECT );
 
 }
 
@@ -296,7 +325,7 @@ void CTDGui::OnActivateWalkMode( CB_Imp_GuiC_Callback* pkCallback, guiCBase* pkC
 {
 
     // these events must be defined also in glo's gui xml file!
-    if ( pkControl->GetState() == eGuiCBase::CB_SELECT ) { // state = CB_SELECT means we enter to walk mode
+    if ( pkControl->GetState() == eGuiCBase::CB_NORMAL ) { // state = CB_NORMAL means we enter to walk mode
         
         LockMovementInput( false );
         m_bEditText = false;
@@ -305,7 +334,7 @@ void CTDGui::OnActivateWalkMode( CB_Imp_GuiC_Callback* pkCallback, guiCBase* pkC
 
     } else {
 
-        if ( pkControl->GetState() == eGuiCBase::CB_NORMAL ) { // state = CB_NORMAL means we toggle into edit mode ( we use a checkbox, i.e. button is checked )
+        if ( pkControl->GetState() == eGuiCBase::CB_SELECT ) { // state = CB_SELECT means we toggle into edit mode ( we use a checkbox, i.e. button is checked )
         
             ClearMovementFlags();
             LockMovementInput( true );
@@ -410,28 +439,8 @@ int CTDGui::Message( int iMsgId, void *pMsgStruct )
 int CTDGui::ParameterDescription( int iParamIndex, ParameterDescriptor *pkDesc )
 {
 
-    int iParamCount = 1;
-
-    if ( pkDesc == NULL ) {
-
-        return iParamCount;
-    }
-
-    switch( iParamIndex ) 
-    {
-
-    case 0:
-        pkDesc->SetName( "ConfigFile" );
-        pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
-        pkDesc->SetVar( &m_kConfigFile );
-        
-        break;
-
-    default:
-        return -1;
-    }
-
-    return iParamCount;
+    // we have no parameters
+    return 0;
 
 }
 

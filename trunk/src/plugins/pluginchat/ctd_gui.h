@@ -113,12 +113,6 @@ class CTDGui : public CTD::BaseEntity, public CTD::WidgetInput
 
         //******************************************************************************************//
 
-        // entity parameters
-        //------------------------------------------------------------------------------------------//
-
-        // config file ( xml format )
-        std::string                                 m_kConfigFile;
-
         // GLO related functions and variables
         //------------------------------------------------------------------------------------------//
 
@@ -140,6 +134,9 @@ class CTDGui : public CTD::BaseEntity, public CTD::WidgetInput
         // add message to message window
         void                                        AddMessage( wchar_t *pcMsg );
 
+        // screen resolution, the loaded gui xml depends on resolution for a better item positioning
+        enum { e800x600, e1024x768, e1600x1200 }    m_eResolution;
+
         CTD::BaseEntity                             *m_pkChatMember;
 
         wchar_t                                     *m_pcPlayerName;
@@ -151,9 +148,9 @@ class CTDGui : public CTD::BaseEntity, public CTD::WidgetInput
         
         guiCEdit                                    *m_pkMsgBox;
         
-        dataFont                                    *m_pkMsgFont;
+        guiCCheckBox                                *m_pkWalkModeCheckbox;
 
-        float                                       m_fMsgFontHeight;
+        dataFont                                    *m_pkMsgFont;
 
         unsigned int                                m_uiMsgMaxLines;
 
