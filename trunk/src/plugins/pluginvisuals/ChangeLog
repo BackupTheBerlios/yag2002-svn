@@ -1,4 +1,8 @@
 
+boto ( 10/14/2004 )
+
+- small bugfixes in skybox and point light entities
+
 boto ( 10/08/2004 )
 
 - adaptations to new framework completed
