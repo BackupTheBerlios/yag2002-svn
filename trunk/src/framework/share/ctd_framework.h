@@ -108,9 +108,12 @@ class Framework
 
         /**
         * Load a given level file
+        * \param strLevelFile                   Level file name
+        * \param bInitializePlugins             If true all loaded plugins are initialized.
+        * \param pkLevelSet                     LevelSet to load to. If NULL then a new LevelSet is created.
         * \return                               Instance of Level set where the level has been loaded to.
         */
-        LevelSet*                               LoadLevel( const std::string &strLevelFile );
+        LevelSet*                               LoadLevel( const std::string &strLevelFile, bool bInitializePlugins = true, LevelSet* pkLevelSet = NULL );
 
         /**
         * This function starts the game.
@@ -147,14 +150,6 @@ class Framework
         * \return                               Returns false if the key code does not exitst or key configuration does not exit
         */
         bool                                    GetKeyCode( const std::string &strKeyName , int &iKeyCode );                                                
-
-        /**
-        * Find an entity given its instance name.
-        * \param     strInstanceName            Instance name
-        * \param     strPluginName              Plugin name, if this is a blank string then all plugins are searched for given instance name.
-        * \return                               Pointer to BaseEntity object. NULL if entity could not be found.
-        */
-        CTD::BaseEntity*                        FindEntity( const std::string &strInstanceName, const std::string &strPluginName = std::string() );     
 
         /**
         * Send a message to a given plugin.
@@ -219,6 +214,30 @@ class Framework
         * \return                               Level manager
         */
         LevelManager*                           GetLevelManager();
+
+        /**
+        * Find an entity given its instance name.
+        * \param     strInstanceName            Instance name
+        * \param     strPluginName              Plugin name, if this is a blank string then all plugins are searched for given instance name.
+        * \return                               Pointer to BaseEntity object. NULL if entity could not be found.
+        */
+        CTD::BaseEntity*                        FindEntity( const std::string &strInstanceName, const std::string &strPluginName = std::string() );     
+
+        /**
+        * Add a new entity, this method is useful for managing networked objects which are not setup during level loading
+        * \param pkLevelSet                     LevelSet the entity is added to
+        * \param pkEntity                       Entity to be added
+        * \param strPluginName                  Name of plugin to add the entity to. if empty then the entity is added to first plugin.
+        * \return                               true if successfull added, false if this entity already exists in level set
+        */
+        bool                                    AddEntiy( LevelSet* pkLevelSet, CTD::BaseEntity* pkEntity, const string &strPluginName = "" );
+
+        /**
+        * Remove an entity, this method is useful for managing networked objects
+        * \param pkEntity                       Entity to be removed, all levelsets are searched and updated
+        * \return                               Numver of entities removed from all levelsets
+        */
+        unsigned int                            RemoveEntiy( CTD::BaseEntity* pkEntity );
 
         /**
         * Switch to given level set. In game loop the new level set will be considered for rendering
