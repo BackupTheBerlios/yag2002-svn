@@ -50,27 +50,17 @@ namespace CTD
 
 #define ENTITY_NAME_PLAYER    "Player"
 
-// forward declaration of player entity and its composition
-//-------
-class PlayerPhysics;
-class PlayerAnimation;
-template< class PlayerPhysicsT, class PlayerAnimationT > class Player;
-typedef Player< class PlayerPhysics, class PlayerAnimation > EnPlayer;
-//-------
+class EnPlayerAnimation;
+class EnPlayerPhysics;
 
-//! Class for player entity
-template
-< 
-    class PlayerPhysicsT, 
-    class PlayerAnimationT
->
-class Player : public BaseEntity
+//! Player entity
+class EnPlayer : public BaseEntity
 {
     public:
 
-                                                    Player();
+                                                    EnPlayer();
 
-                                                    ~Player();
+        virtual                                     ~EnPlayer();
 
 
         /**
@@ -90,61 +80,34 @@ class Player : public BaseEntity
         */
         void                                        updateEntity( float deltaTime );
 
-        /**
-        * Apply players movement force
-        * \param force                              Force to apply to player for movement
-        */
-        void                                        applyForce( const osg::Vec3f& force );
-
     protected:
 
-        // entity parameters
+        // entity attributes
         //----------------------------------------------------------//
 
         //! Player name
         std::string                                 _playerName;
 
-        //! Animation config file
-        std::string                                 _animCfgFile;
+        //! Physics entity's instance name which will be attached to player
+        std::string                                 _physicsEntity;
 
-        //! Dimentions of player: width / length / height
-        osg::Vec3f                                  _dimensions;
+        //! Animation entity's instance name which will be attached to player
+        std::string                                 _animationEntity;
 
         //! initial position
         osg::Vec3f                                  _position;
 
-        //! Step height
-        float                                       _stepHeight;
-
-        //! Max force for movement
-        float                                       _linearForce;
-
-        //! Max force for rotation
-        float                                       _angularForce;
-
-        //! Player's mass
-        float                                       _mass;
-
-        //! Force for movement
-        osg::Vec3f                                  _force;
-
         //! Rotation about up vector
         float                                       _rotation;
-
-        //! Player's gravity, default is the Physics system gravity
-        float                                       _gravity;
-
-        //! Linear damping
-        float                                       _linearDamping;
 
         // the following is for internal use
         //----------------------------------------------------------//
 
         //! Physics component
-        PlayerPhysicsT*                             _p_playerPhysics;
+        EnPlayerPhysics*                            _p_playerPhysics;
 
         //! Animation control component
-        PlayerAnimationT*                           _p_playerAnimation;
+        EnPlayerAnimation*                          _p_playerAnimation;
 
         //! Movement direction
         osg::Vec3f                                  _moveDir;
@@ -154,9 +117,9 @@ class Player : public BaseEntity
         {
             public:
 
-                                                    InputHandler( Player< PlayerPhysicsT, PlayerAnimationT > *p_player ) : _p_player( p_player ) {}
+                                                    InputHandler( EnPlayer*p_player );
                                                     
-                                                    ~InputHandler() {}
+                virtual                             ~InputHandler();
 
                 /**
                 * Handle input events.
@@ -165,12 +128,14 @@ class Player : public BaseEntity
 
             protected:
 
-                Player< PlayerPhysicsT, PlayerAnimationT >* _p_player;
+                EnPlayer*                           _p_player;
         };
 
-    friend typename PlayerPhysicsT;
-    friend typename PlayerAnimationT;
-    friend class    InputHandler;
+        InputHandler*                               _p_inputHandler;
+
+    friend class EnPlayerPhysics;
+    friend class EnPlayerAnimation;
+    friend class InputHandler;
 };
 
 //! Entity type definition used for type registry

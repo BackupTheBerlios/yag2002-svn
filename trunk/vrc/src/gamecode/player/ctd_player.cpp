@@ -50,114 +50,100 @@ CTD_IMPL_ENTITYFACTORY_AUTO( PlayerEntityFactory );
 namespace CTD
 {
     
-template
-< 
-    class PlayerPhysicsT, 
-    class PlayerAnimationT 
->
-Player< PlayerPhysicsT, PlayerAnimationT >::Player() :
+EnPlayer::EnPlayer() :
 _p_playerPhysics( NULL ),
 _p_playerAnimation( NULL ),
 _playerName( "noname" ),
-_dimensions( Vec3f( 0.5f, 0.5f, 1.8f ) ),
-_stepHeight( 0.5f ),
-_linearForce( 0.1f ),
-_angularForce( 0.05f ),
 _rotation( 0 ),
 _moveDir( Vec3f( 0, 1, 0 ) ),
-_gravity( Physics::get()->getWorldGravity() ),
-_linearDamping( 0.2f )
+_p_inputHandler( NULL )
 {
     EntityManager::get()->registerUpdate( this );     // register entity in order to get updated per simulation step
 
-    getAttributeManager().addAttribute( "name"          , _playerName    );
-    getAttributeManager().addAttribute( "animconfig"    , _animCfgFile   );
-    getAttributeManager().addAttribute( "dimensions"    , _dimensions    );
-    getAttributeManager().addAttribute( "position"      , _position      );
-    getAttributeManager().addAttribute( "stepheight"    , _stepHeight    );
-    getAttributeManager().addAttribute( "linearforce"   , _linearForce   );
-    getAttributeManager().addAttribute( "lineardamping" , _linearDamping );
-    getAttributeManager().addAttribute( "angularforce"  , _angularForce  );
-    getAttributeManager().addAttribute( "mass"          , _mass          );
-    getAttributeManager().addAttribute( "gravity"       , _gravity       );
+    getAttributeManager().addAttribute( "name"            , _playerName       );
+    getAttributeManager().addAttribute( "physicsentity"   , _physicsEntity    );
+    getAttributeManager().addAttribute( "animationentity" , _animationEntity  );
+    getAttributeManager().addAttribute( "position"        , _position         );
+    getAttributeManager().addAttribute( "rotation"        , _rotation         );
 
-    // register us in viewer to get event callbacks
-    Application::get()->getViewer()->getEventHandlerList().push_back( new InputHandler( this ) );
-
-    // create physics component, it is important that the physics component is created in constructor
-    //  due to own material definitions for player
-    _p_playerPhysics = new PlayerPhysicsT( this );
-
-    // create animation component
-    _p_playerAnimation = new PlayerAnimationT( this );
+    // create a new input handler for this player
+    _p_inputHandler = new InputHandler( this );
 }
 
-template
-< 
-    class PlayerPhysicsT,
-    class PlayerAnimationT
->
-Player< PlayerPhysicsT, PlayerAnimationT >::~Player()
+EnPlayer::~EnPlayer()
 {
     if ( _p_playerPhysics )
-        delete _p_playerPhysics;
+    {
+        EntityManager::get()->deleteEntity( _p_playerPhysics );
+        _p_playerPhysics->destroyPhysics();
+    }
+
+    if ( _p_playerAnimation )
+    {
+        EntityManager::get()->deleteEntity( _p_playerAnimation );
+        _p_playerAnimation->destroyPhysics();
+    }
+
+    // delete input handler immediately
+    // remove this handler from viewer's handler list
+    osgProducer::Viewer::EventHandlerList& eh = Application::get()->getViewer()->getEventHandlerList();
+    osgProducer::Viewer::EventHandlerList::iterator beg = eh.begin(), end = eh.end();
+    for ( ; beg != end; beg++ )
+    {
+        if ( *beg == _p_inputHandler )
+        {
+            eh.erase( beg );
+            break;
+        }
+    }
 }
 
-template
-< 
-    class PlayerPhysicsT,
-    class PlayerAnimationT
->
-void Player< PlayerPhysicsT, PlayerAnimationT >::initialize()
+void EnPlayer::initialize()
 {
+}
 
-    // init animation component
-    _p_playerAnimation->initialize();
+void EnPlayer::postInitialize()
+{
+    // find and attach physics component
+    _p_playerPhysics = dynamic_cast< EnPlayerPhysics* >( EntityManager::get()->findEntity( ENTITY_NAME_PLPHYS, _physicsEntity ) );
+    assert( _p_playerPhysics && "given instance name does not belong to a player physics entity type!" );
+    _p_playerPhysics->setPlayer( this );
+
+    // find and attach animation component
+    _p_playerAnimation = dynamic_cast< EnPlayerAnimation* >( EntityManager::get()->findEntity( ENTITY_NAME_PLANIM, _animationEntity ) );
+    assert( _p_playerAnimation && "given instance name does not belong to a player animation entity type!" );
 
     // now we add the new mesh into our transformable scene group
     addTransformableNode( _p_playerAnimation->getNode() );
     setPosition( _position );
-
-    // now we can initialize the physics component ( after the transform node is set )
-    _p_playerPhysics->initialize();
 }
 
-template
-< 
-    class PlayerPhysicsT,
-    class PlayerAnimationT
->
-void Player< PlayerPhysicsT, PlayerAnimationT >::postInitialize()
-{
-}
-
-template
-< 
-    class PlayerPhysicsT,
-    class PlayerAnimationT
->
-void Player< PlayerPhysicsT, PlayerAnimationT >::updateEntity( float deltaTime )
+void EnPlayer::updateEntity( float deltaTime )
 {
     _p_playerPhysics->update( deltaTime );
     _p_playerAnimation->update( deltaTime );
+
+    // dynamic deletion test
+    static float timer = 0; 
+    timer += deltaTime;
+    if ( timer > 5.0f ) // delete entity after some time
+        EntityManager::get()->deleteEntity( this );
 }
 
-template
-< 
-    class PlayerPhysicsT,
-    class PlayerAnimationT
->
-void Player< PlayerPhysicsT, PlayerAnimationT >::applyForce( const Vec3f& force )
+// input handler implementation
+//-----------------------------
+EnPlayer::InputHandler::InputHandler( EnPlayer*p_player ) : _p_player( p_player ) 
 {
-    _force = force;
+    // register us in viewer to get event callbacks
+    osg::ref_ptr< EnPlayer::InputHandler > ih( this );
+    Application::get()->getViewer()->getEventHandlerList().push_back( ih.get() );
 }
 
-template
-< 
-    class PlayerPhysicsT,
-    class PlayerAnimationT
->
-bool Player< PlayerPhysicsT, PlayerAnimationT >::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+EnPlayer::InputHandler::~InputHandler() 
+{
+}
+
+bool EnPlayer::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
     bool         ret         = false;
     unsigned int eventType   = ea.getEventType();
@@ -200,8 +186,7 @@ bool Player< PlayerPhysicsT, PlayerAnimationT >::InputHandler::handle( const osg
             if ( key == osgGA::GUIEventAdapter::KEY_Down )
                 moveBackward = false;
 
-            _p_player->_force._v[ 0 ] = 0;
-            _p_player->_force._v[ 1 ] = 0;
+            _p_player->_p_playerPhysics->setForce( 0, 0 );
         }
 
         if ( key == osgGA::GUIEventAdapter::KEY_Right )
@@ -215,7 +200,7 @@ bool Player< PlayerPhysicsT, PlayerAnimationT >::InputHandler::handle( const osg
 
     if ( rotateRight )
     {
-        _p_player->_rotation += _p_player->_angularForce;
+        _p_player->_rotation += _p_player->_p_playerPhysics->getAngularForce();
         if ( _p_player->_rotation > PI * 2.0f )
             _p_player->_rotation -= PI * 2.0f;
 
@@ -227,7 +212,7 @@ bool Player< PlayerPhysicsT, PlayerAnimationT >::InputHandler::handle( const osg
     {
         if ( _p_player->_rotation < 0 )
             _p_player->_rotation += PI * 2.0f;
-        _p_player->_rotation -= _p_player->_angularForce;
+        _p_player->_rotation -= _p_player->_p_playerPhysics->getAngularForce();
 
         _p_player->_moveDir._v[ 0 ] = sinf( _p_player->_rotation );
         _p_player->_moveDir._v[ 1 ] = cosf( _p_player->_rotation );
@@ -235,13 +220,13 @@ bool Player< PlayerPhysicsT, PlayerAnimationT >::InputHandler::handle( const osg
 
     if ( moveForward )
     {
-        _p_player->_force = _p_player->_moveDir * _p_player->_linearForce;
+        _p_player->_p_playerPhysics->setForce( _p_player->_moveDir._v[ 0 ], _p_player->_moveDir._v[ 0 ] );
         _p_player->_p_playerAnimation->actionWalk();
     }
 
     if ( moveBackward )
     {
-        _p_player->_force = _p_player->_moveDir * ( -_p_player->_linearForce );
+        _p_player->_p_playerPhysics->setForce( -_p_player->_moveDir._v[ 0 ], -_p_player->_moveDir._v[ 0 ] );
         _p_player->_p_playerAnimation->actionWalk();
     }
 

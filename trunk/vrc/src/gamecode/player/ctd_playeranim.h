@@ -42,23 +42,26 @@
 
 #include <ctd_base.h>
 #include <ctd_baseentity.h>
-#include "ctd_player.h"
+#include <ctd_entitymanager.h>
 #include <rbody/osg/ReplicantBodyMgr.h>
 #include <rbody/osg/OsgBody.h>
 
 namespace CTD
 {
 
+#define ENTITY_NAME_PLANIM    "PlayerAnimation"
+
+class EnPlayer;
+
 //! Class for controling player animations
-class PlayerAnimation
+class EnPlayerAnimation  : public BaseEntity
 {
 
     public:
 
-                                                    PlayerAnimation( EnPlayer* p_player );
+                                                    EnPlayerAnimation();
 
-                                                    ~PlayerAnimation();
-
+        virtual                                     ~EnPlayerAnimation();
 
         /**
         * Initializing function
@@ -66,7 +69,12 @@ class PlayerAnimation
         void                                        initialize();
 
         /**
-        * Update
+        * Destroy animation system. This must be called during Player's destruction.
+        */
+        void                                        destroyPhysics();
+
+        /**
+        * Update called by EnPlayer entity. Note: this is not the framework update method!
         * \param deltaTime                          Time passed since last update
         */
         void                                        update( float deltaTime );
@@ -84,6 +92,14 @@ class PlayerAnimation
         void                                        actionJump();
 
     protected:
+
+        // entity attributes
+        //----------------------------------------------------------//
+
+        //! Animation config file
+        std::string                                 _animCfgFile;
+
+        //----------------------------------------------------------//
 
         EnPlayer*                                   _p_player;
 
@@ -104,10 +120,22 @@ class PlayerAnimation
 
 };
 
-inline osg::Node* PlayerAnimation::getNode()
+inline osg::Node* EnPlayerAnimation::getNode()
 {
     return _p_node;
 }
+
+
+//! Entity type definition used for type registry
+class PlayerAnimationEntityFactory : public BaseEntityFactory
+{
+    public:
+                                                    PlayerAnimationEntityFactory() : BaseEntityFactory(ENTITY_NAME_PLANIM) {}
+
+        virtual                                     ~PlayerAnimationEntityFactory() {}
+
+        Macro_CreateEntity( EnPlayerAnimation );
+};
 
 } // namespace CTD
 

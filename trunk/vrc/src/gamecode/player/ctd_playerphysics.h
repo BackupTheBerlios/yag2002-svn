@@ -48,18 +48,30 @@
 namespace CTD
 {
 
-//! Class for player physics
-//! Note: actually this class should not be derived from BaseEntity, however we need this to be able to
-//         determine the which of colliding bodies is the PlayerPhysics one ( see function playerContactProcess )
-class PlayerPhysics : public BaseEntity
+#define ENTITY_NAME_PLPHYS  "PlayerPhysics"
+
+class EnPlayer;
+
+//! Player physics entity
+class EnPlayerPhysics : public BaseEntity
 {
 
     public:
 
-                                                    PlayerPhysics( EnPlayer* p_player );
+                                                    EnPlayerPhysics();
 
-                                                    ~PlayerPhysics();
+        virtual                                     ~EnPlayerPhysics();
 
+        /**
+        * Set player association, player must call this in post-initialize phase
+        * \param p_player                           Player instance
+        */
+        void                                        setPlayer( EnPlayer* p_player );
+
+        /**
+        * Destroy physics. This must be called during Player's destruction.
+        */
+        void                                        destroyPhysics();
 
         /**
         * Initializing function
@@ -67,10 +79,25 @@ class PlayerPhysics : public BaseEntity
         void                                        initialize();
 
         /**
-        * Update
+        * Post-Initializing function
+        */
+        void                                        postInitialize();
+
+        /**
+        * Update called by EnPlayer entity. Note: this is not the framework update method!
         * \param deltaTime                          Time passed since last update
         */
         void                                        update( float deltaTime );
+
+        /**
+        * Set force in x and y direction.
+        */
+        void                                        setForce( float x, float y );
+
+        /**
+        * Get angular force, it's used by EnPlayer to update rotation about up axis
+        */
+        float                                       getAngularForce();
 
         /**
         * Call this method to force the body to jump
@@ -108,6 +135,35 @@ class PlayerPhysics : public BaseEntity
         // find floor under player
         float                                       findFloor( NewtonWorld* world, const osg::Vec3f& p0, float maxDist );
 
+        // entity attributes
+        //--------------------------------------------------------//
+
+        //! Dimentions of player: width / length / height
+        osg::Vec3f                                  _dimensions;
+
+        //! Step height
+        float                                       _stepHeight;
+
+        //! Max force for movement
+        float                                       _linearForce;
+
+        //! Max force for rotation
+        float                                       _angularForce;
+
+        //! Player's mass
+        float                                       _mass;
+
+        //! Force for movement
+        osg::Vec3f                                  _force;
+
+        //! Player's gravity, default is the Physics system gravity
+        float                                       _gravity;
+
+        //! Linear damping
+        float                                       _linearDamping;
+
+        //--------------------------------------------------------//
+
         EnPlayer*                                   _p_player;
 
         NewtonWorld*                                _p_world;
@@ -119,9 +175,6 @@ class PlayerPhysics : public BaseEntity
 
         //! Player height
         float                                       _playerHeight;
-
-        //! Step height
-        float                                       _stepHeight;
 
         //! Shows that there is no force for movement
         bool                                        _isStopped;
@@ -138,12 +191,34 @@ class PlayerPhysics : public BaseEntity
 
         float                                       _jumpForce;
 
-        //! Player's gravity, default is the Physics system gravity
-        float                                       _gravity;
-
         //! Body matrix
         osg::Matrixf                                _matrix;
+
 };
+
+inline void EnPlayerPhysics::setForce( float x, float y )
+{
+    _force._v[ 0 ] = x * _linearForce;
+    _force._v[ 1 ] = y * _linearForce;
+
+}
+
+inline float EnPlayerPhysics::getAngularForce()
+{
+    return _angularForce;
+}
+
+//! Entity type definition used for type registry
+class PlayerPhysicsEntityFactory : public BaseEntityFactory
+{
+    public:
+                                                    PlayerPhysicsEntityFactory() : BaseEntityFactory(ENTITY_NAME_PLPHYS) {}
+
+        virtual                                     ~PlayerPhysicsEntityFactory() {}
+
+        Macro_CreateEntity( EnPlayerPhysics );
+};
+
 
 } // namespace CTD
 

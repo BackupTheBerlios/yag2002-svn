@@ -36,45 +36,57 @@
 #include <ctd_log.h>
 #include <ctd_application.h>
 #include "ctd_playeranim.h"
+#include "ctd_player.h"
 
 using namespace osg;
 using namespace rbody;
 using namespace std;
 
+
+#define ACTION_IDLE     "ACT_IDLE_LONG"
+#define ACTION_WALK     "ACT_WALK"
+#define ACTION_JUMP     "ACT_STAND"
+
 namespace CTD
 {
 
-PlayerAnimation::PlayerAnimation( EnPlayer* p_player ) :
-_p_player( p_player ),
+//! Implement and register the player animation entity factory
+CTD_IMPL_ENTITYFACTORY_AUTO( PlayerAnimationEntityFactory );
+
+EnPlayerAnimation::EnPlayerAnimation() :
+_p_player( NULL ),
 _p_characterGrp( NULL ),
 _p_replicantBodyMgr( ReplicantBodyMgr::instance() ),
 _p_node( NULL ),
 _p_body( NULL )
 { 
+    // the deletion must not be controled by entity manager, but by player
+    setAutoDelete( false );
+
+    // register attributes
+    getAttributeManager().addAttribute( "animconfig"   , _animCfgFile );
 }
 
-PlayerAnimation::~PlayerAnimation()
+EnPlayerAnimation::~EnPlayerAnimation()
 {
 }
 
-void PlayerAnimation::initialize()
+void EnPlayerAnimation::initialize()
 {
     try
     {
-        if ( !_p_player->_animCfgFile.length() )
+        if ( !_animCfgFile.length() )
         {
             log << Log::LogLevel( Log::L_ERROR ) << "*** missing animation config file parameter" << endl;
             return;
         }
 
-        string file = Application::get()->getMediaPath() + _p_player->_animCfgFile;
+        string file = Application::get()->getMediaPath() + _animCfgFile;
 
         // create a body from the core 
         OsgBodyNode* p_osgBody = new OsgBodyNode( file, NULL );
 
-        string name;
-        _p_player->getAttributeManager().getAttributeValue( "name", name );
-        p_osgBody->setName( name );
+        p_osgBody->setName( getInstanceName() );
         p_osgBody->setUpdateMode( OsgBodyNode::UPDATE_NONE );
 
         // set default action if one exists
@@ -97,22 +109,23 @@ void PlayerAnimation::initialize()
     }
     catch ( std::exception& e ) 
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** problem evaluating character anim file '" << _p_player->_animCfgFile << "'" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** problem evaluating character anim file '" << _animCfgFile << "'" << endl;
         log << Log::LogLevel( Log::L_ERROR ) << "***  reason: " << e.what() << endl;
         assert( NULL );
         return;
     }
 }
 
-void PlayerAnimation::update( float deltaTime )
+void EnPlayerAnimation::destroyPhysics()
+{
+}
+
+void EnPlayerAnimation::update( float deltaTime )
 {
     _p_body->getBody()->update( deltaTime );
 }
 
-#define ACTION_IDLE     "ACT_IDLE_LONG"
-#define ACTION_WALK     "ACT_WALK"
-#define ACTION_JUMP     "ACT_STAND"
-void PlayerAnimation::actionIdle()
+void EnPlayerAnimation::actionIdle()
 {
     ActionRequest* p_action = _p_body->getBody()->getActionPrototype( ACTION_IDLE );
     _p_body->getBody()->executeAction( p_action, true );
@@ -126,7 +139,7 @@ void PlayerAnimation::actionIdle()
     _action = eIdle;
 }
 
-void PlayerAnimation::actionWalk()
+void EnPlayerAnimation::actionWalk()
 {
     ActionRequest* p_action = _p_body->getBody()->getActionPrototype( ACTION_WALK );
     _p_body->getBody()->executeAction( p_action, false );
@@ -140,7 +153,7 @@ void PlayerAnimation::actionWalk()
     _action = eWalk;
 }
 
-void PlayerAnimation::actionJump()
+void EnPlayerAnimation::actionJump()
 {
     ActionRequest* p_action = _p_body->getBody()->getActionPrototype( ACTION_JUMP );
     _p_body->getBody()->executeAction( p_action, false );
