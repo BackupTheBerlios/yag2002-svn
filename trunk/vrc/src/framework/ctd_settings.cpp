@@ -156,7 +156,7 @@ bool Settings::load( const std::string& filename )
         _p_stream = p_stream;
         _p_stream->close();
         _loaded   = true;
-        return true;
+        return false;
     }
 
     _p_stream = p_stream; 
@@ -273,7 +273,6 @@ bool Settings::store( const string& filename )
     _p_stream->close();
 
     return true;
-
 }
 
 bool Settings::read( const string& token, string& value )
