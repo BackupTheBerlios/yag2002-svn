@@ -211,8 +211,6 @@ void Application::run()
         // fire off the cull and draw traversals of the scene.
         _p_viewer->frame();
 
-        // wait for all cull and draw threads to complete.
-        _p_viewer->sync();
     }
 
     // exit viewer
