@@ -148,6 +148,13 @@ int Message( int iMsgId, void *pMsgStruct )
         }
         break;
 
+        case CTD_PLUGIN_MSG_POSTINITIALIZE:
+        {
+            // notify all entities about entering the menu
+            Framework::Get()->SendEntityMessage( CTD_ENTITY_ENTER_MENU, ( void* )NULL );
+        }
+        break;
+
         // 3d rendering phase
         case CTD_PLUGIN_MSG_RENDER_3D:
 
