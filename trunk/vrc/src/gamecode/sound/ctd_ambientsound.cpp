@@ -53,10 +53,14 @@ _soundState( NULL )
     //! Note: this entity needs no periodic updating
 
     // register entity attributes
+    _attributeManager.addAttribute( "resourcedir" , _soundFileDir   );
     _attributeManager.addAttribute( "soundfile",    _soundFile      );
     _attributeManager.addAttribute( "loop",         _loop           );
     _attributeManager.addAttribute( "autoplay",     _autoPlay       );
     _attributeManager.addAttribute( "volume",       _volume         );
+
+    // this entity does not need a periodic update
+    activate( false );
 }
 
 EnAmientSound::~EnAmientSound()
@@ -66,15 +70,19 @@ EnAmientSound::~EnAmientSound()
 
 void EnAmientSound::initialize()
 {
+    osgAL::SoundManager::instance()->addFilePath( Application::get()->getMediaPath() + _soundFileDir );
+
     openalpp::Sample* p_sample = NULL;
     try {
 
-        p_sample = new openalpp::Sample( string( Application::get()->getMediaPath() + _soundFile ).c_str() );
+        p_sample = osgAL::SoundManager::instance()->getSample( _soundFile );
+        if ( !p_sample )
+            return;
 
-    } catch ( openalpp::Error error )
+    } 
+    catch ( openalpp::Error error )
     {
         cout << "*** error loading sound file" << endl;
-        activate( false );
         return;
     }
 

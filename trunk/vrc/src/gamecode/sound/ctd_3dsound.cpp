@@ -56,6 +56,7 @@ _soundState( NULL )
     EntityManager::get()->registerUpdate( this );   // register entity in order to get updated per simulation step
 
     // register entity attributes
+    _attributeManager.addAttribute( "resourcedir" , _soundFileDir   );
     _attributeManager.addAttribute( "soundfile",    _soundFile      );
     _attributeManager.addAttribute( "position",     _position       );
     _attributeManager.addAttribute( "loop",         _loop           );
@@ -77,12 +78,18 @@ En3DSound::~En3DSound()
 
 void En3DSound::initialize()
 {
+    // set file search path for sound resources
+    osgAL::SoundManager::instance()->addFilePath( Application::get()->getMediaPath() + _soundFileDir );
+
     openalpp::Sample* p_sample = NULL;
     try {
 
-        p_sample = new openalpp::Sample( string( Application::get()->getMediaPath() + _soundFile ).c_str() );
+        p_sample = osgAL::SoundManager::instance()->getSample( _soundFile );
+        if ( !p_sample )
+            return;
 
-    } catch ( openalpp::Error error )
+    } 
+    catch ( openalpp::Error error )
     {
         cout << "*** error loading sound file" << endl;
         activate( false );
@@ -123,7 +130,7 @@ void En3DSound::initialize()
         osg::Node* p_mesh = LevelManager::get()->loadMesh( "sound/soundsrc.osg" );
         if ( p_mesh )
         {
-            addTransformableNode( p_mesh );
+            addToTransformableNode( p_mesh );
             setPosition( _position );
         } else
             cout << "*** error loading mesh file for sound source 'sound/soundsrc.osg'" << endl;

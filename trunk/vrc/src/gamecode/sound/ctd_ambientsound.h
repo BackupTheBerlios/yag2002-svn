@@ -60,6 +60,9 @@ class EnAmientSound : public BaseEntity
 
     protected:
 
+        //! Resource directory for searching for sound files
+        std::string                                 _soundFileDir;
+
         //! Sound file name
         std::string                                 _soundFile;
 
