@@ -4,6 +4,7 @@
 	Version="7.10"
 	Name="VRC"
 	ProjectGUID="{7556DEC2-DC66-4460-B66E-F630DBB669F0}"
+	RootNamespace="VRC"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -36,7 +37,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsWin32d.lib osgd.lib osgDBd.lib osgGAd.lib osgProducerd.lib osgUtild.lib osgALd.lib osgCald.lib oalppd.lib Cal3d_d.lib Producerd.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib tinyxmld.lib Newton.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsWin32d.lib osgd.lib osgDBd.lib osgGAd.lib osgProducerd.lib osgUtild.lib osgALd.lib osgCald.lib oalppd.lib Cal3d_d.lib Producerd.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib tinyxmld.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib"
 				OutputFile="../../../../bin/win32/vrc_debug.exe"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
@@ -87,7 +88,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgProducer.lib osgUtil.lib osgAL.lib osgCal.lib oalpp.lib Cal3d.lib Producer.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib tinyxml.lib Newton.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgProducer.lib osgUtil.lib osgAL.lib osgCal.lib oalpp.lib Cal3d.lib Producer.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib tinyxml.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib"
 				OutputFile="../../../../bin/win32/vrc.exe"
 				AdditionalLibraryDirectories=""/>
 			<Tool
@@ -161,10 +162,34 @@
 				RelativePath="..\..\..\..\src\framework\ctd_baseentity.inl">
 			</File>
 			<File
+				RelativePath="..\..\..\..\src\framework\ctd_configuration.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\ctd_configuration.h">
+			</File>
+			<File
 				RelativePath="..\..\..\..\src\framework\ctd_entitymanager.cpp">
 			</File>
 			<File
 				RelativePath="..\..\..\..\src\framework\ctd_entitymanager.h">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\ctd_guimanager.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\ctd_guimanager.h">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\ctd_guirenderer.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\ctd_guirenderer.h">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\ctd_guitexture.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\ctd_guitexture.h">
 			</File>
 			<File
 				RelativePath="..\..\..\..\src\framework\ctd_levelmanager.cpp">
