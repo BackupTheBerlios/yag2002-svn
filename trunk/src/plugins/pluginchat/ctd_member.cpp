@@ -49,7 +49,7 @@ namespace CTD_IPluginChat {
 
 
 // uncomment this define when the gui test is completed, use this mode only with standalone simulation
-//#define GUI_TEST  1
+#define GUI_TEST  1
 
 // plugin global entity descriptor for chat member
 CTDChatMemberDesc   g_pkChatMemberEntity_desc;
@@ -250,6 +250,15 @@ void CTDChatMember< InterpolatorT, InterpolatorRotT >::PostInitialize()
         m_pkEntityGui = Framework::Get()->FindEntity( CTD_ENTITY_NAME_Gui );
 
     }
+
+
+#ifdef GUI_TEST
+
+    if ( m_pkEntityGui ) {
+        m_pkEntityGui->NetworkMessage( CTD_NM_SYSTEM_NOTIFY_CONNECTION_ESTABLISHED, NULL );
+    }
+#endif
+
 }
 
 template< class InterpolatorT, class InterpolatorRotT >
