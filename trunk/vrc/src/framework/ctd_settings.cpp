@@ -189,6 +189,9 @@ bool Settings::load( const std::string& filename )
         if ( p_setting->getTypeInfo() == typeid( int ) ) {
             read( p_setting->getTokenName(), static_cast< Setting< int >* >( p_setting )->_value );
         } else 
+        if ( p_setting->getTypeInfo() == typeid( unsigned int ) ) {
+            read( p_setting->getTokenName(), static_cast< Setting< unsigned int >* >( p_setting )->_value );
+        } else 
         if ( p_setting->getTypeInfo() == typeid( string ) ) {
             read( p_setting->getTokenName(), static_cast< Setting< string >* >( p_setting )->_value );
         } else 
@@ -248,6 +251,9 @@ bool Settings::store( const string& filename )
         } else 
         if ( p_setting->getTypeInfo() == typeid( int ) ) {
             write( p_setting->getTokenName(), static_cast< Setting< int >* >( p_setting )->_value );
+        } else
+        if ( p_setting->getTypeInfo() == typeid( unsigned int ) ) {
+            write( p_setting->getTokenName(), static_cast< Setting< unsigned int >* >( p_setting )->_value );
         } else 
         if ( p_setting->getTypeInfo() == typeid( string ) ) {
             write( p_setting->getTokenName(), static_cast< Setting< string >* >( p_setting )->_value );
@@ -319,6 +325,17 @@ bool Settings::read( const string& token, int& value )
     return true;
 }
 
+bool Settings::read( const string& token, unsigned int& value )
+{
+    string  strvalue;
+    if ( read( token, strvalue ) == false )
+        return false;
+
+    stringstream strstream( strvalue );
+    strstream >> value;
+    return true;
+}
+
 bool Settings::read( const string& token, float& value )
 {
     string  strvalue;
@@ -355,6 +372,14 @@ bool Settings::write( const string& token, const bool& value )
 }
 
 bool Settings::write( const string& token, const int& value )
+{
+    stringstream str;
+    str << token << "=" << value << "\r\n";
+    _fileBuffer += str.str();
+    return true;
+}
+
+bool Settings::write( const string& token, const unsigned int& value )
 {
     stringstream str;
     str << token << "=" << value << "\r\n";

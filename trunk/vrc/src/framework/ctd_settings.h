@@ -183,6 +183,9 @@ class Settings
         //! Helper method for writing one setting of type integer
         bool                                    write( const std::string& token, const int& value );
 
+        //! Helper method for writing one setting of type unsigned integer
+        bool                                    write( const std::string& token, const unsigned int& value );
+
         //! Helper method for writing one setting of type float
         bool                                    write( const std::string& token, const float& value );
 
@@ -197,6 +200,9 @@ class Settings
 
         //! Helper method for reading given setting and its value of type integer
         bool                                    read( const std::string& token, int& value );
+
+        //! Helper method for reading given setting and its value of type unsigned integer
+        bool                                    read( const std::string& token, unsigned int& value );
 
         //! Helper method for reading given setting and its value of type float
         bool                                    read( const std::string& token, float& value );
