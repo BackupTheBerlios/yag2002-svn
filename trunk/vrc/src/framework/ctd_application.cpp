@@ -131,6 +131,8 @@ bool Application::initialize( int argc, char **argv )
     Producer::RenderSurface* p_rs = p_cam->getRenderSurface();
     p_rs->setWindowRectangle( 100, 100, _screenWidth, _screenHeight );
     p_rs->fullScreen( false );
+    p_rs->useCursor( false ); //hide cursor
+
 
     // get details on keyboard and mouse bindings used by the viewer.
     _p_viewer->getUsage( *arguments.getApplicationUsage() );
