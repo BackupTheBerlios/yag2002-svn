@@ -39,9 +39,6 @@
 #include <CEGUITexture.h>
 #include <ctd_guirenderer.h>
 
-#include <list>
-
-
 namespace CTD
 {
 
