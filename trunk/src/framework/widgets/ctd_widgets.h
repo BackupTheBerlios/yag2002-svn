@@ -48,6 +48,7 @@
 #include <GUI/guiCScreen.h>
 #include <GUI/guiCWindow.h>
 #include <GUI/guiCallback.h>
+#include <GUI/guiCTypes.h>
 #include <Utility/utlMacros.h>
 #include <Utility/utlVector.h>
 #include <Utility/utlPulseTypes.h>

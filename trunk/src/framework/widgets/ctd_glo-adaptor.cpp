@@ -48,6 +48,7 @@
 #include <Render/rendCBase.h>
 #include <Render/rendMesh.h>
 #include <Main/mainGG.h>
+#include <Data/dataManager.h>
 
 #include "ctd_glo-adaptor.h"
 
@@ -132,19 +133,19 @@ void GLOAdaptor::Initialize()
 {
 
     if ( m_bInitialized == true ) {
-
         return;
-
     }
 
     m_bInitialized      = true;
 
     // init the GLO gui system
+
     // create and setup the input manager
     g_pkInputGroup      = new InputGroup;
     g_pkInputManager    = new inputManager_Neo( g_pkInputGroup );
     g_pkInputGroup->AttachEntity( ( InputEntity* )NeoEngine::Core::Get()->GetConsole() );
     g_pkInputManager->Configure  ( NULL );
+
 
     g_pkRenderManager   = new rendManager_Neo();
 
@@ -167,6 +168,9 @@ void GLOAdaptor::Shutdown()
 
     // shutdown the GLO gui system
     GG_ShutDown();
+    dataManager::p().ShutDown( PT_SYSTEM );
+    g_pkRenderManager->ShutDown( PT_SYSTEM );
+
 
 }
 

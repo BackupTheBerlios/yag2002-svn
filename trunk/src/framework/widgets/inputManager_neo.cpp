@@ -124,7 +124,18 @@ void inputManager_Neo::Input( const NeoEngine::InputEvent *pkEvent )
             ProcessKeyInput( WM_KEYDOWN, iKeyCode, iCharKeyData );
 
         }
-     
+
+        // process callbacks
+        vector< WidgetInput* >::iterator    pkCalback    = m_vpkInputCallbacks.begin();
+        vector< WidgetInput* >::iterator    pkCalbackEnd = m_vpkInputCallbacks.end();
+        
+        while ( pkCalback != pkCalbackEnd ) {
+        
+            ( *pkCalback )->OnInput( pkEvent );
+            pkCalback++;
+
+        }
+
     } 
 
     if( pkEvent->m_iType == IE_MOUSEDOWN )
@@ -158,17 +169,6 @@ void inputManager_Neo::Input( const NeoEngine::InputEvent *pkEvent )
             }
 
         }
-
-    }
-
-    // process callbacks
-    vector< WidgetInput* >::iterator    pkCalback    = m_vpkInputCallbacks.begin();
-    vector< WidgetInput* >::iterator    pkCalbackEnd = m_vpkInputCallbacks.end();
-    
-    while ( pkCalback != pkCalbackEnd ) {
-    
-        ( *pkCalback )->OnInput( pkEvent );
-        pkCalback++;
 
     }
 

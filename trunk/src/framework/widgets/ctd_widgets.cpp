@@ -62,6 +62,12 @@ Widgets::~Widgets()
 bool Widgets::Initialize()
 {
 
+    // force a reinitialization when already initialized
+    if ( m_bInitialized == true ) {
+
+        m_pImpGLOAdaptor->Shutdown();
+
+    }
     m_pImpGLOAdaptor->Initialize();
 
     m_bInitialized = true;
