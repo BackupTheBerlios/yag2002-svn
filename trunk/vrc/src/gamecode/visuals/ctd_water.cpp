@@ -157,7 +157,6 @@ _sizeX( 5000.0f ),
 _sizeY( 5000.0f ),
 _subDevisionsX( 100 ),
 _subDevisionsY( 100 ),
-_height( 0.0f ),
 _viscosity( 0.005f ), 
 _speed( 100.0f ),
 _stimulationRate( 3 ),
@@ -173,7 +172,7 @@ _p_geom( NULL )
     _attributeManager.addAttribute( "sizeY"                 , _sizeY                 );
     _attributeManager.addAttribute( "subdivX"               , _subDevisionsX         );
     _attributeManager.addAttribute( "subdivY"               , _subDevisionsY         );
-    _attributeManager.addAttribute( "height"                , _height                );
+    _attributeManager.addAttribute( "position"              , _position              );
     _attributeManager.addAttribute( "viscosity"             , _viscosity             );
     _attributeManager.addAttribute( "waveSpeed"             , _speed                 );
     _attributeManager.addAttribute( "stimulationAmplitude"  , _amplitude             );
@@ -195,7 +194,8 @@ EnWater::~EnWater()
 
 void EnWater::initialize()
 {
-    static_cast< Group* >( Application::get()->getSceneRootNode() )->addChild( makeMesh() );
+    addToTransformableNode( makeMesh() );
+    setPosition( _position );
 
     _stimulationPeriod = 1.0f / _stimulationRate;
     // calculate the liquid equation constants
@@ -299,9 +299,9 @@ osg::Node* EnWater::addRefractStateSet( osg::Node* node )
     // set blending for transparency
     BlendFunc* p_blend = new osg::BlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     stateset->setAttribute( p_blend );
-	stateset->setMode( GL_BLEND,osg::StateAttribute::ON );		
-	stateset->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
-    stateset->setRenderBinDetails( -1, "RenderBin" );
+    stateset->setMode( GL_BLEND,osg::StateAttribute::ON );      
+    stateset->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
+    //stateset->setRenderBinDetails( 1, "RenderBin" );
 
     osg::Group* group = new osg::Group;
     group->addChild( node );
@@ -321,9 +321,9 @@ Node* EnWater::makeMesh()
 
     _posArray1     = new Vec3Array();
     _posArray2     = new Vec3Array();
-    _normArray    = new Vec3Array();
-    Vec3Array*  p_posArray1     = _posArray1.get();
-    Vec3Array*  p_posArray2     = _posArray2.get();
+    _normArray     = new Vec3Array();
+    Vec3Array*  p_posArray1    = _posArray1.get();
+    Vec3Array*  p_posArray2    = _posArray2.get();
     Vec3Array*  p_normArray    = _normArray.get();
     Vec2Array*  p_tcoordArray  = new Vec2Array();
     p_posArray1->resize( _subDevisionsX * _subDevisionsY );
