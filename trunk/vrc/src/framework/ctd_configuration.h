@@ -53,6 +53,7 @@ namespace CTD
 #define CTD_GS_SCREENHEIGHT             "screenHeight"
 #define CTD_GS_GUISCHEME                "guiScheme"
 #define CTD_GS_PLAYERNAME               "playerName"
+#define CTD_GS_MOUSESENS                "mouseSensitivity"
 
 
 class Application;
@@ -98,6 +99,8 @@ class Configuration : public Singleton< Configuration >
         std::string                             _guiScheme;
 
         std::string                             _playerName;
+
+        float                                   _mouseSensivity;
 
     friend class Singleton< Configuration >;
     friend class Application;
