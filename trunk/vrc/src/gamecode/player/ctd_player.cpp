@@ -134,7 +134,6 @@ void EnPlayer::postInitialize()
 void EnPlayer::updateEntity( float deltaTime )
 {
     _p_playerPhysics->update( deltaTime );
-    _p_playerAnimation->update( deltaTime );
 }
 
 // input handler implementation
