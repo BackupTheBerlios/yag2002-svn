@@ -50,6 +50,8 @@
 #include <neoengine/scenenode.h>
 #include <neoengine/core.h>
 #include <neoengine/aabb.h>
+#include <neoengine/sphere.h>
+#include <neoengine/light.h>
 
 #include <ctd_framework.h>
 #include <ctd_descriptor.h>
