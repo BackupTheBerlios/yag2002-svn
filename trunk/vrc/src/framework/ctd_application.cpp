@@ -34,6 +34,8 @@
 #include "ctd_levelmanager.h"
 #include "ctd_entitymanager.h"
 #include "ctd_physics.h"
+#include "ctd_guimanager.h"
+#include "ctd_configuration.h"
 #include "ctd_log.h"
 
 #include <osg/VertexProgram>
@@ -49,7 +51,9 @@ Application::Application():
 _entityManager( EntityManager::get() ),
 _running( false ),
 _p_viewer( NULL ),
-_p_rootSceneNode( NULL )
+_p_rootSceneNode( NULL ),
+_screenWidth( 600 ),
+_screenHeight( 400 )
 {
 }
 
@@ -63,6 +67,8 @@ void Application::shutdown()
     LevelManager::get()->shutdown();
     _p_soundManager->shutdown();
     _p_physics->shutdown();
+    Configuration::get()->shutdown();
+    _p_guiManager->shutdown();
     delete _p_viewer;
 
     destroy();
@@ -71,7 +77,6 @@ void Application::shutdown()
 bool Application::initialize( int argc, char **argv )
 {
     string levelname;
-
     // use an ArgumentParser object to manage the program arguments.
     osg::ArgumentParser arguments(&argc,argv);
     ArgumentParser::Parameter levelparam( levelname );
@@ -88,7 +93,7 @@ bool Application::initialize( int argc, char **argv )
         arguments.writeErrorMessages( cout );
     }
 
-    // set the media path
+    // set the media path as first step, other modules need the variable _mediaPath
     //-------------------
     _mediaPath = arguments.getApplicationName();
     //  clean path
@@ -98,6 +103,12 @@ bool Application::initialize( int argc, char **argv )
     tmp = tmp.substr( 0, tmp.rfind( "/" ) );
     _mediaPath = tmp;
     _mediaPath += "/media/";
+    //-------------------
+
+    // load the settings
+    //-------------------
+    Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  _screenWidth );
+    Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, _screenHeight );
     //-------------------
 
     // setup log system
@@ -118,9 +129,10 @@ bool Application::initialize( int argc, char **argv )
     // set fullscreen / windowed mode
     Producer::Camera *p_cam = _p_viewer->getCamera(0);
     Producer::RenderSurface* p_rs = p_cam->getRenderSurface();
+    p_rs->setWindowRectangle( 100, 100, _screenWidth, _screenHeight );
     p_rs->fullScreen( false );
 
-    //// get details on keyboard and mouse bindings used by the viewer.
+    // get details on keyboard and mouse bindings used by the viewer.
     _p_viewer->getUsage( *arguments.getApplicationUsage() );
 
     log << Log::LogLevel( Log::L_INFO ) << "initializing physics" << endl;
@@ -138,7 +150,7 @@ bool Application::initialize( int argc, char **argv )
     setSceneRootNode( sceneroot.get() );
     // level manager sets the scene data in Application
     _p_viewer->setSceneData( sceneroot.get() );
-
+ 
     // finalize physics initialization when all entities are created
     assert( _p_physics->finalize( _p_rootSceneNode ) );
     // enable physics debug rendering
@@ -166,8 +178,12 @@ bool Application::initialize( int argc, char **argv )
     _entityManager->initializeEntities();
     _entityManager->postInitializeEntities();
 
-    log << Log::LogLevel( Log::L_INFO ) << "initialization  succeeded" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "initializing gui system..." << endl;
+    // initialize the gui system
+    _p_guiManager = GuiManager::get();
+    _p_guiManager->initialize();
 
+    log << Log::LogLevel( Log::L_INFO ) << "initialization  succeeded" << endl;
     return true;
 }
 
@@ -204,13 +220,15 @@ void Application::run()
         // update physics
         _p_physics->update( deltaTime );
 
+        // update gui manager
+        _p_guiManager->update( deltaTime );
+
         // update the scene by traversing it with the the update visitor which will
         // call all node update callbacks and animations.
         _p_viewer->update();
          
         // fire off the cull and draw traversals of the scene.
         _p_viewer->frame();
-
     }
 
     // exit viewer

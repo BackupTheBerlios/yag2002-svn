@@ -39,6 +39,7 @@ namespace CTD
 
 class LevelManager;
 class EntityManager;
+class GuiManager;
 class Physics;
 
 //! Application
@@ -65,10 +66,13 @@ class Application : public Singleton< Application >
         inline osgProducer::Viewer*                 getViewer();
 
         //! Get the top node in scenegraph
-        inline osg::Node*                           getSceneRootNode();
+        inline osg::Group*                          getSceneRootNode();
 
         //! Set the top node in scenegraph, be carefull using this method!
-        inline void                                 setSceneRootNode( osg::Node* p_root );
+        inline void                                 setSceneRootNode( osg::Group* p_root );
+
+        //! Get screen size in width and height
+        inline void                                 getScreenSize( unsigned int& x, unsigned int& y );
 
     protected:
 
@@ -83,11 +87,17 @@ class Application : public Singleton< Application >
 
         osgAL::SoundManager*                        _p_soundManager;
 
+        GuiManager*                                 _p_guiManager;
+
         Physics*                                    _p_physics;
 
         osgProducer::Viewer*                        _p_viewer;
 
-        osg::Node*                                  _p_rootSceneNode;
+        unsigned int                                _screenWidth;
+
+        unsigned int                                _screenHeight;
+
+        osg::Group*                                 _p_rootSceneNode;
 
         std::string                                 _mediaPath;
 
@@ -104,14 +114,20 @@ inline const std::string& Application::getMediaPath()
     return _mediaPath;
 }
 
-inline void Application::setSceneRootNode( osg::Node* p_root )
+inline void Application::setSceneRootNode( osg::Group* p_root )
 {
     _p_rootSceneNode = p_root;
 }
 
-inline osg::Node* Application::getSceneRootNode()
+inline osg::Group* Application::getSceneRootNode()
 {
     return _p_rootSceneNode;
+}
+        
+inline void Application::getScreenSize( unsigned int& x, unsigned int& y )
+{
+    x = _screenWidth;
+    y = _screenHeight;
 }
 
 }
