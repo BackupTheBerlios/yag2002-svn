@@ -680,11 +680,8 @@ void CTDCal3DAnim::Render()
 // update animation state
 void CTDCal3DAnim::UpdateAnim(const float &fElapsedTime)
 {
-
 	m_fElapsedTime = fElapsedTime;
-
 	m_calModel.update(m_fElapsedTime);
-
 }
 
 
@@ -775,8 +772,6 @@ void CTDCal3DAnim::Landing()
 
 bool CTDCal3DAnim::IsLanded()
 {
-
-
 	if (m_fLandingTimer < 0.0f) {
 	
 		return true;
@@ -789,14 +784,12 @@ bool CTDCal3DAnim::IsLanded()
 
 void CTDCal3DAnim::Stop()
 {
-
 	Idle();
-
 }
 
 void CTDCal3DAnim::Turn()
 {
-
+    Walk();
 }
 
 void CTDCal3DAnim::Look(const float &angleX, const float &angleY)
