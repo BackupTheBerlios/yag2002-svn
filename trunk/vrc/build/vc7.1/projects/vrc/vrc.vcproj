@@ -254,6 +254,12 @@
 				<File
 					RelativePath="..\..\..\..\src\gamecode\player\ctd_playerphysics.h">
 				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\player\ctd_playersound.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\player\ctd_playersound.h">
+				</File>
 				<Filter
 					Name="nw-roles"
 					Filter="">
