@@ -42,12 +42,11 @@
 
 
 #include <neoengine/base.h>
+#include <neoengine/directory.h>
 #include <neoengine/nemath.h>
 #include <neoengine/mesh.h>
 #include <neoengine/logstream.h>
 #include <neoengine/renderentity.h>
-#include <neochunkio/scene.h>
-#include <neochunkio/mesh.h>
 #include <neoengine/sprite.h>
 #include <neoengine/sceneentity.h>
 #include <neoengine/scenenode.h>
@@ -56,6 +55,9 @@
 #include <neoengine/aabb.h>
 #include <neoengine/inputentity.h>
 #include <neoengine/light.h>
+#include <neochunkio/materiallib.h>
+#include <neochunkio/scene.h>
+#include <neochunkio/mesh.h>
 
 #include <ctd_descriptor.h>
 #include <ctd_baseentity.h>
