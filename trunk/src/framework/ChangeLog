@@ -1,0 +1,137 @@
+
+boto ( 10/08/2004 )
+
+- small bugfix in send plugin and entity message method
+
+boto ( 10/04/2004 )
+
+- new todos have been implemented
+
+boto ( 10/02/2004 )
+
+- new todos:
+
+1. framework must have methods to hold several sets of plugin managers and rooms ( level sets ) instead of one single room and plugin manager, thus switching between them would be simpler
+2. it should be possible to activate / deactivate level sets
+3. it should be possible to search for plugin managers and rooms by name
+4. the game loop should update only active level sets
+5. framework's LoadLevel should create new plugin manager and room and push them into new created level set ( loading a level results in a new level set )
+6. it should be possible to destroy level sets ( given their name ), thus incremental level loading would be possible
+
+boto ( 09/27/2004 )
+
+- generated api docs using doxygen
+- framework redesign completed
+
+boto ( 09/24/2004 )
+
+- begin redesigning of framework and source directory structure
+
+boto ( 09/10/2004 )
+
+- added a timeout in server for pending client connections, thus avoiding server's connection deadlock
+
+- GLO gui system is now integrated into CTDWidget::Widgets core
+
+- i have still problems with player's smoothing algorithm ( dead-reckoning ) for rotation and positioning
+
+boto ( 09/06/2004 )
+
+- CTDEngineInterface renamed to CTDFramework, we no longer need an engine interface as there are no dynamic libs anymore
+
+
+boto ( 08/29/2004 )
+
+- the framework has been adapted to reflect the changes due to usage of static engine libs
+
+- the plugins are now also static libs, no dynamic libs can be built anymore due to static engine libs :-(
+
+- rendering phase has been moved to framework ( ctd_application.cpp ). it can not be handled in plugins any longer
+
+boto ( 08/24/2004 ) 
+
+- adaptations of framework and plugins in order to use static engine libs instead of dynamic libs
+
+boto ( 08/04/2004 ) 
+
+- added start level and exit game items to menu
+- changed the was how entities get updated. no updates anymore during room's updatin
+   as entity ( scene node ) translations can cause removing and adding the node to another
+   node which causes a crash in room manger.
+   the new entity update function is called 'UpdateEntity' instead of SceneNode overriden 'Update'
+- vc7.0 solution changed to vc7.1
+
+boto ( 07/30/2004 ) 
+
+- loading a level can now be done using the menu system
+
+boto ( 07/28/2004 ) 
+
+- added settings manager
+
+boto ( 05/27/2004 ) 
+
+- modified the level loader to allow loading also bsp scenes
+
+
+boto ( 05/13/2004 ) 
+
+- start implementation of 3d menu
+- networking core is further refined and tested, some features ( such as peer-to-peer connection support ) are still missing
+
+boto ( 05/02/2004 )
+
+- finished implementation of server/client negotiation, and remote client object 
+   initialization
+
+
+boto ( 04/14/2004 )
+
+- networking core in framework has been further refined
+- extended plugin manager by functions to find entity descriptors
+- extended entity descriptor by function GetNetworkingType(); 
+  this returns the networking mode: none, network server object or network client object
+
+boto ( 04/07/2004 )
+
+- start adding networking support using RakNet
+
+
+boto ( 03/08/2004 )
+
+- added multiple data subdirectory support in engine configuration file, the first element must be 
+  the top level data directory!
+
+
+boto ( 02/23/2004 )
+
+- further bug-fix for releasing plugins
+
+
+boto ( 02/16/2004 )
+
+- bug-fix for releasing plugins
+
+
+boto ( 02/08/2004 )
+
+- added file-based input key configuration into engine interface
+
+
+boto ( 01/07/2004)
+
+- added releasing of entities and plugins into plugin manager
+
+boto ( 12/09/2003)
+
+- added an engine interface accessible to plugins with most important simulation control functions. 
+
+
+boto ( 11/05/2003)
+
+-  creation of a core for all initializations and level start-ups
+
+  + level loader which reads a level file is in xml format and allows the description of map file, 
+     plugins, entities and their parameterization, etc.
+     
+  + plugin manager for loading and managing plugins and their entities

@@ -1,0 +1,59 @@
+
+boto ( 10/08/2004 )
+
+- adaptations to new framework completed
+
+boto ( 09/09/2004 )
+
+- refactored the pluing for building with static libs
+
+
+boto ( 03/25/2004 )
+
+- fixed a bug in animated mesh entity related to updating pos/rot during animation
+
+
+boto ( 03/23/2004 )
+
+- added a base particle system
+- added fountain particle system entity
+
+
+boto ( 03/21/2004 )
+
+- added sprite entity
+
+
+boto ( 02/23/2004 )
+
+- added keyframe animated mesh entity
+
+
+boto ( 02/09/2004 )
+
+- added skybox entity
+
+
+boto ( 02/07/2004 )
+
+- removed gpu prog entity and related link in static mesh entity, as the engine can handle gpu progs in
+   a convenient way, now.
+ 
+
+boto ( 01/07/2004)
+
+- added right handling of gpu programs avoiding multiple compilation and uploading of same gpu program
+
+
+boto ( 01/06/2004)
+
+- static mesh: added dynamic lighting via point lighting entity
+
+
+boto ( 01/04/2004)
+
+- creation of cg shader entity for point lighting ( with up to 3 light sources )
+
+ + problem: the vertex program core of neoengine cannot handle multiple instantiation of one program => several intances 
+    result in several compilations and gpu uploads.
+    

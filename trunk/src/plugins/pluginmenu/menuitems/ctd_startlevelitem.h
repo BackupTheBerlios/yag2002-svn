@@ -1,0 +1,145 @@
+/****************************************************************
+ *  3D Game 'Capture The Diamond'
+ *  Copyright (C) 2002-2004, Ali Botorabi
+ *
+ *  This program is free software; you can redistribute it and/or 
+ *  modify it under the terms of the GNU General Public License 
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public 
+ *  License along with this program; if not, write to the Free 
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  MA  02111-1307  USA
+ * 
+ ****************************************************************/
+
+/*###############################################################
+ # neoengine, start level item for 3d menu
+ #  this item allows immediately starting of preset level
+ #
+ #
+ #   date of creation:  07/29/2004
+ #
+ #   author:            ali botorabi (boto) 
+ #      e-mail:         botorabi@gmx.net
+ #
+ # change history:
+ #
+ #  date       nick name  comment
+ #----------------------------------------------------------
+ #  07/29/2004 boto       creation of CTDMenuStartLevelItem
+ #
+ ################################################################*/
+
+#ifndef _CTD_MENUSTARTLEVELITEM_H_
+#define _CTD_MENUSTARTLEVELITEM_H_
+
+
+#include "../base.h"
+#include "ctd_menuitem.h"
+#include "../ctd_menucontrol.h"
+#include <string>
+
+namespace CTD_IPluginMenu
+{
+
+// name of this entity
+#define CTD_ENTITY_NAME_MenuStartLevelItem  "MenuStartLevelItem"
+
+class CTDMenuStartLevelItem: public CTDMenuItem
+{
+
+	public:
+
+													CTDMenuStartLevelItem();
+													~CTDMenuStartLevelItem();
+
+		//******************************* override some functions **********************************//
+
+		/**
+		* Initializing function
+		*/
+		void										Initialize();
+
+		/**
+		* Post-initializing function, this is called after all plugins' entities are initilized.
+		* One important usage of this function is to search and attach entities to eachother, after all entities are initialized.
+		*/
+		 void										PostInitialize();
+
+		/**
+		* Update object
+		* \param fDeltaTime                         Time passed since last update
+		*/
+		void									    UpdateEntity( float fDeltaTime );
+
+		/**
+		* Messaging function.
+		* \param  iMsgId                            Message ID
+		* \param  pMsgStruct                        Message specific data structure
+		* \return                                   This return value is message specific.
+		*/
+		int											Message( int iMsgId, void *pkMsgStruct );
+
+		/**
+		* Call back funtion for beginning with focus state. This function is called when 
+		*  the user activates an item.
+		*/
+		void										OnBeginFocus();
+
+		/**
+		* Call back funtion for ending with focus state. This function is called when 
+		*  the user changes the focus to another item.
+		*/
+		void										OnEndFocus();
+
+		/**
+		* Call back funtion for getting activated. This function is called when 
+		*  the user activates an item, e.g. by pressing enter for a focused item.
+		*/
+		void										OnActivate();
+
+		//*******************************************************************************************//
+
+		int											ParameterDescription( int iParamIndex, CTD::ParameterDescriptor *pkDesc );
+
+		//******************************************************************************************//
+
+	protected:
+
+        //! Start networking in client mode
+        std::string                                 StartNetworking();
+
+		NeoEngine::Vector3d							m_kCurrPosition;
+
+		float										m_fPosVar;
+
+};
+
+
+// descriptor for menu's start level item entity
+class CTDMenuStartLevelItemDesc : public CTD::EntityDescriptor
+{
+
+	public:
+													CTDMenuStartLevelItemDesc() { };
+													~CTDMenuStartLevelItemDesc() { }
+			
+		const std::string&							GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME_MenuStartLevelItem ) }
+		CTD::BaseEntity*							CreateEntityInstance() { return (CTD::BaseEntity*) new CTDMenuStartLevelItem; }
+
+
+};
+
+// global instance of start level item entity is used in dll interface
+extern CTDMenuStartLevelItemDesc g_pkCTDMenuStartLevelItemEntity_desc;
+
+}
+
+#endif //_CTD_MENUSTARTLEVELITEM_H_
