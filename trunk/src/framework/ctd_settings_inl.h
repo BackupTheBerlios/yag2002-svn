@@ -43,114 +43,64 @@
 #endif
 
 
-inline bool Settings::GetValue( const std::string &strSettingName, bool &bValue )
+template< typename TypeT >
+inline bool Settings::RegisterSetting( const std::string &strToken, const TypeT &Value )
 {
 
-    Setting *pkSetting = FindSetting( strSettingName );
+    // check for existing token names, no duplicated are allowed
+    size_t uiTokens = m_vpkSettings.size();
+    for ( size_t uiCnt = 0; uiCnt < uiTokens; uiCnt++ ) {
 
+        if ( m_vpkSettings[ uiCnt ]->GetTokenName() == strToken ) {
+
+            return false;
+
+        }
+
+    }
+    Setting< TypeT > *pkSetting = new Setting< TypeT >( strToken, Value );
+    m_vpkSettings.push_back( pkSetting );
+    
+    return true;
+
+}
+
+template< class TypeT >
+inline bool Settings::GetValue( const std::string &strToken, TypeT& Value )
+{
+
+    SettingBase *pkSetting = FindSetting( strToken );
     if ( pkSetting == NULL ) {
 
         return false;
 
     }
-
-    bValue = pkSetting->m_bValue;
-
+    Value = ( static_cast< Setting< TypeT >* >( pkSetting ) )->m_Value;
     return true;
 
 }
 
-inline bool Settings::SetValue( const std::string &strSettingName, const bool &bValue )
+template< class TypeT >
+inline bool Settings::SetValue( const std::string &strToken, const TypeT& Value )
 {
 
-    Setting *pkSetting = FindSetting( strSettingName );
-
+    SettingBase *pkSetting = FindSetting( strToken );
     if ( pkSetting == NULL ) {
 
         return false;
 
     }
-
-    pkSetting->m_bValue = bValue;
-
+    ( static_cast< Setting< TypeT >* >( pkSetting ) )->m_Value = Value;
     return true;
 
 }
 
-inline bool Settings::GetValue( const std::string &strSettingName, std::string &strValue )
-{
-
-    Setting *pkSetting = FindSetting( strSettingName );
-
-    if ( pkSetting == NULL ) {
-
-        return false;
-
-    }
-
-    strValue = pkSetting->m_strValue;
-
-    return true;
-
-}
-
-inline bool Settings::SetValue( const std::string &strSettingName, const std::string &strValue )
-{
-
-    Setting *pkSetting = FindSetting( strSettingName );
-
-    if ( pkSetting == NULL ) {
-
-        return false;
-
-    }
-
-    pkSetting->m_strValue = strValue;
-
-    return true;
-
-}
-
-inline bool Settings::GetValue( const std::string &strSettingName, int &iValue )
-{
-
-    Setting *pkSetting = FindSetting( strSettingName );
-
-    if ( pkSetting == NULL ) {
-
-        return false;
-
-    }
-
-    iValue = pkSetting->m_iValue;
-
-    return true;
-
-}
-
-inline bool Settings::SetValue( const std::string &strSettingName, const int &iValue )
-{
-
-    Setting *pkSetting = FindSetting( strSettingName );
-
-    if ( pkSetting == NULL ) {
-
-        return false;
-
-    }
-
-    pkSetting->m_iValue = iValue;
-
-    return true;
-
-}
-
-inline Settings::Setting* Settings::FindSetting( const std::string &strToken )
+inline Settings::SettingBase* Settings::FindSetting( const std::string &strToken )
 {
 
     for ( size_t uiCnt = 0; uiCnt < m_vpkSettings.size(); uiCnt++ ) {
 
-        if ( m_vpkSettings[ uiCnt ]->m_strToken == strToken ) {
+        if ( m_vpkSettings[ uiCnt ]->GetTokenName() == strToken ) {
 
             return m_vpkSettings[ uiCnt ];
 

@@ -41,62 +41,21 @@ using namespace std;
 namespace CTD
 {
 
-Settings    *Settings::s_SingletonSettings = NULL;
-
 static const basic_string <char>::size_type npos = -1;
-
-// default settings
-#define CTD_SVALUE_PLAYERNAME       "noname"
-#define CTD_SVALUE_LEVEL            "noname"
-#define CTD_SVALUE_SERVER           "localhost"
-#define CTD_BVALUE_NETWORKING       true
-#define CTD_BVALUE_SERVER           false
-#define CTD_BVALUE_CLIENT           true
-#define CTD_SVALUE_SERVERNAME       "ctd-server"
-#define CTD_SVALUE_SERVERIP         "localhost"
-#define CTD_SVALUE_CLIENTNAME       "ctd-client"
-#define CTD_IVALUE_SERVERPORT       32000
-#define CTD_IVALUE_CLIENTPORT       32001
 
 Settings::Settings()
 {
 
-    // register settings
-    Setting *pkSetting;
-
-    pkSetting   = new Setting( string( CTD_STOKEN_PLAYERNAME ), string( CTD_SVALUE_PLAYERNAME ) );
-    m_vpkSettings.push_back( pkSetting );
-
-    pkSetting   = new Setting( string( CTD_STOKEN_LEVEL ), string( CTD_SVALUE_LEVEL ) );
-    m_vpkSettings.push_back( pkSetting );
-
-    pkSetting   = new Setting( string( CTD_BTOKEN_NETWORKING ), ( bool )CTD_BVALUE_NETWORKING );
-    m_vpkSettings.push_back( pkSetting );
-
-    pkSetting   = new Setting( string( CTD_BTOKEN_SERVER ), ( bool )CTD_BVALUE_SERVER );
-    m_vpkSettings.push_back( pkSetting );
-
-    pkSetting   = new Setting( string( CTD_BTOKEN_CLIENT ), ( bool )CTD_BVALUE_CLIENT );
-    m_vpkSettings.push_back( pkSetting );
-
-    pkSetting   = new Setting( string( CTD_STOKEN_SERVERNAME ), string( CTD_SVALUE_SERVERNAME ) );
-    m_vpkSettings.push_back( pkSetting );
-
-    pkSetting   = new Setting( string( CTD_STOKEN_SERVERIP ), string( CTD_SVALUE_SERVERIP ) );
-    m_vpkSettings.push_back( pkSetting );
-
-    pkSetting   = new Setting( string( CTD_ITOKEN_CLIENTPORT ), ( int )CTD_IVALUE_CLIENTPORT );
-    m_vpkSettings.push_back( pkSetting );
-
-    pkSetting   = new Setting( string( CTD_ITOKEN_SERVERPORT ), ( int )CTD_IVALUE_SERVERPORT );
-    m_vpkSettings.push_back( pkSetting );
-
-    pkSetting   = new Setting( string( CTD_STOKEN_CLIENTNAME ), string( CTD_SVALUE_CLIENTNAME ) );
-    m_vpkSettings.push_back( pkSetting );
+    m_bLoaded = false;
+    m_pkFile  = NULL;
 
 }
 
 Settings::~Settings()
+{
+}
+
+void Settings::Shutdown()
 {
 
     // release all setting elements
@@ -105,110 +64,96 @@ Settings::~Settings()
         delete m_vpkSettings[ uiCnt ];
 
     }
-
-}
-
-void Settings::Shutdown()
-{
-
-    delete s_SingletonSettings;
-    s_SingletonSettings = NULL;
-
-}
-
-
-bool Settings::Load( const std::string &strCfgFileName )
-{
-
-    FILE    *pkFile = NULL;
-    pkFile = fopen( strCfgFileName.c_str(), "rb" );
-
-    // if settings file does not exist then create one
-    if ( pkFile == NULL ) {
-
-        neolog << LogLevel( INFO ) << " creating game settings file '" << strCfgFileName << "'" << endl;
-        
-        // store default settings
-        Store( strCfgFileName );
-        
-        pkFile = fopen( strCfgFileName.c_str(), "rb" );
-        if ( pkFile == NULL ) {
-
-            neolog << LogLevel( ERROR ) << "*** cannot load game settings file '" << strCfgFileName << "'" << endl;
-            return false;
-
-        }
-
-    }
-
-    // reset the file buffer
+    m_bLoaded       = false;
     m_strFileBuffer = "";
+    delete m_pkFile;
 
-    char    cBuffer;
-    while( fread( &cBuffer, sizeof( char ), 1, pkFile ) != 0 ) {
+}
 
-        m_strFileBuffer += cBuffer;
+bool Settings::Load( const std::string &strSettingsFile )
+{
+
+    m_pkFile = NeoEngine::Core::Get()->GetFileManager()->GetByName( strSettingsFile );
+    if ( !m_pkFile ) {
+        
+        neolog << LogLevel( INFO ) << "*** cannot find settings file '" << strSettingsFile << "'" << endl;
+        return false;
 
     }
-    fclose( pkFile );
+    return Load( m_pkFile );
 
+}
 
-    Setting *pkSetting;
+bool Settings::Load( File *pkFile )
+{
 
-    // read registered settings
-    pkSetting = FindSetting( CTD_STOKEN_PLAYERNAME );           
-    assert ( pkSetting );
-    ReadString( string( CTD_STOKEN_PLAYERNAME ), pkSetting->m_strValue );
+    if ( !m_pkFile->Open( "", m_pkFile->GetName(), ios_base::in | ios_base::binary ) ) {
 
-    pkSetting = FindSetting( CTD_STOKEN_LEVEL );            
-    assert ( pkSetting );
-    ReadString( string( CTD_STOKEN_LEVEL ), pkSetting->m_strValue );
+        neolog << LogLevel( INFO ) << "*** cannot open settings file '" << m_pkFile->GetName() << "'" << endl;
+        return false;
 
-    pkSetting = FindSetting( CTD_BTOKEN_NETWORKING );           
-    assert ( pkSetting );
-    ReadBool( string( CTD_BTOKEN_NETWORKING ), pkSetting->m_bValue );
+    }
 
-    pkSetting = FindSetting( CTD_BTOKEN_SERVER );           
-    assert ( pkSetting );
-    ReadBool( string( CTD_BTOKEN_SERVER ), pkSetting->m_bValue );
+    // load the settings into the file buffer
+    m_strFileBuffer = "";
+    char*    pcBuffer = new char[ m_pkFile->GetSize() * sizeof( char ) ];
+    m_pkFile->Read( pcBuffer, m_pkFile->GetSize() );
+    m_strFileBuffer   = pcBuffer;
+    delete[] pcBuffer;
 
-    pkSetting = FindSetting( CTD_BTOKEN_CLIENT );           
-    assert ( pkSetting );
-    ReadBool( string( CTD_BTOKEN_CLIENT ), pkSetting->m_bValue );
+    m_pkFile->Close();
 
-    pkSetting = FindSetting( CTD_STOKEN_SERVERNAME );           
-    assert ( pkSetting );
-    ReadString( string( CTD_STOKEN_SERVERNAME ), pkSetting->m_strValue );
+    // format the intput
+    size_t uiTokens = m_vpkSettings.size();
+    for( size_t uiCnt = 0; uiCnt < uiTokens; uiCnt++ ) {
 
-    pkSetting = FindSetting( CTD_STOKEN_SERVERIP );         
-    assert ( pkSetting );
-    ReadString( string( CTD_STOKEN_SERVERIP ), pkSetting->m_strValue );
+        SettingBase *pkSetting = m_vpkSettings[ uiCnt ];
+        
+        if ( pkSetting->GetTypeInfo() == typeid( bool ) ) {
+            Read( pkSetting->GetTokenName(), static_cast< Setting< bool >* >( pkSetting )->m_Value );
+        } else 
+        if ( pkSetting->GetTypeInfo() == typeid( int ) ) {
+            Read( pkSetting->GetTokenName(), static_cast< Setting< int >* >( pkSetting )->m_Value );
+        } else 
+        if ( pkSetting->GetTypeInfo() == typeid( string ) ) {
+            Read( pkSetting->GetTokenName(), static_cast< Setting< string >* >( pkSetting )->m_Value );
+        } else 
+        if ( pkSetting->GetTypeInfo() == typeid( float ) ) {
+            Read( pkSetting->GetTokenName(), static_cast< Setting< float >* >( pkSetting )->m_Value );
+        } else 
+         if ( pkSetting->GetTypeInfo() == typeid( Vector3d ) ) {
+            Read( pkSetting->GetTokenName(), static_cast< Setting< Vector3d >* >( pkSetting )->m_Value );
+        } else 
+        assert( NULL && "unsupported setting type" );
 
-    pkSetting = FindSetting( CTD_STOKEN_CLIENTNAME );           
-    assert ( pkSetting );
-    ReadString( string( CTD_STOKEN_CLIENTNAME ), pkSetting->m_strValue );
-    
-    pkSetting = FindSetting( CTD_ITOKEN_CLIENTPORT );           
-    assert ( pkSetting );
-    ReadInt( string( CTD_ITOKEN_CLIENTPORT ), pkSetting->m_iValue );
+    }
 
-    pkSetting = FindSetting( CTD_ITOKEN_SERVERPORT );           
-    assert ( pkSetting );
-    ReadInt( string( CTD_ITOKEN_SERVERPORT ), pkSetting->m_iValue );
+    m_strSettingsFile = m_pkFile->GetName();
+    m_bLoaded         = true;
 
     return true;
 
 }
 
 
-bool Settings::Store( const string &strCfgFileName )
+bool Settings::Store( File *pkFile )
 {
 
-    FILE    *pkFile = NULL;
-    pkFile = fopen( strCfgFileName.c_str(), "wb+" );
-    if ( pkFile == NULL ) {
+    if ( !m_bLoaded && !pkFile ) {
 
-        neolog << LogLevel( WARNING ) << " cannot store game settings file '" << strCfgFileName << "'" << endl;
+        neolog << LogLevel( WARNING ) << "*** no settings file was previously loaded" << endl;
+        return false;
+    }
+
+    if ( pkFile ) {
+
+        m_pkFile = pkFile;
+
+    }
+
+    if ( !m_pkFile->Open( "", m_pkFile->GetName(), ios_base::out | ios_base::binary ) ) {
+
+        neolog << LogLevel( INFO ) << "*** cannot write to settings file '" << m_pkFile->GetName() << "'" << endl;
         return false;
 
     }
@@ -216,65 +161,41 @@ bool Settings::Store( const string &strCfgFileName )
     // clean the content of settings file buffer
     m_strFileBuffer = "";
     
-    Setting *pkSetting;
+    // format the output
+    size_t uiTokens = m_vpkSettings.size();
+    for( size_t uiCnt = 0; uiCnt < uiTokens; uiCnt++ ) {
 
-    // fill the file buffer
-    pkSetting = FindSetting( CTD_STOKEN_PLAYERNAME );           
-    assert ( pkSetting );
-    WriteString( string( CTD_STOKEN_PLAYERNAME ), pkSetting->m_strValue );
-
-    pkSetting = FindSetting( CTD_STOKEN_LEVEL );            
-    assert ( pkSetting );
-    WriteString( string( CTD_STOKEN_LEVEL ), pkSetting->m_strValue );
-
-    pkSetting = FindSetting( CTD_BTOKEN_NETWORKING );           
-    assert ( pkSetting );
-    WriteBool( string( CTD_BTOKEN_NETWORKING ), pkSetting->m_bValue );
-
-    pkSetting = FindSetting( CTD_BTOKEN_SERVER );           
-    assert ( pkSetting );
-    WriteBool( string( CTD_BTOKEN_SERVER ), pkSetting->m_bValue );
-
-    pkSetting = FindSetting( CTD_BTOKEN_CLIENT );           
-    assert ( pkSetting );
-    WriteBool( string( CTD_BTOKEN_CLIENT ), pkSetting->m_bValue );
-
-    pkSetting = FindSetting( CTD_STOKEN_SERVERNAME );           
-    assert ( pkSetting );
-    WriteString( string( CTD_STOKEN_SERVERNAME ), pkSetting->m_strValue );
-
-    pkSetting = FindSetting( CTD_STOKEN_SERVERIP );         
-    assert ( pkSetting );
-    WriteString( string( CTD_STOKEN_SERVERIP ), pkSetting->m_strValue );
-
-    pkSetting = FindSetting( CTD_STOKEN_CLIENTNAME );           
-    assert ( pkSetting );
-    WriteString( string( CTD_STOKEN_CLIENTNAME ), pkSetting->m_strValue );
-    
-    pkSetting = FindSetting( CTD_ITOKEN_CLIENTPORT );           
-    assert ( pkSetting );
-    WriteInt( string( CTD_ITOKEN_CLIENTPORT ), pkSetting->m_iValue );
-
-    pkSetting = FindSetting( CTD_ITOKEN_SERVERPORT );           
-    assert ( pkSetting );
-    WriteInt( string( CTD_ITOKEN_SERVERPORT ), pkSetting->m_iValue );
-                                                                    
-    // write the buffer into file
-    size_t  uiBufferLength = m_strFileBuffer.length();
-    char    cBuffer;
-    for ( size_t uiCnt = 0; uiCnt < uiBufferLength; uiCnt++ ) {
-
-        cBuffer =  m_strFileBuffer[ uiCnt ];
-        fwrite( &cBuffer, sizeof( char ), 1, pkFile );
+        SettingBase *pkSetting = m_vpkSettings[ uiCnt ];
+        
+        if ( pkSetting->GetTypeInfo() == typeid( bool ) ) {
+            Write( pkSetting->GetTokenName(), static_cast< Setting< bool >* >( pkSetting )->m_Value );
+        } else 
+        if ( pkSetting->GetTypeInfo() == typeid( int ) ) {
+            Write( pkSetting->GetTokenName(), static_cast< Setting< int >* >( pkSetting )->m_Value );
+        } else 
+        if ( pkSetting->GetTypeInfo() == typeid( string ) ) {
+            Write( pkSetting->GetTokenName(), static_cast< Setting< string >* >( pkSetting )->m_Value );
+        } else 
+        if ( pkSetting->GetTypeInfo() == typeid( float ) ) {
+            Write( pkSetting->GetTokenName(), static_cast< Setting< float >* >( pkSetting )->m_Value );
+        } else
+        if ( pkSetting->GetTypeInfo() == typeid( Vector3d ) ) {
+            Write( pkSetting->GetTokenName(), static_cast< Setting< Vector3d >* >( pkSetting )->m_Value );
+        } else
+            assert( NULL && "unsupported setting type" );
 
     }
-    fclose( pkFile );
+
+    // write the buffer into file
+    m_pkFile->Write( m_strFileBuffer.c_str(), ( int )m_strFileBuffer.length() );
+
+    m_pkFile->Close();
 
     return true;
 
 }
 
-bool Settings::ReadString( const string &strToken, string &strValue )
+bool Settings::Read( const string &strToken, string &strValue )
 {
 
     size_t  iPos = -1;
@@ -286,7 +207,9 @@ bool Settings::ReadString( const string &strToken, string &strValue )
         iPos = m_strFileBuffer.find( strToken.c_str(), iPos, strToken.length() );
         if ( iPos == npos ) {
 
+            neolog << LogLevel( DEBUG ) << "*** settings manager could not read requested token '" << strToken << "', skipping..." << endl;
             return false;
+
         }
 
     } while ( m_strFileBuffer[ iPos + strToken.length() ] != '=' );
@@ -305,12 +228,12 @@ bool Settings::ReadString( const string &strToken, string &strValue )
 }
 
 
-bool Settings::ReadBool( const string &strToken, bool &bValue )
+bool Settings::Read( const string &strToken, bool &bValue )
 {
 
     string  strValue;
 
-    if ( ReadString( strToken, strValue ) == false ) {
+    if ( Read( strToken, strValue ) == false ) {
 
         return false;
 
@@ -330,12 +253,12 @@ bool Settings::ReadBool( const string &strToken, bool &bValue )
 
 }
 
-bool Settings::ReadInt( const string &strToken, int &iValue )
+bool Settings::Read( const string &strToken, int &iValue )
 {
 
     string  strValue;
 
-    if ( ReadString( strToken, strValue ) == false ) {
+    if ( Read( strToken, strValue ) == false ) {
 
         return false;
 
@@ -347,7 +270,41 @@ bool Settings::ReadInt( const string &strToken, int &iValue )
 
 }
 
-bool Settings::WriteString( const string &strToken, const string &strValue )
+bool Settings::Read( const string &strToken, float &fValue )
+{
+
+    string  strValue;
+
+    if ( Read( strToken, strValue ) == false ) {
+
+        return false;
+
+    }
+
+    fValue = ( float )atof( strValue.c_str() );
+
+    return true;
+
+}
+
+bool Settings::Read( const string &strToken, Vector3d &kValue )
+{
+
+    string  strValue;
+
+    if ( Read( strToken, strValue ) == false ) {
+
+        return false;
+
+    }
+
+    sscanf( strValue.c_str(), "%f %f %f", &kValue.x, &kValue.y, &kValue.z );
+
+    return true;
+
+}
+
+bool Settings::Write( const string &strToken, const string &strValue )
 {
 
     m_strFileBuffer += string ( strToken + "=" + strValue + "\r" + "\n" );
@@ -356,7 +313,7 @@ bool Settings::WriteString( const string &strToken, const string &strValue )
 
 }
 
-bool Settings::WriteBool( const string &strToken, const bool &bValue )
+bool Settings::Write( const string &strToken, const bool &bValue )
 {
 
     string  strStringValue;
@@ -376,11 +333,33 @@ bool Settings::WriteBool( const string &strToken, const bool &bValue )
 
 }
 
-bool Settings::WriteInt( const string &strToken, const int &iValue )
+bool Settings::Write( const string &strToken, const int &iValue )
 {
 
     char pcBuff[ 64 ];
     itoa( iValue, pcBuff, 10 );
+    m_strFileBuffer += string ( strToken + "=" + string ( pcBuff ) + "\r" + "\n" );
+
+    return true;
+
+}
+
+bool Settings::Write( const string &strToken, const float &fValue )
+{
+
+    char pcBuff[ 64 ];
+    sprintf( pcBuff, "%f", fValue );
+    m_strFileBuffer += string ( strToken + "=" + string ( pcBuff ) + "\r" + "\n" );
+
+    return true;
+
+}
+
+bool Settings::Write( const string &strToken, const Vector3d &kValue )
+{
+
+    char pcBuff[ 64 ];
+    sprintf( pcBuff, "%f %f %f", kValue.x, kValue.y, kValue.z );
     m_strFileBuffer += string ( strToken + "=" + string ( pcBuff ) + "\r" + "\n" );
 
     return true;

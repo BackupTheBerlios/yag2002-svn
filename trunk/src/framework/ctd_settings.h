@@ -51,188 +51,178 @@
 namespace CTD
 {
 
-// settings tokens
-#define CTD_STOKEN_PLAYERNAME       "playername"
-#define CTD_STOKEN_LEVEL            "level"
-#define CTD_BTOKEN_NETWORKING       "networking"
-#define CTD_BTOKEN_SERVER           "server"
-#define CTD_BTOKEN_CLIENT           "client"
-#define CTD_STOKEN_SERVERNAME       "servername"
-#define CTD_STOKEN_CLIENTNAME       "clientname"
-#define CTD_STOKEN_SERVERIP         "serverip"
-#define CTD_ITOKEN_CLIENTPORT       "clientport"
-#define CTD_ITOKEN_SERVERPORT       "serverport"
-
 
 class Settings;
 
-//! Singleton class for managing the game settings
+//! Class for managing game settings
 class Settings
 {
 
     public:
 
-        /**
-        * Retrieve the value of given setting which must be of type bool.
-        * \param strSettingName         name of setting
-        * \param bValue                 boolean value of setting
-        * \return                       false if setting name and type do not match.
-        */
-        bool                            GetValue( const std::string &strSettingName, bool &bValue );
-
-        /**
-        * Set the value of given setting which must be of type bool.
-        * \param strSettingName         name of setting
-        * \param bValue                 boolean value of setting
-        * \return                       false if setting name and type do not match.
-        */
-        bool                            SetValue( const std::string &strSettingName, const bool &bValue );
-
-        /**
-        * Retrieve the value of given setting which must be of type string.
-        * \param strSettingName         name of setting
-        * \param strValue               string value of setting
-        * \return                       false if setting name and type do not match.
-        */
-        bool                            GetValue( const std::string &strSettingName, std::string &strValue );
-
-        /**
-        * Set the value of given setting which must be of type string.
-        * \param strSettingName         name of setting
-        * \param strValue               string value of setting
-        * \return                       false if setting name and type do not match.
-        */
-        bool                            SetValue( const std::string &strSettingName, const std::string &strValue );
-
-        /**
-        * Retrieve the value of given setting which must be of type integer.
-        * \param strSettingName         name of setting
-        * \param iValue                 integer value of setting
-        * \return                       false if setting name and type do not match.
-        */
-        bool                            GetValue( const std::string &strSettingName, int &iValue );
-
-        /**
-        * Set the value of given setting which must be of type integer.
-        * \param strSettingName         name of setting
-        * \param iValue                 integer value of setting
-        * \return                       false if setting name and type do not match.
-        */
-        bool                            SetValue( const std::string &strSettingName, const int &iValue );
-
-        /**
-        * Create / retrieve an instance of this class.
-        * \return                        Pointer to a valid instace of this class.
-        */
-        static Settings*                Get() 
-                                        {                                       
-                                            if( s_SingletonSettings == NULL ) s_SingletonSettings = new Settings;
-                                            return s_SingletonSettings;
-                                        }
-
-
-    protected:
-
                                         Settings();
 
                                         ~Settings();
 
-        static Settings*                s_SingletonSettings;
+        /**
+        * Load settings defined in file strCfgFileName.
+        * \param strSettingsFile        File the settings are loaded from and stored to
+        * \return                       false if something went wrong.
+        */
+        bool                            Load( const std::string &strSettingsFile );
 
         /**
         * Load settings defined in file strCfgFileName.
-        * \return  false if something went wrong.
+        * \param pkFile                 File instance the settings are loaded from and stored to. It is deleted in Shutdown method. Don't delete it yourself!
+        * \return                       false if something went wrong.
         */
-        bool                            Load( const std::string &strCfgFileName );
+        bool                            Load( NeoEngine::File *pkFile );
 
         /**
-        * Store settings defined in file strCfgFileName.
-        * \return                      false if something went wrong.
+        * Store loaded settings file
+        * \param pkFile                 File for storing, if NULL then the same file for loading is used
+        * \return                       false if something went wrong.
         */
-        bool                            Store( const std::string &strCfgFileName );
+        bool                            Store( NeoEngine::File *pkFile = NULL );
 
         /**
         * Shutdown the singleton instance of Settings.
         */
         void                            Shutdown();
 
-        //! Helper function for writing one setting of type string
-        bool                            WriteString( const std::string &strToken, const std::string &strValue );
+        /**
+        * Register a new setting
+        * \param strToken               Token name
+        * \param Value                  Token value
+        * \return                       flase ist the token name already exsists.
+        */
+        template< typename TypeT >
+        bool                            RegisterSetting( const std::string &strToken, const TypeT &Value );
 
-        //! Helper function for writing one setting of type bool
-        bool                            WriteBool( const std::string &strToken, const bool &bValue );
+        /**
+        * Get setting's value
+        * \param strToken               Token name
+        * \param Value                  Token value
+        * \return                       true if the setting token exists, otherwise false
+        */
+        template< class TypeT >
+        bool                            GetValue( const std::string &strToken, TypeT& Value );
 
-        //! Helper function for writing one setting of type integer
-        bool                            WriteInt( const std::string &strToken, const int &iValue );
+        /**
+        * Set setting's value
+        * \param strToken               Token name
+        * \param Value                  Token value to be set
+        * \return                       true if the setting token exists, otherwise false
+        */
+        template< class TypeT >
+        bool                            SetValue( const std::string &strToken, const TypeT& Value );
 
-        //! Helper function for reading given setting and its value of type string
-        bool                            ReadString( const std::string &strToken, std::string &strValue );
+    protected:
 
-        //! Helper function for reading given setting and its value of type bool
-        bool                            ReadBool( const std::string &strToken, bool &bValue );
 
-        //! Helper function for reading given setting and its value of type integer
-        bool                            ReadInt( const std::string &strToken, int &iValue );
+        //! Base class for all types of settings
+        class SettingBase
+        {
+
+            public:
+                
+                                                SettingBase() {};
+
+                //! Get setting's name
+                const std::string&              GetTokenName()
+                                                {
+                                                    return m_strToken;
+                                                }
+
+                //! Retrieve the type info of value
+                virtual const std::type_info&   GetTypeInfo() = 0;
+
+            protected:
+
+                //! Token name
+                std::string                     m_strToken;
+
+        };
 
         //! This class contains one setting with associated value
-        class Setting
+        template< class TypeT >
+        class Setting : public SettingBase
         {
 
             public:
 
+                typedef typename TypeT          TokenType;
 
-                                        Setting( const std::string &strName, bool bValue ) : m_iValue( 0 )
-                                        {
+                                                Setting( const std::string &strName, TokenType Value )
+                                                {
+                                                    m_strToken = strName;
+                                                    m_Value    = Value;
+                                                }
 
-                                            m_strToken          = strName;
-                                            m_bValue            = bValue;
-                                            m_eType             = eBOOL;
+                                                ~Setting() {}
 
-                                        }
+                const std::type_info&           GetTypeInfo()
+                                                {
+                                                    return typeid( TokenType );
+                                                }
+
+            protected:
 
 
-                                        Setting( const std::string &strName, const std::string &strValue ) : m_bValue( false ), m_iValue( 0 )
-                                        {
+                //! Setting's value
+                TokenType                       m_Value;
 
-                                            m_strToken          = strName;
-                                            m_strValue          = strValue;
-                                            m_eType             = eSTRING;
-
-                                        }
-
-                                        Setting( const std::string &strName, int iValue  ) : m_bValue( false )
-                                        {
-
-                                            m_strToken          = strName;
-                                            m_iValue            = iValue;
-                                            m_eType             = eINT;
-
-                                        }
-
-                                        ~Setting() {}
-
-                enum { eSTRING, eBOOL, eINT } m_eType;
-
-                std::string             m_strToken;
-
-                std::string             m_strValue;
-
-                bool                    m_bValue;
-
-                int                     m_iValue;
+            friend  class Settings;
 
         };
 
         //! Find the setting in settings list with given name
-        Setting*                        FindSetting( const std::string &strToken );
+        SettingBase*                    FindSetting( const std::string &strToken );
+
+        //! Helper method for writing one setting of type string
+        bool                            Write( const std::string &strToken, const std::string &strValue );
+
+        //! Helper method for writing one setting of type bool
+        bool                            Write( const std::string &strToken, const bool &bValue );
+
+        //! Helper method for writing one setting of type integer
+        bool                            Write( const std::string &strToken, const int &iValue );
+
+        //! Helper method for writing one setting of type float
+        bool                            Write( const std::string &strToken, const float &fValue );
+
+        //! Helper method for writing one setting of type Vector3d
+        bool                            Write( const std::string &strToken, const NeoEngine::Vector3d &kValue );
+
+        //! Helper method for reading given setting and its value of type string
+        bool                            Read( const std::string &strToken, std::string &strValue );
+
+        //! Helper method for reading given setting and its value of type bool
+        bool                            Read( const std::string &strToken, bool &bValue );
+
+        //! Helper method for reading given setting and its value of type integer
+        bool                            Read( const std::string &strToken, int &iValue );
+
+        //! Helper method for reading given setting and its value of type float
+        bool                            Read( const std::string &strToken, float &fValue );
+
+        //! Helper method for reading given setting and its value of type Vector3d
+        bool                            Read( const std::string &strToken, NeoEngine::Vector3d &kValue );
 
         //! List of game settings
-        std::vector< Setting* >         m_vpkSettings;
+        std::vector< SettingBase* >     m_vpkSettings;
 
         //! File buffer
         std::string                     m_strFileBuffer;
 
-    friend  class   FrameworkImpl;
+        //! file name where the settings are loaded and stored
+        std::string                     m_strSettingsFile;
+
+        //! Shows that a setting file has been successfully loaded
+        bool                            m_bLoaded;
+
+        NeoEngine::File                 *m_pkFile;
+
 
 };
 
