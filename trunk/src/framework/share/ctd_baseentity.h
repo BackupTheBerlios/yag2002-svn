@@ -61,30 +61,13 @@ namespace CTD
 
 class ParameterDescriptor;
 
-// networking types
-
-//  - none means no networking needed.
-
-//  - server objects reside only on server and distribute their state to all connected clients
-//     example: a day/night simulator would reside on the server.
-
-//  - client objects are controlled by one of the connected clients and distribute their state 
-//     to all other clients ( to their ghosts ) via server. 
-//     example: a player is a client object.
-
-// - remote client are ghosts on local machine
-//     example: other players i see on my machine are represented by remote client objects
-
-typedef enum  { stateNONE, stateSERVEROBJECT, stateCLIENTOBJECT, stateREMOTE_CLIENTOBJECT } tCTDNetworkingType;
-
-
 // father class of all plugin entities, this class is derived from scene entity and add messaging and param desctiption functions
 class BaseEntity : public NeoEngine::SceneNode
 {
 
     public:
 
-                                    BaseEntity() : SceneNode(), m_usNetworkID( 0 ), m_eNetworkingType( stateNONE ) {} 
+                                    BaseEntity() : SceneNode() {} 
 
         virtual                     ~BaseEntity() {}
 
@@ -130,13 +113,6 @@ class BaseEntity : public NeoEngine::SceneNode
         virtual void                UpdateEntity( float fDeltaTime ) {};
 
         /**
-        * Messaging function for incomming network pakets. This function is called by framework.
-        * \param   iMsgId           Message ID
-        * \param   pMsgStruct       Message specific data structure
-        */
-        virtual void                NetworkMessage( int iMsgId, void *pMsgStruct ) {};
-
-        /**
         * Messaging function for intercommunication between entities.
         * \param   iMsgId           Message ID
         * \param   pMsgStruct       Message specific data structure
@@ -153,29 +129,6 @@ class BaseEntity : public NeoEngine::SceneNode
         */
         virtual int                 ParameterDescription( int iPramIndex, ParameterDescriptor *pkDesc ) { return -1; }
 
-        /**
-        * Set and Get functions for network ID
-        */
-        void                        SetNetworkID( unsigned short usNetworkID ) { m_usNetworkID = usNetworkID; }
-
-        unsigned short              GetNetworkID() { return m_usNetworkID; }
-
-        /**
-        * This function is called uppon entity creation. 
-        *  A return value of stateNONE disables networking for entity.
-        *  A return value of stateSERVEROBJECT enables networking for entity as server object.
-        *  A return value of stateCLIENTOBJECT enables networking for entity as client object ( e.g. player is a client object ).
-        *  A return value of stateREMOTE_CLIENTOBJECT is set by framework and indicates the entity as remote client object ( e.g. a remote player is a remote client object ).
-        *   as a client object ( client object ) which must be requested and acknowledged by the server during creation. It furthermore is represented
-        *   by a ghost on other clients. A player is a client object.
-        */
-        virtual tCTDNetworkingType  GetNetworkingType() { return m_eNetworkingType; }
-        
-        /**
-        * Set function for networking type
-        */
-        void                        SetNetworkingType( tCTDNetworkingType eType ) { m_eNetworkingType = eType; }
-
     private:
 
         /** 
@@ -188,11 +141,10 @@ class BaseEntity : public NeoEngine::SceneNode
         */
         BaseEntity&                 operator = ( BaseEntity& );
 
+        /**
+        * Entity instance name
+        */
         std::string                 m_strInstanceName;
-
-        unsigned short              m_usNetworkID;
-
-        tCTDNetworkingType          m_eNetworkingType;
 
 
 };
