@@ -167,9 +167,11 @@ class FrameworkImpl
         /**
         * Load a given level file
         * \param strLevelFile                   Level file name
+        * \param bInitializePlugins             If true all loaded plugins are initialized.
+        * \param pkLevelSet                     LevelSet to load to. If NULL then a new LevelSet is created.
         * \return                               Returns the level set created during loading.
         */
-        LevelSet*                               LoadLevel( const std::string &strLevelFile );
+        LevelSet*                               LoadLevel( const std::string &strLevelFile, bool bInitializePlugins = true, LevelSet* pkLevelSet = NULL );
 
         /**
         * Send a message to a given plugin.
@@ -186,7 +188,7 @@ class FrameworkImpl
         * \param strPluginName                  Plugin name, let it empty to send the message to all level sets' plugins' entities.
         * \param bNetworkMessage                If true then the NetworkMessage method of entities is called.
         */
-        void                                    SendEntityMessage( int iMsgId, void* pMsgStruct, const std::string &strPluginName = "", bool bNetworkMessage = false );
+        void                                    SendEntityMessage( int iMsgId, void* pMsgStruct, const std::string &strPluginName = "" );
 
 
         /**
@@ -219,6 +221,22 @@ class FrameworkImpl
         * \return                               Pointer to BaseEntity object. NULL if entity could not be found.
         */
         BaseEntity*                             FindEntity( const std::string &strInstanceName, const std::string &strPluginName = std::string() );     
+
+        /**
+        * Add a new entity
+        * \param pkLevelSet                     LevelSet the entity is added to
+        * \param pkEntity                       Entity to be added
+        * \param strPluginName                  Name of plugin to add the entity to. if empty then the entity is added to first plugin.
+        * \return                               true if successfull added, false if this entity already exists in level set
+        */
+        bool                                    AddEntiy( LevelSet* pkLevelSet, CTD::BaseEntity* pkEntity, const string &strPluginName = "" );
+
+        /**
+        * Remove an entity from levelsets, rooms and eventually delete it
+        * \param pkEntity                       Entity to be removed, all levelsets are searched and updated
+        * \return                               Number of entities removed from all levelsets
+        */
+        unsigned int                            RemoveEntiy( CTD::BaseEntity* pkEntity );
 
         /**
         * Find an entity in given plugin manager

@@ -57,10 +57,10 @@ Framework::~Framework()
 {
 }
 
-LevelSet* Framework::LoadLevel( const std::string &strLevelFile ) 
+LevelSet* Framework::LoadLevel( const std::string &strLevelFile, bool bInitializePlugins, LevelSet* pkLevelSet ) 
 { 
-    // load a level, create a new plugin manager for new level
-    return m_pkImpl->LoadLevel( strLevelFile ); 
+    // load a level 
+    return m_pkImpl->LoadLevel( strLevelFile, bInitializePlugins, pkLevelSet ); 
 }
 
 void Framework::StartGame()
@@ -88,6 +88,16 @@ BaseEntity* Framework::FindEntity( const std::string &strInstanceName, const std
     return m_pkImpl->FindEntity( strInstanceName, strPluginName );
 }
 
+bool Framework::AddEntiy( LevelSet* pkLevelSet, CTD::BaseEntity* pkEntity, const string &strPluginName )
+{
+    return m_pkImpl->AddEntiy( pkLevelSet, pkEntity, strPluginName );
+}
+
+unsigned int Framework::RemoveEntiy( CTD::BaseEntity* pkEntity )
+{
+    return m_pkImpl->RemoveEntiy( pkEntity );
+}
+
 void Framework::SendPluginMessage( int iMsgId, void *pMsgStruct, const string &strPluginName )
 {
     m_pkImpl->SendPluginMessage( iMsgId, pMsgStruct, strPluginName );
@@ -95,7 +105,7 @@ void Framework::SendPluginMessage( int iMsgId, void *pMsgStruct, const string &s
 
 void Framework::SendEntityMessage( int iMsgId, void *pMsgStruct, const string &strPluginName )
 {
-    m_pkImpl->SendEntityMessage( iMsgId, pMsgStruct, strPluginName, false );
+    m_pkImpl->SendEntityMessage( iMsgId, pMsgStruct, strPluginName );
 }
 
 GameMode Framework::GetGameMode()

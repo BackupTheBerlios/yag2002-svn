@@ -184,6 +184,7 @@ FrameworkImpl::FrameworkImpl()
     m_pkGameSettings->RegisterSetting( string( CTD_STOKEN_SERVERIP ),   string( CTD_SVALUE_SERVERIP ) );
     m_pkGameSettings->RegisterSetting( string( CTD_ITOKEN_CLIENTPORT ), ( int )CTD_IVALUE_CLIENTPORT );
     m_pkGameSettings->RegisterSetting( string( CTD_ITOKEN_SERVERPORT ), ( int )CTD_IVALUE_SERVERPORT );
+    m_pkGameSettings->RegisterSetting( string( CTD_FTOKEN_MOUSE_SENSITIVITY ), ( float )CTD_FVALUE_MOUSE_SENSITIVITY );
 
     if ( m_pkGameSettings->Load( CTD_SETTINGS_FILE ) == false ) {    
     
@@ -242,7 +243,7 @@ void FrameworkImpl::SendPluginMessage( int iMsgId, void *pMsgStruct, const strin
 
 }
 
-void FrameworkImpl::SendEntityMessage( int iMsgId, void* pMsgStruct, const string &strPluginName, bool bNetworkMessage )
+void FrameworkImpl::SendEntityMessage( int iMsgId, void* pMsgStruct, const string &strPluginName )
 {
 
     unsigned int    uiNumLevelSets = m_pkLevelManager->GetLevelSetCount();
@@ -250,7 +251,7 @@ void FrameworkImpl::SendEntityMessage( int iMsgId, void* pMsgStruct, const strin
     unsigned int    uiLevelSetCnt  = 0;
     while ( uiLevelSetCnt < uiNumLevelSets ) {
 
-        apkLevelSets[ uiLevelSetCnt ]->m_pkPluginMgr->SendEntityMessage( iMsgId, pMsgStruct, strPluginName, bNetworkMessage );
+        apkLevelSets[ uiLevelSetCnt ]->m_pkPluginMgr->SendEntityMessage( iMsgId, pMsgStruct, strPluginName );
         uiLevelSetCnt++;
 
     }
@@ -549,7 +550,7 @@ void FrameworkImpl::SetupSoundDevice()
 
 }
 
-LevelSet* FrameworkImpl::LoadLevel( const std::string &strLevelFile ) 
+LevelSet* FrameworkImpl::LoadLevel( const std::string &strLevelFile, bool bInitializePlugins, LevelSet* pkLevelSet ) 
 { 
     
     File *pkFile = NeoEngine::Core::Get()->GetFileManager()->GetByName( strLevelFile );
@@ -559,49 +560,63 @@ LevelSet* FrameworkImpl::LoadLevel( const std::string &strLevelFile )
         delete pkFile;
         return false;
 
-   }
-    
-    LevelSet      *pkLevelSet       = new LevelSet;
-    LevelLoader   *pkLevelLoader    = new LevelLoader( pkLevelSet, this );
+    }
 
+    LevelSet *pkLSet = pkLevelSet;
+    // need to create a levelset?
+    if ( !pkLSet ) {    
+        pkLSet  = new LevelSet;
+    } 
+
+    LevelLoader *pkLevelLoader = new LevelLoader( pkLSet, this );
     if ( pkLevelLoader->Load( pkFile, 0 ) == false) {
 
         delete pkLevelLoader;
-        delete pkLevelSet;
+        if ( !pkLevelSet ) {
+            delete pkLSet;
+        }
         delete pkFile;
         return NULL;
 
     }
 
     // set the current level set, thus the plugins can access to it during initialization
-    m_pkCurrentLevelSet = pkLevelSet;
+    m_pkCurrentLevelSet = pkLSet;
 
-    // add the new set to level manager
-    m_pkLevelManager->Add( pkLevelSet );
+    if ( !pkLevelSet ) {    
     
-    // first send a message to all plugins for initializing them
-    neolog << LogLevel( INFO ) << "  CTD initializing plugins ..." << endl;
-    pkLevelSet->m_pkPluginMgr->SendPluginMessage( CTD_PLUGIN_MSG_INIZIALIZE, ( void* )NULL );
+        // add the new set to level manager if it was created here
+        m_pkLevelManager->Add( pkLSet );
+    
+    }
+    
+    if ( bInitializePlugins ) {
 
-    // then initialize entities in plugins
-    neolog << LogLevel( INFO ) << "  CTD initializing entites ..." << endl;
-    pkLevelSet->m_pkPluginMgr->InitializeEntities();
+        neolog << LogLevel( INFO ) << "----------------------------" << endl;
+        // first send a message to all plugins for initializing them
+        neolog << LogLevel( INFO ) << "CTD initializing plugins ..." << endl;
+        pkLSet->m_pkPluginMgr->SendPluginMessage( CTD_PLUGIN_MSG_INIZIALIZE, ( void* )NULL );
 
-    // post-initialize entities in plugins; this is needed for entities to have the chance for attaching them to eachother
-    neolog << LogLevel( INFO ) << "  CTD post-initializing entites ..." << endl;
-    pkLevelSet->m_pkPluginMgr->PostInitializeEntities();
+        // then initialize entities in plugins
+        neolog << LogLevel( INFO ) << "CTD initializing entites ..." << endl;
+        pkLSet->m_pkPluginMgr->InitializeEntities();
 
-    // send post initialize message when all things are already initilaized
-    neolog << LogLevel( INFO ) << "  CTD post-initializing plugins ..." << endl;
-    pkLevelSet->m_pkPluginMgr->SendPluginMessage( CTD_PLUGIN_MSG_POSTINITIALIZE, ( void* )NULL );
+        // post-initialize entities in plugins; this is needed for entities to have the chance for attaching them to eachother
+        neolog << LogLevel( INFO ) << "CTD post-initializing entites ..." << endl;
+        pkLSet->m_pkPluginMgr->PostInitializeEntities();
+
+        // send post initialize message when all things are already initilaized
+        neolog << LogLevel( INFO ) << "CTD post-initializing plugins ..." << endl;
+        pkLSet->m_pkPluginMgr->SendPluginMessage( CTD_PLUGIN_MSG_POSTINITIALIZE, ( void* )NULL );
+
+    }
 
     neolog << LogLevel( INFO ) << "-----------------------------------------------" << endl << endl;
 
     delete pkLevelLoader;
     delete pkFile;
 
-
-    return pkLevelSet;
+    return pkLSet;
 
 }
 
@@ -638,8 +653,7 @@ bool FrameworkImpl::GetKeyCode( const std::string &strKeyName , int &iKeyCode )
 BaseEntity* FrameworkImpl::FindEntity( const std::string &strInstanceName, const std::string &strPluginName )
 {
 
-    BaseEntity* pkEntity = NULL;
-
+    BaseEntity*     pkEntity = NULL;
     unsigned int    uiNumLevelSets = m_pkLevelManager->GetLevelSetCount();
     LevelSet**      apkLevelSets   = m_pkLevelManager->GetAllLevelSets();
     unsigned int    uiLevelSetCnt  = 0;
@@ -658,6 +672,94 @@ BaseEntity* FrameworkImpl::FindEntity( const std::string &strInstanceName, const
     }
 
     return NULL;
+
+}
+
+bool FrameworkImpl::AddEntiy( LevelSet* pkLevelSet, CTD::BaseEntity* pkEntity, const string &strPluginName )
+{
+
+    PluginManager    *pkPluginMgr    = pkLevelSet->GetPluginManager();
+    Plugin           *pkPlugin       = NULL;
+
+    if ( strPluginName.length() == 0 ) {
+
+        if ( pkPluginMgr->m_vpkPlugins.size() == 0 ) {
+   
+            neolog << LogLevel( ERROR ) << "framework: error adding entity, there are no plugins to add the new entity to!" << endl << endl;
+            return false;
+
+        } else {
+        
+            // add to first plugin
+            pkPluginMgr->m_vpkPlugins[ 0 ]->m_vpkEntities.push_back( pkEntity );
+            pkLevelSet->GetRoom()->AttachNode( pkEntity );
+            return true;
+
+        }
+
+    } else {
+
+        // search for plugin by name
+        for ( unsigned int i = 0; i < pkPluginMgr->m_vpkPlugins.size(); i++ ) {
+
+            if ( strPluginName == pkPluginMgr->m_vpkPlugins[i]->GetName() ) {
+
+                pkPlugin = pkPluginMgr->m_vpkPlugins[i];
+                break;
+
+            }
+        }
+        if ( pkPlugin ) {
+
+            pkPlugin->m_vpkEntities.push_back( pkEntity );
+            pkLevelSet->GetRoom()->AttachNode( pkEntity );
+            return true;
+
+        }
+
+    }
+
+    return false;
+}
+
+unsigned int FrameworkImpl::RemoveEntiy( CTD::BaseEntity* pkEntity )
+{
+
+    PluginManager    *pkPluginMgr    = NULL;
+    unsigned int     uiNumLevelSets = m_pkLevelManager->GetLevelSetCount();
+    LevelSet**       apkLevelSets   = m_pkLevelManager->GetAllLevelSets();
+    unsigned int     uiLevelSetCnt  = 0;
+    unsigned int     uiInstCounter  = 0;
+    while ( uiLevelSetCnt < uiNumLevelSets ) {
+
+        pkPluginMgr = apkLevelSets[ uiLevelSetCnt ]->GetPluginManager();
+
+        for ( unsigned int i = 0; i < pkPluginMgr->m_vpkPlugins.size(); i++ ) {
+
+            vector< BaseEntity* >::iterator ppkEntity    = pkPluginMgr->m_vpkPlugins[i]->m_vpkEntities.begin();  
+            vector< BaseEntity* >::iterator ppkEntityEnd = pkPluginMgr->m_vpkPlugins[i]->m_vpkEntities.end();
+            while( ppkEntity != ppkEntityEnd ) {
+                
+                if ( ( *ppkEntity ) == pkEntity ) {
+                    
+                    // remove entity from plugin manager's entity list
+                    pkPluginMgr->m_vpkPlugins[i]->m_vpkEntities.erase( ppkEntity );
+
+                    // remove entity from room
+                    apkLevelSets[ uiLevelSetCnt ]->GetRoom()->DetachNode( ( SceneNode* )( *ppkEntity ) );
+
+                    uiInstCounter++;
+                    break;
+
+                }
+
+                ppkEntity++;
+            }
+        }
+        uiLevelSetCnt++;
+    }
+
+    return uiInstCounter;
 
 }
 

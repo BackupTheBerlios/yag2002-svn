@@ -122,185 +122,203 @@ bool LevelLoader::LoadNode( unsigned int uiFlags )
 
     // start evaluating the xml structure
     //---------------------------------//
-    TiXmlNode       *node               = 0;
-    TiXmlNode       *node2              = 0;
-    TiXmlNode       *node3              = 0;
-    TiXmlNode       *node4              = 0;
-    TiXmlElement    *levelElement       = 0;
-    TiXmlElement    *mapElement         = 0;
-    TiXmlElement    *moduleElement      = 0;
-    TiXmlElement    *entityElement      = 0;
-    TiXmlElement    *loadingpicElement  = 0;
+    TiXmlNode       *pkNode                 = 0;
+    TiXmlNode       *pkNode2                = 0;
+    TiXmlNode       *pkNode3                = 0;
+    TiXmlNode       *pkNode4                = 0;
+    TiXmlElement    *pkLevelElement         = 0;
+    TiXmlElement    *pkMapElement           = 0;
+    TiXmlElement    *pkModuleElement        = 0;
+    TiXmlElement    *pkEntityElement        = 0;
+    TiXmlElement    *pkLoadingpicElement    = 0;
 
+    char            *pcBufName, *pcBufType, *pcBufValue;
+    string          strLevelName;
+    string          strMapName;
+    string          strMapType;
+    Room            *pkRoom                 = NULL;
+    bool            bHasMap                 = false;
 
-    char *pcBufName, *pcBufType, *pcBufValue;
-    string strLevelName;
-    string strMapName;
-    string strMapType;
-
-    // get the level entry
-    node = doc.FirstChild( CTD_LVL_ELEM_LEVEL );
-    if ( !node ) {
-
-        neolog << LogLevel( ERROR ) << "**** CTD (XML parser) could not find level element: " << string( CTD_LVL_ELEM_LEVEL ) << endl;
-        return false;    
+    // get the level entry if one exists
+    pkNode = doc.FirstChild( CTD_LVL_ELEM_LEVEL );
+    if ( pkNode ) {
     
-    }
+        // get level name
+        pkLevelElement = pkNode->ToElement();
+        if ( !pkLevelElement ) {
 
-    // get level name
-    levelElement = node->ToElement();
-    if ( !levelElement ) {
- 
-        neolog << LogLevel( ERROR ) << "**** CTD (XML parser) could not find level element. " << endl;
-        return false;
+            neolog << LogLevel( ERROR ) << "**** CTD (XML parser) could not find level element. " << endl;
+            return false;
 
-    }
+        }
 
-    pcBufName = (char*)levelElement->Attribute( CTD_LVL_ATTR_NAME, NULL );
-    if ( pcBufName == NULL ) {
-
-        strLevelName = "noname";
-
-    } else {
-
-        strLevelName = pcBufName;
-
-    }
-    neolog << LogLevel( INFO ) << "  name: ' " << strLevelName.c_str() << " '" << endl;
-
-    // set the level set name
-    m_pkLevelSet->m_strName = strLevelName;
-
-    // get map information
-    node = levelElement->FirstChild( CTD_LVL_ELEM_MAP );
-    mapElement = node->ToElement();
-    pcBufName = ( char* )mapElement->Attribute( CTD_LVL_ATTR_NAME, NULL );
-    if ( pcBufName == NULL ) {
-
-        neolog << LogLevel( ERROR ) << "**** CTD (XML parser) could not find map element. " << endl;
-        return false;
-
-    } else {
-
-        strMapName = pcBufName;
-
-        // get map type
-        pcBufName = ( char* )mapElement->Attribute( CTD_LVL_ELEM_MAP_TYPE, NULL );
+        pcBufName = (char*)pkLevelElement->Attribute( CTD_LVL_ATTR_NAME, NULL );
         if ( pcBufName == NULL ) {
 
-            neolog << LogLevel( WARNING ) << "**** CTD (XML parser) missing map type, assuming ABT " << endl;
-            strMapType  = CTD_LVL_ELEM_MAP_TYPE_ABT;
+            strLevelName = "noname";
 
         } else {
 
-            strMapType = pcBufName;
+            strLevelName = pcBufName;
 
         }
+        neolog << LogLevel( INFO ) << "  name: ' " << strLevelName.c_str() << " '" << endl;
+
+        // set the level set name
+        m_pkLevelSet->m_strName = strLevelName;
+
+    } else {
+
+        neolog << LogLevel( ERROR ) << "*** CTD (XML parser) error, file has no 'Level' node. " << endl;
+        return NULL;
+
+    }
+
+    // get map information if it exists
+    pkNode = pkLevelElement->FirstChild( CTD_LVL_ELEM_MAP );
+    if ( pkNode ) {
+
+        pkMapElement = pkNode->ToElement();
+        pcBufName = ( char* )pkMapElement->Attribute( CTD_LVL_ATTR_NAME, NULL );
+        if ( pcBufName == NULL ) {
+
+            neolog << LogLevel( ERROR ) << "**** CTD (XML parser) could not find map element. " << endl;
+            return false;
+
+        } else {
+
+            strMapName = pcBufName;
+
+            // get map type
+            pcBufName = ( char* )pkMapElement->Attribute( CTD_LVL_ELEM_MAP_TYPE, NULL );
+            if ( pcBufName == NULL ) {
+
+                neolog << LogLevel( WARNING ) << "**** CTD (XML parser) missing map type, assuming ABT " << endl;
+                strMapType  = CTD_LVL_ELEM_MAP_TYPE_ABT;
+
+            } else {
+
+                strMapType = pcBufName;
+
+            }
+
+        }
+
+        // load abt module
+        if ( strMapType == CTD_LVL_ELEM_MAP_TYPE_ABT ) {
+
+            pkRoom = NeoEngine::Core::Get()->GetRoomManager()->CreateRoom( "abt" );
+
+        } else {
+
+            // load bsp module
+            if ( strMapType == CTD_LVL_ELEM_MAP_TYPE_BSP ) {
+
+                pkRoom = NeoEngine::Core::Get()->GetRoomManager()->CreateRoom( "bsp" );
+
+
+            } else {
+
+                neolog << LogLevel( ERROR ) << "**** CTD (XML parser) unsupported map tye '" << strMapType << endl;
+                neolog << LogLevel( ERROR ) << "****   use '" << CTD_LVL_ELEM_MAP_TYPE_ABT << "' or '"
+                    << CTD_LVL_ELEM_MAP_TYPE_BSP << "'" << endl;
+                return false;
+
+            }
+
+        }
+
+        // set level set's room
+        m_pkLevelSet->m_pkRoom  = pkRoom;
+
+        bHasMap                 = true;
+
+    } else {
+
+        pkRoom = m_pkLevelSet->m_pkRoom;
 
     }
 
     // look for loading picture definition
-    node = levelElement->FirstChild( CTD_LVL_ELEM_LOADINGPIC );
-    if ( node ) {
+    pkNode = pkLevelElement->FirstChild( CTD_LVL_ELEM_LOADINGPIC );
+    if ( pkNode ) {
 
-        loadingpicElement = node->ToElement();
-        pcBufName = (char*)loadingpicElement->Attribute( CTD_LVL_ATTR_NAME, NULL );
+        pkLoadingpicElement = pkNode->ToElement();
+        pcBufName = (char*)pkLoadingpicElement->Attribute( CTD_LVL_ATTR_NAME, NULL );
         // show loading picture
         ShowLoadingPicture( pcBufName );
 
      }
 
-    // load map
+    // load map if desired
     //-------------------------------------------------------//
+    if ( bHasMap ) {
 
-    Room *pkRoom = NULL;
-    // load abt module
-    if ( strMapType == CTD_LVL_ELEM_MAP_TYPE_ABT ) {
+        Scene       *pkScene = new Scene;
+        // load the scene
+        pkScene->Load( strMapName.c_str(), Scene::STRIPIFYALL );
 
-        pkRoom = NeoEngine::Core::Get()->GetRoomManager()->CreateRoom( "abt" );
+        // get all meshes and place them into room
+        size_t uiMeshCount = pkScene->GetMeshes().size();
+        for ( size_t uiMeshes = 0; uiMeshes < uiMeshCount; uiMeshes++ ) {
 
-    } else {
+            MeshEntity  *pkMeshEnt = new MeshEntity( pkScene->GetMeshes()[ uiMeshes ] );
 
-        if ( strMapType == CTD_LVL_ELEM_MAP_TYPE_BSP ) {
+            if ( strMapType == CTD_LVL_ELEM_MAP_TYPE_ABT ) {
 
-            pkRoom = NeoEngine::Core::Get()->GetRoomManager()->CreateRoom( "bsp" );
+                // get all submeshes
+                vector<SubMesh*>    vpkSubmeshes = pkMeshEnt->GetSubMeshes();
+                SubMesh             *pkSubMesh = NULL;
+                for ( size_t uiSubMeshes = 0; uiSubMeshes < vpkSubmeshes.size(); uiSubMeshes++) {
 
+                    // get geometry info and add it into room
+                    pkSubMesh = vpkSubmeshes[ uiSubMeshes ];
 
-        } else {
+                    PolygonBufferPtr    pkPolys = pkSubMesh->GetPolygonBuffer();
+                    VertexBufferPtr     pkVerts = pkSubMesh->GetVertexBuffer();
+                    Material            *pkMat  = pkSubMesh->m_pkMaterial;  
 
-            neolog << LogLevel( ERROR ) << "**** CTD (XML parser) unsupported map tye '" << strMapType << endl;
-            neolog << LogLevel( ERROR ) << "****   use '" << CTD_LVL_ELEM_MAP_TYPE_ABT << "' or '"
-                << CTD_LVL_ELEM_MAP_TYPE_BSP << "'" << endl;
-            return false;
+                    pkRoom->AddGeometry( pkPolys, pkVerts, pkMat );
+                }
+
+            } else {
+
+                if ( strMapType == CTD_LVL_ELEM_MAP_TYPE_BSP ) {
+
+                    pkMeshEnt->GenerateBoundingVolume();
+                    SceneNode *pkNode = new SceneNode;
+                    pkNode->SetEntity( pkMeshEnt );
+                    pkRoom->AttachNode( pkNode );
+
+                }
+
+            } 
 
         }
 
-    }
-
-
-    // set level set's room
-    m_pkLevelSet->m_pkRoom = pkRoom;
-
-    Scene       *pkScene = new Scene;
-
-    // load the scene
-    pkScene->Load( strMapName.c_str(), Scene::STRIPIFYALL );
-
-    // get all meshes and place them into room
-    size_t uiMeshCount = pkScene->GetMeshes().size();
-    for ( size_t uiMeshes = 0; uiMeshes < uiMeshCount; uiMeshes++ ) {
-
-        MeshEntity  *pkMeshEnt = new MeshEntity( pkScene->GetMeshes()[ uiMeshes ] );
-
-        if ( strMapType == CTD_LVL_ELEM_MAP_TYPE_ABT ) {
-
-            // get all submeshes
-            vector<SubMesh*>    vpkSubmeshes = pkMeshEnt->GetSubMeshes();
-            SubMesh             *pkSubMesh = NULL;
-            for ( size_t uiSubMeshes = 0; uiSubMeshes < vpkSubmeshes.size(); uiSubMeshes++) {
-
-                // get geometry info and add it into room
-                pkSubMesh = vpkSubmeshes[ uiSubMeshes ];
-
-                PolygonBufferPtr    pkPolys = pkSubMesh->GetPolygonBuffer();
-                VertexBufferPtr     pkVerts = pkSubMesh->GetVertexBuffer();
-                Material            *pkMat  = pkSubMesh->m_pkMaterial;  
-
-                pkRoom->AddGeometry( pkPolys, pkVerts, pkMat );
-            }
-
-        } else {
-            
-            if ( strMapType == CTD_LVL_ELEM_MAP_TYPE_BSP ) {
-
-                pkMeshEnt->GenerateBoundingVolume();
-                SceneNode *pkNode = new SceneNode;
-                pkNode->SetEntity( pkMeshEnt );
-                pkRoom->AttachNode( pkNode );
-
-            }
-
-        } 
+        pkScene->PrintHierarchy();
+        delete pkScene;
+        //-------------------------------------------------------//
 
     }
-
-    pkScene->PrintHierarchy();
-    delete pkScene;
-    //-------------------------------------------------------//
 
     // load and setup plugins
     //----------------------------------------------------------------------------//
 
     // create a new plugin manager
-    m_pkLevelSet->m_pkPluginMgr = new PluginManager;
+    if ( !m_pkLevelSet->m_pkPluginMgr ) {
+    
+        m_pkLevelSet->m_pkPluginMgr = new PluginManager;
+
+    }
 
     unsigned int uiPluginCount = 0;
     unsigned int uiEntityCount = 0;
     // get plugin information
-    for ( node = levelElement->FirstChild( CTD_LVL_ELEM_MODULE ); node; node = node->NextSiblingElement( CTD_LVL_ELEM_MODULE ) ) {
+    for ( pkNode = pkLevelElement->FirstChild( CTD_LVL_ELEM_MODULE ); pkNode; pkNode = pkNode->NextSiblingElement( CTD_LVL_ELEM_MODULE ) ) {
 
-        moduleElement = node->ToElement();
-        pcBufName = (char*)moduleElement->Attribute( CTD_LVL_ATTR_NAME, NULL );
+        pkModuleElement = pkNode->ToElement();
+        pcBufName = (char*)pkModuleElement->Attribute( CTD_LVL_ATTR_NAME, NULL );
 
         if (pcBufName != NULL) {
 
@@ -320,12 +338,12 @@ bool LevelLoader::LoadNode( unsigned int uiFlags )
 
             // setup plugin's global parameters
             neolog << LogLevel( INFO ) << "  CTD setup plugin's global parameters ..." << endl;
-            for ( node2 = moduleElement->FirstChild( CTD_LVL_ELEM_PARAM ); node2; node2 = node2->NextSiblingElement( CTD_LVL_ELEM_PARAM ) ) {
+            for ( pkNode2 = pkModuleElement->FirstChild( CTD_LVL_ELEM_PARAM ); pkNode2; pkNode2 = pkNode2->NextSiblingElement( CTD_LVL_ELEM_PARAM ) ) {
 
-                moduleElement = node2->ToElement();
-                pcBufName  = (char*)moduleElement->Attribute( CTD_LVL_ATTR_NAME, NULL );
-                pcBufType  = (char*)moduleElement->Attribute( CTD_LVL_ATTR_TYPE, NULL );
-                pcBufValue = (char*)moduleElement->Attribute( CTD_LVL_ATTR_VALUE, NULL );
+                pkModuleElement = pkNode2->ToElement();
+                pcBufName  = (char*)pkModuleElement->Attribute( CTD_LVL_ATTR_NAME, NULL );
+                pcBufType  = (char*)pkModuleElement->Attribute( CTD_LVL_ATTR_TYPE, NULL );
+                pcBufValue = (char*)pkModuleElement->Attribute( CTD_LVL_ATTR_VALUE, NULL );
 
                 if ( ( pcBufName == NULL ) || 
                      ( pcBufType == NULL ) ||
@@ -344,13 +362,13 @@ bool LevelLoader::LoadNode( unsigned int uiFlags )
             neolog << LogLevel( INFO ) << "  CTD setup entity's parameters..." << endl;
 
             // get entity information
-            node3 = node; // module node
-            for ( node3 = node3->FirstChild( CTD_LVL_ELEM_ENTITY ); node3; node3 = node3->NextSiblingElement( CTD_LVL_ELEM_ENTITY ) ) {
+            pkNode3 = pkNode; // module pkNode
+            for ( pkNode3 = pkNode3->FirstChild( CTD_LVL_ELEM_ENTITY ); pkNode3; pkNode3 = pkNode3->NextSiblingElement( CTD_LVL_ELEM_ENTITY ) ) {
 
-                entityElement = node3->ToElement();
+                pkEntityElement = pkNode3->ToElement();
 
                 // get entity name
-                pcBufName = ( char* )entityElement->Attribute( CTD_LVL_ATTR_NAME, NULL );
+                pcBufName = ( char* )pkEntityElement->Attribute( CTD_LVL_ATTR_NAME, NULL );
 
                 if ( pcBufName == NULL ) {
                     neolog << LogLevel( WARNING ) << "  **** CTD (XML parser) entity has no name, skipping" << endl;
@@ -374,19 +392,19 @@ bool LevelLoader::LoadNode( unsigned int uiFlags )
                 BaseEntity  *pkEntity = pkEntityDesc->CreateEntityInstance();
 
                 // get instance name if one provided
-                pcBufName = (char*)entityElement->Attribute( CTD_LVL_ATTR_INST_NAME, NULL );
+                pcBufName = (char*)pkEntityElement->Attribute( CTD_LVL_ATTR_INST_NAME, NULL );
                 if ( pcBufName ) {
                     // set entity's instance name
                     ( pkEntity)->SetInstanceName( pcBufName );
                     neolog << LogLevel( INFO ) << "  CTD instance name: '" << pcBufName << " '" << endl;
                 }
 
-                for ( node4 = entityElement->FirstChild( CTD_LVL_ELEM_PARAM ); node4; node4 = node4->NextSiblingElement( CTD_LVL_ELEM_PARAM ) ) {
+                for ( pkNode4 = pkEntityElement->FirstChild( CTD_LVL_ELEM_PARAM ); pkNode4; pkNode4 = pkNode4->NextSiblingElement( CTD_LVL_ELEM_PARAM ) ) {
 
-                    entityElement = node4->ToElement();
-                    pcBufName  = (char*)entityElement->Attribute( CTD_LVL_ATTR_NAME, NULL );
-                    pcBufType  = (char*)entityElement->Attribute( CTD_LVL_ATTR_TYPE, NULL );
-                    pcBufValue = (char*)entityElement->Attribute( CTD_LVL_ATTR_VALUE, NULL );
+                    pkEntityElement = pkNode4->ToElement();
+                    pcBufName  = (char*)pkEntityElement->Attribute( CTD_LVL_ATTR_NAME, NULL );
+                    pcBufType  = (char*)pkEntityElement->Attribute( CTD_LVL_ATTR_TYPE, NULL );
+                    pcBufValue = (char*)pkEntityElement->Attribute( CTD_LVL_ATTR_VALUE, NULL );
 
                     if ( ( pcBufName == NULL ) || 
                          ( pcBufType == NULL ) ||
@@ -403,42 +421,9 @@ bool LevelLoader::LoadNode( unsigned int uiFlags )
 
                 }
 
-                // enable networking if desired
-                // attach node to room immediately only if in stand-alone mode or in server/client mode but no networking enabled for entity
-                if ( ( m_pkFrameworkImpl->m_eGameMode != stateSTANDALONE ) && ( pkEntity->GetNetworkingType() != stateNONE ) ) {
-
-                    // if server object then instantly create it
-                    if ( pkEntity->GetNetworkingType() == stateSERVEROBJECT ) {
-
-                        m_pkFrameworkImpl->GetNetworkDevice()->AddServerObject( pkEntity );
-                        // add the entity into plugin's entity list
-                        m_pkLevelSet->m_pkPluginMgr->AddEntity( pkPlugin, pkEntity );
-
-
-                    } else {
-
-                        // if it is a client object then it must be created later after negotiation with server
-                        //  client objects can only be created as actors on clients; their ghosts are created on server and all other clients later
-                        //  after negotiation with server
-                        if ( ( pkEntity->GetNetworkingType() == stateCLIENTOBJECT ) &&
-                              ( m_pkFrameworkImpl->m_eGameMode == stateCLIENT ) ) {
-
-                            m_pkFrameworkImpl->GetNetworkDevice()->AddClientObject( pkEntity );
-
-                              
-                        }
-
-                    }
-
-                // add immediately the entity into room manager when in stand-alone mode
-                //  otherwise they are added into room manager later ( after server/client connection is established )
-                } else {
-
-                    pkRoom->AttachNode( ( SceneNode* )pkEntity );
-                    // add the entity into plugin's entity list
-                    m_pkLevelSet->m_pkPluginMgr->AddEntity( pkPlugin, pkEntity );
-
-                }
+                pkRoom->AttachNode( ( SceneNode* )pkEntity );
+                // add the entity into plugin's entity list
+                m_pkLevelSet->m_pkPluginMgr->AddEntity( pkPlugin, pkEntity );
 
                 uiEntityCount++;
 
