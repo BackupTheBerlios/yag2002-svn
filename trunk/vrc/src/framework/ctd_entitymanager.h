@@ -113,6 +113,11 @@ class EntityManager : public Singleton< EntityManager >
 
         EntityManager&                              operator = ( const EntityManager& );
 
+        //! Shutdown entity manager
+        void                                        shutdown();
+
+    private:
+
         //! Initialize all registered entities
         void                                        initializeEntities();
 
@@ -131,14 +136,11 @@ class EntityManager : public Singleton< EntityManager >
         //! Delete all entities
         void                                        deleteAllEntities();
 
-        //! Add given entity into initialization list ( used in level mananger )
-        void                                        addToInitList( BaseEntity* p_entity );
+        //! Add given entity into pool ( used in level mananger ). the pool contains all loaded entities
+        void                                        addToEntityPool( BaseEntity* p_entity );
 
-        //! After post-initialization the init list should be cleared using this method ( used by application )
-        void                                        clearInitList();
-
-        //! Shutdown entity manager
-        void                                        shutdown();
+        //! Remove given entity from pool. If del is true then the entity is also deleted.
+        void                                        removeFromEntityPool( BaseEntity* p_entity, bool del = true );
 
         //! List of all registered update entities
         std::vector< BaseEntity* >                  _updateEntities;
@@ -150,7 +152,7 @@ class EntityManager : public Singleton< EntityManager >
         std::vector< std::pair< BaseEntity*, bool > > _queueUpdateEntities;
 
         //! List of all entities which are going to be initialized after level loading
-        std::vector< BaseEntity* >                  _entityInitList;
+        std::vector< BaseEntity* >                  _entityPool;
 
         //! List of all registered entity types
         std::vector< BaseEntityFactory* >           _entityFactories;

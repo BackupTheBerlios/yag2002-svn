@@ -170,6 +170,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
     for ( p_node = p_node->FirstChild( CTD_LVL_ELEM_ENTITY ); p_node; p_node = p_node->NextSiblingElement( CTD_LVL_ELEM_ENTITY ) ) 
     {
         TiXmlElement* p_entityElement = p_node->ToElement();
+        string entitytype, instancename;
         // get entity name
         p_bufName = ( char* )p_entityElement->Attribute( CTD_LVL_ENTITY_TYPE );
         if ( !p_bufName ) 
@@ -177,7 +178,13 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
             cout << "  **** entity has no type, skipping" << endl;
             continue;       
         }
-        BaseEntity* p_entity = EntityManager::get()->createEntity( p_bufName );
+        entitytype = p_bufName;
+        p_bufName = ( char* )p_entityElement->Attribute( CTD_LVL_ENTITY_INST_NAME );
+        if ( !p_bufName ) 
+            instancename = p_bufName;
+
+        // create entity
+        BaseEntity* p_entity = EntityManager::get()->createEntity( entitytype, instancename );
         // could we find entity type
         if ( !p_entity ) 
         {
@@ -192,9 +199,6 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
             p_entity->setInstanceName( p_bufName );
             cout << "  instance name: '" << p_bufName << " '" << endl;
         }
-
-        // add entity into initialization list
-        EntityManager::get()->addToInitList( p_entity );
 
         entityCounter++;
 
