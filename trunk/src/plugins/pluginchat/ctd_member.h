@@ -47,10 +47,10 @@
 #include "../share/ctd_baseentity.h"
 #include "../share/ctd_printf.h"
 #include "../share/ctd_chat_defs.h"
-#include "ctd_interpolator.h"
-#include "ctd_networkingutils.h"
+#include "ctd_membernw.h"
 #include "ctd_physics.h"
-
+#include "ctd_gui.h"
+#include "ctd_cal3danim.h"
 
 namespace CTD_IPluginChat {
 
@@ -59,16 +59,7 @@ namespace CTD_IPluginChat {
 extern CTDPrintf    g_CTDPrintf;
 extern CTDPrintf    g_CTDPrintfNwStats;
 
-
-// networking related constants
-//-------------------------------------------------------//
-// update cycle for position and rotation( sec )
-#define CTD_ChatMember_POS_UPDATE_PERIODE               0.200f
-#define CTD_ChatMember_ROT_UPDATE_PERIODE               0.2000f
-//-------------------------------------------------------//
-
 // chat member entity
-template< class InterpolatorPosT, class InterpolatorRotT >
 class CTDChatMember : public CTD::BaseEntity
 {
 
@@ -79,16 +70,6 @@ class CTDChatMember : public CTD::BaseEntity
                                                     ~CTDChatMember();
 
         //******************************* override some functions **********************************//
-
-        /**
-        * Get network type of this entity ( see BaseEntity for more details ).
-        * Return always the type using BaseEntity::GetNetworkingType() and set
-        * your desired type in ctor ( as a client object can get remote client object through the framework ).
-        */
-        CTD::tCTDNetworkingType                     GetNetworkingType() 
-                                                    { 
-                                                        return BaseEntity::GetNetworkingType();
-                                                    }
 
         /**
         * Initializing function
@@ -108,37 +89,12 @@ class CTDChatMember : public CTD::BaseEntity
         void                                        UpdateEntity( float fDeltaTime );
 
         /**
-        * Update method for client objects called by UpdateEntity
-        * \param fDeltaTime                         Time passed since last update
-        */
-        void                                        UpdateClientObject( float fDeltaTime );
-
-        /**
-        * Update method for remote client objects called by UpdateEntity
-        * \param fDeltaTime                         Time passed since last update
-        */
-        void                                        UpdateRemoteClientObject( float fDeltaTime );
-
-        /**
-        * Update method for standalone objects called by UpdateEntity
-        * \param fDeltaTime                         Time passed since last update
-        */
-        void                                        UpdateStandaloneObject( float fDeltaTime );
-
-        /**
         * Render object
         * \param pkFrustum                          Current view frustum (if any)
         * \param bForce                             Render even if rendered previously this frame or deactivated (default false)
         * \return                                   true if we were rendered, false if not (already rendered, not forced)
         */
         bool                                        Render( NeoEngine::Frustum *pkFrustum = 0, bool bForce = false );
-
-        /**
-        * Messaging function for incomming network pakets. This function is called by framework.
-        * \param   iMsgId                           Message ID
-        * \param   pMsgStruct                       Message specific data structure
-        */
-        void                                        NetworkMessage( int iMsgId, void *pMsgStruct );
 
         /**
         * Messaging function.
@@ -154,23 +110,53 @@ class CTDChatMember : public CTD::BaseEntity
 
         //******************************************************************************************//
 
+        // these methods are used for setting up remote clients
+        //------------------------------------------------------------------------------------------//
+        void                                        SetPlayerNetworking( CTD_MemberNw* pkNw ) { m_pkPlayerNetworking = pkNw; }
+
+        // get player name, is used for sending initialization data to remote clients
+        std::string                                 GetPlayerName() { return m_strPlayerName; }
+
+        // set player character's animation config file name
+        void                                        SetAnimConfig( const std::string& strAnimConfig ) { m_strCal3dConfigFile = strAnimConfig; }
+
+        // set name for remote clients
+        void                                        SetPlayerName( const std::string& strName ) { m_strPlayerName = strName; }
+
+        // post new chat text into gui
+        void                                        PostChatText( const std::string& strText );
+        //------------------------------------------------------------------------------------------//
+
         // entity parameters
+        std::string                                 m_strCal3dConfigFile;
+
         float                                       m_fPositionalSpeed;
         float                                       m_fAngularSpeed;
+        float                                       m_fMouseSensitivity;
+
         NeoEngine::Vector3d                         m_kInitPosition;
         NeoEngine::Vector3d                         m_kInitRotation;
         NeoEngine::Vector3d                         m_kDimensions;
-        NeoEngine::MeshEntity                       *m_pkMesh;
 
     protected:
 
-        // this funtion compiles initialization data to send to new created remote clients on other machines
-        void                                        SendInitDataToRemoteClients( tCTD_NM_InitRemoteChatMember *pkInitData );
+        /**
+        * Update method for object on server called by UpdateEntity
+        * \param fDeltaTime                         Time passed since last update
+        */
+        void                                        UpdateServerObject( float fDeltaTime );
 
-        // network processing message functions
-        void                                        ProcessEntityMessage( void *pkMsgStruct );
+        /**
+        * Update method for object on client called by UpdateEntity
+        * \param fDeltaTime                         Time passed since last update
+        */
+        void                                        UpdateClientObject( float fDeltaTime );
 
-        void                                        ProcessSystemMessage( void *pkMsgStruct );
+        /**
+        * Update method for standalone objects called by UpdateEntity
+        * \param fDeltaTime                         Time passed since last update
+        */
+        void                                        UpdateStandaloneObject( float fDeltaTime );
 
         // process inputs
         void                                        ProcessInput( float fDeltaTime );
@@ -178,71 +164,51 @@ class CTDChatMember : public CTD::BaseEntity
         // physics for moving the body
         WalkPhysics                                 m_kPhysics;
 
-        // position interpolator object
-        InterpolatorPosT                            m_kPositionInterpolator;
-
-        // rotation interpolator object
-        InterpolatorRotT                            m_kRotationInterpolator;
-
         std::string                                 m_strPlayerName;
 
         // instance of gui entity
-        CTD::BaseEntity                             *m_pkEntityGui;
+        CTDGui                                      *m_pkEntityGui;
 
         // a local pointer to camera object
         NeoEngine::Camera                           *m_pkCamera;
+        
+        // networking interface
+        CTD_MemberNw                               *m_pkPlayerNetworking;
 
-        CTD::AvarageUpdatePeriod< 10 >              m_kAvaragePositionUpdatePeriod;
-        NeoEngine::Vector3d                         m_kActualPosition;
-        NeoEngine::Vector3d                         m_kInterpolatedPosition;
-        NeoEngine::Vector3d                         m_kLastPosition;
-
-        CTD::AvarageUpdatePeriod< 10 >              m_kAvarageRotationUpdatePeriod;
-        NeoEngine::Vector3d                         m_kActualRotation;
-        NeoEngine::Quaternion                       m_kActualRotationQ;
-        NeoEngine::Vector3d                         m_kInterpolatedRotation;
-        NeoEngine::Vector3d                         m_kLastRotation;
-
-        float                                       m_fPassedPosSendTime;
-        float                                       m_fPassedRotSendTime;
+        // animation module
+        CTDCal3DAnim                                *m_pkAnimMgr;
 
         // input processing specific
         float                                       m_fPositionalAcceleration;
         float                                       m_fAngularAcceleration;
 
+        // animation commands
+        unsigned int                                m_uiCmdFlag, m_uiLastCmdFlag;
+
         bool                                        m_bMoved;
-        enum { stateIdleMove, stateMoving }         m_eMove;
         bool                                        m_bRotated;
-        enum { stateIdleRotate, stateRotating }     m_eRotate;
-
-        //! Translation states
-        enum _translationState { 
-            stateTranslationIdle = 0x0, 
-            stateTranslationStartMoving, 
-            stateTranslationMoving, 
-            stateTranslationStopMoving }            m_eTranslationState;
-
-        //! Rotation states
-        enum _rotationState { 
-            stateRotationIdle = 0x0, 
-            stateRotationStartMoving, 
-            stateRotationMoving, 
-            stateRotationStopMoving }               m_eRotationState;
+        bool                                        m_bMouseRotated;
+        float                                       m_fMouseDebounceTimer;
 
         NeoEngine::Vector3d                         m_kMove;
         NeoEngine::Vector3d                         m_kRotate;
 
-        CTD::BaseEntity                             *m_pkChatMember;
+        NeoEngine::Vector3d                         m_kVelocity;
+
+        NeoEngine::Vector3d                         m_kCurrentPosition;
+
+        NeoEngine::Vector3d                         m_kCurrentRotation;
+        NeoEngine::Quaternion                       m_kCurrentRotationQ;
 
         // networking specific
         CTD::GameMode                               m_eGameMode;
         CTD::NetworkDevice                          *m_pkNetworkDevice;
-        CTD::NetworkServer                          *m_pkNetworkServer;
-        CTD::NetworkClient                          *m_pkNetworkClient;
+
         NeoEngine::Room                             *m_pkRoom;
+
+
 };
 
-typedef CTDChatMember< LinearInterpolator, LinearInterpolator > CTDChatMemberLinearPosLinearRot;
 
 // descriptor for chat member entity
 class CTDChatMemberDesc : public CTD::EntityDescriptor
@@ -254,12 +220,12 @@ class CTDChatMemberDesc : public CTD::EntityDescriptor
             
         const std::string&                          GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME_ChatMember ) }
 
-        CTD::BaseEntity*                            CreateEntityInstance() { return (CTD::BaseEntity*) new CTDChatMemberLinearPosLinearRot; }
+        CTD::BaseEntity*                            CreateEntityInstance() { return (CTD::BaseEntity*) new CTDChatMember; }
 
 
 };
 
-// global instance of chat member entity is used in dll interface
+// global instance of chat member entity
 extern CTDChatMemberDesc g_pkChatMemberEntity_desc;
 
 }
