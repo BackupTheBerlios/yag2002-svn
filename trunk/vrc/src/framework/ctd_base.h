@@ -34,6 +34,7 @@
 #ifndef _CTD_BASE_H_
 #define _CTD_BASE_H_
 
+// ms windows stuff
 #ifdef WIN32
 #   define CRTDBG_MAP_ALLOC
 #   include <stdlib.h>
@@ -44,11 +45,20 @@
 #  include <windows.h>
 #endif
 
+// CEGUI headers
+#include <CEGUI.h>
+
 // osg headers
-#include <osgDB/ReadFile>
+
+#include <osg/AlphaFunc>
+#include <osg/BlendFunc>
+#include <osg/ColorMask>
+#include <osg/ClipNode>
 #include <osg/CoordinateSystemNode>
 #include <osg/Depth>
+#include <osg/Material>
 #include <osg/ShapeDrawable>
+#include <osg/Stencil>
 #include <osg/Texture>
 #include <osg/Texture2D>
 #include <osg/TexMat>
@@ -65,16 +75,19 @@
 #include <osg/Vec2>
 #include <osg/VertexProgram>
 
-#include <osgGA/guiactionadapter>
-#include <osgGA/guieventadapter>
-
 #include <osgAL/SoundNode>
 #include <osgAL/SoundRoot>
 #include <osgAL/SoundManager>
 #include <osgAL/SoundState>
 
-#include <osgUtil/Optimizer>
+#include <osgDB/ReadFile>
+
+#include <osgGA/guiactionadapter>
+#include <osgGA/guieventadapter>
+
 #include <osgProducer/Viewer>
+
+#include <osgUtil/Optimizer>
 
 // Physics library header
 #include <Newton.h>
