@@ -68,7 +68,7 @@ class InterpolatorBase
         virtual                                     ~InterpolatorBase() {}
 
         //! Initialize the interpolator
-        virtual                                     Initialize( 
+        virtual void                                Initialize( 
                                                                 const NeoEngine::Vector3d &kPoint,
                                                                 const NeoEngine::Vector3d &kVelocity = NeoEngine::Vector3d( 0, 0, 0 ),
                                                                 float fMaxTime = 1.0f
