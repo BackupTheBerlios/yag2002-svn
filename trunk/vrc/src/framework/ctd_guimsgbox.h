@@ -102,7 +102,7 @@ class MessageBoxDialog
         };
 
         //! Set callback which is called when a button has been clicked.
-        void                                        setClickCallback( MessageBoxDialog::ClickCallback* p_clb );
+        void                                    setClickCallback( MessageBoxDialog::ClickCallback* p_clb );
 
     protected:
 
