@@ -56,81 +56,81 @@ namespace CTD_IPluginVisuals {
 class CTDParticleFountain : public CTD::BaseEntity, public CTDBaseParticle
 {
 
-	public:
+    public:
 
-													CTDParticleFountain();
-		virtual										~CTDParticleFountain();
+                                                    CTDParticleFountain();
+        virtual                                     ~CTDParticleFountain();
 
-		//******************************* override some functions **********************************//
+        //******************************* override some functions **********************************//
 
-		/**
-		* Initializing function
-		*/
-		void										Initialize();
+        /**
+        * Initializing function
+        */
+        void                                        Initialize();
 
-		/**
-		* Update object
-		* \param fDeltaTime                         Time passed since last update
-		*/
-		void									    UpdateEntity( float fDeltaTime );
+        /**
+        * Update object
+        * \param fDeltaTime                         Time passed since last update
+        */
+        void                                        UpdateEntity( float fDeltaTime );
 
-		/**
-		* Render object
-		* \param pkFrustum                          Current view frustum (if any)
-		* \param bForce                             Render even if rendered previously this frame or deactivated (default false)
-		* \return                                   true if we were rendered, false if not (already rendered, not forced)
-		*/
-		bool										Render( NeoEngine::Frustum *pkFrustum = 0, bool bForce = false );
+        /**
+        * Render object
+        * \param pkFrustum                          Current view frustum (if any)
+        * \param bForce                             Render even if rendered previously this frame or deactivated (default false)
+        * \return                                   true if we were rendered, false if not (already rendered, not forced)
+        */
+        bool                                        Render( NeoEngine::Frustum *pkFrustum = 0, bool bForce = false );
 
-		/**
-		* Messaging function.
-		* \param  iMsgId                            Message ID
-		* \param  pMsgStruct                        Message specific data structure
-		* \return                                   This return value is message specific.
-		*/
-		int											Message( int iMsgId, void *pMsgStruct );
+        /**
+        * Messaging function.
+        * \param  iMsgId                            Message ID
+        * \param  pMsgStruct                        Message specific data structure
+        * \return                                   This return value is message specific.
+        */
+        int                                         Message( int iMsgId, void *pMsgStruct );
 
-		//*******************************************************************************************//
+        //*******************************************************************************************//
 
-		int											ParameterDescription( int param_index, CTD::ParameterDescriptor *pd );
+        int                                         ParameterDescription( int param_index, CTD::ParameterDescriptor *pd );
 
-		//******************************************************************************************//
+        //******************************************************************************************//
 
-		
-		// entity parameters
+        
+        // entity parameters
 
-		NeoEngine::Vector3d							m_kPosition;
-		NeoEngine::Vector3d							m_kDimensions;
+        NeoEngine::Vector3d                         m_kPosition;
+        NeoEngine::Vector3d                         m_kDimensions;
 
-		int											m_iPopulation;
-		int											m_iRate;
-		float										m_fLife;
-		float										m_fFadeOutFactor;
+        int                                         m_iPopulation;
+        int                                         m_iRate;
+        float                                       m_fLife;
+        float                                       m_fFadeOutFactor;
 
-		NeoEngine::Vector3d							m_kVelocity;
-		float										m_fVelocitySigma;
-		NeoEngine::Vector3d							m_kGravity;
-		float										m_fBounceFriction;
-		float										m_fBounceResilience;
-		NeoEngine::Vector3d							m_kSourcePosition;
-		float										m_kSourceRadius;
+        NeoEngine::Vector3d                         m_kVelocity;
+        float                                       m_fVelocitySigma;
+        NeoEngine::Vector3d                         m_kGravity;
+        float                                       m_fBounceFriction;
+        float                                       m_fBounceResilience;
+        NeoEngine::Vector3d                         m_kSourcePosition;
+        float                                       m_kSourceRadius;
 
-		// color ranges
-		NeoEngine::Vector3d							m_kColor;
+        // color ranges
+        NeoEngine::Vector3d                         m_kColor;
 
-		// size of one single particle
-		float										m_fSizeU;
-		float										m_fSizeV;
-		// material file of one single particle
-		std::string									m_strMatFile;
+        // size of one single particle
+        float                                       m_fSizeU;
+        float                                       m_fSizeV;
+        // material file of one single particle
+        std::string                                 m_strMatFile;
 
-		// this flas determines wether the particle system should be activated after initialization
-		//  if you intend to use this particle system in other entities set this parameter to false ( default true )
-		bool										m_bAutoActivate;
+        // this flas determines wether the particle system should be activated after initialization
+        //  if you intend to use this particle system in other entities set this parameter to false ( default true )
+        bool                                        m_bAutoActivate;
 
-	private:
+    private:
 
-		NeoEngine::Sprite							*m_pkSprite;
+        NeoEngine::Sprite                           *m_pkSprite;
 
 };
 
@@ -139,12 +139,12 @@ class CTDParticleFountain : public CTD::BaseEntity, public CTDBaseParticle
 class CTDParticleFountainDesc : public CTD::EntityDescriptor
 {
 
-	public:
-													CTDParticleFountainDesc() { };
-													~CTDParticleFountainDesc() { }
-			
-		const std::string&							GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME_ParticleFountain ) }
-		CTD::BaseEntity*							CreateEntityInstance() { return (CTD::BaseEntity*) new CTDParticleFountain; };
+    public:
+                                                    CTDParticleFountainDesc() { };
+                                                    ~CTDParticleFountainDesc() { }
+            
+        const std::string&                          GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME_ParticleFountain ) }
+        CTD::BaseEntity*                            CreateEntityInstance() { return (CTD::BaseEntity*) new CTDParticleFountain; };
 
 };
 

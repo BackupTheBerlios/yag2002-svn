@@ -48,36 +48,36 @@ namespace CTD_IPluginVisuals {
 CTDBaseParticle::CTDBaseParticle()
 {
 
-	m_hParticleHandle		= -1;
-	m_hActionHandle			= -1;
+    m_hParticleHandle       = -1;
+    m_hActionHandle         = -1;
 
 }
 
 CTDBaseParticle::~CTDBaseParticle()
 {
 
-	if ( m_hParticleHandle != -1 ) {
+    if ( m_hParticleHandle != -1 ) {
 
-		pDeleteParticleGroups( m_hParticleHandle, 1 );
-	
-	}
+        pDeleteParticleGroups( m_hParticleHandle, 1 );
+    
+    }
 
 }
 
 int CTDBaseParticle::NewActionList()
 {
 
-	m_hActionHandle = pGenActionLists( 1 );
-	pNewActionList( m_hActionHandle );
+    m_hActionHandle = pGenActionLists( 1 );
+    pNewActionList( m_hActionHandle );
 
-	return m_hActionHandle;
+    return m_hActionHandle;
 
 }
 
 void CTDBaseParticle::EndActionList()
 {
 
-	pEndActionList();
+    pEndActionList();
 
 }
 
@@ -85,76 +85,76 @@ void CTDBaseParticle::EndActionList()
 int CTDBaseParticle::CreateGroup( const Vector3d &kOrigin, int iPopulation )
 {
 
-	m_kOrigin			= kOrigin;
-	m_hParticleHandle	= pGenParticleGroups( 1, iPopulation );	
-	pCurrentGroup( m_hParticleHandle );
+    m_kOrigin           = kOrigin;
+    m_hParticleHandle   = pGenParticleGroups( 1, iPopulation ); 
+    pCurrentGroup( m_hParticleHandle );
 
-	return m_hParticleHandle;
+    return m_hParticleHandle;
 
 }
 
 void CTDBaseParticle::UpdateParticles( float fDeltaTime )
 {
 
-	// limit delta time to avoid crazy flying particles around
-	float fLimDeltaTime = fDeltaTime;
-	if ( fDeltaTime > 0.1f ) {
+    // limit delta time to avoid crazy flying particles around
+    float fLimDeltaTime = fDeltaTime;
+    if ( fDeltaTime > 0.1f ) {
 
-		fLimDeltaTime = 0.1f;
+        fLimDeltaTime = 0.1f;
 
-	}
+    }
 
-	pCurrentGroup( m_hParticleHandle );
-	pTimeStep( fLimDeltaTime );
-	pCallActionList( m_hActionHandle );
+    pCurrentGroup( m_hParticleHandle );
+    pTimeStep( fLimDeltaTime );
+    pCallActionList( m_hActionHandle );
 
 }
 
 void CTDBaseParticle::RenderParticles( RenderPrimitive *pkPrimitive )
 {
 
-	 // setup the particle group
-	 //-------------------------//
-	pCurrentGroup( m_hParticleHandle );
-	_ParticleState &rkPS = _GetPState();
-	// get a pointer to the particles in gp memory
-	ParticleGroup *pkPG = rkPS.pgrp;
-	if( pkPG == NULL ) {
+     // setup the particle group
+     //-------------------------//
+    pCurrentGroup( m_hParticleHandle );
+    _ParticleState &rkPS = _GetPState();
+    // get a pointer to the particles in gp memory
+    ParticleGroup *pkPG = rkPS.pgrp;
+    if( pkPG == NULL ) {
 
-		return; // ERROR
-	
-	}
-	if( pkPG->p_count < 0 ) {
+        return; // ERROR
+    
+    }
+    if( pkPG->p_count < 0 ) {
 
-		return;
+        return;
 
-	}
-	 //-------------------------//
+    }
+     //-------------------------//
 
-	static Camera *pkCamera;
-	pkCamera = Camera::GetActive();
-	static Quaternion kQuat;
-	kQuat = pkCamera ? pkCamera->GetWorldRotation() : Quaternion::IDENTITY;
+    static Camera *pkCamera;
+    pkCamera = Camera::GetActive();
+    static Quaternion kQuat;
+    kQuat = pkCamera ? pkCamera->GetWorldRotation() : Quaternion::IDENTITY;
 
 
-	// render all particles in group
-	for( int iPartCnt = 0; iPartCnt < pkPG->p_count; iPartCnt++ ) {
+    // render all particles in group
+    for( int iPartCnt = 0; iPartCnt < pkPG->p_count; iPartCnt++ ) {
 
-		Particle &rkParticle = pkPG->list[ iPartCnt ];
+        Particle &rkParticle = pkPG->list[ iPartCnt ];
 
-		Vector3d kTrans( rkParticle.pos.x, rkParticle.pos.z, rkParticle.pos.y );
+        Vector3d kTrans( rkParticle.pos.x, rkParticle.pos.z, rkParticle.pos.y );
 
-		pkPrimitive->m_kModelMatrix.Set( kQuat, m_kOrigin + kTrans );
+        pkPrimitive->m_kModelMatrix.Set( kQuat, m_kOrigin + kTrans );
 
-		// i have still a problem with fasing out the particles; as they would share all the same material thus cannot have induvidual colors.
-		//  the particle system must be extended later!
-		//Color	kColor( rkParticle.color.x, rkParticle.color.y, rkParticle.color.z, 1 );		
-		//pkPrimitive->m_pkMaterial->m_kAmbient = kColor;
-		//pkPrimitive->m_pkMaterial->m_kDiffuse = kColor;
+        // i have still a problem with fasing out the particles; as they would share all the same material thus cannot have induvidual colors.
+        //  the particle system must be extended later!
+        //Color kColor( rkParticle.color.x, rkParticle.color.y, rkParticle.color.z, 1 );        
+        //pkPrimitive->m_pkMaterial->m_kAmbient = kColor;
+        //pkPrimitive->m_pkMaterial->m_kDiffuse = kColor;
 
-		Framework::Get()->GetRenderDevice()->Render( *pkPrimitive, 0 );
+        Framework::Get()->GetRenderDevice()->Render( *pkPrimitive, 0 );
 
-	}
+    }
 
 }
 

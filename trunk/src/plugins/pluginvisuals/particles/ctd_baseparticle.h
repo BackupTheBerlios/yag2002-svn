@@ -51,59 +51,59 @@ namespace CTD_IPluginVisuals {
 class CTDBaseParticle
 {
 
-	public:
+    public:
 
-													CTDBaseParticle();
-													~CTDBaseParticle();
+                                                    CTDBaseParticle();
+                                                    ~CTDBaseParticle();
 
-		
-		/**
-		* create a particle group
-		* \param kOrigin                           the origin of particle system in world space
-		* \param iPopulation                       max particles allocated for the group
-		* \param pkPrimitive                       template primitive used for rendering
-		* \return                                  handle of new created group
-		*/
-		int										   CreateGroup( const NeoEngine::Vector3d &kOrigin, int iPopulation );
+        
+        /**
+        * create a particle group
+        * \param kOrigin                           the origin of particle system in world space
+        * \param iPopulation                       max particles allocated for the group
+        * \param pkPrimitive                       template primitive used for rendering
+        * \return                                  handle of new created group
+        */
+        int                                        CreateGroup( const NeoEngine::Vector3d &kOrigin, int iPopulation );
 
-		/**
-		* set new origin for particle group
-		* \param kOrigin                           the origin of particle system in world space
-		*/
-		void									   SetGroupOrigin( const NeoEngine::Vector3d &kOrigin ) { m_kOrigin = kOrigin; }
+        /**
+        * set new origin for particle group
+        * \param kOrigin                           the origin of particle system in world space
+        */
+        void                                       SetGroupOrigin( const NeoEngine::Vector3d &kOrigin ) { m_kOrigin = kOrigin; }
 
-		/**
-		* create an action list for a particle group ( first use CreateGroup function )
-		* \return                                  handle of new created action list
-		*/
-		int										   NewActionList();
+        /**
+        * create an action list for a particle group ( first use CreateGroup function )
+        * \return                                  handle of new created action list
+        */
+        int                                        NewActionList();
 
-		/**
-		* end an action list for a particle group ( first use NewActionList function )
-		*/
-		void									   EndActionList();
+        /**
+        * end an action list for a particle group ( first use NewActionList function )
+        */
+        void                                       EndActionList();
 
 
 
-		/**
-		* Update particle states
-		* \param fDeltaTime                        Time passed since last update
-		*/
-		void									   UpdateParticles( float fDeltaTime );
+        /**
+        * Update particle states
+        * \param fDeltaTime                        Time passed since last update
+        */
+        void                                       UpdateParticles( float fDeltaTime );
 
-		/**
-		* Render particles
-		* \param pkPrimitive                       primitive used for rendering
-		*/
-		void									   RenderParticles( NeoEngine::RenderPrimitive *pkPrimitive );
+        /**
+        * Render particles
+        * \param pkPrimitive                       primitive used for rendering
+        */
+        void                                       RenderParticles( NeoEngine::RenderPrimitive *pkPrimitive );
 
-	private:
+    private:
 
-		// particle system's origin
-		NeoEngine::Vector3d							m_kOrigin;
+        // particle system's origin
+        NeoEngine::Vector3d                         m_kOrigin;
 
-		int											m_hParticleHandle;
-		int											m_hActionHandle;
+        int                                         m_hParticleHandle;
+        int                                         m_hActionHandle;
 
 };
 
