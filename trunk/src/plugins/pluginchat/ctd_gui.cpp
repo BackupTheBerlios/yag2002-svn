@@ -45,7 +45,6 @@ using namespace CTD;
 
 namespace CTD_IPluginChat {
 
-
 // plugin global entity descriptor for gui system
 CTDGuiDesc g_pkGuiEntity_desc;
 //-------------------------------------------//
@@ -113,7 +112,7 @@ void CTDGui::SetupGuiSystem()
 {
 
     // configure the widget system
-    Widgets::Get()->Initialize();
+    //Widgets::Get()->Initialize();
     Widgets::Get()->Activate();
     Widgets::Get()->Load( m_kConfigFile );
 
@@ -124,20 +123,12 @@ void CTDGui::SetupGuiSystem()
     assert( ( pkWalkModeBtn != NULL ) && "'WalkMode' button is not defined in gui definition file!" );
 
     CB_Imp_GuiC_Callback* pkGLOActivateWalkModeButtonCallback = new GuiC_Callback< CTDGui >( this, OnActivateWalkMode, CM_GUI );
-    pkWalkModeBtn->AddCallback( pkGLOActivateWalkModeButtonCallback, eGuiCBase::CB_SELECT );
+    pkWalkModeBtn->AddCallback( pkGLOActivateWalkModeButtonCallback, eGuiCBase::CB_ON_CHANGE );
 
     // set a callback for chat message editbox
-    guiCWindow*  pkEditBoxWindow   = ( guiCWindow* )dataManager_S::SearchWidget("EditBox");
-    assert( ( pkEditBoxWindow != NULL ) && "'EditBox' is not defined in gui definition file!" );
-    
-    CB_Imp_GuiC_Callback* pkGLOActivateEditboxCallback = new GuiC_Callback< CTDGui >( this, OnActivateEditText, CM_GUI );
-    pkEditBoxWindow->AddCallback( pkGLOActivateEditboxCallback, eGuiCBase::CB_SELECT );
-
-
     m_pkEditBox   = ( guiCEdit* )dataManager_S::SearchWidget("EditArea");
     assert( ( m_pkEditBox != NULL ) && "'EditBox::EditArea' is not defined in gui definition file!" );
 
-    // we allow also activation of edit box when one clicks on text area
     CB_Imp_GuiC_Callback* pkGLOActivateEditAreaCallback = new GuiC_Callback< CTDGui >( this, OnActivateEditText, CM_GUI );
     m_pkEditBox->AddCallback( pkGLOActivateEditAreaCallback, eGuiCBase::CB_SELECT );
 
@@ -199,7 +190,9 @@ void CTDGui::OnInput( const NeoEngine::InputEvent *pkEvent )
 
     // handle key down/up events
     if ( ( pkEvent->m_iType == IE_KEYDOWN ) && ( iCharKeyData == KC_RETURN ) ) {
-
+        
+        static wchar_t s_pcText[ 256 ]; 
+        
         // don't print empty text into message window
         if ( ( !m_pkEditBox->StringRef() ) || ( m_pkEditBox->StringRef()[ 0 ] == L'' ) ) {
 
@@ -208,7 +201,6 @@ void CTDGui::OnInput( const NeoEngine::InputEvent *pkEvent )
         }
 
         // get the text in edit box and set the player name at begin of text
-        static wchar_t s_pcText[ 256 ]; 
         utlStringCopy( s_pcText, m_pcPlayerName );
         utlStringConcat( s_pcText, m_pkEditBox->StringRef() );
 
@@ -285,26 +277,49 @@ void CTDGui::AddMessage( wchar_t *pcMsg )
 
 }
 
-void CTDGui::OnActivateEditText( CB_Imp_GuiC_Callback* a_pCallback, guiCBase* a_pControl, void* a_pData )
+void CTDGui::OnActivateEditText( CB_Imp_GuiC_Callback* pkCallback, guiCBase* pkControl, void* pkData )
 {
 
     ClearMovementFlags();
     LockMovementInput( true );
     m_bEditText = true;
 
+    // activatet the edit box
+    guiCWidget* pkParent = ( guiCWidget* )m_pkEditBox->Parent();
+    pkParent->ChangeState( eGuiWidget::CB_WIDGET_FOCUS );
+
+    //! TODO: update the walk mode button to edit mode ( set its state to eGuiCBase::CB_NORMAL, see below )
+
 }
 
-void CTDGui::OnActivateWalkMode( CB_Imp_GuiC_Callback* a_pCallback, guiCBase* a_pControl, void* a_pData )
+void CTDGui::OnActivateWalkMode( CB_Imp_GuiC_Callback* pkCallback, guiCBase* pkControl, void* pkData )
 {
 
-    LockMovementInput( false );
-    m_bEditText = false;
+    // these events must be defined also in glo's gui xml file!
+    if ( pkControl->GetState() == eGuiCBase::CB_SELECT ) { // state = CB_SELECT means we enter to walk mode
+        
+        LockMovementInput( false );
+        m_bEditText = false;
+        guiCWidget* pkParent = ( guiCWidget* )m_pkEditBox->Parent();
+        pkParent->ChangeState( eGuiWidget::CB_WIDGET_DISABLED );
 
+    } else {
+
+        if ( pkControl->GetState() == eGuiCBase::CB_NORMAL ) { // state = CB_NORMAL means we toggle into edit mode ( we use a checkbox, i.e. button is checked )
+        
+            ClearMovementFlags();
+            LockMovementInput( true );
+            m_bEditText = true;
+            guiCWidget* pkParent = ( guiCWidget* )m_pkEditBox->Parent();
+            pkParent->ChangeState( eGuiWidget::CB_WIDGET_FOCUS );
+
+        }
+    }
 }
 
 void CTDGui::UpdateEntity( float fDeltaTime ) 
 { 
-    
+
 }
 
 // incomming network messages
@@ -320,7 +335,7 @@ void CTDGui::NetworkMessage( int iMsgId, void *pkMsgStruct )
             // get the chat member entity, we need it for sending messages over network, etc.
             //-------------------------------//
             m_pkChatMember = Framework::Get()->GetPlayer();
-            assert( m_pkChatMember && " 'CTDGui::Initialize' player is not set in framework!" );
+            assert( m_pkChatMember && " 'CTDGui::NetworkMessage' player is not set in framework!" );
 
             // setup the gui system
             SetupGuiSystem();

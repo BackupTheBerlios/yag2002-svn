@@ -124,10 +124,12 @@ class CTDGui : public CTD::BaseEntity, public CTD::WidgetInput
 
         // callback functions
 
-        void                                        OnActivateEditText( CB_Imp_GuiC_Callback* a_pCallback, guiCBase* a_pControl, void* a_pData );
+        // is called when the text area is clicked
+        void                                        OnActivateEditText( CB_Imp_GuiC_Callback* pkCallback, guiCBase* pkControl, void* pkData );
+        // is called when the check box for walk mode is clicked
+        void                                        OnActivateWalkMode( CB_Imp_GuiC_Callback* pkCallback, guiCBase* pkControl, void* pkData );
 
-        void                                        OnActivateWalkMode( CB_Imp_GuiC_Callback* a_pCallback, guiCBase* a_pControl, void* a_pData );
-
+        // is called when a key is pressed
         void                                        OnInput( const NeoEngine::InputEvent *pkEvent );
 
     protected:
