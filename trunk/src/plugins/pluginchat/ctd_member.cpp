@@ -188,7 +188,7 @@ void CTDChatMember< InterpolatorT, InterpolatorRotT >::Initialize()
     m_fAngularSpeed     = ( m_fAngularSpeed * PI / 180.0f );
 
     // get player name
-    Settings::Get()->GetValue( CTD_STOKEN_PLAYERNAME, m_strPlayerName );
+    Framework::Get()->GetGameSettings()->GetValue( CTD_STOKEN_PLAYERNAME, m_strPlayerName );
 
 }
 // post-init entity

@@ -178,7 +178,7 @@ void CTDGui::SetupGuiSystem()
     // get local chat member name
     //-------------------------------//
     string strPlayerName;
-    Settings::Get()->GetValue( CTD_STOKEN_PLAYERNAME, strPlayerName );
+    Framework::Get()->GetGameSettings()->GetValue( CTD_STOKEN_PLAYERNAME, strPlayerName );
     strPlayerName       = "<" + strPlayerName + ">";
     m_pcPlayerName      = utlStringClone_C( ( char* )strPlayerName.c_str() );
 
