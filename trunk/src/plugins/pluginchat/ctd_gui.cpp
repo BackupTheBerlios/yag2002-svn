@@ -56,33 +56,33 @@ static unsigned int s_uiGuiEntityCnt = 0;
 CTDGui::CTDGui()
 {
 
-	// check whether there is more than one single instance of this entity
-	s_uiGuiEntityCnt++;
-	assert( ( s_uiGuiEntityCnt == 1 ) && "CTDGui: there must be one single instance of Gui entity!" );
+    // check whether there is more than one single instance of this entity
+    s_uiGuiEntityCnt++;
+    assert( ( s_uiGuiEntityCnt == 1 ) && "CTDGui: there must be one single instance of Gui entity!" );
 
-	CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Chat) entity ' Gui ' created " );
+    CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Chat) entity ' Gui ' created " );
 
-	// activate networking as client object
+    // activate networking as client object
     SetNetworkingType( CTD::stateNONE );
 
-	// set the entity ( node ) name
-	//  for client objects it is essential that the entity name is set in constructor
-	SetName( CTD_ENTITY_NAME_Gui );
-	
-	m_kConfigFile	= "index.xml";
+    // set the entity ( node ) name
+    //  for client objects it is essential that the entity name is set in constructor
+    SetName( CTD_ENTITY_NAME_Gui );
+    
+    m_kConfigFile   = "index.xml";
 
-	m_pkChatMember	= NULL;
+    m_pkChatMember  = NULL;
 
-	m_pcPlayerName	= NULL;
+    m_pcPlayerName  = NULL;
 
 }
 
 CTDGui::~CTDGui()
 {
 
-	CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Chat) entity ' Gui ' destroyed " );
+    CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Chat) entity ' Gui ' destroyed " );
 
-	s_uiGuiEntityCnt--;
+    s_uiGuiEntityCnt--;
 
 }
 
@@ -90,17 +90,17 @@ CTDGui::~CTDGui()
 void CTDGui::Initialize() 
 {
 
-	// set a unique instance name, so chat member entity can find us later. we take the same name as entity name
-	SetInstanceName( CTD_ENTITY_NAME_Gui );
+    // set a unique instance name, so chat member entity can find us later. we take the same name as entity name
+    SetInstanceName( CTD_ENTITY_NAME_Gui );
 
-	// the server needs no gui system!
-	if ( Framework::Get()->GetGameMode() == stateSERVER ) {
-	
-		Deactivate();
+    // the server needs no gui system!
+    if ( Framework::Get()->GetGameMode() == stateSERVER ) {
+    
+        Deactivate();
 
-		CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Chat) entity ' Gui ' in chat server we don't need a gui system, entity deactivated. " );
-		
-	}
+        CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Chat) entity ' Gui ' in chat server we don't need a gui system, entity deactivated. " );
+        
+    }
 
 }
 
@@ -112,341 +112,311 @@ void CTDGui::PostInitialize()
 void CTDGui::SetupGuiSystem() 
 {
 
-	// configure the widget system
-	Widgets::Get()->Initialize();
-	Widgets::Get()->Activate();
-	Widgets::Get()->Load( m_kConfigFile );
+    // configure the widget system
+    Widgets::Get()->Initialize();
+    Widgets::Get()->Activate();
+    Widgets::Get()->Load( m_kConfigFile );
 
-	m_bEditText = false;
+    m_bEditText = false;
 
-	// set a callback for walk mode button
-	guiCButton*  pkWalkModeBtn   = ( guiCButton* )dataManager_S::SearchWidget("WalkMode");
-	assert( ( pkWalkModeBtn != NULL ) && "'WalkMode' button is not defined in gui definition file!" );
+    // set a callback for walk mode button
+    guiCButton*  pkWalkModeBtn   = ( guiCButton* )dataManager_S::SearchWidget("WalkMode");
+    assert( ( pkWalkModeBtn != NULL ) && "'WalkMode' button is not defined in gui definition file!" );
 
-	CB_Imp_GuiC_Callback* pkGLOActivateWalkModeButtonCallback = new GuiC_Callback< CTDGui >( this, OnActivateWalkMode, CM_GUI );
-	pkWalkModeBtn->AddCallback( pkGLOActivateWalkModeButtonCallback, eGuiCBase::CB_SELECT );
+    CB_Imp_GuiC_Callback* pkGLOActivateWalkModeButtonCallback = new GuiC_Callback< CTDGui >( this, OnActivateWalkMode, CM_GUI );
+    pkWalkModeBtn->AddCallback( pkGLOActivateWalkModeButtonCallback, eGuiCBase::CB_SELECT );
 
-	// set a callback for chat message editbox
-	guiCWindow*  pkEditBoxWindow   = ( guiCWindow* )dataManager_S::SearchWidget("EditBox");
-	assert( ( pkEditBoxWindow != NULL ) && "'EditBox' is not defined in gui definition file!" );
-	
-	CB_Imp_GuiC_Callback* pkGLOActivateEditboxCallback = new GuiC_Callback< CTDGui >( this, OnActivateEditText, CM_GUI );
-	pkEditBoxWindow->AddCallback( pkGLOActivateEditboxCallback, eGuiCBase::CB_SELECT );
+    // set a callback for chat message editbox
+    guiCWindow*  pkEditBoxWindow   = ( guiCWindow* )dataManager_S::SearchWidget("EditBox");
+    assert( ( pkEditBoxWindow != NULL ) && "'EditBox' is not defined in gui definition file!" );
+    
+    CB_Imp_GuiC_Callback* pkGLOActivateEditboxCallback = new GuiC_Callback< CTDGui >( this, OnActivateEditText, CM_GUI );
+    pkEditBoxWindow->AddCallback( pkGLOActivateEditboxCallback, eGuiCBase::CB_SELECT );
 
 
-	m_pkEditBox   = ( guiCEdit* )dataManager_S::SearchWidget("EditArea");
-	assert( ( m_pkEditBox != NULL ) && "'EditBox::EditArea' is not defined in gui definition file!" );
+    m_pkEditBox   = ( guiCEdit* )dataManager_S::SearchWidget("EditArea");
+    assert( ( m_pkEditBox != NULL ) && "'EditBox::EditArea' is not defined in gui definition file!" );
 
-	// we allow also activation of edit box when one clicks on text area
-	CB_Imp_GuiC_Callback* pkGLOActivateEditAreaCallback = new GuiC_Callback< CTDGui >( this, OnActivateEditText, CM_GUI );
-	m_pkEditBox->AddCallback( pkGLOActivateEditAreaCallback, eGuiCBase::CB_SELECT );
+    // we allow also activation of edit box when one clicks on text area
+    CB_Imp_GuiC_Callback* pkGLOActivateEditAreaCallback = new GuiC_Callback< CTDGui >( this, OnActivateEditText, CM_GUI );
+    m_pkEditBox->AddCallback( pkGLOActivateEditAreaCallback, eGuiCBase::CB_SELECT );
 
-	m_pkMsgBox   = ( guiCEdit* )dataManager_S::SearchWidget("MsgBox");
-	assert( ( m_pkMsgBox != NULL ) && "'MsgWindow::MsgBox' is not defined in gui definition file!" );
-	
-	// setup the text buffer of message window
-	//--------------------------------------------------//
-	// allocate text buffer
-	int iMaxStringLen = m_pkMsgBox->LengthMax();
-	// if no length given in xml file then assume the default size
-	if ( iMaxStringLen <= 0 ) {
-		iMaxStringLen = 4096;
-	}
-	wchar_t *pcTextBuffer = new wchar_t[ iMaxStringLen ];
-	pcTextBuffer[ iMaxStringLen - 1 ] = 0;
-	m_pkMsgBox->StringRef() =  pcTextBuffer;
-	
-	// reset the text buffer
-	pcTextBuffer		= m_pkMsgBox->GetString();
-	pcTextBuffer[ 0 ]	= 0;
-	//--------------------------------------------------//
+    m_pkMsgBox   = ( guiCEdit* )dataManager_S::SearchWidget("MsgBox");
+    assert( ( m_pkMsgBox != NULL ) && "'MsgWindow::MsgBox' is not defined in gui definition file!" );
+    
+    // setup the text buffer of message window
+    //--------------------------------------------------//
+    // allocate text buffer
+    int iMaxStringLen = m_pkMsgBox->LengthMax();
+    // if no length given in xml file then assume the default size
+    if ( iMaxStringLen <= 0 ) {
+        iMaxStringLen = 4096;
+    }
+    wchar_t *pcTextBuffer = new wchar_t[ iMaxStringLen ];
+    pcTextBuffer[ iMaxStringLen - 1 ] = 0;
+    m_pkMsgBox->StringRef() =  pcTextBuffer;
+    
+    // reset the text buffer
+    pcTextBuffer        = m_pkMsgBox->GetString();
+    pcTextBuffer[ 0 ]   = 0;
+    //--------------------------------------------------//
 
-	// calculate the available lines in message window
-	//--------------------------------------------------//
-	m_uiMsgTotalLines	= 0;
+    // calculate the available lines in message window
+    //--------------------------------------------------//
+    m_uiMsgTotalLines   = 0;
 
-	// get  message window font size
-	utlVector kSize;
-	m_pkMsgFont			= ( dataFont* )dataManager_S::SearchDataFont( "MsgFont" );
-	m_pkMsgFont->GetSize ( "A", 1, kSize );
-	m_fMsgFontHeight	= kSize.y;
+    // get  message window font size
+    utlVector kSize;
+    m_pkMsgFont         = ( dataFont* )dataManager_S::SearchDataFont( "MsgFont" );
+    m_pkMsgFont->GetSize ( "A", 1, kSize );
+    m_fMsgFontHeight    = kSize.y;
 
-	// add this object to callback list so the widget system will notify us on new inputs
-	//-------------------------------//
-	Widgets::Get()->AddInputCallback( this );
+    // add this object to callback list so the widget system will notify us on new inputs
+    //-------------------------------//
+    Widgets::Get()->AddInputCallback( this );
 
-	// get local chat member name
-	//-------------------------------//
-	string strPlayerName;
-	Settings::Get()->GetValue( CTD_STOKEN_PLAYERNAME, strPlayerName );
-	strPlayerName		= "<" + strPlayerName + ">";
-	m_pcPlayerName		= utlStringClone_C( ( char* )strPlayerName.c_str() );
+    // get local chat member name
+    //-------------------------------//
+    string strPlayerName;
+    Settings::Get()->GetValue( CTD_STOKEN_PLAYERNAME, strPlayerName );
+    strPlayerName       = "<" + strPlayerName + ">";
+    m_pcPlayerName      = utlStringClone_C( ( char* )strPlayerName.c_str() );
 
 }
 
 void CTDGui::OnInput( const NeoEngine::InputEvent *pkEvent )
 {
 
-	// proceed only when edit box is active
-	if ( m_bEditText == false ) {
+    // proceed only when edit box is active
+    if ( m_bEditText == false ) {
 
-		return;
+        return;
 
-	}
+    }
 
-	int		iKeyData     = pkEvent->m_aArgs[0].m_iData;
-	int 	iCharKeyData = pkEvent->m_aArgs[0].m_iData;
+    int     iKeyData     = pkEvent->m_aArgs[0].m_iData;
+    int     iCharKeyData = pkEvent->m_aArgs[0].m_iData;
 
-	// handle key down/up events
-	if ( ( pkEvent->m_iType == IE_KEYDOWN ) && ( iCharKeyData == KC_RETURN ) ) {
+    // handle key down/up events
+    if ( ( pkEvent->m_iType == IE_KEYDOWN ) && ( iCharKeyData == KC_RETURN ) ) {
 
-		// don't print empty text into message window
-		if ( ( !m_pkEditBox->StringRef() ) || ( m_pkEditBox->StringRef()[ 0 ] == L'' ) ) {
+        // don't print empty text into message window
+        if ( ( !m_pkEditBox->StringRef() ) || ( m_pkEditBox->StringRef()[ 0 ] == L'' ) ) {
 
-			return;
+            return;
 
-		}
+        }
 
-		// get the text in edit box and set the player name at begin of text
-		static wchar_t s_pcText[ 256 ]; 
-		utlStringCopy( s_pcText, m_pcPlayerName );
-		utlStringConcat( s_pcText, m_pkEditBox->StringRef() );
+        // get the text in edit box and set the player name at begin of text
+        static wchar_t s_pcText[ 256 ]; 
+        utlStringCopy( s_pcText, m_pcPlayerName );
+        utlStringConcat( s_pcText, m_pkEditBox->StringRef() );
 
-		// send message over network
-		m_pkChatMember->Message( CTD_ENTITY_GUI_SEND_TEXT, s_pcText );
+        // send message over network
+        m_pkChatMember->Message( CTD_ENTITY_GUI_SEND_TEXT, s_pcText );
 
-		// set caret to position 0
-		int     iLen = utlStringLength( s_pcText );
-		m_pkEditBox->MoveCaret( -iLen );
+        // set caret to position 0
+        int     iLen = utlStringLength( s_pcText );
+        m_pkEditBox->MoveCaret( -iLen );
 
-		// add the message to message window
-		AddMessage( s_pcText );
+        // add the message to message window
+        AddMessage( s_pcText );
 
-		// reset the text in editbox
-		m_pkEditBox->StringRef()[ 0 ] = 0;
+        // reset the text in editbox
+        m_pkEditBox->StringRef()[ 0 ] = 0;
 
-	}
+    }
 
 }
 
 void CTDGui::AddMessage( wchar_t *pcMsg )
 {
 
-	// add new text to message window
-	wchar_t *pcMsgText = m_pkMsgBox->StringRef();
-	utlStringConcat( pcMsgText, pcMsg );
-	utlStringConcat( pcMsgText, ( wchar_t* )"\n" );
+    // add new text to message window
+    wchar_t *pcMsgText = m_pkMsgBox->StringRef();
+    utlStringConcat( pcMsgText, pcMsg );
+    utlStringConcat( pcMsgText, ( wchar_t* )"\n" );
 
-	// get message window height
-	utlVector kSize;
-	rendCBase	*pkRenderPrimitive = m_pkMsgBox->GetRender();
-	pkRenderPrimitive->GetCurrentOrNormalDraw()->GetSize( kSize );
-	m_uiMsgMaxLines		= ( unsigned int )( kSize.y / m_fMsgFontHeight );
+    // get message window height
+    utlVector kSize;
+    rendCBase   *pkRenderPrimitive = m_pkMsgBox->GetRender();
+    pkRenderPrimitive->GetCurrentOrNormalDraw()->GetSize( kSize );
+    m_uiMsgMaxLines     = ( unsigned int )( kSize.y / m_fMsgFontHeight );
 
-	// fit the message lines into message box
-	if ( m_uiMsgTotalLines > m_uiMsgMaxLines ) {
+    // fit the message lines into message box
+    if ( m_uiMsgTotalLines > m_uiMsgMaxLines ) {
 
-		// find the end of first line in message buffer
-		int iLen   = utlStringLength( pcMsgText );
-		int iCRPos = 0;
-		for ( ; iCRPos < iLen; iCRPos ++ ) {
+        // find the end of first line in message buffer
+        int iLen   = utlStringLength( pcMsgText );
+        int iCRPos = 0;
+        for ( ; iCRPos < iLen; iCRPos ++ ) {
 
-			if ( ( wchar_t )pcMsgText[ iCRPos ] == ( wchar_t )'\n' ) {
+            if ( ( wchar_t )pcMsgText[ iCRPos ] == ( wchar_t )'\n' ) {
 
-				break;
+                break;
 
-			}
+            }
 
-		}
+        }
 
-		// cut the first line from msg buffer
-		if ( iCRPos < iLen ) {
+        // cut the first line from msg buffer
+        if ( iCRPos < iLen ) {
 
-			// skip CR
-			iCRPos++;
+            // skip CR
+            iCRPos++;
 
-			// FIXME: i don't know why memmove does not work here!?
-			//memmove( pcMsgText, ( void* )( pcMsgText + iCRPos ), iLen - iCRPos + 1 );
+            // FIXME: i don't know why memmove does not work here!?
+            //memmove( pcMsgText, ( void* )( pcMsgText + iCRPos ), iLen - iCRPos + 1 );
 
-			// do the text moving by hand :-(
-			for ( int i = 0; i <= ( iLen - iCRPos ); i++ ) {
+            // do the text moving by hand :-(
+            for ( int i = 0; i <= ( iLen - iCRPos ); i++ ) {
 
-				pcMsgText[ i ] = pcMsgText[ i + iCRPos ];
-			}
+                pcMsgText[ i ] = pcMsgText[ i + iCRPos ];
+            }
 
-		}
+        }
 
-	} else {
+    } else {
 
-		// increase total count of used lines if not the maximum reached
-		m_uiMsgTotalLines++;
+        // increase total count of used lines if not the maximum reached
+        m_uiMsgTotalLines++;
 
-	}
+    }
 
 }
 
 void CTDGui::OnActivateEditText( CB_Imp_GuiC_Callback* a_pCallback, guiCBase* a_pControl, void* a_pData )
 {
 
-	ClearMovementFlags();
-	LockMovementInput( true );
-	m_bEditText = true;
+    ClearMovementFlags();
+    LockMovementInput( true );
+    m_bEditText = true;
 
 }
 
 void CTDGui::OnActivateWalkMode( CB_Imp_GuiC_Callback* a_pCallback, guiCBase* a_pControl, void* a_pData )
 {
 
-	LockMovementInput( false );
-	m_bEditText = false;
+    LockMovementInput( false );
+    m_bEditText = false;
 
 }
 
 void CTDGui::UpdateEntity( float fDeltaTime ) 
 { 
-	
+    
 }
 
 // incomming network messages
 void CTDGui::NetworkMessage( int iMsgId, void *pkMsgStruct )
 {
-	
-	// wait until we have been integrated into network session
-	switch ( iMsgId ) {
-		
-		case CTD_NM_SYSTEM_NOTIFY_CONNECTION_ESTABLISHED:
-		{
+    
+    // wait until we have been integrated into network session
+    switch ( iMsgId ) {
+        
+        case CTD_NM_SYSTEM_NOTIFY_CONNECTION_ESTABLISHED:
+        {
 
-			// get the chat member entity, we need it for sending messages over network, etc.
-			//-------------------------------//
-			m_pkChatMember = Framework::Get()->GetPlayer();
-			assert( m_pkChatMember && " 'CTDGui::Initialize' player is not set in framework!" );
+            // get the chat member entity, we need it for sending messages over network, etc.
+            //-------------------------------//
+            m_pkChatMember = Framework::Get()->GetPlayer();
+            assert( m_pkChatMember && " 'CTDGui::Initialize' player is not set in framework!" );
 
-			// setup the gui system
-			SetupGuiSystem();
+            // setup the gui system
+            SetupGuiSystem();
 
-		}
-		break;
+        }
+        break;
 
-		case CTD_NM_SYSTEM_NOTIFY_CONNECTION_LOST:
-		{
-		}
-		break;
+        case CTD_NM_SYSTEM_NOTIFY_CONNECTION_LOST:
+        {
+        }
+        break;
 
-		case CTD_NM_SYSTEM_NOTIFY_CONNECTION_RESUMED:
-		{
-		}
-		break;
+        case CTD_NM_SYSTEM_NOTIFY_CONNECTION_RESUMED:
+        {
+        }
+        break;
 
-		case CTD_NM_SYSTEM_NOTIFY_DISCONNECTED:
-		{
-		}
-		break;
+        case CTD_NM_SYSTEM_NOTIFY_DISCONNECTED:
+        {
+        }
+        break;
 
-		default:
-			// unexpected message type!
-			;
-	}
+        default:
+            // unexpected message type!
+            ;
+    }
 
 }
 
-int	CTDGui::Message( int iMsgId, void *pMsgStruct ) 
+int CTDGui::Message( int iMsgId, void *pMsgStruct ) 
 { 
 
-	switch ( iMsgId ) {
+    switch ( iMsgId ) {
 
-		// handle pausing and entering the menu
-		case CTD_ENTITY_ENTER_MENU:
-		case CTD_ENTITY_PAUSING_BEGIN:
+        // handle entering the menu, disable widgets drawing
+        case CTD_ENTITY_ENTER_MENU:
 
-			CTDPRINTF_DISABLE( g_CTDPrintf );
-			CTDPRINTF_FLUSH( g_CTDPrintf );
-			break;
+            Widgets::Get()->Deactivate();
 
-		case CTD_ENTITY_EXIT_MENU:
-		case CTD_ENTITY_PAUSING_END:
+            break;
 
-			CTDPRINTF_ENABLE( g_CTDPrintf );
-			break;
+        // handle exiting the menu, enable widgets drawing
+        case CTD_ENTITY_EXIT_MENU:
 
-		case CTD_ENTITY_CHATMEMBER_ADD_MSG:
-		{
+            Widgets::Get()->Activate();
 
-			char			*pcMsg = ( char* )pMsgStruct;
-			// convert the multi-byte character sting to wide characher string
-			static wchar_t	s_pcWMsg[ 256 ];
-			mbstowcs( s_pcWMsg, pcMsg, 256 );
+            break;
 
-			AddMessage( s_pcWMsg );
+        // add a new chat message to message console
+        case CTD_ENTITY_CHATMEMBER_ADD_MSG:
+        {
 
-		}
-		break;
+            char            *pcMsg = ( char* )pMsgStruct;
+            // convert the multi-byte character sting to wide characher string
+            static wchar_t  s_pcWMsg[ 256 ];
+            mbstowcs( s_pcWMsg, pcMsg, 256 );
 
-		default:
-			break;
+            AddMessage( s_pcWMsg );
 
-	}
+        }
+        break;
 
-	return 0; 
-}	
+        default:
+            break;
+
+    }
+
+    return 0; 
+}   
 
 
-int	CTDGui::ParameterDescription( int iParamIndex, ParameterDescriptor *pkDesc )
+int CTDGui::ParameterDescription( int iParamIndex, ParameterDescriptor *pkDesc )
 {
 
-	int iParamCount = 1;
+    int iParamCount = 1;
 
-	if ( pkDesc == NULL ) {
+    if ( pkDesc == NULL ) {
 
-		return iParamCount;
-	}
+        return iParamCount;
+    }
 
-	switch( iParamIndex ) 
-	{
-	case 0:
-		pkDesc->SetName( "ConfigFile" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
-		pkDesc->SetVar( &m_kConfigFile );
-		
-		break;
-/*
-	case 1:
-		pkDesc->SetName( "Rotation" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
-		pkDesc->SetVar( &m_kInitRotation );
-		
-		break;
+    switch( iParamIndex ) 
+    {
 
-	case 2:
-		pkDesc->SetName( "Dimensions" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_VECTOR3 );
-		pkDesc->SetVar( &m_kDimensions );
-		
-		break;
+    case 0:
+        pkDesc->SetName( "ConfigFile" );
+        pkDesc->SetType( ParameterDescriptor::CTD_PD_STRING );
+        pkDesc->SetVar( &m_kConfigFile );
+        
+        break;
 
-	case 3:
-		pkDesc->SetName( "PositionalSpeed" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_FLOAT );
-		pkDesc->SetVar( &m_fPositionalSpeed );
-		break;
+    default:
+        return -1;
+    }
 
-	case 4:
-		pkDesc->SetName( "AngularSpeed" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_FLOAT );
-		pkDesc->SetVar( &m_fAngularSpeed );
-		break;
-
-	case 5:
-		pkDesc->SetName( "Mesh" );
-		pkDesc->SetType( ParameterDescriptor::CTD_PD_STATIC_MESH );
-		pkDesc->SetVar( &m_pkMesh );
-		break;
-*/
-	default:
-		return -1;
-	}
-
-	return iParamCount;
+    return iParamCount;
 
 }
 

@@ -49,113 +49,113 @@
 namespace CTD_IPluginChat {
 
 // this is the printf object
-extern CTDPrintf	g_CTDPrintf;
-extern CTDPrintf	g_CTDPrintfNwStats;
+extern CTDPrintf    g_CTDPrintf;
+extern CTDPrintf    g_CTDPrintfNwStats;
 
 class CTDGui : public CTD::BaseEntity, public CTD::WidgetInput
 {
 
-	public:
+    public:
 
-													CTDGui();
+                                                    CTDGui();
 
-													~CTDGui();
+                                                    ~CTDGui();
 
-		//******************************* override some functions **********************************//
+        //******************************* override some functions **********************************//
 
-		/**
-		* Get network type of this entity ( see BaseEntity for more details ).
-		* Return always the type using BaseEntity::GetNetworkingType() and set
-		* your desired type in ctor ( as a client object can get remote client object through the framework ).
-		*/
-		CTD::tCTDNetworkingType						GetNetworkingType() 
-													{ 
-														return BaseEntity::GetNetworkingType();
-													}
+        /**
+        * Get network type of this entity ( see BaseEntity for more details ).
+        * Return always the type using BaseEntity::GetNetworkingType() and set
+        * your desired type in ctor ( as a client object can get remote client object through the framework ).
+        */
+        CTD::tCTDNetworkingType                     GetNetworkingType() 
+                                                    { 
+                                                        return BaseEntity::GetNetworkingType();
+                                                    }
 
-		/**
-		* Initializing function
-		*/
-		void										Initialize();
+        /**
+        * Initializing function
+        */
+        void                                        Initialize();
 
-		/**
-		* Post-initializing function, this is called after all plugins' entities are initilized.
-		* One important usage of this function is to search and attach entities to eachother, after all entities are initialized.
-		*/
-		 void										PostInitialize();
+        /**
+        * Post-initializing function, this is called after all plugins' entities are initilized.
+        * One important usage of this function is to search and attach entities to eachother, after all entities are initialized.
+        */
+         void                                       PostInitialize();
 
-		/**
-		* Update object
-		* \param fDeltaTime                         Time passed since last update
-		*/
-		void									    UpdateEntity( float fDeltaTime );		
-		
-		/**
-		* Messaging function.
-		* \param  iMsgId                            Message ID
-		* \param  pMsgStruct                        Message specific data structure
-		* \return                                   This return value is message specific.
-		*/
-		int											Message( int iMsgId, void *pMsgStruct );
+        /**
+        * Update object
+        * \param fDeltaTime                         Time passed since last update
+        */
+        void                                        UpdateEntity( float fDeltaTime );       
+        
+        /**
+        * Messaging function.
+        * \param  iMsgId                            Message ID
+        * \param  pMsgStruct                        Message specific data structure
+        * \return                                   This return value is message specific.
+        */
+        int                                         Message( int iMsgId, void *pMsgStruct );
 
 
-		/**
-		* Messaging function for incomming network pakets. This function is called by framework.
-		* \param   iMsgId           				Message ID
-		* \param   pMsgStruct       				Message specific data structure
-		*/
-		void										NetworkMessage( int iMsgId, void *pMsgStruct );
+        /**
+        * Messaging function for incomming network pakets. This function is called by framework.
+        * \param   iMsgId                           Message ID
+        * \param   pMsgStruct                       Message specific data structure
+        */
+        void                                        NetworkMessage( int iMsgId, void *pMsgStruct );
 
-		/**
-		* Entity parameter description function.
-		*/
-		int											ParameterDescription( int iParamIndex, CTD::ParameterDescriptor *pkDesc );
+        /**
+        * Entity parameter description function.
+        */
+        int                                         ParameterDescription( int iParamIndex, CTD::ParameterDescriptor *pkDesc );
 
-		//******************************************************************************************//
+        //******************************************************************************************//
 
-		// entity parameters
-		//------------------------------------------------------------------------------------------//
+        // entity parameters
+        //------------------------------------------------------------------------------------------//
 
-		// config file ( xml format )
-		std::string									m_kConfigFile;
+        // config file ( xml format )
+        std::string                                 m_kConfigFile;
 
-		// GLO related functions and variables
-		//------------------------------------------------------------------------------------------//
+        // GLO related functions and variables
+        //------------------------------------------------------------------------------------------//
 
-		// callback functions
+        // callback functions
 
-        void										OnActivateEditText( CB_Imp_GuiC_Callback* a_pCallback, guiCBase* a_pControl, void* a_pData );
+        void                                        OnActivateEditText( CB_Imp_GuiC_Callback* a_pCallback, guiCBase* a_pControl, void* a_pData );
 
-        void										OnActivateWalkMode( CB_Imp_GuiC_Callback* a_pCallback, guiCBase* a_pControl, void* a_pData );
+        void                                        OnActivateWalkMode( CB_Imp_GuiC_Callback* a_pCallback, guiCBase* a_pControl, void* a_pData );
 
-		void										OnInput( const NeoEngine::InputEvent *pkEvent );
+        void                                        OnInput( const NeoEngine::InputEvent *pkEvent );
 
-	protected:
+    protected:
 
-		// setup the gui system when a connection with server has been established
-		void										SetupGuiSystem();
+        // setup the gui system when a connection with server has been established
+        void                                        SetupGuiSystem();
 
-		// add message to message window
-		void										AddMessage( wchar_t *pcMsg );
+        // add message to message window
+        void                                        AddMessage( wchar_t *pcMsg );
 
-		CTD::BaseEntity							*m_pkChatMember;
+        CTD::BaseEntity                             *m_pkChatMember;
 
-		wchar_t										*m_pcPlayerName;
+        wchar_t                                     *m_pcPlayerName;
 
-		// true if in message editing mode
-		bool										m_bEditText;
+        // true if in message editing mode
+        bool                                        m_bEditText;
 
-		guiCEdit									*m_pkEditBox;
-		
-		guiCEdit									*m_pkMsgBox;
-		
-		dataFont									*m_pkMsgFont;
+        guiCEdit                                    *m_pkEditBox;
+        
+        guiCEdit                                    *m_pkMsgBox;
+        
+        dataFont                                    *m_pkMsgFont;
 
-		float										m_fMsgFontHeight;
+        float                                       m_fMsgFontHeight;
 
-		unsigned int								m_uiMsgMaxLines;
+        unsigned int                                m_uiMsgMaxLines;
 
-		unsigned int								m_uiMsgTotalLines;
+        unsigned int                                m_uiMsgTotalLines;
 
 };
 
@@ -164,12 +164,12 @@ class CTDGui : public CTD::BaseEntity, public CTD::WidgetInput
 class CTDGuiDesc : public CTD::EntityDescriptor
 {
 
-	public:
-													CTDGuiDesc() { };
-													~CTDGuiDesc() { }
-			
-		const std::string&							GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME_Gui ) }
-		CTD::BaseEntity*							CreateEntityInstance() { return (CTD::BaseEntity*) new CTDGui; };
+    public:
+                                                    CTDGuiDesc() { };
+                                                    ~CTDGuiDesc() { }
+            
+        const std::string&                          GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME_Gui ) }
+        CTD::BaseEntity*                            CreateEntityInstance() { return (CTD::BaseEntity*) new CTDGui; };
 
 
 };
