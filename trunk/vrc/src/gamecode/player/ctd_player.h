@@ -129,6 +129,13 @@ class EnPlayer : public BaseEntity
             protected:
 
                 EnPlayer*                           _p_player;
+
+                bool                                _rotateRight;
+                float                               _rotateLeft;
+                bool                                _moveForward;
+                bool                                _moveBackward;
+
+
         };
 
         InputHandler*                               _p_inputHandler;

@@ -122,17 +122,16 @@ void EnPlayer::updateEntity( float deltaTime )
 {
     _p_playerPhysics->update( deltaTime );
     _p_playerAnimation->update( deltaTime );
-
-    // dynamic deletion test
-    static float timer = 0; 
-    timer += deltaTime;
-    if ( timer > 5.0f ) // delete entity after some time
-        EntityManager::get()->deleteEntity( this );
 }
 
 // input handler implementation
 //-----------------------------
-EnPlayer::InputHandler::InputHandler( EnPlayer*p_player ) : _p_player( p_player ) 
+EnPlayer::InputHandler::InputHandler( EnPlayer*p_player ) : 
+_p_player( p_player ) ,
+_rotateRight( false ),
+_rotateLeft( false ),
+_moveForward( false ),
+_moveBackward( false )
 {
     // register us in viewer to get event callbacks
     osg::ref_ptr< EnPlayer::InputHandler > ih( this );
@@ -149,24 +148,20 @@ bool EnPlayer::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GU
     unsigned int eventType   = ea.getEventType();
     int          key         = ea.getKey();
 
-    //! TODO make these member vars
-    static bool  rotateRight = false, rotateLeft = false;
-    static bool  moveForward = false, moveBackward = false;
-
     // dispatch key activity
     if ( eventType == osgGA::GUIEventAdapter::KEYDOWN )
     {
         if ( key == osgGA::GUIEventAdapter::KEY_Up )
-            moveForward = true;
+            _moveForward = true;
 
         if ( key == osgGA::GUIEventAdapter::KEY_Down )
-            moveBackward = true;
+            _moveBackward = true;
 
         if ( key == osgGA::GUIEventAdapter::KEY_Right )
-            rotateRight = true;
+            _rotateRight = true;
 
         if ( key == osgGA::GUIEventAdapter::KEY_Left )
-            rotateLeft = true;
+            _rotateLeft = true;
 
         if ( key == 'm' )
         {
@@ -181,24 +176,24 @@ bool EnPlayer::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GU
         if ( ( key == osgGA::GUIEventAdapter::KEY_Up ) || ( key == osgGA::GUIEventAdapter::KEY_Down ) )
         {
             if ( key == osgGA::GUIEventAdapter::KEY_Up )
-                moveForward = false;
+                _moveForward = false;
 
             if ( key == osgGA::GUIEventAdapter::KEY_Down )
-                moveBackward = false;
+                _moveBackward = false;
 
             _p_player->_p_playerPhysics->setForce( 0, 0 );
         }
 
         if ( key == osgGA::GUIEventAdapter::KEY_Right )
-            rotateRight = false;
+            _rotateRight = false;
 
         if ( key == osgGA::GUIEventAdapter::KEY_Left )
-            rotateLeft = false;
+            _rotateLeft = false;
 
         ret = true;
     }
 
-    if ( rotateRight )
+    if ( _rotateRight )
     {
         _p_player->_rotation += _p_player->_p_playerPhysics->getAngularForce();
         if ( _p_player->_rotation > PI * 2.0f )
@@ -208,7 +203,7 @@ bool EnPlayer::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GU
         _p_player->_moveDir._v[ 1 ] = cosf( _p_player->_rotation );
     }
 
-    if ( rotateLeft )
+    if ( _rotateLeft )
     {
         if ( _p_player->_rotation < 0 )
             _p_player->_rotation += PI * 2.0f;
@@ -218,19 +213,19 @@ bool EnPlayer::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GU
         _p_player->_moveDir._v[ 1 ] = cosf( _p_player->_rotation );
     }
 
-    if ( moveForward )
+    if ( _moveForward )
     {
-        _p_player->_p_playerPhysics->setForce( _p_player->_moveDir._v[ 0 ], _p_player->_moveDir._v[ 0 ] );
+        _p_player->_p_playerPhysics->setForce( _p_player->_moveDir._v[ 0 ], _p_player->_moveDir._v[ 1 ] );
         _p_player->_p_playerAnimation->actionWalk();
     }
 
-    if ( moveBackward )
+    if ( _moveBackward )
     {
-        _p_player->_p_playerPhysics->setForce( -_p_player->_moveDir._v[ 0 ], -_p_player->_moveDir._v[ 0 ] );
+        _p_player->_p_playerPhysics->setForce( -_p_player->_moveDir._v[ 0 ], -_p_player->_moveDir._v[ 1 ] );
         _p_player->_p_playerAnimation->actionWalk();
     }
 
-    if ( !moveForward && !moveBackward )
+    if ( !_moveForward && !_moveBackward )
         _p_player->_p_playerAnimation->actionIdle();
 
     return ret;
