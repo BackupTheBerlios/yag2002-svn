@@ -21,6 +21,7 @@
 
 /*###############################################################
  # entity water
+ #  the rendering code is basing on osg examples osgreflect and osgvertexprogram 
  #
  #   date of creation:  03/26/2005
  #
@@ -93,9 +94,6 @@ class EnWater :  public BaseEntity
         //! Stimulus amplitude
         float                                       _amplitude;
 
-        //! Water texture
-        std::string                                 _texFile;
-
         //! Reflection cube map textures
         std::string                                 _cubeMapTextures[ 6 ];
 
@@ -104,41 +102,49 @@ class EnWater :  public BaseEntity
         //! Given the step width calculate the liquid equation constants
         void                                        calcConstants( float stepWidth );
 
-        //! Create the water surface mesh
-        osg::Node*                                  makeMesh();
+        //! Setup water geom, vertex shader and state sets
+        osg::Node*                                  setupWater(osg::Node* model);
+
+        //! Create the water surface mesh ( grid )
+        osg::Geometry*                              makeMesh();
 
         //! Read the six sides of reflection / refraction cube map
         osg::TextureCubeMap*                        readCubeMap();
 
-        //! Set reflection / refraction stuff for given node
-        osg::Node*                                  addRefractStateSet( osg::Node* node );
-
+        //! This is used for cube mapping
         EyeTransform*                               _p_transformEyePoint;
            
-        osg::ref_ptr< osg::Group >                  _node;
-           
         osg::ref_ptr< osg::Geode >                  _geode;
+
+        bool                                        _primaryPosBuffer;
 
         // vertex position array ( two buffers for fast switching )
         osg::ref_ptr< osg::Vec3Array >              _posArray1;
 
         osg::ref_ptr< osg::Vec3Array >              _posArray2;
     
-        bool                                        _primaryPosBuffer;
+        osg::ref_ptr< osg::Vec3Array >              _normArray;
 
         // water geometry
         osg::Geometry*                              _p_geom;
 
-        osg::ref_ptr< osg::Vec3Array >              _normArray;
+        //! Ratio of indicies of refraction
+        float                                       _refract;
 
-        // some internal vaiables
+        //! Fresnel multiplier
+        float                                       _fresnel;
+
+
+        // some internal vaiables used for water simulation
         float                                       _k1;
+
         float                                       _k2;
+        
         float                                       _k3;
 
         float                                       _stimulationPeriod;
+        
         float                                       _pastTime;
-
 };
 
 //! Entity type definition used for type registry
