@@ -1,6 +1,6 @@
 /****************************************************************
  *  3D Game 'Capture The Diamond'
- *  Copyright (C) 2002-2004, Ali Botorabi
+ *  Copyright (C) 2004-2006, Ali Botorabi
  *
  *  This program is free software; you can redistribute it and/or 
  *  modify it under the terms of the GNU General Public License 
@@ -163,6 +163,11 @@ class BaseEntity : public osg::Node
         * If p_scenegroup is NULL then the cloned scene node will be added to clonee's parent group thus getting a sibling.
         */
         virtual BaseEntity*                         clone( const std::string& instanceName, osg::Group* p_scenegroup = NULL );
+
+        /** 
+        * A convenient way to clone and initialize / post-initialize an entity.
+        */
+        virtual BaseEntity*                         cloneAndInitialize( const std::string& instanceName, osg::Group* p_scenegroup = NULL );
 
     private:
 

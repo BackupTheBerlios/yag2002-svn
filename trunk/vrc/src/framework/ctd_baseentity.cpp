@@ -1,6 +1,6 @@
 /****************************************************************
  *  3D Game 'Capture The Diamond'
- *  Copyright (C) 2002-2004, Ali Botorabi
+ *  Copyright (C) 2004-2006, Ali Botorabi
  *
  *  This program is free software; you can redistribute it and/or 
  *  modify it under the terms of the GNU General Public License 
@@ -69,5 +69,16 @@ BaseEntity* BaseEntity::clone( const string& instanceName, osg::Group* p_scenegr
             p_scenegroup->addChild( p_trans );
     }
 
+    return p_entity;
+}
+
+BaseEntity* BaseEntity::cloneAndInitialize( const string& instanceName, osg::Group* p_scenegroup )
+{
+    BaseEntity* p_entity = clone( instanceName, p_scenegroup );
+    if ( !p_entity )
+        return NULL;
+
+    p_entity->initialize();
+    p_entity->postInitialize();
     return p_entity;
 }
