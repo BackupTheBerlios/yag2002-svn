@@ -287,7 +287,7 @@ bool GLOAdaptor::XML_ImportFromFile( char* a_pFileName )
     
     FileManager *pkFileManager = NeoEngine::Core::Get()->GetFileManager();
     File *pkFile = pkFileManager->GetByName( a_pFileName );
-    if ( pkFile->Open() ) {
+    if ( pkFile && pkFile->Open() ) {
 
         CTDCONSOLE_PRINT( LogLevel( INFO ), "GuiSystem: parsing xml file " + string( a_pFileName ) );
 
