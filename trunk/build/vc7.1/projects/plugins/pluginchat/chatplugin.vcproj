@@ -220,7 +220,7 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\ChangeLog">
+			RelativePath="..\..\..\..\..\src\plugins\pluginchat\ChangeLog">
 		</File>
 	</Files>
 	<Globals>
