@@ -52,6 +52,7 @@
 #include <neoengine/sceneentity.h>
 #include <neoengine/scenenode.h>
 #include <neoengine/core.h>
+#include <neoengine/contact.h>
 #include <neoengine/aabb.h>
 #include <neoengine/inputentity.h>
 #include <neoengine/light.h>
