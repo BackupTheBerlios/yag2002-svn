@@ -355,6 +355,16 @@
 					RelativePath="..\..\..\..\src\gamecode\sound\ctd_ambientsound.h">
 				</File>
 			</Filter>
+			<Filter
+				Name="visuals"
+				Filter="">
+				<File
+					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_skybox.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_skybox.h">
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>
