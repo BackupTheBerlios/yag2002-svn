@@ -58,7 +58,7 @@ class Singleton
 
 #include "ctd_singleton.inl"
 
-#define CTD_SINGLETON_IMPL( Type ) template<> Type* Singleton< Type >::_p_instance = 0;
+#define CTD_SINGLETON_IMPL( Type ) template<> Type* CTD::Singleton< Type >::_p_instance = 0;
 
 }
 
