@@ -77,28 +77,8 @@ bool WalkPhysics::MoveBody( Vector3d &kPosition, const Vector3d &kMoveVector, fl
 {
 
     Vector3d kCurrPosition = kPosition;
- 
-    // during falling avoid moving in x and z directions
-    if ( m_bLastContact &&  m_bHasContact ) {
-
-        kCurrPosition += Vector3d( kMoveVector.x, 0, kMoveVector.z );
-    
-    } else {
-
-        if ( !m_bLastContact &&  m_bHasContact ) {
         
-            m_kLastMoveVector = kMoveVector;
-            kCurrPosition += Vector3d( m_kLastMoveVector.x, 0, m_kLastMoveVector.z );
-
-        } else {
-        
-            if ( !m_bLastContact &&  !m_bHasContact ) {
-
-                kCurrPosition += Vector3d( m_kLastMoveVector.x, 0, m_kLastMoveVector.z );
-
-            }
-        }
-    }
+    kCurrPosition += Vector3d( kMoveVector.x, 0, kMoveVector.z );
 
     // store the last contact flag
     m_bLastContact = m_bHasContact;
@@ -224,6 +204,11 @@ bool WalkPhysics::MoveBody( Vector3d &kPosition, const Vector3d &kMoveVector, fl
  
     return true;
 
+}
+
+bool WalkPhysics::IsOnGround()
+{
+    return ( m_bLastContact &&  m_bHasContact );
 }
 
 } // namespace CTD_IPluginChat

@@ -68,10 +68,10 @@ class WalkPhysics
         * \param fGravity                           Gravity force used for falling
         */
         void                                        Initialize( 
-                                                                NeoEngine::SceneNode *pkSceneNode, 
-                                                                NeoEngine::Room *pkRoom, 
-                                                                float fMaxStepHeight = 0.5f,
-                                                                float fGravity = 0.98f 
+                                                                NeoEngine::SceneNode    *pkSceneNode, 
+                                                                NeoEngine::Room         *pkRoom, 
+                                                                float                   fMaxStepHeight = 0.5f,
+                                                                float                   fGravity       = 0.98f 
                                                                );
 
         /**
@@ -91,6 +91,12 @@ class WalkPhysics
         * \return                                   true if a collision occured, otherwise false
         */
         bool                                        MoveBody( NeoEngine::Vector3d &kPosition, const NeoEngine::Vector3d &kMoveVector, float fDeltaTime );
+
+        /**
+        * Shows whether body is on ground.
+        * \return                                   true if body is on ground.
+        */
+        bool                                        IsOnGround();
 
     protected:
 
@@ -117,9 +123,6 @@ class WalkPhysics
         
         //! Flag indicating that during current update a collision occured
         bool                                        m_bHasContact;
-
-        //! Last move vector before begin of falling
-        NeoEngine::Vector3d                         m_kLastMoveVector;
 
         //! Last calculated position
         NeoEngine::Vector3d                         m_kLastPosition;
