@@ -43,8 +43,6 @@
 
 
 #include <base.h>
-#include <string>
-
 
 namespace CTD_IPluginVisuals {
 
@@ -58,6 +56,7 @@ class CTDPointLight : public CTD::BaseEntity
     public:
 
                                                     CTDPointLight();
+
                                                     ~CTDPointLight();
 
         //******************************* overriding functions **********************************//
@@ -71,8 +70,6 @@ class CTDPointLight : public CTD::BaseEntity
         * Post-Initializing function
         */
         void                                        PostInitialize();   
-
-        // render the light sources as bbox for debugging
 
         /**
         * Render object
@@ -101,13 +98,16 @@ class CTDPointLight : public CTD::BaseEntity
         NeoEngine::Light                            *m_pkLight;
 
         NeoEngine::Vector3d                         m_vPosition;
+
         float                                       m_fRadius;
 
-        // ligth sprite
+        // light sprite
         std::string                                 m_strSprite;
+        
         // entity for creating sprites
         CTD::BaseEntity                             *m_pkSpriteFactory;
-        // created sprite entity using sprite factory; take care: you must detach this created entity in room manager during destruction
+        
+        // created sprite entity using sprite factory
         CTD::BaseEntity                             *m_pkSprite;
 
 };

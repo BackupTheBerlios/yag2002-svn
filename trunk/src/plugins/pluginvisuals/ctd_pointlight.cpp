@@ -50,7 +50,7 @@ CTDPointLightDesc   g_pkPointLightEntity_desc;
 CTDPointLight::CTDPointLight()
 {
 
-    CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Lights) entity ' PointLight ' created " );
+    CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Visuals) entity ' PointLight ' created " );
 
     m_pkSprite          = NULL;
     m_pkSpriteFactory   = NULL;
@@ -72,7 +72,7 @@ CTDPointLight::CTDPointLight()
 CTDPointLight::~CTDPointLight()
 {
 
-    CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Lights) entity ' PointLight ' destroyed " );
+    CTDCONSOLE_PRINT( LogLevel( INFO ), " (Plugin Visuals) entity ' PointLight ' destroyed " );
     if ( m_pkSprite != NULL ) {
 
         m_pkRoom->DetachNode( m_pkSprite );
@@ -114,7 +114,7 @@ void CTDPointLight::PostInitialize()
     // assign sprite entity
     if ( m_strSprite.length() == 0 ) {
     
-        CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Lights) entity ' PointLight::" + GetInstanceName() + " ' missing sprite entity parameter! " );
+        CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Visuals) entity ' PointLight::" + GetInstanceName() + " ' missing sprite entity parameter! " );
 
     }
         
@@ -122,7 +122,7 @@ void CTDPointLight::PostInitialize()
 
     if ( m_pkSpriteFactory == NULL ) {
 
-        CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Lights) entity ' PointLight::" + GetInstanceName() + " ' cannot find sprite entity! " );
+        CTDCONSOLE_PRINT( LogLevel( WARNING ), " (Plugin Visuals) entity ' PointLight::" + GetInstanceName() + " ' cannot find sprite entity! " );
 
     } else {
 
