@@ -424,6 +424,11 @@ void Physics::genericContactEnd( const NewtonMaterial* p_material )
 {
 }
 
+CollisionStruct* Physics::getCollisionStruct()
+{
+    return s_colStruct;
+}
+
 int Physics::levelContactProcess(const NewtonMaterial* p_material, const NewtonContact* p_contact )
 {
     // handle level submaterials

@@ -40,6 +40,7 @@ namespace CTD
 
 class Application;
 class PhysicsDebugDrawable;
+struct CollisionStruct;
 
 //! Physics core
 class Physics : public Singleton< Physics >
@@ -94,6 +95,10 @@ class Physics : public Singleton< Physics >
         //! Generic collision callback function for contact end ( this can be used in entity material definitions )
         static void                                 genericContactEnd( const NewtonMaterial* p_material );
         
+        //! Returns the collision struct which is modified in contact process funtions above.
+        //!  Use this struct to get tangent and normal speed of collision after the genericContactEnd function.
+        static CollisionStruct*                     getCollisionStruct();
+
         //! Collision callback function for level contact processing ( this can be used in entity material definitions )
         static int                                  levelContactProcess( const NewtonMaterial* p_material, const NewtonContact* p_contact );
 
