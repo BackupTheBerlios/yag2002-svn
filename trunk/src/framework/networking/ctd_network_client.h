@@ -45,13 +45,9 @@
 
 
 #include "ctd_network_defs.h"
-
-#include <ctd_baseentity.h>
-#include <ctd_pluginmanager.h>
-
-#include <Source/PacketEnumerations.h>
-#include <Source/RakClient.h>
-#include "raknet_Multiplayer.h"
+#include <include/PacketEnumerations.h>
+#include <include/RakClient.h>
+#include <include/Multiplayer.h>
 
 #include <string>
 #include <vector>
@@ -67,13 +63,7 @@ class NetworkClient  : public Multiplayer< RakClientInterface >, public RakClien
 
     protected:
 
-                                        NetworkClient( 
-                                                          FrameworkImpl             *pkFrameworkImpl,
-                                                          tStaticDataClient         *pkStaticData,
-                                                          std::vector< ClientNode > *pvpkClientList
-                                                         );
-                                        
-
+                                        NetworkClient( FrameworkImpl *pkFrameworkImpl, tStaticDataClient *pkStaticData );
                                         ~NetworkClient();
 
 
@@ -114,63 +104,20 @@ class NetworkClient  : public Multiplayer< RakClientInterface >, public RakClien
         //! Update client, message dispatching, etc.
         void                            Update();
 
-        //! Add a new client object
-        bool                            AddRemoteClientObject( const std::string &strEntityName, unsigned short usNetworkID, const PlayerID &kNodeID, const std::string &strNetworkNodeName );
-
-        //! Remove a client from internal list and destroy its entities
-        void                            RemoveClient( const PlayerID &kNodeID );
-
-        //! Enqueue a client which wants to be integrated into the network
-        void                            EnqueueRequestingClientObject( NetworkObject *pkQueuedClientObject ) { m_pkQueuedClientObject = pkQueuedClientObject; }
-
-        //-------------------------------------------------------------------------------------------//
-        //! Indicated whether a connection could be established with a new client 
-        bool                            IsConnectionEstablished() { return m_bConnectionEstablished; }
-
         //! Shutdown networking
         void                            Shutdown();
 
-        //! Set ready flag signalizing that entity messages can / cannot be dispatched
-        //!  e.g. after negotiating with server this flas is set to true by network device
-        void                            SetReady( bool bReady ) { m_bReady = bReady; }
+        //! Return true if a connection to server is established
+        bool                            IsConnectionEstablished() { return m_bConnectionEstablished; }
 
-        //! Shows wether server could create the requested client object
-        bool                            IsClientObjectCreated() { return m_bClientObjectCreated; }
-
-        //! Call this after successfully creation of a client object on server
-        void                            ResetClientObjectCreated() { m_bClientObjectCreated = false; }
-        
-        //! Connection established
+        //! Connection flag
         bool                            m_bConnectionEstablished;
-
-        //! Flag indicating that network messages can be dispatched
-        bool                            m_bReady;
-
-        //! Flag to indicate that the requested client object is created on server
-        bool                            m_bClientObjectCreated;
-
-        //! Client list transmission initiated
-        bool                            m_bCListTransInitiated;
-
-        //! Count of clients to trasmit
-        unsigned int                    m_uiCListCount;
-        
-        //! Timer for checking client list transmission timeout
-        NeoEngine::Timer                m_kCListTransTimer;
 
         //! Client's static data
         tStaticDataClient               *m_pkStaticData;
-        
-        //! Client list
-        std::vector< ClientNode >       *m_pvpkClientList;
-
+                        
         //! Instance of framework implementation
         FrameworkImpl                   *m_pkFrameworkImpl;
-        
-        //! This client object is queued by network device which is requesting the server for adding it into network session
-        //!  This queue has a depth of 1, so adding requests are processed sequentially.
-        NetworkObject                   *m_pkQueuedClientObject;
-
 
     friend class NetworkDevice;
 

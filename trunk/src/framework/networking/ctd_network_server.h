@@ -44,11 +44,9 @@
 #define _CTD_NETWORK_SERVER_H_
 
 #include "ctd_network_defs.h"
-#include <ctd_baseentity.h>
-#include <ctd_pluginmanager.h>
-#include <Source/PacketEnumerations.h>
-#include <Source/RakServer.h>
-#include "raknet_Multiplayer.h"
+#include <include/PacketEnumerations.h>
+#include <include/RakServer.h>
+#include <include/Multiplayer.h>
 
 #include <string>
 #include <vector>
@@ -56,41 +54,15 @@
 namespace CTD
 {
 
-// a new client will be stored in this pending class and
-//  processed in next steps
-class PendingClient {
-
-    public:
-                                PendingClient() { m_bPending = false; }
-                                ~PendingClient() {};
-
-        bool                    m_bPending;
-        PlayerID                m_kNodeID;
-        std::string             m_strNetworkNodeName;
-        NeoEngine::Timer        m_pkPendingTimer;
-
-};
-
 class FrameworkImpl;
 //--------------------------------------------------------------------------------------//
 // server core
 class NetworkServer  : public Multiplayer< RakServerInterface >, public RakServer
 {
 
-    friend class NetworkDevice;
+    protected:
 
-
-    private:
-
-                                        NetworkServer( FrameworkImpl                    *pkFrameworkImpl,
-                                                       tStaticDataServer                *pkStaticData, 
-                                                       std::vector< ClientNode >        *pvpkClientList )
-                                        {
-                                            m_pkFrameworkImpl   = pkFrameworkImpl;
-                                            m_pkStaticData      = pkStaticData; 
-                                            m_pvpkClientList    = pvpkClientList;
-                                            m_bServerRunning    = true;
-                                        }
+                                        NetworkServer( FrameworkImpl *pkFrameworkImpl, tStaticDataServer *pkStaticData );
 
                                         ~NetworkServer() {}
 
@@ -129,33 +101,19 @@ class NetworkServer  : public Multiplayer< RakServerInterface >, public RakServe
         // protocol stack specific functions and variables
         //-------------------------------------------------------------------------------------------------------------------------//
 
+        //! Update server
         void                            Update();
 
-        // shutdown networking
+        //! Shutdown networking
         void                            Shutdown();
 
-
-        // this function starts transmitting a list of clients to requesting ( new ) client
-        bool                            TransmitClientList( const PlayerID &rkNodeID );
-
-        // this is called if a new connected client requests for adding a client object such as player
-        bool                            AddClientObject( const std::string &strEntityName, const PlayerID &rkNodeID, const std::string &strNetworkNodeName );
-
-        // remove a client from internal list and destroy its entities
-        void                            RemoveClient( const PlayerID &kNodeID );
-
-        // this funtion created a unique network id for client objects which are requested by clients
-        unsigned short                  CreateNewNetworkID();
-
+        //! Server's static data
         tStaticDataServer               *m_pkStaticData;
 
-        std::vector< ClientNode >       *m_pvpkClientList;
-        
+        //! Instance of framework implementation
         FrameworkImpl                   *m_pkFrameworkImpl;
-        
-        PendingClient                   m_kPendingClient;
 
-        bool                            m_bServerRunning;
+    friend class NetworkDevice;
 
 };
 

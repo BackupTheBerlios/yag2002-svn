@@ -34,13 +34,8 @@
 
 #include <ctd_frbase.h>
 #include "ctd_network.h"
-
-#include <ctd_framework_impl.h>
-#include <ctd_descriptor.h>
-#include <ctd_levelmanager.h>
-
-#include "raknet_NetworkObject.h"
-
+#include "ctd_network_server.h"
+#include "ctd_network_client.h"
 #include <string>
 
 using namespace std;
@@ -68,8 +63,6 @@ NetworkDevice::NetworkDevice( FrameworkImpl *pkFrameworkImpl )
     m_fClientMinUpdatePeriod    = CTD_CLIENT_UPDATE_PERIOD_THROTTLE;
     m_fPassedUpdateTime         = 0;
 
-
-    m_bConnectionEstablished    = false;
 
     m_bServerStaticDataReady    = false;
     m_bClientStaticDataReady    = false;
@@ -133,7 +126,7 @@ void NetworkDevice::Initialize( bool bServer )
         m_strNetworkNodeName        = m_kStaticDataServer.m_pcNetworkNodeName;
 
         // setup server object
-        m_pkServer  = new NetworkServer( m_pkFrameworkImpl, &m_kStaticDataServer, &m_vstrClientList );
+        m_pkServer  = new NetworkServer( m_pkFrameworkImpl, &m_kStaticDataServer );
 
         // set static data for server
         m_pkServer->SetStaticServerData( (char*)&m_kStaticDataServer, sizeof( tStaticDataServer ) );
@@ -145,7 +138,7 @@ void NetworkDevice::Initialize( bool bServer )
 
         m_strNetworkNodeName            = m_kStaticDataClient.m_pcNetworkNodeName;
 
-        m_pkClient  = new NetworkClient( m_pkFrameworkImpl, &m_kStaticDataClient, &m_vstrClientList );
+        m_pkClient  = new NetworkClient( m_pkFrameworkImpl, &m_kStaticDataClient );
 
         m_kStaticDataClient.m_kNodeID   = m_pkClient->GetPlayerID();
 
@@ -217,213 +210,6 @@ bool NetworkDevice::EstablishConnection()
 
 }
 
-// this function is called by LevelLoader and enables entities for networking if they request for it
-//  by returning 'stateSERVEROBJECT' in function Entity::GetNetworkingType()
-unsigned short NetworkDevice::AddServerObject( BaseEntity *pkEntity )
-{
-
-    // create a new server object and set its entity
-    NetworkObject   *pkNetObject = new NetworkObject;
-    pkNetObject->SetEntity( pkEntity );
-    pkEntity->SetNetworkID( pkNetObject->GetID() );
-    pkEntity->SetNetworkingType( stateSERVEROBJECT );
-    m_pkFrameworkImpl->AddNetworkServerObject( pkEntity );
-
-    return pkNetObject->GetID();
-
-}
-
-// this function is called to insert the network objects into room manager
-void NetworkDevice::ActivateServerObjects()
-{
-
-    size_t uiEntities = m_pkFrameworkImpl->m_vpkNetworkServerObjects.size();
-    for ( size_t uiEntityCnt = 0; uiEntityCnt < uiEntities; uiEntityCnt++ ) {
-
-        BaseEntity  *pkEntity = m_pkFrameworkImpl->m_vpkNetworkServerObjects[ uiEntityCnt ];
-        m_pkFrameworkImpl->GetCurrentLevelSet()->GetRoom()->AttachNode( ( SceneNode* )pkEntity );
-
-    }
-
-}
-
-void NetworkDevice::AddClientObject( BaseEntity *pkEntity )
-{
-
-    assert( ( m_pkFrameworkImpl->m_eGameMode != stateSERVER ) && " (NetworkDevice::AddNetworkActor) do not try to add a client object in server mode!" );
-    m_pkFrameworkImpl->AddNetworkClientObject( pkEntity );
-
-}
-
-
-//  create the network client objects in negotiation with server and add them into room manager
-void NetworkDevice::ActivateClientObjects()
-{
-
-    size_t uiClientObjects = m_pkFrameworkImpl->m_vpkNetworkClientObjects.size();
-    for ( size_t uiClientObjectCnt = 0; uiClientObjectCnt < uiClientObjects; uiClientObjectCnt++ ) {
-
-        BaseEntity* pkEntity = m_pkFrameworkImpl->m_vpkNetworkClientObjects[ uiClientObjectCnt ];
-
-        // we need the initialization to be able to send initialization data
-        m_pkFrameworkImpl->GetCurrentLevelSet()->GetRoom()->AttachNode( ( SceneNode* )pkEntity );
-        pkEntity->Initialize();
-
-        // try to integrate the client object into network session
-        unsigned int uiNumRetries = CTD_CLIENT_ADD_CLIENTOBJECT_RETRIES;
-        while ( ( uiNumRetries > 0 ) && ( CreateClientObject( pkEntity ) == false ) ) {
-
-            uiNumRetries--;
-            neolog << LogLevel( WARNING ) << "nw-device: could not create client object on server, try again ..." << endl;
-
-        }
-
-        if ( uiNumRetries == 0 ) {
-
-            m_pkFrameworkImpl->GetCurrentLevelSet()->GetRoom()->DetachNode( ( SceneNode* )pkEntity );
-
-            // FIXME: this client must be also removed from client list!
-            
-            neolog << LogLevel( WARNING ) << "nw-device: cannot create client object on server, giving up!" << endl;
-
-        } else {
-
-            pkEntity->Activate();
-            pkEntity->PostInitialize();
-
-            // send connection notification to all entities
-            neolog << LogLevel( INFO ) << "nw-device: sending notification to all entities... " << endl;
-            m_pkFrameworkImpl->SendPluginMessage( CTD_NM_SYSTEM_NOTIFY_CONNECTION_ESTABLISHED, ( void* )NULL );
-            m_pkFrameworkImpl->SendEntityMessage( CTD_NM_SYSTEM_NOTIFY_CONNECTION_ESTABLISHED, ( void* )NULL, "", true ); // empty plugin name means a message broadcast
-
-        }
-    }
-}
-
-// requests the server for list of already connected remote clients
-bool NetworkDevice::GetRemoteClients() 
-{
-    
-    neolog << LogLevel( INFO ) << "nw-device: getting remote client objects ..." << endl;
-
-    tCTD_NM_NETWORK_CLIENT_REQ_CLIENTLIST       kRequestClientList;
-    kRequestClientList.m_usPacketIdentifier     = CTD_NM_NETWORK_SYSTEM;
-    kRequestClientList.m_ucDataType             = CTD_NM_NETWORK_CLIENT_REQ_CLIENTLIST;
-
-    bool bSuccess = m_pkClient->Send( 
-        ( char* )&kRequestClientList, 
-        sizeof( tCTD_NM_NETWORK_CLIENT_REQ_CLIENTLIST ),
-        HIGH_PRIORITY,
-        RELIABLE_SEQUENCED, 
-        0
-    );
-
-    if ( bSuccess == false ) {
-
-        neolog << LogLevel( WARNING ) << "nw-device: error sending request for client list" << endl;
-
-    }
-
-    return bSuccess;
-}
-
-
-void NetworkDevice::RemoveServerObject( unsigned short usNetworkID )
-{
-
-}
-
-// this function is called in client mode, it tries to add a client object to server and other clients
-bool NetworkDevice::CreateClientObject( BaseEntity *pkActorkEntity )
-{
-
-    assert( m_pkClient && " (NetworkDevice::AddRemoteActor() you must first initialize and establish a connection to server!" );
-
-    if ( m_pkClient->IsConnectionEstablished() == false ) {
-
-        neolog << LogLevel( WARNING ) << "nw-device: error: request for adding a client object cannot be processed as no connection to server established!";
-        return false;
-
-    }
-
-    if ( pkActorkEntity->GetName().length() == 0 ) {
-
-        neolog << LogLevel( WARNING ) << "nw-device:  error: client object entity has no valid name, it cannot be added as client object to server and clients!";
-        return false;
-
-    }
-
-    // avoid auto-creation of network id, this id will be received from server
-    NetworkObject   *pkNetworkObject = new NetworkObject( false );
-    pkNetworkObject->SetEntity( pkActorkEntity );
-    // enqueue this new created server object so the client core will be able to set
-    //  its network id when it is retrieved from server
-    m_pkClient->EnqueueRequestingClientObject( pkNetworkObject );
-
-    tCTD_NM_CLIENT_ADD_CLIENTOBJECT_REQEUST      kRequestAddClientObject;
-    kRequestAddClientObject.m_usPacketIdentifier = CTD_NM_NETWORK_SYSTEM;
-    kRequestAddClientObject.m_ucDataType         = CTD_NM_NETWORK_CLIENT_REQ_ADD_CLIENTOBJECT;
-    strcpy( kRequestAddClientObject.m_pcEntityName, pkActorkEntity->GetName().c_str() );
-    strcpy( kRequestAddClientObject.m_pcNetworkNodeName, GetNetworkNodeName().c_str() );
-    bool bSuccess = m_pkClient->Send( 
-        ( char* )&kRequestAddClientObject, 
-        sizeof( tCTD_NM_CLIENT_ADD_CLIENTOBJECT_REQEUST ),
-        HIGH_PRIORITY,
-        RELIABLE_SEQUENCED, 
-        0
-    );
-
-    if ( bSuccess == false ) {
-
-        neolog << LogLevel( WARNING ) << "nw-device: error sending client object creation request" << endl;
-        delete pkNetworkObject;
-        return false;
-
-    }
-
-
-    neolog << LogLevel( INFO ) << "nw-device: requesting server for adding a client object ...." << endl;
-
-    Timer   kTimer, kSecTimer;
-    float fTime     = kTimer.GetDeltaTime( true );
-    float fSecTime  = kSecTimer.GetDeltaTime( true );
-    
-
-    // wait until server created a client object or timeout occurs
-    while ( m_pkClient->IsClientObjectCreated() == false ) {
-
-        // call the client with 2 x minimum delta time to process the packets in every call
-        UpdateClient( 2.0f * CTD_CLIENT_UPDATE_PERIOD_THROTTLE );
-
-        fTime     = kTimer.GetDeltaTime( false );
-        fSecTime  = kSecTimer.GetDeltaTime( false );
-
-        if ( fSecTime > 1.0f ) {
-
-            neolog << LogLevel( INFO ) << ".";
-            fTime     = kSecTimer.GetDeltaTime( true );
-        }
-
-        // check for connection timeout
-        if ( fTime > CTD_CLIENT_ADD_CLIENTOBJECT_TIMEOUT ) {
-
-            neolog << LogLevel( INFO ) << " timeout" << endl;
-            delete pkNetworkObject;
-            m_pkClient->ResetClientObjectCreated();
-            return false;
-
-        }
-    }
-
-    m_pkClient->ResetClientObjectCreated();
-
-    neolog << LogLevel( INFO ) << endl;
-
-    return true;
-
-}
-
-
 // update funtions for server and client
 void NetworkDevice::UpdateServer( float fDeltaTime ) 
 { 
@@ -432,21 +218,6 @@ void NetworkDevice::UpdateServer( float fDeltaTime )
 
         return;
 
-    }
-
-    // check the timeout for pending client
-    //  if during negotiation a client fails then the server will lock and accept no further clients! this timeout releases the pending status of server.
-    if ( m_pkServer->m_kPendingClient.m_bPending == true ) {
-
-        if ( m_pkServer->m_kPendingClient.m_pkPendingTimer.GetDeltaTime( false ) > CTD_PENDING_CLIENT_TIMEOUT ) {
-
-            m_pkServer->Kick( m_pkServer->m_kPendingClient.m_kNodeID );
-            m_pkServer->m_kPendingClient.m_bPending = false;
-            m_pkServer->RemoveClient( m_pkServer->m_kPendingClient.m_kNodeID );
-            neolog << LogLevel( INFO ) << "nw-device: timeout for integration of pending client reached, kick the client '" << m_pkServer->m_kPendingClient.m_strNetworkNodeName << "'" << endl; 
-
-        }
-    
     }
 
     m_pkServer->Update();
@@ -469,37 +240,6 @@ void NetworkDevice::UpdateClient( float fDeltaTime )
 
         m_pkClient->Update();
         m_fPassedUpdateTime = 0.0f;
-
-    }
-
-    BaseEntity  *pkEntity;
-    // update remote client entities
-    std::vector< ClientNode >::iterator pkClientNode    = m_pkClient->m_pvpkClientList->begin();
-    std::vector< ClientNode >::iterator pkClientNodeEnd = m_pkClient->m_pvpkClientList->end();
-    while ( pkClientNode != pkClientNodeEnd ) {
-
-        pkEntity = ( *pkClientNode ).m_pkEntity;
-        if ( pkEntity->IsActive() == true ) {
-        
-            pkEntity->UpdateEntity( fDeltaTime );
-
-        }
-        pkClientNode++;
-
-    }
-
-    // update client entities
-    std::vector< BaseEntity* >::iterator    pkClient    = m_pkFrameworkImpl->m_vpkNetworkClientObjects.begin();
-    std::vector< BaseEntity* >::iterator    pkClientEnd = m_pkFrameworkImpl->m_vpkNetworkClientObjects.end();
-    while ( pkClient != pkClientEnd ) {
-
-        pkEntity = ( *pkClient );
-        if ( pkEntity->IsActive() == true ) {
-        
-            pkEntity->UpdateEntity( fDeltaTime );
-
-        }
-        pkClient++;
 
     }
 
