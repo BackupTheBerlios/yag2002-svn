@@ -87,6 +87,26 @@ class WalkPhysics
         //! Gravity
         float                                       m_fGravity;
 
+        //! Ground offset
+        float                                       m_fGroundOffset;
+
+        //! Maximal height of a step which can be automatically climbed
+        float                                       m_fStepHeight;
+
+        //! BBox radius
+        float                                       m_fObjectHeight;
+
+        //! Flag indicating that during last update a collision occured
+        bool                                        m_bLastContact;
+        
+        //! Flag indicating that during current update a collision occured
+        bool                                        m_bHasContact;
+
+        //! Last move vector before begin of falling
+        NeoEngine::Vector3d                         m_kLastMoveVector;
+
+        //! Current velocity
+        NeoEngine::Vector3d                         m_kVelocity;
 
 };
 
