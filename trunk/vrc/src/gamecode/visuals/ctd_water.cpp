@@ -441,7 +441,7 @@ void EnWater::updateEntity( float deltaTime )
         _pastTime -= _stimulationPeriod;
         // create a random coordinate
         unsigned int randcoord = ( unsigned int )( ( rand() % _subDevisionsY ) * _subDevisionsY + ( rand() % _subDevisionsX ) );
-        ( *p_posArray2 )[ randcoord ]._v[ 2 ] += stimulus;
+        ( *p_posArray2 )[ randcoord ]._v[ 2 ] += _amplitude;//stimulus;
     }
 
     // swap vertex position buffers
@@ -451,11 +451,25 @@ void EnWater::updateEntity( float deltaTime )
 
 void EnWater::calcConstants( float stepWidth )
 {
-    float distance = _sizeX / ( float )_subDevisionsX;
+    float dx = _sizeX / ( float )_subDevisionsX;
+    float dy = _sizeY / ( float )_subDevisionsY;
+    assert( ( abs( dx - dy ) < 0.1f ) && "entity Water: subdivisions along x and y must result in square grids!" ); // distance to next vertex must be the same in x any y direction!
+    float distance = dx;
     // setup water equation constants
     float f1 = _speed * _speed * stepWidth * stepWidth / ( distance * distance );
     float f2 = 1.0f / ( _viscosity * stepWidth + 2 );
     _k1 = ( 4.0f - 8.0f * f1 ) * f2;
     _k2 = ( _viscosity * stepWidth - 2 ) * f2;
     _k3 = 2.0f * f1 * f2;
+
+    // check the stability critera
+#ifdef _DEBUG
+    float minSpeed = ( distance / ( 2.0f * stepWidth ) ) * sqrtf( _viscosity * stepWidth + 2 );
+    if ( _speed > minSpeed )
+        _speed = minSpeed - 1.0f; // adapt speed
+
+    float minTimestep = ( distance * distance ) * ( ( _viscosity + sqrtf( _viscosity * _viscosity + 32.0f * ( _speed / distance ) ) ) / ( 8.0f * _speed * _speed ) );
+    if ( stepWidth > minTimestep )
+        assert( NULL && "entity Water: insufficent time interval" );
+#endif
 }
