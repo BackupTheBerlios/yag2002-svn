@@ -55,11 +55,21 @@ class GuiManager : public Singleton< GuiManager >
 {
     public:
 
-        //! Load a gui layout ( e.g. a dialog ) from given file.
-        CEGUI::Window*                          loadLayout( const std::string& filename );
+        //! Load a gui layout ( e.g. a dialog ) from given file and handle.
+        /**
+        * If handle is empty then a handle is automaticaly genereated, if so you cannot access the elements in layout later!
+        * example: 
+        *   CEGUI::Window* p_wnd = loadlayout( mylayoutfile, "myhanlde" )
+        *   CEGUI::WIndow* p_btn = p_wnd->getChild( "myhandle" + "OK_BUTTON" );
+        * where OK_BUTTON is defined in layout file.
+        */
+        CEGUI::Window*                          loadLayout( const std::string& filename, const std::string& handle = "" );
 
         //! Show up given layout in root window.
         void                                    showLayout( CEGUI::Window* p_layout );
+
+        //! Show a message dialog
+        void                                    messageBox( const std::string& title, const std::string& message );
 
     protected:
 
@@ -112,6 +122,8 @@ class GuiManager : public Singleton< GuiManager >
 
         //! Root window of cegui where all other windows are placed
         CEGUI::DefaultWindow*                   _p_root;
+
+        CEGUI::Window*                          _p_msgDialog;
 
     friend class Singleton< GuiManager >;
     friend class GuiRenderCallback;
