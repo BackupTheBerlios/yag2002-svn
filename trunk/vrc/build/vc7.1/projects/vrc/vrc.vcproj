@@ -19,7 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../../../src/framework;../../../../lib/tinyxml/src;../../../../lib/Newton;../../../../lib/osg/include"
+				AdditionalIncludeDirectories="../../../../src/framework"
 				PreprocessorDefinitions="_DEBUG;WIN32"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -36,9 +36,9 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsWin32d.lib osgd.lib osgDBd.lib osgGAd.lib osgProducerd.lib osgUtild.lib osgALd.lib oalppd.lib Producerd.lib ReplicantBodyd.lib rcfgscriptd.lib rvrutilsd.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib tinyxmld.lib Newton.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsWin32d.lib osgd.lib osgDBd.lib osgGAd.lib osgProducerd.lib osgUtild.lib osgALd.lib osgCald.lib oalppd.lib Cal3d_d.lib Producerd.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib tinyxmld.lib Newton.lib"
 				OutputFile="../../../../bin/win32/vrc_debug.exe"
-				AdditionalLibraryDirectories="../../../../lib/tinyxml/lib;../../../../lib/Newton;../../../../lib/osg/lib"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
 				HeapCommitSize="0"
 				StackCommitSize="10000"/>
@@ -74,7 +74,7 @@
 				EnableFiberSafeOptimizations="TRUE"
 				OptimizeForProcessor="3"
 				OptimizeForWindowsApplication="TRUE"
-				AdditionalIncludeDirectories="../../../../src/framework;../../../../lib/tinyxml/src;../../../../lib/Newton;../../../../lib/osg/include"
+				AdditionalIncludeDirectories="../../../../src/framework"
 				PreprocessorDefinitions="WIN32"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="TRUE"
@@ -87,9 +87,9 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgProducer.lib osgUtil.lib osgAL.lib oalpp.lib Producer.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib tinyxml.lib Newton.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgProducer.lib osgUtil.lib osgAL.lib osgCal.lib oalpp.lib Cal3d.lib Producer.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib tinyxml.lib Newton.lib"
 				OutputFile="../../../../bin/win32/vrc.exe"
-				AdditionalLibraryDirectories="../../../../lib/tinyxml/lib;../../../../lib/Newton;../../../../lib/osg/lib"/>
+				AdditionalLibraryDirectories=""/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
