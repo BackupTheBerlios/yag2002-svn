@@ -178,23 +178,23 @@ bool Settings::load( const std::string& filename )
     for( size_t cnt = 0; cnt < tokens; cnt++ ) 
     {
         SettingBase* p_setting = _settings[ cnt ];
-        
-        if ( p_setting->getTypeInfo() == typeid( bool ) ) {
+        const type_info& settings_typeinfo = p_setting->getTypeInfo();
+        if ( settings_typeinfo == typeid( bool ) ) {
             read( p_setting->getTokenName(), static_cast< Setting< bool >* >( p_setting )->_value );
         } else 
-        if ( p_setting->getTypeInfo() == typeid( int ) ) {
+        if ( settings_typeinfo == typeid( int ) ) {
             read( p_setting->getTokenName(), static_cast< Setting< int >* >( p_setting )->_value );
         } else 
-        if ( p_setting->getTypeInfo() == typeid( unsigned int ) ) {
+        if ( settings_typeinfo == typeid( unsigned int ) ) {
             read( p_setting->getTokenName(), static_cast< Setting< unsigned int >* >( p_setting )->_value );
         } else 
-        if ( p_setting->getTypeInfo() == typeid( string ) ) {
+        if ( settings_typeinfo == typeid( string ) ) {
             read( p_setting->getTokenName(), static_cast< Setting< string >* >( p_setting )->_value );
         } else 
-        if ( p_setting->getTypeInfo() == typeid( float ) ) {
+        if ( settings_typeinfo == typeid( float ) ) {
             read( p_setting->getTokenName(), static_cast< Setting< float >* >( p_setting )->_value );
         } else 
-         if ( p_setting->getTypeInfo() == typeid( osg::Vec3f ) ) {
+         if ( settings_typeinfo == typeid( osg::Vec3f ) ) {
              read( p_setting->getTokenName(), static_cast< Setting< osg::Vec3f >* >( p_setting )->_value );
         } else 
             assert( NULL && "unsupported setting type" );
@@ -242,23 +242,23 @@ bool Settings::store( const string& filename )
     for( size_t cnt = 0; cnt < tokens; cnt++ ) {
 
         SettingBase* p_setting = _settings[ cnt ];
-        
-        if ( p_setting->getTypeInfo() == typeid( bool ) ) {
+        const type_info& settings_typeinfo = p_setting->getTypeInfo();
+        if ( settings_typeinfo == typeid( bool ) ) {
             write( p_setting->getTokenName(), static_cast< Setting< bool >* >( p_setting )->_value );
         } else 
-        if ( p_setting->getTypeInfo() == typeid( int ) ) {
+        if ( settings_typeinfo == typeid( int ) ) {
             write( p_setting->getTokenName(), static_cast< Setting< int >* >( p_setting )->_value );
         } else
-        if ( p_setting->getTypeInfo() == typeid( unsigned int ) ) {
+        if ( settings_typeinfo == typeid( unsigned int ) ) {
             write( p_setting->getTokenName(), static_cast< Setting< unsigned int >* >( p_setting )->_value );
         } else 
-        if ( p_setting->getTypeInfo() == typeid( string ) ) {
+        if ( settings_typeinfo == typeid( string ) ) {
             write( p_setting->getTokenName(), static_cast< Setting< string >* >( p_setting )->_value );
         } else 
-        if ( p_setting->getTypeInfo() == typeid( float ) ) {
+        if ( settings_typeinfo == typeid( float ) ) {
             write( p_setting->getTokenName(), static_cast< Setting< float >* >( p_setting )->_value );
         } else
-        if ( p_setting->getTypeInfo() == typeid( osg::Vec3f ) ) {
+        if ( settings_typeinfo == typeid( osg::Vec3f ) ) {
             write( p_setting->getTokenName(), static_cast< Setting< osg::Vec3f >* >( p_setting )->_value );
         } else
             assert( NULL && "unsupported setting type" );
