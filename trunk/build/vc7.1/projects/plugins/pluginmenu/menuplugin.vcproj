@@ -20,7 +20,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../../../../src/plugins/pluginmenu;../../../../../src/plugins/share;../../../../../src/framework;../../../../../src/framework/share;../../../../../src/framework/networking;../../../../../src/framework/widgets;../../../../../lib/tinyxml/src;../../../../../lib/neoengine/include;../../../../../lib/RakNet;../../../../../lib/GGCode/Source;../../../../../lib/GGCode/Source/GGLib"
+				AdditionalIncludeDirectories="../../../../../src/plugins/pluginmenu;../../../../../src/utils/animtool;../../../../../src/plugins/share;../../../../../src/framework;../../../../../src/framework/share;../../../../../src/framework/networking;../../../../../src/framework/widgets;../../../../../lib/tinyxml/src;../../../../../lib/neoengine/include;../../../../../lib/RakNet;../../../../../lib/GGCode/Source;../../../../../lib/GGCode/Source/GGLib"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;PLUGIN_INTERNALS"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -82,7 +82,7 @@
 				EnableFiberSafeOptimizations="TRUE"
 				OptimizeForProcessor="2"
 				OptimizeForWindowsApplication="TRUE"
-				AdditionalIncludeDirectories="../../../../../src/plugins/pluginmenu;../../../../../src/plugins/share;../../../../../src/framework;../../../../../src/framework/share;../../../../../src/framework/networking;../../../../../src/framework/widgets;../../../../../lib/tinyxml/src;../../../../../lib/neoengine/include;../../../../../lib/RakNet;../../../../../lib/GGCode/Source;../../../../../lib/GGCode/Source/GGLib"
+				AdditionalIncludeDirectories="../../../../../src/plugins/pluginmenu;../../../../../src/utils/animtool;../../../../../src/plugins/share;../../../../../src/framework;../../../../../src/framework/share;../../../../../src/framework/networking;../../../../../src/framework/widgets;../../../../../lib/tinyxml/src;../../../../../lib/neoengine/include;../../../../../lib/RakNet;../../../../../lib/GGCode/Source;../../../../../lib/GGCode/Source/GGLib"
 				PreprocessorDefinitions="WIN32;_LIB;CTDPRINTF;PLUGIN_INTERNALS"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -214,6 +214,16 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\plugins\pluginmenu\visuals\ctd_menuskybox.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="utils"
+			Filter="">
+			<File
+				RelativePath="..\..\..\..\..\src\utils\animtool\ctd_animutil.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\utils\animtool\ctd_animutil.h">
 			</File>
 		</Filter>
 		<File
