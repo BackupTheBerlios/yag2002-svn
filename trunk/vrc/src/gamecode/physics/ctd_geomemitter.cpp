@@ -115,7 +115,6 @@ void EnGeomEmitter::updateEntity( float deltaTime )
     {
         if ( ( geom->second -= deltaTime ) < 0 )
         {
-            geom->first->removeTransformationNode();
             EntityManager::get()->deleteEntity( geom->first );
             _geoms.erase( geom );
             // we delete objects in a smooth way
