@@ -127,6 +127,9 @@ void EnPlayerAnimation::update( float deltaTime )
 
 void EnPlayerAnimation::actionIdle()
 {
+    if ( _action == eIdle )
+        return;
+
     ActionRequest* p_action = _p_body->getBody()->getActionPrototype( ACTION_IDLE );
     _p_body->getBody()->executeAction( p_action, true );
 
@@ -141,6 +144,9 @@ void EnPlayerAnimation::actionIdle()
 
 void EnPlayerAnimation::actionWalk()
 {
+    if ( _action == eWalk )
+        return;
+
     ActionRequest* p_action = _p_body->getBody()->getActionPrototype( ACTION_WALK );
     _p_body->getBody()->executeAction( p_action, false );
 
@@ -155,6 +161,9 @@ void EnPlayerAnimation::actionWalk()
 
 void EnPlayerAnimation::actionJump()
 {
+    if ( _action == eJump )
+        return;
+
     ActionRequest* p_action = _p_body->getBody()->getActionPrototype( ACTION_JUMP );
     _p_body->getBody()->executeAction( p_action, false );
 
