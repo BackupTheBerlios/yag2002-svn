@@ -21,7 +21,8 @@
 
 /*###############################################################
  # entity skybox
- #      this code is basing on Delta3d's implementation of skybox
+ #      this code is basing on Delta3D's implementation of skybox
+ #                  ( http://www.delta3d.org/ )
  #
  #   date of creation:  03/24/2005
  #
@@ -85,7 +86,6 @@ void EnSkyBox::initialize()
     p_group->addChild( _xform );
 
     static_cast< Group* >( Application::get()->getSceneRootNode() )->addChild( p_group );
-//    addToTransformableNode( p_group );
 }
 
 // thanks to delta3d team for the code ;-)

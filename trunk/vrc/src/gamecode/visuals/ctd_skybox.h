@@ -21,7 +21,8 @@
 
 /*###############################################################
  # entity skybox
- #      this code is basing on Delta3d's implementation of skybox
+ #      this code is basing on Delta3D's implementation of skybox
+ #                  ( http://www.delta3d.org/ )
  #
  #   date of creation:  03/24/2005
  #
@@ -48,6 +49,11 @@ class EnSkyBox :  public BaseEntity
                                                     EnSkyBox();
 
         virtual                                     ~EnSkyBox();
+
+
+        //! This entity does not need a transform node, which would be created by level manager on loading
+        //!   We create an own one and add it into scene's root node
+        bool                                        needTransformation() { return false; }
 
         /**
         * Initializing function, this is called after all engine modules are initialized and a map is loaded.
