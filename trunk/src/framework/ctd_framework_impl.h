@@ -73,6 +73,7 @@ namespace CTD
 
 class LevelSet;
 class LevelManager;
+class Settings;
 
 //! Base class for all implementations of Framework
 class FrameworkImpl
@@ -153,8 +154,15 @@ class FrameworkImpl
 
         /**
         * Load engine configuration
+        * \param strFileName                    Configuration file name
         */
         void                                    LoadConfig( const std::string& strFileName );
+
+        /**
+        * Returns the game settings instance
+        * \return                               Game settings instance
+        */
+        Settings*                               GetGameSettings();
 
         /**
         * Load a given level file
@@ -381,6 +389,9 @@ class FrameworkImpl
 
         //! Indicates the usage of stencil buffer
         bool                                    m_bUseStencilBuffer;
+
+        //! Game settings instance
+        Settings                                *m_pkGameSettings;
 
         //! An instance of key configuration class
         KeyConfig                               *m_pkKeyConfiguration;

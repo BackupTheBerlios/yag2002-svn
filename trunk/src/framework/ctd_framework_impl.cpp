@@ -38,7 +38,7 @@
 #include <ctd_settings.h>
 #include <ctd_network.h>
 #include <ctd_levelmanager.h>
-
+#include <ctd_plugin_defs.h>
 
 #include <neofcbzip2/link.h>
 #include <neofczip/link.h>
@@ -149,8 +149,6 @@ FrameworkImpl::FrameworkImpl()
     NormalDiffuseLightmapTexVertex::s_kDecl.m_pkElements[3].m_uiOffset = 32;
     //*****************************************************************************************//
 
-    // load game settings
-    Settings::Get()->Load( CTD_SETTINGS_FILE );
 
     // load engine configuration
     LoadConfig( CTD_CONFIG_FILE_NAME );
@@ -169,6 +167,33 @@ FrameworkImpl::FrameworkImpl()
         m_pkCore->GetFileManager()->AddPackage( vstrPackages[ uiPathCnt ] );
 
     }
+
+    // load game settings
+    //-------------------------------------------------------//
+    neolog << LogLevel( INFO ) << "loading settings ..." << endl;
+    m_pkGameSettings = new Settings;
+
+    // register standard settings
+    m_pkGameSettings->RegisterSetting( string( CTD_STOKEN_PLAYERNAME ), string( CTD_SVALUE_PLAYERNAME ) );
+    m_pkGameSettings->RegisterSetting( string( CTD_STOKEN_LEVEL ),      string( CTD_SVALUE_LEVEL ) );
+    m_pkGameSettings->RegisterSetting( string( CTD_BTOKEN_NETWORKING ), ( bool )CTD_BVALUE_NETWORKING );
+    m_pkGameSettings->RegisterSetting( string( CTD_BTOKEN_SERVER ),     ( bool )CTD_BVALUE_SERVER );
+    m_pkGameSettings->RegisterSetting( string( CTD_BTOKEN_CLIENT ),     ( bool )CTD_BVALUE_CLIENT );
+    m_pkGameSettings->RegisterSetting( string( CTD_STOKEN_SERVERNAME ), string( CTD_SVALUE_SERVERNAME ) );
+    m_pkGameSettings->RegisterSetting( string( CTD_STOKEN_CLIENTNAME ), string( CTD_SVALUE_CLIENTNAME ) );
+    m_pkGameSettings->RegisterSetting( string( CTD_STOKEN_SERVERIP ),   string( CTD_SVALUE_SERVERIP ) );
+    m_pkGameSettings->RegisterSetting( string( CTD_ITOKEN_CLIENTPORT ), ( int )CTD_IVALUE_CLIENTPORT );
+    m_pkGameSettings->RegisterSetting( string( CTD_ITOKEN_SERVERPORT ), ( int )CTD_IVALUE_SERVERPORT );
+
+    if ( m_pkGameSettings->Load( CTD_SETTINGS_FILE ) == false ) {    
+    
+        neolog << LogLevel( WARNING ) << "**** settings not available, create defaults!" << endl;        
+        // force storing
+        File *pkFile = new File( "", CTD_SETTINGS_FILE, ios_base::out | ios_base::binary );
+        m_pkGameSettings->Store( pkFile );
+        // pkFile is deleted by Settings!
+
+    }
     
     // create level manager
     m_pkLevelManager = new LevelManager;
@@ -176,7 +201,6 @@ FrameworkImpl::FrameworkImpl()
     // create the key configuration instance
     m_pkKeyConfiguration = new KeyConfig;
     m_pkKeyConfiguration->Initialize( m_strKeyConfigFile );
-
 
 }
 
@@ -188,7 +212,8 @@ FrameworkImpl::~FrameworkImpl()
 
     delete m_pkKeyConfiguration;
 
-    Settings::Get()->Shutdown();
+    m_pkGameSettings->Shutdown();
+    delete m_pkGameSettings;
 
     m_vpkNetworkClientObjects.clear();
     m_vpkNetworkServerObjects.clear();
@@ -237,6 +262,13 @@ void FrameworkImpl::ExitGame()
 
     SendEntityMessage( CTD_ENTITY_EXIT_GAME, ( void* )NULL );
     SendPluginMessage( CTD_PLUGIN_MSG_SHUTDOWN, ( void* )NULL );
+
+}
+
+Settings* FrameworkImpl::GetGameSettings()
+{
+
+    return m_pkGameSettings;
 
 }
 

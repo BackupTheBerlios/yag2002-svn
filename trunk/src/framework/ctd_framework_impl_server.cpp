@@ -207,9 +207,9 @@ bool FrameworkImplServer::SetupNetworking()
     string          strServerIP;
     string          strNodeName;
 
-    Settings::Get()->GetValue( CTD_ITOKEN_SERVERPORT, iServerPort );
-    Settings::Get()->GetValue( CTD_STOKEN_SERVERIP, strServerIP );
-    Settings::Get()->GetValue( CTD_STOKEN_PLAYERNAME, strNodeName );
+    GetGameSettings()->GetValue( CTD_ITOKEN_SERVERPORT, iServerPort );
+    GetGameSettings()->GetValue( CTD_STOKEN_SERVERIP, strServerIP );
+    GetGameSettings()->GetValue( CTD_STOKEN_PLAYERNAME, strNodeName );
 
     m_pkNetworkDevice   = new NetworkDevice( this );
 

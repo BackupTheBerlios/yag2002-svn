@@ -73,6 +73,11 @@ void Framework::ExitGame()
     return m_pkImpl->ExitGame();
 }
 
+Settings* Framework::GetGameSettings()
+{
+    return m_pkImpl->GetGameSettings();
+}
+
 bool Framework::GetKeyCode( const std::string &strKeyName , int &iKeyCode ) 
 {
     return m_pkImpl->GetKeyCode( strKeyName, iKeyCode );
