@@ -44,6 +44,7 @@
 #include "ctd_menugroup.h"
 #include "ctd_itemmarker.h"
 #include "visuals/ctd_menuskybox.h"
+#include "visuals/ctd_menupointlight.h"
 #include "menuitems/ctd_outputitem.h"
 #include "menuitems/ctd_startlevelitem.h"
 #include "menuitems/ctd_exitgameitem.h"
@@ -186,7 +187,7 @@ int Message( int iMsgId, void *pMsgStruct )
 int NumEntities()
 {
 
-    return 11;
+    return 12;
 
 }
 
@@ -200,46 +201,50 @@ EntityDescriptor* GetEntityDescriptor( int iNum )
     {
 
     case    0:
-        kDesc = &g_pkCTDMenuCameraEntity_desc;
-        break;
-
-    case    1:
-        kDesc = &g_pkCTDMenuControlEntity_desc;
-        break;
-
-    case    2:
-        kDesc = &g_pkCTDMenuOutputItemEntity_desc;
-        break;
-
-    case    3:
-        kDesc = &g_pkCTDMenuInputItemEntity_desc;
-        break;
-
-    case    4:
-        kDesc = &g_pkCTDMenuGroupEntity_desc;
-        break;
-
-    case    5:
-        kDesc = &g_pkCTD3DFontMgrEntity_desc;
-        break;
-
-    case    6:
-        kDesc = &g_pkCTDItemMarkerEntity_desc;
-        break;
-
-    case    7:
-        kDesc = &g_pkCTDMenuChangeGroupItemEntity_desc;
-        break;
-
-    case    8:
         kDesc = &g_pkCTDMenuSkyBoxEntity_desc;
 
         break;
+    case    1:
+        kDesc = &g_pkMenuPointLightEntity_desc;
+
+        break;
+    case    2:
+        kDesc = &g_pkCTDMenuCameraEntity_desc;
+        break;
+
+    case    3:
+        kDesc = &g_pkCTDMenuControlEntity_desc;
+        break;
+
+    case    4:
+        kDesc = &g_pkCTDMenuOutputItemEntity_desc;
+        break;
+
+    case    5:
+        kDesc = &g_pkCTDMenuInputItemEntity_desc;
+        break;
+
+    case    6:
+        kDesc = &g_pkCTDMenuGroupEntity_desc;
+        break;
+
+    case    7:
+        kDesc = &g_pkCTD3DFontMgrEntity_desc;
+        break;
+
+    case    8:
+        kDesc = &g_pkCTDItemMarkerEntity_desc;
+        break;
+
     case    9:
+        kDesc = &g_pkCTDMenuChangeGroupItemEntity_desc;
+        break;
+
+    case    10:
         kDesc = &g_pkCTDMenuStartLevelItemEntity_desc;
 
         break;
-    case    10:
+    case    11:
         kDesc = &g_pkCTDMenuExitGameItemEntity_desc;
 
         break;
