@@ -47,7 +47,10 @@ SettingsManager::SettingsManager()
 
 SettingsManager::~SettingsManager()
 {
-
+    // delete all profiles
+    map< string, Settings* >::iterator pp_profile = NULL, pp_profileEnd = _profiles.end();
+    while ( pp_profile != pp_profileEnd )
+        delete pp_profile->second;
 }
 
 Settings* SettingsManager::createProfile( const string& profilename, const string& filename )
@@ -118,8 +121,7 @@ Settings* SettingsManager::getProfile( const std::string& profilename )
 
 // implementation of Settings
 Settings::Settings() :
-_loaded( false ),
-_p_stream( NULL )
+_loaded( false )
 {
 }
 
@@ -129,9 +131,6 @@ Settings::~Settings()
     std::vector< SettingBase* >::iterator pp_setting = _settings.begin(), pp_settingEnd = _settings.end();
     for ( ; pp_setting != pp_settingEnd; pp_setting++ )
         delete ( *pp_setting );
-
-    if ( _p_stream )
-        delete _p_stream;
 }
 
 bool Settings::load( const std::string& filename )
@@ -146,36 +145,33 @@ bool Settings::load( const std::string& filename )
     if ( !filename.length() )
         openfile = _settingsFile;
 
-    fstream* p_stream = new fstream;
+    auto_ptr< fstream > p_stream( new fstream );
+
     p_stream->open( openfile.c_str(), ios_base::binary | ios_base::in );
     // if the file does not exist then create one
     if ( !*p_stream )
     {   
         p_stream->open( openfile.c_str(), ios_base::binary | ios_base::out );
         log << Log::LogLevel( Log::L_WARNING ) << "*** settings file '" << openfile << "' does not exist. one has been created." << endl;
-        _p_stream = p_stream;
-        _p_stream->close();
         _loaded   = true;
         return false;
     }
 
-    _p_stream = p_stream; 
-
     // get file size
-    _p_stream->seekg( 0, ios_base::end );
-    int filesize = ( int )_p_stream->tellg();
-    _p_stream->seekg( 0, ios_base::beg );
+    p_stream->seekg( 0, ios_base::end );
+    int filesize = ( int )p_stream->tellg();
+    p_stream->seekg( 0, ios_base::beg );
 
     // load the settings into the file buffer
     _fileBuffer = "";
     char* p_buf = new char[ filesize * sizeof( char ) + 2 ];
-    _p_stream->read( p_buf, filesize );
+    p_stream->read( p_buf, filesize );
     _fileBuffer = p_buf;
     _fileBuffer[ filesize ]     = 13; // terminate the buffer string
     _fileBuffer[ filesize + 1 ] = 0;
     delete[] p_buf;
 
-    _p_stream->close();
+    p_stream->close();
 
     // format the intput
     size_t tokens = _settings.size();
@@ -212,29 +208,30 @@ bool Settings::load( const std::string& filename )
 
 bool Settings::store( const string& filename )
 {
+    auto_ptr< fstream > p_stream( new fstream );
+
     if ( !filename.length() )
     {
-        if ( !_loaded && !_p_stream ) 
+        if ( !_loaded ) 
         {
             log << Log::LogLevel( Log::L_WARNING ) << "*** no settings file was previously loaded" << endl;
             return false;
         }
-        _p_stream->open( _settingsFile.c_str(), ios_base::binary | ios_base::out );
+        p_stream->open( _settingsFile.c_str(), ios_base::binary | ios_base::out );
+        if ( !*p_stream )
+        {
+            log << Log::LogLevel( Log::L_ERROR ) << "*** cannot open settings file '" << filename << "'" << endl;
+            assert( NULL && " internal error, cannot open settings file for writing" );
+        }
     } 
     else
     {
-        fstream* p_stream = new fstream;
         p_stream->open( filename.c_str(), ios_base::binary | ios_base::out );
         if ( !*p_stream )
         {   
-            delete p_stream;
             log << Log::LogLevel( Log::L_ERROR ) << "*** cannot open settings file '" << filename << "'" << endl;
-        return false;
+            return false;
         }
-
-        if ( _p_stream )
-            delete _p_stream;
-        _p_stream = p_stream; 
     }
 
     // clean the content of settings file buffer
@@ -269,8 +266,8 @@ bool Settings::store( const string& filename )
     }
 
     // write the buffer into file
-    _p_stream->write( _fileBuffer.c_str(), ( int )_fileBuffer.length() );
-    _p_stream->close();
+    p_stream->write( _fileBuffer.c_str(), ( int )_fileBuffer.length() );
+    p_stream->close();
 
     return true;
 }

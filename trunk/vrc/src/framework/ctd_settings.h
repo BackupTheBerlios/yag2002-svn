@@ -222,8 +222,6 @@ class Settings
         //! Shows that a setting file has been successfully loaded
         bool                                    _loaded;
 
-        std::fstream*                           _p_stream;
-
     friend class SettingsManager;
 };
 
