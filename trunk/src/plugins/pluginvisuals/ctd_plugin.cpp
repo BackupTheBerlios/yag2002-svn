@@ -51,55 +51,55 @@ using namespace NeoEngine;
 namespace CTD_IPluginVisuals {
 
 
-ModuleStatic			*g_pkStaticModule		= NULL;
+ModuleStatic            *g_pkStaticModule       = NULL;
 
 
 // interface function for retrieving plugin version
 void GetVersion( std::string *pstrName, int *piMajor, int *piMinor, int *piRevision )
 {
-	*pstrName   = CTD_PLUGINNAME_VISUALS;
-	*piMajor    = CTD_PLUGIN_VISUALS_VERSION_MAJ;
-	*piMinor    = CTD_PLUGIN_VISUALS_VERSION_MIN;
-	*piRevision = CTD_PLUGIN_VISUALS_VERSION_REVISION;
+    *pstrName   = CTD_PLUGINNAME_VISUALS;
+    *piMajor    = CTD_PLUGIN_VISUALS_VERSION_MAJ;
+    *piMinor    = CTD_PLUGIN_VISUALS_VERSION_MIN;
+    *piRevision = CTD_PLUGIN_VISUALS_VERSION_REVISION;
 }
 
 // interface function for initialization
 int Initialize()
 {
-	return 0;
+    return 0;
 }
 
 // interface function for shutdown
 int Shutdown()
 {
-	return 0;
+    return 0;
 }
 
 // interface function for plugin global messaging
 int Message( int iMsgId, void *pMsgStruct )
 {
 
-	switch ( iMsgId ) {
+    switch ( iMsgId ) {
 
-		// set engine interface
+        // set engine interface
         case CTD_PLUGIN_MSG_INIZIALIZE:
-	
-			break;
+    
+            break;
 
-		// 3d rendering phase
-		case CTD_PLUGIN_MSG_RENDER_3D:
+        // 3d rendering phase
+        case CTD_PLUGIN_MSG_RENDER_3D:
 
-			break;
+            break;
 
-		// 2d rendering phase ( e.g. for huds )
-		case CTD_PLUGIN_MSG_RENDER_2D:
+        // 2d rendering phase ( e.g. for huds )
+        case CTD_PLUGIN_MSG_RENDER_2D:
 
-			break;
+            break;
 
-		default:
+        default:
 
-			;
-	}
+            ;
+    }
 
     // this plugin needs not notifications anymore
     return CTD_PLUGIN_MSG_NO_NOTIFICATION;
@@ -109,7 +109,7 @@ int Message( int iMsgId, void *pMsgStruct )
 int NumEntities()
 {
 
-	return 6;
+    return 6;
 
 }
 
@@ -117,40 +117,40 @@ int NumEntities()
 EntityDescriptor* GetEntityDescriptor( int iNum )
 {
 
-	EntityDescriptor	*pkDesc;
+    EntityDescriptor    *pkDesc;
 
-	switch(iNum) 
-	{
+    switch(iNum) 
+    {
 
-	case	0:
-		pkDesc = &g_pkStaticMeshEntity_desc;
-		break;
-	
-	case	1:
-		pkDesc = &g_pkAnimatedMeshEntity_desc;
-		break;
+    case    0:
+        pkDesc = &g_pkStaticMeshEntity_desc;
+        break;
+    
+    case    1:
+        pkDesc = &g_pkAnimatedMeshEntity_desc;
+        break;
 
-	case	2:
-		pkDesc = &g_pkSkyBoxEntity_desc;
-		break;
+    case    2:
+        pkDesc = &g_pkSkyBoxEntity_desc;
+        break;
 
-	case	3:
-		pkDesc = &g_pkSpriteEntity_desc;
-		break;
+    case    3:
+        pkDesc = &g_pkSpriteEntity_desc;
+        break;
 
-	case	4:
-		pkDesc = &g_pkParticleFountainEntity_desc;
-		break;
+    case    4:
+        pkDesc = &g_pkParticleFountainEntity_desc;
+        break;
 
-	case	5:
-		pkDesc = &g_pkPointLightEntity_desc;
-		break;
+    case    5:
+        pkDesc = &g_pkPointLightEntity_desc;
+        break;
 
-	default:
-		pkDesc = NULL;
-	}
+    default:
+        pkDesc = NULL;
+    }
 
-	return pkDesc;
+    return pkDesc;
 }
 
 
@@ -159,13 +159,13 @@ EntityDescriptor* GetEntityDescriptor( int iNum )
 int ParameterDescription( int iNum, ParameterDescriptor* pkDesc )
 {
 
-	int iParamCount = 0;
+    int iParamCount = 0;
 
-	if (pkDesc == NULL) {
+    if (pkDesc == NULL) {
 
-		return iParamCount;
-	}
-	return iParamCount;
+        return iParamCount;
+    }
+    return iParamCount;
 
 }
 
@@ -173,17 +173,17 @@ int ParameterDescription( int iNum, ParameterDescriptor* pkDesc )
 Link::Link()
 {
 
-	g_pkStaticModule = new ModuleStatic( "ctd_visuals" );
+    g_pkStaticModule = new ModuleStatic( "ctd_visuals" );
 
-	g_pkStaticModule->m_Symbols.Insert( "Initialize",           (void**)Initialize );
-	g_pkStaticModule->m_Symbols.Insert( "Shutdown",             (void**)Shutdown   );
-	g_pkStaticModule->m_Symbols.Insert( "GetVersion",           (void**)GetVersion );
-	g_pkStaticModule->m_Symbols.Insert( "Message",              (void**)Message );
-	g_pkStaticModule->m_Symbols.Insert( "NumEntities",          (void**)NumEntities );
-	g_pkStaticModule->m_Symbols.Insert( "GetEntityDescriptor",  (void**)GetEntityDescriptor );
-	g_pkStaticModule->m_Symbols.Insert( "ParameterDescription", (void**)ParameterDescription );
+    g_pkStaticModule->m_Symbols.Insert( "Initialize",           (void**)Initialize );
+    g_pkStaticModule->m_Symbols.Insert( "Shutdown",             (void**)Shutdown   );
+    g_pkStaticModule->m_Symbols.Insert( "GetVersion",           (void**)GetVersion );
+    g_pkStaticModule->m_Symbols.Insert( "Message",              (void**)Message );
+    g_pkStaticModule->m_Symbols.Insert( "NumEntities",          (void**)NumEntities );
+    g_pkStaticModule->m_Symbols.Insert( "GetEntityDescriptor",  (void**)GetEntityDescriptor );
+    g_pkStaticModule->m_Symbols.Insert( "ParameterDescription", (void**)ParameterDescription );
 
-	NeoEngine::Core::GetModuleManager()->InsertModule( g_pkStaticModule );
+    NeoEngine::Core::GetModuleManager()->InsertModule( g_pkStaticModule );
 }
 
 }; // namespace CTD_IPluginVisuals

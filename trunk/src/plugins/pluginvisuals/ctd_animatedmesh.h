@@ -58,63 +58,63 @@ namespace CTD_IPluginVisuals {
 class CTDAnimMesh : public CTD::BaseEntity
 {
 
-	public:
+    public:
 
-													CTDAnimMesh();
-													~CTDAnimMesh();
+                                                    CTDAnimMesh();
+                                                    ~CTDAnimMesh();
 
-		//******************************* override some functions **********************************//
+        //******************************* override some functions **********************************//
 
-		/**
-		* Initializing function
-		*/
-		void										Initialize();
-		
-		/**
-		* Post-Initializing function
-		*/
-		void										PostInitialize();
+        /**
+        * Initializing function
+        */
+        void                                        Initialize();
+        
+        /**
+        * Post-Initializing function
+        */
+        void                                        PostInitialize();
 
-		/**
-		* Update object
-		* \param fDeltaTime                         Time passed since last update
-		*/
-		void									     UpdateEntity( float fDeltaTime );
+        /**
+        * Update object
+        * \param fDeltaTime                         Time passed since last update
+        */
+        void                                         UpdateEntity( float fDeltaTime );
 
-		/**
-		* Render object
-		* \param pkFrustum                          Current view frustum (if any)
-		* \param bForce                             Render even if rendered previously this frame or deactivated (default false)
-		* \return                                   true if we were rendered, false if not (already rendered, not forced)
-		*/
-		bool										Render( NeoEngine::Frustum *pkFrustum = 0, bool bForce = false );
+        /**
+        * Render object
+        * \param pkFrustum                          Current view frustum (if any)
+        * \param bForce                             Render even if rendered previously this frame or deactivated (default false)
+        * \return                                   true if we were rendered, false if not (already rendered, not forced)
+        */
+        bool                                        Render( NeoEngine::Frustum *pkFrustum = 0, bool bForce = false );
 
-		//*******************************************************************************************//
+        //*******************************************************************************************//
 
-		int											Message( int iMsgId, void *pkMsgStruct );
-		int											ParameterDescription( int iParamIndex, CTD::ParameterDescriptor *pkDesc );
+        int                                         Message( int iMsgId, void *pkMsgStruct );
+        int                                         ParameterDescription( int iParamIndex, CTD::ParameterDescriptor *pkDesc );
 
-		//******************************************************************************************//
+        //******************************************************************************************//
 
-		// entity parameters
-		NeoEngine::Vector3d							m_vOffsetPosition;
-		NeoEngine::Vector3d							m_vOffsetRotation;
+        // entity parameters
+        NeoEngine::Vector3d                         m_vOffsetPosition;
+        NeoEngine::Vector3d                         m_vOffsetRotation;
 
-		std::string									m_strMeshEntiyName;
-		CTD::BaseEntity							    *m_pkMeshEntity;
+        std::string                                 m_strMeshEntiyName;
+        CTD::BaseEntity                             *m_pkMeshEntity;
 
-		std::string									m_strAnimationFile;
+        std::string                                 m_strAnimationFile;
 
-	// internal variables
-	private:
+    // internal variables
+    private:
 
-		NeoEngine::AnimatedNode						*m_pkAnimatedNode;
+        NeoEngine::AnimatedNode                     *m_pkAnimatedNode;
 
-		/**
-		* Reads and animation keyframe file and returns a pointer to animation object
-		* \return  pointer to animation object, NULL means loading animation data was not successfull.
-		*/
-		NeoEngine::AnimatedNode*					ReadKeyframes( std::string &strFileName );
+        /**
+        * Reads and animation keyframe file and returns a pointer to animation object
+        * \return  pointer to animation object, NULL means loading animation data was not successfull.
+        */
+        NeoEngine::AnimatedNode*                    ReadKeyframes( std::string &strFileName );
 
 
 };
@@ -124,12 +124,12 @@ class CTDAnimMesh : public CTD::BaseEntity
 class CTDAnimMeshDesc : public CTD::EntityDescriptor
 {
 
-	public:
-													CTDAnimMeshDesc() { };
-													~CTDAnimMeshDesc() { }
-			
-		const std::string&							GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME_AnimMesh ) }
-		CTD::BaseEntity*							CreateEntityInstance() { return (CTD::BaseEntity*) new CTDAnimMesh; };
+    public:
+                                                    CTDAnimMeshDesc() { };
+                                                    ~CTDAnimMeshDesc() { }
+            
+        const std::string&                          GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME_AnimMesh ) }
+        CTD::BaseEntity*                            CreateEntityInstance() { return (CTD::BaseEntity*) new CTDAnimMesh; };
 
 };
 

@@ -61,54 +61,54 @@ namespace CTD_IPluginVisuals {
 class CTDSprite : public CTD::BaseEntity, public NeoEngine::FrameCallback
 {
 
-	public:
+    public:
 
-													CTDSprite();
-		virtual										~CTDSprite();
+                                                    CTDSprite();
+        virtual                                     ~CTDSprite();
 
-		//******************************* override some functions **********************************//
+        //******************************* override some functions **********************************//
 
-		/**
-		* Initializing function
-		*/
-		void										Initialize();
+        /**
+        * Initializing function
+        */
+        void                                        Initialize();
 
-		/**
-		* Messaging function.
-		* \param  iMsgId                            Message ID
-		* \param  pMsgStruct                        Message specific data structure
-		* \return                                   This return value is message specific.
-		*/
-		int											Message( int iMsgId, void *pMsgStruct );
+        /**
+        * Messaging function.
+        * \param  iMsgId                            Message ID
+        * \param  pMsgStruct                        Message specific data structure
+        * \return                                   This return value is message specific.
+        */
+        int                                         Message( int iMsgId, void *pMsgStruct );
 
-		//*******************************************************************************************//
+        //*******************************************************************************************//
 
-		int											ParameterDescription( int param_index, CTD::ParameterDescriptor *pd );
+        int                                         ParameterDescription( int param_index, CTD::ParameterDescriptor *pd );
 
-		//******************************************************************************************//
+        //******************************************************************************************//
 
-		/**
-		* Frame callback method for rendering the sprite without lighting
-		* \param eType                              Callback type
-		* \param pData                              Data pointer (type specific)
-		*/
-		void                                        FrameEvent( NeoEngine::FrameCallback::FRAMECALLBACKTYPE eType, void *pData );
-		//******************************************************************************************//
+        /**
+        * Frame callback method for rendering the sprite without lighting
+        * \param eType                              Callback type
+        * \param pData                              Data pointer (type specific)
+        */
+        void                                        FrameEvent( NeoEngine::FrameCallback::FRAMECALLBACKTYPE eType, void *pData );
+        //******************************************************************************************//
 
-		// entity parameters
-		NeoEngine::Vector3d							m_kPosition;
-		float										m_fSizeU;
-		float										m_fSizeV;
-		std::string									m_strMatFile;
-		NeoEngine::Vector3d							m_kColor;
-		// this flas determines wether the sprite should be activated ( rendered ) after initialization
-		//  if you intend to use this sprite in other entities set this parameter to false ( default true )
-		bool										m_bAutoActivate;
+        // entity parameters
+        NeoEngine::Vector3d                         m_kPosition;
+        float                                       m_fSizeU;
+        float                                       m_fSizeV;
+        std::string                                 m_strMatFile;
+        NeoEngine::Vector3d                         m_kColor;
+        // this flas determines wether the sprite should be activated ( rendered ) after initialization
+        //  if you intend to use this sprite in other entities set this parameter to false ( default true )
+        bool                                        m_bAutoActivate;
 
-	private:
-	
-		// mesh entity for rendering the sprite
-		NeoEngine::Sprite							*m_pkSprite;
+    protected:
+    
+        // mesh entity for rendering the sprite
+        NeoEngine::Sprite                           *m_pkSprite;
 
 };
 
@@ -117,12 +117,12 @@ class CTDSprite : public CTD::BaseEntity, public NeoEngine::FrameCallback
 class CTDSpriteDesc : public CTD::EntityDescriptor
 {
 
-	public:
-													CTDSpriteDesc() { };
-													~CTDSpriteDesc() { }
-			
-		const std::string&							GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME_Sprite ) }
-		CTD::BaseEntity*							CreateEntityInstance() { return (CTD::BaseEntity*) new CTDSprite; };
+    public:
+                                                    CTDSpriteDesc() { };
+                                                    ~CTDSpriteDesc() { }
+            
+        const std::string&                          GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME_Sprite ) }
+        CTD::BaseEntity*                            CreateEntityInstance() { return (CTD::BaseEntity*) new CTDSprite; };
 
 };
 

@@ -57,68 +57,68 @@ namespace CTD_IPluginVisuals {
 class CTDStaticMesh : public CTD::BaseEntity
 {
 
-	public:
+    public:
 
-													CTDStaticMesh();
-		virtual										~CTDStaticMesh();
+                                                    CTDStaticMesh();
+        virtual                                     ~CTDStaticMesh();
 
-		//******************************* override some functions **********************************//
+        //******************************* override some functions **********************************//
 
-		/**
-		* Initializing function
-		*/
-		void										Initialize();
+        /**
+        * Initializing function
+        */
+        void                                        Initialize();
 
-		/**
-		* Update object
-		* \param fDeltaTime                         Time passed since last update
-		*/
-		void									    UpdateEntity( float fDeltaTime );
+        /**
+        * Update object
+        * \param fDeltaTime                         Time passed since last update
+        */
+        void                                        UpdateEntity( float fDeltaTime );
 
-		/**
-		* PreRender function called before rendering phase begins.
-		* Here it is used to render the cubemap.
-		*/
-		void										PreRender();
+        /**
+        * PreRender function called before rendering phase begins.
+        * Here it is used to render the cubemap.
+        */
+        void                                        PreRender();
 
-		/**
-		* Render object
-		* \param pkFrustum                          Current view frustum (if any)
-		* \param bForce                             Render even if rendered previously this frame or deactivated (default false)
-		* \return                                   true if we were rendered, false if not (already rendered, not forced)
-		*/
-		bool										Render( NeoEngine::Frustum *pkFrustum = 0, bool bForce = false );
-
-
-		//*******************************************************************************************//
-
-		int											ParameterDescription( int param_index, CTD::ParameterDescriptor *pd );
-
-		//******************************************************************************************//
-
-		// entity parameters
-		NeoEngine::Vector3d							m_kPosition;
-		NeoEngine::Vector3d							m_kRotation;
-
-		NeoEngine::Vector3d							m_kAmientColor;
-		NeoEngine::Vector3d							m_kDiffuseColor;
-		NeoEngine::Vector3d							m_kSpecularColor;
-		NeoEngine::Vector3d							m_kEmission;
-		float										m_fShininess;
-
-		float										m_fScale;
-		bool										m_bThrowShadows;
-		bool										m_bEnvMapping;
-
-		// mesh entity
-		NeoEngine::MeshEntity						*m_pkMesh;
-
-	private:
+        /**
+        * Render object
+        * \param pkFrustum                          Current view frustum (if any)
+        * \param bForce                             Render even if rendered previously this frame or deactivated (default false)
+        * \return                                   true if we were rendered, false if not (already rendered, not forced)
+        */
+        bool                                        Render( NeoEngine::Frustum *pkFrustum = 0, bool bForce = false );
 
 
-		NeoEngine::RenderDevice						*m_pkRenderDevice;
-		NeoEngine::PixelBuffer						*m_pkCubemap;
-		NeoEngine::Camera							*m_pkCubemapCamera;
+        //*******************************************************************************************//
+
+        int                                         ParameterDescription( int param_index, CTD::ParameterDescriptor *pd );
+
+        //******************************************************************************************//
+
+        // entity parameters
+        NeoEngine::Vector3d                         m_kPosition;
+        NeoEngine::Vector3d                         m_kRotation;
+
+        NeoEngine::Vector3d                         m_kAmientColor;
+        NeoEngine::Vector3d                         m_kDiffuseColor;
+        NeoEngine::Vector3d                         m_kSpecularColor;
+        NeoEngine::Vector3d                         m_kEmission;
+        float                                       m_fShininess;
+
+        float                                       m_fScale;
+        bool                                        m_bThrowShadows;
+        bool                                        m_bEnvMapping;
+
+        // mesh entity
+        NeoEngine::MeshEntity                       *m_pkMesh;
+
+    private:
+
+
+        NeoEngine::RenderDevice                     *m_pkRenderDevice;
+        NeoEngine::PixelBuffer                      *m_pkCubemap;
+        NeoEngine::Camera                           *m_pkCubemapCamera;
 
 };
 
@@ -127,12 +127,12 @@ class CTDStaticMesh : public CTD::BaseEntity
 class CTDStaticMeshDesc : public CTD::EntityDescriptor
 {
 
-	public:
-													CTDStaticMeshDesc() { };
-													~CTDStaticMeshDesc() { }
-			
-		const std::string&							GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME ) }
-		CTD::BaseEntity*							CreateEntityInstance() { return (CTD::BaseEntity*) new CTDStaticMesh; };
+    public:
+                                                    CTDStaticMeshDesc() { };
+                                                    ~CTDStaticMeshDesc() { }
+            
+        const std::string&                          GetEntityName() { CTD_RETURN_ENTITYNAME( CTD_ENTITY_NAME ) }
+        CTD::BaseEntity*                            CreateEntityInstance() { return (CTD::BaseEntity*) new CTDStaticMesh; };
 
 };
 
