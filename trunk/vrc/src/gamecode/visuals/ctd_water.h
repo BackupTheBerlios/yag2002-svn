@@ -103,7 +103,7 @@ class EnWater :  public BaseEntity
         void                                        calcConstants( float stepWidth );
 
         //! Setup water geom, vertex shader and state sets
-        osg::Node*                                  setupWater(osg::Node* model);
+        osg::Node*                                  setupWater( osg::Node* p_node );
 
         //! Create the water surface mesh ( grid )
         osg::Geometry*                              makeMesh();
