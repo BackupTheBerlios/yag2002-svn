@@ -276,7 +276,7 @@ void FrameworkImplStandalone::GameLoop()
 
         }
 
-        // now dras all widgets, if there are any
+        // now draw all widgets, if there are any
         m_pkWidgets->Update();
         //----------------------//
 
