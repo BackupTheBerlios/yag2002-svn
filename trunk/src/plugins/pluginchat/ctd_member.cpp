@@ -65,6 +65,11 @@ CTDPrintf           g_CTDPrintfNwStats;
 #define CTD_MAX_STEPHEIGHT          0.7f
 // gravity force
 #define CTD_PLAYER_GRAVITY          0.98f
+// jump force
+#define CTD_PLAYER_JUMP_FORCE       10.0f
+// player mass
+#define CTD_PLAYER_MASS             70.0f
+
 // mouse input debounce timer
 #define CTD_MOUSE_DEBOUNCE_TIME     0.2f
 
@@ -103,12 +108,16 @@ CTDChatMember::CTDChatMember()
     m_kDimensions               = Vector3d( 0.5f, 1.8f, 0.5f );
     m_fPositionalSpeed          = 5.0f;
     m_fAngularSpeed             = 1.0f;
+    m_fVelocityY                = 0;
+    m_fJumpForce                = CTD_PLAYER_JUMP_FORCE;
+    m_fMass                     = CTD_PLAYER_MASS;
 
     m_pkCamera                  = NULL;
     m_pkNetworkDevice           = NULL;
     m_pkEntityGui               = NULL;
     m_pkRoom                    = NULL;
     m_pkAnimMgr                 = NULL;
+    m_stateJump                 = m_eBeginJumping;
 
     m_fAngularAcceleration      = 0;
     m_fPositionalAcceleration   = 0;
@@ -372,7 +381,7 @@ void CTDChatMember::ProcessInput( float fDeltaTime )
         if( g_aiKeys[ MOVE_BACKWARD ] ) {
 
            	SET_COMMAND( ANIM_CMD_MOVE_BACKWARD );
-            m_kMove.z = m_fPositionalSpeed;
+            m_kMove.z = m_fPositionalSpeed * 0.7f;
             m_bMoved = true;
         
         }
@@ -397,6 +406,13 @@ void CTDChatMember::ProcessInput( float fDeltaTime )
     
     }
 
+    if( g_aiKeys[ JUMP ] ) {
+
+        SET_COMMAND( ANIM_CMD_JUMP );
+        g_aiKeys[ JUMP ] = 0;
+
+    }
+
     // calculate position vector
     if ( m_bMoved == true ) {
 
@@ -404,7 +420,6 @@ void CTDChatMember::ProcessInput( float fDeltaTime )
 
     } else {
 
-        SET_COMMAND( ANIM_CMD_MOVE_STOP );
         m_kMove.Reset();
 
     }
@@ -421,15 +436,21 @@ void CTDChatMember::ProcessInput( float fDeltaTime )
 
     }
 
+    if ( !m_bRotated && !m_bMoved ) {
+
+        SET_COMMAND( ANIM_CMD_MOVE_STOP );
+
+    }
+
 }
 
 void CTDChatMember::UpdateEntity( float fDeltaTime ) 
 { 
 
-    // limit delta time
-    if ( fDeltaTime > 0.06f ) {
+    // limit delta time, we need at least 30 fps in order to get things ( such as physics ) running stable
+    if ( fDeltaTime > 0.03f ) {
 
-        fDeltaTime = 0.06f;
+        fDeltaTime = 0.03f;
 
     }
 
@@ -564,20 +585,119 @@ void CTDChatMember::UpdateStandaloneObject( float fDeltaTime )
 
     // process new input
     ProcessInput( fDeltaTime );
-
-    static Quaternion s_kCamRotation;
-
+    
+    Vector3d   kMoveVec;
+    
     // handle rotation
     if ( IS_COMMAND( ANIM_CMD_ROTATE ) ) {
 
         // calculate rotation depending on local inputs
-        s_kCamRotation       *= Quaternion( EulerAngles( m_kRotate.x, 0.0f, 0.0f ) );
-        s_kCamRotation       = Quaternion( EulerAngles( 0.0f, m_kRotate.y, 0.0f ) ) * s_kCamRotation;
-        m_kCurrentRotationQ  = Quaternion( EulerAngles( 0.0f, m_kRotate.y, 0.0f ) ) * m_kCurrentRotationQ;
-
+        m_kCurrentRotationQ   = Quaternion( EulerAngles( 0.0f, m_kRotate.y, 0.0f ) ) * m_kCurrentRotationQ;
         SetRotation( m_kCurrentRotationQ );
-        // set camera rotation and position
-        m_pkCamera->SetRotation( s_kCamRotation );
+
+    }
+
+	// check for jump command, attention: the jump command can occur during moving!
+	if ( IS_COMMAND( ANIM_CMD_JUMP ) ) {
+
+        if ( m_stateJump == m_eBeginJumping	 ) {
+            
+            // jump only if the object is not falling or already jumping
+            if ( m_fVelocityY == 0 ) {
+
+                m_pkAnimMgr->Jump();
+                m_fVelocityY = sqrtf( m_fMass * m_fJumpForce * 2.0f );
+                m_stateJump  = m_eStartLanding;
+            
+            }
+        }
+    }
+
+    m_kCurrentPosition.y += m_fVelocityY * fDeltaTime;
+    if ( m_fVelocityY > 0 ) {
+        m_fVelocityY -= CTD_PLAYER_GRAVITY * m_fMass * fDeltaTime * 2.0f;
+    } else {
+        m_fVelocityY = 0;
+    }
+
+    if ( m_uiCmdFlag & ANIM_CMD_MOVEMENT_MASK ) {
+
+        // calculate position depending on local inputs
+        kMoveVec    = m_kCurrentRotationQ * m_kMove;
+
+        SetTranslation( m_kCurrentPosition );
+
+        // TODO: add camera offset as controllable parameter
+        Vector3d    kOffset( 0, 2.0f, 10.0f );
+        m_pkCamera->SetTranslation( m_kCurrentPosition );
+        m_pkCamera->Translate( kOffset );
+
+    }
+
+    // move the body considering collisions
+    m_kPhysics.MoveBody( m_kCurrentPosition, kMoveVec, fDeltaTime );
+
+    // update animation
+    UpdateAnimation( fDeltaTime );
+
+#ifdef PRINT_STATISTICS
+    // this is the code which is executed on client's own player
+    // some printfs into screen
+    static char strBuff[256];
+    // print out fps
+    sprintf( strBuff, "FPS %.0f  ", Framework::Get()->GetFPS() );
+    CTDPRINTF_PRINT( g_CTDPrintf, strBuff );
+    sprintf( strBuff, "player name: %s  ", m_strPlayerName.c_str() );
+    CTDPRINTF_PRINT( g_CTDPrintf, strBuff );
+    sprintf( strBuff, "position: %f %f %f  ", m_kCurrentPosition.x, m_kCurrentPosition.y, m_kCurrentPosition.z );
+    CTDPRINTF_PRINT( g_CTDPrintf, strBuff );
+    sprintf( strBuff, "rotation: %f %f %f  ", m_kCurrentRotation.x, m_kCurrentRotation.y, m_kCurrentRotation.z );
+    CTDPRINTF_PRINT( g_CTDPrintf, strBuff );
+#endif
+
+}
+
+void CTDChatMember::UpdateAnimation( float fDeltaTime )
+{
+
+    if ( IS_COMMAND( ANIM_CMD_JUMP ) ) {
+
+		switch ( m_stateJump ) {
+
+			case m_eBeginJumping:
+
+				break;
+
+			case m_eStartLanding:
+
+				// check for ground contact to begin with landing
+				if ( m_kPhysics.IsOnGround() ) {
+
+                    SET_COMMAND( ANIM_CMD_LAND );
+	                m_pkAnimMgr->Landing();
+					m_stateJump = m_eWait4Landing;
+
+                }
+				break;
+
+			case m_eWait4Landing:
+
+				if ( m_pkAnimMgr->IsLanded() == true ) {
+
+					m_stateJump = m_eBeginJumping;
+					CLEAR_COMMAND( ANIM_CMD_JUMP );
+
+				}
+				break;
+
+			default:
+				;
+		}
+
+	}
+
+    // handle rotation
+    if ( IS_COMMAND( ANIM_CMD_ROTATE ) ) {
 
         if (!WAS_LAST_COMMAND( ANIM_CMD_MOVE_FORWARD | ANIM_CMD_MOVE_BACKWARD ) ) {
             m_pkAnimMgr->Turn();
@@ -587,7 +707,7 @@ void CTDChatMember::UpdateStandaloneObject( float fDeltaTime )
 
     }
 
-    // trigger animations
+    // trigger movement animations
     switch ( m_uiCmdFlag & ANIM_CMD_MOVEMENT_MASK ) {
     
         case ANIM_CMD_MOVE_LEFT:
@@ -619,46 +739,12 @@ void CTDChatMember::UpdateStandaloneObject( float fDeltaTime )
             ;
 
     }
+    // update last commands and reset current movement flags
+   	UPDATE_LAST_COMMANDS();
+    CLEAR_COMMAND( ANIM_CMD_MOVEMENT_MASK );
 
-    Vector3d kMoveVec;
-
-    if ( m_uiCmdFlag & ANIM_CMD_MOVEMENT_MASK ) {
-
-        // calculate position depending on local inputs
-        kMoveVec    = m_kCurrentRotationQ * m_kMove;
-
-        SetTranslation( m_kCurrentPosition );
-
-        // TODO: add camera offset as controllable parameter
-        Vector3d    kOffset( 0, 1.0f, 10.0f );
-        m_pkCamera->SetTranslation( m_kCurrentPosition + ( s_kCamRotation * kOffset ) );
-
-        // reset movement flags
-        CLEAR_COMMAND( ANIM_CMD_MOVEMENT_MASK );
-
-    }
-
-    // move the body considering collisions
-    m_kPhysics.MoveBody( m_kCurrentPosition, kMoveVec, fDeltaTime );
-
-    // update animation
+    // update animation module
 	m_pkAnimMgr->UpdateAnim( fDeltaTime );
-
-
-#ifdef PRINT_STATISTICS
-    // this is the code which is executed on client's own player
-    // some printfs into screen
-    static char strBuff[256];
-    // print out fps
-    sprintf( strBuff, "FPS %.0f  ", Framework::Get()->GetFPS() );
-    CTDPRINTF_PRINT( g_CTDPrintf, strBuff );
-    sprintf( strBuff, "player name: %s  ", m_strPlayerName.c_str() );
-    CTDPRINTF_PRINT( g_CTDPrintf, strBuff );
-    sprintf( strBuff, "position: %f %f %f  ", m_kCurrentPosition.x, m_kCurrentPosition.y, m_kCurrentPosition.z );
-    CTDPRINTF_PRINT( g_CTDPrintf, strBuff );
-    sprintf( strBuff, "rotation: %f %f %f  ", m_kCurrentRotation.x, m_kCurrentRotation.y, m_kCurrentRotation.z );
-    CTDPRINTF_PRINT( g_CTDPrintf, strBuff );
-#endif
 
 }
 
@@ -672,24 +758,24 @@ void CTDChatMember::PostChatText( const std::string& strText )
 bool CTDChatMember::Render( Frustum *pkFrustum, bool bForce ) 
 {
 
-     if( bForce ) {
-         
-         m_uiLastFrame = s_uiFrameCount; 
-         return true; 
-     } 
+    if( bForce ) {
 
-     if( !m_bActive || ( m_uiLastFrame >= s_uiFrameCount ) ) 
-         return false; 
+        m_uiLastFrame = s_uiFrameCount; 
+        return true; 
+    } 
 
-     m_uiLastFrame = s_uiFrameCount; 
+    if( !m_bActive || ( m_uiLastFrame >= s_uiFrameCount ) ) 
+        return false; 
 
-     if ( m_pkAnimMgr ) {
-     
-         m_pkAnimMgr->Render();
+    m_uiLastFrame = s_uiFrameCount; 
 
-     }
+    if ( m_pkAnimMgr ) {
 
-    GetBoundingVolume()->RenderOutlines( Color::BLUE );
+        m_pkAnimMgr->Render();
+
+    }
+
+    //GetBoundingVolume()->RenderOutlines( Color::BLUE );
 
     return true;
 

@@ -158,11 +158,26 @@ class CTDChatMember : public CTD::BaseEntity
         */
         void                                        UpdateStandaloneObject( float fDeltaTime );
 
+        /**
+        * Update animation
+        * \param fDeltaTime                         Time passed since last update
+        */
+        void                                        UpdateAnimation( float fDeltaTime );
+
         // process inputs
         void                                        ProcessInput( float fDeltaTime );
 
         // physics for moving the body
         WalkPhysics                                 m_kPhysics;
+
+        // velocity in y direction ( used for jumping )
+        float                                       m_fVelocityY;
+
+        // force for jumping
+        float                                       m_fJumpForce;
+
+        // player mass
+        float                                       m_fMass;
 
         std::string                                 m_strPlayerName;
 
@@ -173,10 +188,16 @@ class CTDChatMember : public CTD::BaseEntity
         NeoEngine::Camera                           *m_pkCamera;
         
         // networking interface
-        CTD_MemberNw                               *m_pkPlayerNetworking;
+        CTD_MemberNw                                *m_pkPlayerNetworking;
 
         // animation module
         CTDCal3DAnim                                *m_pkAnimMgr;
+
+        // jump states used for animation control
+        enum _statejump {
+            m_eBeginJumping, 
+            m_eStartLanding, 
+            m_eWait4Landing }                       m_stateJump;
 
         // input processing specific
         float                                       m_fPositionalAcceleration;
