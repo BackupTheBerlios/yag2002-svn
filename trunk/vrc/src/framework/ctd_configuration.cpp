@@ -53,16 +53,21 @@ Configuration::Configuration() :
 _p_settings( SettingsManager::get()->createProfile( CTD_GAMESETTING_PROFILENAME, Application::get()->getMediaPath() + CTD_GAMESETTING_FILENAME ) ),
 _screenWidth( 600 ),
 _screenHeight( 400 ),
-_mouseSensivity( 1.0f ),
+_mouseSensitivity( 1.0f ),
 _guiScheme( CTD_GUI_DEFUALT_SCHEME ),
-_playerName( "NoName" )
+_playerName( "NoName" ),
+_mouseInverted( false )
 {
     // register all settings
-    _p_settings->registerSetting( CTD_GS_SCREENWIDTH,   _screenWidth    );
-    _p_settings->registerSetting( CTD_GS_SCREENHEIGHT,  _screenHeight   );
-    _p_settings->registerSetting( CTD_GS_GUISCHEME,     _guiScheme      );
-    _p_settings->registerSetting( CTD_GS_PLAYERNAME,    _playerName     );
-    _p_settings->registerSetting( CTD_GS_MOUSESENS,     _mouseSensivity );
+    _p_settings->registerSetting( CTD_GS_SCREENWIDTH,   _screenWidth      );
+    _p_settings->registerSetting( CTD_GS_SCREENHEIGHT,  _screenHeight     );
+    _p_settings->registerSetting( CTD_GS_GUISCHEME,     _guiScheme        );
+    _p_settings->registerSetting( CTD_GS_PLAYERNAME,    _playerName       );
+    _p_settings->registerSetting( CTD_GS_MOUSESENS,     _mouseSensitivity );
+    _p_settings->registerSetting( CTD_GS_INVERTMOUSE,   _mouseInverted    );
+    _p_settings->registerSetting( CTD_GS_SERVER_NAME,   _serverName       );
+    _p_settings->registerSetting( CTD_GS_SERVER_IP,     _serverIP         );
+    _p_settings->registerSetting( CTD_GS_SERVER_PORT,   _serverPort       );
 
     bool exists = SettingsManager::get()->loadProfile( CTD_GAMESETTING_PROFILENAME );
     if ( !exists )
@@ -73,6 +78,11 @@ _playerName( "NoName" )
 
 Configuration::~Configuration()
 {
+}
+
+void Configuration::store()
+{
+    SettingsManager::get()->storeProfile( CTD_GAMESETTING_PROFILENAME );
 }
 
 void Configuration::shutdown()

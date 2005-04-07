@@ -54,6 +54,11 @@ namespace CTD
 #define CTD_GS_GUISCHEME                "guiScheme"
 #define CTD_GS_PLAYERNAME               "playerName"
 #define CTD_GS_MOUSESENS                "mouseSensitivity"
+#define CTD_GS_MAX_MOUSESENS            3.0f                /* maximal mouse sensitivity */
+#define CTD_GS_INVERTMOUSE              "mouseInverted"
+#define CTD_GS_SERVER_NAME              "serverName"
+#define CTD_GS_SERVER_IP                "serverIP"
+#define CTD_GS_SERVER_PORT              "serverPort"
 
 
 class Application;
@@ -75,6 +80,9 @@ class Configuration : public Singleton< Configuration >
         //! Set setting value. Returns false if setting does not exist.
         template< class TypeT >
         inline bool                             setSettingValue( const std::string& name, const TypeT& value );
+
+        //! Store the settings to file
+        void                                    store();
 
     protected:
 
@@ -100,7 +108,15 @@ class Configuration : public Singleton< Configuration >
 
         std::string                             _playerName;
 
-        float                                   _mouseSensivity;
+        float                                   _mouseSensitivity;
+
+        float                                   _mouseInverted;
+
+        std::string                             _serverName;
+
+        std::string                             _serverIP;
+        
+        unsigned int                            _serverPort;
 
     friend class Singleton< Configuration >;
     friend class Application;
