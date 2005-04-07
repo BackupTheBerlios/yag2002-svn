@@ -56,15 +56,43 @@ class DialogGameSettings
 
     protected:
 
+        //! Is asked on canceling dialog
+        bool                                        isDirty();
+
+        //! Setup all controls when the dialog is opening ( show( true ) )
+        void                                        setupControls();
+
         //! Dialog callback for Ok button        
         bool                                        onClickedOk( const CEGUI::EventArgs& arg );
 
         //! Dialog callback for Cancel button        
         bool                                        onClickedCancel( const CEGUI::EventArgs& arg );
 
+        //! Dialog callback for mouse sensitivity scrollbar        
+        bool                                        onMouseSensitivityChanged( const CEGUI::EventArgs& arg );
+       
+        //! Busy flag ( see method onClickedOk for more details )
+        bool                                        _busy;
+
+        //  internal variables
+
         CEGUI::Window*                              _p_settingsDialog;
 
         CEGUI::Editbox*                             _p_playername;
+
+        CEGUI::Editbox*                             _p_serverName;
+
+        CEGUI::Editbox*                             _p_serverIP;
+
+        CEGUI::Editbox*                             _p_serverPort;
+
+        CEGUI::Scrollbar*                           _p_mouseSensivity;
+
+        float                                       _mouseSensitivity;
+
+        CEGUI::Checkbox*                            _p_mouseInvert;
+
+        bool                                        _mouseInverted;
 };
 
 }
