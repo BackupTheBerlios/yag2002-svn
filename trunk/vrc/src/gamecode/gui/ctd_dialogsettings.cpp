@@ -50,6 +50,14 @@ _busy( false ),
 _p_settingsDialog( NULL ),
 _p_playername( NULL ),
 _p_mouseSensivity( NULL ),
+_p_keyMoveForward1( NULL ),
+_keyMoveForward1( 'w' ),
+_p_keyMoveBackward1( NULL ),
+_keyMoveBackward1( 's' ),
+_p_keyMoveLeft1( NULL ),
+_keyMoveLeft1( 'a' ),
+_p_keyMoveRight1( NULL ),
+_keyMoveRight1( 'd' ),
 _mouseSensitivity( 1.0f ),
 _mouseInverted( false )
 {
@@ -112,6 +120,24 @@ bool DialogGameSettings::initialize( const string& layoutfile )
     CEGUI::TabPane*    p_paneControl = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_control" ) );
     assert( p_paneControl && "DialogGameSettings: cannot find tab pane 'pane_control'" );
 
+    // key bindings
+    //-------------
+    _p_keyMoveForward1 = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_forward1" ) );
+    assert( _p_keyMoveForward1 && "DialogGameSettings: cannot find 'btn_forward1'" );
+
+    _p_keyMoveBackward1 = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_backward1" ) );
+    assert( _p_keyMoveBackward1 && "DialogGameSettings: cannot find 'btn_backward1'" );
+
+    _p_keyMoveLeft1 = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_left1" ) );
+    assert( _p_keyMoveLeft1 && "DialogGameSettings: cannot find 'btn_left1'" );
+
+    _p_keyMoveRight1 = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_right1" ) );
+    assert( _p_keyMoveRight1 && "DialogGameSettings: cannot find 'btn_right1'" );
+
+     //!TODO rest of Control settings (  second key bindings )
+
+    //-------------
+
     // set callback for mouse sensivity scrollbar
     _p_mouseSensivity = static_cast< CEGUI::Scrollbar* >( p_paneControl->getChild( SDLG_PREFIX "sb_mousesensivity" ) );
     assert( _p_mouseSensivity && "DialogGameSettings: cannot find 'sb_mousesensivity'" );
@@ -120,8 +146,6 @@ bool DialogGameSettings::initialize( const string& layoutfile )
     // setup invert mouse callback
     _p_mouseInvert = static_cast< CEGUI::Checkbox* >( p_paneControl->getChild( SDLG_PREFIX "cbx_mouseinvert" ) );
     assert( _p_mouseInvert && "DialogGameSettings: cannot find 'cbx_mouseinvert'" );
-
-     //!TODO rest of Control settings ( key input map )
 
     // setup all control contents
     setupControls();
@@ -142,21 +166,44 @@ void DialogGameSettings::setupControls()
     // get current configuration settings
     //-----------------------------------
     string cfg_playername;
-    Configuration::get()->getSettingValue( CTD_GS_PLAYERNAME, cfg_playername );
+    Configuration::get()->getSettingValue( CTD_GS_PLAYERNAME,  cfg_playername       );
     float  cfg_mousesensitivity;
-    Configuration::get()->getSettingValue( CTD_GS_MOUSESENS, cfg_mousesensitivity );
+    Configuration::get()->getSettingValue( CTD_GS_MOUSESENS,   cfg_mousesensitivity );
     bool   cfg_mouseInverted;
-    Configuration::get()->getSettingValue( CTD_GS_INVERTMOUSE, cfg_mouseInverted );
+    Configuration::get()->getSettingValue( CTD_GS_INVERTMOUSE, cfg_mouseInverted    );
     string cfg_servername;
-    Configuration::get()->getSettingValue( CTD_GS_SERVER_NAME, cfg_servername );
+    Configuration::get()->getSettingValue( CTD_GS_SERVER_NAME, cfg_servername       );
     string cfg_serverip;
-    Configuration::get()->getSettingValue( CTD_GS_SERVER_IP, cfg_serverip );
+    Configuration::get()->getSettingValue( CTD_GS_SERVER_IP,   cfg_serverip         );
     unsigned int cfg_serverport;
-    Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, cfg_serverport );
+    Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, cfg_serverport       );
+
+    unsigned int cfg_moveforward1;
+    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_FORWARD,  cfg_moveforward1    );
+    unsigned int cfg_movebackward1;
+    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_BACKWARD, cfg_movebackward1   );
+    unsigned int cfg_moveleft1;
+    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_LEFT,     cfg_moveleft1       );
+    unsigned int cfg_moveright1;
+    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_RIGHT,    cfg_moveright1      );
+
     //-----------------------------------
+
 
     // set player name
     _p_playername->setText( cfg_playername );
+
+    //! TODO: we need a get key as string method which converts space, esc, and other special characters into strings
+    //!       this method should be in a key map class in framework
+    char keyasstring[ 2 ] = { 0, 0 };
+    keyasstring[ 0 ] = cfg_moveforward1;
+    _p_keyMoveForward1->setText( keyasstring );
+    keyasstring[ 0 ] = cfg_movebackward1;
+    _p_keyMoveBackward1->setText( keyasstring );
+    keyasstring[ 0 ] = cfg_moveleft1;
+    _p_keyMoveLeft1->setText( keyasstring );
+    keyasstring[ 0 ] = cfg_moveright1;
+    _p_keyMoveRight1->setText( keyasstring );
 
     _p_serverName->setText( cfg_servername );
     _p_serverIP->setText( cfg_serverip );
@@ -177,6 +224,31 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
 {
     string playername = _p_playername->getText().c_str();
     Configuration::get()->setSettingValue( CTD_GS_PLAYERNAME, playername );
+
+    // write key bindings
+    //-----------------
+
+    //! TODO: we need a get key as string method which converts space, esc, and other special characters into strings
+    //!       this method should be in a key map class in framework
+
+    stringstream keyasstring;
+    unsigned int cfg_key;
+    keyasstring << _p_keyMoveForward1->getText().c_str();
+    keyasstring >> cfg_key;
+    Configuration::get()->setSettingValue( CTD_GS_KEY_MOVE_FORWARD, cfg_key );
+    keyasstring.clear();
+    keyasstring << _p_keyMoveBackward1->getText().c_str();
+    keyasstring >> cfg_key;
+    Configuration::get()->setSettingValue( CTD_GS_KEY_MOVE_BACKWARD, cfg_key );
+    keyasstring.clear();
+    keyasstring << _p_keyMoveLeft1->getText().c_str();
+    keyasstring >> cfg_key;
+    Configuration::get()->setSettingValue( CTD_GS_KEY_MOVE_LEFT, cfg_key );
+    keyasstring.clear();
+    keyasstring << _p_keyMoveRight1->getText().c_str();
+    keyasstring >> cfg_key;
+    Configuration::get()->setSettingValue( CTD_GS_KEY_MOVE_RIGHT, cfg_key );
+    //-----------------
 
     Configuration::get()->setSettingValue( CTD_GS_MOUSESENS, _mouseSensitivity );
     
@@ -211,7 +283,7 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
 
     // ask user for saving changes using a messagebox
     {
-        MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "Want to save changes?", MessageBoxDialog::YES_NO, true );
+        MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "You changed the settings.\nDo you want to save changes?", MessageBoxDialog::YES_NO, true );
         // set busy flag for our object ( DialogGameSettings ). the busy flag is removed then when the message box is terminated
         //  by clicking any button. the object must not be destroyed before that! this flag helps to catch such programming pittfall.
         _busy = true;

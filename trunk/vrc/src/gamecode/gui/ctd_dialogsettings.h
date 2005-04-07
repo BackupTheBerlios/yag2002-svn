@@ -90,6 +90,22 @@ class DialogGameSettings
 
         float                                       _mouseSensitivity;
 
+        CEGUI::PushButton*                          _p_keyMoveForward1;
+
+        unsigned int                                _keyMoveForward1;
+
+        CEGUI::PushButton*                          _p_keyMoveBackward1;
+
+        unsigned int                                _keyMoveBackward1;
+
+        CEGUI::PushButton*                          _p_keyMoveLeft1;
+
+        unsigned int                                _keyMoveLeft1;
+
+        CEGUI::PushButton*                          _p_keyMoveRight1;
+
+        unsigned int                                _keyMoveRight1;
+
         CEGUI::Checkbox*                            _p_mouseInvert;
 
         bool                                        _mouseInverted;
