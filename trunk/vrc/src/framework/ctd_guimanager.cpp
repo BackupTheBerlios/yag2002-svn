@@ -296,11 +296,13 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
             case osgGA::GUIEventAdapter::KEY_Page_Down:
                 CEGUI::System::getSingleton().injectKeyDown(CEGUI::Key::PageDown);
                 break;
-        }    
+        }
+
+        // always inject Character even if we have done key-down injection
+        CEGUI::System::getSingleton().injectChar( static_cast< CEGUI::utf32 >( key ) );
+    
     }
 
-    // always inject Character even if we have done key-down injection
-    CEGUI::System::getSingleton().injectChar( static_cast< CEGUI::utf32 >( key ) );
 
     // handle mouse
     unsigned int buttonMask = ea.getButtonMask();
