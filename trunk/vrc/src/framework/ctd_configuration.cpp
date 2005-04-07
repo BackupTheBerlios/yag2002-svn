@@ -56,19 +56,29 @@ _screenHeight( 400 ),
 _mouseSensitivity( 1.0f ),
 _guiScheme( CTD_GUI_DEFUALT_SCHEME ),
 _playerName( "NoName" ),
-_mouseInverted( false )
+_mouseInverted( false ),
+_moveForward( 'w' ),
+_moveBackward( 's' ),
+_moveLeft( 'a' ),
+_moveRight( 'd' )
 {
     // register all settings
-    _p_settings->registerSetting( CTD_GS_SCREENWIDTH,   _screenWidth      );
-    _p_settings->registerSetting( CTD_GS_SCREENHEIGHT,  _screenHeight     );
-    _p_settings->registerSetting( CTD_GS_GUISCHEME,     _guiScheme        );
-    _p_settings->registerSetting( CTD_GS_PLAYERNAME,    _playerName       );
-    _p_settings->registerSetting( CTD_GS_MOUSESENS,     _mouseSensitivity );
-    _p_settings->registerSetting( CTD_GS_INVERTMOUSE,   _mouseInverted    );
-    _p_settings->registerSetting( CTD_GS_SERVER_NAME,   _serverName       );
-    _p_settings->registerSetting( CTD_GS_SERVER_IP,     _serverIP         );
-    _p_settings->registerSetting( CTD_GS_SERVER_PORT,   _serverPort       );
+    _p_settings->registerSetting( CTD_GS_SCREENWIDTH,         _screenWidth      );
+    _p_settings->registerSetting( CTD_GS_SCREENHEIGHT,        _screenHeight     );
+    _p_settings->registerSetting( CTD_GS_GUISCHEME,           _guiScheme        );
+    _p_settings->registerSetting( CTD_GS_PLAYERNAME,          _playerName       );
+    _p_settings->registerSetting( CTD_GS_MOUSESENS,           _mouseSensitivity );
+    _p_settings->registerSetting( CTD_GS_INVERTMOUSE,         _mouseInverted    );
+    _p_settings->registerSetting( CTD_GS_SERVER_NAME,         _serverName       );
+    _p_settings->registerSetting( CTD_GS_SERVER_IP,           _serverIP         );
+    _p_settings->registerSetting( CTD_GS_SERVER_PORT,         _serverPort       );
 
+    _p_settings->registerSetting( CTD_GS_KEY_MOVE_FORWARD,    _moveForward      );
+    _p_settings->registerSetting( CTD_GS_KEY_MOVE_BACKWARD,   _moveBackward     );
+    _p_settings->registerSetting( CTD_GS_KEY_MOVE_LEFT,       _moveLeft         );
+    _p_settings->registerSetting( CTD_GS_KEY_MOVE_RIGHT,      _moveRight        );
+
+    // load profile
     bool exists = SettingsManager::get()->loadProfile( CTD_GAMESETTING_PROFILENAME );
     if ( !exists )
     {

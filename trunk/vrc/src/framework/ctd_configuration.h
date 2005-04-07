@@ -59,6 +59,11 @@ namespace CTD
 #define CTD_GS_SERVER_NAME              "serverName"
 #define CTD_GS_SERVER_IP                "serverIP"
 #define CTD_GS_SERVER_PORT              "serverPort"
+// key bindings
+#define CTD_GS_KEY_MOVE_FORWARD         "moveForward"
+#define CTD_GS_KEY_MOVE_BACKWARD        "moveBackward"
+#define CTD_GS_KEY_MOVE_LEFT            "moveLeft"
+#define CTD_GS_KEY_MOVE_RIGHT           "moveRight"
 
 
 class Application;
@@ -117,6 +122,14 @@ class Configuration : public Singleton< Configuration >
         std::string                             _serverIP;
         
         unsigned int                            _serverPort;
+
+        unsigned int                            _moveForward;
+
+        unsigned int                            _moveBackward;
+        
+        unsigned int                            _moveLeft;
+        
+        unsigned int                            _moveRight;
 
     friend class Singleton< Configuration >;
     friend class Application;
