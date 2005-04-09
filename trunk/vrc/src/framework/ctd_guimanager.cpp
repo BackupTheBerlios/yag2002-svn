@@ -33,6 +33,7 @@
 #include "ctd_guimanager.h"
 #include "ctd_application.h"
 #include "ctd_configuration.h"
+#include "ctd_keymap.h"
 #include "ctd_log.h"
 #include "ctd_guirenderer.h"
 
@@ -184,7 +185,18 @@ void GuiManager::doInitialize()
     System::getSingleton().setDefaultMouseCursor( &p_taharezImages->getImage( "MouseArrow" ) );
 
     // load font
-    FontManager::getSingleton().createFont( string( "gui/fonts/" CTD_GUI_FONT ".font" ) );
+    CEGUI::Font* p_font = FontManager::getSingleton().createFont( string( "gui/fonts/" CTD_GUI_FONT ".font" ) );
+    // add german specific glyphs to font
+    CEGUI::String glyphs = p_font->getAvailableGlyphs();
+    CEGUI::String germanGlyphs;
+    germanGlyphs += ( CEGUI::utf8 )223; // s-zet
+    germanGlyphs += ( CEGUI::utf8 )228; // ae
+    germanGlyphs += ( CEGUI::utf8 )246; // oe
+    germanGlyphs += ( CEGUI::utf8 )252; // ue
+    germanGlyphs += ( CEGUI::utf8 )196; // Ae
+    germanGlyphs += ( CEGUI::utf8 )214; // Oe
+    germanGlyphs += ( CEGUI::utf8 )220; // Ue
+    p_font->defineFontGlyphs( glyphs + germanGlyphs ); 
 
     // load scheme
     SchemeManager::getSingleton().loadScheme( string( "gui/schemes/" CTD_GUI_SCHEME ".scheme" ) );
@@ -243,19 +255,21 @@ void GuiManager::update( float deltaTime )
 
 bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
-    bool         ret         = false;
-    unsigned int eventType   = ea.getEventType();
-    int          key         = ea.getKey();
-
+    bool         ret          = false;
+    unsigned int eventType    = ea.getEventType();
+    int          key          = ea.getKey();
+ 
     // dispatch key down activity
     if ( eventType == osgGA::GUIEventAdapter::KEYDOWN )
     {
+
         // some keys may be handled via key code and generate those too
         switch ( key )
         {
             case osgGA::GUIEventAdapter::KEY_BackSpace:
                 CEGUI::System::getSingleton().injectKeyDown(CEGUI::Key::Backspace);
                 break;
+
 
             case osgGA::GUIEventAdapter::KEY_Delete:
                 CEGUI::System::getSingleton().injectKeyDown(CEGUI::Key::Delete);
@@ -298,9 +312,10 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
                 break;
         }
 
+        unsigned int transkey = KeyMap::get()->translateKey( key );
+
         // always inject Character even if we have done key-down injection
-        CEGUI::System::getSingleton().injectChar( static_cast< CEGUI::utf32 >( key ) );
-    
+        CEGUI::System::getSingleton().injectChar( static_cast< CEGUI::utf32 >( transkey ) );    
     }
 
 
