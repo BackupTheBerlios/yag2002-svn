@@ -198,6 +198,12 @@
 				RelativePath="..\..\..\..\src\framework\ctd_guitexture.h">
 			</File>
 			<File
+				RelativePath="..\..\..\..\src\framework\ctd_keymap.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\ctd_keymap.h">
+			</File>
+			<File
 				RelativePath="..\..\..\..\src\framework\ctd_levelmanager.cpp">
 			</File>
 			<File
