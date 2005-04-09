@@ -36,14 +36,20 @@
 #include "ctd_physics.h"
 #include "ctd_guimanager.h"
 #include "ctd_configuration.h"
+#include "ctd_keymap.h"
 #include "ctd_log.h"
 
 #include <osg/VertexProgram>
 #include <Producer/Camera>
+#include <osgProducer/ViewerEventHandler>
 
 using namespace std;
 using namespace CTD; 
 using namespace osg; 
+
+// media path relative to inst dir
+#define CTD_MEDIA_PATH  "/media/"
+
 
 CTD_SINGLETON_IMPL( Application );
 
@@ -102,7 +108,7 @@ bool Application::initialize( int argc, char **argv )
     tmp = tmp.substr( 0, tmp.rfind( "/" ) );
     tmp = tmp.substr( 0, tmp.rfind( "/" ) );
     _mediaPath = tmp;
-    _mediaPath += "/media/";
+    _mediaPath += CTD_MEDIA_PATH;
     //-------------------
 
     // load the settings
@@ -124,16 +130,17 @@ bool Application::initialize( int argc, char **argv )
     _p_viewer = new osgProducer::Viewer( arguments );
 
     // set up the value with sensible default event handlers.
-    unsigned int opt = osgProducer::Viewer::STANDARD_SETTINGS;
-    opt &= ~osgProducer::Viewer::HEAD_LIGHT_SOURCE;
+    unsigned int opt = 0;//osgProducer::Viewer::STANDARD_SETTINGS;
+    //unsigned int opt = osgProducer::Viewer::STANDARD_SETTINGS;
+    //opt &= ~osgProducer::Viewer::HEAD_LIGHT_SOURCE;
+    //opt &= ~osgProducer::Viewer::VIEWER_MANIPULATOR;
+    //opt &= ~osgProducer::Viewer::STATE_MANIPULATOR;
+    //opt &= ~osgProducer::Viewer::NO_EVENT_HANDLERS;
 
-    // setup input processor
-    //osgProducer::KeyboardMouseCallback *p_kbm = new osgProducer::KeyboardMouseCallback( 
-    //    new Producer::KeyboardMouse( _p_viewer->getCamera( 0 )->getRenderSurface() ), _running );
-    //_p_viewer->setKeyboardMouseCallback( p_kbm );
-    
     // now setup the viewer
     _p_viewer->setUpViewer( osgProducer::Viewer::SKY_LIGHT_SOURCE | opt );
+
+    //----------
 
     // set fullscreen / windowed mode
     Producer::Camera *p_cam = _p_viewer->getCamera(0);
@@ -145,6 +152,11 @@ bool Application::initialize( int argc, char **argv )
 
     // get details on keyboard and mouse bindings used by the viewer.
     _p_viewer->getUsage( *arguments.getApplicationUsage() );
+
+    log << Log::LogLevel( Log::L_INFO ) << "setup keyboard map" << endl;
+    // setup keyboard map
+    //! TODO: get keyboard config from game configuration
+    KeyMap::get()->setup( KeyMap::German );
 
     log << Log::LogLevel( Log::L_INFO ) << "initializing physics" << endl;
     // init physics
