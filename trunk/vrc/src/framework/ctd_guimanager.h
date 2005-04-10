@@ -46,6 +46,7 @@ namespace CTD
 class Application;
 class CTDGuiRenderer;
 class GuiRenderCallback;
+class GuiViewerRealizeCallback;
 
 // some definitions
 #define CTD_GUI_FONT            "Commonwealth-10"
@@ -76,6 +77,12 @@ class GuiManager : public Singleton< GuiManager >
         //! Get the render area of gui.
         void                                    getGuiArea( float& width, float& height );
 
+        //! Activate / deactive gui event handling and rendering
+        void                                    activate( bool active );
+
+        //! Get active / deactive state
+        bool                                    isActive();
+
     protected:
 
                                                 GuiManager();
@@ -93,6 +100,9 @@ class GuiManager : public Singleton< GuiManager >
 
         //! Update the gui system for time-based elements
         void                                    update( float deltaTime );
+
+        //! Render gui if active
+        void                                    doRender();
 
         //! Shutdown gui manager
         void                                    shutdown();
@@ -125,11 +135,17 @@ class GuiManager : public Singleton< GuiManager >
 
         osg::ref_ptr< GuiRenderCallback >       _guiRenderCallback;
 
+        osg::ref_ptr< GuiViewerRealizeCallback > _guiRealizeCallback;
+
         //! Root window of cegui where all other windows are placed
         CEGUI::DefaultWindow*                   _p_root;
 
+        //! Is gui rendering active?
+        bool                                    _active;
+
     friend class Singleton< GuiManager >;
     friend class GuiRenderCallback;
+    friend class GuiViewerRealizeCallback;
     friend class Application;
 };
 

@@ -45,28 +45,35 @@ using namespace CEGUI;
 namespace CTD
 {
 
+//! Viewer's realize callback. Here we initialize CEGUI's renderer.
+class GuiViewerRealizeCallback : public Producer::RenderSurface::Callback
+{
+    public:
+       
+        virtual void                                operator()( const Producer::RenderSurface & )
+                                                    {
+                                                        GuiManager::get()->doInitialize();
+                                                    }
+
+    protected:
+
+        virtual                                     ~GuiViewerRealizeCallback() {}
+
+};
 
 //! Post-render callback, here the complete gui is initialized and drawn
 class GuiRenderCallback : public Producer::Camera::Callback
 {
     public:
-                                                    GuiRenderCallback() : _initialized( false ) {}
 
        virtual void                                 operator()( const Producer::Camera & ) 
                                                     {
-                                                        if ( !_initialized )
-                                                        {
-                                                            GuiManager::get()->doInitialize();
-                                                            _initialized = true;
-                                                        }
-                                                        CEGUI::System::getSingleton().renderGUI();
+                                                        GuiManager::get()->doRender();
                                                     }
-
-        virtual                                     ~GuiRenderCallback(){}
 
     protected:
 
-        bool                                        _initialized;
+        virtual                                     ~GuiRenderCallback(){}
 };
 
 //! Resource loader for gui resource loading
@@ -124,7 +131,8 @@ GuiManager::GuiManager() :
 _p_renderer( NULL ),
 _windowWidth( 600 ),
 _windowHeight( 400 ),
-_p_root( NULL )
+_p_root( NULL ),
+_active( true )
 {
 }
 
@@ -133,8 +141,7 @@ GuiManager::~GuiManager()
 }
 
 void GuiManager::shutdown()
-{
-    
+{    
     // remove input handler from viewer's handler list
     osgProducer::Viewer::EventHandlerList& eh = Application::get()->getViewer()->getEventHandlerList();
     osgProducer::Viewer::EventHandlerList::iterator beg = eh.begin(), end = eh.end();
@@ -161,12 +168,17 @@ void GuiManager::initialize()
     Producer::Camera* p_cam = p_viewer->getCamera( 0 );
     _guiRenderCallback = new GuiRenderCallback;
     p_cam->addPostDrawCallback( _guiRenderCallback.get() );
+
+    // register a viewer realize callback, here we initialize CEGUI's renderer (using doInitialize)
+    _guiRealizeCallback = new GuiViewerRealizeCallback;
+    Producer::RenderSurface* p_rs = p_cam->getRenderSurface();
+    p_rs->addRealizeCallback( _guiRealizeCallback.get() );
 }
 
 void GuiManager::doInitialize()
 {
     unsigned int width, height;
-    Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  width );
+    Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  width  );
     Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, height );
     _windowWidth = float( width );
     _windowHeight = float( height );
@@ -248,14 +260,32 @@ void GuiManager::getGuiArea( float& width, float& height )
     height = _p_renderer->getHeight();
 }
 
+void GuiManager::activate( bool active )
+{
+    _active = active;
+}
+
+bool GuiManager::isActive()
+{
+    return _active;
+}
+
 void GuiManager::update( float deltaTime )
 {
     _p_root->update( deltaTime );
 }
 
+void GuiManager::doRender()
+{
+    if ( _active )
+        CEGUI::System::getSingleton().renderGUI();
+}
+
 bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
-    bool         ret          = false;
+    if ( !_p_guiMgr->_active )
+        return false;
+
     unsigned int eventType    = ea.getEventType();
     int          key          = ea.getKey();
  
@@ -322,8 +352,11 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
     // handle mouse
     unsigned int buttonMask = ea.getButtonMask();
     static bool  lbtn_down  = false;
+    static bool  lbtn_up    = true;
     static bool  rbtn_down  = false;
+    static bool  rbtn_up    = true;
     static bool  mbtn_down  = false;
+    static bool  mbtn_up    = true;
 
     // left mouse button
     if ( buttonMask == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON )
@@ -332,12 +365,17 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
         {
             CEGUI::System::getSingleton().injectMouseButtonDown( CEGUI::LeftButton );
             lbtn_down = true;
-        }
+            lbtn_up   = false;
+        } 
     }
     else
     {
-        CEGUI::System::getSingleton().injectMouseButtonUp( CEGUI::LeftButton );
-        lbtn_down = false;
+        if ( !lbtn_up )
+        {
+            CEGUI::System::getSingleton().injectMouseButtonUp( CEGUI::LeftButton );
+            lbtn_up   = true;
+            lbtn_down = false;
+        }
     }
 
     // right mouse button
@@ -347,12 +385,17 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
         {
             CEGUI::System::getSingleton().injectMouseButtonDown( CEGUI::RightButton );
             rbtn_down = true;
+            rbtn_up   = false;
         }
     }
     else
     {
-        CEGUI::System::getSingleton().injectMouseButtonUp( CEGUI::RightButton );
-        rbtn_down = false;
+        if ( !rbtn_up )
+        {
+            CEGUI::System::getSingleton().injectMouseButtonUp( CEGUI::RightButton );
+            rbtn_down = false;
+            rbtn_up   = true;
+        }
     }
     
     // middle mouse button
@@ -362,12 +405,17 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
         {
             CEGUI::System::getSingleton().injectMouseButtonDown( CEGUI::MiddleButton );
             mbtn_down = true;
+            mbtn_up   = true;
         }
     }
     else
     {
-        CEGUI::System::getSingleton().injectMouseButtonUp( CEGUI::MiddleButton );
-        mbtn_down = false;
+        if ( !mbtn_up )
+        {
+            CEGUI::System::getSingleton().injectMouseButtonUp( CEGUI::MiddleButton );
+            mbtn_down = false;
+            mbtn_up   = false;
+        }
     }
 
     // adjust the pointer position
@@ -378,18 +426,9 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
     y = ( 0.5f * y + 0.5f ) * _p_guiMgr->_windowHeight;
     CEGUI::System::getSingleton().injectMousePosition( x, y );
 
-    //!TODO: mouse scroll handling
-
-    //!TODO: app window resising and fullscreen toggling does not work as we get no RESIZE event. we have to hook into os
-    // handle app's window reshaping
-    //if ( eventType == osgGA::GUIEventAdapter::RESIZE )
-    //{
-        //Producer::Camera *p_cam = Application::get()->getViewer()->getCamera(0);
-        //Producer::RenderSurface* p_rs = p_cam->getRenderSurface();    
-        //_p_guiMgr->_p_renderer->changeDisplayResolution( float( p_rs->getWindowWidth() ), float( p_rs->getWindowHeight() ) );
-    //}
+    //!TODO: mouse scroll handling, do we need it!?
   
-     return ret;
+     return false;
 }
 
 }
