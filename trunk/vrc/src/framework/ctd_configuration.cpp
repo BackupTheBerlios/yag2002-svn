@@ -51,6 +51,7 @@ CTD_SINGLETON_IMPL( Configuration );
 // implementation of GuiManager
 Configuration::Configuration() :
 _p_settings( SettingsManager::get()->createProfile( CTD_GAMESETTING_PROFILENAME, Application::get()->getMediaPath() + CTD_GAMESETTING_FILENAME ) ),
+_keyboardType( CTD_GS_KEYBOARD_ENGLISH ),
 _screenWidth( 600 ),
 _screenHeight( 400 ),
 _mouseSensitivity( 1.0f ),
@@ -63,6 +64,7 @@ _moveLeft( 'a' ),
 _moveRight( 'd' )
 {
     // register all settings
+    _p_settings->registerSetting( CTD_GS_KEYBOARD,            _keyboardType     );
     _p_settings->registerSetting( CTD_GS_SCREENWIDTH,         _screenWidth      );
     _p_settings->registerSetting( CTD_GS_SCREENHEIGHT,        _screenHeight     );
     _p_settings->registerSetting( CTD_GS_GUISCHEME,           _guiScheme        );

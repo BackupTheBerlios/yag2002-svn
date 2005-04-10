@@ -49,22 +49,29 @@ namespace CTD
 #define CTD_GAMESETTING_FILENAME        "gamesettings.cfg"
 
 //! Game settings' token names
+//keyboard type
+#define CTD_GS_KEYBOARD                 "keyboard"
+#define CTD_GS_KEYBOARD_ENGLISH         "english"
+#define CTD_GS_KEYBOARD_GERMAN          "german"
+// screen
 #define CTD_GS_SCREENWIDTH              "screenWidth"
 #define CTD_GS_SCREENHEIGHT             "screenHeight"
+// gui
 #define CTD_GS_GUISCHEME                "guiScheme"
+// player
 #define CTD_GS_PLAYERNAME               "playerName"
 #define CTD_GS_MOUSESENS                "mouseSensitivity"
 #define CTD_GS_MAX_MOUSESENS            3.0f                /* maximal mouse sensitivity */
 #define CTD_GS_INVERTMOUSE              "mouseInverted"
-#define CTD_GS_SERVER_NAME              "serverName"
-#define CTD_GS_SERVER_IP                "serverIP"
-#define CTD_GS_SERVER_PORT              "serverPort"
-// key bindings
+//   player key bindings
 #define CTD_GS_KEY_MOVE_FORWARD         "moveForward"
 #define CTD_GS_KEY_MOVE_BACKWARD        "moveBackward"
 #define CTD_GS_KEY_MOVE_LEFT            "moveLeft"
 #define CTD_GS_KEY_MOVE_RIGHT           "moveRight"
-
+// networking
+#define CTD_GS_SERVER_NAME              "serverName"
+#define CTD_GS_SERVER_IP                "serverIP"
+#define CTD_GS_SERVER_PORT              "serverPort"
 
 class Application;
 
@@ -109,13 +116,15 @@ class Configuration : public Singleton< Configuration >
 
         unsigned int                            _screenHeight;
 
+        std::string                             _keyboardType;
+
         std::string                             _guiScheme;
 
         std::string                             _playerName;
 
         float                                   _mouseSensitivity;
 
-        float                                   _mouseInverted;
+        bool                                    _mouseInverted;
 
         std::string                             _serverName;
 
