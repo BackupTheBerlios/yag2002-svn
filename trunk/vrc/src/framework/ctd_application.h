@@ -41,6 +41,7 @@ class LevelManager;
 class EntityManager;
 class GuiManager;
 class Physics;
+class GameState;
 
 //! Application
 class Application : public Singleton< Application >
@@ -81,8 +82,6 @@ class Application : public Singleton< Application >
 
         virtual                                     ~Application();
 
-        bool                                        _running;
-
         EntityManager*                              _entityManager;
 
         osgAL::SoundManager*                        _p_soundManager;
@@ -90,6 +89,8 @@ class Application : public Singleton< Application >
         GuiManager*                                 _p_guiManager;
 
         Physics*                                    _p_physics;
+
+        GameState*                                  _p_gameState;
 
         osgProducer::Viewer*                        _p_viewer;
 

@@ -37,6 +37,7 @@
 #include "ctd_guimanager.h"
 #include "ctd_configuration.h"
 #include "ctd_keymap.h"
+#include "ctd_gamestate.h"
 #include "ctd_log.h"
 
 #include <osg/VertexProgram>
@@ -50,12 +51,11 @@ using namespace osg;
 // media path relative to inst dir
 #define CTD_MEDIA_PATH  "/media/"
 
-
 CTD_SINGLETON_IMPL( Application );
 
 Application::Application():
 _entityManager( EntityManager::get() ),
-_running( false ),
+_p_gameState( GameState::get() ),
 _p_viewer( NULL ),
 _p_rootSceneNode( NULL ),
 _screenWidth( 600 ),
@@ -75,6 +75,7 @@ void Application::shutdown()
     _p_physics->shutdown();
     Configuration::get()->shutdown();
     _p_guiManager->shutdown();
+    _p_gameState->shutdown();
     delete _p_viewer;
 
     destroy();
@@ -82,14 +83,26 @@ void Application::shutdown()
 
 bool Application::initialize( int argc, char **argv )
 {
-    string levelname;
+    // set game state
+    _p_gameState->setState( GameState::Initializing );
+
+    // set mode to none; server or client must be choosen later
+    _p_gameState->setMode( GameState::None );
+
+    string arg_levelname;
     // use an ArgumentParser object to manage the program arguments.
     osg::ArgumentParser arguments(&argc,argv);
-    ArgumentParser::Parameter levelparam( levelname );
-    if ( !arguments.read( "-level", levelparam ) )
+    ArgumentParser::Parameter levelparam( arg_levelname );
+    if ( !arguments.read( "-level", arg_levelname ) )
     {
         return false;
     }
+
+    // fetch argument for using osgviewer instead of own camera and scene updating
+    bool   useosgviewer = false;
+    if ( arguments.find( "-useosgviewer" ) )
+       useosgviewer = true;
+
     // any option left unread are converted into errors to write out later.
     arguments.reportRemainingOptionsAsUnrecognized();
 
@@ -127,19 +140,22 @@ bool Application::initialize( int argc, char **argv )
  
     log << Log::LogLevel( Log::L_INFO ) << "initializing viewer" << endl;
     // construct the viewer
+    //----------
     _p_viewer = new osgProducer::Viewer( arguments );
 
-    // set up the value with sensible default event handlers.
-    unsigned int opt = 0;//osgProducer::Viewer::STANDARD_SETTINGS;
-    //unsigned int opt = osgProducer::Viewer::STANDARD_SETTINGS;
-    //opt &= ~osgProducer::Viewer::HEAD_LIGHT_SOURCE;
-    //opt &= ~osgProducer::Viewer::VIEWER_MANIPULATOR;
-    //opt &= ~osgProducer::Viewer::STATE_MANIPULATOR;
-    //opt &= ~osgProducer::Viewer::NO_EVENT_HANDLERS;
+    unsigned int opt = 0;
+    if ( useosgviewer )
+    {
+        // set up the viewer services
+        opt |= osgProducer::Viewer::SKY_LIGHT_SOURCE;
+        //opt |= ~osgProducer::Viewer::HEAD_LIGHT_SOURCE;
+        opt |= ~osgProducer::Viewer::STATS_MANIPULATOR;
+        opt |= ~osgProducer::Viewer::TRACKBALL_MANIPULATOR;
+        opt |= ~osgProducer::Viewer::ESCAPE_SETS_DONE;
+    }
 
     // now setup the viewer
-    _p_viewer->setUpViewer( osgProducer::Viewer::SKY_LIGHT_SOURCE | opt );
-
+    _p_viewer->setUpViewer( opt );
     //----------
 
     // set fullscreen / windowed mode
@@ -149,14 +165,17 @@ bool Application::initialize( int argc, char **argv )
     p_rs->fullScreen( false );
     p_rs->useCursor( false ); //hide cursor
 
-
     // get details on keyboard and mouse bindings used by the viewer.
     _p_viewer->getUsage( *arguments.getApplicationUsage() );
 
-    log << Log::LogLevel( Log::L_INFO ) << "setup keyboard map" << endl;
     // setup keyboard map
-    //! TODO: get keyboard config from game configuration
-    KeyMap::get()->setup( KeyMap::German );
+    string keybType;
+    Configuration::get()->getSettingValue( CTD_GS_KEYBOARD, keybType );
+    log << Log::LogLevel( Log::L_INFO ) << "setup keyboard map to: " << keybType << endl;
+    if ( keybType == CTD_GS_KEYBOARD_ENGLISH )
+        KeyMap::get()->setup( KeyMap::English );
+    else
+        KeyMap::get()->setup( KeyMap::German );
 
     log << Log::LogLevel( Log::L_INFO ) << "initializing physics" << endl;
     // init physics
@@ -165,7 +184,7 @@ bool Application::initialize( int argc, char **argv )
     _p_physics->setWorldGravity( -9.8f );
 
     // load the level
-    osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->load( getMediaPath() + levelname );
+    osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->load( getMediaPath() + arg_levelname );
     if ( !sceneroot.valid() )
         return false;
 
@@ -177,7 +196,7 @@ bool Application::initialize( int argc, char **argv )
     // finalize physics initialization when all entities are created
     assert( _p_physics->finalize( _p_rootSceneNode ) );
     // enable physics debug rendering
-//    _p_physics->enableDebugRender();
+    //_p_physics->enableDebugRender();
 
     // initialize sound manager
     _p_soundManager = osgAL::SoundManager::instance();
@@ -220,14 +239,15 @@ bool Application::initialize( int argc, char **argv )
 
 void Application::run()
 {
-    _running = true;
+    // set game state
+    _p_gameState->setState( GameState::Running );
 
     osg::Timer       timer;
     float            deltaTime = 0;
     osg::Timer_t     curTick   = 0;
     osg::Timer_t     lastTick  = 0;
 
-    while( !_p_viewer->done() && _running )
+    while( _p_gameState->getMode() != GameState::Quitting && !_p_viewer->done() )
     {
         lastTick  = curTick;
         curTick   = timer.tick();
@@ -238,9 +258,6 @@ void Application::run()
             deltaTime = 0.06f;
         else if ( deltaTime < 0.01f )
             deltaTime = 0.01f;
-
-        // wait for all cull and draw threads to complete.
-        _p_viewer->sync();
 
         // update entities
         _entityManager->update( deltaTime  );
@@ -257,17 +274,16 @@ void Application::run()
          
         // fire off the cull and draw traversals of the scene.
         _p_viewer->frame();
-    }
 
-    // exit viewer
-    //_p_viewer->setDone( true );
-    
+        // wait for all cull and draw threads to complete.
+        _p_viewer->sync();
+    }
+   
     // wait for all cull and draw threads to complete before exit.
     _p_viewer->sync();
-
 }
 
 void Application::stop()
 {
-    _running = false;
+    _p_gameState->setState( GameState::Quitting );
 }
