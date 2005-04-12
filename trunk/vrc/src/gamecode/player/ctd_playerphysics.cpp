@@ -126,8 +126,8 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
 	} 
     else // this else is only for being on safe side. in normal case all level bodies come in as body0!
     {
-        //p_phys = static_cast< EnPlayerPhysics* >( NewtonBodyGetUserData( s_colStruct->_p_body0 ) );
-        assert( NULL && "body0 should be static geom!" );
+        p_phys = static_cast< EnPlayerPhysics* >( NewtonBodyGetUserData( s_colStruct->_p_body0 ) );
+       // assert( NULL && "body0 should be static geom!" ); this case comes when i move the character out of world bbox
     }
     s_colStruct->_p_otherEntity = NULL;
     s_colStruct->_p_physics     = p_phys;
@@ -457,7 +457,7 @@ void EnPlayerPhysics::initialize()
     _playerHeight = _dimensions._v[ 2 ] * 2.0f;
 
     // create the collision 
-//    NewtonCollision *p_collision = NewtonCreateSphere( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
+    //NewtonCollision *p_collision = NewtonCreateSphere( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
     NewtonCollision *p_collision = NewtonCreateBox( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
     p_collision = NewtonCreateConvexHullModifier( _p_world, p_collision );
 
@@ -487,7 +487,7 @@ void EnPlayerPhysics::initialize()
     float Iyy = 0.7f * _mass * ( dim.x() * dim.x() + dim.z() * dim.z() ) / 12.0f;
     float Izz = 0.7f * _mass * ( dim.x() * dim.x() + dim.y() * dim.y() ) / 12.0f;
     NewtonBodySetMassMatrix( _p_body, _mass, Ixx, Iyy, Izz );
-//    NewtonBodySetMassMatrix( _p_body, _mass, 1.0f, 1.0f, 1.0f );
+    //NewtonBodySetMassMatrix( _p_body, _mass, 1.0f, 1.0f, 1.0f );
 
     // release the collision object, we don't need it anymore
     NewtonReleaseCollision( _p_world, p_collision );
