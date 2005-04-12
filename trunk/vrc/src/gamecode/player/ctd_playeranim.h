@@ -151,6 +151,7 @@ class EnPlayerAnimation  : public BaseEntity
         //! offset rotation
         osg::Vec3f                                  _rotation;
 
+        //! Uniform scale
         float                                       _scale;
 
         // animation ids
