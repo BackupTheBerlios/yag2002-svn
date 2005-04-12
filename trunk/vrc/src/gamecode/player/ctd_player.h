@@ -101,7 +101,7 @@ class EnPlayer : public BaseEntity
         //! Sound entity's instance name which will be attached to player
         std::string                                 _soundEntity;
 
-        //! initial position
+        //! Initial position
         osg::Vec3f                                  _position;
 
         //! Rotation about up vector
@@ -141,7 +141,7 @@ class EnPlayer : public BaseEntity
                 EnPlayer*                           _p_player;
 
                 bool                                _rotateRight;
-                float                               _rotateLeft;
+                bool                                _rotateLeft;
                 bool                                _moveForward;
                 bool                                _moveBackward;
 

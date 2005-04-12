@@ -36,6 +36,7 @@
 #include <ctd_application.h>
 #include <ctd_levelmanager.h>
 #include <ctd_physics.h>
+#include <ctd_log.h>
 #include "ctd_player.h"
 #include "ctd_playerphysics.h"
 #include "ctd_playeranim.h"
@@ -113,22 +114,37 @@ void EnPlayer::initialize()
 
 void EnPlayer::postInitialize()
 {
+
+    log << Log::LogLevel( Log::L_INFO ) << "  initializing player instance '" << getInstanceName() << "' ..." << endl;
+
+    log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for physics entity '" << _physicsEntity << "' ..." << endl;
     // find and attach physics component
     _p_playerPhysics = dynamic_cast< EnPlayerPhysics* >( EntityManager::get()->findEntity( ENTITY_NAME_PLPHYS, _physicsEntity ) );
     assert( _p_playerPhysics && "given instance name does not belong to a EnPlayerPhysics entity type!" );
     _p_playerPhysics->setPlayer( this );
+    log << Log::LogLevel( Log::L_DEBUG ) << "   -  physics entity successfully attached" << endl;
 
+    log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for animation entity '" << _animationEntity << "' ..." << endl;
     // find and attach animation component
     _p_playerAnimation = dynamic_cast< EnPlayerAnimation* >( EntityManager::get()->findEntity( ENTITY_NAME_PLANIM, _animationEntity ) );
     assert( _p_playerAnimation && "given instance name does not belong to a EnPlayerAnimation entity type!" );
     _p_playerAnimation->setPlayer( this );
+    log << Log::LogLevel( Log::L_DEBUG ) << "   -  animation entity successfully attached" << endl;
 
-    // find and attach sound component
+    log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for sound entity '" << _soundEntity << "' ..." << endl;
+    // find and attach sound component, tollerate missing sound for now
     _p_playerSound = dynamic_cast< EnPlayerSound* >( EntityManager::get()->findEntity( ENTITY_NAME_PLSOUND, _soundEntity ) );
-    assert( _p_playerAnimation && "given instance name does not belong to a EnPayerSound entity type!" );
-    _p_playerSound->setPlayer( this );
+    if ( !_p_playerSound )
+        log << Log::LogLevel( Log::L_ERROR ) << "  *** could not find sound entity '" << _soundEntity << "' of type PlayerSound. player sound deactivated" << endl;
+    else
+    {
+        _p_playerSound->setPlayer( this );
+        log << Log::LogLevel( Log::L_DEBUG ) << "   -  sound entity successfully attached" << endl;
+    }
 
     setPosition( _position );
+
+    log << Log::LogLevel( Log::L_INFO ) << "  player instance successfully initialized" << endl;
 }
 
 void EnPlayer::updateEntity( float deltaTime )
@@ -156,7 +172,6 @@ EnPlayer::InputHandler::~InputHandler()
 
 bool EnPlayer::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
-    bool         ret         = false;
     unsigned int eventType   = ea.getEventType();
     int          key         = ea.getKey();
 
@@ -178,10 +193,8 @@ bool EnPlayer::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GU
         if ( key == 'm' )
         {
             _p_player->_p_playerPhysics->jump();
-            _p_player->_p_playerAnimation->actionWalk();
+            _p_player->_p_playerAnimation->animJump();
         }
-
-        ret = true;
     }
     else if ( eventType == osgGA::GUIEventAdapter::KEYUP )
     {
@@ -201,8 +214,6 @@ bool EnPlayer::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GU
 
         if ( key == osgGA::GUIEventAdapter::KEY_Left )
             _rotateLeft = false;
-
-        ret = true;
     }
 
     if ( _rotateRight )
@@ -213,6 +224,8 @@ bool EnPlayer::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GU
 
         _p_player->_moveDir._v[ 0 ] = sinf( _p_player->_rotation );
         _p_player->_moveDir._v[ 1 ] = cosf( _p_player->_rotation );
+
+        _p_player->_p_playerAnimation->animTurn();
     }
 
     if ( _rotateLeft )
@@ -223,27 +236,32 @@ bool EnPlayer::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GU
 
         _p_player->_moveDir._v[ 0 ] = sinf( _p_player->_rotation );
         _p_player->_moveDir._v[ 1 ] = cosf( _p_player->_rotation );
+
+        _p_player->_p_playerAnimation->animTurn();
     }
 
     if ( _moveForward )
     {
         _p_player->_p_playerPhysics->setForce( _p_player->_moveDir._v[ 0 ], _p_player->_moveDir._v[ 1 ] );
-        _p_player->_p_playerAnimation->actionWalk();
+        _p_player->_p_playerAnimation->animWalk();
     }
 
     if ( _moveBackward )
     {
         _p_player->_p_playerPhysics->setForce( -_p_player->_moveDir._v[ 0 ], -_p_player->_moveDir._v[ 1 ] );
-        _p_player->_p_playerAnimation->actionWalk();
+        _p_player->_p_playerAnimation->animWalk();
     }
 
     if ( !_moveForward && !_moveBackward )
     {
-        _p_player->_p_playerAnimation->actionIdle();
-        _p_player->getPlayerSound()->stopPlayingAll();
+        if ( !_rotateLeft && !_rotateRight )
+            _p_player->_p_playerAnimation->animIdle();
+
+        if ( _p_player->getPlayerSound() )
+            _p_player->getPlayerSound()->stopPlayingAll();
     }
 
-    return ret;
+    return false; // let other handlers get all inputs handled here
 }
 
 } // namespace CTD
