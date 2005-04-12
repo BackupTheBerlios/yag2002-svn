@@ -133,7 +133,7 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
     s_colStruct->_p_physics     = p_phys;
 
     // play appropriate sound only if we are moving
-    if ( p_phys->isMoving() )
+    if ( p_phys->isMoving() && p_phys->getPlayer()->getPlayerSound() )
     {
         unsigned int attribute = ( unsigned int )( NewtonMaterialGetContactFaceAttribute( p_material ) );
         unsigned int materialType = attribute & 0xFF;
@@ -308,14 +308,14 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
 
     force._v[ 2 ] = mass * ( p_phys->_gravity + climbforce ); // add gravity and climbing force
 
-	// snap to ground
+    // snap to ground
     if ( p_phys->_isAirBorne && !p_phys->_jumpTimer ) 
     {
         floor = p_phys->findFloor( p_phys->_p_world, pos, p_phys->_playerHeight + 0.25f );
 		deltaHeight = ( pos._v[ 2 ] - 0.5f * p_phys->_playerHeight ) - floor;
 		if ( ( deltaHeight < ( 0.25f - 0.001f ) ) && ( deltaHeight > 0.01f ) ) 
         {
-			// snap to floor ony if the floor is lower than the character feets		
+			// snap to floor ony if the floor is lower than the character feet	
 			accelZ = -( deltaHeight * timestepInv + velocity._v[ 2 ] ) * timestepInv;
 			force._v[ 2 ] += mass * accelZ;
 		}
@@ -357,7 +357,7 @@ _p_world( Physics::get()->getWorld() ),
 _isAirBorne( false ),
 _playerHeight( 1.8f ),
 _jumpTimer( 0 ),
-_jumpForce( 50.0f ),
+_jumpForce( 5.0f ),
 _climbForce( 30.0f ),
 _dimensions( Vec3f( 0.5f, 0.5f, 1.8f ) ),
 _stepHeight( 0.5f ),
@@ -372,6 +372,7 @@ _gravity( Physics::get()->getWorldGravity() )
     // add entity attributes
     getAttributeManager().addAttribute( "dimensions"    , _dimensions    );
     getAttributeManager().addAttribute( "stepheight"    , _stepHeight    );
+    getAttributeManager().addAttribute( "jumpforce"     , _jumpForce     );
     getAttributeManager().addAttribute( "linearforce"   , _linearForce   );
     getAttributeManager().addAttribute( "lineardamping" , _linearDamping );
     getAttributeManager().addAttribute( "angularforce"  , _angularForce  );
@@ -456,7 +457,8 @@ void EnPlayerPhysics::initialize()
     _playerHeight = _dimensions._v[ 2 ] * 2.0f;
 
     // create the collision 
-    NewtonCollision *p_collision = NewtonCreateSphere( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
+//    NewtonCollision *p_collision = NewtonCreateSphere( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
+    NewtonCollision *p_collision = NewtonCreateBox( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
     p_collision = NewtonCreateConvexHullModifier( _p_world, p_collision );
 
     //create the rigid body
@@ -480,12 +482,12 @@ void EnPlayerPhysics::initialize()
     NewtonBodySetForceAndTorqueCallback( _p_body, physicsApplyForceAndTorque );
 
     // set the mass matrix
-    //Vec3f& dim = _p_player->_dimensions;
-    //float Ixx = 0.7f * mass * ( dim.y() * dim.y() + dim.z() * dim.z() ) / 12.0f;
-    //float Iyy = 0.7f * mass * ( dim.x() * dim.x() + dim.z() * dim.z() ) / 12.0f;
-    //float Izz = 0.7f * mass * ( dim.x() * dim.x() + dim.y() * dim.y() ) / 12.0f;
-    //NewtonBodySetMassMatrix( _p_body, mass, Ixx, Iyy, Izz );
-    NewtonBodySetMassMatrix( _p_body, _mass, 1.0f, 1.0f, 1.0f );
+    Vec3f& dim = _dimensions;
+    float Ixx = 0.7f * _mass * ( dim.y() * dim.y() + dim.z() * dim.z() ) / 12.0f;
+    float Iyy = 0.7f * _mass * ( dim.x() * dim.x() + dim.z() * dim.z() ) / 12.0f;
+    float Izz = 0.7f * _mass * ( dim.x() * dim.x() + dim.y() * dim.y() ) / 12.0f;
+    NewtonBodySetMassMatrix( _p_body, _mass, Ixx, Iyy, Izz );
+//    NewtonBodySetMassMatrix( _p_body, _mass, 1.0f, 1.0f, 1.0f );
 
     // release the collision object, we don't need it anymore
     NewtonReleaseCollision( _p_world, p_collision );
