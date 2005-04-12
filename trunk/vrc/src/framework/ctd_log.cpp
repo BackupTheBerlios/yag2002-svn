@@ -59,12 +59,14 @@ Log::~Log()
 
 void Log::addSink( const std::string& sinkname, const std::string& filename, unsigned int loglevel )
 {
-    assert( loglevel <= L_ERROR && loglevel >= L_DEBUG );
+    assert( loglevel <= L_INFO && loglevel >= L_ERROR );
 
     // check if there is already a sink with requested sink name
     vector< Sink* >::iterator pp_sink = _sinks.begin(), pp_sinkEnd = _sinks.end();
     for ( ; pp_sink != pp_sinkEnd; pp_sink++ )
+    {
         assert( ( *pp_sink )->_name == sinkname && "sink name already exists!" );            
+    }
 
     fstream* p_stream = new fstream;
     p_stream->open( filename.c_str(), ios_base::binary | ios_base::out );
@@ -81,12 +83,14 @@ void Log::addSink( const std::string& sinkname, const std::string& filename, uns
 
 void Log::addSink( const string& sinkname, ostream& sink, unsigned int loglevel )
 {
-    assert( loglevel <= L_ERROR && loglevel >= L_DEBUG );
+    assert( loglevel <= L_INFO && loglevel >= L_ERROR );
     
     // check if there is already a sink with requested sink name
     vector< Sink* >::iterator pp_sink = _sinks.begin(), pp_sinkEnd = _sinks.end();
     for ( ; pp_sink != pp_sinkEnd; pp_sink++ )
+    {
         assert( ( *pp_sink )->_name != sinkname && "sink name already exists!" );            
+    }
 
     Sink *p_sink = new Sink( sinkname, &sink, loglevel, true );
     _sinks.push_back( p_sink );
@@ -112,7 +116,7 @@ void Log::out( const string& msg )
     vector< Sink* >::iterator pp_sink = _sinks.begin(), pp_sinkEnd = _sinks.end();
     for ( ; pp_sink != pp_sinkEnd; pp_sink++ )
     {
-        if ( ( *pp_sink )->_logLevel < _severity )
+        if ( ( *pp_sink )->_logLevel <= _severity )
         {
             *( ( *pp_sink )->_p_stream ) << msg;
         }
