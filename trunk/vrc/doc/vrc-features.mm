@@ -71,7 +71,6 @@
 </node>
 <node TEXT="settings manager" POSITION="left">
 <node TEXT="loading/storing float, int, bool, vector3 setting elements">
-<icon BUILTIN="messagebox_warning"/>
 <node TEXT="100%">
 <icon BUILTIN="button_ok"/>
 </node>
@@ -168,13 +167,13 @@
 </node>
 </node>
 <node TEXT="animation">
-<node TEXT="60%">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="80%">
+<icon BUILTIN="idea"/>
 </node>
 </node>
 <node TEXT="sound">
-<node TEXT="30%">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 <node TEXT="networking">
@@ -193,7 +192,7 @@
 </node>
 </node>
 <node TEXT="control / logic">
-<node TEXT="5%">
+<node TEXT="20%">
 <icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
@@ -299,22 +298,18 @@
 </node>
 </node>
 <node TEXT="menu system" POSITION="right">
-<cloud COLOR="#ccff99"/>
 <node TEXT="crazy eddie&apos;s gui">
 <edge WIDTH="thin"/>
 <font NAME="SansSerif" SIZE="12"/>
-<node TEXT="80%">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="integration into redering process">
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
+<node TEXT="loading layout (xml) ">
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
 </node>
-<node TEXT="input processing / windowing" POSITION="left">
-<edge WIDTH="thin"/>
-<cloud COLOR="#ccffff"/>
-<font NAME="SansSerif" SIZE="12"/>
-<node TEXT="currently Open Producer">
-<node TEXT="must be changed to e.g. SDL">
-<icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
 </node>
