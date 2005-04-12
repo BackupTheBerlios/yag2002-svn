@@ -298,7 +298,7 @@ osg::Geometry* EnWater::makeMesh()
 
 osg::Node* EnWater::setupWater( osg::Node* p_node )
 {
-    //! FIXME, setting other x and y coordinated than 0 0 caused wrong mirroring!
+    //! FIXME, setting other x and y coordinates than 0 0 caused wrong mirroring!
     float height_factor = 0.3;    
     Vec3f translation = _position;
     translation *= height_factor;
@@ -314,7 +314,7 @@ osg::Node* EnWater::setupWater( osg::Node* p_node )
     rootColorMask->setMask(true,true,true,true);        
     
     // set up depth to be inherited by the rest of the scene unless
-    // overridden. this is overridden in bin 3.
+    // overridden. this is overridden in bin 2.
     osg::Depth* rootDepth = new osg::Depth;
     rootDepth->setFunction(osg::Depth::LESS);
     rootDepth->setRange(0.0,1.0);
@@ -352,7 +352,7 @@ osg::Node* EnWater::setupWater( osg::Node* p_node )
         p_mirrorNode->addChild(geode);
         
     }
-     
+
     // bin2  - set up the depth to the furthest depth value
     {
     
@@ -370,17 +370,17 @@ osg::Node* EnWater::setupWater( osg::Node* p_node )
         depth->setFunction(osg::Depth::ALWAYS);
         depth->setRange(1.0,1.0);
 
-        osg::StateSet* statesetBin3 = new osg::StateSet();
-        statesetBin3->setRenderBinDetails(2,"RenderBin");
-        statesetBin3->setMode(GL_CULL_FACE,osg::StateAttribute::OFF);
-        statesetBin3->setAttributeAndModes(stencil,osg::StateAttribute::ON);
-        statesetBin3->setAttribute(colorMask);
-        statesetBin3->setAttribute(depth);
+        osg::StateSet* statesetBin2 = new osg::StateSet();
+        statesetBin2->setRenderBinDetails(2,"RenderBin");
+        statesetBin2->setMode(GL_CULL_FACE,osg::StateAttribute::OFF);
+        statesetBin2->setAttributeAndModes(stencil,osg::StateAttribute::ON);
+        statesetBin2->setAttribute(colorMask);
+        statesetBin2->setAttribute(depth);
         
         // set up the mirror geode.
         osg::Geode* geode = new osg::Geode;
         geode->addDrawable(mirror);
-        geode->setStateSet(statesetBin3);
+        geode->setStateSet(statesetBin2);
         
         p_mirrorNode->addChild(geode);
         
@@ -394,7 +394,6 @@ osg::Node* EnWater::setupWater( osg::Node* p_node )
 
         osg::ClipNode* clipNode = new osg::ClipNode;
         clipNode->addClipPlane(clipplane);
-
 
         osg::StateSet* dstate = clipNode->getOrCreateStateSet();
         dstate->setRenderBinDetails(3,"RenderBin");
@@ -419,13 +418,12 @@ osg::Node* EnWater::setupWater( osg::Node* p_node )
     
     }
 
-
     // bin4  - draw the textured mirror and blend it with the reflection.
     {
     
         // set up depth so all writing to depth goes to maximum depth.
         osg::Depth* depth = new osg::Depth;
-        depth->setFunction(osg::Depth::ALWAYS);
+        depth->setFunction(osg::Depth::LEQUAL);
 
         osg::Stencil* stencil = new osg::Stencil;
         stencil->setFunction(osg::Stencil::EQUAL,1,~0);
@@ -496,8 +494,7 @@ osg::Node* EnWater::setupWater( osg::Node* p_node )
         group->setCullCallback( new TexMatCallback( *texMat ) );
         group->setStateSet( statesetBin5 );
 
-        //addRefractStateSet( geode );
-        p_mirrorNode->addChild( geode );
+        p_mirrorNode->addChild( group );
     }
     
     return p_mirrorNode;
