@@ -234,7 +234,7 @@ void CTDGuiRenderer::doRender()
 
 void CTDGuiRenderer::clearRenderList(void)
 {
-    _quadlist.clear();
+    _quadlist.clear();  
 }
 
 Texture* CTDGuiRenderer::createTexture()
@@ -310,7 +310,6 @@ void CTDGuiRenderer::initPerFrameStates()
 void CTDGuiRenderer::exitPerFrameStates()
 {
     glDisable(GL_TEXTURE_2D);
-
     glPopMatrix(); 
     glMatrixMode(GL_PROJECTION);
     glPopMatrix(); 
