@@ -35,6 +35,7 @@
 #include <ctd_guimanager.h>
 #include <ctd_configuration.h>
 #include <ctd_log.h>
+#include <ctd_keymap.h>
 #include "ctd_dialogsettings.h"
 
 using namespace std;
@@ -59,7 +60,9 @@ _keyMoveLeft1( 'a' ),
 _p_keyMoveRight1( NULL ),
 _keyMoveRight1( 'd' ),
 _mouseSensitivity( 1.0f ),
-_mouseInverted( false )
+_mouseInverted( false ),
+_p_keyKeybEnglish( NULL ),
+_p_keyKeybGerman( NULL )
 {
 }
 
@@ -82,70 +85,69 @@ bool DialogGameSettings::initialize( const string& layoutfile )
 
     _p_settingsDialog->hide();
 
-    // setup ok button
-    CEGUI::PushButton* p_btnok = static_cast< CEGUI::PushButton* >( _p_settingsDialog->getChild( SDLG_PREFIX "btn_ok" ) );
-    assert( p_btnok && "DialogGameSettings: cannot find 'btn_ok'" );
-    p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedOk, this ) );
-   
-    // setup cancel button
-    CEGUI::PushButton* p_btncancel = static_cast< CEGUI::PushButton* >( _p_settingsDialog->getChild( SDLG_PREFIX "btn_cancel" ) );
-    assert( p_btncancel && "DialogGameSettings: cannot find 'btn_cancel'" );
-    p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedCancel, this ) );
+    try
+    {
+        // setup ok button
+        CEGUI::PushButton* p_btnok = static_cast< CEGUI::PushButton* >( _p_settingsDialog->getChild( SDLG_PREFIX "btn_ok" ) );
+        p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedOk, this ) );
 
-    // get player name text box
-    _p_playername = static_cast< CEGUI::Editbox* >( _p_settingsDialog->getChild( SDLG_PREFIX "text_playername" ) );
-    assert( _p_playername && "DialogGameSettings: cannot find 'text_playername'" );
+        // setup cancel button
+        CEGUI::PushButton* p_btncancel = static_cast< CEGUI::PushButton* >( _p_settingsDialog->getChild( SDLG_PREFIX "btn_cancel" ) );
+        p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedCancel, this ) );
 
-    // get tab control contents
-    //-------------------------
-    CEGUI::TabControl* p_tabctrl = static_cast< CEGUI::TabControl* >( _p_settingsDialog->getChild( SDLG_PREFIX "tab_ctrl" ) );
-    assert( p_tabctrl && "DialogGameSettings: cannot find tab control 'tab_ctrl'" );
+        // get player name text box
+        _p_playername = static_cast< CEGUI::Editbox* >( _p_settingsDialog->getChild( SDLG_PREFIX "text_playername" ) );
 
-    // get contents of pane Network
-    //#############################
-    CEGUI::TabPane*    p_paneNetworking = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_networking" ) );
-    assert( p_paneNetworking && "DialogGameSettings: cannot find tab pane 'pane_networking'" );
+        // get tab control contents
+        //-------------------------
+        CEGUI::TabControl* p_tabctrl = static_cast< CEGUI::TabControl* >( _p_settingsDialog->getChild( SDLG_PREFIX "tab_ctrl" ) );
 
-    _p_serverName = static_cast< CEGUI::Editbox* >( p_paneNetworking->getChild( SDLG_PREFIX "nw_servername" ) );
-    assert( _p_serverName && "DialogGameSettings: cannot find 'nw_servername'" );
+        // get contents of pane Network
+        //#############################
+        CEGUI::TabPane*    p_paneNetworking = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_networking" ) );
+        _p_serverName = static_cast< CEGUI::Editbox* >( p_paneNetworking->getChild( SDLG_PREFIX "nw_servername" ) );
+        _p_serverIP   = static_cast< CEGUI::Editbox* >( p_paneNetworking->getChild( SDLG_PREFIX "nw_serverip" ) );
+        _p_serverPort = static_cast< CEGUI::Editbox* >( p_paneNetworking->getChild( SDLG_PREFIX "nw_serverport" ) );
 
-    _p_serverIP   = static_cast< CEGUI::Editbox* >( p_paneNetworking->getChild( SDLG_PREFIX "nw_serverip" ) );
-    assert( _p_serverIP && "DialogGameSettings: cannot find 'nw_serverip'" );
+        // get contents of pane Control
+        //#############################
+        CEGUI::TabPane*    p_paneControl = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_control" ) );
 
-    _p_serverPort = static_cast< CEGUI::Editbox* >( p_paneNetworking->getChild( SDLG_PREFIX "nw_serverport" ) );
-    assert( _p_serverPort && "DialogGameSettings: cannot find 'nw_serverport'" );
+        // key bindings
+        //-------------
+        _p_keyMoveForward1  = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_forward1" ) );
+        _p_keyMoveBackward1 = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_backward1" ) );
+        _p_keyMoveLeft1     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_left1" ) );
+        _p_keyMoveRight1    = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_right1" ) );
 
-    // get contents of pane Control
-    //#############################
-    CEGUI::TabPane*    p_paneControl = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_control" ) );
-    assert( p_paneControl && "DialogGameSettings: cannot find tab pane 'pane_control'" );
+        //!TODO rest of Control settings (  second key bindings )
 
-    // key bindings
-    //-------------
-    _p_keyMoveForward1 = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_forward1" ) );
-    assert( _p_keyMoveForward1 && "DialogGameSettings: cannot find 'btn_forward1'" );
+        //-------------
 
-    _p_keyMoveBackward1 = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_backward1" ) );
-    assert( _p_keyMoveBackward1 && "DialogGameSettings: cannot find 'btn_backward1'" );
+        // get contents of pane Keyboard
+        //#############################
+        CEGUI::TabPane*    p_paneKeyboard = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_keyboard" ) );
 
-    _p_keyMoveLeft1 = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_left1" ) );
-    assert( _p_keyMoveLeft1 && "DialogGameSettings: cannot find 'btn_left1'" );
+        _p_keyKeybEnglish = static_cast< CEGUI::Checkbox* >( p_paneKeyboard->getChild( SDLG_PREFIX "cb_english" ) );
+        _p_keyKeybEnglish->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( DialogGameSettings::onKeyboardEnglishChanged, this ) );
 
-    _p_keyMoveRight1 = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_right1" ) );
-    assert( _p_keyMoveRight1 && "DialogGameSettings: cannot find 'btn_right1'" );
+        _p_keyKeybGerman  = static_cast< CEGUI::Checkbox* >( p_paneKeyboard->getChild( SDLG_PREFIX "cb_german" ) );
+        _p_keyKeybGerman->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( DialogGameSettings::onKeyboardGermanChanged, this ) );
 
-     //!TODO rest of Control settings (  second key bindings )
+        //-------------
+        // set callback for mouse sensivity scrollbar
+        _p_mouseSensivity = static_cast< CEGUI::Scrollbar* >( p_paneControl->getChild( SDLG_PREFIX "sb_mousesensivity" ) );
+        _p_mouseSensivity->subscribeEvent( CEGUI::Scrollbar::EventMoved, CEGUI::Event::Subscriber( DialogGameSettings::onMouseSensitivityChanged, this ) );
 
-    //-------------
+        // setup invert mouse callback
+        _p_mouseInvert = static_cast< CEGUI::Checkbox* >( p_paneControl->getChild( SDLG_PREFIX "cbx_mouseinvert" ) );
 
-    // set callback for mouse sensivity scrollbar
-    _p_mouseSensivity = static_cast< CEGUI::Scrollbar* >( p_paneControl->getChild( SDLG_PREFIX "sb_mousesensivity" ) );
-    assert( _p_mouseSensivity && "DialogGameSettings: cannot find 'sb_mousesensivity'" );
-    _p_mouseSensivity->subscribeEvent( CEGUI::Scrollbar::EventMoved, CEGUI::Event::Subscriber( DialogGameSettings::onMouseSensitivityChanged, this ) );
-
-    // setup invert mouse callback
-    _p_mouseInvert = static_cast< CEGUI::Checkbox* >( p_paneControl->getChild( SDLG_PREFIX "cbx_mouseinvert" ) );
-    assert( _p_mouseInvert && "DialogGameSettings: cannot find 'cbx_mouseinvert'" );
+    }
+    catch ( CEGUI::Exception e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "*** DialogGameSettings: cannot setup dialog layout." << endl;
+        log << "      reason: " << e.getMessage().c_str() << endl;
+    }
 
     // setup all control contents
     setupControls();
@@ -187,23 +189,27 @@ void DialogGameSettings::setupControls()
     unsigned int cfg_moveright1;
     Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_RIGHT,    cfg_moveright1      );
 
+    string cfg_keyboard;
+    Configuration::get()->getSettingValue( CTD_GS_KEYBOARD,          cfg_keyboard        );
+    
     //-----------------------------------
 
 
     // set player name
     _p_playername->setText( cfg_playername );
 
-    //! TODO: we need a get key as string method which converts space, esc, and other special characters into strings
-    //!       this method should be in a key map class in framework
-    char keyasstring[ 2 ] = { 0, 0 };
-    keyasstring[ 0 ] = cfg_moveforward1;
-    _p_keyMoveForward1->setText( keyasstring );
-    keyasstring[ 0 ] = cfg_movebackward1;
-    _p_keyMoveBackward1->setText( keyasstring );
-    keyasstring[ 0 ] = cfg_moveleft1;
-    _p_keyMoveLeft1->setText( keyasstring );
-    keyasstring[ 0 ] = cfg_moveright1;
-    _p_keyMoveRight1->setText( keyasstring );
+    // set key binding names
+    string keyname;
+    keyname = KeyMap::get()->getKeyName( cfg_moveforward1 );
+    _p_keyMoveForward1->setText( keyname.c_str() );
+    keyname = KeyMap::get()->getKeyName( cfg_movebackward1 );
+    _p_keyMoveBackward1->setText( keyname.c_str() );
+    keyname = KeyMap::get()->getKeyName( cfg_moveleft1 );
+    _p_keyMoveLeft1->setText( keyname.c_str() );
+    keyname = KeyMap::get()->getKeyName( cfg_moveright1 );
+    _p_keyMoveRight1->setText( keyname.c_str() );
+
+    //------------
 
     _p_serverName->setText( cfg_servername );
     _p_serverIP->setText( cfg_serverip );
@@ -216,6 +222,21 @@ void DialogGameSettings::setupControls()
     _p_mouseSensivity->setScrollPosition( cfg_mousesensitivity );
     // setup chekbox
     _p_mouseInvert->setSelected( cfg_mouseInverted );
+
+    // setup keyboard settings
+    if ( cfg_keyboard == CTD_GS_KEYBOARD_ENGLISH )
+    {
+        _p_keyKeybEnglish->setSelected( true );
+        _p_keyKeybGerman->setSelected( false );
+    }
+    else if ( cfg_keyboard == CTD_GS_KEYBOARD_GERMAN )
+    {
+        _p_keyKeybEnglish->setSelected( false );
+        _p_keyKeybGerman->setSelected( true );
+    }
+    else
+        log << Log::LogLevel( Log::L_ERROR ) << "*** DialogGameSettings: invalid keyboard type: " << cfg_keyboard << endl;
+
 }
 
 // dialog callbacks
@@ -227,26 +248,18 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
 
     // write key bindings
     //-----------------
-
-    //! TODO: we need a get key as string method which converts space, esc, and other special characters into strings
-    //!       this method should be in a key map class in framework
-
-    stringstream keyasstring;
     unsigned int cfg_key;
-    keyasstring << _p_keyMoveForward1->getText().c_str();
-    keyasstring >> cfg_key;
+
+    cfg_key = KeyMap::get()->getKeyCode( _p_keyMoveForward1->getText().c_str() );
     Configuration::get()->setSettingValue( CTD_GS_KEY_MOVE_FORWARD, cfg_key );
-    keyasstring.clear();
-    keyasstring << _p_keyMoveBackward1->getText().c_str();
-    keyasstring >> cfg_key;
+
+    cfg_key = KeyMap::get()->getKeyCode( _p_keyMoveBackward1->getText().c_str() );
     Configuration::get()->setSettingValue( CTD_GS_KEY_MOVE_BACKWARD, cfg_key );
-    keyasstring.clear();
-    keyasstring << _p_keyMoveLeft1->getText().c_str();
-    keyasstring >> cfg_key;
+
+    cfg_key = KeyMap::get()->getKeyCode( _p_keyMoveLeft1->getText().c_str() );
     Configuration::get()->setSettingValue( CTD_GS_KEY_MOVE_LEFT, cfg_key );
-    keyasstring.clear();
-    keyasstring << _p_keyMoveRight1->getText().c_str();
-    keyasstring >> cfg_key;
+
+    cfg_key = KeyMap::get()->getKeyCode( _p_keyMoveRight1->getText().c_str() );
     Configuration::get()->setSettingValue( CTD_GS_KEY_MOVE_RIGHT, cfg_key );
     //-----------------
 
@@ -268,6 +281,20 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
     portasstring >> serverport;
     Configuration::get()->setSettingValue( CTD_GS_SERVER_PORT, serverport );
 
+    // set keyboard type
+    string cfg_keyboard;
+    if ( _p_keyKeybEnglish->isSelected() )
+    {
+        KeyMap::get()->setup( KeyMap::English ); // re-init keyboard
+        cfg_keyboard = CTD_GS_KEYBOARD_ENGLISH;
+    }
+    else
+    {
+        KeyMap::get()->setup( KeyMap::German ); // re-init keyboard
+        cfg_keyboard = CTD_GS_KEYBOARD_GERMAN;
+    }
+    Configuration::get()->setSettingValue( CTD_GS_KEYBOARD, cfg_keyboard );
+
     // store all settings into file
     Configuration::get()->store();
     // disappear the dialog
@@ -283,7 +310,7 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
 
     // ask user for saving changes using a messagebox
     {
-        MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "You changed the settings.\nDo you want to save changes?", MessageBoxDialog::YES_NO, true );
+        MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "You have changed the settings.\nDo you want to save changes?", MessageBoxDialog::YES_NO, true );
         // set busy flag for our object ( DialogGameSettings ). the busy flag is removed then when the message box is terminated
         //  by clicking any button. the object must not be destroyed before that! this flag helps to catch such programming pittfall.
         _busy = true;
@@ -325,6 +352,26 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
 bool DialogGameSettings::onMouseSensitivityChanged( const CEGUI::EventArgs& arg )
 {
     _mouseSensitivity = _p_mouseSensivity->getScrollPosition();
+    return true;
+}
+
+bool DialogGameSettings::onKeyboardEnglishChanged( const CEGUI::EventArgs& arg )
+{    
+    if ( _p_keyKeybEnglish->isSelected() )
+        _p_keyKeybGerman->setSelected( false );
+    else
+        _p_keyKeybGerman->setSelected( true );
+
+    return true;
+}
+
+bool DialogGameSettings::onKeyboardGermanChanged( const CEGUI::EventArgs& arg )
+{    
+    if ( _p_keyKeybGerman->isSelected() )
+        _p_keyKeybEnglish->setSelected( false );
+    else
+        _p_keyKeybEnglish->setSelected( true );
+
     return true;
 }
 

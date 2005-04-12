@@ -71,6 +71,12 @@ class DialogGameSettings
         //! Dialog callback for mouse sensitivity scrollbar        
         bool                                        onMouseSensitivityChanged( const CEGUI::EventArgs& arg );
        
+        //! Dialog callback for keyboarch checkbox: english        
+        bool                                        onKeyboardEnglishChanged( const CEGUI::EventArgs& arg );
+       
+        //! Dialog callback for keyboarch checkbox: german        
+        bool                                        onKeyboardGermanChanged( const CEGUI::EventArgs& arg );
+       
         //! Busy flag ( see method onClickedOk for more details )
         bool                                        _busy;
 
@@ -109,6 +115,10 @@ class DialogGameSettings
         CEGUI::Checkbox*                            _p_mouseInvert;
 
         bool                                        _mouseInverted;
+
+        CEGUI::Checkbox*                            _p_keyKeybEnglish;
+
+        CEGUI::Checkbox*                            _p_keyKeybGerman;
 };
 
 }
