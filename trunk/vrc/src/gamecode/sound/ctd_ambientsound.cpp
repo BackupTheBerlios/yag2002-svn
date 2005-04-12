@@ -35,9 +35,10 @@
 #include "ctd_ambientsound.h"
 
 using namespace std;
-using namespace CTD; 
 using namespace osg; 
 
+namespace CTD
+{
 
 //! Implement and register the platform entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( AmbientSoundEntityFactory );
@@ -65,7 +66,8 @@ _soundState( NULL )
 
 EnAmientSound::~EnAmientSound()
 {
-    _soundState->setPlay( false );
+    if ( _soundState )
+        _soundState->setPlay( false );
 }
 
 void EnAmientSound::initialize()
@@ -120,12 +122,14 @@ void EnAmientSound::initialize()
 
 void EnAmientSound::startPlaying()
 {
-    assert( _soundState );
+    assert( _soundState && "Entitiy AmbientSound: sound could not be loaded!" );
     _soundState->setPlay( true );
 }
 
 void EnAmientSound::stopPlaying()
 {
-    assert( _soundState );
+    assert( _soundState && "Entitiy AmbientSound: sound could not be loaded!" );
     _soundState->setPlay( false );
 }
+
+} // namespace CTD
