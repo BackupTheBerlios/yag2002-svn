@@ -99,9 +99,20 @@ bool Application::initialize( int argc, char **argv )
     }
 
     // fetch argument for using osgviewer instead of own camera and scene updating
-    bool   useosgviewer = false;
-    if ( arguments.find( "-useosgviewer" ) )
-       useosgviewer = true;
+    int   argpos;
+    bool  useOsgViewer = false;
+    if ( argpos = arguments.find( "-useosgviewer" ) )
+    {
+        useOsgViewer = true;
+        arguments.remove( argpos );
+    }
+    // enable physics debug rendering?
+    bool  enablePhysicsDebugRendering = false;
+    if ( argpos = arguments.find( "-physicsdebug" ) )
+    {
+        enablePhysicsDebugRendering = true;
+        arguments.remove( argpos );
+    }
 
     // any option left unread are converted into errors to write out later.
     arguments.reportRemainingOptionsAsUnrecognized();
@@ -144,7 +155,7 @@ bool Application::initialize( int argc, char **argv )
     _p_viewer = new osgProducer::Viewer( arguments );
 
     unsigned int opt = 0;
-    if ( useosgviewer )
+    if ( useOsgViewer )
     {
         // set up the viewer services
         opt |= osgProducer::Viewer::SKY_LIGHT_SOURCE;
@@ -196,7 +207,8 @@ bool Application::initialize( int argc, char **argv )
     // finalize physics initialization when all entities are created
     assert( _p_physics->finalize( _p_rootSceneNode ) );
     // enable physics debug rendering
-    //_p_physics->enableDebugRender();
+    if ( enablePhysicsDebugRendering )
+        _p_physics->enableDebugRender();
 
     // initialize sound manager
     _p_soundManager = osgAL::SoundManager::instance();
@@ -219,21 +231,48 @@ bool Application::initialize( int argc, char **argv )
     // initialize the gui system
     _p_guiManager = GuiManager::get();
     _p_guiManager->initialize();
+    // note: after initialization of gui system the viewer must be realized (in order to get gui's renderer
+    //  initialized) before the entities are initialized
+    // use single-threading (entity specific gl commands need it)
+    _p_viewer->realize( osgProducer::Viewer::ThreadingModel::SingleThreaded ); 
+    _p_viewer->sync();
+    //--------
 
-    // we must draw at least one frame in order to get the gui system initialized ( see gui wrapper's hook into post draw callback in 'ctd_guimanager.cpp' ).
-    // the gui system must be initialized before the entities are initialized ( because of gui entities ).
+    log << Log::LogLevel( Log::L_INFO ) << "starting entity setup ..." << endl;
+    osg::Timer      timer;
+    osg::Timer_t    curTick    = 0;
+    osg::Timer_t    startTick  = 0;
+    float           time4Init      = 0;
+    float           time4PostInit  = 0;
+    // setup entities
+    log << Log::LogLevel( Log::L_INFO ) << " initializing entities..." << endl;
+
     {
-        _p_viewer->realize();
-        _p_viewer->frame();
-        _p_viewer->sync();
+        startTick  = timer.tick();
+
+        _entityManager->initializeEntities();
+        
+        curTick    = timer.tick();
+        time4Init  = timer.delta_s( startTick, curTick );
     }
 
-    log << Log::LogLevel( Log::L_INFO ) << "initializing entities..." << endl;
-    // setup entities
-    _entityManager->initializeEntities();
-    _entityManager->postInitializeEntities();
+    log << Log::LogLevel( Log::L_INFO ) << " post-initializing entities..." << endl;
+    {
+        startTick  = timer.tick();
+    
+        _entityManager->postInitializeEntities();
 
-    log << Log::LogLevel( Log::L_INFO ) << "initialization  succeeded" << endl;
+        curTick        = timer.tick();
+        time4PostInit  = timer.delta_s( startTick, curTick );
+    }
+    log << Log::LogLevel( Log::L_INFO ) << "entity setup completed" << endl;
+
+    log << Log::LogLevel( Log::L_INFO ) << "--------------------------------------------" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "needed time for initialization: " << time4Init << " seconds" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "needed time for post-initialization: " << time4PostInit << " seconds" <<  endl;
+    log << Log::LogLevel( Log::L_INFO ) << "total time for setting up: " << time4Init + time4PostInit << " seconds" <<  endl;
+    log << Log::LogLevel( Log::L_INFO ) << "--------------------------------------------" << endl;
+  
     return true;
 }
 
@@ -268,15 +307,15 @@ void Application::run()
         // update gui manager
         _p_guiManager->update( deltaTime );
 
+        // wait for all cull and draw threads to complete.
+        _p_viewer->sync();
+
         // update the scene by traversing it with the the update visitor which will
         // call all node update callbacks and animations.
         _p_viewer->update();
          
         // fire off the cull and draw traversals of the scene.
         _p_viewer->frame();
-
-        // wait for all cull and draw threads to complete.
-        _p_viewer->sync();
     }
    
     // wait for all cull and draw threads to complete before exit.
