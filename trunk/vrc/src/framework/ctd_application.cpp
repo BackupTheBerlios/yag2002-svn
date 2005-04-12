@@ -146,8 +146,8 @@ bool Application::initialize( int argc, char **argv )
     // setup log system
     //-----------------
     //! TODO: set the loglevels basing on config file
-    log.addSink( "file", getMediaPath() + "ctd.log", Log::L_DEBUG );
-    log.addSink( "stdout", cout, Log::L_DEBUG );
+    log.addSink( "file", getMediaPath() + "ctd.log", Log::L_ERROR );
+    log.addSink( "stdout", cout, Log::L_ERROR );
  
     log << Log::LogLevel( Log::L_INFO ) << "initializing viewer" << endl;
     // construct the viewer
