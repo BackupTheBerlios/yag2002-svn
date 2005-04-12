@@ -55,6 +55,7 @@ std::map< std::string, osgCal::Model* >    s_modelCache;
 
 EnPlayerAnimation::EnPlayerAnimation() :
 _p_player( NULL ),
+_scale( 1.0f ),
 _IdAnimIdle( -1 ),
 _IdAnimWalk( -1 ),
 _IdAnimRun( -1 ),
@@ -62,13 +63,16 @@ _IdAnimJump( -1 ),
 _IdAnimLand( -1 ),
 _ready( true )
 { 
-
-    EntityManager::get()->registerUpdate( this );     // register entity in order to get updated per simulation step
+    // register entity in order to get updated per simulation step
+    EntityManager::get()->registerUpdate( this );
 
     // the deletion must not be controled by entity manager, but by player
     setAutoDelete( false );
     // register attributes
     getAttributeManager().addAttribute( "animconfig"   , _animCfgFile );
+    getAttributeManager().addAttribute( "position"     , _position    );
+    getAttributeManager().addAttribute( "rotation"     , _rotation    );
+    getAttributeManager().addAttribute( "scale"        , _scale       );
 }
 
 EnPlayerAnimation::~EnPlayerAnimation()
@@ -90,6 +94,8 @@ void EnPlayerAnimation::initialize()
     p_model = s_modelCache.find( _animCfgFile );
     if ( p_model != s_modelCache.end() )
     {
+        log << Log::LogLevel( Log::L_DEBUG ) << "  using cached model '" << _animCfgFile << "' ..." << endl;
+
         _model = new osgCal::Model( *( p_model->second ) );
         // create a transform node in order to set position and rotation offsets
         _animNode = new PositionAttitudeTransform;
@@ -101,6 +107,9 @@ void EnPlayerAnimation::initialize()
             );
         _animNode->setAttitude( quat );
         _animNode->addChild( _model.get() );
+
+        log << Log::LogLevel( Log::L_INFO ) << "  initializing player animation instance completed" << endl;
+
         return;
     }
 
@@ -133,8 +142,6 @@ void EnPlayerAnimation::initialize()
     //------------------------------------------
     if ( !_model->getUseVertexProgram() )
         log << Log::LogLevel( Log::L_WARNING ) << " cannot use hardware (gpu) for blending, using software blending instead." << endl;
-
-    _model->getCalModel()->setLodLevel( 1.0 );
 
     // creating a concrete model using the core template
     if( !_model->create() ) 
@@ -249,24 +256,7 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
         destFileName = rootDir + "/" + strData;
 
         // handle the model creation
-        if( strKey == "scale" )
-        {
-            // set rendering scale factor
-            _scale = (float)atof(strData.c_str());
-        }
-        else if( strKey == "position" )
-        {
-            sscanf( strData.c_str(), "%f %f %f", &( _position._v[ 0 ] ), &( _position._v[ 1 ] ), &( _position._v[ 2 ] ) );
-        }
-        else if( strKey == "rotation" )
-        {
-            sscanf( strData.c_str(), "%f %f %f", &( _rotation._v[ 0 ] ), &( _rotation._v[ 1 ] ), &( _rotation._v[ 2 ] ) );
-        }
-        else if( strKey == "position" )
-        {
-            sscanf( strData.c_str(), "%f %f %f", &( _position._v[ 0 ] ), &( _position._v[ 1 ] ), &( _position._v[ 2 ] ) );
-        }
-        else if( strKey == "skeleton" )
+        if( strKey == "skeleton" )
         {
             if ( !_p_calCoreModel->loadCoreSkeleton( destFileName ) )
                 log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading skeleton: " << destFileName << endl;                      
