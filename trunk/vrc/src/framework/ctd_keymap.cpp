@@ -125,7 +125,6 @@ void KeyMap::setup( KeyMap::KeyboardType type )
     _keyNames.insert( std::make_pair( "´",          '´'                                     ) );
     _keyNames.insert( std::make_pair( "~",          '~'                                     ) );
     _keyNames.insert( std::make_pair( "=",          '='                                     ) );
-    _keyNames.insert( std::make_pair( " ",          ' '                                     ) );
 
     _keyNames.insert( std::make_pair( "1",          '1'                                     ) );
     _keyNames.insert( std::make_pair( "2",          '2'                                     ) );
