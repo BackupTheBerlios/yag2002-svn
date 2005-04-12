@@ -30,6 +30,7 @@
  ################################################################*/
 
 #include <ctd_base.h>
+#include <ctd_log.h>
 #include "ctd_log.h"
 #include "ctd_levelmanager.h"
 #include "ctd_application.h"
@@ -72,7 +73,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
     file.open( levelFile.c_str(), std::ios::in, std::ios::binary );
     if ( !file )
     {
-        cout << "*** cannot open level file." << endl;
+        log << Log::LogLevel( Log::L_DEBUG ) << "*** cannot open level file." << endl;
         return false;
     }
     // read in the file into char buffer for tinyxml
@@ -93,8 +94,8 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
 
     if ( doc.Error() == true ) 
     {
-        cout << "*** CTD (XML parser) error parsing level config file. " << endl;
-        cout << doc.ErrorDesc() << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** CTD (XML parser) error parsing level config file. " << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << doc.ErrorDesc() << endl;
         return false;
     }
 
@@ -117,7 +118,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
         p_levelElement = p_node->ToElement();
         if ( !p_levelElement ) 
         {
-            cout << "**** could not find level element. " << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "**** could not find level element. " << endl;
             return false;
         }
 
@@ -138,7 +139,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
             p_bufName    = ( char* )p_mapElement->Attribute( CTD_LVL_ELEM_NAME );
             if ( p_bufName == NULL ) 
             {
-                cout << "*** could not find map element." << endl;
+                log << Log::LogLevel( Log::L_ERROR ) << "*** could not find map element." << endl;
                 return false;
             } 
             else 
@@ -160,7 +161,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
 
     // read entity definitions
     //------------------------
-    cout << "setup entities" << endl;
+    log << Log::LogLevel( Log::L_DEBUG ) << "setup entities" << endl;
 
     unsigned int entityCounter = 0;
 
@@ -174,7 +175,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
         string enttype;
         if ( !p_bufName ) 
         {
-            cout << "  **** entity has no type, skipping" << endl;
+            log << Log::LogLevel( Log::L_DEBUG ) << "  **** entity has no type, skipping" << endl;
             continue;       
         }
         else
@@ -190,16 +191,16 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
         // could we find entity type
         if ( !p_entity ) 
         {
-            cout << "  *** could not find entity type ' " << p_bufName << " '" << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "  *** could not find entity type ' " << p_bufName << " '" << endl;
             continue;
         }
-        cout << "entity created, type: '" << enttype << " '" << endl;
+        log << Log::LogLevel( Log::L_DEBUG ) << "entity created, type: '" << enttype << " '" << endl;
         // get instance name if one provided
         p_bufName = ( char* )p_entityElement->Attribute( CTD_LVL_ENTITY_INST_NAME );
         if ( p_bufName ) {
             // set entity's instance name
             p_entity->setInstanceName( p_bufName );
-            cout << "  instance name: '" << p_bufName << " '" << endl;
+            log << Log::LogLevel( Log::L_DEBUG ) << "  instance name: '" << p_bufName << " '" << endl;
         }
 
         entityCounter++;
@@ -216,14 +217,14 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
 
             if ( !p_paramName || !p_paramType || !p_paramValue )
             {
-                cout << "****  incomplete entity parameter entry, skipping" << endl;
+                log << Log::LogLevel( Log::L_ERROR ) << "****  incomplete entity parameter entry, skipping" << endl;
                 continue;   
             }
 
             AttributeManager& attrMgr = p_entity->getAttributeManager();
             if ( !attrMgr.setAttributeValue( p_paramName, p_paramType, p_paramValue ) )
             {
-                cout << "****  cannot find entity parameter '" << p_paramName << "'" << endl;
+                log << Log::LogLevel( Log::L_DEBUG ) << "****  cannot find entity parameter '" << p_paramName << "'" << endl;
             }
         }
 
@@ -239,8 +240,8 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
 
     }
 
-    cout << endl;
-    cout << "total number of created entities: '" << entityCounter << "'" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "total number of created entities: '" << entityCounter << "'" << endl;
 
     return mainGroup;
 }
@@ -259,7 +260,7 @@ osg::Node* LevelManager::loadStaticWorld( const string& fileName )
     }
     // stop timer and give out the time messure
     osg::Timer_t end_tick = osg::Timer::instance()->tick();
-    cout << "Time to load = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << endl;
+    log << Log::LogLevel( Log::L_DEBUG ) << "Time to load = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << endl;
 
     return p_loadedModel;
 }
