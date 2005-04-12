@@ -69,6 +69,12 @@ class EnPlayerAnimation  : public BaseEntity
         bool                                        needTransformation() { return false; }
 
         /**
+        * Update entity
+        * \param deltaTime                          Time passed since last update
+        */
+        void                                        updateEntity( float deltaTime );
+
+        /**
         * Set player association, player must call this in post-initialize phase
         * \param p_player                           Player instance
         */
@@ -89,14 +95,17 @@ class EnPlayerAnimation  : public BaseEntity
         */
         void                                        destroy();
 
-        //! Trigger idle animation
-        void                                        actionIdle();
+        //! Idle animation
+        void                                        animIdle();
 
-        //! Trigger walk animation
-        void                                        actionWalk();
+        //! Walk animation
+        void                                        animWalk();
 
-        //! Trigger jump animation
-        void                                        actionJump();
+        //! Jump animation
+        void                                        animJump();
+ 
+        //! Turn animation
+        void                                        animTurn();
 
     protected:
 
@@ -132,8 +141,9 @@ class EnPlayerAnimation  : public BaseEntity
         {
             eIdle,
             eWalk,
-            eJump
-        }                                           _action;
+            eJump,
+            eTurn
+        }                                           _anim;
 
         //! offset position
         osg::Vec3f                                  _position;
@@ -148,7 +158,8 @@ class EnPlayerAnimation  : public BaseEntity
         int                                         _IdAnimWalk;
         int                                         _IdAnimRun;
         int                                         _IdAnimJump;
-        int                                         _IdAnimLand;        
+        int                                         _IdAnimLand;
+        int                                         _IdAnimTrun;
 };
 
 //! Entity type definition used for type registry

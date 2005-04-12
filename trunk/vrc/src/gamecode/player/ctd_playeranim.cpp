@@ -44,15 +44,14 @@ using namespace osgCal;
 using namespace std;
 
 
-#define ACTION_IDLE     "CACT_IDLE_LONG"
-#define ACTION_WALK     "CACT_WALK"
-#define ACTION_JUMP     "CACT_STAND"
-
 namespace CTD
 {
 
 //! Implement and register the player animation entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( PlayerAnimationEntityFactory );
+
+// a small model cache for sharing same animation models
+std::map< std::string, osgCal::Model* >    s_modelCache;
 
 EnPlayerAnimation::EnPlayerAnimation() :
 _p_player( NULL ),
@@ -63,6 +62,9 @@ _IdAnimJump( -1 ),
 _IdAnimLand( -1 ),
 _ready( true )
 { 
+
+    EntityManager::get()->registerUpdate( this );     // register entity in order to get updated per simulation step
+
     // the deletion must not be controled by entity manager, but by player
     setAutoDelete( false );
     // register attributes
@@ -75,12 +77,34 @@ EnPlayerAnimation::~EnPlayerAnimation()
 
 void EnPlayerAnimation::initialize()
 {
+    log << Log::LogLevel( Log::L_INFO ) << "  initializing player animation instance '" << getInstanceName() << "' ..." << endl;
+
     if ( !_animCfgFile.length() )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** missing animation config file parameter" << endl;
         return;
     }
 
+    // look up the model cache first
+    std::map< std::string, osgCal::Model* >::iterator p_model;
+    p_model = s_modelCache.find( _animCfgFile );
+    if ( p_model != s_modelCache.end() )
+    {
+        _model = new osgCal::Model( *( p_model->second ) );
+        // create a transform node in order to set position and rotation offsets
+        _animNode = new PositionAttitudeTransform;
+        _animNode->setPosition( _position );
+        Quat quat( 
+            _rotation.x() * PI / 180.0f, Vec3f( 1, 0, 0 ),
+            _rotation.y() * PI / 180.0f, Vec3f( 0, 1, 0 ),
+            _rotation.z() * PI / 180.0f, Vec3f( 0, 0, 1 )
+            );
+        _animNode->setAttitude( quat );
+        _animNode->addChild( _model.get() );
+        return;
+    }
+
+    // if no cache hit then setup and create a new model
     string file     = Application::get()->getMediaPath() + _animCfgFile;
     string rootDir  = extractPath( file );
     string configfilename = extractFileName( file );
@@ -104,9 +128,13 @@ void EnPlayerAnimation::initialize()
     // set the material set of the whole model
     _model->getCalModel()->setMaterialSet( 0 );
 
-    //! FIXME: for some reason hw blending makes problems
-    // _model->setUseVertexProgram( true );
+    // try to enable hw blending
+    _model->setUseVertexProgram( true );
     //------------------------------------------
+    if ( !_model->getUseVertexProgram() )
+        log << Log::LogLevel( Log::L_WARNING ) << " cannot use hardware (gpu) for blending, using software blending instead." << endl;
+
+    _model->getCalModel()->setLodLevel( 1.0 );
 
     // creating a concrete model using the core template
     if( !_model->create() ) 
@@ -132,8 +160,16 @@ void EnPlayerAnimation::initialize()
     _animNode->setAttitude( quat );
     _animNode->addChild( _model.get() );
 
-    // we don't need updating as the osgCal's node is updated automatically
-    activate( false );
+    // register model
+    s_modelCache.insert( std::make_pair( _animCfgFile, _model.get() ) );
+
+    log << Log::LogLevel( Log::L_INFO ) << "  initializing player animation instance completed" << endl;
+}
+
+void EnPlayerAnimation::updateEntity( float deltaTime )
+{
+    // calculate lod factor depending on camera distance
+    //_model->getCalModel()->setLodLevel( lod );
 }
 
 bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& configfilename )
@@ -284,13 +320,18 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
             if ( _IdAnimRun < 0 )
                 log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << endl; 
         }
+        else if( strKey == "animation_turn" )
+        {
+            _IdAnimTrun = _p_calCoreModel->loadCoreAnimation( destFileName );
+            if ( _IdAnimTrun < 0 )
+                log << Log::LogLevel( Log::L_ERROR ) << "***  line"  << line << ", problem loading animation: " << destFileName << endl; 
+        }
         else if( strKey == "animation_jump" )
         {
             _IdAnimJump = _p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimJump < 0 )
                 log << Log::LogLevel( Log::L_ERROR ) << "***  line"  << line << ", problem loading animation: " << destFileName << endl; 
-        }
-        else if( strKey == "animation_land" )
+        }        else if( strKey == "animation_landing" )
         {
             _IdAnimLand = _p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimLand < 0 )
@@ -333,32 +374,43 @@ void EnPlayerAnimation::destroy()
 }
 
 //! TODO: animation control must be implemented
-void EnPlayerAnimation::actionIdle()
+void EnPlayerAnimation::animIdle()
 {
-    if ( _action == eIdle )
+    if ( _anim == eIdle )
         return;
 
     _model->getCalModel()->getMixer()->blendCycle( _IdAnimIdle, 1.0f, 0.5f );
     _model->getCalModel()->getMixer()->clearCycle( _IdAnimWalk, 0.5f );
-    _action = eIdle;
+    _model->getCalModel()->getMixer()->clearCycle( _IdAnimTrun, 0.5f );
+    _anim = eIdle;
 }
 
-void EnPlayerAnimation::actionWalk()
+void EnPlayerAnimation::animWalk()
 {
-    if ( _action == eWalk )
+    if ( _anim == eWalk )
         return;
 
     _model->getCalModel()->getMixer()->blendCycle( _IdAnimWalk, 1.0f, 0.5f );
     _model->getCalModel()->getMixer()->clearCycle( _IdAnimIdle, 0.5f );
-    _action = eWalk;
+    _model->getCalModel()->getMixer()->clearCycle( _IdAnimTrun, 0.0f );
+    _anim = eWalk;
 }
 
-void EnPlayerAnimation::actionJump()
+void EnPlayerAnimation::animJump()
 {
-    if ( _action == eJump )
+    if ( _anim == eJump )
         return;
 
-    _action = eJump;
+    _model->getCalModel()->getMixer()->executeAction( _IdAnimJump, 0.0f, 0.0f, 0.4f );
+    _anim = eJump;
 }
 
+void EnPlayerAnimation::animTurn()
+{
+    if ( _anim == eTurn )
+        return;
+
+    _model->getCalModel()->getMixer()->blendCycle( _IdAnimTrun, 1.0f, 0.0f );
+    _anim = eTurn;
+}
 } // namespace CTD
