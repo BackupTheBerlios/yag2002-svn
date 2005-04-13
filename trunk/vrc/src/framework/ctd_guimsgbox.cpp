@@ -112,14 +112,14 @@ _autodel( autodelete )
     _p_wnd->setSizingEnabled( false );
 
     // create text area
-    CEGUI::StaticText* p_msgtext = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( ( CEGUI::utf8* )"TaharezLook/StaticText", "_msg_box_text_" ) );
-    p_msgtext->setText( text );
-    p_msgtext->setPosition( CEGUI::Point( 0.05f, 0.05f ) );
-    p_msgtext->setSize( CEGUI::Size( 0.9f, 0.9f ) );
-    p_msgtext->setBackgroundEnabled( false );
-    p_msgtext->setFormatting( CEGUI::StaticText::HorzCentred, CEGUI::StaticText::VertCentred );
-    p_msgtext->setFrameEnabled( false );
-    _p_wnd->addChildWindow( p_msgtext );
+    _p_msgtext = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( ( CEGUI::utf8* )"TaharezLook/StaticText", "_msg_box_text_" ) );
+    _p_msgtext->setText( text );
+    _p_msgtext->setPosition( CEGUI::Point( 0.05f, 0.05f ) );
+    _p_msgtext->setSize( CEGUI::Size( 0.9f, 0.9f ) );
+    _p_msgtext->setBackgroundEnabled( false );
+    _p_msgtext->setFormatting( CEGUI::StaticText::HorzCentred, CEGUI::StaticText::VertCentred );
+    _p_msgtext->setFrameEnabled( false );
+    _p_wnd->addChildWindow( _p_msgtext );
 
     // create buttons
     switch ( type )
@@ -195,6 +195,20 @@ MessageBoxDialog::~MessageBoxDialog()
 {
 }
 
+void MessageBoxDialog::destroy()
+{
+    // if not auto deleting then just hide the message box
+    if ( _autodel )
+    {
+        CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
+
+        if ( _p_clb )
+            delete _p_clb;
+
+        delete this;
+    }
+}
+
 void MessageBoxDialog::show()
 {
     // if we were just hidden before then unhide, otherwise it is the first time for showing the dialog so add it into parent window
@@ -252,6 +266,21 @@ bool MessageBoxDialog::onClickedNo( const CEGUI::EventArgs& arg )
 {
     processClick( MessageBoxDialog::BTN_NO ); 
     return true;
+}
+
+const string& MessageBoxDialog::getText()
+{
+    // convert cegui's string to std string
+    static string text;
+    text = _p_msgtext->getText().c_str();
+    return text;
+}
+
+void MessageBoxDialog::setText( const string& text )
+{
+    // convert std string to cegui's string
+    CEGUI::String t( text.c_str() );
+    _p_msgtext->setText( t );
 }
 
 } // namespace CTD

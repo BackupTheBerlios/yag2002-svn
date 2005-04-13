@@ -77,7 +77,7 @@ class MessageBoxDialog
                                                                  CEGUI::Window* p_parent = NULL
                                                                 );
 
-                                                ~MessageBoxDialog();
+        virtual                                ~MessageBoxDialog();
 
         //! Show up the message box
         void                                    show();
@@ -104,6 +104,15 @@ class MessageBoxDialog
         //! Set callback which is called when a button has been clicked.
         void                                    setClickCallback( MessageBoxDialog::ClickCallback* p_clb );
 
+        //! Return the message text
+        const std::string&                      getText();
+
+        //! Set the message text
+        void                                    setText( const std::string& text );
+
+        //! Don't wait for button click, destroy the messagebox imediately.
+        void                                    destroy();
+
     protected:
 
         bool                                    onClickedOk( const CEGUI::EventArgs& arg );
@@ -123,6 +132,8 @@ class MessageBoxDialog
         CEGUI::Window*                          _p_parent;
 
         MessageBoxDialog::ClickCallback*        _p_clb;
+
+        CEGUI::StaticText*                      _p_msgtext;
 
         bool                                    _autodel;
 };
