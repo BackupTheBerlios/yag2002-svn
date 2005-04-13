@@ -58,10 +58,11 @@ _mouseSensitivity( 1.0f ),
 _guiScheme( CTD_GUI_DEFUALT_SCHEME ),
 _playerName( "NoName" ),
 _mouseInverted( false ),
-_moveForward( 'w' ),
-_moveBackward( 's' ),
-_moveLeft( 'a' ),
-_moveRight( 'd' )
+_moveForward( "W" ),
+_moveBackward( "S" ),
+_moveLeft( "A" ),
+_moveRight( "D" ),
+_jump( "Space" )
 {
     // register all settings
     _p_settings->registerSetting( CTD_GS_KEYBOARD,            _keyboardType     );
@@ -79,6 +80,7 @@ _moveRight( 'd' )
     _p_settings->registerSetting( CTD_GS_KEY_MOVE_BACKWARD,   _moveBackward     );
     _p_settings->registerSetting( CTD_GS_KEY_MOVE_LEFT,       _moveLeft         );
     _p_settings->registerSetting( CTD_GS_KEY_MOVE_RIGHT,      _moveRight        );
+    _p_settings->registerSetting( CTD_GS_KEY_JUMP,            _jump             );
 
     // load profile
     bool exists = SettingsManager::get()->loadProfile( CTD_GAMESETTING_PROFILENAME );
