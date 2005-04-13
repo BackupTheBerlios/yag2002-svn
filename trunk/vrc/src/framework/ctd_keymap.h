@@ -40,7 +40,8 @@ namespace CTD
 {
 //! Key mapper
 /**
-* Singleton for mapping key codes supporting english and german keyboards
+* Singleton for mapping key codes supporting english and german keyboards.
+* It provides also mouse buttons' name and key code access.
 */
 class KeyMap : public Singleton< KeyMap >
 {
@@ -56,14 +57,20 @@ class KeyMap : public Singleton< KeyMap >
         //! Setup keyboard for english or german type. Use this method to switch the keyboard type.
         void                                    setup( KeyMap::KeyboardType type );
 
-        //! Given a key name (e.g. "A" or "SPACE") return its keycode
-        unsigned int                            getKeyCode( const std::string& name );
+        //! Given a key name (e.g. "A" or "SPACE") return its keycode. 
+        unsigned int                            getKeyCode( const std::string& name);
 
-        //! Given a key code return its name
-        const std::string&                      getKeyName( unsigned int symb );
+        //! Given a key code return its name.
+        const std::string&                      getKeyName( unsigned int code );
+
+        //! Given a mouse button name return its code.
+        unsigned int                            getMouseButtonCode( const std::string& name );
+
+        //! Given a mouse button code return its name.
+        const std::string&                      getMouseButtonName( unsigned int code );
 
         //! Translate key code into target code.
-        unsigned int                            translateKey( unsigned int key );
+        unsigned int                            translateKey( unsigned int code );
 
     protected:
 
@@ -89,6 +96,12 @@ class KeyMap : public Singleton< KeyMap >
 
         //! Translation map
         std::map< unsigned int, unsigned int >  _translationTable;
+
+        //! Mapping of mouse button names to key codes
+        std::map< std::string, unsigned int >   _mouseBtnNames;
+
+        //! Mapping of key codes to mouse button names
+        std::map< unsigned int, std::string >   _mouseBtnCodes;
 
         //! Keyboad type ( en, ger, etc. )
         unsigned int                            _keyboardType;

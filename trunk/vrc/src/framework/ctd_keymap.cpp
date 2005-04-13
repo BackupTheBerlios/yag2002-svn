@@ -50,7 +50,18 @@ void KeyMap::setup( KeyMap::KeyboardType type )
     _keyboardType = type;
     _keyNames.clear();
     _keyCodes.clear();
+    _mouseBtnNames.clear();
+    _mouseBtnCodes.clear();
 
+    // mouse buttons' names and codes
+    _mouseBtnNames.insert( std::make_pair( "LMB",   osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON   ) );
+    _mouseBtnNames.insert( std::make_pair( "RMB",   osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON  ) );
+    _mouseBtnNames.insert( std::make_pair( "MMB",   osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON ) );
+    _mouseBtnCodes.insert( std::make_pair( osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON,    "LMB"  ) );
+    _mouseBtnCodes.insert( std::make_pair( osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON,   "RMB"  ) );
+    _mouseBtnCodes.insert( std::make_pair( osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON , "MMB"  ) );
+
+    // keyboard's key names and codes
     _keyNames.insert( std::make_pair( "CtrlL",      osgGA::GUIEventAdapter::KEY_Control_L   ) );
     _keyNames.insert( std::make_pair( "CtrlR",      osgGA::GUIEventAdapter::KEY_Control_R   ) );
     _keyNames.insert( std::make_pair( "SuperL",     osgGA::GUIEventAdapter::KEY_Super_L     ) );
@@ -252,34 +263,56 @@ KeyMap::~KeyMap()
 {
 }
 
-unsigned int KeyMap::translateKey( unsigned int key )
+unsigned int KeyMap::translateKey( unsigned int code )
 {
     // translate key if it is in translate table
-    std::map< unsigned int, unsigned int >::iterator p_tans = _translationTable.find( key );
+    std::map< unsigned int, unsigned int >::iterator p_tans = _translationTable.find( code );
     if ( p_tans != _translationTable.end() )
         return p_tans->second;
 
-    return key;
+    return code;
 }
 
 unsigned int KeyMap::getKeyCode( const std::string& name )
 {
     std::map< std::string, unsigned int >::iterator p_key = _keyNames.find( name );
-    if ( p_key == _keyNames.end() ) // not-registered key?
+    if ( p_key == _keyNames.end() ) // non-registered key?
         return 0;
 
-    return p_key->second;
+    return  p_key->second;
 }
 
-const std::string& KeyMap::getKeyName( unsigned int symb )
+const std::string& KeyMap::getKeyName( unsigned int code )
 {
-    std::map< unsigned int, std::string >::iterator p_key = _keyCodes.find( symb );
-    if ( p_key == _keyCodes.end() ) // not-registered key?
+    std::map< unsigned int, std::string >::iterator p_key = _keyCodes.find( code );
+    if ( p_key == _keyCodes.end() ) // non-registered key?
     {
         static std::string nf;
         return nf;
     }
+
     return p_key->second;
 }
 
+unsigned int KeyMap::getMouseButtonCode( const std::string& name )
+{
+    std::map< std::string, unsigned int >::iterator p_key = _mouseBtnNames.find( name );
+    if ( p_key == _mouseBtnNames.end() ) // non-registered key?
+        return 0;
+
+    return  p_key->second;
 }
+
+const std::string& KeyMap::getMouseButtonName( unsigned int code )
+{
+    std::map< unsigned int, std::string >::iterator p_key = _mouseBtnCodes.find( code );
+    if ( p_key == _mouseBtnCodes.end() ) // non-registered key?
+    {
+        static std::string nf;
+        return nf;
+    }
+
+    return p_key->second;
+}
+
+} // namespace CTD
