@@ -286,11 +286,16 @@
 </node>
 <node TEXT="gui">
 <node TEXT="game settings">
-<node TEXT="5%">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 <node TEXT="start up gui">
+<node TEXT="0%">
+<icon BUILTIN="messagebox_warning"/>
+</node>
+</node>
+<node TEXT="main menu">
 <node TEXT="0%">
 <icon BUILTIN="messagebox_warning"/>
 </node>
