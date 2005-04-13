@@ -38,6 +38,33 @@
 namespace CTD
 {
 
+class DialogGameSettings;
+
+//! Input handler for sensing
+class BtnInputHandler : public GenericInputHandler< CEGUI::PushButton >
+{
+    public:
+
+                                        BtnInputHandler( CEGUI::PushButton* p_obj, DialogGameSettings* p_dlg ) : 
+                                            GenericInputHandler< CEGUI::PushButton >( p_obj ),
+                                            _p_dlg( p_dlg ),
+                                            _lockInput( false )
+                                        {}
+
+        virtual                         ~BtnInputHandler() {};
+        
+        bool                            handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
+
+    protected:
+
+        //! Updates key bindings considering potential overriding bindings
+        void                            updateBindings( const std::string newkey );
+
+        DialogGameSettings*             _p_dlg;
+
+        bool                            _lockInput;
+};
+
 class DialogGameSettings
 {
     public:
@@ -77,9 +104,34 @@ class DialogGameSettings
         //! Dialog callback for keyboarch checkbox: german        
         bool                                        onKeyboardGermanChanged( const CEGUI::EventArgs& arg );
        
+        //! Dialog callback for move forward button        
+        bool                                        onClickedForward( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for move backward button        
+        bool                                        onClickedBackward( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for move left button        
+        bool                                        onClickedLeft( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for move right button        
+        bool                                        onClickedRight( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for jump button        
+        bool                                        onClickedJump( const CEGUI::EventArgs& arg );
+
+        //! This method is used for sensing keybinding by the mean of a little messagebox
+        void                                        senseKeybinding( CEGUI::PushButton* p_btn );
+        //---------
+
+        //! Internal method for delayed destruction of move buttons' input sensor
+        void                                        enqueueInputHandlerDestruction( BtnInputHandler* p_handler );
+
+        //! Destruction queue
+        std::vector< BtnInputHandler* >             _inputHandlerDestructionQueue;
+
         //! Busy flag ( see method onClickedOk for more details )
         bool                                        _busy;
-
+    
         //  internal variables
 
         CEGUI::Window*                              _p_settingsDialog;
@@ -96,21 +148,15 @@ class DialogGameSettings
 
         float                                       _mouseSensitivity;
 
-        CEGUI::PushButton*                          _p_keyMoveForward1;
+        CEGUI::PushButton*                          _p_keyMoveForward;
 
-        unsigned int                                _keyMoveForward1;
+        CEGUI::PushButton*                          _p_keyMoveBackward;
 
-        CEGUI::PushButton*                          _p_keyMoveBackward1;
+        CEGUI::PushButton*                          _p_keyMoveLeft;
 
-        unsigned int                                _keyMoveBackward1;
+        CEGUI::PushButton*                          _p_keyMoveRight;
 
-        CEGUI::PushButton*                          _p_keyMoveLeft1;
-
-        unsigned int                                _keyMoveLeft1;
-
-        CEGUI::PushButton*                          _p_keyMoveRight1;
-
-        unsigned int                                _keyMoveRight1;
+        CEGUI::PushButton*                          _p_keyJump;
 
         CEGUI::Checkbox*                            _p_mouseInvert;
 
@@ -119,6 +165,12 @@ class DialogGameSettings
         CEGUI::Checkbox*                            _p_keyKeybEnglish;
 
         CEGUI::Checkbox*                            _p_keyKeybGerman;
+
+        //! Lookup for current key bindings, it is used for detecting an overriding key binding
+        std::vector< std::pair< std::string, CEGUI::PushButton* > > _keyBindingLookup;
+        typedef std::vector< std::pair< std::string, CEGUI::PushButton* > >     tBindingLookup;
+
+    friend class BtnInputHandler;
 };
 
 }

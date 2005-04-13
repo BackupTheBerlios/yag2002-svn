@@ -36,6 +36,7 @@
 #include <ctd_configuration.h>
 #include <ctd_log.h>
 #include <ctd_keymap.h>
+#include <ctd_utils.h>
 #include "ctd_dialogsettings.h"
 
 using namespace std;
@@ -51,14 +52,11 @@ _busy( false ),
 _p_settingsDialog( NULL ),
 _p_playername( NULL ),
 _p_mouseSensivity( NULL ),
-_p_keyMoveForward1( NULL ),
-_keyMoveForward1( 'w' ),
-_p_keyMoveBackward1( NULL ),
-_keyMoveBackward1( 's' ),
-_p_keyMoveLeft1( NULL ),
-_keyMoveLeft1( 'a' ),
-_p_keyMoveRight1( NULL ),
-_keyMoveRight1( 'd' ),
+_p_keyMoveForward( NULL ),
+_p_keyMoveBackward( NULL ),
+_p_keyMoveLeft( NULL ),
+_p_keyMoveRight( NULL ),
+_p_keyJump( NULL ),
 _mouseSensitivity( 1.0f ),
 _mouseInverted( false ),
 _p_keyKeybEnglish( NULL ),
@@ -115,12 +113,20 @@ bool DialogGameSettings::initialize( const string& layoutfile )
 
         // key bindings
         //-------------
-        _p_keyMoveForward1  = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_forward1" ) );
-        _p_keyMoveBackward1 = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_backward1" ) );
-        _p_keyMoveLeft1     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_left1" ) );
-        _p_keyMoveRight1    = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_right1" ) );
+        _p_keyMoveForward  = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_forward" ) );
+        _p_keyMoveForward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedForward, this ) );
 
-        //!TODO rest of Control settings (  second key bindings )
+        _p_keyMoveBackward = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_backward" ) );
+        _p_keyMoveBackward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedBackward, this ) );
+
+        _p_keyMoveLeft     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_left" ) );
+        _p_keyMoveLeft->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedLeft, this ) );
+
+        _p_keyMoveRight    = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_right" ) );
+        _p_keyMoveRight->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedRight, this ) );
+
+        _p_keyJump    = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_jump" ) );
+        _p_keyJump->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedJump, this ) );
 
         //-------------
 
@@ -180,35 +186,11 @@ void DialogGameSettings::setupControls()
     unsigned int cfg_serverport;
     Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, cfg_serverport       );
 
-    unsigned int cfg_moveforward1;
-    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_FORWARD,  cfg_moveforward1    );
-    unsigned int cfg_movebackward1;
-    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_BACKWARD, cfg_movebackward1   );
-    unsigned int cfg_moveleft1;
-    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_LEFT,     cfg_moveleft1       );
-    unsigned int cfg_moveright1;
-    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_RIGHT,    cfg_moveright1      );
-
     string cfg_keyboard;
     Configuration::get()->getSettingValue( CTD_GS_KEYBOARD,          cfg_keyboard        );
     
-    //-----------------------------------
-
-
     // set player name
     _p_playername->setText( cfg_playername );
-
-    // set key binding names
-    string keyname;
-    keyname = KeyMap::get()->getKeyName( cfg_moveforward1 );
-    _p_keyMoveForward1->setText( keyname.c_str() );
-    keyname = KeyMap::get()->getKeyName( cfg_movebackward1 );
-    _p_keyMoveBackward1->setText( keyname.c_str() );
-    keyname = KeyMap::get()->getKeyName( cfg_moveleft1 );
-    _p_keyMoveLeft1->setText( keyname.c_str() );
-    keyname = KeyMap::get()->getKeyName( cfg_moveright1 );
-    _p_keyMoveRight1->setText( keyname.c_str() );
-
     //------------
 
     _p_serverName->setText( cfg_servername );
@@ -216,6 +198,29 @@ void DialogGameSettings::setupControls()
     stringstream portasstring;
     portasstring << cfg_serverport;
     _p_serverPort->setText( portasstring.str() );
+
+    // set key bindings
+    _keyBindingLookup.clear();
+    string cfg_movecmd;
+    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_FORWARD,  cfg_movecmd    );
+    _p_keyMoveForward->setText( cfg_movecmd.c_str() );
+    _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyMoveForward ) );
+
+    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_BACKWARD, cfg_movecmd    );
+    _p_keyMoveBackward->setText( cfg_movecmd.c_str() );
+    _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyMoveBackward ) );
+
+    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_LEFT,     cfg_movecmd    );
+    _p_keyMoveLeft->setText( cfg_movecmd.c_str() );
+    _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyMoveLeft ) );
+
+    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_RIGHT,    cfg_movecmd    );
+    _p_keyMoveRight->setText( cfg_movecmd.c_str() );
+    _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyMoveRight ) );
+
+    Configuration::get()->getSettingValue( CTD_GS_KEY_JUMP,          cfg_movecmd    );
+    _p_keyJump->setText( cfg_movecmd.c_str() );
+    _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyJump ) );
 
     // setup scrollbar position
     _p_mouseSensivity->setDocumentSize( CTD_GS_MAX_MOUSESENS );
@@ -246,29 +251,29 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
     string playername = _p_playername->getText().c_str();
     Configuration::get()->setSettingValue( CTD_GS_PLAYERNAME, playername );
 
-    // write key bindings
-    //-----------------
-    unsigned int cfg_key;
-
-    cfg_key = KeyMap::get()->getKeyCode( _p_keyMoveForward1->getText().c_str() );
+    // set key bindings
+    string cfg_key;
+    cfg_key = _p_keyMoveForward->getText().c_str();
     Configuration::get()->setSettingValue( CTD_GS_KEY_MOVE_FORWARD, cfg_key );
 
-    cfg_key = KeyMap::get()->getKeyCode( _p_keyMoveBackward1->getText().c_str() );
+    cfg_key = _p_keyMoveBackward->getText().c_str();
     Configuration::get()->setSettingValue( CTD_GS_KEY_MOVE_BACKWARD, cfg_key );
 
-    cfg_key = KeyMap::get()->getKeyCode( _p_keyMoveLeft1->getText().c_str() );
+    cfg_key = _p_keyMoveLeft->getText().c_str();
     Configuration::get()->setSettingValue( CTD_GS_KEY_MOVE_LEFT, cfg_key );
 
-    cfg_key = KeyMap::get()->getKeyCode( _p_keyMoveRight1->getText().c_str() );
+    cfg_key = _p_keyMoveRight->getText().c_str();
     Configuration::get()->setSettingValue( CTD_GS_KEY_MOVE_RIGHT, cfg_key );
-    //-----------------
 
-    Configuration::get()->setSettingValue( CTD_GS_MOUSESENS, _mouseSensitivity );
-    
+    cfg_key = _p_keyJump->getText().c_str();
+    Configuration::get()->setSettingValue( CTD_GS_KEY_JUMP, cfg_key );
+
+    // set mouse settings
+    Configuration::get()->setSettingValue( CTD_GS_MOUSESENS, _mouseSensitivity );    
     bool mouseInvert  = _p_mouseInvert->isSelected();
     Configuration::get()->setSettingValue( CTD_GS_INVERTMOUSE, mouseInvert );
 
-    // get server settings
+    // set server settings
     string servername = _p_serverName->getText().c_str();
     Configuration::get()->setSettingValue( CTD_GS_SERVER_NAME, servername );
     
@@ -308,6 +313,8 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
     if ( !isDirty() )
         return true;
 
+    _p_settingsDialog->disable();
+
     // ask user for saving changes using a messagebox
     {
         MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "You have changed the settings.\nDo you want to save changes?", MessageBoxDialog::YES_NO, true );
@@ -331,13 +338,14 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
                                             // store the changes
                                             CEGUI::EventArgs arg;
                                             _p_dialogSettings->onClickedOk( arg ); // get gui control values
-                                            Configuration::get()->store();         // store configuration to file
                                         }
 
                                         // release the busy lock
                                         _p_dialogSettings->_busy = false;
                                         // disappear the dialog
                                         _p_dialogSettings->show( false );
+                                        // enable the dialog again
+                                        _p_dialogSettings->_p_settingsDialog->enable();
                                     }
 
             DialogGameSettings*     _p_dialogSettings;
@@ -375,10 +383,134 @@ bool DialogGameSettings::onKeyboardGermanChanged( const CEGUI::EventArgs& arg )
     return true;
 }
 
+bool DialogGameSettings::onClickedForward( const CEGUI::EventArgs& arg )
+{
+    // begin key sensing for "move forward"
+    senseKeybinding( _p_keyMoveForward );
+    return true;
+}
+
+bool DialogGameSettings::onClickedBackward( const CEGUI::EventArgs& arg )
+{
+    // begin key sensing for "move backward"
+    senseKeybinding( _p_keyMoveBackward );
+    return true;
+}
+
+bool DialogGameSettings::onClickedLeft( const CEGUI::EventArgs& arg )
+{
+    // begin key sensing for "move left"
+    senseKeybinding( _p_keyMoveLeft );
+    return true;
+}
+
+bool DialogGameSettings::onClickedRight( const CEGUI::EventArgs& arg )
+{
+    // begin key sensing for "move right"
+    senseKeybinding( _p_keyMoveRight );
+    return true;
+}
+
+bool DialogGameSettings::onClickedJump( const CEGUI::EventArgs& arg )
+{
+    // begin key sensing for "jump"
+    senseKeybinding( _p_keyJump );
+    return true;
+}
+
+void DialogGameSettings::senseKeybinding( CEGUI::PushButton* p_btn )
+{    
+    // disable dialog so only the key sensing will be active
+    _p_settingsDialog->disable();
+    BtnInputHandler* inputHandler = new BtnInputHandler( p_btn, this );
+}
+
+void DialogGameSettings::enqueueInputHandlerDestruction( BtnInputHandler* p_handler )
+{
+    _inputHandlerDestructionQueue.push_back( p_handler );
+}
+
+void BtnInputHandler::updateBindings( const string newkey )
+{
+    // look for overriding key binding
+    //--------------------------------
+    DialogGameSettings::tBindingLookup::iterator 
+        p_beg = _p_dlg->_keyBindingLookup.begin(), 
+        p_end = _p_dlg->_keyBindingLookup.end(),
+        p_we;
+
+    for ( ; p_beg != p_end; p_beg++ )
+    {
+        if ( p_beg->second == _p_userObject )
+        {
+            p_we = p_beg;
+            continue;
+        }
+        if ( p_beg->first == newkey )
+        {
+            p_beg->second->setText( "..." );
+            p_beg->first = "...";                    
+        }
+    }
+    p_we->first = newkey;
+    //-------------------
+    _p_userObject->setText( newkey );
+}
+
+bool BtnInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+{
+    // we take only the first event for key sensing
+    if ( _lockInput )
+        return false;
+
+    unsigned int eventType   = ea.getEventType();
+    int          key         = ea.getKey();
+
+    // dispatch key activity
+    if ( eventType == osgGA::GUIEventAdapter::KEYDOWN )
+    {
+        if ( key != KeyMap::get()->getKeyCode( "Esc" ) )
+        {            
+            string curkey = KeyMap::get()->getKeyName( key );
+            updateBindings( curkey ); // update all bindings, handle overriding exsiting binding
+            _p_dlg->_p_settingsDialog->enable();
+            _p_dlg->enqueueInputHandlerDestruction( this );
+            _lockInput = true;
+        }
+        return false;
+    }
+
+    // check for mouse buttons
+    unsigned int buttonMask = ea.getButtonMask();
+    // left mouse button
+    if ( buttonMask & 
+        ( 
+        osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON   |
+        osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON |
+        osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON 
+        ) )
+
+    {
+
+        string curkey( KeyMap::get()->getMouseButtonName( buttonMask ) );
+        updateBindings( curkey ); // update all bindings, handle overriding exsiting binding
+        _p_dlg->_p_settingsDialog->enable();
+        _p_dlg->enqueueInputHandlerDestruction( this );
+        _lockInput = true;
+    }
+    return false; // do not consume any key codes!
+}
+
 //-----------------
 
 void DialogGameSettings::update( float deltaTime )
 {
+    // flush the destruction queue
+    std::vector< BtnInputHandler* >::iterator p_beg = _inputHandlerDestructionQueue.begin(), p_end = _inputHandlerDestructionQueue.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        delete ( *p_beg );
+
+    _inputHandlerDestructionQueue.clear();
 }
 
 void DialogGameSettings::show( bool visible )
