@@ -57,6 +57,10 @@
 #include <osg/CoordinateSystemNode>
 #include <osg/Depth>
 #include <osg/Material>
+#include <osg/Math>
+#include <osg/Matrix>
+#include <osg/MatrixTransform>
+#include <osg/LightSource>
 #include <osg/ShapeDrawable>
 #include <osg/Stencil>
 #include <osg/Texture>
@@ -67,9 +71,6 @@
 #include <osg/TextureCubeMap>
 #include <osg/Transform>
 #include <osg/PositionAttitudeTransform>
-#include <osg/Math>
-#include <osg/Matrix>
-#include <osg/MatrixTransform>
 #include <osg/Vec4>
 #include <osg/Vec3>
 #include <osg/Vec2>
