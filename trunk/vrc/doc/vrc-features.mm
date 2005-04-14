@@ -256,6 +256,23 @@
 <icon BUILTIN="button_ok"/>
 </node>
 </node>
+<node TEXT="lights">
+<node TEXT="point light">
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
+</node>
+</node>
+<node TEXT="spot light">
+<node TEXT="0%">
+<icon BUILTIN="messagebox_warning"/>
+</node>
+</node>
+<node TEXT="dirdctional light">
+<node TEXT="0%">
+<icon BUILTIN="help"/>
+</node>
+</node>
+</node>
 <node TEXT="animated tree">
 <icon BUILTIN="help"/>
 </node>
