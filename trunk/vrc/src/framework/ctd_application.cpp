@@ -158,7 +158,7 @@ bool Application::initialize( int argc, char **argv )
     if ( useOsgViewer )
     {
         // set up the viewer services
-        opt |= osgProducer::Viewer::SKY_LIGHT_SOURCE;
+        //opt |= osgProducer::Viewer::SKY_LIGHT_SOURCE;
         //opt |= ~osgProducer::Viewer::HEAD_LIGHT_SOURCE;
         opt |= ~osgProducer::Viewer::STATS_MANIPULATOR;
         opt |= ~osgProducer::Viewer::TRACKBALL_MANIPULATOR;
@@ -272,7 +272,7 @@ bool Application::initialize( int argc, char **argv )
     log << Log::LogLevel( Log::L_INFO ) << "needed time for post-initialization: " << time4PostInit << " seconds" <<  endl;
     log << Log::LogLevel( Log::L_INFO ) << "total time for setting up: " << time4Init + time4PostInit << " seconds" <<  endl;
     log << Log::LogLevel( Log::L_INFO ) << "--------------------------------------------" << endl;
-  
+
     return true;
 }
 
