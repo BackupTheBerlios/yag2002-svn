@@ -254,6 +254,7 @@
 <node TEXT="water">
 <node TEXT="100%">
 <icon BUILTIN="button_ok"/>
+<icon BUILTIN="stop"/>
 </node>
 </node>
 <node TEXT="lights">
