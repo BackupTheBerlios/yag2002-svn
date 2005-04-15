@@ -42,6 +42,9 @@ namespace CTD
 
 #define ENTITY_NAME_POINTLIGHT    "PointLight"
 
+class LightManager;
+
+//! Point light entity
 class EnPointLight :  public BaseEntity
 {
     public:
@@ -82,8 +85,6 @@ class EnPointLight :  public BaseEntity
 
         GLint                                       _lightId;
 
-        static GLint                                _totalLights;
-
         osg::BoundingSphere                         _bSphere;
 
         //! Culling callback class for auto-activating light per frame
@@ -102,6 +103,7 @@ class EnPointLight :  public BaseEntity
 
         };
 
+    friend class LightManager;
 };
 
 //! Entity type definition used for type registry
