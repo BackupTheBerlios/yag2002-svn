@@ -191,7 +191,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
         // could we find entity type
         if ( !p_entity ) 
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "  *** could not find entity type ' " << p_bufName << " '" << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "*** could not find entity type ' " << entitytype << " ', skipping entity!" << endl;
             continue;
         }
         log << Log::LogLevel( Log::L_DEBUG ) << "entity created, type: '" << enttype << " '" << endl;
