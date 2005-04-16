@@ -35,7 +35,7 @@
 #include <ctd_base.h>
 #include <ctd_baseentity.h>
 #include <ctd_entitymanager.h>
-#include <ctd_utils.h>
+#include "ctd_lightmanager.h"
 
 namespace CTD
 {
@@ -45,7 +45,7 @@ namespace CTD
 class LightManager;
 
 //! Point light entity
-class EnPointLight :  public BaseEntity
+class EnPointLight :  public BaseEntity, public BaseLight
 {
     public:
                                                     EnPointLight();
@@ -59,51 +59,8 @@ class EnPointLight :  public BaseEntity
 
     protected:
 
-        // Entity parameters
-        osg::Vec3f                                  _position;
-
-        std::string                                 _meshFile;
-
-        osg::Vec3f                                  _ambientColor;
-
-        osg::Vec3f                                  _diffuseColor;
-        
-        osg::Vec3f                                  _specularColor;
-
-        float                                       _constAttenuation;
-
-        float                                       _linearAttenuation;
-
-        float                                       _quadraticAttenuation;
-
         //! Max radius for culling ( deactivating ) light source during rendering
         float                                       _lightRadius;
-
-    protected:
-
-        osg::ref_ptr< osg::LightSource >            _lightSource;
-
-        GLint                                       _lightId;
-
-        osg::BoundingSphere                         _bSphere;
-
-        //! Culling callback class for auto-activating light per frame
-        class LightCallback : public osg::NodeCallback
-        {
-
-            public:
-
-                                                    LightCallback( EnPointLight* p_lightentity ) : 
-                                                    _lightEntity( p_lightentity )  
-                                                    {}
-
-                void                                operator()( osg::Node* node, osg::NodeVisitor* nv );
-
-                EnPointLight*                       _lightEntity;
-
-        };
-
-    friend class LightManager;
 };
 
 //! Entity type definition used for type registry
