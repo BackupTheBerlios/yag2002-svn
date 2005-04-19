@@ -105,7 +105,7 @@ void CTDResourceProvider::loadRawDataContainer( const CEGUI::String& filename, R
     if ( !( *p_stream ) )
     {   
         log << Log::LogLevel( Log::L_ERROR ) << "*** CTDResourceProvider: file '" << fullpath << "' does not exist." << endl;
-        return;
+        throw CEGUI::Exception( "CTDResourceProvider cannot find file '" + fullpath + "'" );
     }
 
     // get file size
