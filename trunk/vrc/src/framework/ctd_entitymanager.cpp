@@ -33,6 +33,7 @@
 #include <ctd_base.h>
 #include "ctd_application.h"
 #include "ctd_entitymanager.h"
+#include "ctd_log.h"
 
 using namespace std;
 using namespace CTD; 
@@ -268,14 +269,22 @@ void EntityManager::initializeEntities()
 {
     vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
     for(; pp_entity != pp_entityEnd; pp_entity++ )
+    {
+        log << Log::LogLevel( Log::L_DEBUG ) << " initializing entity '" << ( *pp_entity )->getInstanceName() << 
+            "', of type '" << ( *pp_entity )->getTypeName() << "'" << endl;
         ( *pp_entity )->initialize();
+    }
 }
 
 void EntityManager::postInitializeEntities()
 {
     vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
     for(; pp_entity != pp_entityEnd; pp_entity++ )
+    {
+        log << Log::LogLevel( Log::L_DEBUG ) << " post-initializing entity '" << ( *pp_entity )->getInstanceName() << 
+            "', of type '" << ( *pp_entity )->getTypeName() << "'" << endl;
         ( *pp_entity )->postInitialize();
+    }
 }
 
 void EntityManager::updateEntities( float deltaTime  )
