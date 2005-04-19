@@ -30,6 +30,7 @@
  ################################################################*/
 
 #include <ctd_base.h>
+#include "ctd_log.h"
 #include "ctd_physics_helpers.h"
 #include "ctd_physics.h"
 #include <osg/Transform>
@@ -84,11 +85,8 @@ void PhysicsVisitor::apply( Geode& node )
 { 
     // retrieve the node mask which is used for physics material and later for other properies
     _attribute = node.getParent( 0 )->getNodeMask();
-  
     // get the accumulated world matrix for this node
     Matrixf  mat = computeLocalToWorld( getNodePath() );
-
-    cout << "geode visited " << endl;
     unsigned int numDrawables = node.getNumDrawables();
     for ( unsigned int cnt = 0; cnt < numDrawables; cnt++ )
     {
@@ -97,13 +95,8 @@ void PhysicsVisitor::apply( Geode& node )
         // evaluate the geom and generate an appropriate collision geometry
         if ( p_geom )
         {
-            cout << endl << "  building physics collision faces..." << endl;
-            Array*  p_verts   = p_geom->getVertexArray();
-            
-            cout << "  num vertices: " << p_verts->getNumElements() << endl;
-            
+            Array*  p_verts   = p_geom->getVertexArray();                        
             IndexArray* p_indices  = p_geom->getVertexIndices();
-
             unsigned int numPrims = p_geom->getNumPrimitiveSets();
             {
                 for ( unsigned int cnt = 0; cnt < numPrims; cnt++ )
@@ -143,7 +136,7 @@ void PhysicsVisitor::buildTrianlges( PrimitiveSet* p_set, Array* p_verts, Matrix
 {
     if( p_verts->getType() != Array::Vec3ArrayType ) 
     {
-        cout << "*** cannot build trimesh collision data as the vertexarray has not a Vec3 format!" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** cannot build trimesh collision data as the vertexarray has not a Vec3 format!" << endl;
         return;
     }
 
@@ -174,7 +167,7 @@ void PhysicsVisitor::buildTrianlgeStrip( PrimitiveSet* p_set, Array* p_verts, Ma
 {
     if( p_verts->getType() != Array::Vec3ArrayType ) 
     {
-        cout << "*** cannot build trimesh collision data as the vertexarray has not a Vec3 format!" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) <<  "*** cannot build trimesh collision data as the vertexarray has not a Vec3 format!" << endl;
         return;
     }
 

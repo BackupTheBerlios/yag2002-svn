@@ -204,6 +204,7 @@ bool Application::initialize( int argc, char **argv )
     // level manager sets the scene data in Application
     _p_viewer->setSceneData( sceneroot.get() );
  
+    log << Log::LogLevel( Log::L_INFO ) << "finalizing physics setup" << endl;
     // finalize physics initialization when all entities are created
     assert( _p_physics->finalize( _p_rootSceneNode ) );
     // enable physics debug rendering

@@ -69,6 +69,8 @@ LevelManager::~LevelManager()
 
 osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
 {
+    log << Log::LogLevel( Log::L_INFO ) << "loading level ..." << endl;
+    
     ifstream    file;
     file.open( levelFile.c_str(), std::ios::in, std::ios::binary );
     if ( !file )
@@ -144,6 +146,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
             } 
             else 
             {
+                log << Log::LogLevel( Log::L_INFO ) << " loading static geometry: " << p_bufName << endl;
                 osg::Node *p_staticnode = loadStaticWorld( p_bufName );
                 if ( p_staticnode )
                 {
@@ -161,7 +164,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
 
     // read entity definitions
     //------------------------
-    log << Log::LogLevel( Log::L_DEBUG ) << "setup entities" << endl;
+    log << Log::LogLevel( Log::L_DEBUG ) << " create entities ..." << endl;
 
     unsigned int entityCounter = 0;
 
@@ -194,7 +197,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
             log << Log::LogLevel( Log::L_ERROR ) << "*** could not find entity type ' " << entitytype << " ', skipping entity!" << endl;
             continue;
         }
-        log << Log::LogLevel( Log::L_DEBUG ) << "entity created, type: '" << enttype << " '" << endl;
+        log << Log::LogLevel( Log::L_DEBUG ) << "  entity created, type: '" << enttype << " '" << endl;
         // get instance name if one provided
         p_bufName = ( char* )p_entityElement->Attribute( CTD_LVL_ENTITY_INST_NAME );
         if ( p_bufName ) {
@@ -241,7 +244,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
     }
 
     log << Log::LogLevel( Log::L_INFO ) << endl;
-    log << Log::LogLevel( Log::L_INFO ) << "total number of created entities: '" << entityCounter << "'" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << " total number of created entities: '" << entityCounter << "'" << endl;
 
     return mainGroup;
 }
@@ -260,8 +263,7 @@ osg::Node* LevelManager::loadStaticWorld( const string& fileName )
     }
     // stop timer and give out the time messure
     osg::Timer_t end_tick = osg::Timer::instance()->tick();
-    log << Log::LogLevel( Log::L_DEBUG ) << "Time to load = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << endl;
-
+    log << Log::LogLevel( Log::L_DEBUG ) << "  - elapsed time for loading '" << fileName << "' : " << osg::Timer::instance()->delta_s( start_tick, end_tick ) << endl;
     return p_loadedModel;
 }
 
