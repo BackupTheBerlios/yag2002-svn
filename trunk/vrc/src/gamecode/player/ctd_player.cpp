@@ -41,6 +41,7 @@
 #include "ctd_playerphysics.h"
 #include "ctd_playeranim.h"
 #include "ctd_playersound.h"
+#include "ctd_chatgui.h"
 
 using namespace osg;
 using namespace std;
@@ -56,19 +57,22 @@ EnPlayer::EnPlayer() :
 _p_playerPhysics( NULL ),
 _p_playerAnimation( NULL ),
 _p_playerSound( NULL ),
+_p_chatGui( new PlayerChatGui ),
 _playerName( "noname" ),
 _rotation( 0 ),
 _moveDir( Vec3f( 0, 1, 0 ) ),
-_p_inputHandler( NULL )
+_p_inputHandler( NULL ),
+_chatGuiLayoutFile( "gui/chat.xml" )
 {
     EntityManager::get()->registerUpdate( this );     // register entity in order to get updated per simulation step
 
-    getAttributeManager().addAttribute( "name"            , _playerName       );
-    getAttributeManager().addAttribute( "physicsentity"   , _physicsEntity    );
-    getAttributeManager().addAttribute( "animationentity" , _animationEntity  );
-    getAttributeManager().addAttribute( "soundentity"     , _soundEntity      );
-    getAttributeManager().addAttribute( "position"        , _position         );
-    getAttributeManager().addAttribute( "rotation"        , _rotation         );
+    getAttributeManager().addAttribute( "name"              , _playerName           );
+    getAttributeManager().addAttribute( "physicsentity"     , _physicsEntity        );
+    getAttributeManager().addAttribute( "animationentity"   , _animationEntity      );
+    getAttributeManager().addAttribute( "soundentity"       , _soundEntity          );
+    getAttributeManager().addAttribute( "position"          , _position             );
+    getAttributeManager().addAttribute( "rotation"          , _rotation             );
+    getAttributeManager().addAttribute( "chatGuiLayoutFile" , _chatGuiLayoutFile    );
 
     // create a new input handler for this player
     _p_inputHandler = new InputHandler( this );
@@ -109,7 +113,8 @@ EnPlayer::~EnPlayer()
 }
 
 void EnPlayer::initialize()
-{
+{    
+    _p_chatGui->initialize( this, _chatGuiLayoutFile );
 }
 
 void EnPlayer::postInitialize()

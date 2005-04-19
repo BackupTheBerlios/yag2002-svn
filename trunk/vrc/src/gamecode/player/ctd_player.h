@@ -53,6 +53,7 @@ namespace CTD
 class EnPlayerAnimation;
 class EnPlayerPhysics;
 class EnPlayerSound;
+class PlayerChatGui;
 
 //! Player entity
 class EnPlayer : public BaseEntity
@@ -107,6 +108,9 @@ class EnPlayer : public BaseEntity
         //! Rotation about up vector
         float                                       _rotation;
 
+        //! CEGUI layout file for chat
+        std::string                                 _chatGuiLayoutFile;
+
         // the following is for internal use
         //----------------------------------------------------------//
 
@@ -118,6 +122,9 @@ class EnPlayer : public BaseEntity
 
         //! Sound control component
         EnPlayerSound*                              _p_playerSound;
+
+        //! Chat gui
+        std::auto_ptr< PlayerChatGui >              _p_chatGui;
 
         //! Movement direction
         osg::Vec3f                                  _moveDir;
