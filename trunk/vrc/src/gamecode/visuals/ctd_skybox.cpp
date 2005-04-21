@@ -173,7 +173,7 @@ osg::Node* EnSkyBox::makeBox()
         depth->setFunction(osg::Depth::ALWAYS);
         depth->setRange(1.0,1.0);   
         dstate->setAttributeAndModes(depth,osg::StateAttribute::ON );
-        dstate->setMode(GL_FOG, osg::StateAttribute::OFF );
+        dstate->setMode( GL_FOG, osg::StateAttribute::OFF );
         dstate->setRenderBinDetails(-2,"RenderBin");
 
         //for wireframe rendering
