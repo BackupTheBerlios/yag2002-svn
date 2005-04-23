@@ -34,6 +34,7 @@
 #include <ctd_application.h>
 #include <ctd_levelmanager.h>
 #include <ctd_log.h>
+#include <ctd_utils.h>
 #include "ctd_camera.h"
 
 using namespace std;
@@ -41,6 +42,57 @@ using namespace osg;
 
 namespace CTD
 {
+
+//! Input handler for setting the view matrix in 'frame' callback phase
+class CameraFrameHandler : public GenericInputHandler< EnCamera >
+{
+    public:
+
+                                        CameraFrameHandler( EnCamera* p_camEntity ) : 
+                                            GenericInputHandler< EnCamera >( p_camEntity )
+                                        {}
+
+        virtual                         ~CameraFrameHandler() {};
+        
+        bool                            handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
+};
+
+bool CameraFrameHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+{
+    if ( ea.getEventType() == osgGA::GUIEventAdapter::FRAME )
+    {
+        // update camera matrix if needed
+        if ( _p_userObject->_needUpdate )
+        {
+            // setup the view matrix basing on position and transformation        
+            osg::Matrixf trans;
+            trans.makeTranslate( _p_userObject->_curPosition.x(), _p_userObject->_curPosition.y(), _p_userObject->_curPosition.z() );
+            osg::Matrix rot;        
+            rot.makeRotate( _p_userObject->_curRotation );
+
+            // add rotation offset (note: we do not rotate about world coord system)
+            rot = _p_userObject->_offsetMatrixRotation * rot;
+            
+            osg::Matrixf mat;
+            mat = rot * trans;
+
+            // add position offset here
+            mat = _p_userObject->_offsetMatrixPosition * mat;
+
+            //  inverse the matrix
+            osg::Matrixf inv = mat.inverse( mat );
+
+            // adjust Z-UP
+            static Producer::Matrix adjustZ_Up ( Producer::Matrix::rotate( -M_PI / 2.0, 1, 0, 0 ) );
+              // set view matrix
+            Application::get()->getViewer()->setViewByMatrix( Producer::Matrix( inv.ptr() ) * adjustZ_Up  );
+
+            // reset update flag
+            _p_userObject->_needUpdate = false;
+         }
+    }
+    return false;
+}
 
 //! Implement and register the camera entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( CameraEntityFactory );
@@ -50,7 +102,8 @@ _fov( 60.00 ),
 _nearClip( 0.1f ),
 _farClip( 1000.0f ),
 _backgroudColor( Vec3f( 0.2f, 0.2f, 0.2f ) ),
-_needUpdate ( false )
+_needUpdate ( false ),
+_p_cameraHandler( NULL )
 {
     EntityManager::get()->registerUpdate( this );     // register entity in order to get updated per simulation step
 
@@ -65,6 +118,8 @@ _needUpdate ( false )
 
 EnCamera::~EnCamera()
 {
+    // destroy the input handler, this will deregister and delete our handler from viewer's handler list
+    _p_cameraHandler->destroyHandler();
 }
 
 void EnCamera::initialize()
@@ -73,29 +128,27 @@ void EnCamera::initialize()
     Application::get()->getScreenSize( width, height );
 
     // setup camera
-    _p_cam = Application::get()->getViewer()->getCamera( 0 );
-    _p_cam->setLensPerspective( _fov, _fov * ( float( height ) / float( width ) ), _farClip, _nearClip );
-    _p_cam->setClearColor( _backgroudColor.x(), _backgroudColor.y(), _backgroudColor.z(), 1.0 );
+    Producer::Camera* p_cam = Application::get()->getViewer()->getCamera( 0 );
+    p_cam->setLensPerspective( _fov, _fov * ( float( height ) / float( width ) ), _nearClip, _farClip );
+    p_cam->setClearColor( _backgroudColor.x(), _backgroudColor.y(), _backgroudColor.z(), 1.0 );
+    p_cam->setOffset( double( 0 ), double( 0 ) );
 
     _curPosition = _position;
-    _curRotation = osg::Vec3f( 
-                                osg::DegreesToRadians( _rotation.x() ),
-                                osg::DegreesToRadians( _rotation.y() ),
-                                osg::DegreesToRadians( _rotation.z() )
-                              );
+    _curRotation = osg::Quat( 
+                                osg::DegreesToRadians( _rotation.x() ), osg::Vec3f( 0, 1, 0 ), // roll
+                                osg::DegreesToRadians( _rotation.y() ), osg::Vec3f( 1, 0, 0 ), // pitch
+                                osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0, 0, 1 )  // yaw
+                            );
 
-    setCameraTranslation( _curPosition );
-    setCameraRotation( _curRotation );
+    setCameraTranslation( _curPosition, _curRotation );
+
+    // setup the event handler for handling 'frame' callbacks (for setting the view matrix)
+    _p_cameraHandler = new CameraFrameHandler( this );
 }
 
 void EnCamera::updateEntity( float deltaTime )
 {
-    // update camera matrix if needed
-    if ( _needUpdate )
-    {
-        _p_cam->setViewByMatrix( _camMatrix );
-        _needUpdate = false;
-    }
+    // we may add camera fx here later
 }
 
 } // namespace CTD

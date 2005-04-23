@@ -21,7 +21,8 @@
 
 /*###############################################################
  # entity camera
- #  this entity can be attached and used by other cameras 
+ #  this entity can be used by other entities (e.g. player) for 
+ #  controling the rendering view.
  #
  #   date of creation:  04/21/2005
  #
@@ -42,6 +43,8 @@ namespace CTD
 
 #define ENTITY_NAME_CAMERA    "Camera"
 
+class CameraFrameHandler;
+
 //! This entity controls the camera
 class EnCamera :  public BaseEntity
 {
@@ -50,28 +53,29 @@ class EnCamera :  public BaseEntity
 
         virtual                                     ~EnCamera();
 
-        /**
-        * Initializing function, this is called after all engine modules are initialized and a map is loaded.
-        */
+        //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
 
-        /**
-        * Update entity
-        * \param deltaTime                          Time passed since last update
-        */
+        //! Update entity
         void                                        updateEntity( float deltaTime );
 
         //! Set camera translation
-        inline void                                 setCameraTranslation( const osg::Vec3f& trans );
+        inline void                                 setCameraTranslation( const osg::Vec3f& pos, const osg::Quat& rot );
 
-        //! Translate camera
-        inline void                                 translateCamera( const osg::Vec3f& trans );
+        //! Set camera position
+        inline void                                 setCameraPosition( const osg::Vec3f& pos );
 
-        //! Set camera rotation (use euler angles)
-        inline void                                 setCameraRotation( const osg::Vec3f& rot );
+        //! Set camera rotation
+        inline void                                 setCameraRotation( const osg::Quat& rot );
 
-        //! Rotate camera (use euler angles)
-        inline void                                 rotateCamera( const osg::Vec3f& rot );
+        //! Rotate camera
+        inline void                                 rotateCamera( const osg::Quat& rot );
+
+        //! Add an offset to camera rotation
+        inline void                                 setCameraOffsetRotation( const osg::Quat& rotOffset );
+
+        //! Add an offset to camera position
+        inline void                                 setCameraOffsetPosition( const osg::Vec3f& posOffset );
 
     protected:
 
@@ -97,20 +101,25 @@ class EnCamera :  public BaseEntity
 
     protected:
 
-        //! Producer's camera which is controled by this entity
-        Producer::Camera*                           _p_cam;
-
-        //! Camera matrix
-        Producer::Matrix                            _camMatrix;
-
         //! Current camera position
         osg::Vec3f                                  _curPosition;
 
         //! Current camera rotation in randiant
-        osg::Vec3f                                  _curRotation;
+        osg::Quat                                   _curRotation;
+
+        //! Matrix used for offsetting rotation of camera
+        osg::Matrixf                                _offsetMatrixRotation;
+
+        //! Matrix used for offsetting position of camera
+        osg::Matrixf                                _offsetMatrixPosition;
 
         //! Dirty flag
         bool                                        _needUpdate;
+
+        //! Callback handler for setting view matrix in 'frame' callback phase
+        CameraFrameHandler*                         _p_cameraHandler;
+
+    friend class CameraFrameHandler;
 };
 
 //! Entity type definition used for type registry
@@ -126,47 +135,40 @@ class CameraEntityFactory : public BaseEntityFactory
 
 
 // inlines
-inline void EnCamera::setCameraTranslation( const osg::Vec3f& trans )
+inline void EnCamera::setCameraTranslation( const osg::Vec3f& pos, const osg::Quat& rot )
 {
-    _curPosition = trans;
-    _camMatrix = _camMatrix.translate( _curPosition.x(), _curPosition.y(), _curPosition.z() ) *
-                 _camMatrix.rotate( _curRotation.x(), 1, 0, 0 ) *
-                 _camMatrix.rotate( _curRotation.y(), 0, 1, 0 ) *
-                 _camMatrix.rotate( _curRotation.z(), 0, 0, 1 );
-
+    _curPosition = pos;
+    _curRotation = rot;
     _needUpdate = true;
 }
 
-inline void EnCamera::translateCamera( const osg::Vec3f& trans )
+inline void EnCamera::setCameraPosition( const osg::Vec3f& pos )
 {
-    _curPosition += trans;
-    _camMatrix = _camMatrix.translate( _curPosition.x(), _curPosition.y(), _curPosition.z() ) *
-                 _camMatrix.rotate( _curRotation.x(), 1, 0, 0 ) *
-                 _camMatrix.rotate( _curRotation.y(), 0, 1, 0 ) *
-                 _camMatrix.rotate( _curRotation.z(), 0, 0, 1 );
-
+    _curPosition = pos;
     _needUpdate = true;
 }
 
-inline void EnCamera::setCameraRotation( const osg::Vec3f& rot )
+inline void EnCamera::setCameraRotation( const osg::Quat& rot )
 {
     _curRotation = rot;
-    _camMatrix = _camMatrix.translate( _curPosition.x(), _curPosition.y(), _curPosition.z() ) *
-                 _camMatrix.rotate( _curRotation.x(), 1, 0, 0 ) *
-                 _camMatrix.rotate( _curRotation.y(), 0, 1, 0 ) *
-                 _camMatrix.rotate( _curRotation.z(), 0, 0, 1 );
-
     _needUpdate = true;
 }
 
-inline void EnCamera::rotateCamera( const osg::Vec3f& rot )
+inline void EnCamera::rotateCamera( const osg::Quat& rot )
 {
-    _curRotation += rot;
-    _camMatrix = _camMatrix.translate( _curPosition.x(), _curPosition.y(), _curPosition.z() ) *
-                 _camMatrix.rotate( _curRotation.x(), 1, 0, 0 ) *
-                 _camMatrix.rotate( _curRotation.y(), 0, 1, 0 ) *
-                 _camMatrix.rotate( _curRotation.z(), 0, 0, 1 );
+    _curRotation = _curRotation * rot;
+    _needUpdate = true;
+}
 
+inline void EnCamera::setCameraOffsetRotation( const osg::Quat& rotOffset )
+{
+    _offsetMatrixRotation.makeRotate( rotOffset );
+    _needUpdate = true;
+}
+
+inline void EnCamera::setCameraOffsetPosition( const osg::Vec3f& posOffset )
+{
+    _offsetMatrixPosition.makeTranslate( posOffset );
     _needUpdate = true;
 }
 
