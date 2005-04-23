@@ -299,6 +299,10 @@ void Application::run()
         else if ( deltaTime < 0.01f )
             deltaTime = 0.01f;
 
+        // update the scene by traversing it with the the update visitor which will
+        // call all node update callbacks and animations.
+        _p_viewer->update();
+
         // update entities
         _entityManager->update( deltaTime  );
 
@@ -307,16 +311,13 @@ void Application::run()
 
         // update gui manager
         _p_guiManager->update( deltaTime );
-
+         
         // wait for all cull and draw threads to complete.
         _p_viewer->sync();
 
-        // update the scene by traversing it with the the update visitor which will
-        // call all node update callbacks and animations.
-        _p_viewer->update();
-         
         // fire off the cull and draw traversals of the scene.
         _p_viewer->frame();
+
     }
    
     // wait for all cull and draw threads to complete before exit.
