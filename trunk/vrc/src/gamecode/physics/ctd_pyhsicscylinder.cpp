@@ -302,7 +302,7 @@ void EnPhysicsCylinder::initialize()
         return;
     }
     // now we add the new mesh into our transformable scene group
-    addToTransformableNode( p_mesh );
+    addToTransformationNode( p_mesh );
     setPosition( _position );
 
     // create the collision
