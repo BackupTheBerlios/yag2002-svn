@@ -81,14 +81,14 @@ class EnPlayerAnimation  : public BaseEntity
         void                                        setPlayer( EnPlayer* p_player );
 
         /**
+        * Enable / disable rendering
+        */
+        void                                        enableRendering( bool render );
+
+        /**
         * Initializing function
         */
         void                                        initialize();
-
-        /**
-        * Returns true if the initialization was successful.
-        */
-        bool                                        isReady() { return _ready; }
 
         /**
         * Destroy animation system. This must be called during Player's destruction.
@@ -124,9 +124,6 @@ class EnPlayerAnimation  : public BaseEntity
 
         //----------------------------------------------------------//
 
-        //! Shows whether inititialization was successful
-        bool                                        _ready;
-
         EnPlayer*                                   _p_player;
 
         osg::ref_ptr< osgCal::Model >               _model;
@@ -136,6 +133,8 @@ class EnPlayerAnimation  : public BaseEntity
         CalCoreModel*                               _p_calCoreModel;
 
         osg::ref_ptr< osg::PositionAttitudeTransform > _animNode;
+
+        bool                                        _renderingEnabled;
 
         enum 
         {

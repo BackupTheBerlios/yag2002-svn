@@ -61,7 +61,7 @@ _IdAnimWalk( -1 ),
 _IdAnimRun( -1 ),
 _IdAnimJump( -1 ),
 _IdAnimLand( -1 ),
-_ready( true )
+_renderingEnabled( true )
 { 
     // register entity in order to get updated per simulation step
     EntityManager::get()->registerUpdate( this );
@@ -120,7 +120,6 @@ void EnPlayerAnimation::initialize()
     // all textures and cal3d files must be in root dir!
     if ( !setupAnimation( rootDir, configfilename ) )
     {
-        _ready = false;
         return;
     }
 
@@ -177,6 +176,33 @@ void EnPlayerAnimation::updateEntity( float deltaTime )
 {
     // calculate lod factor depending on camera distance
     //_model->getCalModel()->setLodLevel( lod );
+}
+
+void EnPlayerAnimation::enableRendering( bool render )
+{
+    if ( ( _renderingEnabled && render ) || ( !_renderingEnabled && !render ) )
+        return;
+
+    if ( !render )
+        _p_player->removeFromTransformationNode( _animNode.get() );
+    else
+        _p_player->addToTransformationNode( _animNode.get() );
+
+    _renderingEnabled = render;
+}
+
+void EnPlayerAnimation::setPlayer( EnPlayer* p_player )
+{
+    _p_player = p_player;
+    // add the new mesh into player's transformable scene group
+    _p_player->addToTransformationNode( _animNode.get() );
+}
+
+void EnPlayerAnimation::destroy()
+{
+    // note: this method is called by player when it is destroying, e.g. when player disconnects from network
+    _p_player->removeFromTransformationNode( _animNode.get() );
+    EntityManager::get()->deleteEntity( this );
 }
 
 bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& configfilename )
@@ -347,20 +373,6 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
     }
     file.close();
     return true;
-}
-
-void EnPlayerAnimation::setPlayer( EnPlayer* p_player )
-{
-    _p_player = p_player;
-    // add the new mesh into player's transformable scene group
-    _p_player->addToTransformableNode( _animNode.get() );
-}
-
-void EnPlayerAnimation::destroy()
-{
-    // note: this method is called by player when it is destroying, e.g. when player disconnects from network
-    _p_player->removeFromTransformationNode( _animNode.get() );
-    EntityManager::get()->deleteEntity( this );
 }
 
 //! TODO: animation control must be implemented

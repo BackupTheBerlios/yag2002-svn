@@ -37,21 +37,45 @@
 #include <ctd_levelmanager.h>
 #include <ctd_physics.h>
 #include <ctd_log.h>
+#include <ctd_utils.h>
 #include "ctd_player.h"
 #include "ctd_playerphysics.h"
 #include "ctd_playeranim.h"
 #include "ctd_playersound.h"
 #include "ctd_chatgui.h"
+#include "../visuals/ctd_camera.h"
 
 using namespace osg;
 using namespace std;
-using namespace CTD;
-
-//! Implement and register the player entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( PlayerEntityFactory );
 
 namespace CTD
 {
+
+//! Input handler class for player
+class PlayerInputHandler : public GenericInputHandler< EnPlayer >
+{
+    public:
+
+                                            PlayerInputHandler( EnPlayer*p_player );
+                                            
+        virtual                             ~PlayerInputHandler();
+
+        /**
+        * Handle input events.
+        */
+        bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
+
+    protected:
+
+        bool                                _rotateRight;
+        bool                                _rotateLeft;
+        bool                                _moveForward;
+        bool                                _moveBackward;
+        bool                                _camSwitch;
+};
+
+//! Implement and register the player entity factory
+CTD_IMPL_ENTITYFACTORY_AUTO( PlayerEntityFactory );
     
 EnPlayer::EnPlayer() :
 _p_playerPhysics( NULL ),
@@ -59,23 +83,28 @@ _p_playerAnimation( NULL ),
 _p_playerSound( NULL ),
 _p_chatGui( new PlayerChatGui ),
 _playerName( "noname" ),
-_rotation( 0 ),
 _moveDir( Vec3f( 0, 1, 0 ) ),
 _p_inputHandler( NULL ),
-_chatGuiLayoutFile( "gui/chat.xml" )
+_chatGuiLayoutFile( "gui/chat.xml" ),
+_p_camera( NULL ),
+_cameraMode( Isometric )
 {
     EntityManager::get()->registerUpdate( this );     // register entity in order to get updated per simulation step
 
-    getAttributeManager().addAttribute( "name"              , _playerName           );
-    getAttributeManager().addAttribute( "physicsentity"     , _physicsEntity        );
-    getAttributeManager().addAttribute( "animationentity"   , _animationEntity      );
-    getAttributeManager().addAttribute( "soundentity"       , _soundEntity          );
-    getAttributeManager().addAttribute( "position"          , _position             );
-    getAttributeManager().addAttribute( "rotation"          , _rotation             );
-    getAttributeManager().addAttribute( "chatGuiLayoutFile" , _chatGuiLayoutFile    );
+    getAttributeManager().addAttribute( "name"                  , _playerName           );
+    getAttributeManager().addAttribute( "physicsentity"         , _physicsEntity        );
+    getAttributeManager().addAttribute( "animationentity"       , _animationEntity      );
+    getAttributeManager().addAttribute( "soundentity"           , _soundEntity          );
+    getAttributeManager().addAttribute( "position"              , _position             );
+    getAttributeManager().addAttribute( "rotation"              , _rot                  );
+    getAttributeManager().addAttribute( "cameraPosOffsetIso"    , _camPosOffsetIso      );
+    getAttributeManager().addAttribute( "cameraRotOffsetIso"    , _camRotOffsetIso      );
+    getAttributeManager().addAttribute( "cameraPosOffsetEgo"    , _camPosOffsetEgo      );
+    getAttributeManager().addAttribute( "cameraRotOffsetEgo"    , _camRotOffsetEgo      );
+    getAttributeManager().addAttribute( "chatGuiLayoutFile"     , _chatGuiLayoutFile    );
 
     // create a new input handler for this player
-    _p_inputHandler = new InputHandler( this );
+    _p_inputHandler = new PlayerInputHandler( this );
 }
 
 EnPlayer::~EnPlayer()
@@ -98,18 +127,8 @@ EnPlayer::~EnPlayer()
         _p_playerSound->destroy();
     }
 
-    // delete input handler immediately
-    // remove this handler from viewer's handler list
-    osgProducer::Viewer::EventHandlerList& eh = Application::get()->getViewer()->getEventHandlerList();
-    osgProducer::Viewer::EventHandlerList::iterator beg = eh.begin(), end = eh.end();
-    for ( ; beg != end; beg++ )
-    {
-        if ( *beg == _p_inputHandler )
-        {
-            eh.erase( beg );
-            break;
-        }
-    }
+    // destroy input handler
+    _p_inputHandler->destroyHandler();
 }
 
 void EnPlayer::initialize()
@@ -119,8 +138,12 @@ void EnPlayer::initialize()
 
 void EnPlayer::postInitialize()
 {
-
     log << Log::LogLevel( Log::L_INFO ) << "  initializing player instance '" << getInstanceName() << "' ..." << endl;
+
+    log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for camera entity ..." << endl;
+    // get camera entity
+    _p_camera = dynamic_cast< EnCamera* >( EntityManager::get()->findEntity( ENTITY_NAME_CAMERA ) );
+    assert( _p_camera && "could not find the camera entity. you need at lease one!" );
 
     log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for physics entity '" << _physicsEntity << "' ..." << endl;
     // find and attach physics component
@@ -134,6 +157,9 @@ void EnPlayer::postInitialize()
     _p_playerAnimation = dynamic_cast< EnPlayerAnimation* >( EntityManager::get()->findEntity( ENTITY_NAME_PLANIM, _animationEntity ) );
     assert( _p_playerAnimation && "given instance name does not belong to a EnPlayerAnimation entity type!" );
     _p_playerAnimation->setPlayer( this );
+    if ( _cameraMode == Ego ) // in ego mode we won't render our character
+        _p_playerAnimation->enableRendering( false );
+
     log << Log::LogLevel( Log::L_DEBUG ) << "   -  animation entity successfully attached" << endl;
 
     log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for sound entity '" << _soundEntity << "' ..." << endl;
@@ -149,33 +175,84 @@ void EnPlayer::postInitialize()
 
     setPosition( _position );
 
+    // setup camera mode
+    setCameraMode( _cameraMode );
+
     log << Log::LogLevel( Log::L_INFO ) << "  player instance successfully initialized" << endl;
 }
 
 void EnPlayer::updateEntity( float deltaTime )
 {
     _p_playerPhysics->update( deltaTime );
+    // adjust the camera to updated position and rotation. the physics updates the translation of player.
+    // adjust camera to character's head position
+    _p_camera->setCameraTranslation( _position, _rotation );
+}
+
+void EnPlayer::setCameraMode( unsigned int mode )
+{
+    switch ( mode )
+    {
+        case Isometric:
+        {
+            _p_camera->setCameraOffsetPosition( _camPosOffsetIso );
+            osg::Quat rot;
+            rot.makeRotate( 
+                osg::DegreesToRadians( _camRotOffsetIso.x()  ), osg::Vec3f( 0, 1, 0 ), // roll
+                osg::DegreesToRadians( _camRotOffsetIso.y()  ), osg::Vec3f( 1, 0, 0 ), // pitch
+                osg::DegreesToRadians( _camRotOffsetIso.z()  ), osg::Vec3f( 0, 0, 1 )  // yaw
+                );
+            _p_camera->setCameraOffsetRotation( rot );
+            _p_playerAnimation->enableRendering( true );
+        } 
+        break;
+
+        case Ego:
+        {
+            _p_camera->setCameraOffsetPosition( _camPosOffsetEgo );
+            osg::Quat rot;
+            rot.makeRotate( 
+                osg::DegreesToRadians( _camRotOffsetEgo.x()  ), osg::Vec3f( 0, 1, 0 ), // roll
+                osg::DegreesToRadians( _camRotOffsetEgo.y()  ), osg::Vec3f( 1, 0, 0 ), // pitch
+                osg::DegreesToRadians( _camRotOffsetEgo.z()  ), osg::Vec3f( 0, 0, 1 )  // yaw
+                );
+            _p_camera->setCameraOffsetRotation( rot );
+            _p_playerAnimation->enableRendering( false );
+        }
+        break;
+
+        default:
+            assert( NULL && "requesting for an invalid camera mode" );
+
+    }
+    _cameraMode = ( CameraMode )mode;
+}
+
+void EnPlayer::setNextCameraMode()
+{
+    if ( _cameraMode == Isometric )
+        setCameraMode( Ego );
+    else
+        setCameraMode( Isometric );
 }
 
 // input handler implementation
 //-----------------------------
-EnPlayer::InputHandler::InputHandler( EnPlayer*p_player ) : 
-_p_player( p_player ) ,
+PlayerInputHandler::PlayerInputHandler( EnPlayer* p_player ) : 
+GenericInputHandler< EnPlayer >( p_player ),
 _rotateRight( false ),
 _rotateLeft( false ),
 _moveForward( false ),
-_moveBackward( false )
-{
-    // register us in viewer to get event callbacks
-    osg::ref_ptr< EnPlayer::InputHandler > ih( this );
-    Application::get()->getViewer()->getEventHandlerList().push_back( ih.get() );
-}
-
-EnPlayer::InputHandler::~InputHandler() 
+_moveBackward( false ),
+_camSwitch( false )
 {
 }
 
-bool EnPlayer::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+PlayerInputHandler::~PlayerInputHandler() 
+{
+}
+
+bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
     unsigned int eventType   = ea.getEventType();
     int          key         = ea.getKey();
@@ -183,6 +260,16 @@ bool EnPlayer::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GU
     // dispatch key activity
     if ( eventType == osgGA::GUIEventAdapter::KEYDOWN )
     {
+        // change camera mode
+        if ( key == osgGA::GUIEventAdapter::KEY_F1 )
+        {
+            if ( !_camSwitch )
+            {
+                _p_userObject->setNextCameraMode();
+                _camSwitch = true;
+            }
+        }
+
         if ( key == osgGA::GUIEventAdapter::KEY_Up )
             _moveForward = true;
 
@@ -197,12 +284,15 @@ bool EnPlayer::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GU
 
         if ( key == 'm' )
         {
-            _p_player->_p_playerPhysics->jump();
-            _p_player->_p_playerAnimation->animJump();
+            _p_userObject->_p_playerPhysics->jump();
+            _p_userObject->_p_playerAnimation->animJump();
         }
     }
     else if ( eventType == osgGA::GUIEventAdapter::KEYUP )
-    {
+    {     
+        if ( key == osgGA::GUIEventAdapter::KEY_F1 )
+            _camSwitch = false;
+            
         if ( ( key == osgGA::GUIEventAdapter::KEY_Up ) || ( key == osgGA::GUIEventAdapter::KEY_Down ) )
         {
             if ( key == osgGA::GUIEventAdapter::KEY_Up )
@@ -211,7 +301,7 @@ bool EnPlayer::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GU
             if ( key == osgGA::GUIEventAdapter::KEY_Down )
                 _moveBackward = false;
 
-            _p_player->_p_playerPhysics->setForce( 0, 0 );
+            _p_userObject->_p_playerPhysics->setForce( 0, 0 );
         }
 
         if ( key == osgGA::GUIEventAdapter::KEY_Right )
@@ -223,47 +313,47 @@ bool EnPlayer::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GU
 
     if ( _rotateRight )
     {
-        _p_player->_rotation += _p_player->_p_playerPhysics->getAngularForce();
-        if ( _p_player->_rotation > PI * 2.0f )
-            _p_player->_rotation -= PI * 2.0f;
+        _p_userObject->_rot += _p_userObject->_p_playerPhysics->getAngularForce();
+        if ( _p_userObject->_rot > PI * 2.0f )
+            _p_userObject->_rot -= PI * 2.0f;
 
-        _p_player->_moveDir._v[ 0 ] = sinf( _p_player->_rotation );
-        _p_player->_moveDir._v[ 1 ] = cosf( _p_player->_rotation );
+        _p_userObject->_moveDir._v[ 0 ] = sinf( _p_userObject->_rot );
+        _p_userObject->_moveDir._v[ 1 ] = cosf( _p_userObject->_rot );
 
-        _p_player->_p_playerAnimation->animTurn();
+        _p_userObject->_p_playerAnimation->animTurn();
     }
 
     if ( _rotateLeft )
     {
-        if ( _p_player->_rotation < 0 )
-            _p_player->_rotation += PI * 2.0f;
-        _p_player->_rotation -= _p_player->_p_playerPhysics->getAngularForce();
+        if ( _p_userObject->_rot < 0 )
+            _p_userObject->_rot += PI * 2.0f;
+        _p_userObject->_rot -= _p_userObject->_p_playerPhysics->getAngularForce();
 
-        _p_player->_moveDir._v[ 0 ] = sinf( _p_player->_rotation );
-        _p_player->_moveDir._v[ 1 ] = cosf( _p_player->_rotation );
+        _p_userObject->_moveDir._v[ 0 ] = sinf( _p_userObject->_rot );
+        _p_userObject->_moveDir._v[ 1 ] = cosf( _p_userObject->_rot );
 
-        _p_player->_p_playerAnimation->animTurn();
+        _p_userObject->_p_playerAnimation->animTurn();
     }
 
     if ( _moveForward )
     {
-        _p_player->_p_playerPhysics->setForce( _p_player->_moveDir._v[ 0 ], _p_player->_moveDir._v[ 1 ] );
-        _p_player->_p_playerAnimation->animWalk();
+        _p_userObject->_p_playerPhysics->setForce( _p_userObject->_moveDir._v[ 0 ], _p_userObject->_moveDir._v[ 1 ] );
+        _p_userObject->_p_playerAnimation->animWalk();
     }
 
     if ( _moveBackward )
     {
-        _p_player->_p_playerPhysics->setForce( -_p_player->_moveDir._v[ 0 ], -_p_player->_moveDir._v[ 1 ] );
-        _p_player->_p_playerAnimation->animWalk();
+        _p_userObject->_p_playerPhysics->setForce( -_p_userObject->_moveDir._v[ 0 ], -_p_userObject->_moveDir._v[ 1 ] );
+        _p_userObject->_p_playerAnimation->animWalk();
     }
 
     if ( !_moveForward && !_moveBackward )
     {
         if ( !_rotateLeft && !_rotateRight )
-            _p_player->_p_playerAnimation->animIdle();
+            _p_userObject->_p_playerAnimation->animIdle();
 
-        if ( _p_player->getPlayerSound() )
-            _p_player->getPlayerSound()->stopPlayingAll();
+        if ( _p_userObject->getPlayerSound() )
+            _p_userObject->getPlayerSound()->stopPlayingAll();
     }
 
     return false; // let other handlers get all inputs handled here

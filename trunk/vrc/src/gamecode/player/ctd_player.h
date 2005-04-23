@@ -53,7 +53,9 @@ namespace CTD
 class EnPlayerAnimation;
 class EnPlayerPhysics;
 class EnPlayerSound;
+class EnCamera;
 class PlayerChatGui;
+class PlayerInputHandler;
 
 //! Player entity
 class EnPlayer : public BaseEntity
@@ -85,6 +87,18 @@ class EnPlayer : public BaseEntity
         //! Return player's sound component, used by physics component
         EnPlayerSound*                              getPlayerSound() { return _p_playerSound; }
 
+        //! Set player's position. It is used by physics.
+        inline void                                 setPlayerPosition( const osg::Vec3f& pos );
+
+        //! Set player's rotation. It is used by physics.
+        inline void                                 setPlayerRotation( const osg::Quat& rot );
+
+        //! Set camera mode to Isometric or Ego
+        void                                        setCameraMode( unsigned int mode );
+
+        //! Set next camera mode
+        void                                        setNextCameraMode();
+
     protected:
 
         // entity attributes
@@ -102,17 +116,41 @@ class EnPlayer : public BaseEntity
         //! Sound entity's instance name which will be attached to player
         std::string                                 _soundEntity;
 
+        //! Camera entity
+        EnCamera*                                   _p_camera;
+
         //! Initial position
         osg::Vec3f                                  _position;
 
-        //! Rotation about up vector
-        float                                       _rotation;
+        //! Rotation
+        osg::Quat                                   _rotation;
+
+        //! Camera's position offset for isometric mode
+        osg::Vec3f                                  _camPosOffsetIso;
+
+        //! Camera's rotation offset for isometric mode ( roll/pitch/yaw in degrees )
+        osg::Vec3f                                  _camRotOffsetIso;
+
+        //! Camera's position offset for ego mode
+        osg::Vec3f                                  _camPosOffsetEgo;
+
+        //! Camera's rotation offset for ego mode ( roll/pitch/yaw in degrees )
+        osg::Vec3f                                  _camRotOffsetEgo;
 
         //! CEGUI layout file for chat
         std::string                                 _chatGuiLayoutFile;
 
+    protected:
+
         // the following is for internal use
         //----------------------------------------------------------//
+
+        //! Camera mode
+        enum CameraMode
+        {
+            Ego,
+            Isometric
+        }                                           _cameraMode;
 
         //! Physics component
         EnPlayerPhysics*                            _p_playerPhysics;
@@ -129,38 +167,15 @@ class EnPlayer : public BaseEntity
         //! Movement direction
         osg::Vec3f                                  _moveDir;
 
-        //! Input handler class
-        class InputHandler : public osgGA::GUIEventHandler
-        {
-            public:
+        //! Rotation about Z axis
+        float                                       _rot;
 
-                                                    InputHandler( EnPlayer*p_player );
-                                                    
-                virtual                             ~InputHandler();
-
-                /**
-                * Handle input events.
-                */
-                bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
-
-            protected:
-
-                EnPlayer*                           _p_player;
-
-                bool                                _rotateRight;
-                bool                                _rotateLeft;
-                bool                                _moveForward;
-                bool                                _moveBackward;
-
-
-        };
-
-        InputHandler*                               _p_inputHandler;
+        PlayerInputHandler*                         _p_inputHandler;
 
     friend class EnPlayerPhysics;
     friend class EnPlayerAnimation;
     friend class EnPlayerSound;
-    friend class InputHandler;
+    friend class PlayerInputHandler;
 };
 
 //! Entity type definition used for type registry
@@ -173,6 +188,17 @@ class PlayerEntityFactory : public BaseEntityFactory
 
         Macro_CreateEntity( EnPlayer );
 };
+
+// inlines
+inline void EnPlayer::setPlayerPosition( const osg::Vec3f& pos )
+{
+    _position = pos;
+}
+
+inline void EnPlayer::setPlayerRotation( const osg::Quat& rot )
+{
+    _rotation = rot;
+}
 
 } // namespace CTD
 
