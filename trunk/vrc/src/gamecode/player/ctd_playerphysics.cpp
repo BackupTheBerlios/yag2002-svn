@@ -219,8 +219,15 @@ void EnPlayerPhysics::physicsSetTransform( const NewtonBody* p_body, const float
     mat = Matrixf( p_matrix );    
     Quat quat;
     mat.get( quat );
+
+    osg::Vec3f trans = mat.getTrans();
+    // directly set player node's position and rotation
     p_node->setRotation( quat );
-    p_node->setPosition( mat.getTrans() );
+    p_node->setPosition( trans );
+
+    // update also player's internal position and rotation so the camera can by adjusted by player every frame
+    p_node->setPlayerRotation( quat );
+    p_node->setPlayerPosition( trans );
 }
 
 int EnPlayerPhysics::collideWithLevel( const NewtonMaterial* p_material, const NewtonContact* p_contact )

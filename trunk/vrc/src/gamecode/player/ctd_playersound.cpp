@@ -118,7 +118,7 @@ void EnPlayerSound::postInitialize()
     }
 
     // add the sound group into player node
-    _p_player->addToTransformableNode( _p_soundGroup );
+    _p_player->addToTransformationNode( _p_soundGroup );
 }
 
 void EnPlayerSound::destroy()
