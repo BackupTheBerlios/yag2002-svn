@@ -136,6 +136,11 @@ class BaseEntity
         */
         void                                        setTransformationNode( osg::PositionAttitudeTransform* p_trans );
 
+        /**
+        * Get transformation node.
+        */
+        osg::PositionAttitudeTransform*             getTransformationNode();
+
         /** 
         * Set position of the transform node
         */
@@ -196,7 +201,7 @@ class BaseEntity
         /**
         * Add a node to our transformation node, assume that we use a transform node
         */
-        void                                        addToTransformableNode( osg::Node* p_node );
+        void                                        addToTransformationNode( osg::Node* p_node );
 
         /**
         * Remove a node from our transformation node, assume that we use a transform node

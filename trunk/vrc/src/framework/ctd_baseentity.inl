@@ -64,7 +64,12 @@ inline void BaseEntity::setTransformationNode( osg::PositionAttitudeTransform* p
     _p_transformNode = p_trans;
 }
 
-inline void BaseEntity::addToTransformableNode( osg::Node* p_node )
+inline osg::PositionAttitudeTransform* BaseEntity::getTransformationNode() 
+{ 
+    return _p_transformNode;
+}
+
+inline void BaseEntity::addToTransformationNode( osg::Node* p_node )
 {
     assert( _p_transformNode && "this entity has no transformation node!" );
     _p_transformNode->addChild( p_node );
