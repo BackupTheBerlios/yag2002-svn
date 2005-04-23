@@ -130,7 +130,7 @@ void En3DSound::initialize()
         osg::Node* p_mesh = LevelManager::get()->loadMesh( "sound/soundsrc.osg" );
         if ( p_mesh )
         {
-            addToTransformableNode( p_mesh );
+            addToTransformationNode( p_mesh );
             setPosition( _position );
         } else
             cout << "*** error loading mesh file for sound source 'sound/soundsrc.osg'" << endl;
