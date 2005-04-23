@@ -28,14 +28,6 @@
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
-//--------------------------------------------------------//
-//           memory lead detection definitions            //
-//--------------------------------------------------------//
-#define DEBUG_NEW new(_NORMAL_BLOCK, THIS_FILE, __LINE__) //
-#define new DEBUG_NEW                                     //
-#undef THIS_FILE                                          //
-static char THIS_FILE[] = __FILE__;                       //
-//--------------------------------------------------------//
 
 #include <ctd_base.h>
 #include "ctd_platform.h"
@@ -79,7 +71,7 @@ void EnPlatform::initialize()
         return;
     }
     // now we add the new mesh into our transformable scene group
-    addToTransformableNode( p_mesh );
+    addToTransformationNode( p_mesh );
     setPosition( _position );
 }
 
