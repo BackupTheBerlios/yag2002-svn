@@ -95,7 +95,7 @@ void EnPointLight::initialize()
     p_light->setQuadraticAttenuation( _quadraticAttenuation );
 
     // add light to entity's transform node
-    addToTransformableNode( _lightSource.get() );
+    addToTransformationNode( _lightSource.get() );
        
     // set mesh if one defined
     if ( _meshFile.length() )
@@ -104,7 +104,7 @@ void EnPointLight::initialize()
         if ( !mesh.valid() ) 
             log << Log::LogLevel( Log::L_WARNING ) << " cannot find mesh file" << _meshFile << endl;
         else
-            addToTransformableNode( mesh.get() );
+            addToTransformationNode( mesh.get() );
     }
     
     // set entity position which is also the light source position

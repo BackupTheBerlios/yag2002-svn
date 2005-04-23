@@ -191,7 +191,7 @@ void EnWater::initialize()
 {
     //get loaded level mesh and setup the water including reflection/refracion and mirroring
     osg::Node *p_node = LevelManager::get()->getStaticMesh();
-    addToTransformableNode( setupWater( p_node ) );
+    addToTransformationNode( setupWater( p_node ) );
     setPosition( _position );
 
     _stimulationPeriod = 1.0f / _stimulationRate;
