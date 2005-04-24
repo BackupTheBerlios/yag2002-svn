@@ -74,8 +74,19 @@ class EnMenu :  public BaseEntity
 
     protected:
 
+
+        //! Callback for button click "game settings"        
+        bool                                        onClickedGameSettings( const CEGUI::EventArgs& arg );
+
+        //! Callback for button click "quit"        
+        bool                                        onClickedQuit( const CEGUI::EventArgs& arg );
+
+        //! Callback for button click "start"        
+        bool                                        onClickedStart( const CEGUI::EventArgs& arg );
+
         std::auto_ptr< DialogGameSettings >         _settingsDialog;
 
+        CEGUI::Window*                              _p_menuWindow;
 };
 
 //! Entity type definition used for type registry

@@ -37,13 +37,19 @@
 #include "ctd_dialogsettings.h"
 
 using namespace std;
-using namespace CTD; 
+
+namespace CTD
+{
+
+// prefix for menu layout resources
+#define MENU_PREFIX     "menu_"
+
 
 //! Implement and register the menu entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( MenuEntityFactory );
 
-
-EnMenu::EnMenu()
+EnMenu::EnMenu() :
+_p_menuWindow( NULL )
 {
     EntityManager::get()->registerUpdate( this );   // register entity in order to get updated per simulation step
 
@@ -58,14 +64,58 @@ EnMenu::~EnMenu()
 
 void EnMenu::initialize()
 {
+
+    // load the main menu layout
+    try
+    {
+        _p_menuWindow = GuiManager::get()->loadLayout( _menuConfig, NULL, MENU_PREFIX );
+
+        // set button callbacks
+
+        CEGUI::PushButton* p_btnGS = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_game_settings" ) );
+        p_btnGS->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedGameSettings, this ) );
+
+        CEGUI::PushButton* p_btnquit = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_quit" ) );
+        p_btnquit->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedQuit, this ) );
+
+        CEGUI::PushButton* p_btnstart = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_start" ) );
+        p_btnstart->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedStart, this ) );
+    }
+    catch ( CEGUI::Exception e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "*** Menu: cannot find layout: " << _menuConfig << endl;
+        log << "      reason: " << e.getMessage().c_str() << endl;
+        return;
+    }
+
     // setup dialog for editing game settings
     _settingsDialog = auto_ptr< DialogGameSettings >( new DialogGameSettings );
-    if ( !_settingsDialog->initialize( _settingsDialogConfig ) )
+    if ( !_settingsDialog->initialize( _settingsDialogConfig, _p_menuWindow ) )
         return;
-    
+
+}
+
+bool EnMenu::onClickedGameSettings( const CEGUI::EventArgs& arg )
+{
     _settingsDialog->show( true );
+    return true;
+}
+
+bool EnMenu::onClickedQuit( const CEGUI::EventArgs& arg )
+{
+    Application::get()->stop();
+    return true;
+}
+
+bool EnMenu::onClickedStart( const CEGUI::EventArgs& arg )
+{
+    MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "under construction :-)", MessageBoxDialog::OK, true );
+    p_msg->show();
+    return true;
 }
 
 void EnMenu::updateEntity( float deltaTime )
 {
 }
+
+} // namespace CTD
