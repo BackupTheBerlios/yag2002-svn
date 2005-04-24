@@ -72,9 +72,9 @@ DialogGameSettings::~DialogGameSettings()
     assert( !_busy && "this object must not be destroyed before the message box has been closed! see method onClickedOk" );
 }
 
-bool DialogGameSettings::initialize( const string& layoutfile )
+bool DialogGameSettings::initialize( const string& layoutfile, CEGUI::Window* p_parent )
 {    
-    _p_settingsDialog = GuiManager::get()->loadLayout( layoutfile, NULL, SDLG_PREFIX );
+    _p_settingsDialog = GuiManager::get()->loadLayout( layoutfile, p_parent, SDLG_PREFIX );
     if ( !_p_settingsDialog )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** DialogGameSettings: cannot find layout: " << layoutfile << endl;

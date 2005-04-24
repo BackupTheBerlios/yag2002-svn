@@ -46,24 +46,24 @@ class BtnInputHandler : public GenericInputHandler< CEGUI::PushButton >
 {
     public:
 
-                                        BtnInputHandler( CEGUI::PushButton* p_obj, DialogGameSettings* p_dlg ) : 
-                                            GenericInputHandler< CEGUI::PushButton >( p_obj ),
-                                            _p_dlg( p_dlg ),
-                                            _lockInput( false )
-                                        {}
+                                                    BtnInputHandler( CEGUI::PushButton* p_obj, DialogGameSettings* p_dlg ) : 
+                                                        GenericInputHandler< CEGUI::PushButton >( p_obj ),
+                                                        _p_dlg( p_dlg ),
+                                                        _lockInput( false )
+                                                    {}
 
-        virtual                         ~BtnInputHandler() {};
+        virtual                                     ~BtnInputHandler() {};
         
-        bool                            handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
+        bool                                        handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
 
     protected:
 
         //! Updates key bindings considering potential overriding bindings
-        void                            updateBindings( const std::string newkey );
+        void                                        updateBindings( const std::string newkey );
 
-        DialogGameSettings*             _p_dlg;
+        DialogGameSettings*                         _p_dlg;
 
-        bool                            _lockInput;
+        bool                                        _lockInput;
 };
 
 class DialogGameSettings
@@ -73,8 +73,8 @@ class DialogGameSettings
 
         virtual                                     ~DialogGameSettings();
 
-        //! Initialize gui layout, return false when something went wrong. 
-        bool                                        initialize( const std::string& layoutfile );
+        //! Initialize gui layout, return false when something went wrong. Optionaly one can set a parent window.
+        bool                                        initialize( const std::string& layoutfile, CEGUI::Window* p_parent = NULL );
 
         //! Update dialog control
         void                                        update( float deltaTime );
