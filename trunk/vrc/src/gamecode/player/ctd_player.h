@@ -116,9 +116,6 @@ class EnPlayer : public BaseEntity
         //! Sound entity's instance name which will be attached to player
         std::string                                 _soundEntity;
 
-        //! Camera entity
-        EnCamera*                                   _p_camera;
-
         //! Initial position
         osg::Vec3f                                  _position;
 
@@ -145,6 +142,10 @@ class EnPlayer : public BaseEntity
         // the following is for internal use
         //----------------------------------------------------------//
 
+        //! Set camera's pitch and yaw angles given the mouse position [-1..1, -1..1]
+        //  for looking around
+        void                                        setCameraPitchYaw( float pitch, float yaw );
+
         //! Camera mode
         enum CameraMode
         {
@@ -160,6 +161,9 @@ class EnPlayer : public BaseEntity
 
         //! Sound control component
         EnPlayerSound*                              _p_playerSound;
+
+        //! Camera entity
+        EnCamera*                                   _p_camera;
 
         //! Chat gui
         std::auto_ptr< PlayerChatGui >              _p_chatGui;

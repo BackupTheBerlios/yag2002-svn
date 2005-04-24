@@ -236,6 +236,39 @@ void EnPlayer::setNextCameraMode()
         setCameraMode( Isometric );
 }
 
+void EnPlayer::setCameraPitchYaw( float pitch, float yaw )
+{
+#define LIMIT_PITCH_ANGLE   45.0f
+#define LIMIT_PITCH_OFFSET  -20.0f;
+
+    if ( _cameraMode == Isometric )
+    {
+        float angleY = yaw * 360.0f;
+        float angleX = ( pitch * LIMIT_PITCH_ANGLE ) + LIMIT_PITCH_OFFSET;
+        _p_camera->setLocalPitchYaw( angleX, angleY );
+    }
+    // in ego mode we turn the character instead of yawing the camera!
+    else
+    {
+        float angleY = -yaw * 360.0f;
+        float angleX = pitch * LIMIT_PITCH_ANGLE;
+
+        static float lastY = 0;
+
+        _rot += osg::DegreesToRadians( angleY - lastY );
+        if ( _rot > PI * 2.0f )
+            _rot -= PI * 2.0f;
+
+        lastY = angleY;
+
+        _moveDir._v[ 0 ] = sinf( _rot );
+        _moveDir._v[ 1 ] = cosf( _rot );
+        _p_playerAnimation->animTurn();
+
+        _p_camera->setLocalPitch( angleX );
+    }
+}
+
 // input handler implementation
 //-----------------------------
 PlayerInputHandler::PlayerInputHandler( EnPlayer* p_player ) : 
@@ -355,6 +388,9 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
         if ( _p_userObject->getPlayerSound() )
             _p_userObject->getPlayerSound()->stopPlayingAll();
     }
+    
+    // adjust pitch / yaw
+    _p_userObject->setCameraPitchYaw( ea.getY(), -ea.getX() );
 
     return false; // let other handlers get all inputs handled here
 }
