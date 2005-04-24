@@ -71,11 +71,39 @@ class EnCamera :  public BaseEntity
         //! Rotate camera
         inline void                                 rotateCamera( const osg::Quat& rot );
 
-        //! Add an offset to camera rotation
+        //! Add an offset to camera rotation.
+        /**
+        * Note: the methods setLocalPitchYaw and setLocalPitch override the results of this method and
+        *       vice vera!
+        */
         inline void                                 setCameraOffsetRotation( const osg::Quat& rotOffset );
 
         //! Add an offset to camera position
         inline void                                 setCameraOffsetPosition( const osg::Vec3f& posOffset );
+
+        //! Set camera's pitch and yaw in degrees, used for looking around.
+        /**
+        * Note: the method setCameraOffsetRotation overrides the results of this method and
+        *       vice vera!
+        */
+        inline void                                 setLocalPitchYaw( float pitch, float yaw );
+
+        //! Get the current pitch and yaw
+        inline void                                 getLocalPitchYaw( float& pitch, float& yaw );
+
+        //! Set camera's pitch in degrees, used for looking around.
+        /**
+        * Note: the method setCameraOffsetRotation overrides the results of this method and
+        *       vice vera!
+        */
+        inline void                                 setLocalPitch( float pitch );
+
+        //! Set camera's yaw in degrees, used for looking around.
+        /**
+        * Note: the method setCameraOffsetRotation overrides the results of this method and
+        *       vice vera!
+        */
+        inline void                                 setLocalYaw( float yaw );
 
     protected:
 
@@ -112,6 +140,12 @@ class EnCamera :  public BaseEntity
 
         //! Matrix used for offsetting position of camera
         osg::Matrixf                                _offsetMatrixPosition;
+
+        //! Pitch for locally orienting the camera view
+        float                                       _pitch;
+
+        //! Yaw for locally orienting the camera view
+        float                                       _yaw;
 
         //! Dirty flag
         bool                                        _needUpdate;
@@ -169,6 +203,52 @@ inline void EnCamera::setCameraOffsetRotation( const osg::Quat& rotOffset )
 inline void EnCamera::setCameraOffsetPosition( const osg::Vec3f& posOffset )
 {
     _offsetMatrixPosition.makeTranslate( posOffset );
+    _needUpdate = true;
+}
+
+inline void EnCamera::setLocalPitchYaw( float pitch, float yaw )
+{
+    _pitch = pitch;
+    _yaw   = yaw;
+    osg::Quat rot( 
+                    osg::DegreesToRadians( pitch ), osg::Vec3f( 1, 0, 0 ),
+                    osg::DegreesToRadians( 0.0f  ), osg::Vec3f( 0, 1, 0 ),
+                    osg::DegreesToRadians( yaw   ), osg::Vec3f( 0, 0, 1 )
+                 );
+
+    _offsetMatrixRotation = osg::Matrixf( rot );
+    _needUpdate = true;
+}
+
+inline void EnCamera::getLocalPitchYaw( float& pitch, float& yaw )
+{
+    pitch = _pitch;
+    yaw   = _yaw;
+}
+
+inline void EnCamera::setLocalPitch( float pitch )
+{
+    _pitch = pitch;
+    osg::Quat rot( 
+                    osg::DegreesToRadians( pitch ), osg::Vec3f( 1, 0, 0 ),
+                    osg::DegreesToRadians( 0.0f  ), osg::Vec3f( 0, 1, 0 ),
+                    osg::DegreesToRadians( 0.0f  ), osg::Vec3f( 0, 0, 1 )
+                 );
+
+    _offsetMatrixRotation = osg::Matrixf( rot );
+    _needUpdate = true;
+}
+
+inline void EnCamera::setLocalYaw( float yaw )
+{
+    _yaw   = yaw;
+    osg::Quat rot( 
+                    osg::DegreesToRadians( 0.0f  ), osg::Vec3f( 1, 0, 0 ),
+                    osg::DegreesToRadians( 0.0f  ), osg::Vec3f( 0, 1, 0 ),
+                    osg::DegreesToRadians( yaw   ), osg::Vec3f( 0, 0, 1 )
+                 );
+
+    _offsetMatrixRotation = osg::Matrixf( rot );
     _needUpdate = true;
 }
 

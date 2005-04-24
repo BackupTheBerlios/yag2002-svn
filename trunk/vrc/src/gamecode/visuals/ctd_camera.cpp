@@ -21,7 +21,8 @@
 
 /*###############################################################
  # entity camera
- #  this entity can be attached and used by other cameras 
+ #  this entity can be used by other entities (e.g. player) for 
+ #  controling the rendering view.
  #
  #   date of creation:  04/21/2005
  #
@@ -103,7 +104,9 @@ _nearClip( 0.1f ),
 _farClip( 1000.0f ),
 _backgroudColor( Vec3f( 0.2f, 0.2f, 0.2f ) ),
 _needUpdate ( false ),
-_p_cameraHandler( NULL )
+_p_cameraHandler( NULL ),
+_pitch( 0 ),
+_yaw( 0 )
 {
     EntityManager::get()->registerUpdate( this );     // register entity in order to get updated per simulation step
 
