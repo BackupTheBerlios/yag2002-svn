@@ -34,6 +34,7 @@
 
 #include <ctd_base.h>
 #include <ctd_guimanager.h>
+#include <ctd_utils.h>
 
 namespace CTD
 {
