@@ -370,22 +370,31 @@
 					RelativePath="..\..\..\..\src\gamecode\physics\ctd_geomemitter.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_pyhsicsbox.cpp">
+					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicsbase.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_pyhsicsbox.h">
+					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicsbase.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_pyhsicscylinder.cpp">
+					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicsbase.inl">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_pyhsicscylinder.h">
+					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicsbox.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_pyhsicsshpere.h">
+					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicsbox.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_pyhsicssphere.cpp">
+					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicscylinder.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicscylinder.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicsshpere.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicssphere.cpp">
 				</File>
 			</Filter>
 			<Filter
