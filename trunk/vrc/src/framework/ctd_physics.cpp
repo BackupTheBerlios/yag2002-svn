@@ -429,6 +429,11 @@ CollisionStruct* Physics::getCollisionStruct()
     return s_colStruct;
 }
 
+void Physics::setCollisionStruct( CollisionStruct* p_colStruct )
+{
+    s_colStruct = p_colStruct;
+}
+
 int Physics::levelContactProcess(const NewtonMaterial* p_material, const NewtonContact* p_contact )
 {
     // handle level submaterials

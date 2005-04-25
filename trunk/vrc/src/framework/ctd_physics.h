@@ -99,6 +99,10 @@ class Physics : public Singleton< Physics >
         //!  Use this struct to get tangent and normal speed of collision after the genericContactEnd function.
         static CollisionStruct*                     getCollisionStruct();
 
+        //! Set the collision struct.
+        //!  This method can be used to mix entity-specific physics callbacks and Physics' callbacks
+        static void                                 setCollisionStruct( CollisionStruct* p_colStruct );
+
         //! Collision callback function for level contact processing ( this can be used in entity material definitions )
         static int                                  levelContactProcess( const NewtonMaterial* p_material, const NewtonContact* p_contact );
 
