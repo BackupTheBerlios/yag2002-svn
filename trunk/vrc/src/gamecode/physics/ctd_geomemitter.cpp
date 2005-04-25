@@ -103,7 +103,9 @@ void EnGeomEmitter::updateEntity( float deltaTime )
         Vec3f randPos( ( float )( ( rand() % 100 ) - 100 ), ( float )( ( rand() % 80 ) - 80 ), ( float )( rand() % 30 ) );
         p_entity->getAttributeManager().setAttributeValue( "position", _position + randPos );
 
+        // setup entities
         p_entity->initialize();
+        p_entity->postInitialize();
 
         float live = ( float )( 15 + rand() % 20 );
         _geoms.push_back( make_pair( p_entity, live ) );
