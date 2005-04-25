@@ -287,7 +287,7 @@ void Application::run()
     osg::Timer_t     curTick   = 0;
     osg::Timer_t     lastTick  = 0;
 
-    while( _p_gameState->getMode() != GameState::Quitting && !_p_viewer->done() )
+    while( ( _p_gameState->getState() != GameState::Quitting ) && !_p_viewer->done() )
     {
         lastTick  = curTick;
         curTick   = timer.tick();
@@ -317,9 +317,11 @@ void Application::run()
 
         // fire off the cull and draw traversals of the scene.
         _p_viewer->frame();
+    }   
 
-    }
-   
+    // for the case that we quited via entity request ( such as menu's quit button pressing )
+    _p_viewer->setDone( true );
+
     // wait for all cull and draw threads to complete before exit.
     _p_viewer->sync();
 }
