@@ -187,12 +187,12 @@
 </node>
 </node>
 <node TEXT="hud">
-<node TEXT="0%">
+<node TEXT="50%">
 <icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
 <node TEXT="control / logic">
-<node TEXT="20%">
+<node TEXT="25%">
 <icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
@@ -204,13 +204,13 @@
 </node>
 </node>
 <node TEXT="box">
-<node TEXT="70%, sound is missing">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="100%, sound is missing">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 <node TEXT="sphere">
-<node TEXT="70%, sound is missing">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="100%, sound is missing">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 <node TEXT="geometry emitter">
@@ -264,8 +264,8 @@
 </node>
 </node>
 <node TEXT="spot light">
-<node TEXT="0%">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 <node TEXT="dirdctional light">
@@ -314,7 +314,7 @@
 </node>
 </node>
 <node TEXT="main menu">
-<node TEXT="0%">
+<node TEXT="30%">
 <icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
