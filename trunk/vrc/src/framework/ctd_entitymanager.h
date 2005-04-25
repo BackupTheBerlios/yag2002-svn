@@ -21,7 +21,7 @@
 
 /*###############################################################
  # entity manager holding all game objects and provides services
- #  as updating and searching for entitiy by name etc.
+ #  such as updating and searching for entities by name etc.
  #
  #   date of creation:  02/17/2005
  #
@@ -54,7 +54,7 @@ class EntityManager : public Singleton< EntityManager >
         //! Register an entity in order to get it updated in every frame or deregister an entity if "update" is false.
         /*! Usually all active game objects should be registered. 
             Asserts in debug build if the given entity is already registered.
-            */
+        */
         void                                        registerUpdate( BaseEntity* p_entity, bool update = true );
 
         //! Add the given entity to scene.
@@ -63,26 +63,22 @@ class EntityManager : public Singleton< EntityManager >
         */
         void                                        addToScene( BaseEntity* p_entity, osg::Group *p_scenegrp = NULL );
 
-        //! Register an entity factory. 
+        //! Register / deregister an entity factory. If reg is true then the entity is registered, otherwise it is deregistered.
         /*! Every type must be unique.
             Returns false if the given factory is already registered.
-            */
-         bool                                       registerFactory( BaseEntityFactory* p_entityName );
-
-        //! Remove entity factory's registration. 
-        /*! Use this if you wish to completely remove an entity factory. Note that deregistering does not delete the registry object!
+            Use deregistration if you wish to completely remove an entity factory. Note that deregistering does not delete the registry object!
             Returns false if the given factory was not registered.
-            */
-        bool                                        deregisterFactory( BaseEntityFactory* p_entityName );
+        */
+        bool                                        registerFactory( BaseEntityFactory* p_entityName, bool reg = true );
 
         //! Return an entity factory object given entity's name. Use it as creator instance of desired entity factory.
         /*! Returns NULL if entity type is not registered.
-           */
+        */
         BaseEntityFactory*                          getEntityFactory( const std::string& entityName );
 
         //! Create a new entity given its type and optional instance name.
         /*! Returns NULL if entity type does not exist.
-           */
+        */
         BaseEntity*                                 createEntity( const std::string& type, const std::string& instanceName = "" );
 
         //! Delete given entitiy
@@ -93,14 +89,13 @@ class EntityManager : public Singleton< EntityManager >
         //! Find an entity of given type.
         /*! If instanceName is empty then the first enity matching type will be returned.
         *   Returns NULL if no entity found.
-           */
+        */
         BaseEntity*                                 findEntity( const std::string& type, const std::string& instanceName = "" );
 
         //! Find an entity instance.
         /*! Returns NULL if no entity found.
-           */
+        */
         BaseEntity*                                 findInstance( const std::string& instanceName );
-
 
     protected:
 
@@ -136,7 +131,7 @@ class EntityManager : public Singleton< EntityManager >
         //! Delete all entities
         void                                        deleteAllEntities();
 
-        //! Add given entity into pool ( used in level mananger ). the pool contains all loaded entities
+        //! Add given entity into pool ( used in level mananger ). the pool contains all entities
         void                                        addToEntityPool( BaseEntity* p_entity );
 
         //! Remove given entity from pool. If del is true then the entity is also deleted.
@@ -154,11 +149,26 @@ class EntityManager : public Singleton< EntityManager >
         //! List of all entities which are going to be initialized after level loading
         std::vector< BaseEntity* >                  _entityPool;
 
+        //! List of entities to be added to pool gathered in initialization / post-initialization phases
+        /**
+        * This is used when adding to pool entity requests arise during initialization / post-initialization phases.
+        * Such request is triggered e.g. by cloning an entity. In order to avoid the manipulation of entity pool list 
+        * the actual action is delayed until to end of post-initialization phase.
+        */
+        std::vector< BaseEntity* >                  _queueAddToPoolEntities;
+
         //! List of all registered entity types
         std::vector< BaseEntityFactory* >           _entityFactories;
 
-        //! Internal flag indicating the phase of deleting all entities ( see deleteAllEntities() )
-        bool                                        _stateDeletingEntities;
+        //! Flag indicating the various internal states
+        enum
+        {
+            None,
+            InitializingEntities,
+            UpdatingEntities,
+            PostInitializingEntities,
+            DeletingEntities
+        }                                           _internalState;
 
     friend class Singleton< EntityManager >;
     friend class LevelManager;

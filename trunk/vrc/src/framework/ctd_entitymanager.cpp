@@ -21,7 +21,7 @@
 
 /*###############################################################
  # entity manager holding all game objects and provides services
- #  as updating and searching for entitiy by name etc.
+ #  such as updating and searching for entities by name etc.
  #
  #   date of creation:  02/17/2005
  #
@@ -43,7 +43,7 @@ CTD_SINGLETON_IMPL( EntityManager );
 
 
 EntityManager::EntityManager() :
-_stateDeletingEntities( false )
+_internalState( None )
 {
 }
 
@@ -60,11 +60,14 @@ void EntityManager::shutdown()
 
 void EntityManager::update( float deltaTime  )
 {
+    // set internal state
+    _internalState = UpdatingEntities;
+
     // delete queued entities for deletion
-    vector<BaseEntity*>::iterator pp_delentity = _queueDeletedEntities.begin(), pp_delentityEnd = _queueDeletedEntities.end();
+    vector< BaseEntity* >::iterator pp_delentity = _queueDeletedEntities.begin(), pp_delentityEnd = _queueDeletedEntities.end();
     for( ; pp_delentity != pp_delentityEnd; pp_delentity++ )
     {
-        vector<BaseEntity*>::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
+        vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
         for( ; pp_entity != pp_entityEnd; pp_entity++ )
         {
             if ( *pp_entity == *pp_delentity )
@@ -102,33 +105,36 @@ void EntityManager::update( float deltaTime  )
 
     // now update all entities
     updateEntities( deltaTime );
+
+    // set internal state
+    _internalState = None;
 }
 
-bool EntityManager::registerFactory( BaseEntityFactory* p_entityFactory )
+bool EntityManager::registerFactory( BaseEntityFactory* p_entityFactory, bool reg )
 {
     vector< BaseEntityFactory* >::iterator pp_entity = _entityFactories.begin(), pp_entityEnd = _entityFactories.end();
-    for(; pp_entity != pp_entityEnd; pp_entity++ )
+    if ( reg )
     {
-        if ( **pp_entity == *p_entityFactory )
-            return false;
-    }
-    _entityFactories.push_back( p_entityFactory );
-    return true;
-}
-
-bool EntityManager::deregisterFactory( BaseEntityFactory* p_entityFactory )
-{
-    vector< BaseEntityFactory* >::iterator pp_entity = _entityFactories.begin(), pp_entityEnd = _entityFactories.end();
-    for(; pp_entity != pp_entityEnd; pp_entity++ )
-    {
-        if ( **pp_entity == *p_entityFactory )
+        for(; pp_entity != pp_entityEnd; pp_entity++ )
         {
-            _entityFactories.erase( pp_entity );
-            return true;
+            if ( **pp_entity == *p_entityFactory )
+                return false;
+        }
+        _entityFactories.push_back( p_entityFactory );
+        return true;
+    }
+    else
+    {
+        for(; pp_entity != pp_entityEnd; pp_entity++ )
+        {
+            if ( **pp_entity == *p_entityFactory )
+            {
+                _entityFactories.erase( pp_entity );
+                return true;
+            }
         }
     }
-
-    return false;
+    return false;    
 }
 
 BaseEntityFactory* EntityManager::getEntityFactory( const string& type )
@@ -197,8 +203,8 @@ BaseEntity* EntityManager::findInstance( const string& instanceName )
 
 void EntityManager::registerUpdate( CTD::BaseEntity* p_entity, bool update )
 {
-    // check whether the entity is already registered
 #ifdef _DEBUG
+    // check whether the entity is already registered
     if ( update )
     {
         vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
@@ -217,7 +223,7 @@ void EntityManager::registerUpdate( CTD::BaseEntity* p_entity, bool update )
 void EntityManager::deregisterUpdate( BaseEntity* p_entity )
 {
     // if we are in the phase of deleting entities so avoid entity list manipulation!
-    if ( _stateDeletingEntities )
+    if ( _internalState == DeletingEntities )
         return;
 
     vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
@@ -229,10 +235,12 @@ void EntityManager::deregisterUpdate( BaseEntity* p_entity )
             return;
         }
     }
+#ifdef _DEBUG
     assert( NULL && "request for entity update deregistration: entity was not registered before!" );
+#endif
 }
 
-//! TODO implement a real adding functionality basing on spatial partitioning
+//! TODO(?) implement a real adding functionality basing on spatial partitioning
 void EntityManager::addToScene( BaseEntity* p_entity, osg::Group *p_scenegr )
 {
     assert( p_entity && p_entity->_p_transformNode && "adding to scene requires a transformation node in entity!" );
@@ -242,11 +250,18 @@ void EntityManager::addToScene( BaseEntity* p_entity, osg::Group *p_scenegr )
 
 void EntityManager::addToEntityPool( BaseEntity* p_entity )
 {
-    _entityPool.push_back( p_entity );
+    // if entities cause this call (e.g. by entity cloning) during initialization phase then delay the actual
+    //  adding to entity pool until next update (otherwise the pool list gets corrupted).
+    if ( ( _internalState == InitializingEntities ) || ( _internalState == PostInitializingEntities ) )
+        _queueAddToPoolEntities.push_back( p_entity );
+    else
+        _entityPool.push_back( p_entity );
 }
 
 void EntityManager::removeFromEntityPool( BaseEntity* p_entity, bool del )
 {
+    assert ( ( _internalState == UpdatingEntities ) && "internal error: this method can be called only during updating phase" );
+
     vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
     for(; pp_entity != pp_entityEnd; pp_entity++ )
         if ( ( *pp_entity ) == p_entity )
@@ -267,6 +282,9 @@ void EntityManager::removeFromEntityPool( BaseEntity* p_entity, bool del )
 
 void EntityManager::initializeEntities()
 {
+    // set internal state
+    _internalState = InitializingEntities;
+
     vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
     for(; pp_entity != pp_entityEnd; pp_entity++ )
     {
@@ -274,10 +292,16 @@ void EntityManager::initializeEntities()
             "', of type '" << ( *pp_entity )->getTypeName() << "'" << endl;
         ( *pp_entity )->initialize();
     }
+
+    // set internal state
+    _internalState = None;
 }
 
 void EntityManager::postInitializeEntities()
 {
+    // set internal state
+    _internalState = PostInitializingEntities;
+
     vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
     for(; pp_entity != pp_entityEnd; pp_entity++ )
     {
@@ -285,6 +309,14 @@ void EntityManager::postInitializeEntities()
             "', of type '" << ( *pp_entity )->getTypeName() << "'" << endl;
         ( *pp_entity )->postInitialize();
     }
+
+    // add new entities to pool if the request came in during initialization or post-initialization
+    vector< BaseEntity* >::iterator pp_addtopoolentity = _queueAddToPoolEntities.begin(), pp_addtopoolentitiyEnd = _queueAddToPoolEntities.end();
+    for ( ; pp_addtopoolentity != pp_addtopoolentitiyEnd; pp_addtopoolentity++ )
+        _entityPool.push_back( *pp_addtopoolentity );
+
+    // set internal state
+    _internalState = None;
 }
 
 void EntityManager::updateEntities( float deltaTime  )
@@ -300,7 +332,7 @@ void EntityManager::updateEntities( float deltaTime  )
 void EntityManager::deleteEntity( BaseEntity* p_entity )
 {
     // if the deleteEntity is called during shutdown via a e.g. entity destructor then ignore further handling
-    if ( _stateDeletingEntities )
+    if ( _internalState == DeletingEntities )
         return;
 
     // enqueue entity for deletion. the real deletion will occur on next update phase
@@ -309,13 +341,16 @@ void EntityManager::deleteEntity( BaseEntity* p_entity )
 
 void EntityManager::deleteAllEntities()
 {
-    _stateDeletingEntities = true; // set this state so deregistering has no effect on entity list in this phase
+    // set internal state to deleting so deregistering in entity destructors have
+    //  no effect on entity list in this phase
+    _internalState = DeletingEntities;
+
     vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
     for(; pp_entity != pp_entityEnd; pp_entity++ )
         if ( ( *pp_entity )->getAutoDelete() ) // delete only if auto delete flag is set
             delete *pp_entity;
 
-    _stateDeletingEntities = false;
+    _internalState = None;
     _updateEntities.clear();
     _entityPool.clear();
     _queueDeletedEntities.clear();
@@ -327,11 +362,13 @@ void EntityManager::deleteAllEntities()
 BaseEntityFactory::BaseEntityFactory( const std::string& entityTypeName ) : 
 _typeTypeName( entityTypeName ) 
 {
-    EntityManager::get()->registerFactory( this );
+    // register factory
+    EntityManager::get()->registerFactory( this, true );
 }
         
 BaseEntityFactory::~BaseEntityFactory()
 {
-    EntityManager::get()->deregisterFactory( this );
+    // deregister factory
+    EntityManager::get()->registerFactory( this, false );
 }
 
