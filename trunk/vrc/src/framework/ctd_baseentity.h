@@ -47,8 +47,43 @@
 namespace CTD 
 {
 
+class BaseEntity;
 class Application;
 class BaseEntityFactory;
+
+//! Base class for all kinds of entity notifications.
+class EntityNotify
+{
+    public:
+                                                    
+                                                    EntityNotify( unsigned int id, BaseEntity* p_sender = NULL ) :
+                                                     _id( id ),
+                                                     _p_sender( p_sender )
+                                                    {}
+
+        virtual                                     ~EntityNotify() {}
+
+        //! Return the notification id
+        unsigned int                                getId()
+                                                    {
+                                                        return _id;
+                                                    }
+
+        BaseEntity*                                 getSender()
+                                                    {
+                                                        return _p_sender;
+                                                    }
+
+    protected:
+
+        unsigned int                                _id;
+
+        BaseEntity*                                 _p_sender;
+};
+//! Some standard notification ids
+#define     CTD_NOTIFY_MENU_ENTER                   0xF0000010
+#define     CTD_NOTIFY_MENU_LEAVE                   0xF0000011
+
 
 //! Base of all game entities
 class BaseEntity
@@ -88,19 +123,26 @@ class BaseEntity
         /**
         * Initializing function, this is called after all engine modules are initialized and a map is loaded.
         */
-        virtual void                                initialize() {};
+        virtual void                                initialize() {}
 
         /**
         * Post-initializing function, this is called after all plugins' entities are initilized.
         * One important usage of this function is to search and attach entities to eachother, after all entities are initialized.
         */
-        virtual void                                postInitialize() {};
+        virtual void                                postInitialize() {}
 
         /**
         * Update entity
         * \param fDeltaTime                         Time passed since last update
         */
-        virtual void                                updateEntity( float deltaTime ) {};
+        virtual void                                updateEntity( float deltaTime ) {}
+
+        /**
+        * Handle notifications. In order to get notifications the entity must register via EntityManager's registerNotification method.
+        * \param notify                             The notification struct. It may be useful to cast it to appropriate type for 
+        *                                           game-codespecific structs. 
+        */
+        virtual void                                handleNotification( EntityNotify& notify ) {}
 
         /**
         * Returns true if the entity is active.
@@ -126,7 +168,7 @@ class BaseEntity
 
         /**
         * Override and return false if the entitiy does not need transformation.
-        * This method is called during entity creation by the level loader.
+        * This method is called during entity creation e.g. by the level loader.
         */
         virtual bool                                needTransformation() { return true; }
 
