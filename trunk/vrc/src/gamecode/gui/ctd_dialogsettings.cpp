@@ -38,6 +38,7 @@
 #include <ctd_keymap.h>
 #include <ctd_utils.h>
 #include "ctd_dialogsettings.h"
+#include "../sound/ctd_ambientsound.h"
 
 using namespace std;
 
@@ -49,6 +50,7 @@ namespace CTD
 
 DialogGameSettings::DialogGameSettings() :
 _busy( false ),
+_p_clickSound( NULL ),
 _p_settingsDialog( NULL ),
 _p_playername( NULL ),
 _p_mouseSensivity( NULL ),
@@ -74,7 +76,8 @@ DialogGameSettings::~DialogGameSettings()
 
 bool DialogGameSettings::initialize( const string& layoutfile, CEGUI::Window* p_parent )
 {    
-    _p_settingsDialog = GuiManager::get()->loadLayout( layoutfile, p_parent, SDLG_PREFIX );
+    _p_parent = p_parent;
+    _p_settingsDialog = GuiManager::get()->loadLayout( layoutfile, NULL, SDLG_PREFIX );
     if ( !_p_settingsDialog )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** DialogGameSettings: cannot find layout: " << layoutfile << endl;
@@ -159,6 +162,11 @@ bool DialogGameSettings::initialize( const string& layoutfile, CEGUI::Window* p_
     setupControls();
 
     return true;
+}
+
+void DialogGameSettings::setClickSound( EnAmbientSound* p_sound )
+{
+    _p_clickSound = p_sound;
 }
 
 bool DialogGameSettings::isDirty()
@@ -305,6 +313,10 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
     // disappear the dialog
     show( false );
 
+    // play click sound
+    if ( _p_clickSound )
+        _p_clickSound->startPlaying();
+
     return true;
 }
 
@@ -312,6 +324,10 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
 {
     if ( !isDirty() )
         return true;
+
+    // play click sound
+    if ( _p_clickSound )
+        _p_clickSound->startPlaying();
 
     _p_settingsDialog->disable();
 
@@ -346,6 +362,11 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
                                         _p_dialogSettings->show( false );
                                         // enable the dialog again
                                         _p_dialogSettings->_p_settingsDialog->enable();
+
+                                        // play click sound
+                                        if ( _p_dialogSettings->_p_clickSound )
+                                            _p_dialogSettings->_p_clickSound->startPlaying();
+
                                     }
 
             DialogGameSettings*     _p_dialogSettings;
@@ -519,9 +540,17 @@ void DialogGameSettings::show( bool visible )
     {
         setupControls();
         _p_settingsDialog->show();
+        if ( _p_parent )
+        {
+            _p_parent->disable();
+            _p_settingsDialog->enable();
+        }
     }
     else
+    {
         _p_settingsDialog->hide();
+        _p_parent->enable();
+    }
 }
 
 }

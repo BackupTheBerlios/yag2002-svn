@@ -40,6 +40,7 @@ namespace CTD
 {
 
 class DialogGameSettings;
+class EnAmbientSound;
 
 //! Input handler for sensing
 class BtnInputHandler : public GenericInputHandler< CEGUI::PushButton >
@@ -81,6 +82,9 @@ class DialogGameSettings
 
         //! Show/hide the dialog
         void                                        show( bool visible );
+
+        //! Set click sound object
+        void                                        setClickSound( EnAmbientSound* p_sound );
 
     protected:
 
@@ -134,6 +138,10 @@ class DialogGameSettings
         bool                                        _busy;
     
         //  internal variables
+
+        CEGUI::Window*                              _p_parent;
+
+        EnAmbientSound*                             _p_clickSound;
 
         CEGUI::Window*                              _p_settingsDialog;
 

@@ -42,6 +42,8 @@ namespace CTD
 #define ENTITY_NAME_MENU    "Menu"
 
 class DialogGameSettings;
+class MenuInputHandler;
+class EnAmbientSound;
 
 //! The menu system is controlled by this entity
 class EnMenu :  public BaseEntity
@@ -64,6 +66,12 @@ class EnMenu :  public BaseEntity
         //! This entity needs updating
         void                                        updateEntity( float deltaTime );
 
+        //! Enter the menu
+        void                                        enter();
+
+        //! Leave menu
+        void                                        leave();
+
     protected:
 
         //! Entity parameters
@@ -71,6 +79,10 @@ class EnMenu :  public BaseEntity
         std::string                                 _menuConfig;
 
         std::string                                 _settingsDialogConfig;
+
+        std::string                                 _buttonClickSound;
+
+        std::string                                 _buttonHoverSound;
 
     protected:
 
@@ -84,9 +96,26 @@ class EnMenu :  public BaseEntity
         //! Callback for button click "start"        
         bool                                        onClickedStart( const CEGUI::EventArgs& arg );
 
+        //! Callback for mouse hover ( over a button ), used for playing sound
+        bool                                        onButtonHover( const CEGUI::EventArgs& arg );
+
+        //! Callback for losing mouse hover ( over a button ), used for playing sound
+        bool                                        onButtonLostHover( const CEGUI::EventArgs& arg );
+
+        //! Creates a sound entity with given filename
+        EnAmbientSound*                              setupSound( const std::string& filename );
+
+        std::auto_ptr< EnAmbientSound >             _p_clickSound;
+
+        std::auto_ptr< EnAmbientSound >             _p_hoverSound;
+
         std::auto_ptr< DialogGameSettings >         _settingsDialog;
 
         CEGUI::Window*                              _p_menuWindow;
+
+        bool                                        _beginHover;
+
+        MenuInputHandler*                           _p_inputHandler;
 };
 
 //! Entity type definition used for type registry
