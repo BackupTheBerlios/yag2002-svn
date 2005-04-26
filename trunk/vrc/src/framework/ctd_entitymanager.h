@@ -51,17 +51,17 @@ class EntityManager : public Singleton< EntityManager >
 {
     public:
 
-        //! Register an entity in order to get it updated in every frame or deregister an entity if "update" is false.
+        //! Register an entity in order to get it updated in every frame or deregister an entity if "reg" is false.
         /*! Usually all active game objects should be registered. 
-            Asserts in debug build if the given entity is already registered.
+            Returns false if the given entity is already registered (or it was not previousely registered in case of deregistering).
         */
-        void                                        registerUpdate( BaseEntity* p_entity, bool update = true );
+        bool                                        registerUpdate( BaseEntity* p_entity, bool reg = true );
 
-        //! Add the given entity to scene.
-        /* \param p_entity                          Entity to add to scene
-         * \param p_scenegrp                        Scene group into which the entity is attached. If it's NULL then the root group is used.
+        //! Register or deregister an entity for getting notifications.
+        /*! Returns false if the given entity is already registered (or it was not previousely registered in case of deregistering).
+
         */
-        void                                        addToScene( BaseEntity* p_entity, osg::Group *p_scenegrp = NULL );
+        bool                                        registerNotification( BaseEntity* p_entity, bool reg = true );
 
         //! Register / deregister an entity factory. If reg is true then the entity is registered, otherwise it is deregistered.
         /*! Every type must be unique.
@@ -71,15 +71,23 @@ class EntityManager : public Singleton< EntityManager >
         */
         bool                                        registerFactory( BaseEntityFactory* p_entityName, bool reg = true );
 
+        //! Add the given entity to scene.
+        /* \param p_entity                          Entity to add to scene
+         * \param p_scenegrp                        Scene group into which the entity is attached. If it's NULL then the root group is used.
+        */
+        void                                        addToScene( BaseEntity* p_entity, osg::Group *p_scenegrp = NULL );
+
         //! Return an entity factory object given entity's name. Use it as creator instance of desired entity factory.
         /*! Returns NULL if entity type is not registered.
         */
         BaseEntityFactory*                          getEntityFactory( const std::string& entityName );
 
         //! Create a new entity given its type and optional instance name.
-        /*! Returns NULL if entity type does not exist.
+        /*! If addToPool is true then the entity will be added to entity pool. Set this to false if you are
+        *   going to use the entity in a private fashion, so the entity will not be searchable and the destruction will not be managed by EntityManager.
+        *   Returns NULL if entity type does not exist.
         */
-        BaseEntity*                                 createEntity( const std::string& type, const std::string& instanceName = "" );
+        BaseEntity*                                 createEntity( const std::string& type, const std::string& instanceName = "", bool addToPool = true );
 
         //! Delete given entitiy
         /*! \param  p_entity                        Entity to delete
@@ -96,6 +104,11 @@ class EntityManager : public Singleton< EntityManager >
         /*! Returns NULL if no entity found.
         */
         BaseEntity*                                 findInstance( const std::string& instanceName );
+
+        //! Send a notification to all notification-registered entities.
+        /*! This mechanism allows to notify all entities about actions such as entering or leaving menu.
+        */
+        void                                        sendNotification( const EntityNotify& notify );
 
     protected:
 
@@ -148,6 +161,9 @@ class EntityManager : public Singleton< EntityManager >
 
         //! List of all entities which are going to be initialized after level loading
         std::vector< BaseEntity* >                  _entityPool;
+
+        //! List of all entities which registered for getting notification
+        std::vector< BaseEntity* >                  _entityNotification;
 
         //! List of entities to be added to pool gathered in initialization / post-initialization phases
         /**

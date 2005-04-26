@@ -149,7 +149,7 @@ BaseEntityFactory* EntityManager::getEntityFactory( const string& type )
     return NULL;
 }
  
-BaseEntity* EntityManager::createEntity( const string& type, const string& instanceName )
+BaseEntity* EntityManager::createEntity( const string& type, const string& instanceName, bool addToPool )
 {
     BaseEntityFactory* p_type = getEntityFactory( type );
     if ( !p_type )
@@ -159,7 +159,8 @@ BaseEntity* EntityManager::createEntity( const string& type, const string& insta
     p_ent->setInstanceName( instanceName );
     
     // add entity into internal pool
-    addToEntityPool( p_ent );
+    if ( addToPool )
+        addToEntityPool( p_ent );
     
     return p_ent;
 }
@@ -201,23 +202,67 @@ BaseEntity* EntityManager::findInstance( const string& instanceName )
     return NULL;
 }
 
-void EntityManager::registerUpdate( CTD::BaseEntity* p_entity, bool update )
+bool EntityManager::registerUpdate( CTD::BaseEntity* p_entity, bool reg )
 {
-#ifdef _DEBUG
-    // check whether the entity is already registered
-    if ( update )
-    {
-        vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
-        for(; pp_entity != pp_entityEnd; pp_entity++ )
-        {
-            if ( *pp_entity == p_entity )
-                break;
-        }
-        assert( pp_entity == pp_entityEnd );
-    }
-#endif
 
-    _queueUpdateEntities.push_back( make_pair( p_entity, update ) );
+    // check whether the entity is already registered
+    vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
+    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    {
+        if ( *pp_entity == p_entity )
+            break;
+    }
+    if ( !reg && ( pp_entity == pp_entityEnd ) )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "*** EntityManager: the entity is was previousely not registered for updating!, ignoring deregister request" << endl;
+        return false;
+    }
+    else if ( reg && ( pp_entity != pp_entityEnd ) )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "*** EntityManager: the entity is already registered for updating!, ignoring register request" << endl;
+        return false;
+    }
+
+    _queueUpdateEntities.push_back( make_pair( p_entity, reg ) );
+    return true;
+}
+
+bool EntityManager::registerNotification( BaseEntity* p_entity, bool reg )
+{
+    // check whether the entity is already registered
+    vector< BaseEntity* >::iterator pp_entity = _entityNotification.begin(), pp_entityEnd = _entityNotification.end();
+    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    {
+        if ( *pp_entity == p_entity )
+            break;
+    }
+    if ( !reg && ( pp_entity == pp_entityEnd ) )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "*** EntityManager: the entity is was previousely not registered for getting notification!, ignoring deregister request" << endl;
+        return false;
+    }
+    else if ( reg && ( pp_entity != pp_entityEnd ) )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "*** EntityManager: the entity is already registered for getting notification!, ignoring register request" << endl;
+        return false;
+    }
+
+    if ( reg )
+        _entityNotification.push_back( p_entity );
+    else
+        _entityNotification.erase( pp_entity );
+
+    return true;
+}
+
+void EntityManager::sendNotification( const EntityNotify& notify )
+{
+    // send notification to registered entities
+    vector< BaseEntity* >::iterator pp_entity = _entityNotification.begin(), pp_entityEnd = _entityNotification.end();
+    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    {
+        ( *pp_entity )->handleNotification( const_cast< EntityNotify& >( notify ) );
+    }
 }
 
 void EntityManager::deregisterUpdate( BaseEntity* p_entity )
