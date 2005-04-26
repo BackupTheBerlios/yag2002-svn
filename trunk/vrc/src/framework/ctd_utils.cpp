@@ -89,4 +89,31 @@ std::string extractFileName( const std::string& fullpath )
 
     return "";
 }
+
+void getDirectoryListing( std::vector< std::string >& listing, const std::string& dir, const std::string& extension )
+{
+	WIN32_FIND_DATA findData;
+	HANDLE          fileHandle;
+	int             flag = 1;
+	std::string     search ( "*." );
+	std::string     directory( dir );
+	
+    if ( directory == "" ) 
+        directory = ".";
+
+	directory += "/";
+	search = directory + search + extension;
+	// SetCurrentDirectory(dir.c_str());
+	fileHandle = FindFirstFile( search.c_str(), &findData );
+	if ( fileHandle == INVALID_HANDLE_VALUE ) 
+        return;
+
+	while ( flag )
+	{
+		listing.push_back( findData.cFileName );
+		flag = FindNextFile( fileHandle, &findData );
+	}
+	FindClose( fileHandle );
+}
+
 } // namespace CTD

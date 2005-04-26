@@ -46,6 +46,9 @@ std::string extractPath( const std::string& fullpath );
 //! Given a full path this function extracts the file name
 std::string extractFileName( const std::string& fullpath );
 
+//! Given a directory this function retrieves all files inside for given extension
+void getDirectoryListing( std::vector< std::string >& listing, const std::string& dir, const std::string& extension );
+
 //! A generic input handler class with automatic adding and removing to / from viewer's event hanlder list
 struct NullType {};
 template< class T = NullType >
