@@ -177,8 +177,8 @@ _autodel( autodelete )
             // create 'Ok' button
             CEGUI::PushButton* p_btnok = 
                 static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", "_msg_box_btn_ok_" ) );
-            p_btnok->setSize( CEGUI::Size( 0.95f, 0.1f ) );
-            p_btnok->setPosition( CEGUI::Point( 0.025f, 0.875f ) );
+            p_btnok->setSize( CEGUI::Size( 0.95f, 0.15f ) );
+            p_btnok->setPosition( CEGUI::Point( 0.025f, 0.825f ) );
             p_btnok->setText( "Ok" );
             _p_wnd->addChildWindow( p_btnok );
             // set callback
