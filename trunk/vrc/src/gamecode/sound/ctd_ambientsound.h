@@ -42,12 +42,12 @@ namespace CTD
 #define ENTITY_NAME_AMBIENTSOUND    "AmbientSound"
 
 //! 3DSound Entity
-class EnAmientSound : public BaseEntity
+class EnAmbientSound : public BaseEntity
 {
     public:
-                                                    EnAmientSound();
+                                                    EnAmbientSound();
 
-        virtual                                     ~EnAmientSound();
+        virtual                                     ~EnAmbientSound();
 
         //! Initialize 
         void                                        initialize();
@@ -88,7 +88,7 @@ class AmbientSoundEntityFactory : public BaseEntityFactory
 
         virtual                                     ~AmbientSoundEntityFactory() {}
 
-        Macro_CreateEntity( EnAmientSound );
+        Macro_CreateEntity( EnAmbientSound );
 };
 
 }

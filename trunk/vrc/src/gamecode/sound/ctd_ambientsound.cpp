@@ -32,6 +32,7 @@
 #include <ctd_base.h>
 #include <ctd_application.h>
 #include <ctd_levelmanager.h>
+#include <ctd_log.h>
 #include "ctd_ambientsound.h"
 
 using namespace std;
@@ -44,7 +45,7 @@ namespace CTD
 CTD_IMPL_ENTITYFACTORY_AUTO( AmbientSoundEntityFactory );
 
 
-EnAmientSound::EnAmientSound() :
+EnAmbientSound::EnAmbientSound() :
 _loop( true ),
 _autoPlay( true ),
 _volume( 0.8f ),
@@ -54,23 +55,23 @@ _soundState( NULL )
     //! Note: this entity needs no periodic updating
 
     // register entity attributes
-    _attributeManager.addAttribute( "resourcedir" , _soundFileDir   );
-    _attributeManager.addAttribute( "soundfile",    _soundFile      );
+    _attributeManager.addAttribute( "resourceDir" , _soundFileDir   );
+    _attributeManager.addAttribute( "soundFile",    _soundFile      );
     _attributeManager.addAttribute( "loop",         _loop           );
-    _attributeManager.addAttribute( "autoplay",     _autoPlay       );
+    _attributeManager.addAttribute( "autoPlay",     _autoPlay       );
     _attributeManager.addAttribute( "volume",       _volume         );
 
     // this entity does not need a periodic update
     activate( false );
 }
 
-EnAmientSound::~EnAmientSound()
+EnAmbientSound::~EnAmbientSound()
 {
     if ( _soundState )
         _soundState->setPlay( false );
 }
 
-void EnAmientSound::initialize()
+void EnAmbientSound::initialize()
 {
     osgAL::SoundManager::instance()->addFilePath( Application::get()->getMediaPath() + _soundFileDir );
 
@@ -79,7 +80,10 @@ void EnAmientSound::initialize()
 
         p_sample = osgAL::SoundManager::instance()->getSample( _soundFile );
         if ( !p_sample )
+        {
+            log << Log::LogLevel( Log::L_WARNING ) << "*** cannot create sampler for '" << _soundFileDir + _soundFile << "'" << endl;
             return;
+        }
 
     } 
     catch ( openalpp::Error error )
@@ -88,8 +92,15 @@ void EnAmientSound::initialize()
         return;
     }
 
-    // Create a named sound state.
-    _soundState = new osgAL::SoundState( getInstanceName() );
+    // create a named sound state.
+    // note: we have to make the state name unique as otherwise new sound states with already defined names make problems
+    stringstream uniquename;
+    static uniqueId = 0;
+    uniquename << getInstanceName();
+    uniquename << uniqueId;
+    uniqueId++;
+    string s = uniquename.str();
+    _soundState = new osgAL::SoundState( uniquename.str() );
     // Let the soundstate use the sample we just created
     _soundState->setSample( p_sample );
     _soundState->setGain( max( min( _volume, 1.0f ), 0 ) );
@@ -120,13 +131,13 @@ void EnAmientSound::initialize()
     _p_soundNode->setSoundState( _soundState );
 }
 
-void EnAmientSound::startPlaying()
+void EnAmbientSound::startPlaying()
 {
     assert( _soundState && "Entitiy AmbientSound: sound could not be loaded!" );
     _soundState->setPlay( true );
 }
 
-void EnAmientSound::stopPlaying()
+void EnAmbientSound::stopPlaying()
 {
     assert( _soundState && "Entitiy AmbientSound: sound could not be loaded!" );
     _soundState->setPlay( false );
