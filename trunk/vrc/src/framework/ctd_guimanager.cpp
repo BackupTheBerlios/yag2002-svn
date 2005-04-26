@@ -270,6 +270,11 @@ bool GuiManager::isActive()
     return _active;
 }
 
+CTDGuiRenderer* GuiManager::getGuiRenderer()
+{
+    return _p_renderer;
+}
+
 void GuiManager::update( float deltaTime )
 {
     _p_root->update( deltaTime );

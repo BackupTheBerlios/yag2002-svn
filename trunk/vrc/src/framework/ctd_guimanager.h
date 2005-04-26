@@ -34,11 +34,7 @@
 
 #include <ctd_base.h>
 #include <ctd_singleton.h>
-
-namespace CEGUI
-{
-    class OpenGLRenderer;
-}
+#include <ctd_guirenderer.h>
 
 namespace CTD
 {
@@ -82,6 +78,9 @@ class GuiManager : public Singleton< GuiManager >
 
         //! Get active / deactive state
         bool                                    isActive();
+
+        //! Retrieve the gui renderer. One can used it e.g. to create textures for StaticImage elements.
+        CTDGuiRenderer*                         getGuiRenderer();
 
     protected:
 
