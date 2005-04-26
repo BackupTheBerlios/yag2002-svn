@@ -84,6 +84,9 @@ class EnPlayer : public BaseEntity
         */
         void                                        updateEntity( float deltaTime );
 
+        //! Override this method of BaseEntity to get notifications (from menu system)
+        void                                        handleNotification( EntityNotify& notify );
+
         //! Return player's sound component, used by physics component
         EnPlayerSound*                              getPlayerSound() { return _p_playerSound; }
 
@@ -135,7 +138,7 @@ class EnPlayer : public BaseEntity
         osg::Vec3f                                  _camRotOffsetEgo;
 
         //! CEGUI layout file for chat
-        std::string                                 _chatGuiLayoutFile;
+        std::string                                 _chatGuiConfig;
 
     protected:
 

@@ -93,6 +93,14 @@ void PlayerChatGui::initialize( EnPlayer* p_player, const string& layoutFile )
     }
 }
 
+void PlayerChatGui::show( bool visible )
+{
+    if ( visible )
+        _p_wnd->show();
+    else
+        _p_wnd->hide();
+}
+
 void PlayerChatGui::addMessage( const CEGUI::String& msg, const CEGUI::String& author )
 {
     CEGUI::String buffer = _p_messagebox->getText();

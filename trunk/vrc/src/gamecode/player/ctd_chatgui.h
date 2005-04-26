@@ -55,6 +55,9 @@ class PlayerChatGui
         //! Initialize gui layout
         void                                        initialize( EnPlayer* p_player, const std::string& layoutFile );
 
+        //! Shows / hides the gui completely
+        void                                        show( bool visible );
+
     protected:
 
         //! Callback for sensing cariage return during editing a chat message
