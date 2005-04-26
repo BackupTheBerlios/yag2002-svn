@@ -36,6 +36,7 @@
 #include <ctd_log.h>
 #include "ctd_menu.h"
 #include "ctd_dialogsettings.h"
+#include "ctd_dialoglevelselect.h"
 #include "../sound/ctd_ambientsound.h"
 
 using namespace std;
@@ -102,6 +103,9 @@ CTD_IMPL_ENTITYFACTORY_AUTO( MenuEntityFactory );
 
 EnMenu::EnMenu() :
 _p_menuWindow( NULL ),
+_menuConfig( "gui/menu.xml" ),
+_settingsDialogConfig( "gui/settings.xml" ),
+_levelSelectDialogConfig( "gui/levelselect.xml" ),
  _buttonClickSound( "gui/sounds/click.wav" ),
  _buttonHoverSound( "gui/sounds/hover.wav" ),
  _beginHover( false )
@@ -109,10 +113,11 @@ _p_menuWindow( NULL ),
     EntityManager::get()->registerUpdate( this );   // register entity in order to get updated per simulation step
 
     // register entity attributes
-    _attributeManager.addAttribute( "menuConfig"              , _menuConfig             );
-    _attributeManager.addAttribute( "settingsDialogConfig"    , _settingsDialogConfig   );
-    _attributeManager.addAttribute( "buttonClickSound"        , _buttonClickSound       );
-    _attributeManager.addAttribute( "buttonHoverSound"        , _buttonHoverSound       );
+    _attributeManager.addAttribute( "menuConfig"              , _menuConfig                 );
+    _attributeManager.addAttribute( "settingsDialogConfig"    , _settingsDialogConfig       );
+    _attributeManager.addAttribute( "levelSelectDialogConfig" , _levelSelectDialogConfig    );
+    _attributeManager.addAttribute( "buttonClickSound"        , _buttonClickSound           );
+    _attributeManager.addAttribute( "buttonHoverSound"        , _buttonHoverSound           );
 }
 
 EnMenu::~EnMenu()
@@ -133,11 +138,9 @@ void EnMenu::initialize()
     try
     {
         _p_menuWindow = GuiManager::get()->loadLayout( _menuConfig, NULL, MENU_PREFIX );
-
         _p_menuWindow->hide();
 
         // set button callbacks
-
         CEGUI::PushButton* p_btnGS = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_game_settings" ) );
         p_btnGS->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedGameSettings, this ) );
         p_btnGS->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
@@ -166,6 +169,13 @@ void EnMenu::initialize()
         return;
     // set the click sound object
     _settingsDialog->setClickSound( _p_clickSound.get() );
+
+    // setup dialog for selecting a level
+    _levelSelectDialog = auto_ptr< DialogLevelSelect >( new DialogLevelSelect );
+    if ( !_levelSelectDialog->initialize( _levelSelectDialogConfig, _p_menuWindow ) )
+        return;
+    // set the click sound object
+    _levelSelectDialog->setClickSound( _p_clickSound.get() );
 
     // create input handler
     _p_inputHandler = new MenuInputHandler( this );
@@ -239,13 +249,13 @@ bool EnMenu::onClickedStart( const CEGUI::EventArgs& arg )
     if ( _p_clickSound.get() )
         _p_clickSound->startPlaying();
 
-    MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "under construction :-)", MessageBoxDialog::OK, true );
-    p_msg->show();
+    _levelSelectDialog->show( true );
     return true;
 }
 
 void EnMenu::updateEntity( float deltaTime )
 {
+    _settingsDialog->update( deltaTime );
 }
 
 void EnMenu::enter()
@@ -263,6 +273,7 @@ void EnMenu::leave()
 
     _p_menuWindow->hide();
     _settingsDialog->show( false );
+    _levelSelectDialog->show( false );
 }
 
 } // namespace CTD

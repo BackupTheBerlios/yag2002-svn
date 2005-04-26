@@ -22,7 +22,7 @@
 /*###############################################################
  # settings dialog control
  #
- #   date of creation:  06/05/2005
+ #   date of creation:  04/05/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
@@ -74,8 +74,8 @@ class DialogGameSettings
 
         virtual                                     ~DialogGameSettings();
 
-        //! Initialize gui layout, return false when something went wrong. Optionaly one can set a parent window.
-        bool                                        initialize( const std::string& layoutfile, CEGUI::Window* p_parent = NULL );
+        //! Initialize gui layout, return false when something went wrong.
+        bool                                        initialize( const std::string& layoutfile, CEGUI::Window* p_parent );
 
         //! Update dialog control
         void                                        update( float deltaTime );

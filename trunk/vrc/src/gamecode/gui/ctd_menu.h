@@ -42,6 +42,7 @@ namespace CTD
 #define ENTITY_NAME_MENU    "Menu"
 
 class DialogGameSettings;
+class DialogLevelSelect;
 class MenuInputHandler;
 class EnAmbientSound;
 
@@ -80,6 +81,8 @@ class EnMenu :  public BaseEntity
 
         std::string                                 _settingsDialogConfig;
 
+        std::string                                 _levelSelectDialogConfig;
+
         std::string                                 _buttonClickSound;
 
         std::string                                 _buttonHoverSound;
@@ -110,6 +113,8 @@ class EnMenu :  public BaseEntity
         std::auto_ptr< EnAmbientSound >             _p_hoverSound;
 
         std::auto_ptr< DialogGameSettings >         _settingsDialog;
+
+        std::auto_ptr< DialogLevelSelect >          _levelSelectDialog;
 
         CEGUI::Window*                              _p_menuWindow;
 

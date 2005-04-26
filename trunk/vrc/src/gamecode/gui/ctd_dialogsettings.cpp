@@ -22,7 +22,7 @@
 /*###############################################################
  # settings dialog control
  #
- #   date of creation:  06/05/2005
+ #   date of creation:  04/05/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
@@ -322,12 +322,12 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
 
 bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
 {
-    if ( !isDirty() )
-        return true;
-
     // play click sound
     if ( _p_clickSound )
         _p_clickSound->startPlaying();
+
+    if ( !isDirty() )
+        return true;
 
     _p_settingsDialog->disable();
 
@@ -358,8 +358,6 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
 
                                         // release the busy lock
                                         _p_dialogSettings->_busy = false;
-                                        // disappear the dialog
-                                        _p_dialogSettings->show( false );
                                         // enable the dialog again
                                         _p_dialogSettings->_p_settingsDialog->enable();
 
@@ -526,12 +524,6 @@ bool BtnInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAction
 
 void DialogGameSettings::update( float deltaTime )
 {
-    // flush the destruction queue
-    std::vector< BtnInputHandler* >::iterator p_beg = _inputHandlerDestructionQueue.begin(), p_end = _inputHandlerDestructionQueue.end();
-    for ( ; p_beg != p_end; p_beg++ )
-        delete ( *p_beg );
-
-    _inputHandlerDestructionQueue.clear();
 }
 
 void DialogGameSettings::show( bool visible )
@@ -548,6 +540,12 @@ void DialogGameSettings::show( bool visible )
     }
     else
     {
+        // flush the destruction queue for input key-sensing's handlers (character control keybingings)
+        std::vector< BtnInputHandler* >::iterator p_beg = _inputHandlerDestructionQueue.begin(), p_end = _inputHandlerDestructionQueue.end();
+        for ( ; p_beg != p_end; p_beg++ )
+            ( *p_beg )->destroyHandler();
+        _inputHandlerDestructionQueue.clear();
+
         _p_settingsDialog->hide();
         _p_parent->enable();
     }
