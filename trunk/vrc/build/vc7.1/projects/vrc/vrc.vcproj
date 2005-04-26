@@ -460,6 +460,12 @@
 					RelativePath="..\..\..\..\src\gamecode\gui\cd_menu.cpp">
 				</File>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\gui\ctd_dialoglevelselect.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gui\ctd_dialoglevelselect.h">
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\gui\ctd_dialogsettings.cpp">
 				</File>
 				<File
