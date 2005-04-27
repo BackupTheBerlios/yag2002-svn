@@ -32,7 +32,7 @@
 #ifndef _CTD_LIGHTMANAGER_H_
 #define _CTD_LIGHTMANAGER_H_
 
-#include <ctd_base.h>
+#include <ctd_main.h>
 
 namespace CTD
 {

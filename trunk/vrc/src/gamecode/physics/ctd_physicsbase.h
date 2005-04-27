@@ -33,8 +33,7 @@
 #ifndef _CTD_PHYSICSBASE_H_
 #define _CTD_PHYSICSBASE_H_
 
-#include <ctd_base.h>
-#include <ctd_physics.h>
+#include <ctd_main.h>
 
 namespace CTD
 {

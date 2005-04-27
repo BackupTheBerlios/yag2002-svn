@@ -29,10 +29,7 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include <ctd_physics.h>
-#include <ctd_levelmanager.h>
-#include <ctd_log.h>
+#include <ctd_main.h>
 #include "ctd_physicsshpere.h"
 
 using namespace std;

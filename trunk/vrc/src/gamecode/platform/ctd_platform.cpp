@@ -29,9 +29,8 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
+#include <ctd_main.h>
 #include "ctd_platform.h"
-#include <ctd_levelmanager.h>
 
 using namespace std;
 using namespace CTD; 

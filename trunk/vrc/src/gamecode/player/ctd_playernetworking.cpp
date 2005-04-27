@@ -38,8 +38,7 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include <ctd_entitymanager.h>
+#include <ctd_main.h>
 #include "ctd_playernetworking.h"
 #include "ctd_player.h"
 

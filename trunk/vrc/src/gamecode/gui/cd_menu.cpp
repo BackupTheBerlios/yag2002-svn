@@ -29,11 +29,7 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include <ctd_application.h>
-#include <ctd_guimsgbox.h>
-#include <ctd_entitymanager.h>
-#include <ctd_log.h>
+#include <ctd_main.h>
 #include "ctd_menu.h"
 #include "ctd_dialogsettings.h"
 #include "ctd_dialoglevelselect.h"

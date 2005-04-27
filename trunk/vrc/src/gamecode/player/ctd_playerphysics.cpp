@@ -32,8 +32,7 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include <ctd_physics.h>
+#include <ctd_main.h>
 #include "ctd_playerphysics.h"
 #include "ctd_playersound.h"
 #include "ctd_player.h"

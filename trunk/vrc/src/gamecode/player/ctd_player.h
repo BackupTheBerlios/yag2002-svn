@@ -41,9 +41,7 @@
 #ifndef _CTD_PLAYER_H_
 #define _CTD_PLAYER_H_
 
-#include <ctd_base.h>
-#include <ctd_baseentity.h>
-#include <ctd_entitymanager.h>
+#include <ctd_main.h>
 
 namespace CTD
 {

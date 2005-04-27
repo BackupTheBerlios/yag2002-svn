@@ -32,14 +32,7 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include <ctd_application.h>
-#include <ctd_levelmanager.h>
-#include <ctd_configuration.h>
-#include <ctd_keymap.h>
-#include <ctd_physics.h>
-#include <ctd_log.h>
-#include <ctd_utils.h>
+#include <ctd_main.h>
 #include "ctd_player.h"
 #include "ctd_playerphysics.h"
 #include "ctd_playeranim.h"

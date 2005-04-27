@@ -29,14 +29,7 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include <ctd_application.h>
-#include <ctd_guimsgbox.h>
-#include <ctd_guimanager.h>
-#include <ctd_configuration.h>
-#include <ctd_log.h>
-#include <ctd_keymap.h>
-#include <ctd_utils.h>
+#include <ctd_main.h>
 #include "ctd_dialoglevelselect.h"
 #include "../sound/ctd_ambientsound.h"
 

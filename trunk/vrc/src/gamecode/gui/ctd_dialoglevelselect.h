@@ -32,9 +32,7 @@
 #ifndef _CTD_DIALOGLEVELSELECT_H_
 #define _CTD_DIALOGLEVELSELECT_H_
 
-#include <ctd_base.h>
-#include <ctd_guimanager.h>
-#include <ctd_utils.h>
+#include <ctd_main.h>
 
 namespace CTD
 {

@@ -29,11 +29,7 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include <ctd_physics.h>
-#include <ctd_log.h>
-#include <ctd_application.h>
-#include <ctd_configuration.h>
+#include <ctd_main.h>
 #include "ctd_chatgui.h"
 #include "ctd_player.h"
 

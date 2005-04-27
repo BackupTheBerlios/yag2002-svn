@@ -31,8 +31,7 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include <ctd_application.h>
+#include <ctd_main.h>
 #include "ctd_skybox.h"
 
 using namespace std;

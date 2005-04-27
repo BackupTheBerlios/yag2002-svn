@@ -41,8 +41,7 @@
 #ifndef _CTD_PLAYERNETWORKING_H_
 #define _CTD_PLAYERNETWORKING_H_
 
-#include <ctd_base.h>
-#include <ctd_network.h>
+#include <ctd_main.h>
 #include "networkingRoles/_RO_PlayerNetworking.h"
 
 //typedef struct _tChatMsg 

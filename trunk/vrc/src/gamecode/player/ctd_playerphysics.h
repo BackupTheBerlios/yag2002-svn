@@ -41,9 +41,7 @@
 #ifndef _CTD_PLAYERPHYSICS_H_
 #define _CTD_PLAYERPHYSICS_H_
 
-#include <ctd_base.h>
-#include <ctd_baseentity.h>
-#include "ctd_player.h"
+#include <ctd_main.h>
 
 namespace CTD
 {
