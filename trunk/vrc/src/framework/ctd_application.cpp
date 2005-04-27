@@ -162,7 +162,7 @@ bool Application::initialize( int argc, char **argv )
         //opt |= ~osgProducer::Viewer::HEAD_LIGHT_SOURCE;
         opt |= ~osgProducer::Viewer::STATS_MANIPULATOR;
         opt |= ~osgProducer::Viewer::TRACKBALL_MANIPULATOR;
-        opt |= ~osgProducer::Viewer::ESCAPE_SETS_DONE;
+        //opt |= ~osgProducer::Viewer::ESCAPE_SETS_DONE;
     }
 
     // now setup the viewer
