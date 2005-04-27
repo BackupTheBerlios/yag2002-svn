@@ -17,6 +17,7 @@ around existing software packages such as
  - Newton (physics)
  - TinyXML (configurations)
  - ReplicaNet (networking)
+ - CEGUI (2D menus and dialogs)
  - and more ...
 
 The framework can be used for developing every kind of 3D games and scientific simulations which need 3D 
