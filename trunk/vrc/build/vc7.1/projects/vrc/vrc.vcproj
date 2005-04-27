@@ -20,7 +20,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../../../src/framework"
+				AdditionalIncludeDirectories="../../../../src/gamecode;../../../../src/framework"
 				PreprocessorDefinitions="_DEBUG;WIN32"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -29,7 +29,7 @@
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="ctd_base.h"
+				PrecompiledHeaderThrough="ctd_main.h"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="4"/>
@@ -37,9 +37,9 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsWin32d.lib osgd.lib osgDBd.lib osgGAd.lib osgProducerd.lib osgUtild.lib osgALd.lib osgCald.lib oalppd.lib Cal3d_d.lib Producerd.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib tinyxmld.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsWin32d.lib osgd.lib osgDBd.lib osgGAd.lib osgProducerd.lib osgUtild.lib osgALd.lib osgCald.lib oalppd.lib Cal3d_d.lib Producerd.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib tinyxmld.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib frameworkd.lib"
 				OutputFile="../../../../bin/win32/vrc_debug.exe"
-				AdditionalLibraryDirectories=""
+				AdditionalLibraryDirectories="../../../../lib/framework"
 				GenerateDebugInformation="TRUE"
 				HeapCommitSize="0"
 				StackCommitSize="10000"/>
@@ -75,12 +75,12 @@
 				EnableFiberSafeOptimizations="TRUE"
 				OptimizeForProcessor="3"
 				OptimizeForWindowsApplication="TRUE"
-				AdditionalIncludeDirectories="../../../../src/framework"
+				AdditionalIncludeDirectories="../../../../src/gamecode;../../../../src/framework"
 				PreprocessorDefinitions="WIN32"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="ctd_base.h"
+				PrecompiledHeaderThrough="ctd_main.h"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="0"/>
@@ -88,9 +88,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgProducer.lib osgUtil.lib osgAL.lib osgCal.lib oalpp.lib Cal3d.lib Producer.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib tinyxml.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgProducer.lib osgUtil.lib osgAL.lib osgCal.lib oalpp.lib Cal3d.lib Producer.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib tinyxml.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib framework.lib"
 				OutputFile="../../../../bin/win32/vrc.exe"
-				AdditionalLibraryDirectories=""/>
+				AdditionalLibraryDirectories="../../../../lib/framework"
+				IgnoreDefaultLibraryNames=""/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -116,157 +117,6 @@
 	<References>
 	</References>
 	<Files>
-		<Filter
-			Name="framework"
-			Filter="">
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_application.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_application.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_attributemanager.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_attributemanager.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_attributemanager.inl">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_base.cpp">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_base.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_baseentity.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_baseentity.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_baseentity.inl">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_configuration.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_configuration.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_entitymanager.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_entitymanager.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_gamestate.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_gamestate.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_guimanager.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_guimanager.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_guimsgbox.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_guimsgbox.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_guirenderer.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_guirenderer.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_guitexture.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_guitexture.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_keymap.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_keymap.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_levelmanager.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_levelmanager.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_log.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_log.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_main.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_network.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_network.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_network_defs.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_physics.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_physics.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_physics_helpers.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_physics_helpers.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_settings.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_settings.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_settings_inl.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_singleton.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_singleton.inl">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_utils.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\ctd_utils.h">
-			</File>
-		</Filter>
 		<Filter
 			Name="gamecode"
 			Filter="">
@@ -476,6 +326,25 @@
 				</File>
 			</Filter>
 		</Filter>
+		<File
+			RelativePath="..\..\..\..\src\gamecode\ctd_main.cpp">
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					UsePrecompiledHeader="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					UsePrecompiledHeader="1"
+					PrecompiledHeaderThrough="ctd_main.h"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\..\..\..\src\gamecode\ctd_main.h">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
