@@ -51,16 +51,16 @@ class Application;
 class BaseEntityFactory;
 
 //! Base class for all kinds of entity notifications.
-class EntityNotify
+class EntityNotification
 {
     public:
                                                     
-                                                    EntityNotify( unsigned int id, BaseEntity* p_sender = NULL ) :
+                                                    EntityNotification( unsigned int id, BaseEntity* p_sender = NULL ) :
                                                      _id( id ),
                                                      _p_sender( p_sender )
                                                     {}
 
-        virtual                                     ~EntityNotify() {}
+        virtual                                     ~EntityNotification() {}
 
         //! Return the notification id
         unsigned int                                getId()
@@ -80,8 +80,12 @@ class EntityNotify
         BaseEntity*                                 _p_sender;
 };
 //! Some standard notification ids
-#define     CTD_NOTIFY_MENU_ENTER                   0xF0000010
-#define     CTD_NOTIFY_MENU_LEAVE                   0xF0000011
+#define     CTD_NOTIFY_LOADING_LEVEL                0xF0000010  // sent when we load a level
+#define     CTD_NOTIFY_DELETING_ENTITIES            0xF0000020  // sent at begin of entity deletions on level loading
+#define     CTD_NOTIFY_BUILDING_PHYSICSWORLD        0xF0000021  // sent at begin of building physics world on level loading (see entity manager)
+#define     CTD_NOTIFY_DELETING_PHYSICSWORLD        0xF0000022  // sent at begin of destruction of physics world on level loading (see entity manager)
+#define     CTD_NOTIFY_MENU_ENTER                   0xF0000030  // sent when entering menu system
+#define     CTD_NOTIFY_MENU_LEAVE                   0xF0000031  // sent when leaving menu system
 
 
 //! Base of all game entities
@@ -141,7 +145,7 @@ class BaseEntity
         * \param notify                             The notification struct. It may be useful to cast it to appropriate type for 
         *                                           game-codespecific structs. 
         */
-        virtual void                                handleNotification( EntityNotify& notify ) {}
+        virtual void                                handleNotification( EntityNotification& notify ) {}
 
         /**
         * Returns true if the entity is active.
