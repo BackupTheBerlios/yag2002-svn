@@ -30,11 +30,12 @@
 
 #include <ctd_base.h>
 #include <ctd_log.h>
-#include "ctd_log.h"
-#include "ctd_levelmanager.h"
-#include "ctd_application.h"
-#include "ctd_attributemanager.h"
-#include "ctd_entitymanager.h"
+#include <ctd_physics.h>
+#include <ctd_levelmanager.h>
+#include <ctd_application.h>
+#include <ctd_attributemanager.h>
+#include <ctd_entitymanager.h>
+#include <ctd_guimanager.h>
 #include <tinyxml.h>
 
 using namespace std;
@@ -55,28 +56,90 @@ using namespace CTD;
 #define CTD_LVL_ENTITY_PARAM_VALUE          "Value"
 
 
+#define CTD_TOP_GROUP_NAME                  "_topGrp_"
+#define CTD_ENTITY_GROUP_NAME               "_entityGrp_"
+#define CTD_NODE_GROUP_NAME                 "_nodeGrp_"
 
 CTD_SINGLETON_IMPL( LevelManager );
 
-LevelManager::LevelManager()
+LevelManager::LevelManager() :
+_topGroup( new osg::Group() ),
+_nodeGroup( new osg::Group() ),
+_entityGroup( new osg::Group() ),
+_firstLoading( true )
 {
+    // set name of top group
+    _topGroup->setName( CTD_TOP_GROUP_NAME );
+
+    // set name of node group
+    _nodeGroup->setName( CTD_NODE_GROUP_NAME );
+
+    // all entities with transformation node are placed in this entity group
+    _entityGroup->setName( CTD_ENTITY_GROUP_NAME );
+
+    _topGroup->addChild( _nodeGroup.get() );
+    _topGroup->addChild( _entityGroup.get() );
 }
 
 LevelManager::~LevelManager()
 {
 }
 
-osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
+osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile, bool keepPhysicsWorld, bool keepEntities )
 {
+    // this shows whether the new level has a map in order to decide rebuilding physics when necessary (keepPhysicsWorld == false)
+    bool haveMap = false;
+
     log << Log::LogLevel( Log::L_INFO ) << "loading level ..." << endl;
     
     ifstream    file;
-    file.open( levelFile.c_str(), std::ios::in, std::ios::binary );
+    file.open( string( Application::get()->getMediaPath() + levelFile ).c_str(), std::ios::in, std::ios::binary );
     if ( !file )
     {
-        log << Log::LogLevel( Log::L_DEBUG ) << "*** cannot open level file." << endl;
+        log << Log::LogLevel( Log::L_DEBUG ) << "*** cannot open level file: '" << levelFile << "'" << endl;
         return false;
     }
+
+    // Note: all following notifications are sent to already existing entities, so they have the change to do 
+    //       particular actions such as rebuilding their physics, etc.
+    //       the entities of initial level won't get those notifications as they are not created yet (see below)
+
+    // send loading notification
+    {
+        EntityNotification ennotify( CTD_NOTIFY_LOADING_LEVEL );
+        EntityManager::get()->sendNotification( ennotify );
+    }
+
+    // delete existing entities?
+    if ( !keepEntities )
+    {
+        // first send out a notification about deleting entities
+        EntityNotification ennotify( CTD_NOTIFY_DELETING_ENTITIES );
+        EntityManager::get()->sendNotification( ennotify );
+        // now delete entities (note: no-autodelete entities will remain -- see BaseEntity::getAutoDelete() )
+        EntityManager::get()->deleteAllEntities();
+        // (re-)create groups
+        _topGroup->removeChild( _nodeGroup.get() );
+        _topGroup->removeChild( _entityGroup.get() );
+        _nodeGroup = new osg::Group();
+        _nodeGroup->setName( CTD_NODE_GROUP_NAME );
+        _entityGroup = new osg::Group();
+        _entityGroup->setName( CTD_ENTITY_GROUP_NAME );
+        _topGroup->addChild( _nodeGroup.get() );
+        _topGroup->addChild( _entityGroup.get() );
+    }
+    // init physics
+    if( _firstLoading )
+    {
+        assert( Physics::get()->initialize() );
+    }
+    else if ( !keepPhysicsWorld ) // reinit physics world?
+    {
+        EntityNotification ennotify( CTD_NOTIFY_DELETING_PHYSICSWORLD );
+        EntityManager::get()->sendNotification( ennotify );
+         assert( Physics::get()->reinitialize() );
+    }
+
     // read in the file into char buffer for tinyxml
     file.seekg( 0, ios_base::end );
     int filesize = ( int )file.tellg();
@@ -100,8 +163,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
         return false;
     }
 
-    // create the top of scene node ( root of all nodes )
-    osg::ref_ptr< osg::Group >  mainGroup = new osg::Group();
+    log << Log::LogLevel( Log::L_INFO ) << "initializing physics ..." << endl;
 
     // start evaluating the xml structure
     //---------------------------------//
@@ -112,6 +174,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
 
     // get the level entry if one exists
     p_node = doc.FirstChild( CTD_LVL_ELEM_LEVEL );
+    string staticNodeName;
     if ( p_node ) 
     {
     
@@ -125,7 +188,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
 
         p_bufName = ( char* )p_levelElement->Attribute( CTD_LVL_ELEM_NAME );
         if ( p_bufName )
-            mainGroup->setName( p_bufName );
+            staticNodeName = p_bufName;
         else 
             return false;  
     }
@@ -134,38 +197,42 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
     p_node = p_levelElement->FirstChild( CTD_LVL_ELEM_MAP );
     do {
 
-        if ( p_node ) {
+        // a level file can also be without a map
+        if ( !p_node )
+            break;
 
-            p_mapElement = p_node->ToElement();
-            p_bufName    = ( char* )p_mapElement->Attribute( CTD_LVL_ELEM_NAME );
-            if ( p_bufName == NULL ) 
-            {
-                log << Log::LogLevel( Log::L_ERROR ) << "*** could not find map element." << endl;
-                return false;
-            } 
-            else 
-            {
-                log << Log::LogLevel( Log::L_INFO ) << " loading static geometry: " << p_bufName << endl;
-                osg::Node *p_staticnode = loadStaticWorld( p_bufName );
-                if ( p_staticnode )
-                {
-                    p_staticnode->setName( p_bufName );
-                    mainGroup->addChild( p_staticnode );
-                    _staticMesh = p_staticnode;
-                }
-                else
-                    return false;
-            }
+        haveMap = true;
+        p_mapElement = p_node->ToElement();
+        p_bufName    = ( char* )p_mapElement->Attribute( CTD_LVL_ELEM_NAME );
+        if ( p_bufName == NULL ) 
+        {
+            log << Log::LogLevel( Log::L_ERROR ) << "*** missing map name in MAP entry" << endl;
+            return false;
         } 
+        else 
+        {
+            log << Log::LogLevel( Log::L_INFO ) << " loading static geometry: " << p_bufName << endl;
+            osg::Node *p_staticnode = loadStaticWorld( p_bufName );
+            if ( p_staticnode )
+            {
+                p_staticnode->setName( p_bufName );
+                _nodeGroup->addChild( p_staticnode );
+                _staticMesh = p_staticnode;
+                _staticMesh->setName( staticNodeName );
+            }
+            else
+                return false;
+        }
 
     } while ( p_node = p_node->NextSiblingElement( CTD_LVL_ELEM_MAP ) );
 
 
     // read entity definitions
     //------------------------
-    log << Log::LogLevel( Log::L_DEBUG ) << " create entities ..." << endl;
+    log << Log::LogLevel( Log::L_INFO ) << " creating entities ..." << endl;
 
     unsigned int entityCounter = 0;
+    vector< BaseEntity* > entities; // list of all entities which are created during loading
 
     p_node = p_levelElement;
     for ( p_node = p_node->FirstChild( CTD_LVL_ELEM_ENTITY ); p_node; p_node = p_node->NextSiblingElement( CTD_LVL_ELEM_ENTITY ) ) 
@@ -190,12 +257,16 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
 
         // create entity
         BaseEntity* p_entity = EntityManager::get()->createEntity( entitytype, instancename );
+
         // could we find entity type
         if ( !p_entity ) 
         {
             log << Log::LogLevel( Log::L_ERROR ) << "*** could not find entity type ' " << entitytype << " ', skipping entity!" << endl;
             continue;
         }
+        // add to list in order to get it set up later
+        entities.push_back( p_entity );
+
         log << Log::LogLevel( Log::L_DEBUG ) << "  entity created, type: '" << enttype << " '" << endl;
         // get instance name if one provided
         p_bufName = ( char* )p_entityElement->Attribute( CTD_LVL_ENTITY_INST_NAME );
@@ -234,18 +305,146 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile )
         if ( p_entity->needTransformation() ) 
         {
             osg::PositionAttitudeTransform  *p_trans = new osg::PositionAttitudeTransform;
-            //! TODO currently we add all entities into main group, later a better solution may be implemented
+            //! TODO currently we add all entities into entity group, later a better solution may be implemented
             //  which chooses an appropriate group depending on spatial paritioning or something similar.
             p_entity->setTransformationNode( p_trans );
-            mainGroup->addChild( p_trans );
+            _entityGroup->addChild( p_trans );
         }
 
     }
 
     log << Log::LogLevel( Log::L_INFO ) << endl;
     log << Log::LogLevel( Log::L_INFO ) << " total number of created entities: '" << entityCounter << "'" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "entity setup completed" << endl;
 
-    return mainGroup;
+    // store the main group in application and set it in viewer
+    Application::get()->setSceneRootNode( _topGroup.get() );
+    Application::get()->getViewer()->setSceneData( _topGroup.get() );
+
+
+    // are we loading for first time?
+    if ( _firstLoading )
+    {
+        if ( haveMap )
+            buildPhysicsStaticGeometry();
+
+        initializeFirstTime();
+
+        // mark that we have done the first level loading
+        _firstLoading = false;
+    }
+    else
+    {
+        // if the existing static physics world is not to be kept and the new level has a map then rebuild physics
+        if ( !keepPhysicsWorld && haveMap )
+            buildPhysicsStaticGeometry();
+    }
+
+    // init and post-init entities which has been created
+    setupEntities( entities );
+
+    return _topGroup;
+}
+
+void LevelManager::setupEntities( vector< BaseEntity* >& entities )
+{
+    osg::Timer      timer;
+    osg::Timer_t    curTick         = 0;
+    osg::Timer_t    startTick       = 0;
+    float           time4Init       = 0;
+    float           time4PostInit   = 0;
+
+    vector< BaseEntity* >::iterator pp_beg = entities.begin(), pp_end = entities.end();
+
+    log << Log::LogLevel( Log::L_INFO ) << "starting entity setup ..." << endl;
+    // setup entities
+    log << Log::LogLevel( Log::L_INFO ) << " initializing entities ..." << endl;
+    
+    {
+        startTick  = timer.tick();
+
+        for( ; pp_beg != pp_end; pp_beg++ )
+            ( *pp_beg )->initialize();
+        
+        curTick    = timer.tick();
+        time4Init  = timer.delta_s( startTick, curTick );
+    }
+
+    pp_beg = entities.begin(); pp_end = entities.end();
+    log << Log::LogLevel( Log::L_INFO ) << " post-initializing entities ..." << endl;
+    {
+        startTick  = timer.tick();
+    
+
+        for( ; pp_beg != pp_end; pp_beg++ )
+            ( *pp_beg )->postInitialize();
+
+        curTick        = timer.tick();
+        time4PostInit  = timer.delta_s( startTick, curTick );
+    }
+    log << Log::LogLevel( Log::L_INFO ) << "--------------------------------------------" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "needed time for initialization: " << time4Init << " seconds" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "needed time for post-initialization: " << time4PostInit << " seconds" <<  endl;
+    log << Log::LogLevel( Log::L_INFO ) << "total time for setting up: " << time4Init + time4PostInit << " seconds" <<  endl;
+    log << Log::LogLevel( Log::L_INFO ) << "--------------------------------------------" << endl;
+    //--------------//
+}
+
+void LevelManager::initializeFirstTime()
+{
+    // initialize sound manager
+    osgAL::SoundManager* p_soundManager = osgAL::SoundManager::instance();
+    try 
+    {
+        p_soundManager->init( 16 );
+        p_soundManager->getEnvironment()->setDistanceModel( openalpp::InverseDistance );
+        p_soundManager->getEnvironment()->setDopplerFactor( 1 );
+        osgAL::SoundRoot* p_soundRoot = new osgAL::SoundRoot;
+        _topGroup->addChild( p_soundRoot );
+    }
+    catch( openalpp::InitError e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "*** cannot initialize sound device openAL. reason: '" << e.what() << "'" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "***   have you already installed the openAL drivers?" << endl;
+        return;
+    }
+
+    log << Log::LogLevel( Log::L_INFO ) << "initializing gui system..." << endl;
+    // initialize the gui system
+    GuiManager::get()->initialize();
+
+    // for first time we realize the viewer
+    log << Log::LogLevel( Log::L_INFO ) << "starting viewer ..." << endl;
+    // note: after initialization of gui system the viewer must be realized (in order to get gui's renderer
+    //  initialized) before the entities are initialized
+    // use single-threading (entity specific gl commands need it)
+    Application::get()->getViewer()->realize( osgProducer::Viewer::ThreadingModel::SingleThreaded ); 
+    Application::get()->getViewer()->sync();
+}
+
+void LevelManager::buildPhysicsStaticGeometry()
+{
+    // continue setting up physics
+    //----------------------------
+    log << Log::LogLevel( Log::L_INFO ) << "building pyhsics collision geometries ..." << endl;
+
+    // send the notification about building static world
+    {
+        EntityNotification ennotify( CTD_NOTIFY_BUILDING_PHYSICSWORLD );
+        EntityManager::get()->sendNotification( ennotify );
+    }
+
+    osg::Timer      timer;
+    osg::Timer_t    curTick         = 0;
+    osg::Timer_t    startTick       = 0;
+    float           time4Init       = 0;
+
+    startTick  = timer.tick();
+    // build static geoms for physics collision nodes
+    assert( Physics::get()->buildStaticGeometry( _nodeGroup.get() ) );
+    curTick    = timer.tick();
+    time4Init  = timer.delta_s( startTick, curTick );
+    log << Log::LogLevel( Log::L_INFO ) << "needed time for building pyhsics geometries: " << time4Init << " seconds" << endl;
 }
 
 osg::Node* LevelManager::loadStaticWorld( const string& fileName )
@@ -291,13 +490,21 @@ osg::Node* LevelManager::loadMesh( const string& fileName, bool useCache )
     optimizer.optimize( p_loadedModel );
 
     // cache the loaded mesh
-    _meshCache.insert( make_pair( fileName, p_loadedModel ) );
+    if ( useCache )
+        _meshCache.insert( make_pair( fileName, p_loadedModel ) );
 
     return p_loadedModel;
 }
 
 void LevelManager::shutdown()
 {
+    // important: first of all we shut down all entities!
+    EntityManager::get()->shutdown(); 
+    // then we shut down all other libs managed by level loader
+    osgAL::SoundManager::instance()->shutdown();
+    Physics::get()->shutdown();
+    GuiManager::get()->shutdown();
+
     // destroy singleton
     destroy();
 }

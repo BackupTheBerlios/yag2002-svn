@@ -37,6 +37,7 @@ namespace CTD
 {
 
 class Application;
+class BaseEntity;
 
 //! Level manager used only by class Application
 class LevelManager : public Singleton< LevelManager >
@@ -44,12 +45,15 @@ class LevelManager : public Singleton< LevelManager >
     public:
 
         //! Load a level given its file name. Returns top most node in scenegraph.
-        osg::ref_ptr< osg::Group >                  load( const std::string& levelName );
+        /*!
+        * The 'keep' flags care about destroying entities and physics world of an already loaded level.
+        */
+        osg::ref_ptr< osg::Group >                  load( const std::string& levelName, bool keepPhysicsWorld = false, bool keepEntities = false );
 
         //! Load mesh. Return NULL if somethings goes wrong.
         osg::Node*                                  loadMesh( const std::string& fileName, bool useCache = true );
 
-        //! Get root node of loaded static world geometry
+        //! Get root node of loaded static world geometry in the case you want to do some crazy things such as post-processings ;-)
         osg::Node*                                  getStaticMesh();
 
     protected:
@@ -69,11 +73,32 @@ class LevelManager : public Singleton< LevelManager >
         //! Load static world geometry. Return NULL if somethings goes wrong.
         osg::Node*                                  loadStaticWorld( const std::string& fileName );
 
+        //! This method initializes other cores such as sound, gui, etc. (it is called during first level loading)
+        void                                        initializeFirstTime();
+
+        //! Initialize and Post-Initialize given entities
+        void                                        setupEntities( std::vector< BaseEntity* >& entities );
+
+        //! Build the physics's static collision geometry
+        void                                        buildPhysicsStaticGeometry();
+
         //! Static level mesh
         osg::ref_ptr< osg::Node >                   _staticMesh;
 
+        //! The node group where all nodes reside
+        osg::ref_ptr< osg::Group >                  _nodeGroup;
+
+        //! Entity group for all those entities with transformation node
+        osg::ref_ptr< osg::Group >                  _entityGroup;
+
+        //! The top group containing entity and node groups
+        osg::ref_ptr< osg::Group >                  _topGroup;
+
         //! Cache for loaded meshes ( filename / node pairs )
         std::map< std::string, osg::ref_ptr< osg::Node > > _meshCache;
+
+        //! This flag shows whether we are loading a level for first time
+        bool                                        _firstLoading;
 
     friend class Singleton< LevelManager >;
     friend class Application;
