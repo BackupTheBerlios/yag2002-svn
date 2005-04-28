@@ -82,7 +82,7 @@ class EnPlayer : public BaseEntity
         void                                        updateEntity( float deltaTime );
 
         //! Override this method of BaseEntity to get notifications (from menu system)
-        void                                        handleNotification( EntityNotify& notify );
+        void                                        handleNotification( EntityNotification& notify );
 
         //! Return player's sound component, used by physics component
         EnPlayerSound*                              getPlayerSound() { return _p_playerSound; }

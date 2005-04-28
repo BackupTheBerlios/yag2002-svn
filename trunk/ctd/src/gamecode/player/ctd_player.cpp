@@ -148,6 +148,9 @@ EnPlayer::~EnPlayer()
 
     // destroy input handler
     _p_inputHandler->destroyHandler();
+
+    // deregister entity from getting notifications
+    EntityManager::get()->registerNotification( this, false );
 }
 
 void EnPlayer::initialize()
@@ -162,7 +165,7 @@ void EnPlayer::postInitialize()
     log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for camera entity ..." << endl;
     // get camera entity
     _p_camera = dynamic_cast< EnCamera* >( EntityManager::get()->findEntity( ENTITY_NAME_CAMERA ) );
-    assert( _p_camera && "could not find the camera entity. you need at lease one!" );
+    assert( _p_camera && "could not find the camera entity!" );
 
     log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for physics entity '" << _physicsEntity << "' ..." << endl;
     // find and attach physics component
@@ -305,7 +308,7 @@ void EnPlayer::setCameraPitchYaw( float pitch, float yaw )
     }
 }
 
-void EnPlayer::handleNotification( EntityNotify& notify )
+void EnPlayer::handleNotification( EntityNotification& notify )
 {
     // handle some notifications
     switch( notify.getId() )
@@ -421,9 +424,9 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
 
     if ( _rotateRight )
     {
-        _p_userObject->_rot += _p_userObject->_p_playerPhysics->getAngularForce();
+        _p_userObject->_rot -= _p_userObject->_p_playerPhysics->getAngularForce();
         if ( _p_userObject->_rot > PI * 2.0f )
-            _p_userObject->_rot -= PI * 2.0f;
+            _p_userObject->_rot += PI * 2.0f;
 
         _p_userObject->_moveDir._v[ 0 ] = sinf( _p_userObject->_rot );
         _p_userObject->_moveDir._v[ 1 ] = cosf( _p_userObject->_rot );
@@ -434,8 +437,8 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
     if ( _rotateLeft )
     {
         if ( _p_userObject->_rot < 0 )
-            _p_userObject->_rot += PI * 2.0f;
-        _p_userObject->_rot -= _p_userObject->_p_playerPhysics->getAngularForce();
+            _p_userObject->_rot -= PI * 2.0f;
+        _p_userObject->_rot += _p_userObject->_p_playerPhysics->getAngularForce();
 
         _p_userObject->_moveDir._v[ 0 ] = sinf( _p_userObject->_rot );
         _p_userObject->_moveDir._v[ 1 ] = cosf( _p_userObject->_rot );
