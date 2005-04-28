@@ -38,6 +38,7 @@ namespace CTD
 {
 
 class Application;
+class LevelManager;
 class PhysicsDebugDrawable;
 struct CollisionStruct;
 
@@ -46,14 +47,15 @@ class Physics : public Singleton< Physics >
 {
     public:
 
-        //! Predefined material ids
+        //! Predefined material ids which are stored in NodeMask
         enum {
-                MAT_DEFAULT = 0xFF, // "default", no specific material
-                MAT_NOCOL   = 0xFE, // "nocol",   no collision, use this for passable objects
-                MAT_WOOD    = 0x01, // "wood"
-                MAT_STONE   = 0x02, // "stone"
-                MAT_METALL  = 0x03, // "metal"
-                MAT_GRASS   = 0x04, // "grass"
+                NO_BUILD     = 0xFF, // this means build no static collision geometry for this node
+                MAT_DEFAULT  = 0x01, // "default", no specific material
+                MAT_WOOD     = 0x02, // "wood"
+                MAT_STONE    = 0x03, // "stone"
+                MAT_METALL   = 0x04, // "metal"
+                MAT_GRASS    = 0x05, // "grass"
+                MAT_NOCOL    = 0x0F, // "nocol", no collision, use this for passable objects which should be detected though (e.g. for playing a sound)
                 //----------------
                 MAT_eof
         } MaterialID;
@@ -118,18 +120,21 @@ class Physics : public Singleton< Physics >
         //! Initialize physics system
         bool                                        initialize();
 
-        //! Finalize initialization, call this after initialize() and entity creation phase ( i.e. after loading lvl level )
-        /**
-        * Note: the initilization is split up into two phases in order to give entities the 
-        * opportunity for defining own physics materials in their constructors.
-        * The the static level geometry is added to given root node ( in normal case is this the top node ).
+        //! Re-Initialize physics system, used on subsequent level loadings
+        /*!
+        * This call destroys the physics world and initialize it again to allow building new static world geometry.
         */
-        bool                                        finalize( osg::Node* p_root );
+        bool                                        reinitialize();
 
         //! Shutdown physics system
         void                                        shutdown();
 
-        //! Build physics world for static geometry given the root node of scenegraph.
+        //! Build physics world for static geometry given a node.
+        /**
+        * Note: this process is not done in 'initialize' in order to give entities the
+        * opportunity for defining own physics materials in their constructors.
+        * The static level geometry is added to given root node ( in normal case is this the top node ).
+        */
         bool                                        buildStaticGeometry( osg::Node* p_root );
 
         //! Create the material graph
@@ -149,6 +154,7 @@ class Physics : public Singleton< Physics >
 
     friend class Singleton< Physics >;
     friend class PhysicsDebugDrawable;
+    friend class LevelManager;
     friend class Application;
 };
 

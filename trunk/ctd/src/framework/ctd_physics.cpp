@@ -102,14 +102,23 @@ Physics::~Physics()
 
 bool Physics::initialize()
 {
+    NewtonSetSolverModel( _p_world, 0 );   // 0: exact, 1 adaptive, n linear. for games linear is ok
+    NewtonSetFrictionModel( _p_world, 0 ); // 0: exact, 1 adaptive
+    NewtonSetMinimumFrameRate( _p_world, 60.0f );
+
     // setup all predefined materials
     setupMaterials();
     return true;
 }
 
-bool Physics::finalize( Node* p_root )
+bool Physics::reinitialize()
 {
-    return buildStaticGeometry( p_root );
+    // destroy the existing physics world and initialize things again
+    NewtonDestroy( _p_world );   
+    _p_world = NewtonCreate( physicsAlloc, physicsFree );   
+    assert( _p_world );
+
+    return initialize();
 }
 
 void Physics::shutdown()
@@ -126,10 +135,6 @@ void Physics::shutdown()
 
 bool Physics::buildStaticGeometry( Node* p_root )
 {    
-    NewtonSetSolverModel( _p_world, 0 );    // 0: exact, 1 adaptive, n linear. for games linear is ok
-    NewtonSetFrictionModel( _p_world, 0 ); // 0: exact, 1 adaptive
-    NewtonSetMinimumFrameRate( _p_world, 60.0f );
-
     _p_collision = NewtonCreateTreeCollision( _p_world, levelCollisionCallback );    
     NewtonTreeCollisionBeginBuild( _p_collision );
     
