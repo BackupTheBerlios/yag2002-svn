@@ -84,6 +84,12 @@ void PhysicsVisitor::apply( Geode& node )
 { 
     // retrieve the node mask which is used for physics material and later for other properies
     _attribute = node.getParent( 0 )->getNodeMask();
+    
+    // this means no need for building static collision geom
+    //  this is not the same as MAT_NOCOL, as MAT_NOCOL collisions are detected
+    if ( _attribute == Physics::NO_BUILD )
+        return;
+
     // get the accumulated world matrix for this node
     Matrixf  mat = computeLocalToWorld( getNodePath() );
     unsigned int numDrawables = node.getNumDrawables();
