@@ -53,6 +53,13 @@ EntityManager::~EntityManager()
 
 void EntityManager::shutdown()
 {
+    // first send out a shutdown notification
+    EntityNotification ennotify( CTD_NOTIFY_SHUTDOWN );
+    EntityManager::get()->sendNotification( ennotify );
+    // handle all pending requests for last time
+    //  here entities with autoDelete flag false have the last chance to be deleted
+    updateEntityLists();
+
     // set shutdown flag to avoid entity list corruptions during cleanup
     _shuttingDown = true;
     deleteAllEntities();
@@ -249,7 +256,7 @@ bool EntityManager::registerNotification( BaseEntity* p_entity, bool reg )
     }
     if ( !reg && ( pp_entity == pp_entityEnd ) )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** EntityManager: the entity is was previousely not registered for getting notification!, ignoring deregister request" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** EntityManager: the entity was previousely not registered for getting notification!, ignoring deregister request" << endl;
         return false;
     }
     else if ( reg && ( pp_entity != pp_entityEnd ) )
