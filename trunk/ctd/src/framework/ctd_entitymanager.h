@@ -107,7 +107,7 @@ class EntityManager : public Singleton< EntityManager >
         //! Send a notification to all notification-registered entities.
         /*! This mechanism allows to notify all entities about actions such as entering or leaving menu.
         */
-        void                                        sendNotification( const EntityNotify& notify );
+        void                                        sendNotification( const EntityNotification& notify );
 
     protected:
 
@@ -149,6 +149,9 @@ class EntityManager : public Singleton< EntityManager >
         //! Remove given entity from pool. If del is true then the entity is also deleted.
         void                                        removeFromEntityPool( BaseEntity* p_entity, bool del = true );
 
+        //! Update internal maintained entity lists and queues.
+        void                                        updateEntityLists();
+
         //! List of all registered update entities
         std::vector< BaseEntity* >                  _updateEntities;
 
@@ -181,9 +184,11 @@ class EntityManager : public Singleton< EntityManager >
             None,
             InitializingEntities,
             UpdatingEntities,
-            PostInitializingEntities,
-            DeletingEntities
+            PostInitializingEntities            
         }                                           _internalState;
+
+        //! A flag showing the shutdown process
+        bool                                        _shuttingDown;
 
     friend class Singleton< EntityManager >;
     friend class LevelManager;

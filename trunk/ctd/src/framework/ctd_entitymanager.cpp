@@ -42,7 +42,8 @@ CTD_SINGLETON_IMPL( EntityManager );
 
 
 EntityManager::EntityManager() :
-_internalState( None )
+_internalState( None ),
+_shuttingDown( false )
 {
 }
 
@@ -52,12 +53,24 @@ EntityManager::~EntityManager()
 
 void EntityManager::shutdown()
 {
+    // set shutdown flag to avoid entity list corruptions during cleanup
+    _shuttingDown = true;
     deleteAllEntities();
+
     // destroy singleton
     destroy();    
 }
 
 void EntityManager::update( float deltaTime  )
+{
+    // update internal entity lists and queues
+    updateEntityLists();
+
+    // now update all entities
+    updateEntities( deltaTime );
+}
+
+void EntityManager::updateEntityLists()
 {
     // set internal state
     _internalState = UpdatingEntities;
@@ -66,14 +79,16 @@ void EntityManager::update( float deltaTime  )
     vector< BaseEntity* >::iterator pp_delentity = _queueDeletedEntities.begin(), pp_delentityEnd = _queueDeletedEntities.end();
     for( ; pp_delentity != pp_delentityEnd; pp_delentity++ )
     {
+        // remove entity from pool and delete it
+        removeFromEntityPool( *pp_delentity, true );
+
         vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
         for( ; pp_entity != pp_entityEnd; pp_entity++ )
         {
             if ( *pp_entity == *pp_delentity )
             {
-                deregisterUpdate( *pp_entity ); // removes entity from _updateEntities list
+                deregisterUpdate( *pp_entity );                     // removes entity from _updateEntities list
                 BaseEntity* p_rementity = *pp_delentity;
-                removeFromEntityPool( *pp_delentity );       // delete entity
 
                 // often the update deregistration happens in entity destructor, so handle this here
                 vector< std::pair< BaseEntity*, bool > >::iterator pp_updateentity = _queueUpdateEntities.begin(), pp_updateentityEnd = _queueUpdateEntities.end();
@@ -101,9 +116,6 @@ void EntityManager::update( float deltaTime  )
             deregisterUpdate( pp_entity->first );
     }
     _queueUpdateEntities.clear();
-
-    // now update all entities
-    updateEntities( deltaTime );
 
     // set internal state
     _internalState = None;
@@ -213,7 +225,7 @@ bool EntityManager::registerUpdate( CTD::BaseEntity* p_entity, bool reg )
     }
     if ( !reg && ( pp_entity == pp_entityEnd ) )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** EntityManager: the entity is was previousely not registered for updating!, ignoring deregister request" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** EntityManager: the entity was previousely not registered for updating!, ignoring deregister request" << endl;
         return false;
     }
     else if ( reg && ( pp_entity != pp_entityEnd ) )
@@ -254,20 +266,20 @@ bool EntityManager::registerNotification( BaseEntity* p_entity, bool reg )
     return true;
 }
 
-void EntityManager::sendNotification( const EntityNotify& notify )
+void EntityManager::sendNotification( const EntityNotification& notify )
 {
     // send notification to registered entities
     vector< BaseEntity* >::iterator pp_entity = _entityNotification.begin(), pp_entityEnd = _entityNotification.end();
     for( ; pp_entity != pp_entityEnd; pp_entity++ )
     {
-        ( *pp_entity )->handleNotification( const_cast< EntityNotify& >( notify ) );
+        ( *pp_entity )->handleNotification( const_cast< EntityNotification& >( notify ) );
     }
 }
 
 void EntityManager::deregisterUpdate( BaseEntity* p_entity )
 {
     // if we are in the phase of deleting entities so avoid entity list manipulation!
-    if ( _internalState == DeletingEntities )
+    if ( _shuttingDown )
         return;
 
     vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
@@ -375,8 +387,8 @@ void EntityManager::updateEntities( float deltaTime  )
 
 void EntityManager::deleteEntity( BaseEntity* p_entity )
 {
-    // if the deleteEntity is called during shutdown via a e.g. entity destructor then ignore further handling
-    if ( _internalState == DeletingEntities )
+    // if the deleteEntity is called during entity deletions via a e.g. entity destructor then ignore further handling
+    if ( _shuttingDown )
         return;
 
     // enqueue entity for deletion. the real deletion will occur on next update phase
@@ -385,20 +397,24 @@ void EntityManager::deleteEntity( BaseEntity* p_entity )
 
 void EntityManager::deleteAllEntities()
 {
-    // set internal state to deleting so deregistering in entity destructors have
-    //  no effect on entity list in this phase
-    _internalState = DeletingEntities;
+    // deleting all entities is handled as shutdown
+    _shuttingDown = true;
 
     vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
     for(; pp_entity != pp_entityEnd; pp_entity++ )
         if ( ( *pp_entity )->getAutoDelete() ) // delete only if auto delete flag is set
-            delete *pp_entity;
+            _queueDeletedEntities.push_back( *pp_entity );
 
-    _internalState = None;
+    // update entity lists in order to let the deletions take place immediately
+    updateEntityLists();
+    
+    // clean up lists
     _updateEntities.clear();
     _entityPool.clear();
     _queueDeletedEntities.clear();
     _queueUpdateEntities.clear();
+
+    _shuttingDown = false;
 }
 
 // entity factory base class
