@@ -84,6 +84,7 @@ class EntityNotification
 #define     CTD_NOTIFY_DELETING_ENTITIES            0xF0000020  // sent at begin of entity deletions on level loading
 #define     CTD_NOTIFY_BUILDING_PHYSICSWORLD        0xF0000021  // sent at begin of building physics world on level loading (see entity manager)
 #define     CTD_NOTIFY_DELETING_PHYSICSWORLD        0xF0000022  // sent at begin of destruction of physics world on level loading (see entity manager)
+#define     CTD_NOTIFY_NEW_LEVEL_INITIALIZED        0xF0000023  // sent when a new level has been loaded and initialized, register your entities for updates and other things in this phase
 #define     CTD_NOTIFY_MENU_ENTER                   0xF0000030  // sent when entering menu system
 #define     CTD_NOTIFY_MENU_LEAVE                   0xF0000031  // sent when leaving menu system
 #define     CTD_NOTIFY_SHUTDOWN                     0xF00000FF  // sent when shutting down the system
