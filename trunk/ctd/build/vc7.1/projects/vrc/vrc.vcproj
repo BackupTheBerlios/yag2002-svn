@@ -322,6 +322,12 @@
 					RelativePath="..\..\..\..\src\gamecode\gui\ctd_dialogsettings.h">
 				</File>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\gui\ctd_intro.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gui\ctd_intro.h">
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\gui\ctd_menu.h">
 				</File>
 			</Filter>
