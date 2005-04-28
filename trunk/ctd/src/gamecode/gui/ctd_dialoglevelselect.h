@@ -38,12 +38,12 @@ namespace CTD
 
 class DialogGameSettings;
 class EnAmbientSound;
-
+class EnMenu;
 
 class DialogLevelSelect
 {
     public:
-                                                    DialogLevelSelect();
+                                                    DialogLevelSelect( EnMenu* p_menuEntity );
 
         virtual                                     ~DialogLevelSelect();
 
@@ -87,8 +87,15 @@ class DialogLevelSelect
 
         CEGUI::StaticImage*                         _p_image;
 
+        CEGUI::ProgressBar*                         _p_progress;
+
         //! Lookup for available level file names and their preview pics
         std::map< std::string, CEGUI::Image* >      _levelFiles;
+
+        //! Current selected file in list
+        std::string                                 _currentSelection;
+
+        EnMenu*                                     _p_menuEntity;
 };
 
 }

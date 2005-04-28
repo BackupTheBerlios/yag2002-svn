@@ -32,6 +32,7 @@
 #include "ctd_menu.h"
 #include "ctd_dialogsettings.h"
 #include "ctd_dialoglevelselect.h"
+#include "ctd_intro.h"
 #include "../sound/ctd_ambientsound.h"
 
 using namespace std;
@@ -60,12 +61,28 @@ class MenuInputHandler : public GenericInputHandler< EnMenu >
                                             {
                                                 unsigned int eventType   = ea.getEventType();
                                                 int          key         = ea.getKey();
+                                                unsigned int buttonMask  = ea.getButtonMask();
+
+                                                // during intro we abort it when mouse clicked
+                                                if ( buttonMask == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON )
+                                                {
+                                                    if ( _p_menu->_menuState == EnMenu::Intro )
+                                                    {
+                                                        _p_menu->stopIntro();
+                                                        _p_menu->enter();
+                                                        _toggleMenu = !_toggleMenu;
+                                                    }
+                                                }
 
                                                 if ( eventType == osgGA::GUIEventAdapter::KEYDOWN )
                                                 {
                                                     if ( !_lockEsc && ( key == osgGA::GUIEventAdapter::KEY_Escape ) )
                                                     {
                                                         _lockEsc = true;
+
+                                                        // are we in intro, if so then abort it
+                                                        if ( _p_menu->_menuState == EnMenu::Intro )
+                                                            _p_menu->stopIntro();
 
                                                         if ( _toggleMenu )
                                                            _p_menu->enter();
@@ -101,33 +118,69 @@ _p_menuWindow( NULL ),
 _menuConfig( "gui/menu.xml" ),
 _settingsDialogConfig( "gui/settings.xml" ),
 _levelSelectDialogConfig( "gui/levelselect.xml" ),
- _buttonClickSound( "gui/sounds/click.wav" ),
- _buttonHoverSound( "gui/sounds/hover.wav" ),
- _beginHover( false )
+_introTexture( "gui/intro.tga" ),
+_buttonClickSound( "gui/sounds/click.wav" ),
+_buttonHoverSound( "gui/sounds/hover.wav" ),
+_introductionSound( "gui/sounds/intro.wav" ),
+_beginHover( false ),
+_menuState( None )
 {
-    EntityManager::get()->registerUpdate( this );   // register entity in order to get updated per simulation step
+    // make this entity persistent ( thus on level changing this entity will not be deleted by entity manager )
+    setAutoDelete( false );
+    // this entity needs updates initially for getting the intro running
+    EntityManager::get()->registerUpdate( this, true );
+
+    // we register outself to get notifications. interesting one is the shutdown notification
+    //  as we have to trigger the destruction outself -- because of setAutoDelete( false )
+    EntityManager::get()->registerNotification( this, true );
 
     // register entity attributes
     _attributeManager.addAttribute( "menuConfig"              , _menuConfig                 );
     _attributeManager.addAttribute( "settingsDialogConfig"    , _settingsDialogConfig       );
     _attributeManager.addAttribute( "levelSelectDialogConfig" , _levelSelectDialogConfig    );
+    _attributeManager.addAttribute( "intoTexture"             , _introTexture               );
     _attributeManager.addAttribute( "buttonClickSound"        , _buttonClickSound           );
     _attributeManager.addAttribute( "buttonHoverSound"        , _buttonHoverSound           );
+    _attributeManager.addAttribute( "introductionSound"       , _introductionSound          );
 }
 
 EnMenu::~EnMenu()
 {
+    if ( _p_menuWindow )
+        CEGUI::WindowManager::getSingleton().destroyWindow( _p_menuWindow );
+
     _p_inputHandler->destroyHandler();
+
+    // deregister from getting notification
+    EntityManager::get()->registerNotification( this, false );
+}
+
+void EnMenu::handleNotification( EntityNotification& notify )
+{
+    // handle notifications
+    switch( notify.getId() )
+    {
+        // we have to trigger the deletion ourself! ( we disabled auto-deletion for this entity )
+        case CTD_NOTIFY_SHUTDOWN:
+            EntityManager::get()->deleteEntity( this );
+            break;
+
+        default:
+            ;
+    }
 }
 
 void EnMenu::initialize()
 {
     // setup sounds
     if ( _buttonClickSound.length() )
-        _p_clickSound.reset( setupSound( _buttonClickSound ) );
+        _clickSound.reset( setupSound( _buttonClickSound ) );
 
     if ( _buttonHoverSound.length() )
-        _p_hoverSound.reset( setupSound( _buttonHoverSound ) );
+        _hoverSound.reset( setupSound( _buttonHoverSound ) );
+
+    if ( _introductionSound.length() )
+        _introSound.reset( setupSound( _introductionSound ) );
 
     // load the main menu layout
     try
@@ -163,18 +216,28 @@ void EnMenu::initialize()
     if ( !_settingsDialog->initialize( _settingsDialogConfig, _p_menuWindow ) )
         return;
     // set the click sound object
-    _settingsDialog->setClickSound( _p_clickSound.get() );
+    _settingsDialog->setClickSound( _clickSound.get() );
 
     // setup dialog for selecting a level
-    _levelSelectDialog = auto_ptr< DialogLevelSelect >( new DialogLevelSelect );
+    _levelSelectDialog = auto_ptr< DialogLevelSelect >( new DialogLevelSelect( this ) );
     if ( !_levelSelectDialog->initialize( _levelSelectDialogConfig, _p_menuWindow ) )
         return;
     // set the click sound object
-    _levelSelectDialog->setClickSound( _p_clickSound.get() );
+    _levelSelectDialog->setClickSound( _clickSound.get() );
+
+    // setup intro layout
+    _intro = auto_ptr< IntroControl >( new IntroControl );
+    if ( !_intro->initialize( _introTexture ) )
+        return;
+    // set the click and intro sound objects
+    _intro->setClickSound( _clickSound.get() );
+    _intro->setIntroSound( _introSound.get() );
 
     // create input handler
     _p_inputHandler = new MenuInputHandler( this );
 
+    // start intro
+    beginIntro();
 }
 
 EnAmbientSound* EnMenu::setupSound( const std::string& filename )
@@ -208,8 +271,8 @@ bool EnMenu::onButtonHover( const CEGUI::EventArgs& arg )
     if ( !_beginHover )
     {
         _beginHover = true;
-        if ( _p_hoverSound.get() )
-            _p_hoverSound->startPlaying();
+        if ( _hoverSound.get() )
+            _hoverSound->startPlaying();
     }
     return true;
 }
@@ -222,8 +285,8 @@ bool EnMenu::onButtonLostHover( const CEGUI::EventArgs& arg )
 
 bool EnMenu::onClickedGameSettings( const CEGUI::EventArgs& arg )
 {
-    if ( _p_clickSound.get() )
-        _p_clickSound->startPlaying();
+    if ( _clickSound.get() )
+        _clickSound->startPlaying();
 
     _settingsDialog->show( true );
 
@@ -232,8 +295,8 @@ bool EnMenu::onClickedGameSettings( const CEGUI::EventArgs& arg )
 
 bool EnMenu::onClickedQuit( const CEGUI::EventArgs& arg )
 {
-    if ( _p_clickSound.get() )
-        _p_clickSound->startPlaying();
+    if ( _clickSound.get() )
+        _clickSound->startPlaying();
 
     Application::get()->stop();
     return true;
@@ -241,8 +304,8 @@ bool EnMenu::onClickedQuit( const CEGUI::EventArgs& arg )
 
 bool EnMenu::onClickedStart( const CEGUI::EventArgs& arg )
 {
-    if ( _p_clickSound.get() )
-        _p_clickSound->startPlaying();
+    if ( _clickSound.get() )
+        _clickSound->startPlaying();
 
     _levelSelectDialog->show( true );
     return true;
@@ -250,25 +313,80 @@ bool EnMenu::onClickedStart( const CEGUI::EventArgs& arg )
 
 void EnMenu::updateEntity( float deltaTime )
 {
-    _settingsDialog->update( deltaTime );
+    switch ( _menuState )
+    {
+        case None:
+            break;
+
+        case BeginIntro:
+        {     
+            _intro->start();
+            _menuState = Intro;
+        }
+        break;
+
+        case Intro:
+        {            
+            _intro->update( deltaTime );
+        }
+        break;
+
+        case Hidden:
+
+            break;
+
+        case Visible:
+
+            _settingsDialog->update( deltaTime );
+            break;
+
+        default:
+            assert( NULL && "invalid menu state!" );
+
+    }
+}
+
+void EnMenu::beginIntro()
+{
+    _p_menuWindow->hide();
+    _settingsDialog->show( false );
+    _levelSelectDialog->show( false );
+    _intro->start();
+    _menuState = Intro;
+}
+
+void EnMenu::stopIntro()
+{
+    _intro->stop();
+    _menuState = Visible;
 }
 
 void EnMenu::enter()
 {
     // send notification to all notification-registered entities about entering menu
-    EntityManager::get()->sendNotification( EntityNotify( CTD_NOTIFY_MENU_ENTER, this ) );
+    EntityManager::get()->sendNotification( EntityNotification( CTD_NOTIFY_MENU_ENTER, this ) );
 
     _p_menuWindow->show();
+
+    _menuState = Visible;
+
+    // register for updating ( we need it so long we are in menu )
+    EntityManager::get()->registerUpdate( this, true );
 }
 
 void EnMenu::leave()
 {
     // send notification to all notification-registered entities about leaving menu
-    EntityManager::get()->sendNotification( EntityNotify( CTD_NOTIFY_MENU_LEAVE, this ) );
+    EntityManager::get()->sendNotification( EntityNotification( CTD_NOTIFY_MENU_LEAVE, this ) );
 
     _p_menuWindow->hide();
     _settingsDialog->show( false );
     _levelSelectDialog->show( false );
+
+    _menuState = Hidden;
+
+    // de-register updating ( this entity needs not updates when we are not in menu )
+    EntityManager::get()->registerUpdate( this, false );
 }
 
 } // namespace CTD

@@ -30,6 +30,7 @@
 
 #include <ctd_main.h>
 #include "ctd_dialoglevelselect.h"
+#include "ctd_menu.h"
 #include "../sound/ctd_ambientsound.h"
 
 using namespace std;
@@ -42,11 +43,13 @@ namespace CTD
 // relative path to scene directory
 #define SCENE_DIR               "scenes/"
 
-DialogLevelSelect::DialogLevelSelect() :
+DialogLevelSelect::DialogLevelSelect( EnMenu* p_menuEntity ) :
 _p_clickSound( NULL ),
 _p_levelSelectDialog( NULL ),
 _p_listbox( NULL ),
-_p_image( NULL )
+_p_image( NULL ),
+_p_progress( NULL ),
+_p_menuEntity( p_menuEntity )
 {
     // get level file names
     string searchdir = Application::get()->getMediaPath() + SCENE_DIR;
@@ -84,6 +87,13 @@ _p_image( NULL )
             }
         }
     }
+
+    // create progress bar
+    _p_progress = static_cast< CEGUI::ProgressBar* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/AlternateProgressBar", LDLG_PREFIX "pbar" ) );
+    _p_progress->setSize( CEGUI::Size( 0.5f, 0.025f ) );
+    _p_progress->setPosition( CEGUI::Point( 0.25f, 0.5f ) );
+    _p_progress->hide();
+    GuiManager::get()->getRootWindow()->addChildWindow( _p_progress );
 }
 
 DialogLevelSelect::~DialogLevelSelect()
@@ -177,7 +187,12 @@ void DialogLevelSelect::setPreviewPic( CEGUI::ListboxItem* p_item )
 {
     // NULL means deselection of all, no list elements selected anymore
     if ( !p_item )
+    {
         _p_image->setImage( NULL );
+        _currentSelection = "";
+        return;
+    }
+    _currentSelection = p_item->getText().c_str();
 
     // play click sound
     if ( _p_clickSound )
@@ -201,6 +216,27 @@ bool DialogLevelSelect::onClickedStart( const CEGUI::EventArgs& arg )
     if ( _p_clickSound )
         _p_clickSound->startPlaying();
 
+    if ( _currentSelection == "" )
+        return true;
+
+    // ! TODO begin setting the progress status 
+    //_p_progress->show();
+    //_p_progress->setProgress( 0.5f );
+
+    // load choosen level, don't keep physics and entities
+    // note: the menu entity is persistent anyway, it handles the level switch itself!
+    LevelManager::get()->load( string( SCENE_DIR ) + _currentSelection, false, false );
+
+    _p_levelSelectDialog->hide();
+
+    if ( _p_parent )
+        _p_parent->enable();
+
+    _currentSelection = "";
+
+    // leave the menu system
+    _p_menuEntity->leave();
+
     return true;
 }
 
@@ -214,6 +250,8 @@ bool DialogLevelSelect::onClickedReturn( const CEGUI::EventArgs& arg )
 
     if ( _p_parent )
         _p_parent->enable();
+
+    _currentSelection = "";
 
     return true;
 }

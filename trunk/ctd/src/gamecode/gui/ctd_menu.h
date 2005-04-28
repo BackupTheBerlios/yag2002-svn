@@ -42,6 +42,7 @@ class DialogGameSettings;
 class DialogLevelSelect;
 class MenuInputHandler;
 class EnAmbientSound;
+class IntroControl;
 
 //! The menu system is controlled by this entity
 class EnMenu :  public BaseEntity
@@ -72,6 +73,9 @@ class EnMenu :  public BaseEntity
 
     protected:
 
+        //! Override this method of BaseEntity to get notifications (from menu system)
+        void                                        handleNotification( EntityNotification& notify );
+
         //! Entity parameters
 
         std::string                                 _menuConfig;
@@ -80,12 +84,21 @@ class EnMenu :  public BaseEntity
 
         std::string                                 _levelSelectDialogConfig;
 
+        std::string                                 _introTexture;
+
         std::string                                 _buttonClickSound;
 
         std::string                                 _buttonHoverSound;
 
+        std::string                                 _introductionSound;
+
     protected:
 
+        //! Begin intro
+        void                                        beginIntro();
+
+        //! Stop intro
+        void                                        stopIntro();
 
         //! Callback for button click "game settings"        
         bool                                        onClickedGameSettings( const CEGUI::EventArgs& arg );
@@ -105,19 +118,35 @@ class EnMenu :  public BaseEntity
         //! Creates a sound entity with given filename
         EnAmbientSound*                              setupSound( const std::string& filename );
 
-        std::auto_ptr< EnAmbientSound >             _p_clickSound;
+        //! Menu states
+        enum
+        {
+            None,
+            BeginIntro,
+            Intro,
+            Visible,
+            Hidden
+        }                                           _menuState;
 
-        std::auto_ptr< EnAmbientSound >             _p_hoverSound;
+        std::auto_ptr< EnAmbientSound >             _clickSound;
+
+        std::auto_ptr< EnAmbientSound >             _hoverSound;
+
+        std::auto_ptr< EnAmbientSound >             _introSound;
 
         std::auto_ptr< DialogGameSettings >         _settingsDialog;
 
         std::auto_ptr< DialogLevelSelect >          _levelSelectDialog;
+
+        std::auto_ptr< IntroControl >               _intro;
 
         CEGUI::Window*                              _p_menuWindow;
 
         bool                                        _beginHover;
 
         MenuInputHandler*                           _p_inputHandler;
+
+    friend class MenuInputHandler;
 };
 
 //! Entity type definition used for type registry
