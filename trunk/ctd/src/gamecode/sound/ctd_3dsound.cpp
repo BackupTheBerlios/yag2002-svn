@@ -32,9 +32,10 @@
 #include "ctd_3dsound.h"
 
 using namespace std;
-using namespace CTD; 
 using namespace osg; 
 
+namespace CTD
+{
 
 //! Implement and register the platform entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( ThreeDSoundEntityFactory );
@@ -156,12 +157,14 @@ void En3DSound::updateEntity( float deltaTime )
 
 void En3DSound::startPlaying()
 {
-    assert( _soundState );
-    _soundState->setPlay( true );
+    if ( _soundState )
+        _soundState->setPlay( true );
 }
 
 void En3DSound::stopPlaying()
 {
-    assert( _soundState );
-    _soundState->setPlay( false );
+    if ( _soundState )
+        _soundState->setPlay( false );
 }
+
+} // namespace CTD

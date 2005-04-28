@@ -129,14 +129,14 @@ void EnAmbientSound::initialize()
 
 void EnAmbientSound::startPlaying()
 {
-    assert( _soundState && "Entitiy AmbientSound: sound could not be loaded!" );
-    _soundState->setPlay( true );
+    if ( _soundState )
+        _soundState->setPlay( true );
 }
 
 void EnAmbientSound::stopPlaying()
 {
-    assert( _soundState && "Entitiy AmbientSound: sound could not be loaded!" );
-    _soundState->setPlay( false );
+    if ( _soundState )
+        _soundState->setPlay( false );
 }
 
 } // namespace CTD
