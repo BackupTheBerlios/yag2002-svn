@@ -86,6 +86,7 @@ class EntityNotification
 #define     CTD_NOTIFY_DELETING_PHYSICSWORLD        0xF0000022  // sent at begin of destruction of physics world on level loading (see entity manager)
 #define     CTD_NOTIFY_MENU_ENTER                   0xF0000030  // sent when entering menu system
 #define     CTD_NOTIFY_MENU_LEAVE                   0xF0000031  // sent when leaving menu system
+#define     CTD_NOTIFY_SHUTDOWN                     0xF00000FF  // sent when shutting down the system
 
 
 //! Base of all game entities
