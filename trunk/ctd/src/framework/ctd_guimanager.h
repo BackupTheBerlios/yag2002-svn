@@ -39,6 +39,7 @@ namespace CTD
 {
 
 class Application;
+class LevelManager;
 class CTDGuiRenderer;
 class GuiRenderCallback;
 class GuiViewerRealizeCallback;
@@ -80,6 +81,9 @@ class GuiManager : public Singleton< GuiManager >
 
         //! Retrieve the gui renderer. One can used it e.g. to create textures for StaticImage elements.
         CTDGuiRenderer*                         getGuiRenderer();
+
+        //! Retrieve the root window. This can be used in conjuction with manually created elements.
+        CEGUI::DefaultWindow*                   getRootWindow();
 
     protected:
 
@@ -145,6 +149,7 @@ class GuiManager : public Singleton< GuiManager >
     friend class GuiRenderCallback;
     friend class GuiViewerRealizeCallback;
     friend class Application;
+    friend class LevelManager;
 };
 
 } // namespace CTD

@@ -274,6 +274,12 @@ CTDGuiRenderer* GuiManager::getGuiRenderer()
     return _p_renderer;
 }
 
+CEGUI::DefaultWindow* GuiManager::getRootWindow()
+{
+    assert( _p_root && " gui system is not initialized!" );
+    return _p_root;
+}
+
 void GuiManager::update( float deltaTime )
 {
     _p_root->update( deltaTime );
