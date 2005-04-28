@@ -118,14 +118,10 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile, bool kee
         EntityManager::get()->sendNotification( ennotify );
         // now delete entities (note: no-autodelete entities will remain -- see BaseEntity::getAutoDelete() )
         EntityManager::get()->deleteAllEntities();
-        // (re-)create groups
-        _topGroup->removeChild( _nodeGroup.get() );
+        // (re-)create entiy transform node group
         _topGroup->removeChild( _entityGroup.get() );
-        _nodeGroup = new osg::Group();
-        _nodeGroup->setName( CTD_NODE_GROUP_NAME );
         _entityGroup = new osg::Group();
         _entityGroup->setName( CTD_ENTITY_GROUP_NAME );
-        _topGroup->addChild( _nodeGroup.get() );
         _topGroup->addChild( _entityGroup.get() );
     }
     // init physics
@@ -135,9 +131,15 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile, bool kee
     }
     else if ( !keepPhysicsWorld ) // reinit physics world?
     {
+        // (re-)create static geom node group
+        _topGroup->removeChild( _nodeGroup.get() );
+        _nodeGroup = new osg::Group();
+        _nodeGroup->setName( CTD_NODE_GROUP_NAME );
+        _topGroup->addChild( _nodeGroup.get() );
+
         EntityNotification ennotify( CTD_NOTIFY_DELETING_PHYSICSWORLD );
         EntityManager::get()->sendNotification( ennotify );
-         assert( Physics::get()->reinitialize() );
+        assert( Physics::get()->reinitialize() );
     }
 
     // read in the file into char buffer for tinyxml
@@ -329,9 +331,6 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile, bool kee
             buildPhysicsStaticGeometry();
 
         initializeFirstTime();
-
-        // mark that we have done the first level loading
-        _firstLoading = false;
     }
     else
     {
@@ -342,6 +341,21 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile, bool kee
 
     // init and post-init entities which has been created
     setupEntities( entities );
+
+    // send the notification that the a new level has been loaded and initialized
+    // in this phase entites can register themselves for getting updates or notifications
+    // note: take care that after every level loading the entity update registration list is cleared,
+    //       so after every level loading the registration must be done again in entities' notification callback
+    if ( !_firstLoading )
+    {
+        EntityNotification ennotify( CTD_NOTIFY_NEW_LEVEL_INITIALIZED );
+        EntityManager::get()->sendNotification( ennotify );
+    }
+    else
+    {
+        // mark that we have done the first level loading
+        _firstLoading = false;
+    }
 
     return _topGroup;
 }
@@ -428,7 +442,8 @@ void LevelManager::buildPhysicsStaticGeometry()
     //----------------------------
     log << Log::LogLevel( Log::L_INFO ) << "building pyhsics collision geometries ..." << endl;
 
-    // send the notification about building static world
+    // send the notification about building static world, here physics related stuff such as
+    //  definition of own physics materials can take place
     {
         EntityNotification ennotify( CTD_NOTIFY_BUILDING_PHYSICSWORLD );
         EntityManager::get()->sendNotification( ennotify );

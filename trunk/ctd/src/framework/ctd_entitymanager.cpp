@@ -414,12 +414,9 @@ void EntityManager::deleteAllEntities()
 
     // update entity lists in order to let the deletions take place immediately
     updateEntityLists();
-    
-    // clean up lists
+
+    // clear update list
     _updateEntities.clear();
-    _entityPool.clear();
-    _queueDeletedEntities.clear();
-    _queueUpdateEntities.clear();
 
     _shuttingDown = false;
 }
