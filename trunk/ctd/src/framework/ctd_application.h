@@ -31,6 +31,7 @@
 #ifndef _CTD_APPLICATION_H_
 #define _CTD_APPLICATION_H_
 
+#include <ctd_base.h>
 #include <ctd_singleton.h>
 
 namespace CTD
@@ -68,7 +69,7 @@ class Application : public Singleton< Application >
         //! Get the top node in scenegraph
         inline osg::Group*                          getSceneRootNode();
 
-        //! Set the top node in scenegraph, be carefull using this method!
+        //! Set the top node in scenegraph, be careful using this method!
         inline void                                 setSceneRootNode( osg::Group* p_root );
 
         //! Get screen size in width and height
@@ -82,8 +83,6 @@ class Application : public Singleton< Application >
         virtual                                     ~Application();
 
         EntityManager*                              _entityManager;
-
-        osgAL::SoundManager*                        _p_soundManager;
 
         GuiManager*                                 _p_guiManager;
 
