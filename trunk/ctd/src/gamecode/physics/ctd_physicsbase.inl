@@ -77,9 +77,9 @@ int entityContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
         switch ( materialType )
         {
             case 0: // only entities have face attribute 0
-                // for a sofisticated design here a sound callback function of the colising entity could be called.
+                // for a sofisticated design here a sound callback function of the coliding entity could be called.
                 //  but for now we play the default sound.
-                p_ent->playSoundColMetal();
+                p_ent->playSoundColStone();
                 break;
 
             case Physics::MAT_DEFAULT:
