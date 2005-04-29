@@ -43,6 +43,7 @@ CTD_SINGLETON_IMPL( EntityManager );
 
 EntityManager::EntityManager() :
 _internalState( None ),
+_updateEntityListChanged( false ),
 _shuttingDown( false )
 {
 }
@@ -70,6 +71,18 @@ void EntityManager::shutdown()
 
 void EntityManager::update( float deltaTime  )
 {
+    // flush the notification queue first as update registrations can occure during notifications
+    vector< EntityNotification >::iterator p_notify = _queueNotifications.begin(), p_notifyEnd = _queueNotifications.end();
+    vector< BaseEntity* >::iterator pp_entity, pp_entityEnd = _entityNotification.end();
+    for ( ; p_notify != p_notifyEnd; p_notify++ )
+    {
+        for( pp_entity = _entityNotification.begin(); pp_entity != pp_entityEnd; pp_entity++ )
+        {
+            ( *pp_entity )->handleNotification( *p_notify );
+        }
+    }
+    _queueNotifications.clear();
+
     // update internal entity lists and queues
     updateEntityLists();
 
@@ -222,7 +235,6 @@ BaseEntity* EntityManager::findInstance( const string& instanceName )
 
 bool EntityManager::registerUpdate( CTD::BaseEntity* p_entity, bool reg )
 {
-
     // check whether the entity is already registered
     vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
     for( ; pp_entity != pp_entityEnd; pp_entity++ )
@@ -232,12 +244,14 @@ bool EntityManager::registerUpdate( CTD::BaseEntity* p_entity, bool reg )
     }
     if ( !reg && ( pp_entity == pp_entityEnd ) )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** EntityManager: the entity was previousely not registered for updating!, ignoring deregister request" << endl;
+        log << Log::LogLevel( Log::L_WARNING ) << "*** EntityManager: the entity was previousely not registered for updating!, ignoring deregister request" << endl;
+        log << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << endl;
         return false;
     }
     else if ( reg && ( pp_entity != pp_entityEnd ) )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** EntityManager: the entity is already registered for updating!, ignoring register request" << endl;
+        log << Log::LogLevel( Log::L_WARNING ) << "*** EntityManager: the entity is already registered for updating!, ignoring register request" << endl;
+        log << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << endl;
         return false;
     }
 
@@ -256,12 +270,14 @@ bool EntityManager::registerNotification( BaseEntity* p_entity, bool reg )
     }
     if ( !reg && ( pp_entity == pp_entityEnd ) )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** EntityManager: the entity was previousely not registered for getting notification!, ignoring deregister request" << endl;
+        log << Log::LogLevel( Log::L_WARNING ) << "*** EntityManager: the entity was previousely not registered for getting notification!, ignoring deregister request" << endl;
+        log << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << endl;
         return false;
     }
     else if ( reg && ( pp_entity != pp_entityEnd ) )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** EntityManager: the entity is already registered for getting notification!, ignoring register request" << endl;
+        log << Log::LogLevel( Log::L_WARNING ) << "*** EntityManager: the entity is already registered for getting notification!, ignoring register request" << endl;
+        log << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << endl;
         return false;
     }
 
@@ -275,12 +291,7 @@ bool EntityManager::registerNotification( BaseEntity* p_entity, bool reg )
 
 void EntityManager::sendNotification( const EntityNotification& notify )
 {
-    // send notification to registered entities
-    vector< BaseEntity* >::iterator pp_entity = _entityNotification.begin(), pp_entityEnd = _entityNotification.end();
-    for( ; pp_entity != pp_entityEnd; pp_entity++ )
-    {
-        ( *pp_entity )->handleNotification( const_cast< EntityNotification& >( notify ) );
-    }
+    _queueNotifications.push_back( notify );
 }
 
 void EntityManager::deregisterUpdate( BaseEntity* p_entity )
@@ -387,8 +398,17 @@ void EntityManager::updateEntities( float deltaTime  )
     vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
     for( ; pp_entity != pp_entityEnd; pp_entity++ )
     {
-        if ( ( *pp_entity )->isActive() )
-            ( *pp_entity )->updateEntity( deltaTime );
+        BaseEntity* p_ent = *pp_entity;
+        if ( p_ent->isActive() )
+            p_ent->updateEntity( deltaTime );
+
+        // this check enables entities to manipulate the update entity list in their update method
+        //  such manipulation can occure e.g. when an entity requests a level loading in its update method
+        if ( _updateEntityListChanged )
+        {
+            _updateEntityListChanged = false;
+            break;
+        }
     }
 }
 
@@ -417,6 +437,8 @@ void EntityManager::deleteAllEntities()
 
     // clear update list
     _updateEntities.clear();
+    // this flag is used in main update entity loop, thus we tollerate entity deletions during update phase too
+    _updateEntityListChanged = true;
 
     _shuttingDown = false;
 }

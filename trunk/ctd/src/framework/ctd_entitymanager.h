@@ -161,11 +161,17 @@ class EntityManager : public Singleton< EntityManager >
         //! List of entities to be added / removed to / from update list on next update
         std::vector< std::pair< BaseEntity*, bool > > _queueUpdateEntities;
 
+        //! This flag shows that the list has been modified
+        bool                                        _updateEntityListChanged;
+
         //! List of all entities which are going to be initialized after level loading
         std::vector< BaseEntity* >                  _entityPool;
 
         //! List of all entities which registered for getting notification
         std::vector< BaseEntity* >                  _entityNotification;
+
+        //! Notification queue which is flushed at begin of every update phase
+        std::vector< EntityNotification >           _queueNotifications;
 
         //! List of entities to be added to pool gathered in initialization / post-initialization phases
         /**
