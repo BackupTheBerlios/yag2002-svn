@@ -41,7 +41,9 @@ namespace CTD
 {
 
 // prefix for menu layout resources
-#define MENU_PREFIX     "menu_"
+#define MENU_PREFIX             "menu_"
+#define OVERLAY_IMAGESET        MENU_PREFIX "loadingoverlay"
+#define DEFAULT_LEVEL_LOADER    "scenes/loader"
 
 //! Input handler class for menu, it handles ESC key press and toggles the menu gui
 class MenuInputHandler : public GenericInputHandler< EnMenu >
@@ -50,7 +52,7 @@ class MenuInputHandler : public GenericInputHandler< EnMenu >
 
                                             MenuInputHandler( EnMenu* p_menu ) :
                                              _p_menu( p_menu ),
-                                             _toggleMenu( true ),
+                                             _menuActive( true ),
                                              _lockEsc( false )
                                             {}
                                             
@@ -70,7 +72,7 @@ class MenuInputHandler : public GenericInputHandler< EnMenu >
                                                     {
                                                         _p_menu->stopIntro();
                                                         _p_menu->enter();
-                                                        _toggleMenu = !_toggleMenu;
+                                                        return false;
                                                     }
                                                 }
 
@@ -84,12 +86,14 @@ class MenuInputHandler : public GenericInputHandler< EnMenu >
                                                         if ( _p_menu->_menuState == EnMenu::Intro )
                                                             _p_menu->stopIntro();
 
-                                                        if ( _toggleMenu )
+                                                        if ( _menuActive )
+                                                        {
                                                            _p_menu->enter();
+                                                        }
                                                         else
+                                                        {
                                                             _p_menu->leave();
-                                                    
-                                                        _toggleMenu = !_toggleMenu;
+                                                        }
                                                     }
                                                 }
                                                 else if ( eventType == osgGA::GUIEventAdapter::KEYUP )
@@ -101,11 +105,14 @@ class MenuInputHandler : public GenericInputHandler< EnMenu >
                                                 return false;
                                             }
 
+        // reset the input handler to activate or deactivate the menu on next esc key press
+        void                                reset( bool active ) { _lockEsc = false; _menuActive = active; }
+
     protected:
 
         EnMenu*                             _p_menu;
 
-        bool                                _toggleMenu;
+        bool                                _menuActive;
 
         bool                                _lockEsc;
 };
@@ -115,15 +122,23 @@ CTD_IMPL_ENTITYFACTORY_AUTO( MenuEntityFactory );
 
 EnMenu::EnMenu() :
 _p_menuWindow( NULL ),
+_p_btnStart( NULL ),
+_p_btnQuit( NULL ),
+_p_loadingWindow( NULL ),
+_p_loadingLevelPic( NULL ),
+_p_loadingOverlayImage( NULL ),
+_p_loadingOverly( NULL ),
 _menuConfig( "gui/menu.xml" ),
 _settingsDialogConfig( "gui/settings.xml" ),
 _levelSelectDialogConfig( "gui/levelselect.xml" ),
 _introTexture( "gui/intro.tga" ),
+_loadingOverlayTexture( "gui/loading.tga" ),
 _buttonClickSound( "gui/sounds/click.wav" ),
 _buttonHoverSound( "gui/sounds/hover.wav" ),
 _introductionSound( "gui/sounds/intro.wav" ),
 _beginHover( false ),
-_menuState( None )
+_menuState( None ),
+_levelLoaded( false )
 {
     // make this entity persistent ( thus on level changing this entity will not be deleted by entity manager )
     setAutoDelete( false );
@@ -139,6 +154,7 @@ _menuState( None )
     _attributeManager.addAttribute( "settingsDialogConfig"    , _settingsDialogConfig       );
     _attributeManager.addAttribute( "levelSelectDialogConfig" , _levelSelectDialogConfig    );
     _attributeManager.addAttribute( "intoTexture"             , _introTexture               );
+    _attributeManager.addAttribute( "loadingOverlayTexture"   , _loadingOverlayTexture    );
     _attributeManager.addAttribute( "buttonClickSound"        , _buttonClickSound           );
     _attributeManager.addAttribute( "buttonHoverSound"        , _buttonHoverSound           );
     _attributeManager.addAttribute( "introductionSound"       , _introductionSound          );
@@ -149,6 +165,18 @@ EnMenu::~EnMenu()
     if ( _p_menuWindow )
         CEGUI::WindowManager::getSingleton().destroyWindow( _p_menuWindow );
 
+    if ( _p_loadingWindow )
+        CEGUI::WindowManager::getSingleton().destroyWindow( _p_loadingWindow );
+
+    if ( _p_loadingOverly )
+        CEGUI::WindowManager::getSingleton().destroyWindow( _p_loadingOverly );
+
+    if ( _p_loadingLevelPic )
+        CEGUI::WindowManager::getSingleton().destroyWindow( _p_loadingLevelPic );
+
+    CEGUI::ImagesetManager::getSingleton().destroyImageset( OVERLAY_IMAGESET );
+
+    // destroy the input handler
     _p_inputHandler->destroyHandler();
 
     // deregister from getting notification
@@ -160,6 +188,11 @@ void EnMenu::handleNotification( EntityNotification& notify )
     // handle notifications
     switch( notify.getId() )
     {
+        // for every subsequent level loading we must register outself again for getting updating
+        case CTD_NOTIFY_NEW_LEVEL_INITIALIZED:
+            EntityManager::get()->registerUpdate( this, true );
+            break;
+
         // we have to trigger the deletion ourself! ( we disabled auto-deletion for this entity )
         case CTD_NOTIFY_SHUTDOWN:
             EntityManager::get()->deleteEntity( this );
@@ -172,6 +205,14 @@ void EnMenu::handleNotification( EntityNotification& notify )
 
 void EnMenu::initialize()
 {
+    // note: this entity is persistent; on every level loading it is initialized again.
+    //       we need only the first initialization, so skip the subsequent ones!
+    static s_alreadyInitialized = false;
+    if ( s_alreadyInitialized )
+        return;
+    else
+        s_alreadyInitialized = true;
+
     // setup sounds
     if ( _buttonClickSound.length() )
         _clickSound.reset( setupSound( _buttonClickSound ) );
@@ -194,15 +235,47 @@ void EnMenu::initialize()
         p_btnGS->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
         p_btnGS->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonLostHover, this ) );
 
-        CEGUI::PushButton* p_btnquit = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_quit" ) );
-        p_btnquit->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedQuit, this ) );
-        p_btnquit->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
-        p_btnquit->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonLostHover, this ) );
+        _p_btnQuit = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_quit" ) );
+        _p_btnQuit->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedQuitReturnToLevel, this ) );
+        _p_btnQuit->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
+        _p_btnQuit->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonLostHover, this ) );
 
-        CEGUI::PushButton* p_btnstart = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_start" ) );
-        p_btnstart->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedStart, this ) );
-        p_btnstart->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
-        p_btnstart->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonLostHover, this ) );
+        _p_btnStart = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_start" ) );
+        _p_btnStart->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedStartLeave, this ) );
+        _p_btnStart->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
+        _p_btnStart->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonLostHover, this ) );
+
+        // setup loading window
+        _p_loadingWindow = static_cast< CEGUI::Window* >( CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", ( MENU_PREFIX "wnd_loading" ) ) );
+        _p_loadingWindow->hide();
+        GuiManager::get()->getRootWindow()->addChildWindow( _p_loadingWindow );
+        // ------------------
+        // we support a level preview pic and an overlay ( e.g. with text "level loading" )
+        _p_loadingOverly = static_cast< CEGUI::StaticImage* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticImage", ( MENU_PREFIX "img_loadingoverlay" ) ) );
+        _p_loadingOverly->setSize( CEGUI::Size( 1.0f, 1.0f ) );
+        _p_loadingOverly->setAlpha( 0.8f );
+        _p_loadingOverly->setAlwaysOnTop( true );
+        _p_loadingOverly->setBackgroundEnabled( false );
+        _p_loadingOverly->setFrameEnabled( false );
+        _p_loadingWindow->addChildWindow( _p_loadingOverly );
+
+        _p_loadingLevelPic = static_cast< CEGUI::StaticImage* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticImage", ( MENU_PREFIX "img_loadingpic" ) ) );
+        _p_loadingLevelPic->setSize( CEGUI::Size( 1.0f, 1.0f ) );
+        _p_loadingLevelPic->setImage( NULL ); // this image will be delivered by level selector later
+        _p_loadingLevelPic->setBackgroundEnabled( false );
+        _p_loadingLevelPic->setFrameEnabled( false );
+        _p_loadingWindow->addChildWindow( _p_loadingLevelPic );
+
+        // create a new imageset for loading pic
+        string materialName( OVERLAY_IMAGESET );
+        CEGUI::Texture*  p_texture = GuiManager::get()->getGuiRenderer()->createTexture( _loadingOverlayTexture, "MenuResources" );
+        CEGUI::Imageset* p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( materialName, p_texture );        
+        if ( !p_imageSet->isImageDefined( _loadingOverlayTexture ) )
+        {
+            p_imageSet->defineImage( materialName, CEGUI::Point( 0.0f, 0.0f ), CEGUI::Size( p_texture->getWidth(), p_texture->getHeight() ), CEGUI::Point( 0.0f,0.0f ) );
+        }
+        CEGUI::Image* _p_loadingOverlayImage = &const_cast< CEGUI::Image& >( p_imageSet->getImage( materialName ) );
+        _p_loadingOverly->setImage( _p_loadingOverlayImage );
     }
     catch ( CEGUI::Exception e )
     {
@@ -293,21 +366,63 @@ bool EnMenu::onClickedGameSettings( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool EnMenu::onClickedQuit( const CEGUI::EventArgs& arg )
+bool EnMenu::onClickedQuitReturnToLevel( const CEGUI::EventArgs& arg )
 {
     if ( _clickSound.get() )
         _clickSound->startPlaying();
 
-    Application::get()->stop();
+    if ( !_levelLoaded )
+    {
+        Application::get()->stop();
+    }
+    else
+    {
+        leave();
+    }
     return true;
 }
 
-bool EnMenu::onClickedStart( const CEGUI::EventArgs& arg )
+bool EnMenu::onClickedStartLeave( const CEGUI::EventArgs& arg )
 {
     if ( _clickSound.get() )
         _clickSound->startPlaying();
 
-    _levelSelectDialog->show( true );
+    if ( !_levelLoaded )
+    {
+        _levelSelectDialog->show( true );
+    }
+    else
+    {
+        // ask user before leaving
+        MessageBoxDialog* p_msg = new MessageBoxDialog( "", "You want to leave the level?", MessageBoxDialog::YES_NO, true );
+
+        // create a call back for yes/no buttons of messagebox
+        class MsgYesNoClick: public MessageBoxDialog::ClickCallback
+        {
+        public:
+
+                                    MsgYesNoClick( EnMenu* p_menu ) : _p_menu( p_menu ) {}
+
+            virtual                 ~MsgYesNoClick() {}
+
+            void                    onClicked( unsigned int btnId )
+                                    {
+                                        // did the user clicked yes? if so then store settings
+                                        if ( btnId == MessageBoxDialog::BTN_YES )                                                    
+                                            _p_menu->leaveLevel();
+                                        else
+                                            _p_menu->leave();
+
+                                        _p_menu->_p_menuWindow->enable();
+                                    }
+
+            EnMenu*                 _p_menu;
+        };
+        p_msg->setClickCallback( new MsgYesNoClick( this ) );    
+        p_msg->show();
+        _p_menuWindow->disable();
+    }
+
     return true;
 }
 
@@ -331,12 +446,58 @@ void EnMenu::updateEntity( float deltaTime )
         }
         break;
 
-        case Hidden:
+        // in order to show up the loading pic we have to activate it
+        //  and do the actual level loading one step later, as loading a level blocks the main loop :-(
+        case BeginLoadingLevel:
+        {
+            _p_loadingWindow->show();
+            // show up the loading window           
+            GuiManager::get()->showMousePointer( false ); // let the mouse disappear 
+            _menuState = LoadingLevel;
+        }
+        break;
 
+        case LoadingLevel:
+        {
+            // load a new level, don't keep physics and entities
+            // note: the menu entity is persistent anyway, it handles the level switch itself!
+            LevelManager::get()->load( _queuedLevelFile, false, false );
+            _queuedLevelFile = ""; // reset the queue
+
+            // hide the loading window
+            _p_loadingWindow->hide();
+
+            // set flag that we have loaded a level; some menu oprions depend on this flag
+            _levelLoaded = true;
+
+            // leave the menu system
+            leave();
+
+            GuiManager::get()->showMousePointer( true ); // let the mouse appear again 
+        }
+        break;
+
+        case BeginLeavingLevel:
+        {
+            GuiManager::get()->showMousePointer( false ); // let the mouse disappear 
+            _menuState = LeavingLevel;        
+        }
+        break;
+
+        case LeavingLevel:
+        {
+            LevelManager::get()->load( _queuedLevelFile, false, false );
+            _queuedLevelFile = ""; // reset the queue
+            GuiManager::get()->showMousePointer( true ); // let the mouse disappear 
+            _levelLoaded = false;
+            enter();
+        }
+        break;
+
+        case Hidden:
             break;
 
         case Visible:
-
             _settingsDialog->update( deltaTime );
             break;
 
@@ -349,20 +510,23 @@ void EnMenu::updateEntity( float deltaTime )
 void EnMenu::beginIntro()
 {
     _p_menuWindow->hide();
+    _p_loadingWindow->hide();
     _settingsDialog->show( false );
     _levelSelectDialog->show( false );
-    _intro->start();
+    _intro->start();    
     _menuState = Intro;
 }
 
 void EnMenu::stopIntro()
 {
     _intro->stop();
-    _menuState = Visible;
 }
 
 void EnMenu::enter()
 {
+    if ( _menuState == Visible )
+        return;
+
     // send notification to all notification-registered entities about entering menu
     EntityManager::get()->sendNotification( EntityNotification( CTD_NOTIFY_MENU_ENTER, this ) );
 
@@ -370,12 +534,26 @@ void EnMenu::enter()
 
     _menuState = Visible;
 
-    // register for updating ( we need it so long we are in menu )
-    EntityManager::get()->registerUpdate( this, true );
+    if ( _levelLoaded )
+    {
+        _p_btnStart->setText( "leave level" );
+        _p_btnQuit->setText( "return" );
+    }
+    else
+    {
+        _p_btnStart->setText( "start" );
+        _p_btnQuit->setText( "quit" );
+    }
+
+    // reset the input handler
+    _p_inputHandler->reset( true );
 }
 
 void EnMenu::leave()
 {
+    if ( _menuState == Hidden )
+        return;
+
     // send notification to all notification-registered entities about leaving menu
     EntityManager::get()->sendNotification( EntityNotification( CTD_NOTIFY_MENU_LEAVE, this ) );
 
@@ -385,8 +563,27 @@ void EnMenu::leave()
 
     _menuState = Hidden;
 
-    // de-register updating ( this entity needs not updates when we are not in menu )
-    EntityManager::get()->registerUpdate( this, false );
+    // reset the input handler
+    _p_inputHandler->reset( true );
+}
+
+void EnMenu::loadLevel( string levelfile, CEGUI::Image* p_img )
+{
+    // prepare the level loading; the actual loading is done in update method
+    _menuState = BeginLoadingLevel;
+    _queuedLevelFile = levelfile;
+
+    _p_loadingLevelPic->setImage( p_img );
+
+    _p_loadingWindow->show();
+    _p_menuWindow->hide();
+}
+
+void EnMenu::leaveLevel()
+{
+    // prepare the level loading; the actual loading is done in update method
+    _menuState = BeginLeavingLevel;
+    _queuedLevelFile = DEFAULT_LEVEL_LOADER;
 }
 
 } // namespace CTD

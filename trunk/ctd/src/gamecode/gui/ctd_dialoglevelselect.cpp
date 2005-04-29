@@ -48,7 +48,6 @@ _p_clickSound( NULL ),
 _p_levelSelectDialog( NULL ),
 _p_listbox( NULL ),
 _p_image( NULL ),
-_p_progress( NULL ),
 _p_menuEntity( p_menuEntity )
 {
     // get level file names
@@ -87,13 +86,6 @@ _p_menuEntity( p_menuEntity )
             }
         }
     }
-
-    // create progress bar
-    _p_progress = static_cast< CEGUI::ProgressBar* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/AlternateProgressBar", LDLG_PREFIX "pbar" ) );
-    _p_progress->setSize( CEGUI::Size( 0.5f, 0.025f ) );
-    _p_progress->setPosition( CEGUI::Point( 0.25f, 0.5f ) );
-    _p_progress->hide();
-    GuiManager::get()->getRootWindow()->addChildWindow( _p_progress );
 }
 
 DialogLevelSelect::~DialogLevelSelect()
@@ -219,23 +211,16 @@ bool DialogLevelSelect::onClickedStart( const CEGUI::EventArgs& arg )
     if ( _currentSelection == "" )
         return true;
 
-    // ! TODO begin setting the progress status 
-    //_p_progress->show();
-    //_p_progress->setProgress( 0.5f );
-
-    // load choosen level, don't keep physics and entities
-    // note: the menu entity is persistent anyway, it handles the level switch itself!
-    LevelManager::get()->load( string( SCENE_DIR ) + _currentSelection, false, false );
-
     _p_levelSelectDialog->hide();
 
     if ( _p_parent )
         _p_parent->enable();
 
-    _currentSelection = "";
 
-    // leave the menu system
-    _p_menuEntity->leave();
+    // let the menu system know that we load a new level
+    _p_menuEntity->loadLevel( string( SCENE_DIR ) + _currentSelection, _levelFiles[ _currentSelection ] );
+
+    _currentSelection = "";
 
     return true;
 }

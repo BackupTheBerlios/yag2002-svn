@@ -71,6 +71,12 @@ class EnMenu :  public BaseEntity
         //! Leave menu
         void                                        leave();
 
+        //! Load a new level, optionally a background image can be shown during loading
+        void                                        loadLevel( std::string levelfile, CEGUI::Image* p_img = NULL );
+
+        //! Leave current level and return to menu
+        void                                        leaveLevel();
+
     protected:
 
         //! Override this method of BaseEntity to get notifications (from menu system)
@@ -85,6 +91,8 @@ class EnMenu :  public BaseEntity
         std::string                                 _levelSelectDialogConfig;
 
         std::string                                 _introTexture;
+
+        std::string                                 _loadingOverlayTexture;
 
         std::string                                 _buttonClickSound;
 
@@ -103,11 +111,11 @@ class EnMenu :  public BaseEntity
         //! Callback for button click "game settings"        
         bool                                        onClickedGameSettings( const CEGUI::EventArgs& arg );
 
-        //! Callback for button click "quit"        
-        bool                                        onClickedQuit( const CEGUI::EventArgs& arg );
+        //! Callback for button click "quit" or return to level, this button has two functions  
+        bool                                        onClickedQuitReturnToLevel( const CEGUI::EventArgs& arg );
 
-        //! Callback for button click "start"        
-        bool                                        onClickedStart( const CEGUI::EventArgs& arg );
+        //! Callback for button click "start" or "leave", this button has two functions    
+        bool                                        onClickedStartLeave( const CEGUI::EventArgs& arg );
 
         //! Callback for mouse hover ( over a button ), used for playing sound
         bool                                        onButtonHover( const CEGUI::EventArgs& arg );
@@ -116,7 +124,7 @@ class EnMenu :  public BaseEntity
         bool                                        onButtonLostHover( const CEGUI::EventArgs& arg );
 
         //! Creates a sound entity with given filename
-        EnAmbientSound*                              setupSound( const std::string& filename );
+        EnAmbientSound*                             setupSound( const std::string& filename );
 
         //! Menu states
         enum
@@ -124,6 +132,10 @@ class EnMenu :  public BaseEntity
             None,
             BeginIntro,
             Intro,
+            BeginLoadingLevel,
+            LoadingLevel,
+            BeginLeavingLevel,
+            LeavingLevel,
             Visible,
             Hidden
         }                                           _menuState;
@@ -142,9 +154,26 @@ class EnMenu :  public BaseEntity
 
         CEGUI::Window*                              _p_menuWindow;
 
+        CEGUI::Window*                              _p_loadingWindow;
+
+        CEGUI::PushButton*                          _p_btnStart;
+
+        CEGUI::PushButton*                          _p_btnQuit;
+
+        CEGUI::StaticImage*                         _p_loadingOverly;
+
+        CEGUI::Image*                               _p_loadingOverlayImage;
+
+        CEGUI::StaticImage*                         _p_loadingLevelPic;
+
+        std::string                                 _queuedLevelFile;
+
         bool                                        _beginHover;
 
         MenuInputHandler*                           _p_inputHandler;
+
+        //! Shows that a level is already loaded
+        bool                                        _levelLoaded;
 
     friend class MenuInputHandler;
 };

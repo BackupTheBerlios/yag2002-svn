@@ -87,8 +87,6 @@ class DialogLevelSelect
 
         CEGUI::StaticImage*                         _p_image;
 
-        CEGUI::ProgressBar*                         _p_progress;
-
         //! Lookup for available level file names and their preview pics
         std::map< std::string, CEGUI::Image* >      _levelFiles;
 

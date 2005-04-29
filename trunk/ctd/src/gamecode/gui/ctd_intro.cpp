@@ -83,6 +83,9 @@ bool IntroControl::initialize( const string& intoImage )
         _p_introImage->setImage( p_image );
         _p_introImage->setSize( CEGUI::Size( 1.0f, 1.0f ) );
         _p_introImage->setPosition( CEGUI::Point( 0, 0 ) );
+        _p_introImage->setBackgroundEnabled( false );
+        _p_introImage->setFrameEnabled( false );
+
     }
     catch ( CEGUI::Exception e )
     {
@@ -136,6 +139,8 @@ void IntroControl::start()
     GuiManager::get()->getRootWindow()->addChildWindow( _p_wndIntro );
     _introState = Running;
     _introTimer = 0;
+
+    GuiManager::get()->showMousePointer( false ); // let the mouse disappear 
 }
 
 void IntroControl::stop()
@@ -150,6 +155,8 @@ void IntroControl::stop()
     GuiManager::get()->getRootWindow()->removeChildWindow( _p_wndIntro );
     _p_clickSound->startPlaying();
     _introState = Stopped;
+
+    GuiManager::get()->showMousePointer( true ); // let the mouse appear 
 }
 
 } // namespace CTD
