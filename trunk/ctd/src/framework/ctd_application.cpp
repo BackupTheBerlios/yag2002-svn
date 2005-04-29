@@ -45,7 +45,9 @@ using namespace CTD;
 using namespace osg; 
 
 // media path relative to inst dir
-#define CTD_MEDIA_PATH  "/media/"
+#define CTD_MEDIA_PATH      "/media/"
+// default level
+#define CTD_DEFAULT_LEVEL   "scenes/loader"
 
 CTD_SINGLETON_IMPL( Application );
 
@@ -86,9 +88,7 @@ bool Application::initialize( int argc, char **argv )
     osg::ArgumentParser arguments(&argc,argv);
     ArgumentParser::Parameter levelparam( arg_levelname );
     if ( !arguments.read( "-level", arg_levelname ) )
-    {
-        return false;
-    }
+        arg_levelname = CTD_DEFAULT_LEVEL;              // if no level defined then take the default one
 
     // fetch argument for using osgviewer instead of own camera and scene updating
     int   argpos;
@@ -218,10 +218,6 @@ void Application::run()
         else if ( deltaTime < 0.01f )
             deltaTime = 0.01f;
 
-        // update the scene by traversing it with the the update visitor which will
-        // call all node update callbacks and animations.
-        _p_viewer->update();
-
         // update entities
         _entityManager->update( deltaTime  );
 
@@ -231,6 +227,10 @@ void Application::run()
         // update gui manager
         _p_guiManager->update( deltaTime );
          
+        // update the scene by traversing it with the the update visitor which will
+        // call all node update callbacks and animations.
+        _p_viewer->update();
+
         // wait for all cull and draw threads to complete.
         _p_viewer->sync();
 
