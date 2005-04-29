@@ -197,9 +197,17 @@ void EnPlayer::postInitialize()
 
     setPosition( _position );
 
+    // get configuration settings
+    getConfiguration();
+
     // setup camera mode
     setCameraMode( _cameraMode );
 
+    log << Log::LogLevel( Log::L_INFO ) << "  player instance successfully initialized" << endl;
+}
+
+void EnPlayer::getConfiguration()
+{
     // setup key bindings
     std::string keyname;
     Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_FORWARD, keyname );
@@ -216,8 +224,6 @@ void EnPlayer::postInitialize()
 
     Configuration::get()->getSettingValue( CTD_GS_KEY_JUMP, keyname );
     _p_inputHandler->_keyCodeJump = KeyMap::get()->getKeyCode( keyname );
-
-    log << Log::LogLevel( Log::L_INFO ) << "  player instance successfully initialized" << endl;
 }
 
 void EnPlayer::updateEntity( float deltaTime )
@@ -330,6 +336,8 @@ void EnPlayer::handleNotification( EntityNotification& notify )
 
             _p_chatGui->show( true );
             _p_inputHandler->enable( true );
+            // refresh our configuration settings
+            getConfiguration();
             break;
 
         default:

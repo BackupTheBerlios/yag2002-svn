@@ -146,6 +146,9 @@ class EnPlayer : public BaseEntity
         //  for looking around
         void                                        setCameraPitchYaw( float pitch, float yaw );
 
+        //! Get the configuration settings
+        void                                        getConfiguration();
+
         //! Camera mode
         enum CameraMode
         {
