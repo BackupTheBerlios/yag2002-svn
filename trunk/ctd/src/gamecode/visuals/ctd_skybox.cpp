@@ -58,6 +58,7 @@ EnSkyBox::EnSkyBox()
 
 EnSkyBox::~EnSkyBox()
 {
+    Application::get()->getSceneRootNode()->removeChild( _p_skyGrp.get() );
 }
 
 void EnSkyBox::initialize()
@@ -70,14 +71,14 @@ void EnSkyBox::initialize()
     _textureFilenameMap.insert( make_pair( TextureCubeMap::POSITIVE_X, _texNames[ 4 ] ) );
     _textureFilenameMap.insert( make_pair( TextureCubeMap::POSITIVE_Y, _texNames[ 5 ] ) );
 
-    osg::Group* p_group = new osg::Group();
-    p_group->setName( "_skybox_" );
+    _p_skyGrp = new osg::Group();
+    _p_skyGrp->setName( "_skybox_" );
     _p_transformEyePoint = new EyeTransform();
     _p_transformEyePoint->setCullingActive( false );
     _p_transformEyePoint->addChild( makeBox() );
-    p_group->addChild( _p_transformEyePoint );
+    _p_skyGrp->addChild( _p_transformEyePoint );
 
-    static_cast< Group* >( Application::get()->getSceneRootNode() )->addChild( p_group );
+    Application::get()->getSceneRootNode()->addChild( _p_skyGrp.get() );
 }
 
 // thanks to delta3d team for the code ;-)

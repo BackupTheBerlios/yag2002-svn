@@ -73,6 +73,8 @@ class EnSkyBox :  public BaseEntity
           
         EyeTransform*                               _p_transformEyePoint;
            
+        osg::ref_ptr< osg::Group >                  _p_skyGrp;
+
         osg::ref_ptr< osg::Group >                  _node;
            
         osg::ref_ptr< osg::Geode >                  _geode;
