@@ -128,6 +128,7 @@ CTD_SINGLETON_IMPL( GuiManager );
 // implementation of GuiManager
 GuiManager::GuiManager() :
 _p_renderer( NULL ),
+_p_mouseImg( NULL ),
 _windowWidth( 600 ),
 _windowHeight( 400 ),
 _p_root( NULL ),
@@ -193,7 +194,8 @@ void GuiManager::doInitialize()
 
     CEGUI::Imageset* p_taharezImages = ImagesetManager::getSingleton().createImageset( "gui/imagesets/TaharezLook.imageset" );
 
-    System::getSingleton().setDefaultMouseCursor( &p_taharezImages->getImage( "MouseArrow" ) );
+    _p_mouseImg = const_cast< CEGUI::Image* >( &p_taharezImages->getImage( "MouseArrow" ) );
+    CEGUI::System::getSingleton().setDefaultMouseCursor( _p_mouseImg );
 
     // load font
     CEGUI::Font* p_font = FontManager::getSingleton().createFont( string( "gui/fonts/" CTD_GUI_FONT ".font" ) );
@@ -223,6 +225,14 @@ void GuiManager::doInitialize()
 
     // create input handler
     _inputHandler = new InputHandler( this );
+}
+
+void GuiManager::showMousePointer( bool show )
+{    
+    if ( show )
+        MouseCursor::getSingleton().show();
+    else
+        MouseCursor::getSingleton().hide();
 }
 
 CEGUI::Window* GuiManager::loadLayout( const string& filename, CEGUI::Window* p_parent, const string& handle )

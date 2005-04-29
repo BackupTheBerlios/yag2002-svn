@@ -85,6 +85,9 @@ class GuiManager : public Singleton< GuiManager >
         //! Retrieve the root window. This can be used in conjuction with manually created elements.
         CEGUI::DefaultWindow*                   getRootWindow();
 
+        //! Show / hide mouse pointer
+        void                                    showMousePointer( bool show );
+
     protected:
 
                                                 GuiManager();
@@ -128,6 +131,8 @@ class GuiManager : public Singleton< GuiManager >
         };
 
         CTDGuiRenderer*                         _p_renderer;
+
+        CEGUI::Image*                           _p_mouseImg;
 
         osg::ref_ptr< InputHandler >            _inputHandler;
 
