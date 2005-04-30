@@ -99,7 +99,7 @@ void EnAmbientSound::initialize()
     _soundState = new osgAL::SoundState( uniquename.str() );
     // Let the soundstate use the sample we just created
     _soundState->setSample( p_sample );
-    _soundState->setGain( max( min( _volume, 1.0f ), 0 ) );
+    _soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
     // Set its pitch to 1 (normal speed)
     _soundState->setPitch( 1 );
     // Make it play

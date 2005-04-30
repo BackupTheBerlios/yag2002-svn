@@ -33,9 +33,6 @@
 #ifndef	_CTD_GUITEXTURE_H_
 #define	_CTD_GUITEXTURE_H_
 
-#include <CEGUIBase.h>
-#include <CEGUIRenderer.h>
-#include <CEGUITexture.h>
 #include <ctd_guirenderer.h>
 
 namespace CTD

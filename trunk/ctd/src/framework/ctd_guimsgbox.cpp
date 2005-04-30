@@ -32,12 +32,10 @@
 #include "ctd_utils.h"
 #include "ctd_guimsgbox.h"
 
-using namespace std;
-
 namespace CTD
 {
 
-MessageBoxDialog::MessageBoxDialog( const string& title, const string& text, unsigned int type, bool autodelete, CEGUI::Window* p_parent ) :
+MessageBoxDialog::MessageBoxDialog( const std::string& title, const std::string& text, unsigned int type, bool autodelete, CEGUI::Window* p_parent ) :
 _p_wnd( NULL ),
 _p_clb( NULL ),
 _p_parent( NULL ),
@@ -57,7 +55,7 @@ _autodel( autodelete )
     CEGUI::Font* p_font = CEGUI::FontManager::getSingleton().getFont( CTD_GUI_FONT );
 
     // consider line breaks in text
-    vector< string > lines;
+    std::vector< std::string > lines;
     explode( text, "\n", &lines );
     float textwidth  = 0;
     // get maximal line width
@@ -86,13 +84,13 @@ _autodel( autodelete )
         case MessageBoxDialog::YES_NO:
         case MessageBoxDialog::OK_CANCEL:
 
-            boxwidth  = max( 2.0 * minbuttonwidth + 0.1f, textwidth + 0.05 );
+            boxwidth  = std::max( 2.0 * minbuttonwidth + 0.1f, textwidth + 0.05 );
             boxheight = minbuttonheight + textheight + 0.1f; // + 0.1f for the upper frame
             break;
 
         case MessageBoxDialog::OK:
 
-            boxwidth  = max( minbuttonwidth + 0.1f, textwidth + 0.05 );
+            boxwidth  = std::max( minbuttonwidth + 0.1f, textwidth + 0.05f );
             boxheight = minbuttonheight + textheight + 0.1f; // + 0.1f for the upper frame
             break;
 
@@ -267,15 +265,15 @@ bool MessageBoxDialog::onClickedNo( const CEGUI::EventArgs& arg )
     return true;
 }
 
-const string& MessageBoxDialog::getText()
+const std::string& MessageBoxDialog::getText()
 {
     // convert cegui's string to std string
-    static string text;
+    static std::string text;
     text = _p_msgtext->getText().c_str();
     return text;
 }
 
-void MessageBoxDialog::setText( const string& text )
+void MessageBoxDialog::setText( const std::string& text )
 {
     // convert std string to cegui's string
     CEGUI::String t( text.c_str() );

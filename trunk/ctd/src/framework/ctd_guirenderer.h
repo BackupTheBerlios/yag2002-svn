@@ -35,10 +35,6 @@
 
 #include <list>
 #include <set>
-#include <CEGUIBase.h>
-#include <CEGUIRenderer.h>
-#include <CEGUITexture.h>
-
 
 #define OGLRENDERER_VBUFF_CAPACITY  4096
 

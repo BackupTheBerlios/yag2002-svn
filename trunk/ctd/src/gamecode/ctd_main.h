@@ -33,6 +33,9 @@
 #ifndef _CTD_MAIN_H_
 #define _CTD_MAIN_H_
 
+// framework's central header for most important dependencies
+#include <ctd_base.h>
+
 // ms windows stuff
 #ifdef WIN32
 #  ifndef WIN32_LEAN_AND_MEAN
@@ -41,8 +44,6 @@
 #  include <windows.h>
 #endif
 
-// framework's central header for most important dependencies
-#include <ctd_base.h>
 // main header of framework itself
 #include <ctd_framework.h>
 

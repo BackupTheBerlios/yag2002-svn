@@ -61,7 +61,7 @@ void LightManager::flush()
 {
     osg::StateSet*  p_stateset = Application::get()->getViewer()->getGlobalStateSet();
     // first turn off all lights
-    unsigned int numlights = min( ( unsigned int)_lights.size(), CTD_MAX_GL_LIGHTS - 1 );
+    unsigned int numlights = std::min( (int)_lights.size(), CTD_MAX_GL_LIGHTS - 1 );
     for ( unsigned int cnt = 0; cnt < numlights; cnt++ )
         p_stateset->setMode( GL_LIGHT0 + cnt, osg::StateAttribute::OFF );
 

@@ -146,7 +146,7 @@ osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
     // Set its pitch to 1 (normal speed)
     p_soundState->setPitch( 1 );
     p_soundState->setPlay( false );
-    p_soundState->setGain( max( min( _volume, 1.0f ), 0 ) );
+    p_soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
     // Allocate a hardware soundsource to this soundstate (lower priority of 5)
     p_soundState->allocateSource( 5, false );
 

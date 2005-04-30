@@ -33,7 +33,6 @@
 #include <ctd_base.h>
 #include "ctd_guitexture.h"
 #include "ctd_guirenderer.h"
-#include <CEGUIExceptions.h>
 #include <GL/glu.h>
 
 using namespace std;
