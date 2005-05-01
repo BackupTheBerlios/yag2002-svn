@@ -45,6 +45,9 @@ using namespace std;
 namespace CTD
 {
 
+// entity name of player's camera
+#define PLAYER_CAMERA_ENTITIY_NAME      "playercam"
+
 //! Input handler class for player
 class PlayerInputHandler : public GenericInputHandler< EnPlayer >
 {
@@ -148,9 +151,6 @@ EnPlayer::~EnPlayer()
 
     // destroy input handler
     _p_inputHandler->destroyHandler();
-
-    // deregister entity from getting notifications
-    EntityManager::get()->registerNotification( this, false );
 }
 
 void EnPlayer::initialize()
@@ -164,7 +164,7 @@ void EnPlayer::postInitialize()
 
     log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for camera entity ..." << endl;
     // get camera entity
-    _p_camera = dynamic_cast< EnCamera* >( EntityManager::get()->findEntity( ENTITY_NAME_CAMERA ) );
+    _p_camera = dynamic_cast< EnCamera* >( EntityManager::get()->findEntity( ENTITY_NAME_CAMERA, PLAYER_CAMERA_ENTITIY_NAME ) );
     assert( _p_camera && "could not find the camera entity!" );
 
     log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for physics entity '" << _physicsEntity << "' ..." << endl;
@@ -330,6 +330,9 @@ void EnPlayer::handleNotification( EntityNotification& notify )
             if ( _p_playerSound )
                 _p_playerSound->stopPlayingAll();
 
+            // very important: diable the camera when we enter menu!
+            _p_camera->setEnable( false );
+
             break;
 
         case CTD_NOTIFY_MENU_LEAVE:
@@ -338,6 +341,10 @@ void EnPlayer::handleNotification( EntityNotification& notify )
             _p_inputHandler->enable( true );
             // refresh our configuration settings
             getConfiguration();
+ 
+            // very important: enable the camera when we leave menu!
+            _p_camera->setEnable( true );
+            
             break;
 
         default:

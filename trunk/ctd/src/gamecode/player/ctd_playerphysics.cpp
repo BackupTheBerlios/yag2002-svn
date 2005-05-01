@@ -371,9 +371,6 @@ _angularForce( 0.05f ),
 _linearDamping( 0.2f ),
 _gravity( Physics::get()->getWorldGravity() )
 { 
-    // the deletion must not be controled by entity manager, but by player
-    setAutoDelete( false );
-
     // add entity attributes
     getAttributeManager().addAttribute( "dimensions"    , _dimensions    );
     getAttributeManager().addAttribute( "stepheight"    , _stepHeight    );
@@ -500,9 +497,6 @@ void EnPlayerPhysics::initialize()
     // create an up vector joint, this way we constraint the body to keep up
     Vec3f upDirection (0.0f, 0.0f, 1.0f);
     _upVectorJoint = NewtonConstraintCreateUpVector( _p_world, &upDirection._v[ 0 ], _p_body ); 
-
-    // we are updated by player entity, so disable getting updated by the entity system
-    activate( false );
 }
 
 void EnPlayerPhysics::postInitialize()
