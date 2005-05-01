@@ -96,7 +96,7 @@ class BaseEntity
 
     public:
 
-                                                    BaseEntity() : _autoDelete(true), _active(true), _p_transformNode(0) {} 
+                                                    BaseEntity() {} 
 
         virtual                                     ~BaseEntity();
 
@@ -150,32 +150,17 @@ class BaseEntity
         virtual void                                handleNotification( EntityNotification& notify ) {}
 
         /**
-        * Returns true if the entity is active.
-        */
-        bool                                        isActive() { return _active; }
-
-        /**
-        * Activate / deactivate entity. If an enitiy is deactivated then it is not updated in every step of game loop.
-        */
-        void                                        activate( bool active ) { _active = active; }
-
-        /**
-        * Set auto deletion flag.
-        * \param autoDel                            Set to false when you are going to delete the entity manually.
-        */
-        void                                        setAutoDelete( bool autoDel );
-
-        /**
-        * Get auto delete flag.
-        * \return                                   Auto delete flag
-        */
-        bool                                        getAutoDelete();
-
-        /**
         * Override and return false if the entitiy does not need transformation.
         * This method is called during entity creation e.g. by the level loader.
         */
-        virtual bool                                needTransformation() { return true; }
+        virtual const bool                          needTransformation() const { return true; }
+
+        /**
+        * Override and return true if your entity must resist loading of new levels.
+        * A persistent entity keeps its update and notification registration and is not deleted
+        * by EntityManager when a new level is loaded.
+        */
+        virtual const bool                          isPersistent() const { return false; }
 
         /**
         * Set transformation node. An application developer does not need this method in normal case.
@@ -259,14 +244,8 @@ class BaseEntity
         //! Entity attribute manager
         AttributeManager                            _attributeManager;
 
-        //! Deletion managed by Application or by game code?        
-        bool                                        _autoDelete;
-
-        //! Is entity active?
-        bool                                        _active;
-
         //! Transformation node used if it is desired for an entity
-        osg::PositionAttitudeTransform*             _p_transformNode;
+        osg::ref_ptr< osg::PositionAttitudeTransform > _p_transformNode;
 
     friend class Application;
     friend class EntityManager;

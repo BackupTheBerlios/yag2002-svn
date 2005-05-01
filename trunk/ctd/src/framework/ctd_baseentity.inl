@@ -28,16 +28,6 @@
  #
  ################################################################*/
 
-inline void BaseEntity::setAutoDelete( bool autoDel )
-{
-    _autoDelete = autoDel;
-}
-
-inline bool BaseEntity::getAutoDelete()
-{
-    return _autoDelete;
-}
-
 inline const std::string& BaseEntity::getTypeName() 
 { 
     return _typeName; 
@@ -65,21 +55,19 @@ inline void BaseEntity::setTransformationNode( osg::PositionAttitudeTransform* p
 
 inline osg::PositionAttitudeTransform* BaseEntity::getTransformationNode() 
 { 
-    return _p_transformNode;
+    return _p_transformNode.get();
 }
 
 inline void BaseEntity::addToTransformationNode( osg::Node* p_node )
 {
-    assert( _p_transformNode && "this entity has no transformation node!" );
+    assert( _p_transformNode.valid() && "this entity has no transformation node!" );
     _p_transformNode->addChild( p_node );
 }
 
 inline void BaseEntity::removeFromTransformationNode( osg::Node* p_node )
 {
-    if ( _p_transformNode )
-    {
+    if ( _p_transformNode.get() )
         _p_transformNode->removeChild( p_node );
-    }
 }
 
 inline void BaseEntity::setPosition( const osg::Vec3d &pos )

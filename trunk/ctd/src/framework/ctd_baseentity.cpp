@@ -29,19 +29,35 @@
  ################################################################*/
 
 #include <ctd_base.h>
-#include <ctd_baseentity.h>
-#include <ctd_entitymanager.h>
+#include "ctd_baseentity.h"
+#include "ctd_log.h"
+#include "ctd_entitymanager.h"
 
 using namespace std;
 using namespace CTD;
  
 BaseEntity::~BaseEntity()
 {
-    if ( _p_transformNode )
+    if ( _p_transformNode.valid() )
     {
-        _p_transformNode->getParent( 0 )->removeChild( _p_transformNode );
-        _p_transformNode = NULL;
+        if ( _p_transformNode->getParents().size() > 0 )
+        {
+            _p_transformNode->getParent( 0 )->removeChild( _p_transformNode.get() );
+            _p_transformNode.release();
+        }
+        else
+        {
+            log << Log::LogLevel( Log::L_WARNING ) << "*** the transformation node of entity '" << getInstanceName() << "' has no parent!" << endl;
+        }
     }
+
+    // remove notification registration
+    if ( EntityManager::get()->isRegisteredNotification( this ) )
+        EntityManager::get()->registerNotification( this, false );
+
+    // remove update registration
+    if ( EntityManager::get()->isRegisteredUpdate( this ) )
+        EntityManager::get()->registerUpdate( this, false );
 }
 
 BaseEntity* BaseEntity::clone( const string& instanceName, osg::Group* p_scenegroup )
@@ -58,7 +74,7 @@ BaseEntity* BaseEntity::clone( const string& instanceName, osg::Group* p_scenegr
     }
 
     // copy transform node if one exists
-    if ( _p_transformNode )
+    if ( _p_transformNode.valid() )
     {
         osg::PositionAttitudeTransform* p_trans = new osg::PositionAttitudeTransform( *_p_transformNode /*, osg::CopyOp::DEEP_COPY_ALL*/ );
         p_entity->setTransformationNode( p_trans );
