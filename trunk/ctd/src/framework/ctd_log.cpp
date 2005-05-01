@@ -125,6 +125,24 @@ void Log::out( const string& msg )
 void Log::setSeverity( unsigned int severity )
 {
     _severity = severity;
+
+    switch ( severity )
+    {
+        case L_INFO:
+            out( "info:    " );
+            break;
+        case L_DEBUG:
+            out( "debug:   " );
+            break;
+        case L_WARNING:
+            out( "warning: " );
+            break;
+        case L_ERROR:
+            out( "error:   " );
+            break;
+        default:
+            assert( NULL && "unknown log severity" );
+    }
 }
 
 //---------------------------
@@ -158,7 +176,7 @@ basic_ios< char >::int_type Log::LogStreamBuf::overflow( int_type c )
 
 ostream& Log::operator << ( Log::LogLevel& ll )
 {
-    setSeverity( ll._level );
+    setSeverity( ll._level );    
     return *this;
 }
 
