@@ -59,10 +59,10 @@ _IdAnimLand( -1 ),
 _renderingEnabled( true )
 { 
     // register entity in order to get updated per simulation step
-    EntityManager::get()->registerUpdate( this );
+    EntityManager::get()->registerUpdate( this, true );
+    // register entity in order to get notifications
+    EntityManager::get()->registerNotification( this, true );   
 
-    // the deletion must not be controled by entity manager, but by player
-    setAutoDelete( false );
     // register attributes
     getAttributeManager().addAttribute( "animconfig"   , _animCfgFile );
     getAttributeManager().addAttribute( "position"     , _position    );
@@ -72,6 +72,21 @@ _renderingEnabled( true )
 
 EnPlayerAnimation::~EnPlayerAnimation()
 {
+}
+
+void EnPlayerAnimation::handleNotification( EntityNotification& notify )
+{
+    // handle some notifications
+    switch( notify.getId() )
+    {
+        case CTD_NOTIFY_DELETING_ENTITIES:
+            // clear the model cache
+            s_modelCache.clear();
+            break;
+
+        default:
+            ;
+    }
 }
 
 void EnPlayerAnimation::initialize()
