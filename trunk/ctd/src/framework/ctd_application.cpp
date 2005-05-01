@@ -47,7 +47,7 @@ using namespace osg;
 // media path relative to inst dir
 #define CTD_MEDIA_PATH      "/media/"
 // default level
-#define CTD_DEFAULT_LEVEL   "scenes/loader"
+#define CTD_DEFAULT_LEVEL   "gui/loader"
 
 CTD_SINGLETON_IMPL( Application );
 
