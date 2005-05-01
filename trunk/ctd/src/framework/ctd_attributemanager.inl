@@ -107,7 +107,12 @@ bool AttributeManager::setAttributeValue( const std::string& name, TypeT value )
     std::vector< EntityAttributeBase* >::iterator pp_attr = _attributes.begin(), pp_end = _attributes.end();
     while ( pp_attr != pp_end ) {
         if ( ( *pp_attr )->getName() == name ) {
-            assert( typeid( TypeT ) == ( *pp_attr )->getTypeInfo() && "*** wrong type for requested attribute!" );
+            if ( typeid( TypeT ) != ( *pp_attr )->getTypeInfo() )
+            {
+                log << Log::LogLevel( Log::L_ERROR ) << "*** wrong type for requested attribute '" << name << "', skipping!" << endl;
+                pp_attr++;
+                continue;
+            }
             ( static_cast< EntityAttribute< TypeT >* >( *pp_attr ) )->setValue( value );
             return true;
         }
