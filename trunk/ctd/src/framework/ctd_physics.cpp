@@ -29,6 +29,7 @@
  ################################################################*/
 
 #include <ctd_base.h>
+#include "ctd_log.h"
 #include "ctd_physics.h"
 #include "ctd_application.h"
 #include "ctd_physics_helpers.h"
@@ -73,15 +74,19 @@ void levelCollisionCallback (
                             );
 
 
+static freedBytesSum = 0;
+static allocBytesSum = 0;
 // memory allocation for Newton
 void* physicsAlloc( int sizeInBytes )
 {
+    allocBytesSum += sizeInBytes;
 	return malloc( sizeInBytes );
 }
 
 // memory de-allocation for Newton
 void physicsFree( void* ptr, int sizeInBytes )
 {
+    freedBytesSum += sizeInBytes;
 	free( ptr );
 }
 
@@ -91,9 +96,6 @@ Physics::Physics() :
 _p_debugGeode(NULL),
 _gravity(-9.8f)
 {
-    // init physics engine
-    _p_world = NewtonCreate( physicsAlloc, physicsFree );   
-    assert( _p_world );
 }
 
 Physics::~Physics()
@@ -102,6 +104,10 @@ Physics::~Physics()
 
 bool Physics::initialize()
 {
+    // init physics engine
+    _p_world = NewtonCreate( physicsAlloc, physicsFree );   
+    assert( _p_world );
+
     NewtonSetSolverModel( _p_world, 0 );   // 0: exact, 1 adaptive, n linear. for games linear is ok
     NewtonSetFrictionModel( _p_world, 0 ); // 0: exact, 1 adaptive
     NewtonSetMinimumFrameRate( _p_world, 60.0f );
@@ -113,27 +119,40 @@ bool Physics::initialize()
 
 bool Physics::reinitialize()
 {
+    // free up bodies
+    NewtonDestroyAllBodies( _p_world ); 
+    // free all materials
+    NewtonMaterialDestroyAllGroupID( _p_world );
     // destroy the existing physics world and initialize things again
-    NewtonDestroy( _p_world );   
-    _p_world = NewtonCreate( physicsAlloc, physicsFree );   
-    assert( _p_world );
+    NewtonDestroy( _p_world ); 
+    _p_world = NULL;
+
+    log << Log::LogLevel( Log::L_DEBUG ) << "-Physics: remaining non-freed bytes: " <<  allocBytesSum - freedBytesSum << endl;
 
     return initialize();
 }
 
 void Physics::shutdown()
 {
+    //! FIXME: there are mem leaks, remove them!
     if ( _p_world )
     {
+        // free up bodies
+        NewtonDestroyAllBodies( _p_world ); 
+        // free all materials
+        NewtonMaterialDestroyAllGroupID( _p_world );
+        // destroy the existing physics world and initialize things again
         NewtonDestroy( _p_world );
         _p_world = NULL;
     }
+
+    log << Log::LogLevel( Log::L_DEBUG ) << "-Physics: remaining non-freed bytes: " <<  allocBytesSum - freedBytesSum << endl;
 
     // destroy singleton
     destroy();
 }
 
-bool Physics::buildStaticGeometry( Node* p_root )
+bool Physics::buildStaticGeometry( osg::Group* p_root )
 {    
     _p_collision = NewtonCreateTreeCollision( _p_world, levelCollisionCallback );    
     NewtonTreeCollisionBeginBuild( _p_collision );
@@ -144,13 +163,13 @@ bool Physics::buildStaticGeometry( Node* p_root )
     osg::Timer_t start_tick = osg::Timer::instance()->tick();
     //! iterate through all geometries and create their collision faces
     PhysicsVisitor physVisitor( NodeVisitor::TRAVERSE_ALL_CHILDREN, _p_collision );
-    ( ( Group* )p_root )->accept( physVisitor );
+    p_root->accept( physVisitor );
     // stop timer and give out the time messure
     osg::Timer_t end_tick = osg::Timer::instance()->tick();
-    cout << "statistics:" << endl;
-    cout << " time to build physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << endl;
-    cout << " total num of evaluated primitives: " << PhysicsVisitor::getNumPrimitives() << endl;
-    cout << " total num of vertices: " << PhysicsVisitor::getNumVertices() << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "statistics:" << endl;
+    log << " time to build physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << endl;
+    log << " total num of evaluated primitives: " << PhysicsVisitor::getNumPrimitives() << endl;
+    log << " total num of vertices: " << PhysicsVisitor::getNumVertices() << endl;
 
     //--------------------------
 

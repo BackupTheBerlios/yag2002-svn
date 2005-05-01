@@ -129,13 +129,12 @@ class Physics : public Singleton< Physics >
         //! Shutdown physics system
         void                                        shutdown();
 
-        //! Build physics world for static geometry given a node.
+        //! Build physics world for static geometry given a group.
         /**
         * Note: this process is not done in 'initialize' in order to give entities the
-        * opportunity for defining own physics materials in their constructors.
-        * The static level geometry is added to given root node ( in normal case is this the top node ).
+        * opportunity for defining own physics materials during their creation.
         */
-        bool                                        buildStaticGeometry( osg::Node* p_root );
+        bool                                        buildStaticGeometry( osg::Group* p_root );
 
         //! Create the material graph
         void                                        setupMaterials();
