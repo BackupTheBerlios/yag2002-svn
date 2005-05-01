@@ -48,13 +48,19 @@ class LevelManager : public Singleton< LevelManager >
         /*!
         * The 'keep' flags care about destroying entities and physics world of an already loaded level.
         */
-        osg::ref_ptr< osg::Group >                  load( const std::string& levelName, bool keepPhysicsWorld = false, bool keepEntities = false );
+        osg::ref_ptr< osg::Group >                  loadLevel( const std::string& levelName, bool keepPhysicsWorld = false, bool keepEntities = false );
+
+        //! Unload an already loaded level and free up allocated resources and entities (except persistent entities).
+        bool                                        unloadLevel( bool clearPhysics = true, bool clearEntities = true );
 
         //! Load mesh. Return NULL if somethings goes wrong.
         osg::Node*                                  loadMesh( const std::string& fileName, bool useCache = true );
 
-        //! Get root node of loaded static world geometry in the case you want to do some crazy things such as post-processings ;-)
-        osg::Node*                                  getStaticMesh();
+        //! Get node of loaded static world geometry.
+        inline osg::Node*                           getStaticMesh();
+
+        //! Replace the current static world node and return the old one.
+        inline osg::Node*                           setStaticMesh( osg::Node* p_newnode );
 
     protected:
 
@@ -83,7 +89,7 @@ class LevelManager : public Singleton< LevelManager >
         void                                        buildPhysicsStaticGeometry();
 
         //! Static level mesh
-        osg::ref_ptr< osg::Node >                   _staticMesh;
+        osg::Node*                                 _staticMesh;
 
         //! The node group where all nodes reside
         osg::ref_ptr< osg::Group >                  _nodeGroup;
@@ -106,7 +112,33 @@ class LevelManager : public Singleton< LevelManager >
 
 inline osg::Node* LevelManager::getStaticMesh()
 {
-    return _staticMesh.get();
+    return _staticMesh;
+}
+
+inline osg::Node* LevelManager::setStaticMesh( osg::Node* p_newnode )
+{
+    osg::Node* p_oldnode = _staticMesh;
+
+    // catch null nodes
+    if ( !p_newnode )
+    {
+        if ( p_oldnode )
+            _nodeGroup->removeChild( p_oldnode );
+
+        _staticMesh = NULL;
+        return NULL;
+    }
+
+    // catch trying to set the same node again
+    if ( p_newnode == _staticMesh )
+        return p_newnode;
+
+    if ( p_oldnode )
+        _nodeGroup->removeChild( p_oldnode );
+
+    _staticMesh = p_newnode;
+    _nodeGroup->addChild( p_newnode );
+    return p_oldnode;
 }
 
 }

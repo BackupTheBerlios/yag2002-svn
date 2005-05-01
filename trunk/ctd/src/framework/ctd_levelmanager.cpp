@@ -85,7 +85,56 @@ LevelManager::~LevelManager()
 {
 }
 
-osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile, bool keepPhysicsWorld, bool keepEntities )
+bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
+{
+    if ( _firstLoading )
+        return false;
+
+    if ( clearEntities )
+    {
+        // first send out a notification about deleting entities
+        EntityNotification ennotify( CTD_NOTIFY_DELETING_ENTITIES );
+        EntityManager::get()->sendNotification( ennotify );
+        // now delete entities (note: no-autodelete entities will remain -- see BaseEntity::getAutoDelete() )
+        EntityManager::get()->deleteAllEntities();
+        // (re-)create entiy transform node group
+        _topGroup->removeChild( _entityGroup.get() );
+        _entityGroup = new osg::Group();
+        _entityGroup->setName( CTD_ENTITY_GROUP_NAME );
+        _topGroup->addChild( _entityGroup.get() );
+
+        // save the persistent entities which need transformation. they must be copied into new created entity group.
+        std::vector< BaseEntity* > perentities;
+        EntityManager::get()->getPersistentEntities( perentities );
+        vector< BaseEntity* >::iterator pp_entity = perentities.begin(), pp_entityEnd = perentities.end();
+        for( ; pp_entity != pp_entityEnd; pp_entity++ )
+        {
+            if ( ( *pp_entity )->needTransformation() )
+            {
+                _entityGroup->addChild( ( *pp_entity )->getTransformationNode() );
+            }
+        }
+    }
+
+    if ( clearPhysics )
+    {
+        // (re-)create static geom node group
+        _topGroup->removeChild( _nodeGroup.get() );
+        _nodeGroup = new osg::Group();
+        _nodeGroup->setName( CTD_NODE_GROUP_NAME );
+        _topGroup->addChild( _nodeGroup.get() );
+
+        EntityNotification ennotify( CTD_NOTIFY_DELETING_PHYSICSWORLD );
+        EntityManager::get()->sendNotification( ennotify );
+        assert( Physics::get()->reinitialize() );
+
+        _staticMesh = NULL;
+    }
+
+    return true;
+}
+
+osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile, bool keepPhysicsWorld, bool keepEntities )
 {
     // this shows whether the new level has a map in order to decide rebuilding physics when necessary (keepPhysicsWorld == false)
     bool haveMap = false;
@@ -112,18 +161,8 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile, bool kee
 
     // delete existing entities?
     if ( !keepEntities )
-    {
-        // first send out a notification about deleting entities
-        EntityNotification ennotify( CTD_NOTIFY_DELETING_ENTITIES );
-        EntityManager::get()->sendNotification( ennotify );
-        // now delete entities (note: no-autodelete entities will remain -- see BaseEntity::getAutoDelete() )
-        EntityManager::get()->deleteAllEntities();
-        // (re-)create entiy transform node group
-        _topGroup->removeChild( _entityGroup.get() );
-        _entityGroup = new osg::Group();
-        _entityGroup->setName( CTD_ENTITY_GROUP_NAME );
-        _topGroup->addChild( _entityGroup.get() );
-    }
+        unloadLevel( false, true );
+
     // init physics
     if( _firstLoading )
     {
@@ -131,15 +170,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile, bool kee
     }
     else if ( !keepPhysicsWorld ) // reinit physics world?
     {
-        // (re-)create static geom node group
-        _topGroup->removeChild( _nodeGroup.get() );
-        _nodeGroup = new osg::Group();
-        _nodeGroup->setName( CTD_NODE_GROUP_NAME );
-        _topGroup->addChild( _nodeGroup.get() );
-
-        EntityNotification ennotify( CTD_NOTIFY_DELETING_PHYSICSWORLD );
-        EntityManager::get()->sendNotification( ennotify );
-        assert( Physics::get()->reinitialize() );
+        unloadLevel( true, false );
     }
 
     // read in the file into char buffer for tinyxml
@@ -162,7 +193,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile, bool kee
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** CTD (XML parser) error parsing level config file. " << endl;
         log << Log::LogLevel( Log::L_ERROR ) << doc.ErrorDesc() << endl;
-        return false;
+        return NULL;
     }
 
     log << Log::LogLevel( Log::L_INFO ) << "initializing physics ..." << endl;
@@ -185,14 +216,14 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile, bool kee
         if ( !p_levelElement ) 
         {
             log << Log::LogLevel( Log::L_ERROR ) << "**** could not find level element. " << endl;
-            return false;
+            return NULL;
         }
 
         p_bufName = ( char* )p_levelElement->Attribute( CTD_LVL_ELEM_NAME );
         if ( p_bufName )
             staticNodeName = p_bufName;
         else 
-            return false;  
+            return NULL;  
     }
 
     // get map files, load them and add them to main group
@@ -209,7 +240,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile, bool kee
         if ( p_bufName == NULL ) 
         {
             log << Log::LogLevel( Log::L_ERROR ) << "*** missing map name in MAP entry" << endl;
-            return false;
+            return NULL;
         } 
         else 
         {
@@ -223,7 +254,7 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile, bool kee
                 _staticMesh->setName( staticNodeName );
             }
             else
-                return false;
+                return NULL;
         }
 
     } while ( p_node = p_node->NextSiblingElement( CTD_LVL_ELEM_MAP ) );
@@ -303,16 +334,9 @@ osg::ref_ptr< osg::Group > LevelManager::load( const string& levelFile, bool kee
             }
         }
 
-        // create a transformation node if needed
+        // append the transformation node if the entity has one
         if ( p_entity->needTransformation() ) 
-        {
-            osg::PositionAttitudeTransform  *p_trans = new osg::PositionAttitudeTransform;
-            //! TODO currently we add all entities into entity group, later a better solution may be implemented
-            //  which chooses an appropriate group depending on spatial paritioning or something similar.
-            p_entity->setTransformationNode( p_trans );
-            _entityGroup->addChild( p_trans );
-        }
-
+            _entityGroup->addChild( p_entity->getTransformationNode() );
     }
 
     log << Log::LogLevel( Log::L_INFO ) << endl;
