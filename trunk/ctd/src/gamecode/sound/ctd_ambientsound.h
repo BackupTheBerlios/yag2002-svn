@@ -46,6 +46,9 @@ class EnAmbientSound : public BaseEntity
 
         virtual                                     ~EnAmbientSound();
 
+        //! This entity does not need a transform node, which would be created by level manager on loading
+        const bool                                  needTransformation() const { return false; }
+
         //! Initialize 
         void                                        initialize();
 
