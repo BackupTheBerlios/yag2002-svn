@@ -182,7 +182,7 @@ bool Application::initialize( int argc, char **argv )
 
     log << Log::LogLevel( Log::L_INFO ) << "loading level '" << arg_levelname << "'" << endl;
     // load the level and setup things
-    osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->load( arg_levelname );
+    osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( arg_levelname );
     if ( !sceneroot.valid() )
         return false;
 
