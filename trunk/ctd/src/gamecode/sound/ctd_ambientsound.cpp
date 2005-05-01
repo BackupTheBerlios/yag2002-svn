@@ -48,17 +48,12 @@ _volume( 0.8f ),
 _p_soundNode( NULL ),
 _soundState( NULL )
 {
-    //! Note: this entity needs no periodic updating
-
     // register entity attributes
     _attributeManager.addAttribute( "resourceDir" , _soundFileDir   );
     _attributeManager.addAttribute( "soundFile",    _soundFile      );
     _attributeManager.addAttribute( "loop",         _loop           );
     _attributeManager.addAttribute( "autoPlay",     _autoPlay       );
     _attributeManager.addAttribute( "volume",       _volume         );
-
-    // this entity does not need a periodic update
-    activate( false );
 }
 
 EnAmbientSound::~EnAmbientSound()

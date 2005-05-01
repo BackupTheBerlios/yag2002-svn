@@ -68,10 +68,6 @@ _soundState( NULL )
 En3DSound::~En3DSound()
 {
     _soundState->setPlay( false );
-
-    // deregister entity, it is not necessary for entities which 'die' at application exit time
-    //  as the entity manager clears the entity list on app exit
-    EntityManager::get()->registerUpdate( this, false );
 }
 
 void En3DSound::initialize()
@@ -89,8 +85,8 @@ void En3DSound::initialize()
     } 
     catch ( openalpp::Error error )
     {
-        cout << "*** error loading sound file" << endl;
-        activate( false );
+        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading sound file in '" << getInstanceName() << "'" << endl;
+        EntityManager::get()->registerUpdate( this, false );   // deregister entity
         return;
     }
 
