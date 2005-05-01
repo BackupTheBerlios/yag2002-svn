@@ -56,11 +56,17 @@ class EntityManager : public Singleton< EntityManager >
         */
         bool                                        registerUpdate( BaseEntity* p_entity, bool reg = true );
 
+        //! Returns true if the entity is registered for getting updates.
+        bool                                        isRegisteredUpdate( BaseEntity* p_entity );
+
         //! Register or deregister an entity for getting notifications.
         /*! Returns false if the given entity is already registered (or it was not previousely registered in case of deregistering).
 
         */
         bool                                        registerNotification( BaseEntity* p_entity, bool reg = true );
+
+        //! Returns true if the entity is registered for getting notifications.
+        bool                                        isRegisteredNotification( BaseEntity* p_entity );
 
         //! Register / deregister an entity factory. If reg is true then the entity is registered, otherwise it is deregistered.
         /*! Every type must be unique.
@@ -151,6 +157,12 @@ class EntityManager : public Singleton< EntityManager >
 
         //! Update internal maintained entity lists and queues.
         void                                        updateEntityLists();
+
+        //! Flush the notification queue
+        void                                        flushNotificationQueue();
+
+        //! Fills the given list with persistent entities. This method is used by LevelManager.
+        void                                        getPersistentEntities( std::vector< BaseEntity* >& entities );
 
         //! List of all registered update entities
         std::vector< BaseEntity* >                  _updateEntities;

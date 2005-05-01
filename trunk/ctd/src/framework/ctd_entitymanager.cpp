@@ -56,7 +56,9 @@ void EntityManager::shutdown()
 {
     // first send out a shutdown notification
     EntityNotification ennotify( CTD_NOTIFY_SHUTDOWN );
-    EntityManager::get()->sendNotification( ennotify );
+    sendNotification( ennotify );
+    flushNotificationQueue();
+
     // handle all pending requests for last time
     //  here entities with autoDelete flag false have the last chance to be deleted
     updateEntityLists();
@@ -72,16 +74,7 @@ void EntityManager::shutdown()
 void EntityManager::update( float deltaTime  )
 {
     // flush the notification queue first as update registrations can occure during notifications
-    vector< EntityNotification >::iterator p_notify = _queueNotifications.begin(), p_notifyEnd = _queueNotifications.end();
-    vector< BaseEntity* >::iterator pp_entity, pp_entityEnd = _entityNotification.end();
-    for ( ; p_notify != p_notifyEnd; p_notify++ )
-    {
-        for( pp_entity = _entityNotification.begin(); pp_entity != pp_entityEnd; pp_entity++ )
-        {
-            ( *pp_entity )->handleNotification( *p_notify );
-        }
-    }
-    _queueNotifications.clear();
+    flushNotificationQueue();
 
     // update internal entity lists and queues
     updateEntityLists();
@@ -193,6 +186,13 @@ BaseEntity* EntityManager::createEntity( const string& type, const string& insta
     if ( addToPool )
         addToEntityPool( p_ent );
     
+    // create a transformation node if needed
+    if ( p_ent->needTransformation() ) 
+    {
+        osg::PositionAttitudeTransform  *p_trans = new osg::PositionAttitudeTransform;
+        p_ent->setTransformationNode( p_trans );
+    }
+
     return p_ent;
 }
 
@@ -235,7 +235,7 @@ BaseEntity* EntityManager::findInstance( const string& instanceName )
 
 bool EntityManager::registerUpdate( CTD::BaseEntity* p_entity, bool reg )
 {
-    // check whether the entity is already registered
+    // check whether the entity is registered for updates
     vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
     for( ; pp_entity != pp_entityEnd; pp_entity++ )
     {
@@ -259,9 +259,21 @@ bool EntityManager::registerUpdate( CTD::BaseEntity* p_entity, bool reg )
     return true;
 }
 
+bool EntityManager::isRegisteredUpdate( BaseEntity* p_entity )
+{
+    // check whether the entity is registered for updates
+    vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
+    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    {
+        if ( *pp_entity == p_entity )
+            return true;
+    }
+    return false;
+}
+
 bool EntityManager::registerNotification( BaseEntity* p_entity, bool reg )
 {
-    // check whether the entity is already registered
+    // check whether the entity is registered for notifications
     vector< BaseEntity* >::iterator pp_entity = _entityNotification.begin(), pp_entityEnd = _entityNotification.end();
     for( ; pp_entity != pp_entityEnd; pp_entity++ )
     {
@@ -289,9 +301,35 @@ bool EntityManager::registerNotification( BaseEntity* p_entity, bool reg )
     return true;
 }
 
+bool EntityManager::isRegisteredNotification( BaseEntity* p_entity )
+{
+    // check whether the entity is registered for notifications
+    vector< BaseEntity* >::iterator pp_entity = _entityNotification.begin(), pp_entityEnd = _entityNotification.end();
+    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    {
+        if ( *pp_entity == p_entity )
+            return true;
+    }
+    return false;
+}
+
 void EntityManager::sendNotification( const EntityNotification& notify )
 {
     _queueNotifications.push_back( notify );
+}
+
+void EntityManager::flushNotificationQueue()
+{
+    vector< EntityNotification >::iterator p_notify = _queueNotifications.begin(), p_notifyEnd = _queueNotifications.end();
+    vector< BaseEntity* >::iterator pp_entity, pp_entityEnd = _entityNotification.end();
+    for ( ; p_notify != p_notifyEnd; p_notify++ )
+    {
+        for( pp_entity = _entityNotification.begin(); pp_entity != pp_entityEnd; pp_entity++ )
+        {
+            ( *pp_entity )->handleNotification( *p_notify );
+        }
+    }
+    _queueNotifications.clear();
 }
 
 void EntityManager::deregisterUpdate( BaseEntity* p_entity )
@@ -317,9 +355,9 @@ void EntityManager::deregisterUpdate( BaseEntity* p_entity )
 //! TODO(?) implement a real adding functionality basing on spatial partitioning
 void EntityManager::addToScene( BaseEntity* p_entity, osg::Group *p_scenegr )
 {
-    assert( p_entity && p_entity->_p_transformNode && "adding to scene requires a transformation node in entity!" );
+    assert( p_entity && p_entity->_p_transformNode.valid() && "adding to scene requires a transformation node in entity!" );
     osg::Group *p_grp = p_scenegr ? p_scenegr : ( osg::Group* )Application::get()->getViewer()->getTopMostSceneData();
-    p_grp->addChild( p_entity->_p_transformNode );
+    p_grp->addChild( p_entity->_p_transformNode.get() );
 }
 
 void EntityManager::addToEntityPool( BaseEntity* p_entity )
@@ -398,9 +436,8 @@ void EntityManager::updateEntities( float deltaTime  )
     vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
     for( ; pp_entity != pp_entityEnd; pp_entity++ )
     {
-        BaseEntity* p_ent = *pp_entity;
-        if ( p_ent->isActive() )
-            p_ent->updateEntity( deltaTime );
+        BaseEntity* p_ent = ( *pp_entity );
+        p_ent->updateEntity( deltaTime );
 
         // this check enables entities to manipulate the update entity list in their update method
         //  such manipulation can occure e.g. when an entity requests a level loading in its update method
@@ -428,19 +465,46 @@ void EntityManager::deleteAllEntities()
     _shuttingDown = true;
 
     vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
-    for(; pp_entity != pp_entityEnd; pp_entity++ )
-        if ( ( *pp_entity )->getAutoDelete() ) // delete only if auto delete flag is set
+    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    {
+        // delete only if entity is not persistent
+        if ( !( ( *pp_entity )->isPersistent() ) )
+        {
             _queueDeletedEntities.push_back( *pp_entity );
+        }
+    }
 
     // update entity lists in order to let the deletions take place immediately
     updateEntityLists();
 
-    // clear update list
+    // reset update list, add only persistent entities
     _updateEntities.clear();
+    vector< BaseEntity* >::iterator pp_uentity = _entityPool.begin(), pp_uentityEnd = _entityPool.end();
+    for( ; pp_uentity != pp_uentityEnd; pp_uentity++ )
+    {
+        // delete only if entity is not persistent
+        if ( ( *pp_uentity )->isPersistent() )
+        {
+            _updateEntities.push_back( *pp_uentity );
+        }
+    }
+
     // this flag is used in main update entity loop, thus we tollerate entity deletions during update phase too
     _updateEntityListChanged = true;
 
     _shuttingDown = false;
+}
+
+void EntityManager::getPersistentEntities( std::vector< BaseEntity* >& entities )
+{
+    vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
+    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    {
+        if ( ( *pp_entity )->isPersistent() )
+        {
+            entities.push_back( *pp_entity );
+        }
+    }
 }
 
 // entity factory base class
