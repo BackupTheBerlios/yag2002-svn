@@ -40,8 +40,8 @@ namespace CTD
 
 // some defines
 #define LDLG_PREFIX             "ls_"
-// relative path to scene directory
-#define SCENE_DIR               "scenes/"
+// relative path to level directory
+#define SCENE_DIR               "level/"
 
 DialogLevelSelect::DialogLevelSelect( EnMenu* p_menuEntity ) :
 _p_clickSound( NULL ),

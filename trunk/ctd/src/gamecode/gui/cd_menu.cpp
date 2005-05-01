@@ -44,9 +44,9 @@ namespace CTD
 // prefix for menu layout resources
 #define MENU_PREFIX             "menu_"
 #define OVERLAY_IMAGESET        MENU_PREFIX "loadingoverlay"
-#define DEFAULT_LEVEL_LOADER    "scenes/loader"
-#define MENU_SCENE              "scenes/menuscene.osg"
-#define MENU_CAMERAPATH         "scenes/campath.osg"
+#define DEFAULT_LEVEL_LOADER    "gui/scene/loader"
+#define MENU_SCENE              "gui/scene/menuscene.osg"
+#define MENU_CAMERAPATH         "gui/scene/campath.osg"
 
 //! Input handler class for menu, it handles ESC key press and toggles the menu gui
 class MenuInputHandler : public GenericInputHandler< EnMenu >
@@ -137,9 +137,9 @@ _settingsDialogConfig( "gui/settings.xml" ),
 _levelSelectDialogConfig( "gui/levelselect.xml" ),
 _introTexture( "gui/intro.tga" ),
 _loadingOverlayTexture( "gui/loading.tga" ),
-_buttonClickSound( "gui/sounds/click.wav" ),
-_buttonHoverSound( "gui/sounds/hover.wav" ),
-_introductionSound( "gui/sounds/intro.wav" ),
+_buttonClickSound( "gui/sound/click.wav" ),
+_buttonHoverSound( "gui/sound/hover.wav" ),
+_introductionSound( "gui/sound/intro.wav" ),
 _menuState( None ),
 _levelLoaded( false )
 {
