@@ -20,7 +20,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(CTD_DEP_DIR)\Animation\osgcal-0.1.28\include&quot;;&quot;$(CTD_DEP_DIR)\Newton&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(OSGAL_INC_DIR)&quot;;&quot;$(OPENTHREADS_INC_DIR)&quot;;&quot;$(PRODUCER_INC_DIR)&quot;;&quot;$(OSG_INC_DIR)&quot;;&quot;$(CEGUI_INC_DIR)&quot;;../../../../src/gamecode;../../../../src/framework"
+				AdditionalIncludeDirectories="&quot;$(OSG_INC_DIR)&quot;;&quot;$(OPENTHREADS_INC_DIR)&quot;;&quot;$(PRODUCER_INC_DIR)&quot;;&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(CTD_DEP_DIR)\GUI\cegui_mk2-cvs\include&quot;;&quot;$(CTD_DEP_DIR)\Physics\Newton&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\src&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="_DEBUG;WIN32"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -39,7 +39,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="opengl32.lib OpenThreadsWin32d.lib osgd.lib osgDBd.lib osgGAd.lib osgProducerd.lib osgUtild.lib osgALd.lib osgcald.lib oalppd.lib cal3d_d.lib Producerd.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib tinyxmld.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib frameworkd.lib"
 				OutputFile="../../../../bin/win32/vrc_debug.exe"
-				AdditionalLibraryDirectories="&quot;$(CEGUI_LIB_DIR)&quot;;&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(CTD_DEP_DIR)\Newton&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\lib&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\lib&quot;;&quot;$(CTD_DEP_DIR)\Animation\osgcal-0.1.28\bin\osgcal\release&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\bin\release&quot;;&quot;$(OSGAL_LIB_DIR)&quot;;&quot;$(PRODUCER_LIB_DIR)&quot;;&quot;$(OPENTHREADS_LIB_DIR)&quot;;&quot;$(OSG_LIB_DIR)&quot;;../../../../lib/framework"
+				AdditionalLibraryDirectories="&quot;$(OSG_LIB_DIR)&quot;;&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(PRODUCER_LIB_DIR)&quot;;&quot;$(OPENTHREADS_LIB_DIR)&quot;;&quot;$(CTD_DEP_DIR)\Physics\Newton&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\lib&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\lib&quot;;&quot;$(CTD_DEP_DIR)\Animation\osgcal-0.1.28\bin\osgcal\release&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\bin\release&quot;;&quot;$(CTD_DEP_DIR)\GUI\cegui_mk2-cvs\lib&quot;;../../../../lib/framework"
 				GenerateDebugInformation="TRUE"
 				HeapCommitSize="0"
 				StackCommitSize="10000"/>
@@ -75,7 +75,7 @@
 				EnableFiberSafeOptimizations="TRUE"
 				OptimizeForProcessor="3"
 				OptimizeForWindowsApplication="TRUE"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(CTD_DEP_DIR)\Animation\osgcal-0.1.28\include&quot;;&quot;$(CTD_DEP_DIR)\Newton&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(OSGAL_INC_DIR)&quot;;&quot;$(OPENTHREADS_INC_DIR)&quot;;&quot;$(PRODUCER_INC_DIR)&quot;;&quot;$(OSG_INC_DIR)&quot;;&quot;$(CEGUI_INC_DIR)&quot;;../../../../src/gamecode;../../../../src/framework"
+				AdditionalIncludeDirectories="&quot;$(OSG_INC_DIR)&quot;;&quot;$(OPENTHREADS_INC_DIR)&quot;;&quot;$(PRODUCER_INC_DIR)&quot;;&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(CTD_DEP_DIR)\GUI\cegui_mk2-cvs\include&quot;;&quot;$(CTD_DEP_DIR)\Physics\Newton&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\src&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="WIN32"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="TRUE"
@@ -90,7 +90,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgProducer.lib osgUtil.lib osgAL.lib osgcal.lib oalpp.lib cal3d.lib Producer.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib tinyxml.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib framework.lib"
 				OutputFile="../../../../bin/win32/vrc.exe"
-				AdditionalLibraryDirectories="&quot;$(CEGUI_LIB_DIR)&quot;;&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(CTD_DEP_DIR)\Newton&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\lib&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\lib&quot;;&quot;$(CTD_DEP_DIR)\Animation\osgcal-0.1.28\bin\osgcal\release&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\bin\release&quot;;&quot;$(OSGAL_LIB_DIR)&quot;;&quot;$(PRODUCER_LIB_DIR)&quot;;&quot;$(OPENTHREADS_LIB_DIR)&quot;;&quot;$(OSG_LIB_DIR)&quot;;../../../../lib/framework"
+				AdditionalLibraryDirectories="&quot;$(OSG_LIB_DIR)&quot;;&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(PRODUCER_LIB_DIR)&quot;;&quot;$(OPENTHREADS_LIB_DIR)&quot;;&quot;$(CTD_DEP_DIR)\Physics\Newton&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\lib&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\lib&quot;;&quot;$(CTD_DEP_DIR)\Animation\osgcal-0.1.28\bin\osgcal\release&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\bin\release&quot;;&quot;$(CTD_DEP_DIR)\GUI\cegui_mk2-cvs\lib&quot;;../../../../lib/framework"
 				IgnoreDefaultLibraryNames=""/>
 			<Tool
 				Name="VCMIDLTool"/>
