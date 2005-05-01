@@ -34,6 +34,7 @@
 #include "ctd_dialoglevelselect.h"
 #include "ctd_intro.h"
 #include "../sound/ctd_ambientsound.h"
+#include "../visuals/ctd_camera.h"
 
 using namespace std;
 
@@ -44,6 +45,8 @@ namespace CTD
 #define MENU_PREFIX             "menu_"
 #define OVERLAY_IMAGESET        MENU_PREFIX "loadingoverlay"
 #define DEFAULT_LEVEL_LOADER    "scenes/loader"
+#define MENU_SCENE              "scenes/menuscene.osg"
+#define MENU_CAMERAPATH         "scenes/campath.osg"
 
 //! Input handler class for menu, it handles ESC key press and toggles the menu gui
 class MenuInputHandler : public GenericInputHandler< EnMenu >
@@ -128,6 +131,7 @@ _p_loadingWindow( NULL ),
 _p_loadingLevelPic( NULL ),
 _p_loadingOverlayImage( NULL ),
 _p_loadingOverly( NULL ),
+_p_cameraControl( NULL ),
 _menuConfig( "gui/menu.xml" ),
 _settingsDialogConfig( "gui/settings.xml" ),
 _levelSelectDialogConfig( "gui/levelselect.xml" ),
@@ -136,12 +140,9 @@ _loadingOverlayTexture( "gui/loading.tga" ),
 _buttonClickSound( "gui/sounds/click.wav" ),
 _buttonHoverSound( "gui/sounds/hover.wav" ),
 _introductionSound( "gui/sounds/intro.wav" ),
-_beginHover( false ),
 _menuState( None ),
 _levelLoaded( false )
 {
-    // make this entity persistent ( thus on level changing this entity will not be deleted by entity manager )
-    setAutoDelete( false );
     // this entity needs updates initially for getting the intro running
     EntityManager::get()->registerUpdate( this, true );
 
@@ -178,9 +179,6 @@ EnMenu::~EnMenu()
 
     // destroy the input handler
     _p_inputHandler->destroyHandler();
-
-    // deregister from getting notification
-    EntityManager::get()->registerNotification( this, false );
 }
 
 void EnMenu::handleNotification( EntityNotification& notify )
@@ -190,10 +188,9 @@ void EnMenu::handleNotification( EntityNotification& notify )
     {
         // for every subsequent level loading we must register outself again for getting updating
         case CTD_NOTIFY_NEW_LEVEL_INITIALIZED:
-            EntityManager::get()->registerUpdate( this, true );
             break;
 
-        // we have to trigger the deletion ourself! ( we disabled auto-deletion for this entity )
+        // we have to trigger the deletion ourselves! ( we disabled auto-deletion for this entity )
         case CTD_NOTIFY_SHUTDOWN:
             EntityManager::get()->deleteEntity( this );
             break;
@@ -205,6 +202,7 @@ void EnMenu::handleNotification( EntityNotification& notify )
 
 void EnMenu::initialize()
 {
+    //! TODO: design an appropriate support in framework for persistent entities
     // note: this entity is persistent; on every level loading it is initialized again.
     //       we need only the first initialization, so skip the subsequent ones!
     static s_alreadyInitialized = false;
@@ -215,15 +213,18 @@ void EnMenu::initialize()
 
     // setup sounds
     if ( _buttonClickSound.length() )
-        _clickSound.reset( setupSound( _buttonClickSound ) );
+        _clickSound.reset( setupSound( _buttonClickSound, 0.1f ) );
 
     if ( _buttonHoverSound.length() )
-        _hoverSound.reset( setupSound( _buttonHoverSound ) );
+        _hoverSound.reset( setupSound( _buttonHoverSound, 0.1f ) );
 
     if ( _introductionSound.length() )
-        _introSound.reset( setupSound( _introductionSound ) );
+        _introSound.reset( setupSound( _introductionSound, 1.0f ) );
 
-    // load the main menu layout
+    // create a scene with camera path animation and world geometry
+    createMenuScene();
+
+    // load the menu layout
     try
     {
         _p_menuWindow = GuiManager::get()->loadLayout( _menuConfig, NULL, MENU_PREFIX );
@@ -233,17 +234,14 @@ void EnMenu::initialize()
         CEGUI::PushButton* p_btnGS = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_game_settings" ) );
         p_btnGS->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedGameSettings, this ) );
         p_btnGS->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
-        p_btnGS->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonLostHover, this ) );
 
         _p_btnQuit = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_quit" ) );
         _p_btnQuit->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedQuitReturnToLevel, this ) );
         _p_btnQuit->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
-        _p_btnQuit->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonLostHover, this ) );
 
         _p_btnStart = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_start" ) );
         _p_btnStart->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedStartLeave, this ) );
         _p_btnStart->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
-        _p_btnStart->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonLostHover, this ) );
 
         // setup loading window
         _p_loadingWindow = static_cast< CEGUI::Window* >( CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", ( MENU_PREFIX "wnd_loading" ) ) );
@@ -313,7 +311,48 @@ void EnMenu::initialize()
     beginIntro();
 }
 
-EnAmbientSound* EnMenu::setupSound( const std::string& filename )
+void EnMenu::createMenuScene()
+{
+    // load the menu scene and camera path
+    osg::Node* p_scenenode = LevelManager::get()->loadMesh( MENU_SCENE );
+    osg::Node* p_animnode  = LevelManager::get()->loadMesh( MENU_CAMERAPATH );
+    if ( p_scenenode && p_animnode )
+    {
+        _menuAnimationPath = new osg::Group();
+        _menuAnimationPath->addChild( p_animnode );
+    }
+    else
+    {
+        log << Log::LogLevel( Log::L_WARNING ) << "*** EnMenu: cannot setup scene; either menu scene or camera animation is missing" << endl;
+        return;
+    }
+    _menuScene = new osg::Group;
+    _menuScene->setName( "_menuScene_" );
+    _menuScene->addChild( p_scenenode );
+    p_scenenode->setName( "_menuSceneNode_" );
+    _menuScene->addChild( _menuAnimationPath.get() );
+
+    // create and setup camera
+    EnCamera* p_camEntity = static_cast< EnCamera* >( EntityManager::get()->createEntity( ENTITY_NAME_CAMERA, "_menuCam_" ) );
+    assert( p_camEntity && "cannot create camera entity!" );
+    _p_cameraControl = p_camEntity;
+    // our camera must be persistent, as it must survive every subsequent level loading
+    _p_cameraControl->setPersistent( true );
+
+    osg::Vec3f bgcolor( 0.0f, 0.0f, 0.0f ); // black background
+    float fov = 60.0f;
+    p_camEntity->getAttributeManager().setAttributeValue( "backgroundColor", bgcolor );
+    p_camEntity->getAttributeManager().setAttributeValue( "fov",             fov     );
+    osg::Quat rotoffset( -M_PIF / 2.0f, osg::Vec3f( 1, 0, 0 ) );
+    p_camEntity->setCameraOffsetRotation( rotoffset );
+    
+    EntityManager::get()->addToScene( p_camEntity );
+    
+    p_camEntity->initialize();
+    p_camEntity->postInitialize();
+}
+   
+EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume )
 {
     // manually create an entity of type AmbientSound without adding it to pool as we use the entity locally
     //  and do not need managed destruction or searchable ability for the entity
@@ -331,28 +370,20 @@ EnAmbientSound* EnMenu::setupSound( const std::string& filename )
     p_ent->getAttributeManager().setAttributeValue( "soundFile",   file     );
     p_ent->getAttributeManager().setAttributeValue( "loop",        false    );
     p_ent->getAttributeManager().setAttributeValue( "autoPlay",    false    );
+    p_ent->getAttributeManager().setAttributeValue( "volume",      volume   );
     
     // init entity
     p_ent->initialize();
     p_ent->postInitialize();
-
+    
     return p_ent;
 }
 
 bool EnMenu::onButtonHover( const CEGUI::EventArgs& arg )
 {
-    if ( !_beginHover )
-    {
-        _beginHover = true;
-        if ( _hoverSound.get() )
-            _hoverSound->startPlaying();
-    }
-    return true;
-}
-
-bool EnMenu::onButtonLostHover( const CEGUI::EventArgs& arg )
-{
-    _beginHover = false;
+    if ( _hoverSound.get() )
+        _hoverSound->startPlaying();
+    
     return true;
 }
 
@@ -461,8 +492,11 @@ void EnMenu::updateEntity( float deltaTime )
         {
             // load a new level, don't keep physics and entities
             // note: the menu entity is persistent anyway, it handles the level switch itself!
-            LevelManager::get()->load( _queuedLevelFile, false, false );
+            LevelManager::get()->loadLevel( _queuedLevelFile, false, false );
             _queuedLevelFile = ""; // reset the queue
+
+            // store level scene's static mesh for later switching
+            _levelScene = LevelManager::get()->getStaticMesh();
 
             // hide the loading window
             _p_loadingWindow->hide();
@@ -477,29 +511,26 @@ void EnMenu::updateEntity( float deltaTime )
         }
         break;
 
-        case BeginLeavingLevel:
-        {
-            GuiManager::get()->showMousePointer( false ); // let the mouse disappear 
-            _menuState = LeavingLevel;        
-        }
-        break;
-
-        case LeavingLevel:
-        {
-            LevelManager::get()->load( _queuedLevelFile, false, false );
-            _queuedLevelFile = ""; // reset the queue
-            GuiManager::get()->showMousePointer( true ); // let the mouse disappear 
-            _levelLoaded = false;
-            enter();
-        }
-        break;
-
         case Hidden:
             break;
 
         case Visible:
+        {
             _settingsDialog->update( deltaTime );
-            break;
+
+            if ( _menuAnimationPath.get() )
+            {
+                // play the camera animation during the user is in menu            
+                TransformationVisitor tv( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ); // see ctd_utils.h in framework
+                _menuAnimationPath->accept( tv );
+                const osg::Matrixf&  mat = tv.getMatrix();
+                osg::Quat rot;
+                mat.get( rot );
+                osg::Vec3f pos = mat.getTrans();
+                _p_cameraControl->setCameraTranslation( pos, rot );
+            }
+        }
+        break;
 
         default:
             assert( NULL && "invalid menu state!" );
@@ -530,10 +561,7 @@ void EnMenu::enter()
     // send notification to all notification-registered entities about entering menu
     EntityManager::get()->sendNotification( EntityNotification( CTD_NOTIFY_MENU_ENTER, this ) );
 
-    _p_menuWindow->show();
-
-    _menuState = Visible;
-
+    // set the right text for the multi-function buttons
     if ( _levelLoaded )
     {
         _p_btnStart->setText( "leave level" );
@@ -547,6 +575,15 @@ void EnMenu::enter()
 
     // reset the input handler
     _p_inputHandler->reset( true );
+
+    // show menu layout
+    _p_menuWindow->show();
+
+    // activate the menu scene
+    switchMenuScene( true );
+
+    // set menu state
+    _menuState = Visible;
 }
 
 void EnMenu::leave()
@@ -561,10 +598,31 @@ void EnMenu::leave()
     _settingsDialog->show( false );
     _levelSelectDialog->show( false );
 
-    _menuState = Hidden;
-
     // reset the input handler
     _p_inputHandler->reset( true );
+
+    // deactivate the menu scene
+    switchMenuScene( false );
+
+    // set menu state
+    _menuState = Hidden;
+}
+
+void EnMenu::switchMenuScene( bool tomenu )
+{
+    if ( tomenu )
+    {
+        // replace the level scene node by menu scene node
+        // store the static world node for later switching to level scene
+        LevelManager::get()->setStaticMesh( _menuScene.get() );
+        _p_cameraControl->setEnable( true );
+    }
+    else
+    {
+        // replace the menu scene node by level scene node
+        LevelManager::get()->setStaticMesh( _levelScene.get() );
+        _p_cameraControl->setEnable( false );
+    }
 }
 
 void EnMenu::loadLevel( string levelfile, CEGUI::Image* p_img )
@@ -581,9 +639,14 @@ void EnMenu::loadLevel( string levelfile, CEGUI::Image* p_img )
 
 void EnMenu::leaveLevel()
 {
-    // prepare the level loading; the actual loading is done in update method
-    _menuState = BeginLeavingLevel;
-    _queuedLevelFile = DEFAULT_LEVEL_LOADER;
+    if ( !_levelLoaded )
+        return;
+
+    LevelManager::get()->unloadLevel();
+    _levelLoaded = false;
+    switchMenuScene( true );
+    _p_btnStart->setText( "start" );
+    _p_btnQuit->setText( "quit" );
 }
 
 } // namespace CTD

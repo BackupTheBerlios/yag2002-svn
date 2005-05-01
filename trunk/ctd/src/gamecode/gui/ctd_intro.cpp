@@ -85,7 +85,6 @@ bool IntroControl::initialize( const string& intoImage )
         _p_introImage->setPosition( CEGUI::Point( 0, 0 ) );
         _p_introImage->setBackgroundEnabled( false );
         _p_introImage->setFrameEnabled( false );
-
     }
     catch ( CEGUI::Exception e )
     {

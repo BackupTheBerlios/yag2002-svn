@@ -43,6 +43,7 @@ class DialogLevelSelect;
 class MenuInputHandler;
 class EnAmbientSound;
 class IntroControl;
+class EnCamera;
 
 //! The menu system is controlled by this entity
 class EnMenu :  public BaseEntity
@@ -55,11 +56,13 @@ class EnMenu :  public BaseEntity
 
         //! This entity does not need a transform node, which would be created by level manager on loading
         //!   We create an own one and add it into scene's root node
-        bool                                        needTransformation() { return false; }
+        const bool                                  needTransformation() const { return false; }
 
-        /**
-        * Initializing function, this is called after all engine modules are initialized and a map is loaded.
-        */
+        //! Make this entity persistent, thus on level changing this entity will not be deleted by entity manager
+        //  and update and notification registries will be kept.
+        const bool                                  isPersistent() const { return true; }
+
+        //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
 
         //! This entity needs updating
@@ -120,11 +123,14 @@ class EnMenu :  public BaseEntity
         //! Callback for mouse hover ( over a button ), used for playing sound
         bool                                        onButtonHover( const CEGUI::EventArgs& arg );
 
-        //! Callback for losing mouse hover ( over a button ), used for playing sound
-        bool                                        onButtonLostHover( const CEGUI::EventArgs& arg );
-
         //! Creates a sound entity with given filename
-        EnAmbientSound*                             setupSound( const std::string& filename );
+        EnAmbientSound*                             setupSound( const std::string& filename, float volume );
+
+        //! Create a scene for menu
+        void                                        createMenuScene();
+
+        //! Switch the menu and game scenes
+        void                                        switchMenuScene( bool tomenu );
 
         //! Menu states
         enum
@@ -134,11 +140,17 @@ class EnMenu :  public BaseEntity
             Intro,
             BeginLoadingLevel,
             LoadingLevel,
-            BeginLeavingLevel,
-            LeavingLevel,
             Visible,
             Hidden
         }                                           _menuState;
+
+        osg::ref_ptr< osg::Group >                  _menuScene;
+
+        osg::ref_ptr< osg::Node >                   _levelScene;
+
+        osg::ref_ptr< osg::Group >                  _menuAnimationPath;
+
+        EnCamera*                                   _p_cameraControl;
 
         std::auto_ptr< EnAmbientSound >             _clickSound;
 
@@ -167,8 +179,6 @@ class EnMenu :  public BaseEntity
         CEGUI::StaticImage*                         _p_loadingLevelPic;
 
         std::string                                 _queuedLevelFile;
-
-        bool                                        _beginHover;
 
         MenuInputHandler*                           _p_inputHandler;
 

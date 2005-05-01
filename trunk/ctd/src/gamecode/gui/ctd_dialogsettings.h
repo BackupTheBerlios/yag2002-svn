@@ -97,6 +97,9 @@ class DialogGameSettings
         //! Dialog callback for Cancel button        
         bool                                        onClickedCancel( const CEGUI::EventArgs& arg );
 
+        //! Dialog callback for changing the tab      
+        bool                                        onTabChanged( const CEGUI::EventArgs& arg );
+
         //! Dialog callback for mouse sensitivity scrollbar        
         bool                                        onMouseSensitivityChanged( const CEGUI::EventArgs& arg );
        

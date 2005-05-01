@@ -94,6 +94,7 @@ bool DialogGameSettings::initialize( const string& layoutfile, CEGUI::Window* p_
         // get tab control contents
         //-------------------------
         CEGUI::TabControl* p_tabctrl = static_cast< CEGUI::TabControl* >( _p_settingsDialog->getChild( SDLG_PREFIX "tab_ctrl" ) );
+        p_tabctrl->subscribeEvent( CEGUI::TabControl::EventSelectionChanged, CEGUI::Event::Subscriber( DialogGameSettings::onTabChanged, this ) );
 
         // get contents of pane Network
         //#############################
@@ -347,6 +348,11 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
                                             CEGUI::EventArgs arg;
                                             _p_dialogSettings->onClickedOk( arg ); // get gui control values
                                         }
+                                        else
+                                        {
+                                            // just disappear the dialog
+                                            _p_dialogSettings->show( false );
+                                        }
 
                                         // release the busy lock
                                         _p_dialogSettings->_busy = false;
@@ -364,6 +370,15 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
         p_msg->setClickCallback( new MsgYesNoClick( this ) );    
         p_msg->show();
     }
+
+    return true;
+}
+
+bool DialogGameSettings::onTabChanged( const CEGUI::EventArgs& arg )
+{
+    // play click sound
+    if ( _p_clickSound )
+        _p_clickSound->startPlaying();
 
     return true;
 }
