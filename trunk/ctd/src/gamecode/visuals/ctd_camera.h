@@ -43,6 +43,7 @@ namespace CTD
 class CameraFrameHandler;
 
 //! This entity controls the camera
+//! Note: take care that you don't have more than one enabled camera at same time!
 class EnCamera :  public BaseEntity
 {
     public:
@@ -55,6 +56,13 @@ class EnCamera :  public BaseEntity
 
         //! Update entity
         void                                        updateEntity( float deltaTime );
+
+        //! This entity can be either persistent or not!
+        const bool                                  isPersistent() const { return _isPersistent; }
+
+        //! Set the persistence flag. 
+        //! Note: this flag is checked by framework on destruction of a level.
+        void                                        setPersistent( bool persistence ) { _isPersistent = persistence; }
 
         //! Set camera translation
         inline void                                 setCameraTranslation( const osg::Vec3f& pos, const osg::Quat& rot );
@@ -102,7 +110,20 @@ class EnCamera :  public BaseEntity
         */
         inline void                                 setLocalYaw( float yaw );
 
+        //! Enable / disable this camera
+        void                                        setEnable( bool enable );
+
     protected:
+
+        //! This entity is persistent so we have to handle entity's update registration on every level loading and
+        //  destruction ourselves.
+        void                                        handleNotification( EntityNotification& notify );
+
+        //! Overriden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraPosition!
+        void                                        setPosition( osg::Vec3f& pos );
+
+        //! Overriden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraRotation!
+        void                                        setRotation( osg::Quat& quats );
 
         // Entity parameters
 
@@ -125,6 +146,8 @@ class EnCamera :  public BaseEntity
         osg::Vec3f                                  _backgroudColor;
 
     protected:
+
+        bool                                        _isPersistent;
 
         //! Current camera position
         osg::Vec3f                                  _curPosition;

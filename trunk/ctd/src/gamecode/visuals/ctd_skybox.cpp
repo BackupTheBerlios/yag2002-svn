@@ -42,23 +42,42 @@ using namespace osg;
 CTD_IMPL_ENTITYFACTORY_AUTO( SkyBoxEntityFactory );
 
 
-EnSkyBox::EnSkyBox()
+EnSkyBox::EnSkyBox() :
+_isPersistent( false )
 {
-    // this entity does not need a periodic update
-    activate( false );
+    // register entity in order to get notifications   
+    EntityManager::get()->registerNotification( this, true );   
 
     // register entity attributes
-    _attributeManager.addAttribute( "right"    , _texNames[ 0 ] );
-    _attributeManager.addAttribute( "left"     , _texNames[ 1 ] );
-    _attributeManager.addAttribute( "front"    , _texNames[ 2 ] );
-    _attributeManager.addAttribute( "back"     , _texNames[ 3 ] );
-    _attributeManager.addAttribute( "up"       , _texNames[ 4 ] );
-    _attributeManager.addAttribute( "down"     , _texNames[ 5 ] );
+    _attributeManager.addAttribute( "persistent"    , _isPersistent  );
+    _attributeManager.addAttribute( "right"         , _texNames[ 0 ] );
+    _attributeManager.addAttribute( "left"          , _texNames[ 1 ] );
+    _attributeManager.addAttribute( "front"         , _texNames[ 2 ] );
+    _attributeManager.addAttribute( "back"          , _texNames[ 3 ] );
+    _attributeManager.addAttribute( "up"            , _texNames[ 4 ] );
+    _attributeManager.addAttribute( "down"          , _texNames[ 5 ] );
 }
 
 EnSkyBox::~EnSkyBox()
 {
     Application::get()->getSceneRootNode()->removeChild( _p_skyGrp.get() );
+}
+
+void EnSkyBox::handleNotification( EntityNotification& notify )
+{
+    // handle notifications
+    switch( notify.getId() )
+    {
+        // we have to trigger the deletion ourselves! ( this entity can be peristent )
+        case CTD_NOTIFY_SHUTDOWN:
+
+            if ( _isPersistent )
+                EntityManager::get()->deleteEntity( this );
+            break;
+
+        default:
+            ;
+    }
 }
 
 void EnSkyBox::initialize()

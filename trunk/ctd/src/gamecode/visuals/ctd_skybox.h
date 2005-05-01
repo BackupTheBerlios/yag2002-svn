@@ -50,7 +50,14 @@ class EnSkyBox :  public BaseEntity
 
         //! This entity does not need a transform node, which would be created by level manager on loading
         //!   We create an own one and add it into scene's root node
-        bool                                        needTransformation() { return false; }
+        const bool                                  needTransformation() const { return false; }
+
+        //! This entity can be either persistent or not!
+        const bool                                  isPersistent() const { return _isPersistent; }
+
+        //! Set the persistence flag. 
+        //! Note: this flag is checked by framework on destruction of a level.
+        void                                        setPersistent( bool persistence ) { _isPersistent = persistence; }
 
         /**
         * Initializing function, this is called after all engine modules are initialized and a map is loaded.
@@ -70,7 +77,13 @@ class EnSkyBox :  public BaseEntity
 
         //! Entity parameter for texnames (6)
         std::string                                 _texNames[ 6 ];
-          
+
+    protected:
+
+        //! This entity is persistent so we have to handle entity's update registration on every level loading and
+        //  destruction ourselves.
+        void                                        handleNotification( EntityNotification& notify );
+
         EyeTransform*                               _p_transformEyePoint;
            
         osg::ref_ptr< osg::Group >                  _p_skyGrp;
@@ -82,6 +95,8 @@ class EnSkyBox :  public BaseEntity
         osg::Node*                                  makeBox();
 
         std::map< short, std::string >              _textureFilenameMap;
+
+        bool                                        _isPersistent;
 };
 
 //! Entity type definition used for type registry

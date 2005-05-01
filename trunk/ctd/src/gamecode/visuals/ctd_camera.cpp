@@ -45,16 +45,29 @@ class CameraFrameHandler : public GenericInputHandler< EnCamera >
     public:
 
                                         CameraFrameHandler( EnCamera* p_camEntity ) : 
-                                            GenericInputHandler< EnCamera >( p_camEntity )
+                                          GenericInputHandler< EnCamera >( p_camEntity ),
+                                          _enable( true )
                                         {}
 
         virtual                         ~CameraFrameHandler() {};
         
         bool                            handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
+
+        void                            setEnable( bool enable )
+                                        {
+                                            _enable = enable;
+                                        }
+
+    protected:
+
+        bool                            _enable;
 };
 
 bool CameraFrameHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
+    if ( !_enable )
+        return false;
+
     if ( ea.getEventType() == osgGA::GUIEventAdapter::FRAME )
     {
         // update camera matrix if needed
@@ -94,6 +107,7 @@ bool CameraFrameHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
 CTD_IMPL_ENTITYFACTORY_AUTO( CameraEntityFactory );
 
 EnCamera::EnCamera() :
+_isPersistent( false ),
 _fov( 60.00 ),
 _nearClip( 0.1f ),
 _farClip( 1000.0f ),
@@ -103,7 +117,8 @@ _p_cameraHandler( NULL ),
 _pitch( 0 ),
 _yaw( 0 )
 {
-    EntityManager::get()->registerUpdate( this );     // register entity in order to get updated per simulation step
+    EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
+    EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 
     // register entity attributes
     _attributeManager.addAttribute( "position"          , _position         );
@@ -118,6 +133,27 @@ EnCamera::~EnCamera()
 {
     // destroy the input handler, this will deregister and delete our handler from viewer's handler list
     _p_cameraHandler->destroyHandler();
+}
+
+void EnCamera::handleNotification( EntityNotification& notify )
+{
+    // handle notifications
+    switch( notify.getId() )
+    {
+        // for every subsequent level loading we must register outself again for getting updating
+        case CTD_NOTIFY_NEW_LEVEL_INITIALIZED:
+            break;
+
+        // we have to trigger the deletion ourselves! ( this entity can be peristent )
+        case CTD_NOTIFY_SHUTDOWN:
+
+            if ( _isPersistent )
+                EntityManager::get()->deleteEntity( this );
+            break;
+
+        default:
+            ;
+    }
 }
 
 void EnCamera::initialize()
@@ -142,6 +178,11 @@ void EnCamera::initialize()
 
     // setup the event handler for handling 'frame' callbacks (for setting the view matrix)
     _p_cameraHandler = new CameraFrameHandler( this );
+}
+
+void EnCamera::setEnable( bool enable )
+{
+    _p_cameraHandler->setEnable( enable );
 }
 
 void EnCamera::updateEntity( float deltaTime )
