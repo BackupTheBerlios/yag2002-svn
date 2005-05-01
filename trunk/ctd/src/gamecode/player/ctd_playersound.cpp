@@ -49,9 +49,6 @@ _volume( 0.8f ),
 _referenceDist( 10.0f ),
 _p_soundGroup( NULL )
 { 
-    // the deletion must not be controled by entity manager, but by player
-    setAutoDelete( false );
-
     // register attributes
     getAttributeManager().addAttribute( "resourcedir"         , _soundFileDir  );
     getAttributeManager().addAttribute( "refdistance"         , _referenceDist );
@@ -60,9 +57,6 @@ _p_soundGroup( NULL )
     getAttributeManager().addAttribute( "soundwalkwood"       , _walkWood      );
     getAttributeManager().addAttribute( "soundwalkmetal"      , _walkMetal     );
     getAttributeManager().addAttribute( "soundwalkgrass"      , _walkGrass     );
-
-    // this entity does not need a periodic update
-    activate( false );
 }
 
 EnPlayerSound::~EnPlayerSound()
@@ -134,7 +128,7 @@ osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
     } 
     catch ( openalpp::Error error )
     {
-        cout << "*** error loading sound file '" << filename << "'" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading sound file '" << filename << "' in '" << getInstanceName() << "'" << endl;
         return NULL;
     }
      
