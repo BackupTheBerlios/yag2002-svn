@@ -131,10 +131,6 @@ _p_world( Physics::get()->getWorld() )
 
 EnPhysicsSphere::~EnPhysicsSphere()
 {
-    // deregister entity, it is not necessary for entities which 'die' at application exit time
-    //  as the entity manager clears the entity list on app exit
-    EntityManager::get()->registerUpdate( this, false );
-
     // remove physics body
     if ( _p_body )
     {

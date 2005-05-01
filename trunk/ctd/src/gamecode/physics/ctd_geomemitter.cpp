@@ -53,9 +53,6 @@ _geomCount( 0 )
 
 EnGeomEmitter::~EnGeomEmitter()
 {
-    // deregister entity, it is not necessary for entities which 'die' at application exit time
-    //  as the entity manager clears the entity list on app exit
-    EntityManager::get()->registerUpdate( this, false );
 }
 
 void EnGeomEmitter::postInitialize()

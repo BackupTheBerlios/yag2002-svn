@@ -134,10 +134,6 @@ _p_world( Physics::get()->getWorld() )
 
 EnPhysicsCylinder::~EnPhysicsCylinder()
 {
-    // deregister entity, it is not necessary for entities which 'die' at application exit time or which are removed by the 
-    // the mean of entity manager's deleteEntity method, as the entity manager clears the entity list on app exit
-    EntityManager::get()->registerUpdate( this, false );
-
     // remove physics body
     if ( _p_body )
     {
@@ -188,10 +184,11 @@ void EnPhysicsCylinder::initialize()
     osg::Node* p_mesh = LevelManager::get()->loadMesh( _meshFile );
     if ( !p_mesh ) 
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading mesh file" << endl;
-        activate( false );
+        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading mesh file '" << _meshFile << "'" << endl;
+        EntityManager::get()->registerUpdate( this, false );   // deregister entity
         return;
     }
+
     // now we add the new mesh into our transformable scene group
     addToTransformationNode( p_mesh );
     setPosition( _position );
