@@ -121,8 +121,36 @@ class EyeTransform : public osg::Transform
                                             }
 };
 
+//! Visitor for getting the world transformation considering all PositionAttitudeTransform nodes in path
+class TransformationVisitor : public osg::NodeVisitor
+{
+    public:
+                                            TransformationVisitor( osg::NodeVisitor::TraversalMode tm = osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ) :
+                                                osg::NodeVisitor( tm )
+                                            {
+                                                // we take all nodes
+                                                setTraversalMask( 0xffffffff );
+                                            }
+
+                                            ~TransformationVisitor() {}
+
+        void                                apply( osg::PositionAttitudeTransform& node )
+                                            {                        
+                                                _matrix *= computeLocalToWorld( getNodePath() );
+                                            }
+
+        const osg::Matrixf&                 getMatrix()
+                                            {
+                                                return _matrix;
+                                            }
+
+    protected:
+
+        osg::Matrixf                        _matrix;
+};
+
 //! Update texture matrix for cubemaps ( see osg's VertexProgram example )
-struct TexMatCallback : public osg::NodeCallback
+class TexMatCallback : public osg::NodeCallback
 {
     public:
 
