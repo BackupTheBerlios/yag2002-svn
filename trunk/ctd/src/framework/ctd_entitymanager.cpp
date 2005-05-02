@@ -187,7 +187,7 @@ BaseEntity* EntityManager::createEntity( const string& type, const string& insta
         addToEntityPool( p_ent );
     
     // create a transformation node if needed
-    if ( p_ent->needTransformation() ) 
+    if ( p_ent->isTransformable() ) 
     {
         osg::PositionAttitudeTransform  *p_trans = new osg::PositionAttitudeTransform;
         p_ent->setTransformationNode( p_trans );

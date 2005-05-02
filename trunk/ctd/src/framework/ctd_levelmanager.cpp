@@ -109,7 +109,7 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
         vector< BaseEntity* >::iterator pp_entity = perentities.begin(), pp_entityEnd = perentities.end();
         for( ; pp_entity != pp_entityEnd; pp_entity++ )
         {
-            if ( ( *pp_entity )->needTransformation() )
+            if ( ( *pp_entity )->isTransformable() )
             {
                 _entityGroup->addChild( ( *pp_entity )->getTransformationNode() );
             }
@@ -335,7 +335,7 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile, boo
         }
 
         // append the transformation node if the entity has one
-        if ( p_entity->needTransformation() ) 
+        if ( p_entity->isTransformable() ) 
             _entityGroup->addChild( p_entity->getTransformationNode() );
     }
 

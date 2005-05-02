@@ -153,7 +153,7 @@ class BaseEntity
         * Override and return false if the entitiy does not need transformation.
         * This method is called during entity creation e.g. by the level loader.
         */
-        virtual const bool                          needTransformation() const { return true; }
+        virtual const bool                          isTransformable() const { return true; }
 
         /**
         * Override and return true if your entity must resist loading of new levels.
