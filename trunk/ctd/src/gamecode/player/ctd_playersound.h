@@ -70,7 +70,7 @@ class EnPlayerSound  : public BaseEntity
         void                                        postInitialize();
 
         //! This entity does not need a transform node, which would be created by level manager on loading
-        bool                                        needTransformation() { return false; }
+        bool                                        isTransformable() { return false; }
 
         /**
         * Destroy player's sound component. This must be called during Player's destruction.

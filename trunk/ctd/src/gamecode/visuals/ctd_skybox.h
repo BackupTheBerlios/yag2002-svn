@@ -50,7 +50,7 @@ class EnSkyBox :  public BaseEntity
 
         //! This entity does not need a transform node, which would be created by level manager on loading
         //!   We create an own one and add it into scene's root node
-        const bool                                  needTransformation() const { return false; }
+        const bool                                  isTransformable() const { return false; }
 
         //! This entity can be either persistent or not!
         const bool                                  isPersistent() const { return _isPersistent; }

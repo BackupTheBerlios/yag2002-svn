@@ -63,7 +63,7 @@ class EnPlayerAnimation  : public BaseEntity
 
         //! This entity does not need a transform node, which would be created by level manager on loading
         //!   We create an own one which is given to player after initialization ( see setPlayer ).
-        bool                                        needTransformation() { return false; }
+        bool                                        isTransformable() { return false; }
 
         /**
         * Update entity

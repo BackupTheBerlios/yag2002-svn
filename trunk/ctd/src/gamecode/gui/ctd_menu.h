@@ -56,7 +56,7 @@ class EnMenu :  public BaseEntity
 
         //! This entity does not need a transform node, which would be created by level manager on loading
         //!   We create an own one and add it into scene's root node
-        const bool                                  needTransformation() const { return false; }
+        const bool                                  isTransformable() const { return false; }
 
         //! Make this entity persistent, thus on level changing this entity will not be deleted by entity manager
         //  and update and notification registries will be kept.
