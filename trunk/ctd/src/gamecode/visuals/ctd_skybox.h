@@ -20,8 +20,6 @@
 
 /*###############################################################
  # entity skybox
- #      this code is basing on Delta3D's implementation of skybox
- #                  ( http://www.delta3d.org/ )
  #
  #   date of creation:  03/24/2005
  #
@@ -47,22 +45,18 @@ class EnSkyBox :  public BaseEntity
 
         virtual                                     ~EnSkyBox();
 
-
-        //! This entity does not need a transform node, which would be created by level manager on loading
-        //!   We create an own one and add it into scene's root node
-        const bool                                  isTransformable() const { return false; }
-
         //! This entity can be either persistent or not!
         const bool                                  isPersistent() const { return _isPersistent; }
 
         //! Set the persistence flag. 
         //! Note: this flag is checked by framework on destruction of a level.
         void                                        setPersistent( bool persistence ) { _isPersistent = persistence; }
-
-        /**
-        * Initializing function, this is called after all engine modules are initialized and a map is loaded.
-        */
+        
+        //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
+
+        //! Enable / disable skybox rendering
+        void                                        enable( bool en );
 
         typedef enum   {
             SKYBOX_FRONT = 0,
@@ -97,6 +91,8 @@ class EnSkyBox :  public BaseEntity
         std::map< short, std::string >              _textureFilenameMap;
 
         bool                                        _isPersistent;
+
+        bool                                        _enable;
 };
 
 //! Entity type definition used for type registry

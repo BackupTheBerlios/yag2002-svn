@@ -20,8 +20,6 @@
 
 /*###############################################################
  # entity skybox
- #      this code is basing on Delta3D's implementation of skybox
- #                  ( http://www.delta3d.org/ )
  #
  #   date of creation:  03/24/2005
  #
@@ -43,13 +41,15 @@ CTD_IMPL_ENTITYFACTORY_AUTO( SkyBoxEntityFactory );
 
 
 EnSkyBox::EnSkyBox() :
-_isPersistent( false )
+_isPersistent( false ),
+_enable( true )
 {
     // register entity in order to get notifications   
     EntityManager::get()->registerNotification( this, true );   
 
     // register entity attributes
     _attributeManager.addAttribute( "persistent"    , _isPersistent  );
+    _attributeManager.addAttribute( "enable"        , _enable        );
     _attributeManager.addAttribute( "right"         , _texNames[ 0 ] );
     _attributeManager.addAttribute( "left"          , _texNames[ 1 ] );
     _attributeManager.addAttribute( "front"         , _texNames[ 2 ] );
@@ -60,7 +60,6 @@ _isPersistent( false )
 
 EnSkyBox::~EnSkyBox()
 {
-    Application::get()->getSceneRootNode()->removeChild( _p_skyGrp.get() );
 }
 
 void EnSkyBox::handleNotification( EntityNotification& notify )
@@ -97,10 +96,22 @@ void EnSkyBox::initialize()
     _p_transformEyePoint->addChild( makeBox() );
     _p_skyGrp->addChild( _p_transformEyePoint );
 
-    Application::get()->getSceneRootNode()->addChild( _p_skyGrp.get() );
+    if ( _enable )
+        addToTransformationNode( _p_skyGrp.get() );
 }
 
-// thanks to delta3d team for the code ;-)
+void EnSkyBox::enable( bool en )
+{
+    if ( ( en && _enable ) || ( !en && !_enable ) )
+        return;
+
+    _enable = en;
+    if ( en )
+        addToTransformationNode( _p_skyGrp.get() );
+    else
+        removeFromTransformationNode( _p_skyGrp.get() );
+}
+
 osg::Node* EnSkyBox::makeBox()
 {
     _geode  = new osg::Geode();
