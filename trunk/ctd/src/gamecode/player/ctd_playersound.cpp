@@ -46,8 +46,7 @@ CTD_IMPL_ENTITYFACTORY_AUTO( PlayerSoundEntityFactory );
 EnPlayerSound::EnPlayerSound() :
 _p_player( NULL ),
 _volume( 0.8f ),
-_referenceDist( 10.0f ),
-_p_soundGroup( NULL )
+_referenceDist( 10.0f )
 { 
     // register attributes
     getAttributeManager().addAttribute( "resourcedir"         , _soundFileDir  );
@@ -108,11 +107,7 @@ void EnPlayerSound::postInitialize()
     }
 
     // add the sound group into player node
-    _p_player->addToTransformationNode( _p_soundGroup );
-}
-
-void EnPlayerSound::destroy()
-{
+    _p_player->addToTransformationNode( _p_soundGroup.get() );
 }
 
 osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
@@ -121,7 +116,7 @@ osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
     osgAL::SoundNode* p_soundNode = NULL;
     try {
 
-        p_sample = osgAL::SoundManager::instance()->getSample( filename, false );
+        p_sample = osgAL::SoundManager::instance()->getSample( filename );
         if ( !p_sample )
             return NULL;
 
@@ -132,9 +127,16 @@ osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
         return NULL;
     }
      
-    // Create a named sound state
-    string statename = _p_player->getInstanceName() + "_snd_" + filename;
-    osgAL::SoundState* p_soundState = new osgAL::SoundState( statename );
+    // create a named sound state.
+    // note: we have to make the state name unique as otherwise new need unique sound states for every entity instance
+    stringstream uniquename;
+    static uniqueId = 0;
+    uniquename << getInstanceName();
+    uniquename << uniqueId;
+    uniqueId++;
+    string s = uniquename.str();
+    osgAL::SoundState* p_soundState = new osgAL::SoundState( uniquename.str() );
+
     // Let the soundstate use the sample we just created
     p_soundState->setSample( p_sample );
     // Set its pitch to 1 (normal speed)
@@ -152,12 +154,6 @@ osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
 
     p_soundState->setPosition( Vec3f( 0, 0, 0 ) ); // relative to player
 
-    p_soundState->apply();
-
-    //! Note: DO NOT add the soundstate to the sound manager! this causes problems with same filenames in its cache!
-    // nono: osgAL::SoundManager::instance()->addSoundState( p_soundState );
-    // finding out this subtile beast took 1 hour :-(
-
     // Create a sound node and attach the soundstate to it.
     p_soundNode = new osgAL::SoundNode;
     p_soundNode->setSoundState( p_soundState );
@@ -170,52 +166,52 @@ osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
 
 void EnPlayerSound::playWalkGround()
 {
-    std::map< std::string, osgAL::SoundState* >::iterator p_state = _soundStates.find( "walkgrd" );
+    std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_state = _soundStates.find( "walkgrd" );
     assert( p_state != _soundStates.end() );
-    stopOtherSounds( p_state->second );
+    stopOtherSounds( p_state->second.get() );
     if ( !p_state->second->isPlaying() )
         p_state->second->setPlay( true );
 }
 
 void EnPlayerSound::playWalkWood()
 {
-    std::map< std::string, osgAL::SoundState* >::iterator p_state = _soundStates.find( "walkwd" );
+    std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_state = _soundStates.find( "walkwd" );
     assert( p_state != _soundStates.end() );
-    stopOtherSounds( p_state->second );
+    stopOtherSounds( p_state->second.get() );
     if ( !p_state->second->isPlaying() )
         p_state->second->setPlay( true );
 }
 
 void EnPlayerSound::playWalkMetal()
 {
-    std::map< std::string, osgAL::SoundState* >::iterator p_state = _soundStates.find( "walkmet" );
+    std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_state = _soundStates.find( "walkmet" );
     assert( p_state != _soundStates.end() );
-    stopOtherSounds( p_state->second );
+    stopOtherSounds( p_state->second.get() );
     if ( !p_state->second->isPlaying() )
         p_state->second->setPlay( true );
 }
 
 void EnPlayerSound::playWalkGrass()
 {
-    std::map< std::string, osgAL::SoundState* >::iterator p_state = _soundStates.find( "walkgrass" );
+    std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_state = _soundStates.find( "walkgrass" );
     assert( p_state != _soundStates.end() );
-    stopOtherSounds( p_state->second );
+    stopOtherSounds( p_state->second.get() );
     if ( !p_state->second->isPlaying() )
         p_state->second->setPlay( true );
 }
 
 void EnPlayerSound::stopPlayingAll()
 {
-    std::map< std::string, osgAL::SoundState* >::iterator p_beg = _soundStates.begin(), p_end = _soundStates.end();
+    std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_beg = _soundStates.begin(), p_end = _soundStates.end();
     for ( ; p_beg != p_end; p_beg++ )
         p_beg->second->setPlay( false );
 }
 
 void EnPlayerSound::stopOtherSounds( osgAL::SoundState* p_state )
 {
-    std::map< std::string, osgAL::SoundState* >::iterator p_beg = _soundStates.begin(), p_end = _soundStates.end();
+    std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_beg = _soundStates.begin(), p_end = _soundStates.end();
     for ( ; p_beg != p_end; p_beg++ )
-        if ( p_beg->second != p_state ) 
+        if ( p_beg->second.get() != p_state ) 
             p_beg->second->setPlay( false );
 }
 

@@ -134,23 +134,58 @@ EnPlayer::~EnPlayer()
     if ( _p_playerPhysics )
     {
         EntityManager::get()->deleteEntity( _p_playerPhysics );
-        _p_playerPhysics->destroy();
     }
 
     if ( _p_playerAnimation )
     {
         EntityManager::get()->deleteEntity( _p_playerAnimation );
-        _p_playerAnimation->destroy();
     }
 
     if ( _p_playerSound )
     {
         EntityManager::get()->deleteEntity( _p_playerSound );
-        _p_playerSound->destroy();
     }
 
     // destroy input handler
     _p_inputHandler->destroyHandler();
+}
+
+void EnPlayer::handleNotification( EntityNotification& notify )
+{
+    // handle some notifications
+    switch( notify.getId() )
+    {
+        case CTD_NOTIFY_MENU_ENTER:
+
+            _p_chatGui->show( false );
+            _p_inputHandler->enable( false );
+
+            // reset player's movements and sound
+            _p_playerPhysics->setForce( 0, 0 );
+            _p_playerAnimation->animIdle();
+            if ( _p_playerSound )
+                _p_playerSound->stopPlayingAll();
+
+            // very important: diable the camera when we enter menu!
+            _p_camera->setEnable( false );
+
+            break;
+
+        case CTD_NOTIFY_MENU_LEAVE:
+
+            _p_chatGui->show( true );
+            _p_inputHandler->enable( true );
+            // refresh our configuration settings
+            getConfiguration();
+ 
+            // very important: enable the camera when we leave menu!
+            _p_camera->setEnable( true );
+            
+            break;
+
+        default:
+            ;
+    }
 }
 
 void EnPlayer::initialize()
@@ -311,44 +346,6 @@ void EnPlayer::setCameraPitchYaw( float pitch, float yaw )
         _p_playerAnimation->animTurn();
 
         _p_camera->setLocalPitch( angleX );
-    }
-}
-
-void EnPlayer::handleNotification( EntityNotification& notify )
-{
-    // handle some notifications
-    switch( notify.getId() )
-    {
-        case CTD_NOTIFY_MENU_ENTER:
-
-            _p_chatGui->show( false );
-            _p_inputHandler->enable( false );
-
-            // reset player's movements and sound
-            _p_playerPhysics->setForce( 0, 0 );
-            _p_playerAnimation->animIdle();
-            if ( _p_playerSound )
-                _p_playerSound->stopPlayingAll();
-
-            // very important: diable the camera when we enter menu!
-            _p_camera->setEnable( false );
-
-            break;
-
-        case CTD_NOTIFY_MENU_LEAVE:
-
-            _p_chatGui->show( true );
-            _p_inputHandler->enable( true );
-            // refresh our configuration settings
-            getConfiguration();
- 
-            // very important: enable the camera when we leave menu!
-            _p_camera->setEnable( true );
-            
-            break;
-
-        default:
-            ;
     }
 }
 

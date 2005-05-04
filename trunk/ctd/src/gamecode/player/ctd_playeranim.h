@@ -90,11 +90,6 @@ class EnPlayerAnimation  : public BaseEntity
         */
         void                                        initialize();
 
-        /**
-        * Destroy animation system. This must be called during Player's destruction.
-        */
-        void                                        destroy();
-
         //! Idle animation
         void                                        animIdle();
 

@@ -45,6 +45,8 @@ namespace CTD
 //! Implement and register the player physics entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( PlayerPhysicsEntityFactory );
 
+bool EnPlayerPhysics::_materialsCreated = false;
+
 // timer for jumping
 #define JUMP_TIMER	4
 
@@ -359,6 +361,7 @@ float EnPlayerPhysics::physicsRayCastPlacement( const NewtonBody* p_body, const 
 EnPlayerPhysics::EnPlayerPhysics() :
 _p_player( NULL ),
 _p_world( Physics::get()->getWorld() ),
+_p_body( NULL ),
 _isAirBorne( false ),
 _playerHeight( 1.8f ),
 _jumpTimer( 0 ),
@@ -371,6 +374,8 @@ _angularForce( 0.05f ),
 _linearDamping( 0.2f ),
 _gravity( Physics::get()->getWorldGravity() )
 { 
+    EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications about physics building
+
     // add entity attributes
     getAttributeManager().addAttribute( "dimensions"    , _dimensions    );
     getAttributeManager().addAttribute( "stepheight"    , _stepHeight    );
@@ -380,77 +385,93 @@ _gravity( Physics::get()->getWorldGravity() )
     getAttributeManager().addAttribute( "angularforce"  , _angularForce  );
     getAttributeManager().addAttribute( "mass"          , _mass          );
     getAttributeManager().addAttribute( "gravity"       , _gravity       );
-
-    // the materials _must_ be created only once!
-    static playerMatrialCreated = false;
-    if ( !playerMatrialCreated )
-    {
-        playerMatrialCreated = true;
-
-        // create a collision callbacks for player object and other materials
-        //  it is important that own materials are created in constructor!
-        //-------------------------------------------------------------------
-        unsigned int playerID   = Physics::get()->createMaterialID( "player" );
-        unsigned int defaultID  = Physics::get()->getMaterialId( "default" );
-        unsigned int levelID    = Physics::get()->getMaterialId( "level" );
-        unsigned int woodID     = Physics::get()->getMaterialId( "wood" );
-        unsigned int metalID    = Physics::get()->getMaterialId( "metal" );
-        unsigned int grassID    = Physics::get()->getMaterialId( "grass" );
-        unsigned int stoneID    = Physics::get()->getMaterialId( "stone" );
-
-        // set non-colliding for player-nocol collisions
-        NewtonMaterialSetDefaultCollidable( _p_world, Physics::get()->getMaterialId( "nocol" ), playerID, 0 );
-
-        // set the material properties for player on default
-        NewtonMaterialSetDefaultElasticity( _p_world, playerID, defaultID, 0.3f );
-        NewtonMaterialSetDefaultSoftness( _p_world, playerID, defaultID, 0.8f );
-        NewtonMaterialSetDefaultFriction( _p_world, playerID, defaultID, 0.8f, 0.7f );
-        NewtonMaterialSetCollisionCallback( _p_world, playerID, defaultID, &player_levelCollStruct, playerContactBegin, playerContactProcessLevel, playerContactEnd ); 
-
-        // set the material properties for player on level
-        NewtonMaterialSetDefaultElasticity( _p_world, playerID, levelID, 0.3f );
-        NewtonMaterialSetDefaultSoftness( _p_world, playerID, levelID, 0.8f );
-        NewtonMaterialSetDefaultFriction( _p_world, playerID, levelID, 0.8f, 0.7f );
-        NewtonMaterialSetCollisionCallback( _p_world, playerID, levelID, &player_levelCollStruct, playerContactBegin, playerContactProcessLevel, playerContactEnd ); 
-
-        // set the material properties for player on wood
-        NewtonMaterialSetDefaultElasticity( _p_world, playerID, woodID, 0.5f );
-        NewtonMaterialSetDefaultSoftness( _p_world, playerID, woodID, 0.5f );
-        NewtonMaterialSetDefaultFriction( _p_world, playerID, woodID, 0.6f, 0.4f);
-        NewtonMaterialSetCollisionCallback( _p_world, playerID, woodID, &player_woodCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
-
-        // set the material properties for player on metal
-        NewtonMaterialSetDefaultElasticity( _p_world, playerID, metalID, 0.7f );
-        NewtonMaterialSetDefaultSoftness( _p_world, playerID, metalID, 0.9f );
-        NewtonMaterialSetDefaultFriction( _p_world, playerID, metalID, 0.8f, 0.6f );
-        NewtonMaterialSetCollisionCallback( _p_world, playerID, metalID, &player_metalCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
-
-        // set the material properties for player on grass
-        NewtonMaterialSetDefaultElasticity( _p_world, playerID, grassID, 0.2f );
-        NewtonMaterialSetDefaultSoftness( _p_world, playerID, grassID, 0.3f );
-        NewtonMaterialSetDefaultFriction( _p_world, playerID, grassID, 0.8f, 0.7f );
-        NewtonMaterialSetCollisionCallback( _p_world, playerID, grassID, &player_grassCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
-
-        // set the material properties for player on stone
-        NewtonMaterialSetDefaultElasticity( _p_world, playerID, stoneID, 0.45f );
-        NewtonMaterialSetDefaultSoftness( _p_world, playerID, stoneID, 0.9f );
-        NewtonMaterialSetDefaultFriction( _p_world, playerID, stoneID, 0.9f, 0.7f );
-        NewtonMaterialSetCollisionCallback( _p_world, playerID, stoneID, &player_stoneCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
-    }
 }
 
 EnPlayerPhysics::~EnPlayerPhysics()
 {
+    if ( _p_body )
+        NewtonDestroyBody( Physics::get()->getWorld(), _p_body );
+}
+
+void EnPlayerPhysics::handleNotification( EntityNotification& notify )
+{
+    switch( notify.getId() )
+    {
+        case CTD_NOTIFY_BUILDING_PHYSICSWORLD:
+
+            // create the physics materials only once for every entity type on every level loading
+            if ( !_materialsCreated )
+            {
+                initializePhysicsMaterials();
+                _materialsCreated = true;
+            }
+            break;
+
+        case CTD_NOTIFY_DELETING_PHYSICSWORLD:
+
+            _materialsCreated = false;
+            break;
+
+        default:
+            ;
+
+    }
+}
+
+void EnPlayerPhysics::initializePhysicsMaterials()
+{
+    // setup materials
+    unsigned int playerID   = Physics::get()->createMaterialID( "player" );
+    unsigned int defaultID  = Physics::get()->getMaterialId( "default" );
+    unsigned int levelID    = Physics::get()->getMaterialId( "level" );
+    unsigned int woodID     = Physics::get()->getMaterialId( "wood" );
+    unsigned int metalID    = Physics::get()->getMaterialId( "metal" );
+    unsigned int grassID    = Physics::get()->getMaterialId( "grass" );
+    unsigned int stoneID    = Physics::get()->getMaterialId( "stone" );
+
+    // set non-colliding for player-nocol collisions
+    NewtonMaterialSetDefaultCollidable( _p_world, Physics::get()->getMaterialId( "nocol" ), playerID, 0 );
+
+    // set the material properties for player on default
+    NewtonMaterialSetDefaultElasticity( _p_world, playerID, defaultID, 0.3f );
+    NewtonMaterialSetDefaultSoftness( _p_world, playerID, defaultID, 0.8f );
+    NewtonMaterialSetDefaultFriction( _p_world, playerID, defaultID, 0.8f, 0.7f );
+    NewtonMaterialSetCollisionCallback( _p_world, playerID, defaultID, &player_levelCollStruct, playerContactBegin, playerContactProcessLevel, playerContactEnd ); 
+
+    // set the material properties for player on level
+    NewtonMaterialSetDefaultElasticity( _p_world, playerID, levelID, 0.3f );
+    NewtonMaterialSetDefaultSoftness( _p_world, playerID, levelID, 0.8f );
+    NewtonMaterialSetDefaultFriction( _p_world, playerID, levelID, 0.8f, 0.7f );
+    NewtonMaterialSetCollisionCallback( _p_world, playerID, levelID, &player_levelCollStruct, playerContactBegin, playerContactProcessLevel, playerContactEnd ); 
+
+    // set the material properties for player on wood
+    NewtonMaterialSetDefaultElasticity( _p_world, playerID, woodID, 0.5f );
+    NewtonMaterialSetDefaultSoftness( _p_world, playerID, woodID, 0.5f );
+    NewtonMaterialSetDefaultFriction( _p_world, playerID, woodID, 0.6f, 0.4f);
+    NewtonMaterialSetCollisionCallback( _p_world, playerID, woodID, &player_woodCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
+
+    // set the material properties for player on metal
+    NewtonMaterialSetDefaultElasticity( _p_world, playerID, metalID, 0.7f );
+    NewtonMaterialSetDefaultSoftness( _p_world, playerID, metalID, 0.9f );
+    NewtonMaterialSetDefaultFriction( _p_world, playerID, metalID, 0.8f, 0.6f );
+    NewtonMaterialSetCollisionCallback( _p_world, playerID, metalID, &player_metalCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
+
+    // set the material properties for player on grass
+    NewtonMaterialSetDefaultElasticity( _p_world, playerID, grassID, 0.2f );
+    NewtonMaterialSetDefaultSoftness( _p_world, playerID, grassID, 0.3f );
+    NewtonMaterialSetDefaultFriction( _p_world, playerID, grassID, 0.8f, 0.7f );
+    NewtonMaterialSetCollisionCallback( _p_world, playerID, grassID, &player_grassCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
+
+    // set the material properties for player on stone
+    NewtonMaterialSetDefaultElasticity( _p_world, playerID, stoneID, 0.45f );
+    NewtonMaterialSetDefaultSoftness( _p_world, playerID, stoneID, 0.9f );
+    NewtonMaterialSetDefaultFriction( _p_world, playerID, stoneID, 0.9f, 0.7f );
+    NewtonMaterialSetCollisionCallback( _p_world, playerID, stoneID, &player_stoneCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
 }
 
 void EnPlayerPhysics::setPlayer( EnPlayer* p_player )
 {
     _p_player = p_player;
-}
-
-void EnPlayerPhysics::destroy()
-{
-    NewtonDestroyBody( Physics::get()->getWorld(), _p_body );
 }
 
 void EnPlayerPhysics::initialize()
@@ -459,12 +480,16 @@ void EnPlayerPhysics::initialize()
     _playerHeight = _dimensions._v[ 2 ] * 2.0f;
 
     // create the collision 
-    //NewtonCollision *p_collision = NewtonCreateSphere( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
-    NewtonCollision *p_collision = NewtonCreateBox( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
-    p_collision = NewtonCreateConvexHullModifier( _p_world, p_collision );
+    //NewtonCollision* p_col = NewtonCreateSphere( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
+    NewtonCollision* p_col = NewtonCreateBox( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
+    NewtonCollision* p_collision = NewtonCreateConvexHullModifier( _p_world, p_col );
+    NewtonReleaseCollision( Physics::get()->getWorld(), p_col );
 
     //create the rigid body
     _p_body = NewtonCreateBody( _p_world, p_collision );
+
+    // release the collision object, we don't need it anymore
+    NewtonReleaseCollision( _p_world, p_collision );
 
     // set wood material
     NewtonBodySetMaterialGroupID( _p_body, Physics::get()->getMaterialId( "player" ) );
@@ -489,10 +514,6 @@ void EnPlayerPhysics::initialize()
     float Iyy = 0.7f * _mass * ( dim.x() * dim.x() + dim.z() * dim.z() ) / 12.0f;
     float Izz = 0.7f * _mass * ( dim.x() * dim.x() + dim.y() * dim.y() ) / 12.0f;
     NewtonBodySetMassMatrix( _p_body, _mass, Ixx, Iyy, Izz );
-    //NewtonBodySetMassMatrix( _p_body, _mass, 1.0f, 1.0f, 1.0f );
-
-    // release the collision object, we don't need it anymore
-    NewtonReleaseCollision( _p_world, p_collision );
 
     // create an up vector joint, this way we constraint the body to keep up
     Vec3f upDirection (0.0f, 0.0f, 1.0f);

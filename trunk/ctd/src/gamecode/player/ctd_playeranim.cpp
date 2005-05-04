@@ -208,13 +208,6 @@ void EnPlayerAnimation::setPlayer( EnPlayer* p_player )
     _p_player->addToTransformationNode( _animNode.get() );
 }
 
-void EnPlayerAnimation::destroy()
-{
-    // note: this method is called by player when it is destroying, e.g. when player disconnects from network
-    _p_player->removeFromTransformationNode( _animNode.get() );
-    EntityManager::get()->deleteEntity( this );
-}
-
 bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& configfilename )
 { // this code is basing on cal3d's miniviewer
 

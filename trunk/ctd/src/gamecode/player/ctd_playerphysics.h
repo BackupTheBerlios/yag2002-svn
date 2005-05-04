@@ -66,11 +66,6 @@ class EnPlayerPhysics : public BaseEntity
         void                                        setPlayer( EnPlayer* p_player );
 
         /**
-        * Destroy physics. This must be called during Player's destruction.
-        */
-        void                                        destroy();
-
-        /**
         * Initializing function
         */
         void                                        initialize();
@@ -135,8 +130,17 @@ class EnPlayerPhysics : public BaseEntity
 
     protected:
 
+        // handle physics building when notified
+        void                                        handleNotification( EntityNotification& notify );
+
+        // init physics materials
+        void                                        initializePhysicsMaterials();
+
         // find floor under player
         float                                       findFloor( NewtonWorld* world, const osg::Vec3f& p0, float maxDist );
+
+        //! The materials must be created only once for all physics entities of same types on every level loading
+        static bool                                 _materialsCreated;
 
         // entity attributes
         //--------------------------------------------------------//

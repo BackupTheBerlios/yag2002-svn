@@ -72,11 +72,6 @@ class EnPlayerSound  : public BaseEntity
         //! This entity does not need a transform node, which would be created by level manager on loading
         bool                                        isTransformable() { return false; }
 
-        /**
-        * Destroy player's sound component. This must be called during Player's destruction.
-        */
-        void                                        destroy();
-
         //! Play walk on ground sound
         void                                        playWalkGround();
 
@@ -127,10 +122,10 @@ class EnPlayerSound  : public BaseEntity
         osgAL::SoundState*                          createSound( const std::string& filename );
 
         //! All sound name / sound state pairs go here
-        std::map< std::string, osgAL::SoundState* > _soundStates;
+        std::map< std::string, osg::ref_ptr< osgAL::SoundState > > _soundStates;
 
         //! Group where all sound nodes reside
-        osg::Group*                                 _p_soundGroup;
+        osg::ref_ptr< osg::Group >                  _p_soundGroup;
 
         EnPlayer*                                   _p_player;
 
