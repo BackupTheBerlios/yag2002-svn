@@ -35,6 +35,7 @@
 #include "ctd_intro.h"
 #include "../sound/ctd_ambientsound.h"
 #include "../visuals/ctd_camera.h"
+#include "../visuals/ctd_skybox.h"
 
 using namespace std;
 
@@ -74,6 +75,7 @@ class MenuInputHandler : public GenericInputHandler< EnMenu >
                                                     if ( _p_menu->_menuState == EnMenu::Intro )
                                                     {
                                                         _p_menu->stopIntro();
+                                                        _p_menu->enableSkybox( true );
                                                         _p_menu->enter();
                                                         return false;
                                                     }
@@ -140,6 +142,8 @@ _loadingOverlayTexture( "gui/loading.tga" ),
 _buttonClickSound( "gui/sound/click.wav" ),
 _buttonHoverSound( "gui/sound/hover.wav" ),
 _introductionSound( "gui/sound/intro.wav" ),
+_menuSceneFile( MENU_SCENE ),
+_menuCameraPathFile( MENU_CAMERAPATH ),
 _menuState( None ),
 _levelLoaded( false )
 {
@@ -151,14 +155,25 @@ _levelLoaded( false )
     EntityManager::get()->registerNotification( this, true );
 
     // register entity attributes
-    _attributeManager.addAttribute( "menuConfig"              , _menuConfig                 );
-    _attributeManager.addAttribute( "settingsDialogConfig"    , _settingsDialogConfig       );
-    _attributeManager.addAttribute( "levelSelectDialogConfig" , _levelSelectDialogConfig    );
-    _attributeManager.addAttribute( "intoTexture"             , _introTexture               );
-    _attributeManager.addAttribute( "loadingOverlayTexture"   , _loadingOverlayTexture    );
-    _attributeManager.addAttribute( "buttonClickSound"        , _buttonClickSound           );
-    _attributeManager.addAttribute( "buttonHoverSound"        , _buttonHoverSound           );
-    _attributeManager.addAttribute( "introductionSound"       , _introductionSound          );
+    _attributeManager.addAttribute( "menuConfig"                , _menuConfig               );
+    _attributeManager.addAttribute( "settingsDialogConfig"      , _settingsDialogConfig     );
+    _attributeManager.addAttribute( "levelSelectDialogConfig"   , _levelSelectDialogConfig  );
+    _attributeManager.addAttribute( "intoTexture"               , _introTexture             );
+    _attributeManager.addAttribute( "loadingOverlayTexture"     , _loadingOverlayTexture    );
+    _attributeManager.addAttribute( "buttonClickSound"          , _buttonClickSound         );
+    _attributeManager.addAttribute( "buttonHoverSound"          , _buttonHoverSound         );
+    _attributeManager.addAttribute( "introductionSound"         , _introductionSound        );
+
+    _attributeManager.addAttribute( "menuScene"                 , _menuSceneFile            );
+    _attributeManager.addAttribute( "cameraPath"                , _menuCameraPathFile       );
+
+    _attributeManager.addAttribute( "skyboxRight"               , _skyboxImages[ 0 ]        );
+    _attributeManager.addAttribute( "skyboxLeft"                , _skyboxImages[ 1 ]        );
+    _attributeManager.addAttribute( "skyboxFront"               , _skyboxImages[ 2 ]        );
+    _attributeManager.addAttribute( "skyboxBack"                , _skyboxImages[ 3 ]        );
+    _attributeManager.addAttribute( "skyboxUp"                  , _skyboxImages[ 4 ]        );
+    _attributeManager.addAttribute( "skyboxDown"                , _skyboxImages[ 5 ]        );
+
 }
 
 EnMenu::~EnMenu()
@@ -202,15 +217,6 @@ void EnMenu::handleNotification( EntityNotification& notify )
 
 void EnMenu::initialize()
 {
-    //! TODO: design an appropriate support in framework for persistent entities
-    // note: this entity is persistent; on every level loading it is initialized again.
-    //       we need only the first initialization, so skip the subsequent ones!
-    static s_alreadyInitialized = false;
-    if ( s_alreadyInitialized )
-        return;
-    else
-        s_alreadyInitialized = true;
-
     // setup sounds
     if ( _buttonClickSound.length() )
         _clickSound.reset( setupSound( _buttonClickSound, 0.1f ) );
@@ -314,8 +320,8 @@ void EnMenu::initialize()
 void EnMenu::createMenuScene()
 {
     // load the menu scene and camera path
-    osg::Node* p_scenenode = LevelManager::get()->loadMesh( MENU_SCENE );
-    osg::Node* p_animnode  = LevelManager::get()->loadMesh( MENU_CAMERAPATH );
+    osg::Node* p_scenenode = LevelManager::get()->loadMesh( _menuSceneFile );
+    osg::Node* p_animnode  = LevelManager::get()->loadMesh( _menuCameraPathFile );
     if ( p_scenenode && p_animnode )
     {
         _menuAnimationPath = new osg::Group();
@@ -344,12 +350,26 @@ void EnMenu::createMenuScene()
     p_camEntity->getAttributeManager().setAttributeValue( "backgroundColor", bgcolor );
     p_camEntity->getAttributeManager().setAttributeValue( "fov",             fov     );
     osg::Quat rotoffset( -M_PIF / 2.0f, osg::Vec3f( 1, 0, 0 ) );
-    p_camEntity->setCameraOffsetRotation( rotoffset );
-    
-    EntityManager::get()->addToScene( p_camEntity );
-    
+    p_camEntity->setCameraOffsetRotation( rotoffset );    
+    EntityManager::get()->addToScene( p_camEntity );    
     p_camEntity->initialize();
     p_camEntity->postInitialize();
+
+    // create and setup skybox
+    EnSkyBox* p_skyboxEntity = static_cast< EnSkyBox* >( EntityManager::get()->createEntity( ENTITY_NAME_SKYBOX, "_menuSkybox_" ) );
+    assert( p_skyboxEntity && "cannot create skybox entity!" );
+    _p_skyBox = p_skyboxEntity;
+    p_skyboxEntity->getAttributeManager().setAttributeValue( "persistent", true                 );
+    p_skyboxEntity->getAttributeManager().setAttributeValue( "enable",     false                );
+    p_skyboxEntity->getAttributeManager().setAttributeValue( "right",      _skyboxImages[ 0 ]   );
+    p_skyboxEntity->getAttributeManager().setAttributeValue( "left",       _skyboxImages[ 1 ]   );
+    p_skyboxEntity->getAttributeManager().setAttributeValue( "back",       _skyboxImages[ 2 ]   );
+    p_skyboxEntity->getAttributeManager().setAttributeValue( "front",      _skyboxImages[ 3 ]   );
+    p_skyboxEntity->getAttributeManager().setAttributeValue( "up",         _skyboxImages[ 4 ]   );
+    p_skyboxEntity->getAttributeManager().setAttributeValue( "down",       _skyboxImages[ 5 ]   );
+    EntityManager::get()->addToScene( p_skyboxEntity );
+    p_skyboxEntity->initialize();
+    p_skyboxEntity->postInitialize();
 }
    
 EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume )
@@ -553,6 +573,11 @@ void EnMenu::stopIntro()
     _intro->stop();
 }
 
+void EnMenu::enableSkybox( bool en )
+{
+    _p_skyBox->enable( en );
+}
+
 void EnMenu::enter()
 {
     if ( _menuState == Visible )
@@ -616,12 +641,14 @@ void EnMenu::switchMenuScene( bool tomenu )
         // store the static world node for later switching to level scene
         LevelManager::get()->setStaticMesh( _menuScene.get() );
         _p_cameraControl->setEnable( true );
+        enableSkybox( true );
     }
     else
     {
         // replace the menu scene node by level scene node
         LevelManager::get()->setStaticMesh( _levelScene.get() );
         _p_cameraControl->setEnable( false );
+        enableSkybox( false );
     }
 }
 

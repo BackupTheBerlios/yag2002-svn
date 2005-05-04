@@ -44,6 +44,7 @@ class MenuInputHandler;
 class EnAmbientSound;
 class IntroControl;
 class EnCamera;
+class EnSkyBox;
 
 //! The menu system is controlled by this entity
 class EnMenu :  public BaseEntity
@@ -103,6 +104,12 @@ class EnMenu :  public BaseEntity
 
         std::string                                 _introductionSound;
 
+        std::string                                 _skyboxImages[ 6 ];
+
+        std::string                                 _menuSceneFile;
+
+        std::string                                 _menuCameraPathFile;
+
     protected:
 
         //! Begin intro
@@ -110,6 +117,8 @@ class EnMenu :  public BaseEntity
 
         //! Stop intro
         void                                        stopIntro();
+
+        void                                        enableSkybox( bool en );
 
         //! Callback for button click "game settings"        
         bool                                        onClickedGameSettings( const CEGUI::EventArgs& arg );
@@ -151,6 +160,8 @@ class EnMenu :  public BaseEntity
         osg::ref_ptr< osg::Group >                  _menuAnimationPath;
 
         EnCamera*                                   _p_cameraControl;
+
+        EnSkyBox*                                   _p_skyBox;
 
         std::auto_ptr< EnAmbientSound >             _clickSound;
 
