@@ -67,7 +67,8 @@ _soundState( NULL )
 
 En3DSound::~En3DSound()
 {
-    _soundState->setPlay( false );
+    if ( _soundState.valid() )
+        _soundState->setPlay( false );
 }
 
 void En3DSound::initialize()
@@ -89,9 +90,9 @@ void En3DSound::initialize()
         EntityManager::get()->registerUpdate( this, false );   // deregister entity
         return;
     }
-
+ 
     // create a named sound state.
-    // note: we have to make the state name unique as otherwise new sound states with already defined names make problems
+    // note: we have to make the state name unique as otherwise new need unique sound states for every entity instance
     stringstream uniquename;
     static uniqueId = 0;
     uniquename << getInstanceName();
@@ -116,14 +117,9 @@ void En3DSound::initialize()
 
     _soundState->setPosition( _position );
 
-    _soundState->apply();
-
-    // Add the soundstate to the sound manager, so we can find it later on if we want to
-    osgAL::SoundManager::instance()->addSoundState( _soundState );
-
     // Create a sound node and attach the soundstate to it.
     _p_soundNode = new osgAL::SoundNode;
-    _p_soundNode->setSoundState( _soundState );
+    _p_soundNode->setSoundState( _soundState.get() );
 
     // this is for debugging
     if ( _showSource )
@@ -133,8 +129,11 @@ void En3DSound::initialize()
         {
             addToTransformationNode( p_mesh );
             setPosition( _position );
-        } else
-            cout << "*** error loading mesh file for sound source 'sound/soundsrc.osg'" << endl;
+        }
+        else
+        {
+            log << Log::LogLevel( Log::L_ERROR ) << "*** error loading mesh file for sound source 'sound/soundsrc.osg'" << endl;
+        }
 
     }
 }
@@ -153,13 +152,13 @@ void En3DSound::updateEntity( float deltaTime )
 
 void En3DSound::startPlaying()
 {
-    if ( _soundState )
+    if ( _soundState.valid() )
         _soundState->setPlay( true );
 }
 
 void En3DSound::stopPlaying()
 {
-    if ( _soundState )
+    if ( _soundState.valid() )
         _soundState->setPlay( false );
 }
 

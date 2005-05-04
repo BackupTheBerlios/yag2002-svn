@@ -92,7 +92,7 @@ class En3DSound : public BaseEntity
 
         osgAL::SoundNode*                           _p_soundNode;
 
-        osgAL::SoundState*                          _soundState;
+        osg::ref_ptr< osgAL::SoundState >           _soundState;
 };
 
 //! Entity type definition used for type registry
