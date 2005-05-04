@@ -42,7 +42,7 @@ namespace CTD
 class En3DSound;
 
 //! PhysicsShpere Entity
-class EnPhysicsCylinder : public BaseEntity, public PhysicsSound
+class EnPhysicsCylinder : public EnPhysicsBase
 {
     public:
                                                     EnPhysicsCylinder();
@@ -82,6 +82,9 @@ class EnPhysicsCylinder : public BaseEntity, public PhysicsSound
         float                                       _height;
 
     protected:
+
+        //! Init physics materials
+        void                                        initializePhysicsMaterials();
 
         // Some internal variables
 

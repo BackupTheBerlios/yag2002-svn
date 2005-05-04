@@ -50,7 +50,8 @@ _dimensions( Vec3f( 1.0f, 1.0f, 1.0f ) ),
 _p_body( NULL ),
 _p_world( Physics::get()->getWorld() )
 {
-    EntityManager::get()->registerUpdate( this );     // register entity in order to get updated per simulation step
+    // register entity in order to get updated per simulation step
+    EntityManager::get()->registerUpdate( this ); 
 
     // register entity attributes
     // note: this must be done in constructor!
@@ -66,69 +67,6 @@ _p_world( Physics::get()->getWorld() )
     _attributeManager.addAttribute( "enSndGrass"    , _soundEntities[ 3 ]   );
 
     _attributeManager.addAttribute( "playThreshold" , _playThreshold        );
-
-    // the materials _must_ be created only once!
-    static boxMatrialCreated = false;
-    if ( !boxMatrialCreated )
-    {
-        boxMatrialCreated = true;
-
-        // create a collision callbacks for player object and other materials
-        //  it is important that own materials are created in constructor!
-        //-------------------------------------------------------------------
-        unsigned int boxID      = Physics::get()->createMaterialID( "box" );
-        unsigned int defaultID  = Physics::get()->getMaterialId( "default" );
-        unsigned int levelID    = Physics::get()->getMaterialId( "level" );
-        unsigned int woodID     = Physics::get()->getMaterialId( "wood" );
-        unsigned int metalID    = Physics::get()->getMaterialId( "metal" );
-        unsigned int grassID    = Physics::get()->getMaterialId( "grass" );
-        unsigned int stoneID    = Physics::get()->getMaterialId( "stone" );
-
-        // set non-colliding for cylinder-nocol collisions
-        NewtonMaterialSetDefaultCollidable( _p_world, Physics::get()->getMaterialId( "nocol" ), boxID, 0 );
-
-        // set the material properties for cylinder on cylinder
-        NewtonMaterialSetDefaultElasticity( _p_world, boxID, boxID, 0.3f );
-        NewtonMaterialSetDefaultSoftness( _p_world, boxID, boxID, 0.3f );
-        NewtonMaterialSetDefaultFriction( _p_world, boxID, boxID, 0.6f, 0.5f );
-        NewtonMaterialSetCollisionCallback( _p_world, boxID, boxID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
-
-        // set the material properties for cylinder on default
-        NewtonMaterialSetDefaultElasticity( _p_world, boxID, defaultID, 0.3f );
-        NewtonMaterialSetDefaultSoftness( _p_world, boxID, defaultID, 0.8f );
-        NewtonMaterialSetDefaultFriction( _p_world, boxID, defaultID, 0.8f, 0.7f );
-        NewtonMaterialSetCollisionCallback( _p_world, boxID, defaultID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
-
-        // set the material properties for cylinder on level
-        NewtonMaterialSetDefaultElasticity( _p_world, boxID, levelID, 0.3f );
-        NewtonMaterialSetDefaultSoftness( _p_world, boxID, levelID, 0.8f );
-        NewtonMaterialSetDefaultFriction( _p_world, boxID, levelID, 0.8f, 0.7f );
-        NewtonMaterialSetCollisionCallback( _p_world, boxID, levelID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
-
-        // set the material properties for cylinder on wood
-        NewtonMaterialSetDefaultElasticity( _p_world, boxID, woodID, 0.5f );
-        NewtonMaterialSetDefaultSoftness( _p_world, boxID, woodID, 0.5f );
-        NewtonMaterialSetDefaultFriction( _p_world, boxID, woodID, 0.6f, 0.4f);
-        NewtonMaterialSetCollisionCallback( _p_world, boxID, woodID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
-
-        // set the material properties for cylinder on metal
-        NewtonMaterialSetDefaultElasticity( _p_world, boxID, metalID, 0.7f );
-        NewtonMaterialSetDefaultSoftness( _p_world, boxID, metalID, 0.9f );
-        NewtonMaterialSetDefaultFriction( _p_world, boxID, metalID, 0.8f, 0.6f );
-        NewtonMaterialSetCollisionCallback( _p_world, boxID, metalID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
-
-        // set the material properties for cylinder on grass
-        NewtonMaterialSetDefaultElasticity( _p_world, boxID, grassID, 0.2f );
-        NewtonMaterialSetDefaultSoftness( _p_world, boxID, grassID, 0.3f );
-        NewtonMaterialSetDefaultFriction( _p_world, boxID, grassID, 0.8f, 0.7f );
-        NewtonMaterialSetCollisionCallback( _p_world, boxID, grassID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
-
-        // set the material properties for cylinder on stone
-        NewtonMaterialSetDefaultElasticity( _p_world, boxID, stoneID, 0.45f );
-        NewtonMaterialSetDefaultSoftness( _p_world, boxID, stoneID, 0.9f );
-        NewtonMaterialSetDefaultFriction( _p_world, boxID, stoneID, 0.9f, 0.7f );
-        NewtonMaterialSetCollisionCallback( _p_world, boxID, stoneID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
-    }
 }
 
 EnPhysicsBox::~EnPhysicsBox()
@@ -141,13 +79,70 @@ EnPhysicsBox::~EnPhysicsBox()
     }     
 }
 
+void EnPhysicsBox::initializePhysicsMaterials()
+{
+    // create and setup collision matrials
+    unsigned int boxID      = Physics::get()->createMaterialID( "box" );
+    unsigned int defaultID  = Physics::get()->getMaterialId( "default" );
+    unsigned int levelID    = Physics::get()->getMaterialId( "level" );
+    unsigned int woodID     = Physics::get()->getMaterialId( "wood" );
+    unsigned int metalID    = Physics::get()->getMaterialId( "metal" );
+    unsigned int grassID    = Physics::get()->getMaterialId( "grass" );
+    unsigned int stoneID    = Physics::get()->getMaterialId( "stone" );
+
+    // set non-colliding for cylinder-nocol collisions
+    NewtonMaterialSetDefaultCollidable( _p_world, Physics::get()->getMaterialId( "nocol" ), boxID, 0 );
+
+    // set the material properties for cylinder on cylinder
+    NewtonMaterialSetDefaultElasticity( _p_world, boxID, boxID, 0.3f );
+    NewtonMaterialSetDefaultSoftness( _p_world, boxID, boxID, 0.3f );
+    NewtonMaterialSetDefaultFriction( _p_world, boxID, boxID, 0.6f, 0.5f );
+    NewtonMaterialSetCollisionCallback( _p_world, boxID, boxID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
+
+    // set the material properties for cylinder on default
+    NewtonMaterialSetDefaultElasticity( _p_world, boxID, defaultID, 0.3f );
+    NewtonMaterialSetDefaultSoftness( _p_world, boxID, defaultID, 0.8f );
+    NewtonMaterialSetDefaultFriction( _p_world, boxID, defaultID, 0.8f, 0.7f );
+    NewtonMaterialSetCollisionCallback( _p_world, boxID, defaultID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
+
+    // set the material properties for cylinder on level
+    NewtonMaterialSetDefaultElasticity( _p_world, boxID, levelID, 0.3f );
+    NewtonMaterialSetDefaultSoftness( _p_world, boxID, levelID, 0.8f );
+    NewtonMaterialSetDefaultFriction( _p_world, boxID, levelID, 0.8f, 0.7f );
+    NewtonMaterialSetCollisionCallback( _p_world, boxID, levelID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
+
+    // set the material properties for cylinder on wood
+    NewtonMaterialSetDefaultElasticity( _p_world, boxID, woodID, 0.5f );
+    NewtonMaterialSetDefaultSoftness( _p_world, boxID, woodID, 0.5f );
+    NewtonMaterialSetDefaultFriction( _p_world, boxID, woodID, 0.6f, 0.4f);
+    NewtonMaterialSetCollisionCallback( _p_world, boxID, woodID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
+
+    // set the material properties for cylinder on metal
+    NewtonMaterialSetDefaultElasticity( _p_world, boxID, metalID, 0.7f );
+    NewtonMaterialSetDefaultSoftness( _p_world, boxID, metalID, 0.9f );
+    NewtonMaterialSetDefaultFriction( _p_world, boxID, metalID, 0.8f, 0.6f );
+    NewtonMaterialSetCollisionCallback( _p_world, boxID, metalID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
+
+    // set the material properties for cylinder on grass
+    NewtonMaterialSetDefaultElasticity( _p_world, boxID, grassID, 0.2f );
+    NewtonMaterialSetDefaultSoftness( _p_world, boxID, grassID, 0.3f );
+    NewtonMaterialSetDefaultFriction( _p_world, boxID, grassID, 0.8f, 0.7f );
+    NewtonMaterialSetCollisionCallback( _p_world, boxID, grassID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
+
+    // set the material properties for cylinder on stone
+    NewtonMaterialSetDefaultElasticity( _p_world, boxID, stoneID, 0.45f );
+    NewtonMaterialSetDefaultSoftness( _p_world, boxID, stoneID, 0.9f );
+    NewtonMaterialSetDefaultFriction( _p_world, boxID, stoneID, 0.9f, 0.7f );
+    NewtonMaterialSetCollisionCallback( _p_world, boxID, stoneID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
+}
+
 // some physics system callback functions
 //---------------------------------------
 // rigid p_body destructor callback
 void EnPhysicsBox::physicsBodyDestructor( const NewtonBody* p_body )
 {
     EnPhysicsBox* p_node = ( EnPhysicsBox* )NewtonBodyGetUserData( p_body );
-    if (p_node)
+    if ( p_node )
         delete( p_node );
 }
 
@@ -187,8 +182,9 @@ void EnPhysicsBox::initialize()
     setPosition( _position );
 
     // create the collision 
-    NewtonCollision *p_collision = NewtonCreateBox( Physics::get()->getWorld(), _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL); 
-    p_collision = NewtonCreateConvexHullModifier( Physics::get()->getWorld(), p_collision );
+    NewtonCollision* p_col = NewtonCreateBox( Physics::get()->getWorld(), _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL ); 
+    NewtonCollision* p_collision = p_collision = NewtonCreateConvexHullModifier( Physics::get()->getWorld(), p_col );
+    NewtonReleaseCollision( Physics::get()->getWorld(), p_col );
 
     Matrixf mat;
     mat.setTrans( _position ); 
@@ -196,12 +192,14 @@ void EnPhysicsBox::initialize()
     //create the rigid p_body
     _p_body = NewtonCreateBody( Physics::get()->getWorld(), p_collision );
 
+    NewtonReleaseCollision( Physics::get()->getWorld(), p_collision );
+
     // set material, see material definition above
     NewtonBodySetMaterialGroupID( _p_body, Physics::get()->getMaterialId( "box" ) );
     NewtonBodySetUserData( _p_body, this );
 
     // set callbacks
-    NewtonBodySetDestructorCallback (_p_body, physicsBodyDestructor );
+    NewtonBodySetDestructorCallback(_p_body, physicsBodyDestructor );
     NewtonBodySetTransformCallback( _p_body, physicsSetTransform );
     NewtonBodySetForceAndTorqueCallback( _p_body, physicsApplyForceAndTorque );
 
@@ -209,10 +207,8 @@ void EnPhysicsBox::initialize()
     NewtonBodySetMassMatrix( _p_body, _mass, 1.0f, 1.0f, 1.0f );
 
     // set the matrix for both the rigid body and the entity
-    NewtonBodySetMatrix ( _p_body, mat.ptr() );
-    physicsSetTransform ( _p_body, mat.ptr() );
-
-    NewtonReleaseCollision( Physics::get()->getWorld(), p_collision );
+    NewtonBodySetMatrix( _p_body, mat.ptr() );
+    physicsSetTransform( _p_body, mat.ptr() );
 }
 
 void EnPhysicsBox::postInitialize()

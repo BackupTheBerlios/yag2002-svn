@@ -32,7 +32,7 @@
 namespace CTD
 {
 
-inline void PhysicsSound::updateSound( float deltaTime )
+inline void EnPhysicsBase::updateSound( float deltaTime )
 {
     _pastTime += deltaTime;
 }

@@ -40,7 +40,7 @@ namespace CTD
 #define ENTITY_NAME_PHYSICSBOX    "PhysicsBox"
 
 //! PhysicsBox Entity
-class EnPhysicsBox : public BaseEntity, public PhysicsSound
+class EnPhysicsBox : public EnPhysicsBase
 {
     public:
                                                     EnPhysicsBox();
@@ -66,6 +66,9 @@ class EnPhysicsBox : public BaseEntity, public PhysicsSound
         static void                                 physicsApplyForceAndTorque( const NewtonBody* p_body );
 
     protected:
+
+        //! Init physics materials
+        void                                        initializePhysicsMaterials();
 
         std::string                                 _meshFile;
 

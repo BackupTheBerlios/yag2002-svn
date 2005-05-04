@@ -39,16 +39,13 @@ namespace CTD
 
 class En3DSound;
 
-//! Base class for physics entities which need sound
-class PhysicsSound
+//! Base class for physics entities
+class EnPhysicsBase : public BaseEntity
 {
     public:
-                                                    PhysicsSound() :
-                                                     _playThreshold( 10.0f ),
-                                                     _pastTime( 0 )
-                                                    {}
+                                                    EnPhysicsBase();
 
-                                                    ~PhysicsSound() {}
+                                                    ~EnPhysicsBase() {}
 
         //! Update sound related stuff
         inline void                                 updateSound( float deltaTime );
@@ -75,6 +72,15 @@ class PhysicsSound
         float                                       _contactMaxTangentSpeed;
 
     protected:
+
+        //! Catch physics notifications
+        void                                        handleNotification( EntityNotification& notify );
+
+        //! This method is called on derived classed when a build physics world notification is received
+        /**
+        * The physics materials must be re-created and initialized during every level loading.
+        */
+        virtual void                                initializePhysicsMaterials() = 0;
 
         //! Helper method for finding sound entities
         En3DSound*                                  getSoundEntity( const std::string& name );

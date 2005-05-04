@@ -40,7 +40,7 @@ namespace CTD
 #define ENTITY_NAME_PHYSICSSPHERE    "PhysicsSphere"
 
 //! PhysicsShpere Entity
-class EnPhysicsSphere : public BaseEntity, public PhysicsSound
+class EnPhysicsSphere : public EnPhysicsBase
 {
     public:
                                                     EnPhysicsSphere();
@@ -78,6 +78,9 @@ class EnPhysicsSphere : public BaseEntity, public PhysicsSound
         float                                       _radius;
 
     protected:
+
+        //! Init physics materials
+        void                                        initializePhysicsMaterials();
 
         // Some internal variables
 

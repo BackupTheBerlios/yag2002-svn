@@ -39,7 +39,44 @@ namespace CTD
 // Collision struct for internal usage
 CollisionStruct* s_entityColStruct = NULL;
 
-void PhysicsSound::playSoundColMetal()
+std::map< std::string, bool > s_entityMaterialInits;
+
+EnPhysicsBase::EnPhysicsBase() :
+_playThreshold( 10.0f ),
+_pastTime( 0 )
+{
+    // register entity in order to get notifications about building physics
+    EntityManager::get()->registerNotification( this, true );
+}
+
+// catch the physics notifications
+void EnPhysicsBase::handleNotification( EntityNotification& notify )
+{
+    switch( notify.getId() )
+    {
+        case CTD_NOTIFY_BUILDING_PHYSICSWORLD:
+
+            // setup materials only once per entity type
+            if ( !s_entityMaterialInits[ getTypeName() ] )
+            {
+                s_entityMaterialInits[ getTypeName() ] = true;
+                initializePhysicsMaterials();
+            }
+            break;
+
+        case CTD_NOTIFY_DELETING_PHYSICSWORLD:
+
+            // clear map
+            s_entityMaterialInits.clear();
+            break;
+
+        default:
+            ;
+
+    }
+}
+
+void EnPhysicsBase::playSoundColMetal()
 {
     // avoid short intervalls for playing as several collisions can occur in smal amount of time
     if ( _pastTime > 0.5f )
@@ -50,7 +87,7 @@ void PhysicsSound::playSoundColMetal()
     }
 }
 
-void PhysicsSound::playSoundColWood()
+void EnPhysicsBase::playSoundColWood()
 {
     if ( _pastTime > 0.5f )
     {
@@ -60,7 +97,7 @@ void PhysicsSound::playSoundColWood()
     }
 }
 
-void PhysicsSound::playSoundColStone()
+void EnPhysicsBase::playSoundColStone()
 {
     if ( _pastTime > 0.5f )
     {
@@ -70,7 +107,7 @@ void PhysicsSound::playSoundColStone()
     }
 }
 
-void PhysicsSound::playSoundColGrass()
+void EnPhysicsBase::playSoundColGrass()
 {
     if ( _pastTime > 0.5f )
     {
@@ -80,7 +117,7 @@ void PhysicsSound::playSoundColGrass()
     }
 }
 
-En3DSound* PhysicsSound::getSoundEntity( const string& name )
+En3DSound* EnPhysicsBase::getSoundEntity( const string& name )
 {
     En3DSound* _p_sndEntity = NULL;
     _p_sndEntity = dynamic_cast< En3DSound* >( EntityManager::get()->findEntity( ENTITY_NAME_3DSOUND, name ) );
