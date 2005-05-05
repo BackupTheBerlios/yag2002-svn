@@ -273,10 +273,22 @@
 					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_camera.h">
 				</File>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_fog.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_fog.h">
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_lightmanager.cpp">
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_lightmanager.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_mesh.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_mesh.h">
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_pointlight.cpp">
