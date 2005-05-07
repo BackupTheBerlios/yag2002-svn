@@ -61,7 +61,9 @@ _moveForward( "W" ),
 _moveBackward( "S" ),
 _moveLeft( "A" ),
 _moveRight( "D" ),
-_jump( "Space" )
+_jump( "Space" ),
+_cameramode( "F1" ),
+_chatmode( "RMB" )
 {
     // register all settings
     _p_settings->registerSetting( CTD_GS_KEYBOARD,            _keyboardType     );
@@ -80,6 +82,8 @@ _jump( "Space" )
     _p_settings->registerSetting( CTD_GS_KEY_MOVE_LEFT,       _moveLeft         );
     _p_settings->registerSetting( CTD_GS_KEY_MOVE_RIGHT,      _moveRight        );
     _p_settings->registerSetting( CTD_GS_KEY_JUMP,            _jump             );
+    _p_settings->registerSetting( CTD_GS_KEY_CAMERAMODE,      _cameramode       );
+    _p_settings->registerSetting( CTD_GS_KEY_CHATMODE,        _chatmode         );
 
     // load profile
     bool exists = SettingsManager::get()->loadProfile( CTD_GAMESETTING_PROFILENAME );

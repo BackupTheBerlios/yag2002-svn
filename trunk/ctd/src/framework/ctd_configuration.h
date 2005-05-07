@@ -68,6 +68,8 @@ namespace CTD
 #define CTD_GS_KEY_MOVE_LEFT            "moveLeft"
 #define CTD_GS_KEY_MOVE_RIGHT           "moveRight"
 #define CTD_GS_KEY_JUMP                 "jump"
+#define CTD_GS_KEY_CAMERAMODE           "cameramode"
+#define CTD_GS_KEY_CHATMODE             "chatmode"
 // networking
 #define CTD_GS_SERVER_NAME              "serverName"
 #define CTD_GS_SERVER_IP                "serverIP"
@@ -142,6 +144,10 @@ class Configuration : public Singleton< Configuration >
 
         std::string                             _jump;
 
+        std::string                             _cameramode;
+
+        std::string                             _chatmode;
+    
     friend class Singleton< Configuration >;
     friend class Application;
 };                                             
