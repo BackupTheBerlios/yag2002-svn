@@ -45,13 +45,13 @@
 #endif
 
 // osg headers
-
 #include <osg/AlphaFunc>
 #include <osg/BlendFunc>
 #include <osg/ColorMask>
 #include <osg/ClipNode>
 #include <osg/CoordinateSystemNode>
 #include <osg/Depth>
+#include <osg/fog>
 #include <osg/Material>
 #include <osg/Math>
 #include <osg/Matrix>
