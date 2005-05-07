@@ -471,6 +471,8 @@ void LevelManager::buildPhysicsStaticGeometry()
     {
         EntityNotification ennotify( CTD_NOTIFY_BUILDING_PHYSICSWORLD );
         EntityManager::get()->sendNotification( ennotify );
+        // flush the notification queue so perior and new entities get the notification
+        EntityManager::get()->flushNotificationQueue();
     }
 
     osg::Timer      timer;
