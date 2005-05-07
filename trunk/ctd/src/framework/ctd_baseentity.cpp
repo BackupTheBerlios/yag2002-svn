@@ -43,7 +43,6 @@ BaseEntity::~BaseEntity()
         if ( _p_transformNode->getParents().size() > 0 )
         {
             _p_transformNode->getParent( 0 )->removeChild( _p_transformNode.get() );
-            _p_transformNode.release();
         }
         else
         {
