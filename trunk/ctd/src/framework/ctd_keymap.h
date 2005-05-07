@@ -68,6 +68,9 @@ class KeyMap : public Singleton< KeyMap >
         //! Given a mouse button code return its name.
         const std::string&                      getMouseButtonName( unsigned int code );
 
+        //! Given a key or mouse button name return its code.
+        unsigned int                            getCode( const std::string& name );
+
         //! Translate key code into target code.
         unsigned int                            translateKey( unsigned int code );
 

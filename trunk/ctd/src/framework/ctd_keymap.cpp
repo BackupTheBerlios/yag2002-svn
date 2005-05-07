@@ -314,4 +314,13 @@ const std::string& KeyMap::getMouseButtonName( unsigned int code )
     return p_key->second;
 }
 
+unsigned int KeyMap::getCode( const std::string& name )
+{
+    unsigned int code = 0;
+    if ( code = getMouseButtonCode( name ) )
+        return code;
+    
+    return getKeyCode( name );
+}
+
 } // namespace CTD
