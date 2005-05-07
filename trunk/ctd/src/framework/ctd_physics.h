@@ -141,8 +141,6 @@ class Physics : public Singleton< Physics >
 
         NewtonWorld*                                _p_world;
 
-        NewtonCollision*                            _p_collision;
-
         NewtonBody*                                 _p_body;
 
         osg::Geode*                                 _p_debugGeode;

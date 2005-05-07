@@ -127,6 +127,9 @@ bool Physics::reinitialize()
     NewtonDestroy( _p_world ); 
     _p_world = NULL;
 
+    // clear the material cache
+    _materials.clear();
+
     log << Log::LogLevel( Log::L_DEBUG ) << "-Physics: remaining non-freed bytes: " <<  allocBytesSum - freedBytesSum << endl;
 
     return initialize();
@@ -134,7 +137,6 @@ bool Physics::reinitialize()
 
 void Physics::shutdown()
 {
-    //! FIXME: there are mem leaks, remove them!
     if ( _p_world )
     {
         // free up bodies
@@ -154,15 +156,15 @@ void Physics::shutdown()
 
 bool Physics::buildStaticGeometry( osg::Group* p_root )
 {    
-    _p_collision = NewtonCreateTreeCollision( _p_world, levelCollisionCallback );    
-    NewtonTreeCollisionBeginBuild( _p_collision );
+    NewtonCollision* p_collision = NewtonCreateTreeCollision( _p_world, levelCollisionCallback );    
+    NewtonTreeCollisionBeginBuild( p_collision );
     
     // build the collision faces
     //--------------------------
     // start timer
     osg::Timer_t start_tick = osg::Timer::instance()->tick();
     //! iterate through all geometries and create their collision faces
-    PhysicsVisitor physVisitor( NodeVisitor::TRAVERSE_ALL_CHILDREN, _p_collision );
+    PhysicsVisitor physVisitor( NodeVisitor::TRAVERSE_ALL_CHILDREN, p_collision );
     p_root->accept( physVisitor );
     // stop timer and give out the time messure
     osg::Timer_t end_tick = osg::Timer::instance()->tick();
@@ -175,9 +177,13 @@ bool Physics::buildStaticGeometry( osg::Group* p_root )
 
     // finalize tree building with optimization off ( because the meshes are already optimized by 
     //  osg _and_ Newton has currently problems with optimization )
-    NewtonTreeCollisionEndBuild( _p_collision, 0 /* 1 */);
+    NewtonTreeCollisionEndBuild( p_collision, 0 /* 1 */);
 
-    _p_body = NewtonCreateBody( _p_world, _p_collision );
+    _p_body = NewtonCreateBody( _p_world, p_collision );
+
+    // release collision object
+    NewtonReleaseCollision( _p_world, p_collision );
+
     // set Material Id for this object
     NewtonBodySetMaterialGroupID( _p_body, getMaterialId( "level" ) );
 
@@ -187,7 +193,7 @@ bool Physics::buildStaticGeometry( osg::Group* p_root )
 
     // calculate the world bbox and world size
     float  bmin[ 4 ], bmax[ 4 ];
-    NewtonCollisionCalculateAABB( _p_collision, mat.ptr(), bmin, bmax );
+    NewtonCollisionCalculateAABB( p_collision, mat.ptr(), bmin, bmax );
     bmin[ 0 ] -= 10.0f;
     bmin[ 1 ] -= 10.0f;
     bmin[ 2 ] -= 10.0f;
@@ -197,8 +203,6 @@ bool Physics::buildStaticGeometry( osg::Group* p_root )
     bmax[ 2 ] += 10.0f;
     bmax[ 3 ] = 1.0f;
     NewtonSetWorldSize( _p_world, bmin, bmax );
-
-    NewtonReleaseCollision( _p_world, _p_collision );
 
     return true;
 } 
