@@ -124,6 +124,12 @@ class DialogGameSettings
         //! Dialog callback for jump button        
         bool                                        onClickedJump( const CEGUI::EventArgs& arg );
 
+        //! Dialog callback for camera mode button        
+        bool                                        onClickedCameraMode( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for chat mode button        
+        bool                                        onClickedChatMode( const CEGUI::EventArgs& arg );
+
         //! This method is used for sensing keybinding by the mean of a little messagebox
         void                                        senseKeybinding( CEGUI::PushButton* p_btn );
         //---------
@@ -165,9 +171,13 @@ class DialogGameSettings
 
         CEGUI::PushButton*                          _p_keyMoveRight;
 
+        CEGUI::PushButton*                          _p_keyCameraMode;
+
         CEGUI::PushButton*                          _p_keyJump;
 
         CEGUI::Checkbox*                            _p_mouseInvert;
+
+        CEGUI::PushButton*                          _p_keyChatMode;
 
         bool                                        _mouseInverted;
 

@@ -51,8 +51,10 @@ _p_keyMoveBackward( NULL ),
 _p_keyMoveLeft( NULL ),
 _p_keyMoveRight( NULL ),
 _p_keyJump( NULL ),
+_p_keyCameraMode( NULL ),
 _mouseSensitivity( 1.0f ),
 _mouseInverted( false ),
+_p_keyChatMode( NULL ),
 _p_keyKeybEnglish( NULL ),
 _p_keyKeybGerman( NULL )
 {
@@ -121,9 +123,14 @@ bool DialogGameSettings::initialize( const string& layoutfile, CEGUI::Window* p_
         _p_keyMoveRight    = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_right" ) );
         _p_keyMoveRight->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedRight, this ) );
 
-        _p_keyJump    = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_jump" ) );
+        _p_keyJump         = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_jump" ) );
         _p_keyJump->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedJump, this ) );
 
+        _p_keyCameraMode   = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_camera" ) );
+        _p_keyCameraMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedCameraMode, this ) );
+
+        _p_keyChatMode     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_chatmode" ) );
+        _p_keyChatMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedChatMode, this ) );
         //-------------
 
         // get contents of pane Keyboard
@@ -188,7 +195,7 @@ void DialogGameSettings::setupControls()
     Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, cfg_serverport       );
 
     string cfg_keyboard;
-    Configuration::get()->getSettingValue( CTD_GS_KEYBOARD,          cfg_keyboard        );
+    Configuration::get()->getSettingValue( CTD_GS_KEYBOARD,    cfg_keyboard         );
     
     // set player name
     _p_playername->setText( cfg_playername );
@@ -222,6 +229,15 @@ void DialogGameSettings::setupControls()
     Configuration::get()->getSettingValue( CTD_GS_KEY_JUMP,          cfg_movecmd    );
     _p_keyJump->setText( cfg_movecmd.c_str() );
     _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyJump ) );
+
+    string cfg_mode;
+    Configuration::get()->getSettingValue( CTD_GS_KEY_CAMERAMODE,    cfg_mode       );
+    _p_keyCameraMode->setText( cfg_mode.c_str() );
+    _keyBindingLookup.push_back( make_pair( cfg_mode, _p_keyCameraMode ) );
+
+    Configuration::get()->getSettingValue( CTD_GS_KEY_CHATMODE,      cfg_mode       );
+    _p_keyChatMode->setText( cfg_mode.c_str() );
+    _keyBindingLookup.push_back( make_pair( cfg_mode, _p_keyChatMode ) );
 
     // setup scrollbar position
     _p_mouseSensivity->setDocumentSize( CTD_GS_MAX_MOUSESENS );
@@ -268,6 +284,12 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
 
     cfg_key = _p_keyJump->getText().c_str();
     Configuration::get()->setSettingValue( CTD_GS_KEY_JUMP, cfg_key );
+
+    cfg_key = _p_keyCameraMode->getText().c_str();
+    Configuration::get()->setSettingValue( CTD_GS_KEY_CAMERAMODE, cfg_key );
+
+    cfg_key = _p_keyChatMode->getText().c_str();
+    Configuration::get()->setSettingValue( CTD_GS_KEY_CHATMODE, cfg_key );
 
     // set mouse settings
     Configuration::get()->setSettingValue( CTD_GS_MOUSESENS, _mouseSensitivity );    
@@ -441,6 +463,20 @@ bool DialogGameSettings::onClickedJump( const CEGUI::EventArgs& arg )
 {
     // begin key sensing for "jump"
     senseKeybinding( _p_keyJump );
+    return true;
+}
+
+bool DialogGameSettings::onClickedCameraMode( const CEGUI::EventArgs& arg )
+{
+    // begin key sensing for "camera mode"
+    senseKeybinding( _p_keyCameraMode );
+    return true;
+}
+
+bool DialogGameSettings::onClickedChatMode( const CEGUI::EventArgs& arg )
+{
+    // begin key sensing for "chat mode"
+    senseKeybinding( _p_keyChatMode );
     return true;
 }
 
