@@ -51,16 +51,34 @@ class PlayerChatGui
         //! Initialize gui layout
         void                                        initialize( EnPlayer* p_player, const std::string& layoutFile );
 
+        //! Update method for chat box animation, etc.
+        void                                        update( float deltaTime );
+
         //! Shows / hides the gui completely
         void                                        show( bool visible );
 
     protected:
 
+        //! Callback for chat frame window close button
+        bool                                        onCloseFrame( const CEGUI::EventArgs& arg );
+
         //! Callback for sensing cariage return during editing a chat message
         bool                                        onEditboxTextChanged( const CEGUI::EventArgs& arg );
 
+        //! Callback for button 'hide'
+        bool                                        onClickedHide( const CEGUI::EventArgs& arg );
+
+        //! Callback for button 'mode'
+        bool                                        onClickedMode( const CEGUI::EventArgs& arg );
+
         //! Add new message into message box, author will be places at begin of message
         void                                        addMessage( const CEGUI::String& msg, const CEGUI::String& author );
+
+        enum {
+            Idle,
+            BoxFadeIn,
+            BoxFadeOut
+        }                                           _state;
 
         EnPlayer*                                   _p_player;
 
@@ -68,9 +86,25 @@ class PlayerChatGui
 
         CEGUI::Window*                              _p_wnd;
 
-        CEGUI::MultiLineEditbox*                    _p_editbox;
+        CEGUI::Window*                              _p_frame;
+
+        CEGUI::PushButton*                          _p_btnHide;
+
+        CEGUI::PushButton*                          _p_btnMode;
+
+        CEGUI::Editbox*                             _p_editbox;
 
         CEGUI::MultiLineEditbox*                    _p_messagebox;
+
+        bool                                        _hidden;
+
+        bool                                        _modeEdit;
+
+        float                                       _fadeTimer;
+
+        osg::Vec2f                                  _boxFrameSize;
+
+        float                                       _frameAlphaValue;
 };
 
 } // namespace CTD

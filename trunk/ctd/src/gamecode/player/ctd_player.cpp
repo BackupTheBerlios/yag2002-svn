@@ -67,11 +67,12 @@ class PlayerInputHandler : public GenericInputHandler< EnPlayer >
                                                 // reset internal flags
                                                 if ( !_enabled )
                                                 {
-                                                    _rotateRight    = false;
-                                                    _rotateLeft     = false;
+                                                    _right          = false;
+                                                    _left           = false;
                                                     _moveForward    = false;
                                                     _moveBackward   = false;
                                                     _camSwitch      = false;
+                                                    _chatSwitch     = false;
                                                 }
                                             }
 
@@ -79,11 +80,12 @@ class PlayerInputHandler : public GenericInputHandler< EnPlayer >
 
         bool                                _enabled;
 
-        bool                                _rotateRight;
-        bool                                _rotateLeft;
+        bool                                _right;
+        bool                                _left;
         bool                                _moveForward;
         bool                                _moveBackward;
         bool                                _camSwitch;
+        bool                                _chatSwitch;
 
     public:
 
@@ -93,6 +95,8 @@ class PlayerInputHandler : public GenericInputHandler< EnPlayer >
         unsigned int                        _keyCodeMoveLeft;
         unsigned int                        _keyCodeMoveRight;
         unsigned int                        _keyCodeJump;
+        unsigned int                        _keyCodeCameraMode;
+        unsigned int                        _keyCodeChatMode;
 };
 
 //! Implement and register the player entity factory
@@ -104,11 +108,13 @@ _p_playerAnimation( NULL ),
 _p_playerSound( NULL ),
 _p_chatGui( new PlayerChatGui ),
 _playerName( "noname" ),
+_rot( 0 ),
 _moveDir( Vec3f( 0, 1, 0 ) ),
 _p_inputHandler( NULL ),
 _chatGuiConfig( "gui/chat.xml" ),
 _p_camera( NULL ),
-_cameraMode( Isometric )
+_cameraMode( Isometric ),
+_enabledControl( true )
 {
     EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
     EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
@@ -174,7 +180,9 @@ void EnPlayer::handleNotification( EntityNotification& notify )
         case CTD_NOTIFY_MENU_LEAVE:
 
             _p_chatGui->show( true );
-            _p_inputHandler->enable( true );
+            if ( _enabledControl )
+                _p_inputHandler->enable( true );
+
             // refresh our configuration settings
             getConfiguration();
  
@@ -186,6 +194,12 @@ void EnPlayer::handleNotification( EntityNotification& notify )
         default:
             ;
     }
+}
+
+void EnPlayer::enableControl( bool en )
+{
+    _enabledControl = en;
+    _p_inputHandler->enable( en );
 }
 
 void EnPlayer::initialize()
@@ -246,27 +260,36 @@ void EnPlayer::getConfiguration()
     // setup key bindings
     std::string keyname;
     Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_FORWARD, keyname );
-    _p_inputHandler->_keyCodeMoveForward = KeyMap::get()->getKeyCode( keyname );
+    _p_inputHandler->_keyCodeMoveForward = KeyMap::get()->getCode( keyname );
 
     Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_BACKWARD, keyname );
-    _p_inputHandler->_keyCodeMoveBackward = KeyMap::get()->getKeyCode( keyname );
+    _p_inputHandler->_keyCodeMoveBackward = KeyMap::get()->getCode( keyname );
 
     Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_LEFT, keyname );
-    _p_inputHandler->_keyCodeMoveLeft = KeyMap::get()->getKeyCode( keyname );
+    _p_inputHandler->_keyCodeMoveLeft = KeyMap::get()->getCode( keyname );
 
     Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_RIGHT, keyname );
-    _p_inputHandler->_keyCodeMoveRight = KeyMap::get()->getKeyCode( keyname );
+    _p_inputHandler->_keyCodeMoveRight = KeyMap::get()->getCode( keyname );
 
     Configuration::get()->getSettingValue( CTD_GS_KEY_JUMP, keyname );
-    _p_inputHandler->_keyCodeJump = KeyMap::get()->getKeyCode( keyname );
+    _p_inputHandler->_keyCodeJump = KeyMap::get()->getCode( keyname );
+
+    Configuration::get()->getSettingValue( CTD_GS_KEY_CAMERAMODE, keyname );
+    _p_inputHandler->_keyCodeCameraMode = KeyMap::get()->getCode( keyname );
+
+    Configuration::get()->getSettingValue( CTD_GS_KEY_CHATMODE, keyname );
+    _p_inputHandler->_keyCodeChatMode = KeyMap::get()->getCode( keyname );
 }
 
 void EnPlayer::updateEntity( float deltaTime )
 {
+    // update player physics
     _p_playerPhysics->update( deltaTime );
     // adjust the camera to updated position and rotation. the physics updates the translation of player.
     // adjust camera to character's head position
     _p_camera->setCameraTranslation( _position, _rotation );
+
+    _p_chatGui->update( deltaTime );
 }
 
 void EnPlayer::setCameraMode( unsigned int mode )
@@ -318,7 +341,7 @@ void EnPlayer::setNextCameraMode()
 
 void EnPlayer::setCameraPitchYaw( float pitch, float yaw )
 {
-#define LIMIT_PITCH_ANGLE   45.0f
+#define LIMIT_PITCH_ANGLE   120.0f
 #define LIMIT_PITCH_OFFSET  -20.0f;
 
     if ( _cameraMode == Isometric )
@@ -354,8 +377,8 @@ void EnPlayer::setCameraPitchYaw( float pitch, float yaw )
 PlayerInputHandler::PlayerInputHandler( EnPlayer* p_player ) : 
 GenericInputHandler< EnPlayer >( p_player ),
 _enabled( true ),
-_rotateRight( false ),
-_rotateLeft( false ),
+_right( false ),
+_left( false ),
 _moveForward( false ),
 _moveBackward( false ),
 _camSwitch( false ),
@@ -363,7 +386,9 @@ _keyCodeMoveForward( osgGA::GUIEventAdapter::KEY_Up ),
 _keyCodeMoveBackward( osgGA::GUIEventAdapter::KEY_Down ),
 _keyCodeMoveLeft( osgGA::GUIEventAdapter::KEY_Left ),
 _keyCodeMoveRight( osgGA::GUIEventAdapter::KEY_Right ),
-_keyCodeJump( osgGA::GUIEventAdapter::KEY_Space )
+_keyCodeJump( osgGA::GUIEventAdapter::KEY_Space ),
+_keyCodeCameraMode( osgGA::GUIEventAdapter::KEY_F1 ),
+_keyCodeChatMode( osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON )
 {
 }
 
@@ -373,18 +398,64 @@ PlayerInputHandler::~PlayerInputHandler()
 
 bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
+
+    unsigned int eventType   = ea.getEventType();
+
+    if ( eventType == osgGA::GUIEventAdapter::FRAME )
+        return false;
+
+    int          kcode      = ea.getKey();
+    unsigned int mouseBtn   = ea.getButton();    
+    bool keyDown            = ( eventType == osgGA::GUIEventAdapter::KEYDOWN );
+    bool keyUp              = ( eventType == osgGA::GUIEventAdapter::KEYUP   );
+    bool mouseButtonPush    = ( eventType == osgGA::GUIEventAdapter::PUSH    );
+    bool mouseButtonRelease = ( eventType == osgGA::GUIEventAdapter::RELEASE );
+    
+    unsigned int key;
+
+    if ( keyDown || keyUp )
+        key = kcode;
+    else if ( mouseButtonPush || mouseButtonRelease )
+        key = mouseBtn;
+
+    // first check the edit / walk toggle command
+    //--------
+    static bool s_toggleChatMode = false;
+    if ( keyDown || mouseButtonPush )
+    {
+        if ( key == _keyCodeChatMode )
+        {
+            if ( !_chatSwitch )
+            {
+                // this method has an side effect on _enable (see below)
+                _p_userObject->enableControl( s_toggleChatMode );
+                s_toggleChatMode = !s_toggleChatMode;
+                _chatSwitch = true;
+
+                // stop player and sound
+                _p_userObject->_p_playerAnimation->animIdle();
+                _p_userObject->getPlayerSound()->stopPlayingAll();
+                _p_userObject->_p_playerPhysics->setForce( 0, 0 );
+            }
+        }
+    }
+    else if ( keyUp || mouseButtonRelease )
+    {
+        if ( key == _keyCodeChatMode )
+            _chatSwitch = false;
+    }
+    //--------
+
     // check for enable flag, e.g. in menu we don't want to control the character
     if ( !_enabled )
         return false;
 
-    unsigned int eventType   = ea.getEventType();
-    int          key         = ea.getKey();
-
-    // dispatch key activity
-    if ( eventType == osgGA::GUIEventAdapter::KEYDOWN )
+    // dispatch player control commands
+    //--------
+    if ( keyDown || mouseButtonPush )
     {
-        // change camera mode ( currently no keybinding, it's hard-coded )
-        if ( key == osgGA::GUIEventAdapter::KEY_F1 )
+        // change camera mode
+        if ( key == _keyCodeCameraMode )
         {
             if ( !_camSwitch )
             {
@@ -400,22 +471,22 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             _moveBackward = true;
 
         if ( key == _keyCodeMoveRight )
-            _rotateRight = true;
+            _right = true;
 
         if ( key == _keyCodeMoveLeft )
-            _rotateLeft = true;
+            _left = true;
 
         if ( key == _keyCodeJump )
         {
             _p_userObject->_p_playerPhysics->jump();
             _p_userObject->_p_playerAnimation->animJump();
         }
-    }
-    else if ( eventType == osgGA::GUIEventAdapter::KEYUP )
-    {     
-        if ( key == osgGA::GUIEventAdapter::KEY_F1 )
+    } 
+    else if ( keyUp || mouseButtonRelease )
+    {
+        if ( key == _keyCodeCameraMode )
             _camSwitch = false;
-            
+
         if ( ( key == _keyCodeMoveForward ) || ( key == _keyCodeMoveBackward ) )
         {
             if ( key == _keyCodeMoveForward )
@@ -427,35 +498,86 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             _p_userObject->_p_playerPhysics->setForce( 0, 0 );
         }
 
-        if ( key == _keyCodeMoveRight )
-            _rotateRight = false;
+        if ( ( key == _keyCodeMoveRight ) || ( key == _keyCodeMoveLeft ) )
+        {
 
-        if ( key == _keyCodeMoveLeft )
-            _rotateLeft = false;
+            if ( key == _keyCodeMoveRight )
+                _right = false;
+
+            if ( key == _keyCodeMoveLeft )
+                _left = false;
+
+            if ( _p_userObject->_cameraMode == EnPlayer::Ego )
+                _p_userObject->_p_playerPhysics->setForce( 0, 0 );
+        }
+    }
+    //--------
+
+    // execute dispatched commands
+    if ( _right )
+    {
+        switch ( _p_userObject->_cameraMode )
+        {
+            case EnPlayer::Isometric:
+            {
+                _p_userObject->_rot -= _p_userObject->_p_playerPhysics->getAngularForce();
+                if ( _p_userObject->_rot > PI * 2.0f )
+                    _p_userObject->_rot += PI * 2.0f;
+
+                _p_userObject->_moveDir._v[ 0 ] = sinf( _p_userObject->_rot );
+                _p_userObject->_moveDir._v[ 1 ] = cosf( _p_userObject->_rot );
+
+                _p_userObject->_p_playerAnimation->animTurn();
+            }
+            break;
+
+            case EnPlayer::Ego:
+            {
+                osg::Vec3f side;
+                side = _p_userObject->_moveDir ^ osg::Vec3f( 0, 0, -1 );
+                _p_userObject->_moveDir._v[ 0 ] = side.x();
+                _p_userObject->_moveDir._v[ 1 ] = side.y();                
+                _p_userObject->_p_playerPhysics->setForce( _p_userObject->_moveDir._v[ 0 ], _p_userObject->_moveDir._v[ 1 ] );
+                _p_userObject->_p_playerAnimation->animTurn();
+            }
+            break;
+
+            default:
+                assert( NULL && "unknown camera state!" );
+        }
     }
 
-    if ( _rotateRight )
+    if ( _left )
     {
-        _p_userObject->_rot -= _p_userObject->_p_playerPhysics->getAngularForce();
-        if ( _p_userObject->_rot > PI * 2.0f )
-            _p_userObject->_rot += PI * 2.0f;
+        switch ( _p_userObject->_cameraMode )
+        {
+            case EnPlayer::Isometric:
+            {
+                if ( _p_userObject->_rot < 0 )
+                    _p_userObject->_rot -= PI * 2.0f;
+                _p_userObject->_rot += _p_userObject->_p_playerPhysics->getAngularForce();
 
-        _p_userObject->_moveDir._v[ 0 ] = sinf( _p_userObject->_rot );
-        _p_userObject->_moveDir._v[ 1 ] = cosf( _p_userObject->_rot );
+                _p_userObject->_moveDir._v[ 0 ] = sinf( _p_userObject->_rot );
+                _p_userObject->_moveDir._v[ 1 ] = cosf( _p_userObject->_rot );
 
-        _p_userObject->_p_playerAnimation->animTurn();
-    }
+                _p_userObject->_p_playerAnimation->animTurn();
+            }
+            break;
+            
+            case EnPlayer::Ego:
+            {
+                osg::Vec3f side;
+                side = _p_userObject->_moveDir ^ osg::Vec3f( 0, 0, 1 );
+                _p_userObject->_moveDir._v[ 0 ] = side.x();
+                _p_userObject->_moveDir._v[ 1 ] = side.y();                
+                _p_userObject->_p_playerPhysics->setForce( _p_userObject->_moveDir._v[ 0 ], _p_userObject->_moveDir._v[ 1 ] );
+                _p_userObject->_p_playerAnimation->animTurn();
+            }
+            break;
 
-    if ( _rotateLeft )
-    {
-        if ( _p_userObject->_rot < 0 )
-            _p_userObject->_rot -= PI * 2.0f;
-        _p_userObject->_rot += _p_userObject->_p_playerPhysics->getAngularForce();
-
-        _p_userObject->_moveDir._v[ 0 ] = sinf( _p_userObject->_rot );
-        _p_userObject->_moveDir._v[ 1 ] = cosf( _p_userObject->_rot );
-
-        _p_userObject->_p_playerAnimation->animTurn();
+            default:
+                assert( NULL && "unknown camera state!" );
+        }
     }
 
     if ( _moveForward )
@@ -473,7 +595,7 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
     static bool soundStopped = false;
     if ( !_moveForward && !_moveBackward )
     {
-        if ( !_rotateLeft && !_rotateRight )
+        if ( !_left && !_right )
             _p_userObject->_p_playerAnimation->animIdle();
 
         // avoid stopping permanently the sound, one is enought
@@ -486,8 +608,24 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
     {
         soundStopped = false;
     }
-    
-    // adjust pitch / yaw
+
+    // handle mouse wheel changes
+    if ( _p_userObject->_cameraMode == EnPlayer::Isometric )
+    {
+        if ( eventType == osgGA::GUIEventAdapter::SCROLLUP )
+        {
+            _p_userObject->_camPosOffsetIso._v[ 1 ] += 0.5f;
+            _p_userObject->_p_camera->setCameraOffsetPosition( _p_userObject->_camPosOffsetIso );
+        }
+        else if ( eventType == osgGA::GUIEventAdapter::SCROLLDOWN )
+        {
+            float& dist = _p_userObject->_camPosOffsetIso._v[ 1 ];
+            dist = std::min( 0.0f, dist - 0.5f );
+            _p_userObject->_p_camera->setCameraOffsetPosition( _p_userObject->_camPosOffsetIso );
+        }
+    }
+
+    // adjust pitch / yaw depending on mouse movement
     _p_userObject->setCameraPitchYaw( ea.getY(), -ea.getX() );
 
     return false; // let other handlers get all inputs handled here

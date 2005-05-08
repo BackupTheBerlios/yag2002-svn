@@ -99,6 +99,9 @@ class EnPlayer : public BaseEntity
         //! Set next camera mode
         void                                        setNextCameraMode();
 
+        //! Enable / disable input processing and control
+        void                                        enableControl( bool en );
+
     protected:
 
         // entity attributes
@@ -155,6 +158,9 @@ class EnPlayer : public BaseEntity
             Ego,
             Isometric
         }                                           _cameraMode;
+
+        //! Enable / disable input processing
+        bool                                        _enabledControl;
 
         //! Physics component
         EnPlayerPhysics*                            _p_playerPhysics;

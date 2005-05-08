@@ -39,12 +39,19 @@ namespace CTD
 {
 // layout prefix
 #define CHATLAYOUT_PREFIX   "chatbox_"
-
+#define FADEIN_TIME         1.0f
+ 
 PlayerChatGui::PlayerChatGui() :
 _p_player( NULL ),
 _p_wnd( NULL ),
+_p_frame( NULL ),
 _p_editbox( NULL ),
-_p_messagebox( NULL )
+_p_messagebox( NULL ),
+_modeEdit( true ),
+_hidden( false ),
+_state( BoxFadeIn ),
+_fadeTimer( 0 ),
+_frameAlphaValue( 1.0f )
 {
 }
 
@@ -64,6 +71,10 @@ void PlayerChatGui::initialize( EnPlayer* p_player, const string& layoutFile )
     try
     {
         _p_wnd = static_cast< CEGUI::Window* >( GuiManager::get()->loadLayout( layoutFile, NULL, CHATLAYOUT_PREFIX ) );
+        _p_frame = static_cast< CEGUI::Window* >( _p_wnd->getChild( CHATLAYOUT_PREFIX "fr_chatbox" ) );
+        _boxFrameSize = osg::Vec2f( _p_frame->getSize().d_width, _p_frame->getSize().d_height );
+        _frameAlphaValue = _p_frame->getAlpha();
+        _p_frame->setMinimumSize( CEGUI::Size( 0.1f, 0.08f ) );
     }
     catch ( CEGUI::Exception e )
     {
@@ -74,17 +85,84 @@ void PlayerChatGui::initialize( EnPlayer* p_player, const string& layoutFile )
 
     try
     {
-        _p_editbox = static_cast< CEGUI::MultiLineEditbox* >( _p_wnd->getChild( CHATLAYOUT_PREFIX "eb_editbox" ) );
+        CEGUI::FrameWindow* p_frameWnd = static_cast< CEGUI::FrameWindow* >( _p_frame );
+        p_frameWnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( PlayerChatGui::onCloseFrame, this ) );
+
+        _p_editbox = static_cast< CEGUI::Editbox* >( _p_frame->getChild( CHATLAYOUT_PREFIX "eb_editbox" ) );
         _p_editbox->subscribeEvent( CEGUI::MultiLineEditbox::EventCharacterKey, CEGUI::Event::Subscriber( PlayerChatGui::onEditboxTextChanged, this ) );
 
-        _p_messagebox = static_cast< CEGUI::MultiLineEditbox* >( _p_wnd->getChild( CHATLAYOUT_PREFIX "eb_messagebox" ) );
+        _p_messagebox = static_cast< CEGUI::MultiLineEditbox* >( _p_frame->getChild( CHATLAYOUT_PREFIX "eb_messagebox" ) );
         _p_messagebox->setReadOnly( true );
+
+        _p_btnHide = static_cast< CEGUI::PushButton* >( _p_wnd->getChild( CHATLAYOUT_PREFIX "btn_hidebox" ) );
+        _p_btnHide->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( PlayerChatGui::onClickedHide, this ) );
+
+        _p_btnMode = static_cast< CEGUI::PushButton* >( _p_wnd->getChild( CHATLAYOUT_PREFIX "btn_mode" ) );
+        _p_btnMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( PlayerChatGui::onClickedMode, this ) );
+
     }
     catch ( CEGUI::Exception e )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** error setting up layout '" << layoutFile << "'" << endl;
         log << "   reason: " << e.getMessage().c_str() << endl;
         return;
+    }
+}
+
+void PlayerChatGui::update( float deltaTime )
+{
+
+    switch( _state )
+    {
+        case Idle:
+            break;
+
+        case BoxFadeIn:
+        {
+            _p_frame->show();
+            if ( _fadeTimer > FADEIN_TIME )
+            {
+                _fadeTimer = 0;
+                // restore the initial size
+                CEGUI::Size size( _boxFrameSize.x(), _boxFrameSize.y() ); 
+                _p_frame->setAlpha( _frameAlphaValue );
+                _p_frame->setSize( size );
+                _state = Idle;
+                break;
+            }
+            _fadeTimer += deltaTime;
+            // fade in the box
+            float fadefac = _fadeTimer / FADEIN_TIME;
+            CEGUI::Size size( _boxFrameSize.x() * fadefac, _boxFrameSize.y() * fadefac ); 
+            _p_frame->setSize( size );
+            _p_frame->setAlpha( fadefac * _frameAlphaValue );
+        }
+        break;
+
+        case BoxFadeOut:
+        {
+            if ( _fadeTimer > FADEIN_TIME )
+            {
+                _fadeTimer = 0;
+                // set size to zero
+                CEGUI::Size size( 0, 0 ); 
+                _p_frame->setSize( size );
+                _state = Idle;
+                _p_frame->hide();
+                break;
+            }
+            _fadeTimer += deltaTime;
+            // fade in the box
+            float fadefac = 1.0f - ( _fadeTimer / FADEIN_TIME );
+            CEGUI::Size size( _boxFrameSize.x() * fadefac, _boxFrameSize.y() * fadefac ); 
+            _p_frame->setSize( size );
+            _p_frame->setAlpha( fadefac * _frameAlphaValue );
+        }
+        break;
+
+        default:
+            assert( NULL && "invalid chat gui state!" );
+
     }
 }
 
@@ -105,6 +183,12 @@ void PlayerChatGui::addMessage( const CEGUI::String& msg, const CEGUI::String& a
     _p_messagebox->setCaratIndex( buffer.length() - 1 );
 }
 
+bool PlayerChatGui::onCloseFrame( const CEGUI::EventArgs& arg )
+{
+    onClickedHide( arg );
+    return true;
+}
+
 bool PlayerChatGui::onEditboxTextChanged( const CEGUI::EventArgs& arg )
 {
     // check for 'Return' key
@@ -115,6 +199,37 @@ bool PlayerChatGui::onEditboxTextChanged( const CEGUI::EventArgs& arg )
         _p_editbox->setText( "" );
     }
     return true;
+}
+
+bool PlayerChatGui::onClickedHide( const CEGUI::EventArgs& arg )
+{
+    // are we already in fading action?
+    if ( _state != Idle )
+        return true;
+
+    _hidden = !_hidden;
+
+    if ( _hidden )
+    {
+        // store the current size for later fade-out
+        _boxFrameSize = osg::Vec2f( _p_frame->getSize().d_width, _p_frame->getSize().d_height );
+        _state = BoxFadeOut;
+    }
+    else
+    {
+        _state = BoxFadeIn;
+    }
+
+    return true;
+}
+
+bool PlayerChatGui::onClickedMode( const CEGUI::EventArgs& arg )
+{
+    // enable / disable player control
+    _p_player->enableControl( !_modeEdit );
+    _modeEdit = !_modeEdit;
+
+   return true;
 }
 
 } // namespace CTD
