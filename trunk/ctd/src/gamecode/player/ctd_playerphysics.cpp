@@ -243,7 +243,7 @@ int EnPlayerPhysics::collideWithLevel( const NewtonMaterial* p_material, const N
 
     Vec3f pos = _p_player->getPosition();
 	// consider the player height
-    if ( point._v[ 2 ] - ( pos._v[ 2 ] - _playerHeight * 0.5f )  < _stepHeight ) 
+    if ( ( point._v[ 2 ] - ( pos._v[ 2 ] - _playerHeight * 0.5f ) ) < _stepHeight ) 
     {
         Vec3f localpoint = pos - point;
         Matrixf::transform3x3( _matrix, localpoint );
@@ -318,9 +318,9 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     // snap to ground
     if ( p_phys->_isAirBorne && !p_phys->_jumpTimer ) 
     {
-        floor = p_phys->findFloor( p_phys->_p_world, pos, p_phys->_playerHeight + 0.25f );
+        floor = p_phys->findFloor( p_phys->_p_world, pos, p_phys->_playerHeight + p_phys->_stepHeight );
 		deltaHeight = ( pos._v[ 2 ] - 0.5f * p_phys->_playerHeight ) - floor;
-		if ( ( deltaHeight < ( 0.25f - 0.001f ) ) && ( deltaHeight > 0.01f ) ) 
+		if ( ( deltaHeight < p_phys->_stepHeight ) && ( deltaHeight > 0.01f ) ) 
         {
 			// snap to floor ony if the floor is lower than the character feet	
 			accelZ = -( deltaHeight * timestepInv + velocity._v[ 2 ] ) * timestepInv;
