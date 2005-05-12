@@ -34,6 +34,7 @@
 #include "ctd_guitexture.h"
 #include "ctd_guirenderer.h"
 #include <GL/glu.h>
+#include <osg/GLExtensions>
 
 using namespace std;
 using namespace CEGUI;
@@ -66,15 +67,11 @@ _queueing(true),
 _currTexture(0),
 _bufferPos(0)
 {
-    GLint vp[4];   
-
-    // initialise renderer size
-    glGetIntegerv(GL_VIEWPORT, vp);
-    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &_maxTextureSize);
+    glGetIntegerv( GL_MAX_TEXTURE_SIZE, &_maxTextureSize );
     _display_area.d_left    = 0;
     _display_area.d_top     = 0;
-    _display_area.d_right   = static_cast<float>(width);
-    _display_area.d_bottom  = static_cast<float>(height);
+    _display_area.d_right   = static_cast<float>( width );
+    _display_area.d_bottom  = static_cast<float>( height );
 }
 
 CTDGuiRenderer::~CTDGuiRenderer()
@@ -88,7 +85,7 @@ void CTDGuiRenderer::changeDisplayResolution( float width, float height )
     _display_area.d_bottom  = height;
 }
 
-void CTDGuiRenderer::addQuad(const Rect& dest_rect, float z, const Texture* tex, const Rect& texture_rect, const ColourRect& colours, QuadSplitMode quad_split_mode)
+void CTDGuiRenderer::addQuad( const Rect& dest_rect, float z, const Texture* tex, const Rect& texture_rect, const ColourRect& colours, QuadSplitMode quad_split_mode )
 {
     // if not queuing, render directly (as in, right now!)
     if (!_queueing)
@@ -230,88 +227,103 @@ void CTDGuiRenderer::doRender()
     exitPerFrameStates();
 }
 
-void CTDGuiRenderer::clearRenderList(void)
+void CTDGuiRenderer::clearRenderList()
 {
     _quadlist.clear();  
 }
 
 Texture* CTDGuiRenderer::createTexture()
 {
-    CTDGuiTexture* tex = new CTDGuiTexture(this);
-    _texturelist.push_back(tex);
-    return tex;
+    CTDGuiTexture* p_tex = new CTDGuiTexture( this );
+    _texturelist.push_back( p_tex );
+    return p_tex;
 }
 
-Texture* CTDGuiRenderer::createTexture(const String& filename, const String& resourceGroup)
+Texture* CTDGuiRenderer::createTexture( const String& filename, const String& resourceGroup )
 {
-    CTDGuiTexture* tex = (CTDGuiTexture*)createTexture();
-    tex->loadFromFile(filename, resourceGroup);
+    CTDGuiTexture* p_tex = static_cast< CTDGuiTexture* >( createTexture() );
+    p_tex->loadFromFile( filename, resourceGroup );
 
-    return tex;
+    return p_tex;
 }
 
-Texture* CTDGuiRenderer::createTexture(float size)
+Texture* CTDGuiRenderer::createTexture( float size )
 {
-    CTDGuiTexture* tex = (CTDGuiTexture*)createTexture();
-    tex->setOGLTextureSize((uint)size);
+    CTDGuiTexture* p_tex = static_cast< CTDGuiTexture* >( createTexture() );
+    p_tex->setOGLTextureSize( ( uint )size );
 
-    return tex;
+    return p_tex;
 }
 
-void CTDGuiRenderer::destroyTexture(Texture* texture)
+void CTDGuiRenderer::destroyTexture( Texture* p_texture )
 {
-    if (texture != NULL)
+    if ( p_texture )
     {
-        CTDGuiTexture* tex = (CTDGuiTexture*)texture;
-        _texturelist.remove(tex);
-        delete tex;
+        CTDGuiTexture* p_tex = static_cast< CTDGuiTexture* >( p_texture );
+        _texturelist.remove( p_tex );
+        delete p_tex;
     }
 }
 
 void CTDGuiRenderer::destroyAllTextures()
 {
-    while (!_texturelist.empty())
-    {
+    while ( !_texturelist.empty() )
         destroyTexture(*(_texturelist.begin()));
-    }
 }
 
 void CTDGuiRenderer::initPerFrameStates()
 {
     //save current attributes
-    glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glPushClientAttrib( GL_CLIENT_ALL_ATTRIB_BITS );
+    glPushAttrib( GL_ALL_ATTRIB_BITS );
 
     glViewport( 0, 0, _display_area.d_right, _display_area.d_bottom );
 
-    glPolygonMode(GL_FRONT, GL_FILL);
-    glMatrixMode(GL_PROJECTION);
+    glPolygonMode( GL_FRONT, GL_FILL );
+    glMatrixMode( GL_PROJECTION );
     glPushMatrix();
     glLoadIdentity();
 
     glOrtho( 0.0, _display_area.d_right, 0.0, _display_area.d_bottom, -1, 1 );
 
-    glMatrixMode(GL_MODELVIEW);
+    glMatrixMode( GL_MODELVIEW );
     glPushMatrix();
     glLoadIdentity();   
 
-    glDisable(GL_LIGHTING);
-    glDisable(GL_DEPTH_TEST);
+    // setup the texture units
+    //------------------------
+    typedef void ( APIENTRY * ActiveTextureProc ) ( GLenum texture );
+    static ActiveTextureProc s_glClientActiveTexture = ( ActiveTextureProc )osg::getGLExtensionFuncPtr( "glClientActiveTexture", "glClientActiveTextureARB" );
+    static ActiveTextureProc s_glActiveTexture       = ( ActiveTextureProc )osg::getGLExtensionFuncPtr( "glActiveTexture",       "glActiveTextureARB"       );
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+    // disable the client-side tex unit 0 as some previous primitives may have used it and missed to disable it after their usage ( is this behaviour intented by osg or is it a bug? )
+    //  missing this results in disappearing the gui when primitives mentioned above are rendered
+    s_glClientActiveTexture( GL_TEXTURE0 + 0 );
+    glDisable( GL_TEXTURE_2D );
+    glBindTexture( GL_TEXTURE_2D, 0 );
 
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    glEnable(GL_TEXTURE_2D);
+    // enable the server-side tex unti 0
+    s_glActiveTexture( GL_TEXTURE0 + 0 );
+    glEnable( GL_TEXTURE_2D );
+    //------------------------
+
+    // setup alpha-blending
+    glEnable( GL_BLEND );
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA ); 
+    glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+
+    // disable depth testing and lighting
+    glDisable( GL_LIGHTING );
+    glDisable( GL_DEPTH_TEST );
 }
 
 void CTDGuiRenderer::exitPerFrameStates()
 {
-    glDisable(GL_TEXTURE_2D);
+    glDisable( GL_TEXTURE_2D );
     glPopMatrix(); 
-    glMatrixMode(GL_PROJECTION);
+    glMatrixMode( GL_PROJECTION );
     glPopMatrix(); 
-    glMatrixMode(GL_MODELVIEW);
+    glMatrixMode( GL_MODELVIEW );
 
     //restore former attributes
     glPopClientAttrib();
