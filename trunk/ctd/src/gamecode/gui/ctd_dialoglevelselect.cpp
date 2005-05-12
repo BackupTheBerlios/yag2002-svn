@@ -247,7 +247,6 @@ bool DialogLevelSelect::onListItemSelChanged( const CEGUI::EventArgs& arg )
     CEGUI::ListboxItem* p_sel = _p_listbox->getFirstSelectedItem();
     setPreviewPic( p_sel );
 
-    //! TODO:
     return true;
 }
 
