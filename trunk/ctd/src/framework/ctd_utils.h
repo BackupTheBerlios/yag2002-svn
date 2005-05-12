@@ -154,29 +154,30 @@ class TexMatCallback : public osg::NodeCallback
 {
     public:
 
-                                            TexMatCallback( osg::TexMat& tm ) : _texMat( tm )
+                                            TexMatCallback( osg::TexMat& tm ) : 
+                                             _texMat( tm ),
+                                             _R( osg::Matrix::rotate( osg::DegreesToRadians( 90.0f ), 1.0f, 0.0f, 0.0f ) )
                                             {
                                             }
 
         virtual void                        operator()( osg::Node* node, osg::NodeVisitor* nv )
                                             {
                                                 osgUtil::CullVisitor* cv = dynamic_cast< osgUtil::CullVisitor* >( nv );
-                                                if (cv)
+                                                if ( cv )
                                                 {
                                                     const osg::Matrix& MV = cv->getModelViewMatrix();
-                                                    const osg::Matrix R = osg::Matrix::rotate( osg::DegreesToRadians( 112.0f ), 0.0f, 0.0f, 1.0f )*
-                                                                        osg::Matrix::rotate( osg::DegreesToRadians( 90.0f ), 1.0f, 0.0f, 0.0f );
-
                                                     osg::Quat q;
-                                                    MV.get(q);
+                                                    MV.get( q );
                                                     const osg::Matrix C = osg::Matrix::rotate( q.inverse() );
 
-                                                    _texMat.setMatrix( C*R );
+                                                    _texMat.setMatrix( C * _R );
                                                 }
                                                 traverse( node, nv );
                                             }
 
         osg::TexMat&                        _texMat;
+
+        osg::Matrix                         _R;
 };
 
 } // namespace CTD
