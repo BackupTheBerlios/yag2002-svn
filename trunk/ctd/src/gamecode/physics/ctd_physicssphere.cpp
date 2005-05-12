@@ -207,11 +207,6 @@ void EnPhysicsSphere::initialize()
     physicsSetTransform ( _p_body, mat.ptr() );
 
     NewtonReleaseCollision( Physics::get()->getWorld(), p_collision );
-
-    //! TODO remove this later
-    Vec3f omega( 0.1f, 0.1f, 0 );
-    NewtonBodySetOmega( _p_body, &omega[0] );
-
 }
 
 void EnPhysicsSphere::postInitialize()
