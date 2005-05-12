@@ -480,8 +480,8 @@ void EnPlayerPhysics::initialize()
     _playerHeight = _dimensions._v[ 2 ] * 2.0f;
 
     // create the collision 
-    //NewtonCollision* p_col = NewtonCreateSphere( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
-    NewtonCollision* p_col = NewtonCreateBox( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
+    NewtonCollision* p_col = NewtonCreateSphere( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
+    //NewtonCollision* p_col = NewtonCreateBox( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
     NewtonCollision* p_collision = NewtonCreateConvexHullModifier( _p_world, p_col );
     NewtonReleaseCollision( Physics::get()->getWorld(), p_col );
 

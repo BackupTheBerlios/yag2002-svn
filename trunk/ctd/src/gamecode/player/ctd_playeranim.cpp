@@ -378,7 +378,7 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
     return true;
 }
 
-//! TODO: animation control must be implemented
+//! TODO: more animation control must be implemented
 void EnPlayerAnimation::animIdle()
 {
     if ( _anim == eIdle )
