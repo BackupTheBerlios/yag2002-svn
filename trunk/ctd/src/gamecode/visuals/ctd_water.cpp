@@ -158,9 +158,9 @@ _primaryPosBuffer( true ),
 _p_geom( NULL ),
 _refract( 1.01f ),
 _fresnel( 1.1f )
-
 {
-    EntityManager::get()->registerUpdate( this );     // register entity in order to get updated per simulation step
+    EntityManager::get()->registerUpdate( this );               // register entity in order to get updated per simulation step
+    EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 
     // register entity attributes
     _attributeManager.addAttribute( "sizeX"                 , _sizeX                 );
@@ -185,11 +185,32 @@ EnWater::~EnWater()
 {
 }
 
+void EnWater::handleNotification( EntityNotification& notify )
+{
+    // handle notifications
+    switch( notify.getId() )
+    {
+        // disable water rendering when in menu
+        case CTD_NOTIFY_MENU_ENTER:
+
+            removeFromTransformationNode( _water.get() );
+            break;
+
+        // enable water entity when get back in game
+        case CTD_NOTIFY_MENU_LEAVE:
+
+            addToTransformationNode( _water.get() );
+            break;
+
+        default:
+            ;
+    }
+}
+
 void EnWater::initialize()
 {
-    //get loaded level mesh and setup the water including reflection/refracion and mirroring
-    osg::Node *p_node = LevelManager::get()->getStaticMesh();
-    addToTransformationNode( setupWater( p_node ) );
+    // the water is added to entity's transform node in notification call-back, when entering game ( leaving menu )!
+    _water = setupWater();
     setPosition( _position );
 
     _stimulationPeriod = 1.0f / _stimulationRate;
@@ -294,208 +315,73 @@ osg::Geometry* EnWater::makeMesh()
     return _p_geom;
 }
 
-osg::Node* EnWater::setupWater( osg::Node* p_node )
+osg::Node* EnWater::setupWater()
 {
-    //! FIXME, setting other x and y coordinates than 0 0 caused wrong mirroring!
-    float height_factor = 0.3;    
-    Vec3f translation = _position;
-    translation *= height_factor;
-
     // create water grid    
-    osg::Drawable* mirror = makeMesh();
+    osg::ref_ptr< osg::Drawable > watermesh = makeMesh();
 
-    osg::MatrixTransform* p_mirrorNode = new osg::MatrixTransform;
-    p_mirrorNode->setMatrix(osg::Matrix::translate( 0, 0, -translation.z() ) );
-        
-    // make sure that the global color mask exists.
-    osg::ColorMask* rootColorMask = new osg::ColorMask;
-    rootColorMask->setMask(true,true,true,true);        
-    
-    // set up depth to be inherited by the rest of the scene unless
-    // overridden. this is overridden in bin 2.
-    osg::Depth* rootDepth = new osg::Depth;
-    rootDepth->setFunction(osg::Depth::LESS);
-    rootDepth->setRange(0.0,1.0);
+    osg::MatrixTransform* p_waternode = new osg::MatrixTransform;
+    p_waternode->setMatrix( osg::Matrix::translate( _position ) );
 
-    osg::StateSet* rootStateSet = new osg::StateSet();        
-    rootStateSet->setAttribute(rootColorMask);
-    rootStateSet->setAttribute(rootDepth);
+    // set up the geode with reflection/refraction
+    //-------------------------------------
+    osg::StateSet* p_stateset = new osg::StateSet();
 
-    p_mirrorNode->setStateSet(rootStateSet);
+    osg::TextureCubeMap* reflectmap = readCubeMap();
+    p_stateset->setTextureAttributeAndModes( 0, reflectmap, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
+    p_stateset->setTextureAttributeAndModes( 1, reflectmap, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
 
-    // bin1  - set up the stencil values and depth for mirror.
+    osg::ref_ptr< osg::TexMat > texMat = new osg::TexMat;
+    p_stateset->setTextureAttribute( 0, texMat.get() );
+
+    // setup vertex program
+    static osg::ref_ptr< osg::VertexProgram > s_vp;
+    if ( !s_vp.valid() )
     {
-    
-        // set up the stencil ops so that the stencil buffer get set at
-        // the mirror plane 
-        osg::Stencil* stencil = new osg::Stencil;
-        stencil->setFunction(osg::Stencil::ALWAYS,1,~0);
-        stencil->setOperation(osg::Stencil::KEEP, osg::Stencil::KEEP, osg::Stencil::REPLACE);
-        
-        // switch off the writing to the color bit planes.
-        osg::ColorMask* colorMask = new osg::ColorMask;
-        colorMask->setMask(false,false,false,false);
-        
-        osg::StateSet* statesetBin1 = new osg::StateSet();        
-        statesetBin1->setRenderBinDetails(1,"RenderBin");
-        statesetBin1->setMode(GL_CULL_FACE,osg::StateAttribute::OFF);
-        statesetBin1->setAttributeAndModes(stencil,osg::StateAttribute::ON);
-        statesetBin1->setAttribute(colorMask);
-        
-        // set up the mirror geode.
-        osg::Geode* geode = new osg::Geode;
-        geode->addDrawable(mirror);
-        geode->setStateSet(statesetBin1);
-        
-        p_mirrorNode->addChild(geode);
-        
+        s_vp = new osg::VertexProgram();
+        s_vp->setVertexProgram( vpstr );
+        s_vp->setProgramLocalParameter( 0, osg::Vec4( _fresnel, _fresnel, _fresnel, 1.0f ) );
+        s_vp->setProgramLocalParameter( 1, osg::Vec4( _refract, _refract * _refract, 0.0f, 0.0f ) );
     }
+    p_stateset->setAttributeAndModes( s_vp.get(), osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
 
-    // bin2  - set up the depth to the furthest depth value
-    {
+    osg::TexEnvCombine* p_te0 = new osg::TexEnvCombine;    
+    p_te0->setCombine_RGB( osg::TexEnvCombine::REPLACE );
+    p_te0->setSource0_RGB( osg::TexEnvCombine::TEXTURE0 );
+    p_te0->setOperand0_RGB( osg::TexEnvCombine::SRC_COLOR );
+
+    osg::TexEnvCombine* p_te1 = new osg::TexEnvCombine;    
+
+    p_te1->setCombine_RGB( osg::TexEnvCombine::INTERPOLATE );
+    p_te1->setSource0_RGB( osg::TexEnvCombine::TEXTURE1 );
+    p_te1->setOperand0_RGB( osg::TexEnvCombine::SRC_COLOR );
+    p_te1->setSource1_RGB( osg::TexEnvCombine::PREVIOUS );
+    p_te1->setOperand1_RGB( osg::TexEnvCombine::SRC_COLOR );
+    p_te1->setSource2_RGB( osg::TexEnvCombine::PRIMARY_COLOR );
+    p_te1->setOperand2_RGB( osg::TexEnvCombine::SRC_COLOR );
+
+    p_stateset->setTextureAttributeAndModes( 0, p_te0, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
+    p_stateset->setTextureAttributeAndModes( 1, p_te1, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
+
+    // set up transparency
+    osg::BlendFunc* p_trans = new osg::BlendFunc;
+    p_trans->setFunction( osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA );
+    p_stateset->setAttributeAndModes( p_trans,osg::StateAttribute::ON );
+
+    p_stateset->setAttribute( p_trans );
+    p_stateset->setMode( GL_BLEND, osg::StateAttribute::ON );      
+    p_stateset->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
+
+    osg::Geode* p_geode = new osg::Geode;
+    p_geode->addDrawable( watermesh.get() );
+    p_geode->setStateSet( p_stateset );
+
+    osg::Group* p_group = new osg::Group;
+    p_group->addChild( p_waternode );
+    p_group->addChild( p_geode );
+    p_group->setCullCallback( new TexMatCallback( *texMat.get() ) );
     
-        // set up the stencil ops so that only operator on this mirrors stencil value.
-        osg::Stencil* stencil = new osg::Stencil;
-        stencil->setFunction(osg::Stencil::EQUAL,1,~0);
-        stencil->setOperation(osg::Stencil::KEEP, osg::Stencil::KEEP, osg::Stencil::KEEP);
-        
-        // switch off the writing to the color bit planes.
-        osg::ColorMask* colorMask = new osg::ColorMask;
-        colorMask->setMask(false,false,false,false);
-
-        // set up depth so all writing to depth goes to maximum depth.
-        osg::Depth* depth = new osg::Depth;
-        depth->setFunction(osg::Depth::ALWAYS);
-        depth->setRange(1.0,1.0);
-
-        osg::StateSet* statesetBin2 = new osg::StateSet();
-        statesetBin2->setRenderBinDetails(2,"RenderBin");
-        statesetBin2->setMode(GL_CULL_FACE,osg::StateAttribute::OFF);
-        statesetBin2->setAttributeAndModes(stencil,osg::StateAttribute::ON);
-        statesetBin2->setAttribute(colorMask);
-        statesetBin2->setAttribute(depth);
-        
-        // set up the mirror geode.
-        osg::Geode* geode = new osg::Geode;
-        geode->addDrawable(mirror);
-        geode->setStateSet(statesetBin2);
-        
-        p_mirrorNode->addChild(geode);
-        
-    }
-
-    // bin3  - draw the reflection.
-    {
-        osg::ClipPlane* clipplane = new osg::ClipPlane;
-        clipplane->setClipPlane(osg::Vec4(0.0f,0.0f,-1.0f,translation.z()));
-        clipplane->setClipPlaneNum(0);
-
-        osg::ClipNode* clipNode = new osg::ClipNode;
-        clipNode->addClipPlane(clipplane);
-
-        osg::StateSet* dstate = clipNode->getOrCreateStateSet();
-        dstate->setRenderBinDetails(3,"RenderBin");
-        dstate->setMode(GL_CULL_FACE,osg::StateAttribute::OVERRIDE|osg::StateAttribute::OFF);
-
-        osg::Stencil* stencil = new osg::Stencil;
-        stencil->setFunction(osg::Stencil::EQUAL,1,~0);
-        stencil->setOperation(osg::Stencil::KEEP, osg::Stencil::KEEP, osg::Stencil::KEEP);
-        dstate->setAttributeAndModes(stencil,osg::StateAttribute::ON);
-
-        osg::MatrixTransform* reverseMatrix = new osg::MatrixTransform;
-        reverseMatrix->setStateSet(dstate);
-        reverseMatrix->preMult(osg::Matrix::translate(-translation.x(),-translation.y(),-translation.z())*
-                     osg::Matrix::scale(1.0f,1.0f,-1.0f)*
-                     osg::Matrix::translate(translation));
-
-        reverseMatrix->addChild( p_node );
-
-        clipNode->addChild(reverseMatrix);
-
-        p_mirrorNode->addChild(clipNode);
-    
-    }
-
-    // bin4  - draw the textured mirror and blend it with the reflection.
-    {
-    
-        // set up depth so all writing to depth goes to maximum depth.
-        osg::Depth* depth = new osg::Depth;
-        depth->setFunction(osg::Depth::LEQUAL);
-
-        osg::Stencil* stencil = new osg::Stencil;
-        stencil->setFunction(osg::Stencil::EQUAL,1,~0);
-        stencil->setOperation(osg::Stencil::KEEP, osg::Stencil::KEEP, osg::Stencil::ZERO);
-
-        // set up the mirror geode with reflection/refraction
-        //-------------------------------------
-        osg::StateSet* statesetBin5 = new osg::StateSet();
-
-        osg::TextureCubeMap* reflectmap = readCubeMap();
-        statesetBin5->setTextureAttributeAndModes( 0, reflectmap, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
-        statesetBin5->setTextureAttributeAndModes( 1, reflectmap, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
-
-        osg::TexMat* texMat = new osg::TexMat;
-        statesetBin5->setTextureAttribute(0, texMat);
-
-        // setup vertex program
-        //! TODO: implementation of a gpu program cache!?
-        static osg::VertexProgram* p_vp = 0;
-        if ( !p_vp )
-        {
-            p_vp = new osg::VertexProgram();
-            p_vp->setVertexProgram( vpstr );
-            p_vp->setProgramLocalParameter( 0, osg::Vec4( _fresnel, _fresnel, _fresnel, 1.0f ) );
-            p_vp->setProgramLocalParameter( 1, osg::Vec4( _refract, _refract * _refract, 0.0f, 0.0f ) );
-        }
-        statesetBin5->setAttributeAndModes( p_vp, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
-
-        osg::TexEnvCombine *te0 = new osg::TexEnvCombine;    
-        te0->setCombine_RGB(osg::TexEnvCombine::REPLACE);
-        te0->setSource0_RGB(osg::TexEnvCombine::TEXTURE0);
-        te0->setOperand0_RGB(osg::TexEnvCombine::SRC_COLOR);
-
-        osg::TexEnvCombine *te1 = new osg::TexEnvCombine;    
-
-        te1->setCombine_RGB(osg::TexEnvCombine::INTERPOLATE);
-        te1->setSource0_RGB(osg::TexEnvCombine::TEXTURE1);
-        te1->setOperand0_RGB(osg::TexEnvCombine::SRC_COLOR);
-        te1->setSource1_RGB(osg::TexEnvCombine::PREVIOUS);
-        te1->setOperand1_RGB(osg::TexEnvCombine::SRC_COLOR);
-        te1->setSource2_RGB(osg::TexEnvCombine::PRIMARY_COLOR);
-        te1->setOperand2_RGB(osg::TexEnvCombine::SRC_COLOR);
-
-        statesetBin5->setTextureAttributeAndModes(0, te0, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
-        statesetBin5->setTextureAttributeAndModes(1, te1, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
-
-        // set up additive blending.
-        osg::BlendFunc* trans = new osg::BlendFunc;
-        //trans->setFunction( osg::BlendFunc::ONE, osg::BlendFunc::ONE );
-        trans->setFunction( osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA );
-
-        statesetBin5->setAttribute( trans );
-        statesetBin5->setMode( GL_BLEND, osg::StateAttribute::ON );      
-        statesetBin5->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
-
-        osg::Geode* geode = new osg::Geode;
-        geode->addDrawable(mirror);
-        geode->setStateSet(statesetBin5);
-
-        statesetBin5->setRenderBinDetails(4,"RenderBin");
-        statesetBin5->setMode(GL_CULL_FACE,osg::StateAttribute::OFF);
-        statesetBin5->setAttributeAndModes(stencil,osg::StateAttribute::ON);
-        statesetBin5->setAttributeAndModes(trans,osg::StateAttribute::ON);
-        statesetBin5->setAttribute(depth);
-
-        osg::Group* group = new osg::Group;
-        group->addChild( geode );
-        group->setCullCallback( new TexMatCallback( *texMat ) );
-        group->setStateSet( statesetBin5 );
-
-        p_mirrorNode->addChild( group );
-    }
-    
-    return p_mirrorNode;
+    return p_group;
 }
 
 void EnWater::updateEntity( float deltaTime )

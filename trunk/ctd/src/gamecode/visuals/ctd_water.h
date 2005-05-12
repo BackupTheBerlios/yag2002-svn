@@ -77,7 +77,7 @@ class EnWater :  public BaseEntity
         //! Subdivisions along Y direction
         int                                         _subDevisionsY;
 
-        //! Walter height (z value)
+        //! Walter' origin
         osg::Vec3f                                  _position;
 
         //! Fluid viscosity
@@ -95,24 +95,27 @@ class EnWater :  public BaseEntity
         //! Reflection cube map textures
         std::string                                 _cubeMapTextures[ 6 ];
 
+    protected:
+
+        // internals
         //--------------------------------------------------------//
+
+        //! Notification call-back
+        void                                        handleNotification( EntityNotification& notify );
 
         //! Given the step width calculate the liquid equation constants
         void                                        calcConstants( float stepWidth );
 
         //! Setup water geom, vertex shader and state sets
-        osg::Node*                                  setupWater( osg::Node* p_node );
+        osg::Node*                                  setupWater();
 
         //! Create the water surface mesh ( grid )
         osg::Geometry*                              makeMesh();
 
         //! Read the six sides of reflection / refraction cube map
         osg::TextureCubeMap*                        readCubeMap();
-
-        //! This is used for cube mapping
-        EyeTransform*                               _p_transformEyePoint;
-           
-        osg::ref_ptr< osg::Geode >                  _geode;
+        
+        osg::ref_ptr< osg::Node >                   _water;
 
         bool                                        _primaryPosBuffer;
 
