@@ -13,9 +13,9 @@
 <icon BUILTIN="button_ok"/>
 </node>
 </node>
-<node TEXT="system notifications">
-<node TEXT="0%">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="notification system">
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 </node>
@@ -29,6 +29,11 @@
 <node TEXT="100%">
 <icon BUILTIN="button_ok"/>
 </node>
+</node>
+</node>
+<node TEXT="entity creation / destruction">
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 </node>
@@ -82,7 +87,7 @@
 </node>
 </node>
 <node TEXT="physics system (Newton)" POSITION="left">
-<node TEXT="support for automatic creation of static map geometry">
+<node TEXT="support for automatic creation of static collision geometry">
 <node TEXT="on-the-fly creation basing on loaded osg file">
 <node TEXT="100%">
 <icon BUILTIN="button_ok"/>
@@ -187,29 +192,29 @@
 </node>
 </node>
 <node TEXT="hud">
-<node TEXT="50%">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="90%">
+<icon BUILTIN="idea"/>
 </node>
 </node>
 <node TEXT="control / logic">
-<node TEXT="25%">
+<node TEXT="40%">
 <icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
 </node>
 <node TEXT="physics objects">
 <node TEXT="cylinder">
-<node TEXT="100%, sound completed">
+<node TEXT="100%">
 <icon BUILTIN="button_ok"/>
 </node>
 </node>
 <node TEXT="box">
-<node TEXT="100%, sound is missing">
+<node TEXT="100%">
 <icon BUILTIN="button_ok"/>
 </node>
 </node>
 <node TEXT="sphere">
-<node TEXT="100%, sound is missing">
+<node TEXT="100%">
 <icon BUILTIN="button_ok"/>
 </node>
 </node>
@@ -254,7 +259,6 @@
 <node TEXT="water">
 <node TEXT="100%">
 <icon BUILTIN="button_ok"/>
-<icon BUILTIN="stop"/>
 </node>
 </node>
 <node TEXT="lights">
@@ -309,13 +313,13 @@
 </node>
 </node>
 <node TEXT="start up gui">
-<node TEXT="0%">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="80%">
+<icon BUILTIN="idea"/>
 </node>
 </node>
 <node TEXT="main menu">
-<node TEXT="30%">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="95%">
+<icon BUILTIN="idea"/>
 </node>
 </node>
 </node>
