@@ -76,10 +76,16 @@ class PlayerInputHandler : public GenericInputHandler< EnPlayer >
                                                 }
                                             }
 
+        void                                setMenuEnabled( bool en )
+                                            {
+                                                _menuEnabled = en;
+                                            }
+
     protected:
 
+        // some internal variables
         bool                                _enabled;
-
+        bool                                _menuEnabled;
         bool                                _right;
         bool                                _left;
         bool                                _moveForward;
@@ -164,8 +170,8 @@ void EnPlayer::handleNotification( EntityNotification& notify )
         case CTD_NOTIFY_MENU_ENTER:
 
             _p_chatGui->show( false );
-            _p_inputHandler->enable( false );
-
+            _p_inputHandler->setMenuEnabled( true );
+            
             // reset player's movements and sound
             _p_playerPhysics->setForce( 0, 0 );
             _p_playerAnimation->animIdle();
@@ -178,18 +184,23 @@ void EnPlayer::handleNotification( EntityNotification& notify )
             break;
 
         case CTD_NOTIFY_MENU_LEAVE:
+        {
+            static bool firstentracne = true;
+            if ( firstentracne )
+            {
+                _p_chatGui->show( true );
+                firstentracne = false;
+            }
 
-            _p_chatGui->show( true );
-            if ( _enabledControl )
-                _p_inputHandler->enable( true );
+            _p_inputHandler->setMenuEnabled( false );
 
             // refresh our configuration settings
             getConfiguration();
  
             // very important: enable the camera when we leave menu!
             _p_camera->setEnable( true );
-            
-            break;
+        }
+        break;
 
         default:
             ;
@@ -377,11 +388,13 @@ void EnPlayer::setCameraPitchYaw( float pitch, float yaw )
 PlayerInputHandler::PlayerInputHandler( EnPlayer* p_player ) : 
 GenericInputHandler< EnPlayer >( p_player ),
 _enabled( true ),
+_menuEnabled( true ),
 _right( false ),
 _left( false ),
 _moveForward( false ),
 _moveBackward( false ),
 _camSwitch( false ),
+_chatSwitch( false ),
 _keyCodeMoveForward( osgGA::GUIEventAdapter::KEY_Up ),
 _keyCodeMoveBackward( osgGA::GUIEventAdapter::KEY_Down ),
 _keyCodeMoveLeft( osgGA::GUIEventAdapter::KEY_Left ),
@@ -398,6 +411,9 @@ PlayerInputHandler::~PlayerInputHandler()
 
 bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
+    // while in menu we skip input processing for player
+    if ( _menuEnabled )
+        return false;
 
     unsigned int eventType   = ea.getEventType();
 
@@ -431,6 +447,9 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
                 _p_userObject->enableControl( s_toggleChatMode );
                 s_toggleChatMode = !s_toggleChatMode;
                 _chatSwitch = true;
+
+                // let the chat control know that we are in edit mode now
+                _p_userObject->_p_chatGui->setEditMode( s_toggleChatMode );
 
                 // stop player and sound
                 _p_userObject->_p_playerAnimation->animIdle();

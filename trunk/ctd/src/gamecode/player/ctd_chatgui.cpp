@@ -39,7 +39,7 @@ namespace CTD
 {
 // layout prefix
 #define CHATLAYOUT_PREFIX   "chatbox_"
-#define FADEIN_TIME         1.0f
+#define FADE_TIME           1.0f
  
 PlayerChatGui::PlayerChatGui() :
 _p_player( NULL ),
@@ -47,11 +47,13 @@ _p_wnd( NULL ),
 _p_frame( NULL ),
 _p_editbox( NULL ),
 _p_messagebox( NULL ),
-_modeEdit( true ),
-_hidden( false ),
-_state( BoxFadeIn ),
+_modeEdit( false ),
+_hidden( true ),
+_state( Idle ),
 _fadeTimer( 0 ),
-_frameAlphaValue( 1.0f )
+_frameAlphaValue( 1.0f ),
+_p_mouseImageWalkMode( NULL ),
+_p_mouseImageEditMode( NULL )
 {
 }
 
@@ -75,6 +77,7 @@ void PlayerChatGui::initialize( EnPlayer* p_player, const string& layoutFile )
         _boxFrameSize = osg::Vec2f( _p_frame->getSize().d_width, _p_frame->getSize().d_height );
         _frameAlphaValue = _p_frame->getAlpha();
         _p_frame->setMinimumSize( CEGUI::Size( 0.1f, 0.08f ) );
+        _p_frame->hide();
     }
     catch ( CEGUI::Exception e )
     {
@@ -94,12 +97,50 @@ void PlayerChatGui::initialize( EnPlayer* p_player, const string& layoutFile )
         _p_messagebox = static_cast< CEGUI::MultiLineEditbox* >( _p_frame->getChild( CHATLAYOUT_PREFIX "eb_messagebox" ) );
         _p_messagebox->setReadOnly( true );
 
+        // setup chat box hide button with ctd specific image set
         _p_btnHide = static_cast< CEGUI::PushButton* >( _p_wnd->getChild( CHATLAYOUT_PREFIX "btn_hidebox" ) );
         _p_btnHide->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( PlayerChatGui::onClickedHide, this ) );
+        _p_btnHide->setStandardImageryEnabled( false );
 
+        CEGUI::Imageset* p_imageSet = NULL;
+        if ( CEGUI::ImagesetManager::getSingleton().isImagesetPresent( "CTDImageSet" ) )
+        {
+            p_imageSet = CEGUI::ImagesetManager::getSingleton().getImageset( "CTDImageSet" );
+        }
+        else
+        {
+            p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( "gui/imagesets/CTDImageSet.imageset" );
+        }
+
+        // set editbox unhide button images
+        CEGUI::Image* p_image = &const_cast< CEGUI::Image& >( p_imageSet->getImage( "HandNormal" ) );
+        CEGUI::RenderableImage* p_rendImage = new CEGUI::RenderableImage;
+        p_rendImage->setImage( p_image );
+        _p_btnHide->setPushedImage( p_rendImage );
+        _p_btnHide->setNormalImage( p_rendImage );
+        delete p_rendImage;
+
+        p_image = &const_cast< CEGUI::Image& >( p_imageSet->getImage( "HandHoover" ) );
+        p_rendImage = new CEGUI::RenderableImage;
+        p_rendImage->setImage( p_image );
+        _p_btnHide->setHoverImage( p_rendImage );
+        delete p_rendImage;
+
+        // setup mode button
         _p_btnMode = static_cast< CEGUI::PushButton* >( _p_wnd->getChild( CHATLAYOUT_PREFIX "btn_mode" ) );
-        _p_btnMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( PlayerChatGui::onClickedMode, this ) );
+        // we begin walkmode enabled
+        _p_btnMode->disable();
+        _p_btnMode->setStandardImageryEnabled( false );
+        p_image = &const_cast< CEGUI::Image& >( p_imageSet->getImage( "FootNormal" ) );
+        p_rendImage = new CEGUI::RenderableImage;
+        p_rendImage->setImage( p_image );
+        _p_btnMode->setDisabledImage( p_rendImage );
+        delete p_rendImage;
 
+        // get the edit / walk pointer images
+        _p_mouseImageWalkMode = &const_cast< CEGUI::Image& >( p_imageSet->getImage( "Crosshair" ) );
+        assert( _p_mouseImageWalkMode && " missing image Crosshair in CTDExtras image set!" );
+        _p_mouseImageEditMode = const_cast< CEGUI::Image* >( CEGUI::System::getSingleton().getDefaultMouseCursor() );
     }
     catch ( CEGUI::Exception e )
     {
@@ -107,6 +148,10 @@ void PlayerChatGui::initialize( EnPlayer* p_player, const string& layoutFile )
         log << "   reason: " << e.getMessage().c_str() << endl;
         return;
     }
+
+    // we begin with walk mode, set the walk mouse pointer image
+    CEGUI::System::getSingleton().setDefaultMouseCursor( _p_mouseImageWalkMode );
+    setEditMode( false );
 }
 
 void PlayerChatGui::update( float deltaTime )
@@ -120,28 +165,31 @@ void PlayerChatGui::update( float deltaTime )
         case BoxFadeIn:
         {
             _p_frame->show();
-            if ( _fadeTimer > FADEIN_TIME )
+            if ( _fadeTimer > FADE_TIME )
             {
                 _fadeTimer = 0;
                 // restore the initial size
                 CEGUI::Size size( _boxFrameSize.x(), _boxFrameSize.y() ); 
                 _p_frame->setAlpha( _frameAlphaValue );
                 _p_frame->setSize( size );
+                _p_btnHide->hide();
                 _state = Idle;
                 break;
             }
             _fadeTimer += deltaTime;
             // fade in the box
-            float fadefac = _fadeTimer / FADEIN_TIME;
+            float fadefac = _fadeTimer / FADE_TIME;
             CEGUI::Size size( _boxFrameSize.x() * fadefac, _boxFrameSize.y() * fadefac ); 
             _p_frame->setSize( size );
             _p_frame->setAlpha( fadefac * _frameAlphaValue );
+            _p_btnHide->setAlpha( ( 1.0f - ( _fadeTimer / FADE_TIME ) ) * _frameAlphaValue );
         }
         break;
 
         case BoxFadeOut:
         {
-            if ( _fadeTimer > FADEIN_TIME )
+            _p_btnHide->show();
+            if ( _fadeTimer > FADE_TIME )
             {
                 _fadeTimer = 0;
                 // set size to zero
@@ -153,10 +201,11 @@ void PlayerChatGui::update( float deltaTime )
             }
             _fadeTimer += deltaTime;
             // fade in the box
-            float fadefac = 1.0f - ( _fadeTimer / FADEIN_TIME );
+            float fadefac = 1.0f - ( _fadeTimer / FADE_TIME );
             CEGUI::Size size( _boxFrameSize.x() * fadefac, _boxFrameSize.y() * fadefac ); 
             _p_frame->setSize( size );
             _p_frame->setAlpha( fadefac * _frameAlphaValue );
+            _p_btnHide->setAlpha( ( _fadeTimer / FADE_TIME ) * _frameAlphaValue );
         }
         break;
 
@@ -223,13 +272,23 @@ bool PlayerChatGui::onClickedHide( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool PlayerChatGui::onClickedMode( const CEGUI::EventArgs& arg )
+void PlayerChatGui::setEditMode( bool edit )
 {
-    // enable / disable player control
-    _p_player->enableControl( !_modeEdit );
-    _modeEdit = !_modeEdit;
+    if ( edit )
+    {
+        _p_btnMode->hide();
+        CEGUI::MouseCursor::getSingleton().setImage( _p_mouseImageEditMode );
+        GuiManager::get()->releasePointer();
+    }
+    else
+    {
+        _p_btnMode->show();
+        CEGUI::MouseCursor::getSingleton().setImage( _p_mouseImageWalkMode );
+        // in walk mode we fix the pointer (crosshair) in the middle of screen
+        GuiManager::get()->lockPointer( 0.0f, 0.0f );
+    }
 
-   return true;
+    _modeEdit = edit;
 }
 
 } // namespace CTD

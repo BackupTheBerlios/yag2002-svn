@@ -57,6 +57,9 @@ class PlayerChatGui
         //! Shows / hides the gui completely
         void                                        show( bool visible );
 
+        //! Set edit / walk mode
+        void                                        setEditMode( bool edit );
+
     protected:
 
         //! Callback for chat frame window close button
@@ -67,9 +70,6 @@ class PlayerChatGui
 
         //! Callback for button 'hide'
         bool                                        onClickedHide( const CEGUI::EventArgs& arg );
-
-        //! Callback for button 'mode'
-        bool                                        onClickedMode( const CEGUI::EventArgs& arg );
 
         //! Add new message into message box, author will be places at begin of message
         void                                        addMessage( const CEGUI::String& msg, const CEGUI::String& author );
@@ -95,6 +95,10 @@ class PlayerChatGui
         CEGUI::Editbox*                             _p_editbox;
 
         CEGUI::MultiLineEditbox*                    _p_messagebox;
+
+        CEGUI::Image*                               _p_mouseImageWalkMode;
+
+        CEGUI::Image*                               _p_mouseImageEditMode;
 
         bool                                        _hidden;
 
