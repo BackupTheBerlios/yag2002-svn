@@ -152,7 +152,10 @@ void IntroControl::stop()
 
     // append the intro window to root
     GuiManager::get()->getRootWindow()->removeChildWindow( _p_wndIntro );
-    _p_clickSound->startPlaying();
+
+    if ( _p_clickSound )
+        _p_clickSound->startPlaying();
+
     _introState = Stopped;
 
     GuiManager::get()->showMousePointer( true ); // let the mouse appear 
