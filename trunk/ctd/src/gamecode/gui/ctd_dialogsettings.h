@@ -137,14 +137,14 @@ class DialogGameSettings
         //! Internal method for delayed destruction of move buttons' input sensor
         void                                        enqueueInputHandlerDestruction( BtnInputHandler* p_handler );
 
+        //  internal variables
+
         //! Destruction queue
         std::vector< BtnInputHandler* >             _inputHandlerDestructionQueue;
 
         //! Busy flag ( see method onClickedOk for more details )
         bool                                        _busy;
     
-        //  internal variables
-
         CEGUI::Window*                              _p_parent;
 
         EnAmbientSound*                             _p_clickSound;

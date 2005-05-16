@@ -82,6 +82,9 @@ bool DialogGameSettings::initialize( const string& layoutfile, CEGUI::Window* p_
 
     try
     {
+        // setup dialog
+        _p_settingsDialog->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedCancel, this ) );
+
         // setup ok button
         CEGUI::PushButton* p_btnok = static_cast< CEGUI::PushButton* >( _p_settingsDialog->getChild( SDLG_PREFIX "btn_ok" ) );
         p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedOk, this ) );
