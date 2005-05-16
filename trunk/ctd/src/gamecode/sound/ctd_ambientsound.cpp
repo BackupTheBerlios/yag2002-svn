@@ -114,9 +114,6 @@ void EnAmbientSound::initialize()
 
     _soundState->apply();
 
-    // Add the soundstate to the sound manager, so we can find it later on if we want to
-//    osgAL::SoundManager::instance()->addSoundState( _soundState.get() );
-
     // Create a sound node and attach the soundstate to it.
     _p_soundNode = new osgAL::SoundNode;
     _p_soundNode->setSoundState( _soundState.get() );
