@@ -88,6 +88,15 @@ class GuiManager : public Singleton< GuiManager >
         //! Show / hide mouse pointer
         void                                    showMousePointer( bool show );
 
+        //! Lock the mouse to given x and y position. The mouse movement handling will be disabled for pointer positioning.
+        /*!
+         * x and x must be in range [ -1 ... 1 ]
+         */
+        void                                    lockPointer( float x, float y );
+
+        //! Enable the mouse handling evaluating mouse movement.
+        void                                    releasePointer();
+
     protected:
 
                                                 GuiManager();
@@ -150,6 +159,9 @@ class GuiManager : public Singleton< GuiManager >
         //! Is gui rendering active?
         bool                                    _active;
 
+        //! Disable the mouse positioning
+        bool                                    _lockMouse;
+                                         
     friend class Singleton< GuiManager >;
     friend class GuiRenderCallback;
     friend class GuiViewerRealizeCallback;

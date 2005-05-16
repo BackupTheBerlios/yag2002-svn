@@ -132,7 +132,8 @@ _p_mouseImg( NULL ),
 _windowWidth( 600 ),
 _windowHeight( 400 ),
 _p_root( NULL ),
-_active( true )
+_active( true ),
+_lockMouse( false )
 {
 }
 
@@ -233,6 +234,21 @@ void GuiManager::showMousePointer( bool show )
         MouseCursor::getSingleton().show();
     else
         MouseCursor::getSingleton().hide();
+}
+
+void GuiManager::lockPointer( float x, float y )
+{
+    _lockMouse = true;
+    // set the fix position
+    // we need absolute mouse coords for CEGUI
+    x = ( 0.5f * x + 0.5f ) * _windowWidth;
+    y = ( 0.5f * y + 0.5f ) * _windowHeight;
+    CEGUI::System::getSingleton().injectMousePosition( x, y );
+}
+
+void GuiManager::releasePointer()
+{
+    _lockMouse = false;
 }
 
 CEGUI::Window* GuiManager::loadLayout( const string& filename, CEGUI::Window* p_parent, const string& handle )
@@ -438,17 +454,19 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
         }
     }
 
-    // adjust the pointer position
-    float x = ea.getX();
-    float y = -ea.getY();
-    // we need absolute mouse coords in range [ 0..1 ] for CEGUI
-    x = ( 0.5f * x + 0.5f ) * _p_guiMgr->_windowWidth;
-    y = ( 0.5f * y + 0.5f ) * _p_guiMgr->_windowHeight;
-    CEGUI::System::getSingleton().injectMousePosition( x, y );
+    if ( !_p_guiMgr->_lockMouse )
+    {
 
-    //!TODO: mouse scroll handling, do we need it!?
-  
-     return false;
+        // adjust the pointer position
+        float x = ea.getX();
+        float y = -ea.getY();
+        // we need absolute mouse coords for CEGUI
+        x = ( 0.5f * x + 0.5f ) * _p_guiMgr->_windowWidth;
+        y = ( 0.5f * y + 0.5f ) * _p_guiMgr->_windowHeight;
+        CEGUI::System::getSingleton().injectMousePosition( x, y );
+    }
+
+    return false;
 }
 
 }
