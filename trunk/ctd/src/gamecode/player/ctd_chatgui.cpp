@@ -218,9 +218,18 @@ void PlayerChatGui::update( float deltaTime )
 void PlayerChatGui::show( bool visible )
 {
     if ( visible )
+    {
         _p_wnd->show();
+    }
     else
+    {
         _p_wnd->hide();
+        // restore mouse pointer image
+        CEGUI::MouseCursor::getSingleton().setImage( _p_mouseImageEditMode );
+        CEGUI::System::getSingleton().setDefaultMouseCursor( _p_mouseImageEditMode );
+        // release the pointer handling for the case that it was locked by this gui
+        GuiManager::get()->releasePointer();
+    }
 }
 
 void PlayerChatGui::addMessage( const CEGUI::String& msg, const CEGUI::String& author )
