@@ -87,6 +87,11 @@ class EnPlayerPhysics : public BaseEntity
         void                                        setForce( float x, float y );
 
         /**
+        * Stop movement
+        */
+        void                                        stopMovement();
+
+        /**
         * Get angular force, it's used by EnPlayer to update rotation about up axis
         */
         float                                       getAngularForce();
@@ -207,6 +212,17 @@ inline void EnPlayerPhysics::setForce( float x, float y )
 {
     _force._v[ 0 ] = x * _linearForce;
     _force._v[ 1 ] = y * _linearForce;
+}
+
+inline void EnPlayerPhysics::stopMovement()
+{
+    // the factor 2.5 is determined by trying
+    osg::Vec3f stopforce( -_force * ( 2.5 / _linearForce ) ); 
+    stopforce._v[ 2 ] = 0;
+    osg::Vec3f pos( _matrix.getTrans() );
+    NewtonAddBodyImpulse( _p_body, &stopforce._v[ 0 ], &pos._v[ 0 ] );
+    _force._v[ 0 ] = 0;
+    _force._v[ 1 ] = 0;
 }
 
 inline float EnPlayerPhysics::getAngularForce()
