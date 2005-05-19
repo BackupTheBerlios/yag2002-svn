@@ -119,23 +119,23 @@ _moveDir( Vec3f( 0, 1, 0 ) ),
 _p_inputHandler( NULL ),
 _chatGuiConfig( "gui/chat.xml" ),
 _p_camera( NULL ),
-_cameraMode( Isometric ),
+_cameraMode( Spheric ),
 _enabledControl( true )
 {
     EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
     EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 
-    getAttributeManager().addAttribute( "name"                  , _playerName           );
-    getAttributeManager().addAttribute( "physicsentity"         , _physicsEntity        );
-    getAttributeManager().addAttribute( "animationentity"       , _animationEntity      );
-    getAttributeManager().addAttribute( "soundentity"           , _soundEntity          );
-    getAttributeManager().addAttribute( "position"              , _position             );
-    getAttributeManager().addAttribute( "rotation"              , _rot                  );
-    getAttributeManager().addAttribute( "cameraPosOffsetIso"    , _camPosOffsetIso      );
-    getAttributeManager().addAttribute( "cameraRotOffsetIso"    , _camRotOffsetIso      );
-    getAttributeManager().addAttribute( "cameraPosOffsetEgo"    , _camPosOffsetEgo      );
-    getAttributeManager().addAttribute( "cameraRotOffsetEgo"    , _camRotOffsetEgo      );
-    getAttributeManager().addAttribute( "chatGuiConfig"         , _chatGuiConfig        );
+    getAttributeManager().addAttribute( "name"                      , _playerName           );
+    getAttributeManager().addAttribute( "physicsentity"             , _physicsEntity        );
+    getAttributeManager().addAttribute( "animationentity"           , _animationEntity      );
+    getAttributeManager().addAttribute( "soundentity"               , _soundEntity          );
+    getAttributeManager().addAttribute( "position"                  , _position             );
+    getAttributeManager().addAttribute( "rotation"                  , _rot                  );
+    getAttributeManager().addAttribute( "cameraPosOffsetSpheric"    , _camPosOffsetSpheric  );
+    getAttributeManager().addAttribute( "cameraRotOffsetSpheric"    , _camRotOffsetSpheric  );
+    getAttributeManager().addAttribute( "cameraPosOffsetEgo"        , _camPosOffsetEgo      );
+    getAttributeManager().addAttribute( "cameraRotOffsetEgo"        , _camRotOffsetEgo      );
+    getAttributeManager().addAttribute( "chatGuiConfig"             , _chatGuiConfig        );
 
     // create a new input handler for this player
     _p_inputHandler = new PlayerInputHandler( this );
@@ -172,8 +172,8 @@ void EnPlayer::handleNotification( EntityNotification& notify )
             _p_chatGui->show( false );
             _p_inputHandler->setMenuEnabled( true );
             
-            // reset player's movements and sound
-            _p_playerPhysics->setForce( 0, 0 );
+            // reset player's movement and sound
+            _p_playerPhysics->stopMovement();
             _p_playerAnimation->animIdle();
             if ( _p_playerSound )
                 _p_playerSound->stopPlayingAll();
@@ -216,6 +216,7 @@ void EnPlayer::enableControl( bool en )
 void EnPlayer::initialize()
 {    
     _p_chatGui->initialize( this, _chatGuiConfig );
+    _p_inputHandler->setMenuEnabled( false );
 }
 
 void EnPlayer::postInitialize()
@@ -307,14 +308,14 @@ void EnPlayer::setCameraMode( unsigned int mode )
 {
     switch ( mode )
     {
-        case Isometric:
+        case Spheric:
         {
-            _p_camera->setCameraOffsetPosition( _camPosOffsetIso );
+            _p_camera->setCameraOffsetPosition( _camPosOffsetSpheric );
             osg::Quat rot;
             rot.makeRotate( 
-                osg::DegreesToRadians( _camRotOffsetIso.x()  ), osg::Vec3f( 0, 1, 0 ), // roll
-                osg::DegreesToRadians( _camRotOffsetIso.y()  ), osg::Vec3f( 1, 0, 0 ), // pitch
-                osg::DegreesToRadians( _camRotOffsetIso.z()  ), osg::Vec3f( 0, 0, 1 )  // yaw
+                osg::DegreesToRadians( _camRotOffsetSpheric.x()  ), osg::Vec3f( 0, 1, 0 ), // roll
+                osg::DegreesToRadians( _camRotOffsetSpheric.y()  ), osg::Vec3f( 1, 0, 0 ), // pitch
+                osg::DegreesToRadians( _camRotOffsetSpheric.z()  ), osg::Vec3f( 0, 0, 1 )  // yaw
                 );
             _p_camera->setCameraOffsetRotation( rot );
             _p_playerAnimation->enableRendering( true );
@@ -344,10 +345,10 @@ void EnPlayer::setCameraMode( unsigned int mode )
 
 void EnPlayer::setNextCameraMode()
 {
-    if ( _cameraMode == Isometric )
+    if ( _cameraMode == Spheric )
         setCameraMode( Ego );
     else
-        setCameraMode( Isometric );
+        setCameraMode( Spheric );
 }
 
 void EnPlayer::setCameraPitchYaw( float pitch, float yaw )
@@ -355,7 +356,7 @@ void EnPlayer::setCameraPitchYaw( float pitch, float yaw )
 #define LIMIT_PITCH_ANGLE   120.0f
 #define LIMIT_PITCH_OFFSET  -20.0f;
 
-    if ( _cameraMode == Isometric )
+    if ( _cameraMode == Spheric )
     {
         float angleY = yaw * 360.0f;
         float angleX = ( pitch * LIMIT_PITCH_ANGLE ) + LIMIT_PITCH_OFFSET;
@@ -417,9 +418,6 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
 
     unsigned int eventType   = ea.getEventType();
 
-    if ( eventType == osgGA::GUIEventAdapter::FRAME )
-        return false;
-
     int          kcode      = ea.getKey();
     unsigned int mouseBtn   = ea.getButton();    
     bool keyDown            = ( eventType == osgGA::GUIEventAdapter::KEYDOWN );
@@ -454,7 +452,7 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
                 // stop player and sound
                 _p_userObject->_p_playerAnimation->animIdle();
                 _p_userObject->getPlayerSound()->stopPlayingAll();
-                _p_userObject->_p_playerPhysics->setForce( 0, 0 );
+                _p_userObject->_p_playerPhysics->stopMovement();            
             }
         }
     }
@@ -514,7 +512,7 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             if ( key == _keyCodeMoveBackward )
                 _moveBackward = false;
 
-            _p_userObject->_p_playerPhysics->setForce( 0, 0 );
+            _p_userObject->_p_playerPhysics->stopMovement();
         }
 
         if ( ( key == _keyCodeMoveRight ) || ( key == _keyCodeMoveLeft ) )
@@ -527,7 +525,7 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
                 _left = false;
 
             if ( _p_userObject->_cameraMode == EnPlayer::Ego )
-                _p_userObject->_p_playerPhysics->setForce( 0, 0 );
+                _p_userObject->_p_playerPhysics->stopMovement();
         }
     }
     //--------
@@ -537,7 +535,7 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
     {
         switch ( _p_userObject->_cameraMode )
         {
-            case EnPlayer::Isometric:
+            case EnPlayer::Spheric:
             {
                 _p_userObject->_rot -= _p_userObject->_p_playerPhysics->getAngularForce();
                 if ( _p_userObject->_rot > PI * 2.0f )
@@ -570,7 +568,7 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
     {
         switch ( _p_userObject->_cameraMode )
         {
-            case EnPlayer::Isometric:
+            case EnPlayer::Spheric:
             {
                 if ( _p_userObject->_rot < 0 )
                     _p_userObject->_rot -= PI * 2.0f;
@@ -611,36 +609,54 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
         _p_userObject->_p_playerAnimation->animWalk();
     }
 
-    static bool soundStopped = false;
-    if ( !_moveForward && !_moveBackward )
+    // handle stopping movement
     {
-        if ( !_left && !_right )
-            _p_userObject->_p_playerAnimation->animIdle();
+        typedef enum { Idle, Stopped } MovementStates;
+        static MovementStates s_states = Idle;
+        switch ( s_states )
+        {
+            case Idle:
+            {
+                if ( !_moveForward && !_moveBackward )
+                    s_states = Stopped;
 
-        // avoid stopping permanently the sound, one is enought
-        if ( !soundStopped && _p_userObject->getPlayerSound() )
-            _p_userObject->getPlayerSound()->stopPlayingAll();
+            }
+            break;
 
-        soundStopped = true;
+            case Stopped:
+            {
+                if ( !_left && !_right )
+                    _p_userObject->_p_playerAnimation->animIdle();
+
+                _p_userObject->_p_playerPhysics->stopMovement();
+
+               if ( _p_userObject->getPlayerSound() )
+                    _p_userObject->getPlayerSound()->stopPlayingAll();
+
+                if ( _moveForward || _moveBackward )
+                    s_states = Idle;
+            }
+            break;
+
+            default:
+                assert( NULL && "invalid movement state in player's input handler" );
+
+        }
     }
-    else
-    {
-        soundStopped = false;
-    }
 
-    // handle mouse wheel changes
-    if ( _p_userObject->_cameraMode == EnPlayer::Isometric )
+    // handle mouse wheel changes for camera offsetting in spheric mode
+    if ( _p_userObject->_cameraMode == EnPlayer::Spheric )
     {
         if ( eventType == osgGA::GUIEventAdapter::SCROLLUP )
         {
-            _p_userObject->_camPosOffsetIso._v[ 1 ] += 0.5f;
-            _p_userObject->_p_camera->setCameraOffsetPosition( _p_userObject->_camPosOffsetIso );
+            _p_userObject->_camPosOffsetSpheric._v[ 1 ] += 0.5f;
+            _p_userObject->_p_camera->setCameraOffsetPosition( _p_userObject->_camPosOffsetSpheric );
         }
         else if ( eventType == osgGA::GUIEventAdapter::SCROLLDOWN )
         {
-            float& dist = _p_userObject->_camPosOffsetIso._v[ 1 ];
+            float& dist = _p_userObject->_camPosOffsetSpheric._v[ 1 ];
             dist = std::min( 0.0f, dist - 0.5f );
-            _p_userObject->_p_camera->setCameraOffsetPosition( _p_userObject->_camPosOffsetIso );
+            _p_userObject->_p_camera->setCameraOffsetPosition( _p_userObject->_camPosOffsetSpheric );
         }
     }
 

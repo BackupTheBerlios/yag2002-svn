@@ -35,7 +35,6 @@
 #include "ctd_player.h"
 
 using namespace osg;
-using namespace osgCal;
 using namespace std;
 
 
@@ -98,7 +97,7 @@ void EnPlayerAnimation::initialize()
         log << Log::LogLevel( Log::L_ERROR ) << "*** missing animation config file parameter" << endl;
         return;
     }
-
+    
     // look up the model cache first
     std::map< std::string, osgCal::Model* >::iterator p_model;
     p_model = s_modelCache.find( _animCfgFile );
@@ -129,41 +128,14 @@ void EnPlayerAnimation::initialize()
     string configfilename = extractFileName( file );
     // all textures and cal3d files must be in root dir!
     if ( !setupAnimation( rootDir, configfilename ) )
-    {
         return;
-    }
-
-    if( !_model->setCoreModel( _coreModel.get() ) )
-    {
-        log << Log::LogLevel( Log::L_ERROR ) << "***  cannot set core model " << endl;
-        return;
-    }
-
-    // attach all meshes into model
-    for( int coreMeshId = 0; coreMeshId < _model->getCalCoreModel()->getCoreMeshCount(); coreMeshId++ )
-        _model->getCalModel()->attachMesh( coreMeshId );
-
-    // set the material set of the whole model
-    _model->getCalModel()->setMaterialSet( 0 );
-
-    // try to enable hw blending
-    _model->setUseVertexProgram( true );
-    //------------------------------------------
-    if ( !_model->getUseVertexProgram() )
-        log << Log::LogLevel( Log::L_WARNING ) << " cannot use hardware (gpu) for blending, using software blending instead." << endl;
-
-    // creating a concrete model using the core template
-    if( !_model->create() ) 
-    {
-        log << Log::LogLevel( Log::L_ERROR ) << "***  cannot create model: " << CalError::getLastErrorDescription() << endl;
-        return;
-    }
 
     // set initial animation
-    _model->getCalModel()->getMixer()->blendCycle( _IdAnimIdle, 1.0f, 0.0f );
+    _model->loop( _IdAnimIdle, 1.0f, 0.0f );
+    _anim = eIdle;
 
     // scale the model
-    _p_calCoreModel->scale( _scale );
+    _coreModel->get()->scale( _scale );
 
     // create a transform node in order to set position and rotation offsets
     _animNode = new PositionAttitudeTransform;
@@ -226,11 +198,15 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
         return false;
     }
 
+
+    // set cal3d's texture coord loading mode
+    CalLoader::setLoadingMode( LOADER_INVERT_V_COORD | LOADER_ROTATE_X_AXIS );
+
     // create a core model instance
     string modelname = "character_" + configfilename;
-    _model = new Model();
-    _coreModel = new CoreModel();
-    _p_calCoreModel = _coreModel->getCalCoreModel();
+    _coreModel = new osgCal::CoreModel( modelname );
+    CalCoreModel* p_calCoreModel = _coreModel->get();
+
     // parse all lines from the model configuration file
     int line;
     for( line = 1; ; line++ )
@@ -287,17 +263,17 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
         // handle the model creation
         if( strKey == "skeleton" )
         {
-            if ( !_p_calCoreModel->loadCoreSkeleton( destFileName ) )
+            if ( !p_calCoreModel->loadCoreSkeleton( destFileName ) )
                 log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading skeleton: " << destFileName << endl;                      
         }
         else if( strKey == "mesh" )
         {
-            if ( _p_calCoreModel->loadCoreMesh( destFileName ) < 0 )
+            if ( p_calCoreModel->loadCoreMesh( destFileName ) < 0 )
                 log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading mesh: " << destFileName << endl;                      
         }
         else if( strKey == "material" )
         {
-            int materialId = _p_calCoreModel->loadCoreMaterial( destFileName );
+            int materialId = p_calCoreModel->loadCoreMaterial( destFileName );
             if( materialId < 0 ) 
             {                
                 log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading material: " << destFileName;                      
@@ -305,15 +281,15 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
             } 
             else 
             {
-                _p_calCoreModel->createCoreMaterialThread( materialId ); 
-                _p_calCoreModel->setCoreMaterialId(materialId, 0, materialId);
+                p_calCoreModel->createCoreMaterialThread( materialId );
+                p_calCoreModel->setCoreMaterialId( materialId, 0, materialId );
 
-                CalCoreMaterial* p_material = _p_calCoreModel->getCoreMaterial( materialId );
+                CalCoreMaterial* p_material = p_calCoreModel->getCoreMaterial( materialId );
                 // the texture file path is relative to the CRF data directory
                 for( vector<CalCoreMaterial::Map>::iterator beg = p_material->getVectorMap().begin(), 
                     end = p_material->getVectorMap().end(); beg != end; beg++ )
                 {
-                    beg->strFilename = rootDir + "/" + beg->strFilename;
+                    beg->strFilename = beg->strFilename;
                 }
 
             }
@@ -323,36 +299,36 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
         // read animation ids
         else if( strKey == "animation_idle" )
         {
-            _IdAnimIdle = _p_calCoreModel->loadCoreAnimation( destFileName );
+            _IdAnimIdle = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimIdle < 0 )
                 log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << endl; 
         }
         else if( strKey == "animation_walk" )
         {
-            _IdAnimWalk = _p_calCoreModel->loadCoreAnimation( destFileName );
+            _IdAnimWalk = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimWalk < 0 )
                 log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << endl; 
         }
         else if( strKey == "animation_run" )
         {
-            _IdAnimRun = _p_calCoreModel->loadCoreAnimation( destFileName );
+            _IdAnimRun = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimRun < 0 )
                 log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << endl; 
         }
         else if( strKey == "animation_turn" )
         {
-            _IdAnimTrun = _p_calCoreModel->loadCoreAnimation( destFileName );
+            _IdAnimTrun = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimTrun < 0 )
                 log << Log::LogLevel( Log::L_ERROR ) << "***  line"  << line << ", problem loading animation: " << destFileName << endl; 
         }
         else if( strKey == "animation_jump" )
         {
-            _IdAnimJump = _p_calCoreModel->loadCoreAnimation( destFileName );
+            _IdAnimJump = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimJump < 0 )
                 log << Log::LogLevel( Log::L_ERROR ) << "***  line"  << line << ", problem loading animation: " << destFileName << endl; 
         }        else if( strKey == "animation_landing" )
         {
-            _IdAnimLand = _p_calCoreModel->loadCoreAnimation( destFileName );
+            _IdAnimLand = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimLand < 0 )
                 log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << endl; 
         }
@@ -375,6 +351,14 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
         }
     }
     file.close();
+
+    // now load all textures, before creating the model below
+    _coreModel->loadAllTextures( rootDir );
+
+    // create the model
+    _model = new osgCal::Model();
+    _model->create( _coreModel.get() );
+    
     return true;
 }
 
@@ -384,9 +368,9 @@ void EnPlayerAnimation::animIdle()
     if ( _anim == eIdle )
         return;
 
-    _model->getCalModel()->getMixer()->blendCycle( _IdAnimIdle, 1.0f, 0.5f );
-    _model->getCalModel()->getMixer()->clearCycle( _IdAnimWalk, 0.5f );
-    _model->getCalModel()->getMixer()->clearCycle( _IdAnimTrun, 0.5f );
+    _model->loop( _IdAnimIdle, 1.0f, 0.5f );
+    _model->stop( _IdAnimWalk, 0.4f );
+    _model->stop( _IdAnimTrun, 0.4f );
     _anim = eIdle;
 }
 
@@ -395,9 +379,9 @@ void EnPlayerAnimation::animWalk()
     if ( _anim == eWalk )
         return;
 
-    _model->getCalModel()->getMixer()->blendCycle( _IdAnimWalk, 1.0f, 0.5f );
-    _model->getCalModel()->getMixer()->clearCycle( _IdAnimIdle, 0.5f );
-    _model->getCalModel()->getMixer()->clearCycle( _IdAnimTrun, 0.0f );
+    _model->loop( _IdAnimWalk, 1.0f, 0.5f );
+    _model->stop( _IdAnimIdle, 0.5f );
+    _model->stop( _IdAnimTrun, 0.0f );
     _anim = eWalk;
 }
 
@@ -406,7 +390,7 @@ void EnPlayerAnimation::animJump()
     if ( _anim == eJump )
         return;
 
-    _model->getCalModel()->getMixer()->executeAction( _IdAnimJump, 0.0f, 0.0f, 0.4f );
+    _model->action( _IdAnimJump, 0.0f, 0.4f );
     _anim = eJump;
 }
 
@@ -415,7 +399,7 @@ void EnPlayerAnimation::animTurn()
     if ( _anim == eTurn )
         return;
 
-    _model->getCalModel()->getMixer()->blendCycle( _IdAnimTrun, 1.0f, 0.0f );
+    _model->loop( _IdAnimTrun, 1.0f, 0.0f );
     _anim = eTurn;
 }
 } // namespace CTD

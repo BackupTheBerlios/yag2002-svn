@@ -125,8 +125,6 @@ class EnPlayerAnimation  : public BaseEntity
 
         osg::ref_ptr< osgCal::CoreModel >           _coreModel;
 
-        CalCoreModel*                               _p_calCoreModel;
-
         osg::ref_ptr< osg::PositionAttitudeTransform > _animNode;
 
         bool                                        _renderingEnabled;

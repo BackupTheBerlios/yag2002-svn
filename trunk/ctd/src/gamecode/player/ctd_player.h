@@ -93,7 +93,7 @@ class EnPlayer : public BaseEntity
         //! Set player's rotation. It is used by physics.
         inline void                                 setPlayerRotation( const osg::Quat& rot );
 
-        //! Set camera mode to Isometric or Ego
+        //! Set camera mode to Spheric or Ego
         void                                        setCameraMode( unsigned int mode );
 
         //! Set next camera mode
@@ -125,11 +125,11 @@ class EnPlayer : public BaseEntity
         //! Rotation
         osg::Quat                                   _rotation;
 
-        //! Camera's position offset for isometric mode
-        osg::Vec3f                                  _camPosOffsetIso;
+        //! Camera's position offset for spheric mode
+        osg::Vec3f                                  _camPosOffsetSpheric;
 
-        //! Camera's rotation offset for isometric mode ( roll/pitch/yaw in degrees )
-        osg::Vec3f                                  _camRotOffsetIso;
+        //! Camera's rotation offset for spheric mode ( roll/pitch/yaw in degrees )
+        osg::Vec3f                                  _camRotOffsetSpheric;
 
         //! Camera's position offset for ego mode
         osg::Vec3f                                  _camPosOffsetEgo;
@@ -156,7 +156,7 @@ class EnPlayer : public BaseEntity
         enum CameraMode
         {
             Ego,
-            Isometric
+            Spheric
         }                                           _cameraMode;
 
         //! Enable / disable input processing
