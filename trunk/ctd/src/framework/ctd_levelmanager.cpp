@@ -456,7 +456,7 @@ void LevelManager::initializeFirstTime()
     // note: after initialization of gui system the viewer must be realized (in order to get gui's renderer
     //  initialized) before the entities are initialized
     // use single-threading (entity specific gl commands need it)
-    Application::get()->getViewer()->realize( osgProducer::Viewer::ThreadingModel::SingleThreaded ); 
+    Application::get()->getViewer()->realize( Producer::CameraGroup::ThreadingModel::SingleThreaded ); 
     Application::get()->getViewer()->sync();
 }
 
