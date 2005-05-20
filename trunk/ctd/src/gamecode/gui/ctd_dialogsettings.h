@@ -130,6 +130,12 @@ class DialogGameSettings
         //! Dialog callback for chat mode button        
         bool                                        onClickedChatMode( const CEGUI::EventArgs& arg );
 
+        //! Dialog callback for fullscreen checkbox        
+        bool                                        onFullscreenChanged( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for windowed screen checkbox        
+        bool                                        onWindowedScreenChanged( const CEGUI::EventArgs& arg );
+
         //! This method is used for sensing keybinding by the mean of a little messagebox
         void                                        senseKeybinding( CEGUI::PushButton* p_btn );
         //---------
@@ -184,6 +190,12 @@ class DialogGameSettings
         CEGUI::Checkbox*                            _p_keyKeybEnglish;
 
         CEGUI::Checkbox*                            _p_keyKeybGerman;
+
+        CEGUI::Combobox*                            _p_resolution;
+
+        CEGUI::Checkbox*                            _p_fullscreen;
+
+        CEGUI::Checkbox*                            _p_wndscreen;
 
         //! Lookup for current key bindings, it is used for detecting an overriding key binding
         std::vector< std::pair< std::string, CEGUI::PushButton* > > _keyBindingLookup;
