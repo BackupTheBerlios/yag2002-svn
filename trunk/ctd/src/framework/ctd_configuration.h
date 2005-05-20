@@ -55,6 +55,8 @@ namespace CTD
 // screen
 #define CTD_GS_SCREENWIDTH              "screenWidth"
 #define CTD_GS_SCREENHEIGHT             "screenHeight"
+#define CTD_GS_FULLSCREEN               "fullScreen"
+
 // gui
 #define CTD_GS_GUISCHEME                "guiScheme"
 // player
@@ -117,6 +119,8 @@ class Configuration : public Singleton< Configuration >
         unsigned int                            _screenWidth;
 
         unsigned int                            _screenHeight;
+
+        bool                                    _fullScreen;
 
         std::string                             _keyboardType;
 
