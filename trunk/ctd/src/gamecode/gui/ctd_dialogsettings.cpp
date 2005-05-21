@@ -39,7 +39,7 @@ namespace CTD
 
 // some defines
 #define SDLG_PREFIX     "sd_"
-// currently supported screen resolutions
+// currently supported fixed screen resolutions
 #define RESOLUTION1     "800x600"
 #define RESOLUTION2     "1024x768"
 #define RESOLUTION3     "1600x1200"
@@ -166,20 +166,21 @@ bool DialogGameSettings::initialize( const string& layoutfile, CEGUI::Window* p_
         // fill up the resolution combobox
         CEGUI::TabPane*    p_paneDisplay = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_display" ) );
 
-        // get fullscreen checkbox
+        // get fullscreen and windowed checkboxes
         _p_fullscreen = static_cast< CEGUI::Checkbox* >( p_paneDisplay->getChild( SDLG_PREFIX "cb_fullscreen" ) );
         _p_fullscreen->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( DialogGameSettings::onFullscreenChanged, this ) );
         _p_wndscreen = static_cast< CEGUI::Checkbox* >( p_paneDisplay->getChild( SDLG_PREFIX "cb_windowed" ) );
         _p_wndscreen->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( DialogGameSettings::onWindowedScreenChanged, this ) );
-
+        // get resolution combobox
         _p_resolution = static_cast< CEGUI::Combobox* >( p_paneDisplay->getChild( SDLG_PREFIX "cbox_resolution" ) );
-        CEGUI::ListboxTextItem* p_item = NULL;
-        p_item = new CEGUI::ListboxTextItem( RESOLUTION1 );
-        _p_resolution->addItem( p_item );
-        p_item = new CEGUI::ListboxTextItem( RESOLUTION2 );
-        _p_resolution->addItem( p_item );
-        p_item = new CEGUI::ListboxTextItem( RESOLUTION3 );
-        _p_resolution->addItem( p_item );
+        // enumerate possible screen resolutions
+        std::vector< std::string > settings;
+        enumerateDisplaySettings( settings, 16 ); // we take settings including above 16 color bits
+        for ( size_t cnt = 0; cnt < settings.size(); cnt++ )
+        {
+            CEGUI::ListboxTextItem* p_item = new CEGUI::ListboxTextItem( settings[ cnt ].c_str() );
+            _p_resolution->addItem( p_item );
+        }
     }
     catch ( CEGUI::Exception e )
     {
@@ -200,9 +201,7 @@ void DialogGameSettings::setClickSound( EnAmbientSound* p_sound )
 
 bool DialogGameSettings::isDirty()
 {
-    //! TODO: compare all dialog settings with those is game configuration
-    // alternatively we could set change callbacks for all dialog controls and set a dirty flag, but that is much more work ;-)
-
+    // for easiness the settings are always dirty, a real check may be implemented later
     return true;
 }
 
@@ -210,103 +209,114 @@ void DialogGameSettings::setupControls()
 {
     // get current configuration settings
     //-----------------------------------
-    string cfg_playername;
-    Configuration::get()->getSettingValue( CTD_GS_PLAYERNAME,  cfg_playername       );
-    float  cfg_mousesensitivity;
-    Configuration::get()->getSettingValue( CTD_GS_MOUSESENS,   cfg_mousesensitivity );
-    bool   cfg_mouseInverted;
-    Configuration::get()->getSettingValue( CTD_GS_INVERTMOUSE, cfg_mouseInverted    );
-    string cfg_servername;
-    Configuration::get()->getSettingValue( CTD_GS_SERVER_NAME, cfg_servername       );
-    string cfg_serverip;
-    Configuration::get()->getSettingValue( CTD_GS_SERVER_IP,   cfg_serverip         );
-    unsigned int cfg_serverport;
-    Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, cfg_serverport       );
-
-    string cfg_keyboard;
-    Configuration::get()->getSettingValue( CTD_GS_KEYBOARD,    cfg_keyboard         );
-    
-    // set player name
-    _p_playername->setText( cfg_playername );
-    //------------
-
-    _p_serverName->setText( cfg_servername );
-    _p_serverIP->setText( cfg_serverip );
-    stringstream portasstring;
-    portasstring << cfg_serverport;
-    _p_serverPort->setText( portasstring.str() );
-
-    // set key bindings
-    _keyBindingLookup.clear();
-    string cfg_movecmd;
-    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_FORWARD,  cfg_movecmd    );
-    _p_keyMoveForward->setText( cfg_movecmd.c_str() );
-    _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyMoveForward ) );
-
-    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_BACKWARD, cfg_movecmd    );
-    _p_keyMoveBackward->setText( cfg_movecmd.c_str() );
-    _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyMoveBackward ) );
-
-    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_LEFT,     cfg_movecmd    );
-    _p_keyMoveLeft->setText( cfg_movecmd.c_str() );
-    _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyMoveLeft ) );
-
-    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_RIGHT,    cfg_movecmd    );
-    _p_keyMoveRight->setText( cfg_movecmd.c_str() );
-    _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyMoveRight ) );
-
-    Configuration::get()->getSettingValue( CTD_GS_KEY_JUMP,          cfg_movecmd    );
-    _p_keyJump->setText( cfg_movecmd.c_str() );
-    _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyJump ) );
-
-    string cfg_mode;
-    Configuration::get()->getSettingValue( CTD_GS_KEY_CAMERAMODE,    cfg_mode       );
-    _p_keyCameraMode->setText( cfg_mode.c_str() );
-    _keyBindingLookup.push_back( make_pair( cfg_mode, _p_keyCameraMode ) );
-
-    Configuration::get()->getSettingValue( CTD_GS_KEY_CHATMODE,      cfg_mode       );
-    _p_keyChatMode->setText( cfg_mode.c_str() );
-    _keyBindingLookup.push_back( make_pair( cfg_mode, _p_keyChatMode ) );
-
-    // setup scrollbar position
-    _p_mouseSensivity->setDocumentSize( CTD_GS_MAX_MOUSESENS );
-    _p_mouseSensivity->setScrollPosition( cfg_mousesensitivity );
-    // setup chekbox
-    _p_mouseInvert->setSelected( cfg_mouseInverted );
-
-    // setup keyboard settings
-    if ( cfg_keyboard == CTD_GS_KEYBOARD_ENGLISH )
     {
-        _p_keyKeybEnglish->setSelected( true );
-        _p_keyKeybGerman->setSelected( false );
-    }
-    else if ( cfg_keyboard == CTD_GS_KEYBOARD_GERMAN )
-    {
-        _p_keyKeybEnglish->setSelected( false );
-        _p_keyKeybGerman->setSelected( true );
-    }
-    else
-        log << Log::LogLevel( Log::L_ERROR ) << "*** DialogGameSettings: invalid keyboard type: " << cfg_keyboard << endl;
-
-    // setup display settings
-    bool fullscreen;
-    Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN,    fullscreen );
-    if ( fullscreen )
-    {
-        _p_fullscreen->setSelected( true );
-        _p_resolution->disable();
-    }
-    else
-    {
-        _p_wndscreen->setSelected( true );
+        string cfg_playername;
+        Configuration::get()->getSettingValue( CTD_GS_PLAYERNAME, cfg_playername );
+        // set player name
+        _p_playername->setText( cfg_playername );
     }
 
-    unsigned int width, height;
-    stringstream resolution;
-    Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,    width     );
-    Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT,   height    );
-    resolution << width << "x" << height;  
-    _p_resolution->setText( resolution.str().c_str() );
+    // get network settings
+    {
+        string cfg_servername;
+        Configuration::get()->getSettingValue( CTD_GS_SERVER_NAME, cfg_servername );
+        string cfg_serverip;
+        Configuration::get()->getSettingValue( CTD_GS_SERVER_IP, cfg_serverip );
+        unsigned int cfg_serverport;
+        Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, cfg_serverport );
+
+        _p_serverName->setText( cfg_servername );
+        _p_serverIP->setText( cfg_serverip );
+        stringstream portasstring;
+        portasstring << cfg_serverport;
+        _p_serverPort->setText( portasstring.str() );
+    }
+
+    // get key bindings
+    {
+        _keyBindingLookup.clear();
+        string cfg_movecmd;
+        Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_FORWARD, cfg_movecmd );
+        _p_keyMoveForward->setText( cfg_movecmd.c_str() );
+        _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyMoveForward ) );
+
+        Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_BACKWARD, cfg_movecmd );
+        _p_keyMoveBackward->setText( cfg_movecmd.c_str() );
+        _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyMoveBackward ) );
+
+        Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_LEFT, cfg_movecmd );
+        _p_keyMoveLeft->setText( cfg_movecmd.c_str() );
+        _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyMoveLeft ) );
+
+        Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_RIGHT, cfg_movecmd );
+        _p_keyMoveRight->setText( cfg_movecmd.c_str() );
+        _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyMoveRight ) );
+
+        Configuration::get()->getSettingValue( CTD_GS_KEY_JUMP, cfg_movecmd );
+        _p_keyJump->setText( cfg_movecmd.c_str() );
+        _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyJump ) );
+
+        string cfg_mode;
+        Configuration::get()->getSettingValue( CTD_GS_KEY_CAMERAMODE, cfg_mode );
+        _p_keyCameraMode->setText( cfg_mode.c_str() );
+        _keyBindingLookup.push_back( make_pair( cfg_mode, _p_keyCameraMode ) );
+
+        Configuration::get()->getSettingValue( CTD_GS_KEY_CHATMODE, cfg_mode );
+        _p_keyChatMode->setText( cfg_mode.c_str() );
+        _keyBindingLookup.push_back( make_pair( cfg_mode, _p_keyChatMode ) );
+
+        float  cfg_mousesensitivity;
+        Configuration::get()->getSettingValue( CTD_GS_MOUSESENS, cfg_mousesensitivity );
+        bool   cfg_mouseInverted;
+        Configuration::get()->getSettingValue( CTD_GS_INVERTMOUSE, cfg_mouseInverted );
+        // setup scrollbar position
+        _p_mouseSensivity->setDocumentSize( CTD_GS_MAX_MOUSESENS );
+        _p_mouseSensivity->setScrollPosition( cfg_mousesensitivity );
+        // setup chekbox
+        _p_mouseInvert->setSelected( cfg_mouseInverted );
+    }
+
+    // get keyboard settings
+    {
+        string cfg_keyboard;
+        Configuration::get()->getSettingValue( CTD_GS_KEYBOARD, cfg_keyboard );
+
+        if ( cfg_keyboard == CTD_GS_KEYBOARD_ENGLISH )
+        {
+            _p_keyKeybEnglish->setSelected( true );
+            _p_keyKeybGerman->setSelected( false );
+        }
+        else if ( cfg_keyboard == CTD_GS_KEYBOARD_GERMAN )
+        {
+            _p_keyKeybEnglish->setSelected( false );
+            _p_keyKeybGerman->setSelected( true );
+        }
+        else
+            log << Log::LogLevel( Log::L_ERROR ) << "*** DialogGameSettings: invalid keyboard type: " << cfg_keyboard << endl;
+    }
+
+    // get display settings
+    {
+        bool fullscreen;
+        Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN, fullscreen );
+        if ( fullscreen )
+        {
+            _p_fullscreen->setSelected( true );
+            _p_resolution->disable();
+        }
+        else
+        {
+            _p_wndscreen->setSelected( true );
+        }
+
+        unsigned int width, height, colorbits;
+        stringstream resolution;
+        Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH, width );
+        Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, height );
+        Configuration::get()->getSettingValue( CTD_GS_COLORBITS, colorbits );
+        resolution << width << "x" << height << "@" << colorbits;
+        _p_resolution->setText( resolution.str().c_str() );
+    }
 }
 
 // dialog callbacks
@@ -388,14 +398,16 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
         Configuration::get()->setSettingValue( CTD_GS_FULLSCREEN, fullscreen );
         if ( !fullscreen )
         {
-            unsigned int width, height;
+            unsigned int width, height, colorbits;
             // get the resolution out of the combobox string
             string       resstring( _p_resolution->getText().c_str() );
             resstring.replace( resstring.find( "x", 0 ), 1, " " ); // replace x by space so that the stream operator below can work
+            resstring.replace( resstring.find( "@", 0 ), 1, " " ); // replace @ by space so that the stream operator below can work
             stringstream resolution( resstring );
-            resolution >> width >> height;
-            Configuration::get()->setSettingValue( CTD_GS_SCREENWIDTH,    width     );
-            Configuration::get()->setSettingValue( CTD_GS_SCREENHEIGHT,   height    );
+            resolution >> width >> height >> colorbits;
+            Configuration::get()->setSettingValue( CTD_GS_SCREENWIDTH, width );
+            Configuration::get()->setSettingValue( CTD_GS_SCREENHEIGHT, height );
+            Configuration::get()->setSettingValue( CTD_GS_COLORBITS, colorbits );
         }
     }
 

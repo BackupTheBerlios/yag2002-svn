@@ -591,13 +591,13 @@ void EnMenu::enter()
     // set the right text for the multi-function buttons
     if ( _levelLoaded )
     {
-        _p_btnStart->setText( "leave level" );
-        _p_btnQuit->setText( "return" );
+        _p_btnStart->setText( "Leave Level" );
+        _p_btnQuit->setText( "Return" );
     }
     else
     {
-        _p_btnStart->setText( "start" );
-        _p_btnQuit->setText( "quit" );
+        _p_btnStart->setText( "Start" );
+        _p_btnQuit->setText( "Quit" );
     }
 
     // reset the input handler
@@ -674,8 +674,8 @@ void EnMenu::leaveLevel()
     LevelManager::get()->unloadLevel();
     _levelLoaded = false;
     switchMenuScene( true );
-    _p_btnStart->setText( "start" );
-    _p_btnQuit->setText( "quit" );
+    _p_btnStart->setText( "Start" );
+    _p_btnQuit->setText( "Quit" );
 }
 
 } // namespace CTD
