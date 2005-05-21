@@ -48,6 +48,9 @@ std::string extractFileName( const std::string& fullpath );
 //! Given a directory this function retrieves all files inside for given extension
 void getDirectoryListing( std::vector< std::string >& listing, const std::string& dir, const std::string& extension );
 
+//! Returns a sorted string list with possible display settings above given colorbits filter value (format: WidthxHeight@ColorBits)
+void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned int colorbitsfilter = 0 );
+
 //! A generic input handler class with automatic adding and removing to / from viewer's event hanlder list
 struct NullType {};
 template< class T = NullType >

@@ -115,4 +115,67 @@ void getDirectoryListing( std::vector< std::string >& listing, const std::string
 	FindClose( fileHandle );
 }
 
+// helper class for enumerateDisplaySettings
+class DispSettings
+{
+    public:
+                                DispSettings() {};
+                                ~DispSettings() {};
+
+        unsigned int            width;
+        unsigned int            height;
+        unsigned int            colorbits;
+
+        bool                    operator < ( DispSettings& ds )
+                                {
+                                    // we compare the areas of two screen resolutions here
+                                    if ( ( ds.height * ds.width ) < ( height * width ) )
+                                        return true;
+                                    else 
+                                        return false;
+                                }
+
+        bool                    operator == ( DispSettings& ds )
+                                {
+                                    if ( ds.height == height && ds.width == width && ds.colorbits == colorbits )
+                                        return true;
+                                    else 
+                                        return false;
+                                }
+};
+
+void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned int colorbitsfilter )
+{
+    DWORD   modenum = 0;
+    DEVMODE devmode;
+    devmode.dmSize = sizeof( DEVMODE );
+
+    std::list< DispSettings > sortedsettings;
+
+    while ( EnumDisplaySettings( NULL, modenum, &devmode ) )
+    {
+        modenum++;
+        DispSettings ds;
+        ds.width     = devmode.dmPelsWidth;
+        ds.height    = devmode.dmPelsHeight;
+        ds.colorbits = devmode.dmBitsPerPel;
+        if ( ds.colorbits >= colorbitsfilter )
+        {
+            sortedsettings.push_back( ds );
+        }
+    }
+    // sort the list and fill the settings string list
+    sortedsettings.sort();
+    sortedsettings.unique();
+
+    std::list< DispSettings >::iterator p_beg = sortedsettings.begin(), p_end = sortedsettings.end();
+    for ( ; p_beg != p_end; p_beg++ ) 
+    {
+        stringstream resstring;
+        resstring << p_beg->width << "x" << p_beg->height << "@" << p_beg->colorbits;
+        settings.push_back( resstring.str() );
+    }
+
+}
+
 } // namespace CTD
