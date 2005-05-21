@@ -53,6 +53,7 @@ _p_settings( SettingsManager::get()->createProfile( CTD_GAMESETTING_PROFILENAME,
 _keyboardType( CTD_GS_KEYBOARD_ENGLISH ),
 _screenWidth( 600 ),
 _screenHeight( 400 ),
+_colorBits( 24 ),
 _fullScreen( true ),
 _mouseSensitivity( 1.0f ),
 _guiScheme( CTD_GUI_DEFUALT_SCHEME ),
@@ -70,6 +71,7 @@ _chatmode( "RMB" )
     _p_settings->registerSetting( CTD_GS_KEYBOARD,            _keyboardType     );
     _p_settings->registerSetting( CTD_GS_SCREENWIDTH,         _screenWidth      );
     _p_settings->registerSetting( CTD_GS_SCREENHEIGHT,        _screenHeight     );
+    _p_settings->registerSetting( CTD_GS_COLORBITS,           _colorBits        );
     _p_settings->registerSetting( CTD_GS_FULLSCREEN,          _fullScreen       );
     _p_settings->registerSetting( CTD_GS_GUISCHEME,           _guiScheme        );
     _p_settings->registerSetting( CTD_GS_PLAYERNAME,          _playerName       );

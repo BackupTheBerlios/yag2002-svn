@@ -55,6 +55,7 @@ namespace CTD
 // screen
 #define CTD_GS_SCREENWIDTH              "screenWidth"
 #define CTD_GS_SCREENHEIGHT             "screenHeight"
+#define CTD_GS_COLORBITS                "colorBits"
 #define CTD_GS_FULLSCREEN               "fullScreen"
 
 // gui
@@ -119,6 +120,8 @@ class Configuration : public Singleton< Configuration >
         unsigned int                            _screenWidth;
 
         unsigned int                            _screenHeight;
+
+        unsigned int                            _colorBits;
 
         bool                                    _fullScreen;
 
