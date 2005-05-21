@@ -45,7 +45,8 @@ class GuiRenderCallback;
 class GuiViewerRealizeCallback;
 
 // some definitions
-#define CTD_GUI_FONT            "Commonwealth-10"
+#define CTD_GUI_FONT8           "CTD-8"
+#define CTD_GUI_FONT10          "CTD-10"
 #define CTD_GUI_SCHEME          "TaharezLookWidgets"
 
 // Graphical User Interface
@@ -81,6 +82,19 @@ class GuiManager : public Singleton< GuiManager >
 
         //! Retrieve the gui renderer. One can used it e.g. to create textures for StaticImage elements.
         CTDGuiRenderer*                         getGuiRenderer();
+
+        //! Retrieve a pre-loaded font resource given its name ( e.g. CTD-8 or CTD-10 )
+        /**
+         * If there is no font with that name then the return value is NULL.
+         */
+        CEGUI::Font*                            getFont( const std::string& fontname );
+
+        //! Load and register a custom font given its description file (in CEGUI's .font format)
+        /*
+         * You can retrieve the font using getFont method with appropriate font name (defined in .font file)
+         * If the file does not exist then the return value is NULL.
+         */
+        CEGUI::Font*                            loadFont( const std::string& descriptionfile );
 
         //! Change the client area, use this e.g. when the main app windows shape changed
         void                                    changeDisplayResolution( float width, float height );
@@ -124,6 +138,9 @@ class GuiManager : public Singleton< GuiManager >
         //! Shutdown gui manager
         void                                    shutdown();
 
+        //! Used internally to create fonts
+        CEGUI::Font*                            createFont( const std::string& fontname );
+
         //! Input handler, inputs are forwarded to gui system
         class InputHandler : public osgGA::GUIEventHandler
         {
@@ -158,6 +175,9 @@ class GuiManager : public Singleton< GuiManager >
 
         //! Root window of cegui where all other windows are placed
         CEGUI::DefaultWindow*                   _p_root;
+
+        //! Loaded fonts
+        std::map< std::string, CEGUI::Font* >   _loadedFonts;
 
         //! Is gui rendering active?
         bool                                    _active;

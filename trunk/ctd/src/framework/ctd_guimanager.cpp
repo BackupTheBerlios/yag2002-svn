@@ -214,19 +214,11 @@ void GuiManager::doInitialize()
     _p_mouseImg = const_cast< CEGUI::Image* >( &p_taharezImages->getImage( "MouseArrow" ) );
     CEGUI::System::getSingleton().setDefaultMouseCursor( _p_mouseImg );
 
-    // load font
-    CEGUI::Font* p_font = FontManager::getSingleton().createFont( string( "gui/fonts/" CTD_GUI_FONT ".font" ) );
-    // add german specific glyphs to font
-    CEGUI::String glyphs = p_font->getAvailableGlyphs();
-    CEGUI::String germanGlyphs;
-    germanGlyphs += ( CEGUI::utf8 )223; // s-zet
-    germanGlyphs += ( CEGUI::utf8 )228; // ae
-    germanGlyphs += ( CEGUI::utf8 )246; // oe
-    germanGlyphs += ( CEGUI::utf8 )252; // ue
-    germanGlyphs += ( CEGUI::utf8 )196; // Ae
-    germanGlyphs += ( CEGUI::utf8 )214; // Oe
-    germanGlyphs += ( CEGUI::utf8 )220; // Ue
-    p_font->defineFontGlyphs( glyphs + germanGlyphs ); 
+    // create necessary fonts
+    CEGUI::Font* p_font = NULL;
+    p_font = createFont( string( "gui/fonts/" CTD_GUI_FONT8 ".font" ) );
+    p_font = createFont( string( "gui/fonts/" CTD_GUI_FONT10 ".font" ) );
+    CEGUI::System::getSingleton().setDefaultFont( p_font ); // set the default font
 
     // load scheme
     SchemeManager::getSingleton().loadScheme( string( "gui/schemes/" CTD_GUI_SCHEME ".scheme" ) );
@@ -242,6 +234,53 @@ void GuiManager::doInitialize()
 
     // create input handler
     _inputHandler = new InputHandler( this );
+}
+
+CEGUI::Font* GuiManager::createFont( const std::string& fontname )
+{
+    CEGUI::Font* p_font = NULL;
+
+    try 
+    {
+        // load font
+        p_font = FontManager::getSingleton().createFont( fontname );
+        // add german specific glyphs to font
+        CEGUI::String glyphs = p_font->getAvailableGlyphs();
+        CEGUI::String germanGlyphs;
+        germanGlyphs += ( CEGUI::utf8 )223; // s-zet
+        germanGlyphs += ( CEGUI::utf8 )228; // ae
+        germanGlyphs += ( CEGUI::utf8 )246; // oe
+        germanGlyphs += ( CEGUI::utf8 )252; // ue
+        germanGlyphs += ( CEGUI::utf8 )196; // Ae
+        germanGlyphs += ( CEGUI::utf8 )214; // Oe
+        germanGlyphs += ( CEGUI::utf8 )220; // Ue
+        p_font->defineFontGlyphs( glyphs + germanGlyphs );
+    }
+    catch ( CEGUI::Exception e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << " GuiManager: cannot create font: '" << fontname << "'" << endl;
+        return NULL;
+    }
+
+    // register the font via its size
+    _loadedFonts[ p_font->getName().c_str() ] = p_font;
+    return p_font;
+}
+
+
+CEGUI::Font* GuiManager::getFont( const std::string& fontname )
+{
+    std::map< std::string, CEGUI::Font* >::iterator p_font = _loadedFonts.find( fontname ), p_end = _loadedFonts.end();
+    if ( p_font != p_end )
+        return p_font->second;
+
+    log << Log::LogLevel( Log::L_ERROR ) << " GuiManager: no font with name '" << fontname << "' exists!" << endl;
+    return NULL;
+}
+
+CEGUI::Font* GuiManager::loadFont( const std::string& descriptionfile )
+{
+    return createFont( descriptionfile );
 }
 
 void GuiManager::changeDisplayResolution( float width, float height )

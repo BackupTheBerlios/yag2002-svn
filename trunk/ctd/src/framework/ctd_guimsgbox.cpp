@@ -52,7 +52,8 @@ _autodel( autodelete )
 
     // determine the size of messagebox needed to show the required message text
     //--------
-    CEGUI::Font* p_font = CEGUI::FontManager::getSingleton().getFont( CTD_GUI_FONT );
+    CEGUI::Font* p_font = GuiManager::get()->getFont( CTD_GUI_FONT10 ); // we take the font with pointsize 10
+    assert( p_font && "font does not exist!" );
 
     // consider line breaks in text
     std::vector< std::string > lines;
