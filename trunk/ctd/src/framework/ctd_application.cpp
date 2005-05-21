@@ -165,6 +165,9 @@ bool Application::initialize( int argc, char **argv )
     Producer::Camera *p_cam = _p_viewer->getCamera( 0 );
     Producer::RenderSurface* p_rs = p_cam->getRenderSurface();
     p_rs->setWindowRectangle( 100, 100, _screenWidth, _screenHeight );
+    unsigned int colorbits = 24;
+    Configuration::get()->getSettingValue( CTD_GS_COLORBITS, colorbits );
+    p_rs->addPixelAttribute( Producer::RenderSurface::DepthSize, colorbits );
     bool fullscreen;
     Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN, fullscreen );
     p_rs->fullScreen( fullscreen );
@@ -233,11 +236,11 @@ void Application::run()
         // call all node update callbacks and animations.
         _p_viewer->update();
 
-        // wait for all cull and draw threads to complete.
-        _p_viewer->sync();
-
         // fire off the cull and draw traversals of the scene.
         _p_viewer->frame();
+
+        // wait for all cull and draw threads to complete.
+        _p_viewer->sync();
     }   
 
     // for the case that we quited via entity request ( such as menu's quit button pressing )
