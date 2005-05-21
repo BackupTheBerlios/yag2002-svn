@@ -82,6 +82,9 @@ class GuiManager : public Singleton< GuiManager >
         //! Retrieve the gui renderer. One can used it e.g. to create textures for StaticImage elements.
         CTDGuiRenderer*                         getGuiRenderer();
 
+        //! Change the client area, use this e.g. when the main app windows shape changed
+        void                                    changeDisplayResolution( float width, float height );
+
         //! Retrieve the root window. This can be used in conjuction with manually created elements.
         CEGUI::DefaultWindow*                   getRootWindow();
 

@@ -178,14 +178,30 @@ void GuiManager::initialize()
 
 void GuiManager::doInitialize()
 {
-    unsigned int width, height;
-    Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  width  );
-    Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, height );
-    _windowWidth = float( width );
-    _windowHeight = float( height );
+    // first we look if we are in windowed or fullscreen mode
+    bool fullscreen;
+    Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN,    fullscreen );
+    if ( fullscreen )
+    {
+        Producer::Camera*        p_cam = Application::get()->getViewer()->getCamera( 0 );
+        Producer::RenderSurface* p_rs  = p_cam->getRenderSurface();
+        unsigned int x, y;
+        int dummy; 
+        p_rs->getWindowRectangle( dummy, dummy, x, y );
+        _windowWidth = float( x );
+        _windowHeight = float( y );
+    }
+    else
+    {
+        unsigned int width, height;
+        Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  width  );
+        Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, height );
+        _windowWidth = float( width );
+        _windowHeight = float( height );
+    }
 
     // create a renderer
-    _p_renderer = new CTDGuiRenderer( 0, width, height );    
+    _p_renderer = new CTDGuiRenderer( 0, _windowWidth, _windowHeight );    
     // create the gui
     CTDResourceProvider *p_resLoader = new CTDResourceProvider;
     new CEGUI::System( _p_renderer, p_resLoader );
@@ -226,6 +242,20 @@ void GuiManager::doInitialize()
 
     // create input handler
     _inputHandler = new InputHandler( this );
+}
+
+void GuiManager::changeDisplayResolution( float width, float height )
+{
+    assert( _p_root && " gui system is not initialized!" );
+    _windowWidth  = width;
+    _windowHeight = height;
+    _p_root->setMaximumSize( CEGUI::Size( _windowWidth, _windowHeight ) );
+    _p_root->setSize( CEGUI::Size( _windowWidth, _windowHeight ) );
+    _p_renderer->changeDisplayResolution( _windowWidth, _windowHeight );
+
+    CEGUI::FontManager::getSingleton().notifyScreenResolution( CEGUI::Size( _windowWidth, _windowHeight ) );
+	CEGUI::ImagesetManager::getSingleton().notifyScreenResolution( CEGUI::Size( _windowWidth, _windowHeight ) );
+	CEGUI::MouseCursor::getSingleton().setConstraintArea( &CEGUI::Rect( 0, 0, _windowWidth, _windowHeight ) );
 }
 
 void GuiManager::showMousePointer( bool show )
