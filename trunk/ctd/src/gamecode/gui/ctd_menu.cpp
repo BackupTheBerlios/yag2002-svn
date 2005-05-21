@@ -264,7 +264,7 @@ void EnMenu::initialize()
         _p_loadingWindow->addChildWindow( _p_loadingOverly );
 
         _p_loadingLevelPic = static_cast< CEGUI::StaticImage* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticImage", ( MENU_PREFIX "img_loadingpic" ) ) );
-        _p_loadingLevelPic->setSize( CEGUI::Size( 1.0f, 1.0f ) );
+        _p_loadingLevelPic->setSize( CEGUI::Size( 1.0, 1.0f ) );
         _p_loadingLevelPic->setImage( NULL ); // this image will be delivered by level selector later
         _p_loadingLevelPic->setBackgroundEnabled( false );
         _p_loadingLevelPic->setFrameEnabled( false );
@@ -280,6 +280,8 @@ void EnMenu::initialize()
         }
         CEGUI::Image* _p_loadingOverlayImage = &const_cast< CEGUI::Image& >( p_imageSet->getImage( materialName ) );
         _p_loadingOverly->setImage( _p_loadingOverlayImage );
+        _p_loadingOverly->setSize( CEGUI::Size( 0.5f, 0.2f ) );
+        _p_loadingOverly->setPosition( CEGUI::Point( 0.25f, 0.75f ) );
     }
     catch ( CEGUI::Exception e )
     {
