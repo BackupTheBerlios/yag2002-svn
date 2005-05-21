@@ -165,7 +165,9 @@ bool Application::initialize( int argc, char **argv )
     Producer::Camera *p_cam = _p_viewer->getCamera( 0 );
     Producer::RenderSurface* p_rs = p_cam->getRenderSurface();
     p_rs->setWindowRectangle( 100, 100, _screenWidth, _screenHeight );
-    p_rs->fullScreen( false );
+    bool fullscreen;
+    Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN, fullscreen );
+    p_rs->fullScreen( fullscreen );
     p_rs->useCursor( false ); //hide cursor
 
     // get details on keyboard and mouse bindings used by the viewer.
@@ -226,7 +228,7 @@ void Application::run()
 
         // update gui manager
         _p_guiManager->update( deltaTime );
-         
+
         // update the scene by traversing it with the the update visitor which will
         // call all node update callbacks and animations.
         _p_viewer->update();
