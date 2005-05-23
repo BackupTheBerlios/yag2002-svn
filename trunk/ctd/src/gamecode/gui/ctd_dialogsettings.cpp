@@ -167,10 +167,9 @@ bool DialogGameSettings::initialize( const string& layoutfile, CEGUI::Window* p_
         CEGUI::TabPane*    p_paneDisplay = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_display" ) );
 
         // get fullscreen and windowed checkboxes
-        _p_fullscreen = static_cast< CEGUI::Checkbox* >( p_paneDisplay->getChild( SDLG_PREFIX "cb_fullscreen" ) );
-        _p_fullscreen->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( DialogGameSettings::onFullscreenChanged, this ) );
-        _p_wndscreen = static_cast< CEGUI::Checkbox* >( p_paneDisplay->getChild( SDLG_PREFIX "cb_windowed" ) );
-        _p_wndscreen->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( DialogGameSettings::onWindowedScreenChanged, this ) );
+        _p_fullscreen = static_cast< CEGUI::RadioButton* >( p_paneDisplay->getChild( SDLG_PREFIX "rb_fullscreen" ) );
+        _p_fullscreen->subscribeEvent( CEGUI::RadioButton::EventSelectStateChanged, CEGUI::Event::Subscriber( DialogGameSettings::onFullscreenChanged, this ) );
+        _p_wndscreen = static_cast< CEGUI::RadioButton* >( p_paneDisplay->getChild( SDLG_PREFIX "rb_windowed" ) );
         // get resolution combobox
         _p_resolution = static_cast< CEGUI::Combobox* >( p_paneDisplay->getChild( SDLG_PREFIX "cbox_resolution" ) );
         // enumerate possible screen resolutions
@@ -572,27 +571,11 @@ bool DialogGameSettings::onFullscreenChanged( const CEGUI::EventArgs& arg )
 {
     if ( _p_fullscreen->isSelected() ) 
     {
-        _p_wndscreen->setSelected( false );
         _p_resolution->disable();
     }
     else
     {
-        _p_wndscreen->setSelected( true );
-    }
-
-    return true;
-}
-
-bool DialogGameSettings::onWindowedScreenChanged( const CEGUI::EventArgs& arg )
-{
-    if ( _p_wndscreen->isSelected() ) 
-    {
-        _p_fullscreen->setSelected( false );
         _p_resolution->enable();
-    }
-    else
-    {
-        _p_fullscreen->setSelected( true );
     }
 
     return true;
