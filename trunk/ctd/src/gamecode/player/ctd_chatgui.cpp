@@ -53,7 +53,7 @@ _state( Idle ),
 _fadeTimer( 0 ),
 _frameAlphaValue( 1.0f ),
 _p_mouseImageWalkMode( NULL ),
-_p_mouseImageEditMode( NULL )
+_p_mouseImageDefault( NULL )
 {
 }
 
@@ -140,7 +140,7 @@ void PlayerChatGui::initialize( EnPlayer* p_player, const string& layoutFile )
         // get the edit / walk pointer images
         _p_mouseImageWalkMode = &const_cast< CEGUI::Image& >( p_imageSet->getImage( "Crosshair" ) );
         assert( _p_mouseImageWalkMode && " missing image Crosshair in CTDExtras image set!" );
-        _p_mouseImageEditMode = const_cast< CEGUI::Image* >( CEGUI::System::getSingleton().getDefaultMouseCursor() );
+        _p_mouseImageDefault = const_cast< CEGUI::Image* >( CEGUI::System::getSingleton().getDefaultMouseCursor() );
     }
     catch ( CEGUI::Exception e )
     {
@@ -220,15 +220,19 @@ void PlayerChatGui::show( bool visible )
     if ( visible )
     {
         _p_wnd->show();
+
+        // reset the mode in order to let things get updated
+        setEditMode( _modeEdit );
     }
     else
     {
         _p_wnd->hide();
-        // restore mouse pointer image
-        CEGUI::MouseCursor::getSingleton().setImage( _p_mouseImageEditMode );
-        CEGUI::System::getSingleton().setDefaultMouseCursor( _p_mouseImageEditMode );
-        // release the pointer handling for the case that it was locked by this gui
+
+        CEGUI::MouseCursor::getSingleton().setImage( _p_mouseImageDefault );
         GuiManager::get()->releasePointer();
+
+        // restore default mouse cursor image
+        CEGUI::System::getSingleton().setDefaultMouseCursor( _p_mouseImageDefault );
     }
 }
 
@@ -286,13 +290,15 @@ void PlayerChatGui::setEditMode( bool edit )
     if ( edit )
     {
         _p_btnMode->hide();
-        CEGUI::MouseCursor::getSingleton().setImage( _p_mouseImageEditMode );
+        CEGUI::MouseCursor::getSingleton().setImage( _p_mouseImageDefault );
+        CEGUI::System::getSingleton().setDefaultMouseCursor( _p_mouseImageDefault );
         GuiManager::get()->releasePointer();
     }
     else
     {
         _p_btnMode->show();
         CEGUI::MouseCursor::getSingleton().setImage( _p_mouseImageWalkMode );
+        CEGUI::System::getSingleton().setDefaultMouseCursor( _p_mouseImageWalkMode );
         // in walk mode we fix the pointer (crosshair) in the middle of screen
         GuiManager::get()->lockPointer( 0.0f, 0.0f );
     }

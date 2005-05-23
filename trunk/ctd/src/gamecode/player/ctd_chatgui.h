@@ -98,7 +98,7 @@ class PlayerChatGui
 
         CEGUI::Image*                               _p_mouseImageWalkMode;
 
-        CEGUI::Image*                               _p_mouseImageEditMode;
+        CEGUI::Image*                               _p_mouseImageDefault;
 
         bool                                        _hidden;
 

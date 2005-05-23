@@ -185,13 +185,7 @@ void EnPlayer::handleNotification( EntityNotification& notify )
 
         case CTD_NOTIFY_MENU_LEAVE:
         {
-            static bool firstentracne = true;
-            if ( firstentracne )
-            {
-                _p_chatGui->show( true );
-                firstentracne = false;
-            }
-
+            _p_chatGui->show( true );
             _p_inputHandler->setMenuEnabled( false );
 
             // refresh our configuration settings
