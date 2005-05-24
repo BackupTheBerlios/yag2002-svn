@@ -43,6 +43,11 @@
 <icon BUILTIN="button_ok"/>
 </node>
 </node>
+<node TEXT="unloading level">
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
+</node>
+</node>
 <node TEXT="mesh loader with caching">
 <node TEXT="100%">
 <icon BUILTIN="button_ok"/>
@@ -75,7 +80,7 @@
 </node>
 </node>
 <node TEXT="settings manager" POSITION="left">
-<node TEXT="loading/storing float, int, bool, vector3 setting elements">
+<node TEXT="loading/storing float, (u) int, bool, vector3 setting elements">
 <node TEXT="100%">
 <icon BUILTIN="button_ok"/>
 </node>
@@ -172,7 +177,7 @@
 </node>
 </node>
 <node TEXT="animation">
-<node TEXT="80%">
+<node TEXT="90%">
 <icon BUILTIN="idea"/>
 </node>
 </node>
@@ -187,17 +192,17 @@
 </node>
 </node>
 <node TEXT="chat functionality">
-<node TEXT="0%">
+<node TEXT="10%">
 <icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
 <node TEXT="hud">
-<node TEXT="90%">
-<icon BUILTIN="idea"/>
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 <node TEXT="control / logic">
-<node TEXT="40%">
+<node TEXT="50%">
 <icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
@@ -272,7 +277,7 @@
 <icon BUILTIN="button_ok"/>
 </node>
 </node>
-<node TEXT="dirdctional light">
+<node TEXT="directional light">
 <node TEXT="0%">
 <icon BUILTIN="help"/>
 </node>
@@ -312,14 +317,14 @@
 <icon BUILTIN="button_ok"/>
 </node>
 </node>
-<node TEXT="start up gui">
+<node TEXT="start up intro">
 <node TEXT="80%">
 <icon BUILTIN="idea"/>
 </node>
 </node>
 <node TEXT="main menu">
-<node TEXT="95%">
-<icon BUILTIN="idea"/>
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 </node>
@@ -334,6 +339,11 @@
 </node>
 </node>
 <node TEXT="loading layout (xml) ">
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
+</node>
+</node>
+<node TEXT="input handling">
 <node TEXT="100%">
 <icon BUILTIN="button_ok"/>
 </node>
