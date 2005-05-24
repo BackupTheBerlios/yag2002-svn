@@ -101,10 +101,15 @@ class BaseEntity
         virtual                                     ~BaseEntity();
 
         /**
-        * Get entity's type name.
-        * \return                                   Type name
+        * Initializing function, this is called after all engine modules are initialized and a map is loaded.
         */
-        const std::string&                          getTypeName();
+        virtual void                                initialize() {}
+
+        /**
+        * Post-initializing function, this is called after all plugins' entities are initialized.
+        * One important usage of this function is to search and attach entities to eachother, after all entities are initialized.
+        */
+        virtual void                                postInitialize() {}
 
         /**
         * Set instance name. Instance name is used to find and attach entities to eachother.
@@ -112,6 +117,12 @@ class BaseEntity
         * \param  name                              Instance name
         */
         void                                        setInstanceName( const std::string& name );
+
+        /**
+        * Get entity's type name.
+        * \return                                   Type name
+        */
+        const std::string&                          getTypeName();
 
         /**
         * Get instance name. Instance name is used to find and attach entities to eachother.
@@ -124,49 +135,6 @@ class BaseEntity
         * \return                                   Attribute manager
         */
         AttributeManager&                           getAttributeManager();
-
-        /**
-        * Initializing function, this is called after all engine modules are initialized and a map is loaded.
-        */
-        virtual void                                initialize() {}
-
-        /**
-        * Post-initializing function, this is called after all plugins' entities are initilized.
-        * One important usage of this function is to search and attach entities to eachother, after all entities are initialized.
-        */
-        virtual void                                postInitialize() {}
-
-        /**
-        * Update entity
-        * \param fDeltaTime                         Time passed since last update
-        */
-        virtual void                                updateEntity( float deltaTime ) {}
-
-        /**
-        * Handle notifications. In order to get notifications the entity must register via EntityManager's registerNotification method.
-        * \param notify                             The notification struct. It may be useful to cast it to appropriate type for 
-        *                                           game-codespecific structs. 
-        */
-        virtual void                                handleNotification( EntityNotification& notify ) {}
-
-        /**
-        * Override and return false if the entitiy does not need transformation.
-        * This method is called during entity creation e.g. by the level loader.
-        */
-        virtual const bool                          isTransformable() const { return true; }
-
-        /**
-        * Override and return true if your entity must resist loading of new levels.
-        * A persistent entity keeps its update and notification registration and is not deleted
-        * by EntityManager when a new level is loaded.
-        */
-        virtual const bool                          isPersistent() const { return false; }
-
-        /**
-        * Set transformation node. An application developer does not need this method in normal case.
-        * It is used by level loader.
-        */
-        void                                        setTransformationNode( osg::PositionAttitudeTransform* p_trans );
 
         /**
         * Get transformation node.
@@ -206,6 +174,57 @@ class BaseEntity
         */
         virtual BaseEntity*                         cloneAndInitialize( const std::string& instanceName, osg::Group* p_scenegroup = NULL );
 
+        /**
+        * Override and return false if the entitiy does not need transformation.
+        * This method is called during entity creation e.g. by the level loader.
+        */
+        virtual const bool                          isTransformable() const { return true; }
+
+        /**
+        * Override and return true if your entity must resist loading of new levels.
+        * A persistent entity keeps its update and notification registration and is not deleted
+        * by EntityManager when a new level is loaded.
+        */
+        virtual const bool                          isPersistent() const { return false; }
+
+    protected:
+
+        /**
+        * Update entity
+        * \param fDeltaTime                         Time passed since last update
+        */
+        virtual void                                updateEntity( float deltaTime ) {}
+
+        /**
+        * Handle notifications. In order to get notifications the entity must register via EntityManager's registerNotification method.
+        * \param notify                             The notification struct. It may be useful to cast it to appropriate type for 
+        *                                           game-codespecific structs. 
+        */
+        virtual void                                handleNotification( EntityNotification& notify ) {}
+
+        /**
+        * Set transformation node. An application developer does not need this method in normal case.
+        * It is used by level loader.
+        */
+        void                                        setTransformationNode( osg::PositionAttitudeTransform* p_trans );
+
+        /**
+        * Add a node to our transformation node, assume that we use a transform node
+        */
+        void                                        addToTransformationNode( osg::Node* p_node );
+
+        /**
+        * Remove a node from our transformation node, assume that we use a transform node
+        * For example it can be used to remove dynamically attached nodes such as rucksack, etc..
+        */
+        void                                        removeFromTransformationNode( osg::Node* p_node );
+
+        //! Entity attribute manager
+        AttributeManager                            _attributeManager;
+
+        //! Transformation node used if it is desired for an entity
+        osg::ref_ptr< osg::PositionAttitudeTransform > _p_transformNode;
+
     private:
 
         /** 
@@ -227,25 +246,6 @@ class BaseEntity
         * Entity instance name
         */
         std::string                                 _instanceName;
-
-    protected:
-
-        /**
-        * Add a node to our transformation node, assume that we use a transform node
-        */
-        void                                        addToTransformationNode( osg::Node* p_node );
-
-        /**
-        * Remove a node from our transformation node, assume that we use a transform node
-        * For example it can be used to remove dynamically attached nodes such as rucksack, etc..
-        */
-        void                                        removeFromTransformationNode( osg::Node* p_node );
-
-        //! Entity attribute manager
-        AttributeManager                            _attributeManager;
-
-        //! Transformation node used if it is desired for an entity
-        osg::ref_ptr< osg::PositionAttitudeTransform > _p_transformNode;
 
     friend class Application;
     friend class EntityManager;
