@@ -220,8 +220,8 @@ void Application::run()
         // limit the deltaTime as we have to be carefull with stability of physics calculation etc.
         if ( deltaTime > 0.06f ) 
             deltaTime = 0.06f;
-        else if ( deltaTime < 0.01f )
-            deltaTime = 0.01f;
+        else if ( deltaTime < 0.001f )
+            deltaTime = 0.001f;
 
         // update entities
         _entityManager->update( deltaTime  );
