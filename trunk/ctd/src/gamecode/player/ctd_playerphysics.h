@@ -87,6 +87,11 @@ class EnPlayerPhysics : public BaseEntity
         void                                        setForce( float x, float y );
 
         /**
+        * Add force in x and y direction.
+        */
+        void                                        addForce( float x, float y );
+
+        /**
         * Stop movement
         */
         void                                        stopMovement();
@@ -100,6 +105,11 @@ class EnPlayerPhysics : public BaseEntity
         * Call this method to force the body to jump
         */
         void                                        jump();
+
+        /**
+        * Returns true when the player is in jumping state.
+        */
+        bool                                        isJumping() { return _isJumping; }
 
         /**
         * Indicates whether we are on ground or in air
@@ -201,6 +211,14 @@ class EnPlayerPhysics : public BaseEntity
 
         unsigned int                                _jumpTimer;
 
+        bool                                        _isJumping;
+
+        enum
+        {
+            BeginJumping,
+            Wait4Landing
+        }                                           _jumpState;
+
         float                                       _jumpForce;
 
         //! Body matrix
@@ -214,10 +232,15 @@ inline void EnPlayerPhysics::setForce( float x, float y )
     _force._v[ 1 ] = y * _linearForce;
 }
 
+inline void EnPlayerPhysics::addForce( float x, float y )
+{
+    _force._v[ 0 ] += x * _linearForce;
+    _force._v[ 1 ] += y * _linearForce;
+}
+
 inline void EnPlayerPhysics::stopMovement()
 {
-    // the factor 2.5 is determined by trying
-    osg::Vec3f stopforce( -_force * ( 2.5 / _linearForce ) ); 
+    osg::Vec3f stopforce( -_force * ( 1.5f / _linearForce ) ); 
     stopforce._v[ 2 ] = 0;
     osg::Vec3f pos( _matrix.getTrans() );
     NewtonAddBodyImpulse( _p_body, &stopforce._v[ 0 ], &pos._v[ 0 ] );

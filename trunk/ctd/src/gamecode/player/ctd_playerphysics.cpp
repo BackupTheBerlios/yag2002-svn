@@ -47,9 +47,6 @@ CTD_IMPL_ENTITYFACTORY_AUTO( PlayerPhysicsEntityFactory );
 
 bool EnPlayerPhysics::_materialsCreated = false;
 
-// timer for jumping
-#define JUMP_TIMER	4
-
 //! Data structure used in raycasting
 struct PlayerRayCastData
 {
@@ -283,7 +280,7 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
 
     NewtonBodyGetMassMatrix( p_body, &mass, &Ixx, &Iyy, &Izz );
     EnPlayerPhysics* p_phys = static_cast< EnPlayerPhysics* >( NewtonBodyGetUserData( p_body ) );
-    Vec3f force  = p_phys->_force;
+    Vec3f& force  = p_phys->_force;
 
 	// get the current world timestep
 	timestep = NewtonGetTimeStep( p_phys->_p_world );
@@ -316,7 +313,7 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     force._v[ 2 ] = mass * ( p_phys->_gravity + climbforce ); // add gravity and climbing force
 
     // snap to ground
-    if ( p_phys->_isAirBorne && !p_phys->_jumpTimer ) 
+    if ( p_phys->_isAirBorne && !p_phys->_isJumping ) 
     {
         floor = p_phys->findFloor( p_phys->_p_world, pos, p_phys->_playerHeight + p_phys->_stepHeight );
 		deltaHeight = ( pos._v[ 2 ] - 0.5f * p_phys->_playerHeight ) - floor;
@@ -326,11 +323,32 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
 			accelZ = -( deltaHeight * timestepInv + velocity._v[ 2 ] ) * timestepInv;
 			force._v[ 2 ] += mass * accelZ;
 		}
-	} 
-    else if ( p_phys->_jumpTimer == JUMP_TIMER ) 
+	}
+    else if ( p_phys->_isJumping )
     {
-        Vec3f veloc( 0.0f, 0.0f, p_phys->_jumpForce );
-        NewtonAddBodyImpulse( p_phys->_p_body, &veloc._v [ 0 ], &pos._v[ 0 ] );
+        switch ( p_phys->_jumpState )
+        {
+            case BeginJumping:
+            {
+                Vec3f veloc( 0.0f, 0.0f, p_phys->_jumpForce );
+                NewtonAddBodyImpulse( p_phys->_p_body, &veloc._v [ 0 ], &pos._v[ 0 ] );
+                p_phys->_jumpState = Wait4Landing;
+            }
+            break;
+
+            case Wait4Landing:
+            {
+                if ( !p_phys->_isAirBorne )
+                {
+                    p_phys->_jumpState = BeginJumping;
+                    p_phys->_isJumping = false;
+                }
+            }
+            break;
+
+            default:
+                assert( NULL && "invalid jump state" );
+        }
     }
 	p_phys->_jumpTimer = p_phys->_jumpTimer ? p_phys->_jumpTimer - 1 : 0;
     NewtonBodySetForce( p_body, &force._v[ 0 ] );
@@ -365,6 +383,8 @@ _p_body( NULL ),
 _isAirBorne( false ),
 _playerHeight( 1.8f ),
 _jumpTimer( 0 ),
+_isJumping( false ),
+_jumpState( BeginJumping ),
 _jumpForce( 5.0f ),
 _climbForce( 30.0f ),
 _dimensions( Vec3f( 0.5f, 0.5f, 1.8f ) ),
@@ -510,9 +530,9 @@ void EnPlayerPhysics::initialize()
 
     // set the mass matrix
     Vec3f& dim = _dimensions;
-    float Ixx = 0.7f * _mass * ( dim.y() * dim.y() + dim.z() * dim.z() ) / 12.0f;
-    float Iyy = 0.7f * _mass * ( dim.x() * dim.x() + dim.z() * dim.z() ) / 12.0f;
-    float Izz = 0.7f * _mass * ( dim.x() * dim.x() + dim.y() * dim.y() ) / 12.0f;
+    float Ixx = 0.4f * _mass * dim.x() * dim.x();
+    float Iyy = 0.4f * _mass * dim.y() * dim.y();
+    float Izz = 0.4f * _mass * dim.z() * dim.z();
     NewtonBodySetMassMatrix( _p_body, _mass, Ixx, Iyy, Izz );
 
     // create an up vector joint, this way we constraint the body to keep up
@@ -547,7 +567,7 @@ void EnPlayerPhysics::update( float deltaTime )
 void EnPlayerPhysics::jump()
 {
     if ( !_isAirBorne )
-        _jumpTimer = 10;
+        _isJumping = true;
 }
 
 } // namespace CTD

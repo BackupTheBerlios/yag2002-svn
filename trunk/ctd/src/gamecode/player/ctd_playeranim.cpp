@@ -390,7 +390,7 @@ void EnPlayerAnimation::animJump()
     if ( _anim == eJump )
         return;
 
-    _model->action( _IdAnimJump, 0.0f, 0.4f );
+    _model->action( _IdAnimJump, 0.0f, 0.9f );
     _anim = eJump;
 }
 

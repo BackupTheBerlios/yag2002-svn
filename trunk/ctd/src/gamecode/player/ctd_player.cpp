@@ -48,6 +48,10 @@ namespace CTD
 // entity name of player's camera
 #define PLAYER_CAMERA_ENTITIY_NAME      "playercam"
 
+// look limits
+#define LIMIT_PITCH_ANGLE               120.0f
+#define LIMIT_PITCH_OFFSET              -20.0f;
+
 //! Input handler class for player
 class PlayerInputHandler : public GenericInputHandler< EnPlayer >
 {
@@ -347,9 +351,6 @@ void EnPlayer::setNextCameraMode()
 
 void EnPlayer::setCameraPitchYaw( float pitch, float yaw )
 {
-#define LIMIT_PITCH_ANGLE   120.0f
-#define LIMIT_PITCH_OFFSET  -20.0f;
-
     if ( _cameraMode == Spheric )
     {
         float angleY = yaw * 360.0f;
@@ -487,9 +488,10 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
         if ( key == _keyCodeMoveLeft )
             _left = true;
 
-        if ( key == _keyCodeJump )
+        if ( key == _keyCodeJump && !_p_userObject->_p_playerPhysics->isJumping() )
         {
             _p_userObject->_p_playerPhysics->jump();
+            _p_userObject->_p_playerAnimation->animIdle(); // stop any movement animation first
             _p_userObject->_p_playerAnimation->animJump();
         }
     } 
@@ -525,15 +527,31 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
     //--------
 
     // execute dispatched commands
+    if ( _moveForward )
+    {
+        _p_userObject->_p_playerPhysics->setForce( _p_userObject->_moveDir._v[ 0 ], _p_userObject->_moveDir._v[ 1 ] );
+
+        if ( !_p_userObject->_p_playerPhysics->isJumping() )
+            _p_userObject->_p_playerAnimation->animWalk();
+    }
+
+    if ( _moveBackward )
+    {
+        _p_userObject->_p_playerPhysics->setForce( -_p_userObject->_moveDir._v[ 0 ], -_p_userObject->_moveDir._v[ 1 ] );
+
+        if ( !_p_userObject->_p_playerPhysics->isJumping() )
+            _p_userObject->_p_playerAnimation->animWalk();
+    }
+
     if ( _right )
     {
         switch ( _p_userObject->_cameraMode )
         {
             case EnPlayer::Spheric:
             {
-                _p_userObject->_rot -= _p_userObject->_p_playerPhysics->getAngularForce();
+                _p_userObject->_rot += _p_userObject->_p_playerPhysics->getAngularForce();
                 if ( _p_userObject->_rot > PI * 2.0f )
-                    _p_userObject->_rot += PI * 2.0f;
+                    _p_userObject->_rot -= PI * 2.0f;
 
                 _p_userObject->_moveDir._v[ 0 ] = sinf( _p_userObject->_rot );
                 _p_userObject->_moveDir._v[ 1 ] = cosf( _p_userObject->_rot );
@@ -545,10 +563,8 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             case EnPlayer::Ego:
             {
                 osg::Vec3f side;
-                side = _p_userObject->_moveDir ^ osg::Vec3f( 0, 0, -1 );
-                _p_userObject->_moveDir._v[ 0 ] = side.x();
-                _p_userObject->_moveDir._v[ 1 ] = side.y();                
-                _p_userObject->_p_playerPhysics->setForce( _p_userObject->_moveDir._v[ 0 ], _p_userObject->_moveDir._v[ 1 ] );
+                side = _p_userObject->_moveDir ^ osg::Vec3f( 0, 0, -0.1f );
+                _p_userObject->_p_playerPhysics->addForce( side.x(), side.y() );
                 _p_userObject->_p_playerAnimation->animTurn();
             }
             break;
@@ -564,9 +580,9 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
         {
             case EnPlayer::Spheric:
             {
+                _p_userObject->_rot -= _p_userObject->_p_playerPhysics->getAngularForce();
                 if ( _p_userObject->_rot < 0 )
-                    _p_userObject->_rot -= PI * 2.0f;
-                _p_userObject->_rot += _p_userObject->_p_playerPhysics->getAngularForce();
+                    _p_userObject->_rot += PI * 2.0f;
 
                 _p_userObject->_moveDir._v[ 0 ] = sinf( _p_userObject->_rot );
                 _p_userObject->_moveDir._v[ 1 ] = cosf( _p_userObject->_rot );
@@ -578,10 +594,8 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             case EnPlayer::Ego:
             {
                 osg::Vec3f side;
-                side = _p_userObject->_moveDir ^ osg::Vec3f( 0, 0, 1 );
-                _p_userObject->_moveDir._v[ 0 ] = side.x();
-                _p_userObject->_moveDir._v[ 1 ] = side.y();                
-                _p_userObject->_p_playerPhysics->setForce( _p_userObject->_moveDir._v[ 0 ], _p_userObject->_moveDir._v[ 1 ] );
+                side = _p_userObject->_moveDir ^ osg::Vec3f( 0, 0, 0.1f );
+                _p_userObject->_p_playerPhysics->addForce( side.x(), side.y() );
                 _p_userObject->_p_playerAnimation->animTurn();
             }
             break;
@@ -589,18 +603,6 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             default:
                 assert( NULL && "unknown camera state!" );
         }
-    }
-
-    if ( _moveForward )
-    {
-        _p_userObject->_p_playerPhysics->setForce( _p_userObject->_moveDir._v[ 0 ], _p_userObject->_moveDir._v[ 1 ] );
-        _p_userObject->_p_playerAnimation->animWalk();
-    }
-
-    if ( _moveBackward )
-    {
-        _p_userObject->_p_playerPhysics->setForce( -_p_userObject->_moveDir._v[ 0 ], -_p_userObject->_moveDir._v[ 1 ] );
-        _p_userObject->_p_playerAnimation->animWalk();
     }
 
     // handle stopping movement
