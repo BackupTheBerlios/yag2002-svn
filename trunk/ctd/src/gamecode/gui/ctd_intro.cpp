@@ -40,7 +40,7 @@ namespace CTD
 // prefix for intro layout resources
 #define INTRO_PREFIX            "intro_"
 // fade-in time
-#define INTRO_FADEIN_TIME       10.0f
+#define INTRO_FADEIN_TIME       3.0f
 
 IntroControl::IntroControl() :
 _p_clickSound( NULL ),
