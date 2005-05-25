@@ -37,6 +37,9 @@
 namespace CTD
 {
 
+// Newton's update period in seconds
+#define FIX_PHYSICS_UPDATE_PERIOD   ( 1.0f / 60.0f )
+
 class Application;
 class LevelManager;
 class PhysicsDebugDrawable;
@@ -173,7 +176,14 @@ inline const float& Physics::getWorldGravity()
 
 inline void Physics::update( float deltaTime )
 { 
-    NewtonUpdate( _p_world, deltaTime );
+    // Newton should be fed with fix timesteps
+    static float time_elapsed = 0;
+    time_elapsed += deltaTime;
+    if ( time_elapsed > FIX_PHYSICS_UPDATE_PERIOD )
+    {
+        NewtonUpdate( _p_world, FIX_PHYSICS_UPDATE_PERIOD );
+        time_elapsed -= FIX_PHYSICS_UPDATE_PERIOD;
+    }
 }
 
 //-------------------------------------//

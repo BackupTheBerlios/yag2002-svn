@@ -110,7 +110,6 @@ bool Physics::initialize()
 
     NewtonSetSolverModel( _p_world, 0 );   // 0: exact, 1 adaptive, n linear. for games linear is ok
     NewtonSetFrictionModel( _p_world, 0 ); // 0: exact, 1 adaptive
-    NewtonSetMinimumFrameRate( _p_world, 60.0f );
 
     // setup all predefined materials
     setupMaterials();
