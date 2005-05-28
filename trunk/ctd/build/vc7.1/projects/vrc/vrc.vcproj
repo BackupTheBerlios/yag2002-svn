@@ -130,6 +130,12 @@
 					RelativePath="..\..\..\..\src\gamecode\player\ctd_chatgui.h">
 				</File>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\player\ctd_inputhandler.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\player\ctd_inputhandler.h">
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\player\ctd_player.cpp">
 				</File>
 				<File
@@ -341,6 +347,16 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\gui\ctd_menu.h">
+				</File>
+			</Filter>
+			<Filter
+				Name="tools"
+				Filter="">
+				<File
+					RelativePath="..\..\..\..\src\gamecode\tools\ctd_fpsdisplay.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\tools\ctd_fpsdisplay.h">
 				</File>
 			</Filter>
 		</Filter>
