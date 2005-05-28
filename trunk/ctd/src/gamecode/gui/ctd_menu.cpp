@@ -533,6 +533,15 @@ void EnMenu::updateEntity( float deltaTime )
         }
         break;
 
+        case UnloadLevel:
+        {
+            LevelManager::get()->unloadLevel();
+            _levelLoaded = false;
+            switchMenuScene( true );
+            _menuState = None;
+        }
+        break;
+
         case Hidden:
             break;
 
@@ -671,9 +680,7 @@ void EnMenu::leaveLevel()
     if ( !_levelLoaded )
         return;
 
-    LevelManager::get()->unloadLevel();
-    _levelLoaded = false;
-    switchMenuScene( true );
+    _menuState = UnloadLevel;
     _p_btnStart->setText( "Start" );
     _p_btnQuit->setText( "Quit" );
 }

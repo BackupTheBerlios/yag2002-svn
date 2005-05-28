@@ -149,6 +149,7 @@ class EnMenu :  public BaseEntity
             Intro,
             BeginLoadingLevel,
             LoadingLevel,
+            UnloadLevel,
             Visible,
             Hidden
         }                                           _menuState;
