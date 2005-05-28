@@ -281,8 +281,10 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     NewtonBodyGetMassMatrix( p_body, &mass, &Ixx, &Iyy, &Izz );
     EnPlayerPhysics* p_phys = static_cast< EnPlayerPhysics* >( NewtonBodyGetUserData( p_body ) );
     Vec3f& force  = p_phys->_force;
+    force._v[ 0 ] *= p_phys->_linearForce;
+    force._v[ 1 ] *= p_phys->_linearForce;
 
-	// get the current world timestep
+    // get the current world timestep
 	timestep = NewtonGetTimeStep( p_phys->_p_world );
 	timestepInv = 1.0f / timestep;
 

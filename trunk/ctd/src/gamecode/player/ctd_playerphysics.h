@@ -228,14 +228,14 @@ class EnPlayerPhysics : public BaseEntity
 
 inline void EnPlayerPhysics::setForce( float x, float y )
 {
-    _force._v[ 0 ] = x * _linearForce;
-    _force._v[ 1 ] = y * _linearForce;
+    _force._v[ 0 ] = x;
+    _force._v[ 1 ] = y;
 }
 
 inline void EnPlayerPhysics::addForce( float x, float y )
 {
-    _force._v[ 0 ] += x * _linearForce;
-    _force._v[ 1 ] += y * _linearForce;
+    _force._v[ 0 ] += x;
+    _force._v[ 1 ] += y;
 }
 
 inline void EnPlayerPhysics::stopMovement()
