@@ -32,7 +32,7 @@
 
 #include <ctd_main.h>
 #include "ctd_playersound.h"
-#include "ctd_player.h"
+#include "ctd_playerimpl.h"
 
 using namespace osg;
 using namespace std;
@@ -62,7 +62,7 @@ EnPlayerSound::~EnPlayerSound()
 {
 }
 
-void EnPlayerSound::setPlayer( EnPlayer* p_player )
+void EnPlayerSound::setPlayer( BasePlayerImplementation* p_player )
 {
     _p_player = p_player;
 }
@@ -107,7 +107,7 @@ void EnPlayerSound::postInitialize()
     }
 
     // add the sound group into player node
-    _p_player->addToTransformationNode( _p_soundGroup.get() );
+    _p_player->getPlayerEntity()->appendTransformationNode( _p_soundGroup.get() );
 }
 
 osgAL::SoundState* EnPlayerSound::createSound( const string& filename )

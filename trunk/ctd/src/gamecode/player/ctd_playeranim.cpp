@@ -32,7 +32,7 @@
 
 #include <ctd_main.h>
 #include "ctd_playeranim.h"
-#include "ctd_player.h"
+#include "ctd_playerimpl.h"
 
 using namespace osg;
 using namespace std;
@@ -166,18 +166,18 @@ void EnPlayerAnimation::enableRendering( bool render )
         return;
 
     if ( !render )
-        _p_player->removeFromTransformationNode( _animNode.get() );
+        _p_player->getPlayerEntity()->removeTransformationNode( _animNode.get() );
     else
-        _p_player->addToTransformationNode( _animNode.get() );
+        _p_player->getPlayerEntity()->appendTransformationNode( _animNode.get() );
 
     _renderingEnabled = render;
 }
 
-void EnPlayerAnimation::setPlayer( EnPlayer* p_player )
+void EnPlayerAnimation::setPlayer( BasePlayerImplementation* p_player )
 {
     _p_player = p_player;
     // add the new mesh into player's transformable scene group
-    _p_player->addToTransformationNode( _animNode.get() );
+    _p_player->getPlayerEntity()->appendTransformationNode( _animNode.get() );
 }
 
 bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& configfilename )

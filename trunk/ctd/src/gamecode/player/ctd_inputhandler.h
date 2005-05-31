@@ -40,6 +40,7 @@
 #define _CTD_INPUTHANDLER_H_
 
 #include <ctd_main.h>
+#include "ctd_player.h"
 
 namespace CTD
 {
@@ -48,16 +49,16 @@ namespace CTD
 #define LIMIT_PITCH_ANGLE               120.0f
 #define LIMIT_PITCH_OFFSET              -20.0f;
 
-class EnPlayer;
+class BasePlayerImplStandalone;
 
 //! Input handler class for player
-class PlayerInputHandler : public GenericInputHandler< EnPlayer >
+class PlayerIHStandalone : public GenericInputHandler< BasePlayerImplStandalone >
 {
     public:
 
-                                            PlayerInputHandler( EnPlayer*p_player );
+                                            PlayerIHStandalone( BasePlayerImplStandalone* p_playerimpl, EnPlayer* p_playerentity );
                                             
-        virtual                             ~PlayerInputHandler();
+        virtual                             ~PlayerIHStandalone();
 
         //! Handle input events.
         bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
@@ -85,6 +86,16 @@ class PlayerInputHandler : public GenericInputHandler< EnPlayer >
 
     protected:
 
+        // used internally
+        // ---------------
+        BasePlayerImplStandalone*           getPlayerImpl() { return _p_userObject; }
+
+        EnPlayer*                           getPlayerEntity() { return _p_playerEntity; }
+
+        EnPlayer*                           _p_playerEntity;
+
+        EnPlayer::PlayerAttributes          _attributeContainer;
+
         // some internal variables
         bool                                _enabled;
         bool                                _menuEnabled;
@@ -94,6 +105,9 @@ class PlayerInputHandler : public GenericInputHandler< EnPlayer >
         bool                                _moveBackward;
         bool                                _camSwitch;
         bool                                _chatSwitch;
+
+        // rotation about Z axis
+        float                               _rotZ;
 
     public:
 

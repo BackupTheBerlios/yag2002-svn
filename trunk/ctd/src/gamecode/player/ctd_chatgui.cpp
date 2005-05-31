@@ -30,7 +30,7 @@
 
 #include <ctd_main.h>
 #include "ctd_chatgui.h"
-#include "ctd_player.h"
+#include "ctd_playerimpl.h"
 
 using namespace osg;
 using namespace std;
@@ -42,7 +42,7 @@ namespace CTD
 #define FADE_TIME           1.0f
  
 PlayerChatGui::PlayerChatGui() :
-_p_player( NULL ),
+_p_playerImpl( NULL ),
 _p_wnd( NULL ),
 _p_frame( NULL ),
 _p_editbox( NULL ),
@@ -63,9 +63,9 @@ PlayerChatGui::~PlayerChatGui()
         CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
 }
 
-void PlayerChatGui::initialize( EnPlayer* p_player, const string& layoutFile )
+void PlayerChatGui::initialize( BasePlayerImplementation* p_playerimpl, const string& layoutFile )
 {   
-    _p_player = p_player;
+    _p_playerImpl = p_playerimpl;
 
     // get the player name
     Configuration::get()->getSettingValue( CTD_GS_PLAYERNAME, _playername );

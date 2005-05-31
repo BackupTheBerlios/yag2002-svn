@@ -46,7 +46,7 @@ namespace CTD
 
 #define ENTITY_NAME_PLSOUND   "PlayerSound"
 
-class EnPlayer;
+class BasePlayerImplementation;
 
 //! Entity for player sounds
 class EnPlayerSound  : public BaseEntity
@@ -62,7 +62,7 @@ class EnPlayerSound  : public BaseEntity
         * Set player association, player must call this in post-initialize phase
         * \param p_player                           Player instance
         */
-        void                                        setPlayer( EnPlayer* p_player );
+        void                                        setPlayer( BasePlayerImplementation* p_player );
 
         /**
         * Post-Initializing function
@@ -127,7 +127,7 @@ class EnPlayerSound  : public BaseEntity
         //! Group where all sound nodes reside
         osg::ref_ptr< osg::Group >                  _p_soundGroup;
 
-        EnPlayer*                                   _p_player;
+        BasePlayerImplementation*                   _p_player;
 
     friend class EnPlayerSound;
 };

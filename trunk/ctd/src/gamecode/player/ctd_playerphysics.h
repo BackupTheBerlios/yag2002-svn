@@ -47,7 +47,7 @@ namespace CTD
 
 #define ENTITY_NAME_PLPHYS  "PlayerPhysics"
 
-class EnPlayer;
+class BasePlayerImplementation;
 
 //! Player physics entity
 class EnPlayerPhysics : public BaseEntity
@@ -60,10 +60,10 @@ class EnPlayerPhysics : public BaseEntity
         virtual                                     ~EnPlayerPhysics();
 
         /**
-        * Set player association, player must call this in post-initialize phase
+        * Set player's implementation , player entity must call this in post-initialize phase.
         * \param p_player                           Player instance
         */
-        void                                        setPlayer( EnPlayer* p_player );
+        void                                        setPlayer( BasePlayerImplementation* p_playerimpl );
 
         /**
         * Initializing function
@@ -137,7 +137,7 @@ class EnPlayerPhysics : public BaseEntity
         int                                         collideWithOtherEntities( const NewtonMaterial* p_material, const NewtonContact* p_contact );
  
         //! Return player, used in static mehods
-        EnPlayer*                                   getPlayer() { return _p_player; }
+        BasePlayerImplementation*                   getPlayer() { return _p_playerImpl; }
 
         //! Returns true if we are moving
         bool                                        isMoving() { return !_isStopped; }
@@ -186,7 +186,7 @@ class EnPlayerPhysics : public BaseEntity
 
         //--------------------------------------------------------//
 
-        EnPlayer*                                   _p_player;
+        BasePlayerImplementation*                   _p_playerImpl;
 
         NewtonWorld*                                _p_world;
 
@@ -240,6 +240,7 @@ inline void EnPlayerPhysics::addForce( float x, float y )
 
 inline void EnPlayerPhysics::stopMovement()
 {
+    // factor 1.5 is determined by fine-tuning
     osg::Vec3f stopforce( -_force * ( 1.5f / _linearForce ) ); 
     stopforce._v[ 2 ] = 0;
     osg::Vec3f pos( _matrix.getTrans() );

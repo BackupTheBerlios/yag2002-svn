@@ -49,7 +49,7 @@ namespace CTD
 
 #define ENTITY_NAME_PLANIM    "PlayerAnimation"
 
-class EnPlayer;
+class BasePlayerImplementation;
 
 //! Class for controling player animations
 class EnPlayerAnimation  : public BaseEntity
@@ -75,10 +75,10 @@ class EnPlayerAnimation  : public BaseEntity
         void                                        handleNotification( EntityNotification& notify );
 
         /**
-        * Set player association, player must call this in post-initialize phase
+        * Set player association before using this entity.
         * \param p_player                           Player instance
         */
-        void                                        setPlayer( EnPlayer* p_player );
+        void                                        setPlayer( BasePlayerImplementation* p_player );
 
         /**
         * Enable / disable rendering
@@ -119,7 +119,7 @@ class EnPlayerAnimation  : public BaseEntity
 
         //----------------------------------------------------------//
 
-        EnPlayer*                                   _p_player;
+        BasePlayerImplementation*                   _p_player;
 
         osg::ref_ptr< osgCal::Model >               _model;
 

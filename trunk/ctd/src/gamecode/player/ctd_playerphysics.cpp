@@ -34,7 +34,7 @@
 #include <ctd_main.h>
 #include "ctd_playerphysics.h"
 #include "ctd_playersound.h"
-#include "ctd_player.h"
+#include "ctd_playerimpl.h"
 
 using namespace osg;
 using namespace std;
@@ -211,18 +211,14 @@ void EnPlayerPhysics::physicsBodyDestructor( const NewtonBody* p_body )
 // transformation callback
 void EnPlayerPhysics::physicsSetTransform( const NewtonBody* p_body, const float* p_matrix )
 {
-    EnPlayer* p_node = static_cast< EnPlayerPhysics* >( NewtonBodyGetUserData( p_body ) )->_p_player;
-    Matrixf& mat = p_node->_p_playerPhysics->_matrix;
+    BasePlayerImplementation* p_node = static_cast< EnPlayerPhysics* >( NewtonBodyGetUserData( p_body ) )->_p_playerImpl;
+    Matrixf& mat = p_node->getPlayerPhysics()->_matrix;
     mat = Matrixf( p_matrix );    
     Quat quat;
     mat.get( quat );
 
     osg::Vec3f trans = mat.getTrans();
-    // directly set player node's position and rotation
-    p_node->setRotation( quat );
-    p_node->setPosition( trans );
-
-    // update also player's internal position and rotation so the camera can by adjusted by player every frame
+    // set player's position and rotation
     p_node->setPlayerRotation( quat );
     p_node->setPlayerPosition( trans );
 }
@@ -238,7 +234,7 @@ int EnPlayerPhysics::collideWithLevel( const NewtonMaterial* p_material, const N
 	// Get the collision and normal
     NewtonMaterialGetContactPositionAndNormal( p_material, &point._v[ 0 ], &normal._v[ 0 ] );
 
-    Vec3f pos = _p_player->getPosition();
+    Vec3f pos = _p_playerImpl->getPlayerPosition();
 	// consider the player height
     if ( ( point._v[ 2 ] - ( pos._v[ 2 ] - _playerHeight * 0.5f ) ) < _stepHeight ) 
     {
@@ -296,7 +292,7 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     const float* matelems = matrix.ptr();
     Vec3f front( matelems[ 4 ] , matelems[ 5 ], matelems[ 6 ] );
     // _moveDir must be normalized
-    Vec3f cross( front ^ p_phys->_p_player->_moveDir );
+    Vec3f cross( front ^ p_phys->_p_playerImpl->getPlayerMoveDirection() );
     steerAngle = min( max( cross._v[ 2 ], -1.0f ), 1.0f );
 	steerAngle = asinf( steerAngle );
 	NewtonBodyGetOmega( p_phys->_p_body, &omega._v[ 0 ] );
@@ -379,7 +375,7 @@ float EnPlayerPhysics::physicsRayCastPlacement( const NewtonBody* p_body, const 
 // implementation of player physics
 //---------------------------------
 EnPlayerPhysics::EnPlayerPhysics() :
-_p_player( NULL ),
+_p_playerImpl( NULL ),
 _p_world( Physics::get()->getWorld() ),
 _p_body( NULL ),
 _isAirBorne( false ),
@@ -491,9 +487,9 @@ void EnPlayerPhysics::initializePhysicsMaterials()
     NewtonMaterialSetCollisionCallback( _p_world, playerID, stoneID, &player_stoneCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
 }
 
-void EnPlayerPhysics::setPlayer( EnPlayer* p_player )
+void EnPlayerPhysics::setPlayer( BasePlayerImplementation* p_player )
 {
-    _p_player = p_player;
+    _p_playerImpl = p_player;
 }
 
 void EnPlayerPhysics::initialize()
@@ -545,16 +541,16 @@ void EnPlayerPhysics::initialize()
 void EnPlayerPhysics::postInitialize()
 {
     // check if the player has already set its association
-    assert( _p_player && "player entitiy has to set its association in initialize phase!" );
+    assert( _p_playerImpl && "player entitiy has to set its association in initialize phase!" );
 
     // give this object the same name as player's
-    setInstanceName( _p_player->getInstanceName() );
+    setInstanceName( _p_playerImpl->getPlayerEntity()->getInstanceName() );
 
     Matrixf mat;
-    mat.setTrans( _p_player->_position ); 
+    mat.setTrans( _p_playerImpl->getPlayerPosition() ); 
 
     // find floor under the initial position and adapt body matrix
-    float z = findFloor( _p_world, _p_player->_position, 1000.0f );
+    float z = findFloor( _p_world, _p_playerImpl->getPlayerPosition(), 1000.0f );
     mat.ptr()[ 14 ] = z + _dimensions._v[ 2 ] + 0.2f; // add an offset of player height plus 0.2 meters
     // set the matrix for both the rigid body and the entity
     NewtonBodySetMatrix ( _p_body, mat.ptr() );

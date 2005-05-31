@@ -19,10 +19,10 @@
  ****************************************************************/
 
 /*###############################################################
- # player
+ # player entiy
  #
- # this class implements the player
- #
+ # the actual behaviour is defined by one of its implementations 
+ #  for Server, Client, or Standalone.
  #
  #   date of creation:  01/14/2005
  #
@@ -34,6 +34,9 @@
  #  date       nick name  comment
  #----------------------------------------------------------
  #  01/14/2005 boto       creation of Player
+ #
+ #  05/27/2005 boto       separation of player implementation for
+ #                         Server, Client, and Standalone
  #
  ################################################################*/
 
@@ -47,17 +50,13 @@ namespace CTD
 
 #define ENTITY_NAME_PLAYER    "Player"
 
-class EnPlayerAnimation;
-class EnPlayerPhysics;
-class EnPlayerSound;
-class EnCamera;
-class PlayerChatGui;
-class PlayerInputHandler;
+class BasePlayerImplementation;
 
 //! Player entity
 class EnPlayer : public BaseEntity
 {
     public:
+
 
                                                     EnPlayer();
 
@@ -84,111 +83,71 @@ class EnPlayer : public BaseEntity
         //! Override this method of BaseEntity to get notifications (from menu system)
         void                                        handleNotification( EntityNotification& notify );
 
-        //! Return player's sound component, used by physics component
-        EnPlayerSound*                              getPlayerSound() { return _p_playerSound; }
+        //! Use this method for adding a node to player's transformation node
+        inline void                                 appendTransformationNode( osg::Node* p_node );
 
-        //! Set player's position. It is used by physics.
-        inline void                                 setPlayerPosition( const osg::Vec3f& pos );
+        //! Use this method for removing a node from player's transformation node
+        inline void                                 removeTransformationNode( osg::Node* p_node );
 
-        //! Set player's rotation. It is used by physics.
-        inline void                                 setPlayerRotation( const osg::Quat& rot );
-
-        //! Set camera mode to Spheric or Ego
-        void                                        setCameraMode( unsigned int mode );
-
-        //! Set next camera mode
-        void                                        setNextCameraMode();
-
-        //! Enable / disable input processing and control
-        void                                        enableControl( bool en );
-
-    protected:
-
-        // entity attributes
-        //----------------------------------------------------------//
-
-        //! Player name
-        std::string                                 _playerName;
-
-        //! Physics entity's instance name which will be attached to player
-        std::string                                 _physicsEntity;
-
-        //! Animation entity's instance name which will be attached to player
-        std::string                                 _animationEntity;
-
-        //! Sound entity's instance name which will be attached to player
-        std::string                                 _soundEntity;
-
-        //! Initial position
-        osg::Vec3f                                  _position;
-
-        //! Rotation
-        osg::Quat                                   _rotation;
-
-        //! Camera's position offset for spheric mode
-        osg::Vec3f                                  _camPosOffsetSpheric;
-
-        //! Camera's rotation offset for spheric mode ( roll/pitch/yaw in degrees )
-        osg::Vec3f                                  _camRotOffsetSpheric;
-
-        //! Camera's position offset for ego mode
-        osg::Vec3f                                  _camPosOffsetEgo;
-
-        //! Camera's rotation offset for ego mode ( roll/pitch/yaw in degrees )
-        osg::Vec3f                                  _camRotOffsetEgo;
-
-        //! CEGUI layout file for chat
-        std::string                                 _chatGuiConfig;
-
-    protected:
-
-        // the following is for internal use
-        //----------------------------------------------------------//
-
-        //! Set camera's pitch and yaw angles given the mouse position [-1..1, -1..1]
-        //  for looking around
-        void                                        setCameraPitchYaw( float pitch, float yaw );
-
-        //! Get the configuration settings
-        void                                        getConfiguration();
-
-        //! Camera mode
+        //! All possible camera modes the player can have.
         enum CameraMode
         {
             Ego,
             Spheric
-        }                                           _cameraMode;
+        };
 
-        //! Enable / disable input processing
-        bool                                        _enabledControl;
+        //! Entity attribute container
+        class PlayerAttributes
+        {
+            public:
 
-        //! Physics component
-        EnPlayerPhysics*                            _p_playerPhysics;
+                //! Player name
+                std::string                                 _playerName;
 
-        //! Animation control component
-        EnPlayerAnimation*                          _p_playerAnimation;
+                //! Physics entity's instance name which will be attached to player
+                std::string                                 _physicsEntity;
 
-        //! Sound control component
-        EnPlayerSound*                              _p_playerSound;
+                //! Animation entity's instance name which will be attached to player
+                std::string                                 _animationEntity;
 
-        //! Camera entity
-        EnCamera*                                   _p_camera;
+                //! Sound entity's instance name which will be attached to player
+                std::string                                 _soundEntity;
 
-        //! Chat gui
-        std::auto_ptr< PlayerChatGui >              _p_chatGui;
+                //! Initial position
+                osg::Vec3f                                  _pos;
 
-        //! Movement direction
-        osg::Vec3f                                  _moveDir;
+                //! Initial rotation about Z axis
+                float                                       _rot;
 
-        //! Rotation about Z axis
-        float                                       _rot;
+                //! Camera's position offset for spheric mode
+                osg::Vec3f                                  _camPosOffsetSpheric;
 
-        PlayerInputHandler*                         _p_inputHandler;
+                //! Camera's rotation offset for spheric mode ( roll/pitch/yaw in degrees )
+                osg::Vec3f                                  _camRotOffsetSpheric;
 
-    friend class EnPlayerPhysics;
-    friend class EnPlayerAnimation;
-    friend class EnPlayerSound;
-    friend class PlayerInputHandler;
+                //! Camera's position offset for ego mode
+                osg::Vec3f                                  _camPosOffsetEgo;
+
+                //! Camera's rotation offset for ego mode ( roll/pitch/yaw in degrees )
+                osg::Vec3f                                  _camRotOffsetEgo;
+
+                //! CEGUI layout file for chat
+                std::string                                 _chatGuiConfig;
+        };
+
+        //! Return player's attribute container
+        inline const PlayerAttributes&              getPlayerAttributes();
+
+    protected:
+
+        //! Player attributes encapsulated in a container, ready for transfering to player implementation
+        PlayerAttributes                            _attributeContainer;
+
+        //! Game mode ( can be Server, Client, or Standalone )
+        unsigned int                                _gameMode;
+
+        //! Player implementation
+        BasePlayerImplementation*                   _p_playerImpl;
 };
 
 //! Entity type definition used for type registry
@@ -202,15 +161,19 @@ class PlayerEntityFactory : public BaseEntityFactory
         Macro_CreateEntity( EnPlayer );
 };
 
-// inlines
-inline void EnPlayer::setPlayerPosition( const osg::Vec3f& pos )
-{
-    _position = pos;
+inline const EnPlayer::PlayerAttributes& EnPlayer::getPlayerAttributes()
+{ 
+    return _attributeContainer; 
 }
 
-inline void EnPlayer::setPlayerRotation( const osg::Quat& rot )
+inline void EnPlayer::appendTransformationNode( osg::Node* p_node )
 {
-    _rotation = rot;
+    addToTransformationNode( p_node );
+}
+
+inline void EnPlayer::removeTransformationNode( osg::Node* p_node )
+{
+    removeFromTransformationNode( p_node );
 }
 
 } // namespace CTD

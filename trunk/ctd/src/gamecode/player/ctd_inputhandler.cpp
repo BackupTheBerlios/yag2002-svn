@@ -37,13 +37,16 @@
 #include "ctd_chatgui.h"
 #include "../visuals/ctd_camera.h"
 
+#include "ctd_playerimplstandalone.h"
+
 using namespace std;
 
 namespace CTD
 {
 
-PlayerInputHandler::PlayerInputHandler( EnPlayer* p_player ) : 
-GenericInputHandler< EnPlayer >( p_player ),
+PlayerIHStandalone::PlayerIHStandalone( BasePlayerImplStandalone* p_player, EnPlayer* p_playerentity ) : 
+GenericInputHandler< BasePlayerImplStandalone >( p_player ),
+_p_playerEntity( p_playerentity ),
 _enabled( true ),
 _menuEnabled( true ),
 _right( false ),
@@ -52,6 +55,7 @@ _moveForward( false ),
 _moveBackward( false ),
 _camSwitch( false ),
 _chatSwitch( false ),
+_rotZ( 0 ),
 _keyCodeMoveForward( osgGA::GUIEventAdapter::KEY_Up ),
 _keyCodeMoveBackward( osgGA::GUIEventAdapter::KEY_Down ),
 _keyCodeMoveLeft( osgGA::GUIEventAdapter::KEY_Left ),
@@ -60,13 +64,15 @@ _keyCodeJump( osgGA::GUIEventAdapter::KEY_Space ),
 _keyCodeCameraMode( osgGA::GUIEventAdapter::KEY_F1 ),
 _keyCodeChatMode( osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON )
 {
+    // make a local copy of player entity's attributes
+    _attributeContainer = p_playerentity->getPlayerAttributes();
 }
 
-PlayerInputHandler::~PlayerInputHandler() 
+PlayerIHStandalone::~PlayerIHStandalone() 
 {
 }
 
-bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+bool PlayerIHStandalone::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
     // while in menu we skip input processing for player
     if ( _menuEnabled )
@@ -97,17 +103,17 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             if ( !_chatSwitch )
             {
                 // this method has an side effect on _enable (see below)
-                _p_userObject->enableControl( s_toggleChatMode );
+                getPlayerImpl()->enableControl( s_toggleChatMode );
                 s_toggleChatMode = !s_toggleChatMode;
                 _chatSwitch = true;
 
                 // let the chat control know that we are in edit mode now
-                _p_userObject->_p_chatGui->setEditMode( s_toggleChatMode );
+                getPlayerImpl()->_p_chatGui->setEditMode( s_toggleChatMode );
 
                 // stop player and sound
-                _p_userObject->_p_playerAnimation->animIdle();
-                _p_userObject->getPlayerSound()->stopPlayingAll();
-                _p_userObject->_p_playerPhysics->stopMovement();
+                getPlayerImpl()->getPlayerAnimation()->animIdle();
+                getPlayerImpl()->getPlayerSound()->stopPlayingAll();
+                getPlayerImpl()->getPlayerPhysics()->stopMovement();
             }
         }
     }
@@ -131,7 +137,7 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
         {
             if ( !_camSwitch )
             {
-                _p_userObject->setNextCameraMode();
+                getPlayerImpl()->setNextCameraMode();
                 _camSwitch = true;
             }
         }
@@ -148,11 +154,11 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
         if ( key == _keyCodeMoveLeft )
             _left = true;
 
-        if ( key == _keyCodeJump && !_p_userObject->_p_playerPhysics->isJumping() )
+        if ( key == _keyCodeJump && !getPlayerImpl()->_p_playerPhysics->isJumping() )
         {
-            _p_userObject->_p_playerPhysics->jump();
-            _p_userObject->_p_playerAnimation->animIdle(); // stop any movement animation first
-            _p_userObject->_p_playerAnimation->animJump();
+            getPlayerImpl()->_p_playerPhysics->jump();
+            getPlayerImpl()->_p_playerAnimation->animIdle(); // stop any movement animation first
+            getPlayerImpl()->_p_playerAnimation->animJump();
         }
     } 
     else if ( keyUp || mouseButtonRelease )
@@ -168,7 +174,7 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             if ( key == _keyCodeMoveBackward )
                 _moveBackward = false;
 
-            _p_userObject->_p_playerPhysics->stopMovement();
+            getPlayerImpl()->_p_playerPhysics->stopMovement();
         }
 
         if ( ( key == _keyCodeMoveRight ) || ( key == _keyCodeMoveLeft ) )
@@ -180,8 +186,8 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             if ( key == _keyCodeMoveLeft )
                 _left = false;
 
-            if ( _p_userObject->_cameraMode == EnPlayer::Ego )
-                _p_userObject->_p_playerPhysics->stopMovement();
+            if ( getPlayerImpl()->_cameraMode == EnPlayer::Ego )
+                getPlayerImpl()->_p_playerPhysics->stopMovement();
         }
     }
     //--------
@@ -189,47 +195,47 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
     // execute dispatched commands
     if ( _moveForward )
     {
-        _p_userObject->_p_playerPhysics->setForce( _p_userObject->_moveDir._v[ 0 ], _p_userObject->_moveDir._v[ 1 ] );
+        getPlayerImpl()->_p_playerPhysics->setForce( getPlayerImpl()->_moveDir._v[ 0 ], getPlayerImpl()->_moveDir._v[ 1 ] );
 
-        if ( !_p_userObject->_p_playerPhysics->isJumping() )
-            _p_userObject->_p_playerAnimation->animWalk();
+        if ( !getPlayerImpl()->_p_playerPhysics->isJumping() )
+            getPlayerImpl()->_p_playerAnimation->animWalk();
     } 
     
     if ( _moveBackward )
     {
-        _p_userObject->_p_playerPhysics->setForce( -_p_userObject->_moveDir._v[ 0 ], -_p_userObject->_moveDir._v[ 1 ] );
+        getPlayerImpl()->_p_playerPhysics->setForce( -getPlayerImpl()->_moveDir._v[ 0 ], -getPlayerImpl()->_moveDir._v[ 1 ] );
 
-        if ( !_p_userObject->_p_playerPhysics->isJumping() )
-            _p_userObject->_p_playerAnimation->animWalk();
+        if ( !getPlayerImpl()->_p_playerPhysics->isJumping() )
+            getPlayerImpl()->_p_playerAnimation->animWalk();
     }
 
     if ( _right )
     {
-        switch ( _p_userObject->_cameraMode )
+        switch ( getPlayerImpl()->_cameraMode )
         {
             case EnPlayer::Spheric:
             {
-                _p_userObject->_rot += _p_userObject->_p_playerPhysics->getAngularForce();
-                if ( _p_userObject->_rot > osg::PI * 2.0f )
-                    _p_userObject->_rot -= osg::PI * 2.0f;
+                _rotZ += getPlayerImpl()->_p_playerPhysics->getAngularForce();
+                if ( _rotZ > osg::PI * 2.0f )
+                    _rotZ -= osg::PI * 2.0f;
 
-                _p_userObject->_moveDir._v[ 0 ] = sinf( _p_userObject->_rot );
-                _p_userObject->_moveDir._v[ 1 ] = cosf( _p_userObject->_rot );
+                getPlayerImpl()->_moveDir._v[ 0 ] = sinf( _rotZ );
+                getPlayerImpl()->_moveDir._v[ 1 ] = cosf( _rotZ );
 
-                _p_userObject->_p_playerAnimation->animTurn();
+                getPlayerImpl()->_p_playerAnimation->animTurn();
             }
             break;
 
             case EnPlayer::Ego:
             {
                 osg::Vec3f side;
-                side = _p_userObject->_moveDir ^ osg::Vec3f( 0, 0, 1.0f );
+                side = getPlayerImpl()->_moveDir ^ osg::Vec3f( 0, 0, 1.0f );
                 if ( _moveForward || _moveBackward )
-                    _p_userObject->_p_playerPhysics->addForce( side._v[ 0 ], side._v[ 1 ] );
+                    getPlayerImpl()->_p_playerPhysics->addForce( side._v[ 0 ], side._v[ 1 ] );
                 else
-                    _p_userObject->_p_playerPhysics->setForce( side._v[ 0 ], side._v[ 1 ] );
+                    getPlayerImpl()->_p_playerPhysics->setForce( side._v[ 0 ], side._v[ 1 ] );
 
-                _p_userObject->_p_playerAnimation->animTurn();
+                getPlayerImpl()->_p_playerAnimation->animTurn();
             }
             break;
 
@@ -240,31 +246,31 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
 
     if ( _left )
     {
-        switch ( _p_userObject->_cameraMode )
+        switch ( getPlayerImpl()->_cameraMode )
         {
             case EnPlayer::Spheric:
             {
-                _p_userObject->_rot -= _p_userObject->_p_playerPhysics->getAngularForce();
-                if ( _p_userObject->_rot < 0 )
-                    _p_userObject->_rot += osg::PI * 2.0f;
+                _rotZ -= getPlayerImpl()->_p_playerPhysics->getAngularForce();
+                if ( _rotZ < 0 )
+                    _rotZ += osg::PI * 2.0f;
 
-                _p_userObject->_moveDir._v[ 0 ] = sinf( _p_userObject->_rot );
-                _p_userObject->_moveDir._v[ 1 ] = cosf( _p_userObject->_rot );
+                getPlayerImpl()->_moveDir._v[ 0 ] = sinf( _rotZ );
+                getPlayerImpl()->_moveDir._v[ 1 ] = cosf( _rotZ );
 
-                _p_userObject->_p_playerAnimation->animTurn();
+                getPlayerImpl()->_p_playerAnimation->animTurn();
             }
             break;
             
             case EnPlayer::Ego:
             {
                 osg::Vec3f side;
-                side = _p_userObject->_moveDir ^ osg::Vec3f( 0, 0, -1.0f );
+                side = getPlayerImpl()->_moveDir ^ osg::Vec3f( 0, 0, -1.0f );
                 if ( _moveForward || _moveBackward )
-                    _p_userObject->_p_playerPhysics->addForce( side._v[ 0 ], side._v[ 1 ] );
+                    getPlayerImpl()->_p_playerPhysics->addForce( side._v[ 0 ], side._v[ 1 ] );
                 else
-                    _p_userObject->_p_playerPhysics->setForce( side._v[ 0 ], side._v[ 1 ] );
+                    getPlayerImpl()->_p_playerPhysics->setForce( side._v[ 0 ], side._v[ 1 ] );
 
-                _p_userObject->_p_playerAnimation->animTurn();
+                getPlayerImpl()->_p_playerAnimation->animTurn();
             }
             break;
 
@@ -283,12 +289,12 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
         {
             case Idle:
             {
-                if ( _p_userObject->_cameraMode == EnPlayer::Spheric )
+                if ( getPlayerImpl()->_cameraMode == EnPlayer::Spheric )
                 {
                     if ( movefb )
                     {
                         s_states = Stopped;
-                        _p_userObject->_p_playerPhysics->stopMovement();
+                        getPlayerImpl()->_p_playerPhysics->stopMovement();
                     }
                 } 
                 else
@@ -296,7 +302,7 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
                     if ( movelr & movefb )
                     {
                         s_states = Stopped;
-                        _p_userObject->_p_playerPhysics->stopMovement();
+                        getPlayerImpl()->_p_playerPhysics->stopMovement();
                     }
                 }
 
@@ -306,12 +312,12 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             case Stopped:
             {
                 if ( !_left && !_right )
-                    _p_userObject->_p_playerAnimation->animIdle();
+                    getPlayerImpl()->_p_playerAnimation->animIdle();
 
-                //_p_userObject->_p_playerPhysics->stopMovement();
+                //getPlayerImpl()->_p_playerPhysics->stopMovement();
 
-               if ( _p_userObject->getPlayerSound() )
-                    _p_userObject->getPlayerSound()->stopPlayingAll();
+               if ( getPlayerImpl()->getPlayerSound() )
+                    getPlayerImpl()->getPlayerSound()->stopPlayingAll();
 
                 if ( _moveForward || _moveBackward )
                     s_states = Idle;
@@ -325,18 +331,18 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
     }
 
     // handle mouse wheel changes for camera offsetting in spheric mode
-    if ( _p_userObject->_cameraMode == EnPlayer::Spheric )
+    if ( getPlayerImpl()->_cameraMode == EnPlayer::Spheric )
     {
         if ( eventType == osgGA::GUIEventAdapter::SCROLLUP )
         {
-            _p_userObject->_camPosOffsetSpheric._v[ 1 ] += 0.5f;
-            _p_userObject->_p_camera->setCameraOffsetPosition( _p_userObject->_camPosOffsetSpheric );
+            _attributeContainer._camPosOffsetSpheric._v[ 1 ] += 0.5f;
+            getPlayerImpl()->_p_camera->setCameraOffsetPosition( _attributeContainer._camPosOffsetSpheric );
         }
         else if ( eventType == osgGA::GUIEventAdapter::SCROLLDOWN )
         {
-            float& dist = _p_userObject->_camPosOffsetSpheric._v[ 1 ];
+            float& dist = _attributeContainer._camPosOffsetSpheric._v[ 1 ];
             dist = std::min( 0.0f, dist - 0.5f );
-            _p_userObject->_p_camera->setCameraOffsetPosition( _p_userObject->_camPosOffsetSpheric );
+            getPlayerImpl()->_p_camera->setCameraOffsetPosition( _attributeContainer._camPosOffsetSpheric );
         }
     }
 
@@ -348,30 +354,28 @@ bool PlayerInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
         float mcoordY = ea.getYnormalized();
 
         // in ego mode the mouse controls the player rotation
-        if ( _p_userObject->_cameraMode == EnPlayer::Ego )
+        if ( getPlayerImpl()->_cameraMode == EnPlayer::Ego )
         {
-            float& rot = _p_userObject->_rot;
-
             static float lastX = 0;
-            rot = mcoordX * osg::PI * 2.0f; 
+            _rotZ = mcoordX * osg::PI * 2.0f; 
             lastX = mcoordX;
 
-            if ( rot > osg::PI * 2.0f )
-                rot -= osg::PI * 2.0f;
-            else if ( rot < 0 )
-                rot += osg::PI * 2.0f;
+            if ( _rotZ > osg::PI * 2.0f )
+                _rotZ -= osg::PI * 2.0f;
+            else if ( _rotZ < 0 )
+                _rotZ += osg::PI * 2.0f;
 
-            _p_userObject->_moveDir._v[ 0 ] = sinf( rot );
-            _p_userObject->_moveDir._v[ 1 ] = cosf( rot );
-            _p_userObject->_p_playerAnimation->animTurn();
+            getPlayerImpl()->_moveDir._v[ 0 ] = sinf( _rotZ );
+            getPlayerImpl()->_moveDir._v[ 1 ] = cosf( _rotZ );
+            getPlayerImpl()->_p_playerAnimation->animTurn();
 
             // adjust pitch / yaw depending on mouse movement
-            _p_userObject->setCameraPitchYaw( mcoordY, 0 );
+            getPlayerImpl()->setCameraPitchYaw( mcoordY, 0 );
         }
         else
         {
             // adjust pitch / yaw depending on mouse movement
-            _p_userObject->setCameraPitchYaw( mcoordY, -mcoordX );
+            getPlayerImpl()->setCameraPitchYaw( mcoordY, -mcoordX );
         }
     }
 

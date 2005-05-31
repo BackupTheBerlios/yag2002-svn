@@ -36,7 +36,7 @@
 namespace CTD
 {
 
-class EnPlayer;
+class BasePlayerImplementation;
 
 //! Class for player's chat gui control
 class PlayerChatGui
@@ -49,7 +49,7 @@ class PlayerChatGui
         virtual                                     ~PlayerChatGui();
 
         //! Initialize gui layout
-        void                                        initialize( EnPlayer* p_player, const std::string& layoutFile );
+        void                                        initialize( BasePlayerImplementation* p_player, const std::string& layoutFile );
 
         //! Update method for chat box animation, etc.
         void                                        update( float deltaTime );
@@ -80,7 +80,7 @@ class PlayerChatGui
             BoxFadeOut
         }                                           _state;
 
-        EnPlayer*                                   _p_player;
+        BasePlayerImplementation*                   _p_playerImpl;
 
         std::string                                 _playername;
 
