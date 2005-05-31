@@ -148,6 +148,18 @@
 					RelativePath="..\..\..\..\src\gamecode\player\ctd_playeranim.h">
 				</File>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\player\ctd_playerimpl.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\player\ctd_playerimpl.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\player\ctd_playerimplstandalone.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\player\ctd_playerimplstandalone.h">
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\player\ctd_playernetworking.cpp">
 				</File>
 				<File
