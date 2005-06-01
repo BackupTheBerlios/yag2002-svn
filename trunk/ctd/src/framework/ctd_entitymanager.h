@@ -82,10 +82,10 @@ class EntityManager : public Singleton< EntityManager >
         */
         void                                        addToScene( BaseEntity* p_entity, osg::Group *p_scenegrp = NULL );
 
-        //! Return an entity factory object given entity's name. Use it as creator instance of desired entity factory.
+        //! Return an entity factory object given entity's type name. Use it as creator instance of desired entity factory.
         /*! Returns NULL if entity type is not registered.
         */
-        BaseEntityFactory*                          getEntityFactory( const std::string& entityName );
+        BaseEntityFactory*                          getEntityFactory( const std::string& type );
 
         //! Create a new entity given its type and optional instance name.
         /*! If addToPool is true then the entity will be added to entity pool. Set this to false if you are
@@ -219,24 +219,37 @@ class EntityManager : public Singleton< EntityManager >
 class BaseEntityFactory
 {
     public:
-                                                    BaseEntityFactory( const std::string& entityTypeName );
+
+                                                    BaseEntityFactory( const std::string& entityTypeName, unsigned int ntype );
 
         virtual                                     ~BaseEntityFactory();
 
         virtual BaseEntity*                         createEntity() = 0;
-
+       
+        //! Get the entity type. Entity types must be unique and are described by a string.
         inline const std::string&                   getType();
+
+        //! Get networking type. It can be a bitwise-or of BaseEntityFactory::Standalone, BaseEntityFactory::Server, and BaseEntityFactory::Client.
+        inline unsigned int                         getNetworkingType();
 
         inline bool                                 operator == ( BaseEntityFactory& factory );
 
+        //! Entity's networking type. This is used by level loader in order to decide whether to create an entity described by a level file
+        //!  depending on the game mode ( server, client, or standalone ).
+        enum NetworkingType
+        {
+            Standalone = 0x1,
+            Server     = 0x2,
+            Client     = 0x4
+        };
+
     protected:
 
-        void                                        setEntityType( BaseEntity* p_entity ) 
-                                                    { 
-                                                        p_entity->_typeName = _typeTypeName;
-                                                    }
+        inline void                                 setEntityType( BaseEntity* p_entity );
 
         const std::string                           _typeTypeName;
+
+        unsigned int                                _networkingType;
 };
 
 //! Use this convenient macro in your derived entity factories
@@ -266,6 +279,16 @@ inline const std::string& BaseEntityFactory::getType()
 inline bool BaseEntityFactory::operator == ( BaseEntityFactory& factory )
 {
     return ( _typeTypeName == const_cast< std::string& >( factory.getType() ) );
+}
+
+inline unsigned int BaseEntityFactory::getNetworkingType()
+{
+    return _networkingType;
+}
+
+inline void BaseEntityFactory::setEntityType( BaseEntity* p_entity ) 
+{ 
+    p_entity->_typeName = _typeTypeName;
 }
 
 }

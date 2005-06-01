@@ -509,8 +509,9 @@ void EntityManager::getPersistentEntities( std::vector< BaseEntity* >& entities 
 
 // entity factory base class
 //-----------------------
-BaseEntityFactory::BaseEntityFactory( const std::string& entityTypeName ) : 
-_typeTypeName( entityTypeName ) 
+BaseEntityFactory::BaseEntityFactory( const std::string& entityTypeName, unsigned int ntype ) : 
+_typeTypeName( entityTypeName ),
+_networkingType( ntype )
 {
     // register factory
     EntityManager::get()->registerFactory( this, true );

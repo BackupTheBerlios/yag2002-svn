@@ -30,6 +30,7 @@
 
 #include <ctd_base.h>
 #include "ctd_network.h"
+#include "ctd_log.h"
 #include <RNPlatform/Inc/FreewareCode.h>
 
 using namespace std;
@@ -40,10 +41,10 @@ CTD_SINGLETON_IMPL( NetworkDevice );
 
 
 NetworkDevice::NetworkDevice() :
-_mode(NONE),
-_p_session(NULL),
-_clientSessionStable(false),
-_serverSessionStable(false)
+_mode( NONE ),
+_p_session( NULL ),
+_clientSessionStable( false ),
+_serverSessionStable( false )
 {
     FreewareSetRegistrationCode( "64B8EBDH-HJK8L6EA-8EBAC" );
 }
@@ -116,7 +117,7 @@ bool NetworkDevice::setupClient( const string& URL, int channel, const NodeInfo&
     _p_session = new ReplicaNet;
     if ( !_p_session ) 
     {
-        cout << "*** nw client: cannot create network session instance" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** nw client: cannot create network session instance" << endl;
         return false;
     }
 
@@ -130,12 +131,12 @@ bool NetworkDevice::setupClient( const string& URL, int channel, const NodeInfo&
     _p_session->SetPreConnect( true );
 
     //! TODO: the url must also be given by user
-    cout << "nw client:   trying to find sessions ..." << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "nw client: trying to find sessions ..." << endl;
     _p_session->SessionFind();
-	Sleep(500);
+	Sleep( 500 );
     string Url = _p_session->SessionEnumerateFound();
     if ( Url.length() > 0 ) {
-        cout << "nw client:   session found, url: '" +Url + "'" << endl;
+        cout << "nw client: session found, url: '" +Url + "'" << endl;
     } 
     else 
     {
@@ -143,7 +144,7 @@ bool NetworkDevice::setupClient( const string& URL, int channel, const NodeInfo&
         shutdown();
         return false;
     }
-    cout << "nw client:   join to session ..." << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "nw client: joining to session ..." << endl;
     _p_session->SessionJoin( Url );
     //_p_session->SessionJoin( URL );
 
@@ -154,11 +155,11 @@ bool NetworkDevice::setupClient( const string& URL, int channel, const NodeInfo&
         CurrentThread::Sleep( 100 );
     }
 
-    cout << "nw client:   negotiating with server ..." << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "nw client: negotiating with server ..." << endl;
 
     // begin to negotiate with server
     //-----------------------------//
-    cout << "nw client:      exchanging pre-connect data ..." << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "nw client:  exchanging pre-connect data ..." << endl;
 
     PreconnectDataClient preconnectData;
     preconnectData._typeId = ( unsigned char )CTD_NW_PRECON_DATA_CLIENT;
@@ -190,7 +191,7 @@ bool NetworkDevice::setupClient( const string& URL, int channel, const NodeInfo&
         if ( tryCounter > 100 ) 
         {
             shutdown();
-            cout << "*** nw client: problems negotiating with server" << endl;
+            log << Log::LogLevel( Log::L_WARNING ) << "*** nw client: problems negotiating with server" << endl;
             return false;
         }
     }
@@ -204,14 +205,14 @@ bool NetworkDevice::startClient()
 {
     _p_session->PreConnectHasFinished();
 
-    cout << "nw client: successfully integrated to network" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "nw client: successfully integrated to network" << endl;
     stringstream msg;
     msg << "nw client: server name: '" << 
         _nodeInfo._nodeName  << 
         "', level name: '"   << 
         _nodeInfo._levelName << 
         "'" << endl;
-    cout << msg.str() << endl;
+    log << Log::LogLevel( Log::L_INFO ) << msg.str() << endl;
     //-----------------------------//
 
     unsigned int tryCounter = 0;
@@ -227,12 +228,12 @@ bool NetworkDevice::startClient()
         if ( tryCounter > 50 ) 
         {
             shutdown();
-            cout << "*** nw client: problems connecting to server" << endl;
+            log << Log::LogLevel( Log::L_WARNING ) << "*** nw client: problems connecting to server" << endl;
             return false;
         }
     }    
-    cout << endl;
-    cout << "nw client:   successfully joined to session ..." << endl;
+    log << Log::LogLevel( Log::L_INFO ) << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "nw client: successfully joined to session ..." << endl;
 
     return true;
 }
@@ -259,6 +260,7 @@ void NetworkDevice::updateServer( float deltaTime )
         PreconnectDataClient* p_data = ( PreconnectDataClient* )p_buffer;
         if ( p_data->_typeId == ( unsigned char )CTD_NW_PRECON_DATA_CLIENT ) 
         {
+            log << Log::LogLevel( Log::L_INFO ) << "server: new client connecting ... " << endl;
             // send server node
             PreconnectDataServer sendData;
             sendData._typeId = ( unsigned char )CTD_NW_PRECON_DATA_SERVER;

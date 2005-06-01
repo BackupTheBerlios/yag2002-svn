@@ -214,6 +214,11 @@ class AttributeManager
         */
         void                                removeAllAttributes();
 
+        /**
+        * Copy operator
+        */
+        AttributeManager&                   operator = ( const AttributeManager& attr );
+
     protected:
 
         //! Attributes

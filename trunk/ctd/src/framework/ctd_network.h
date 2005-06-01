@@ -58,11 +58,16 @@ namespace CTD
 class Application;
 class NetworkDevice;
 
-//! Server information
+//! Network node information
 class NodeInfo
 {
-
     public:
+                                                        NodeInfo() {}
+
+                                                        NodeInfo( const std::string& levelname, const std::string& nodename ) :
+                                                         _levelName( levelname ),
+                                                         _nodeName( nodename )
+                                                        {}
 
         /**
         * Get level name, this is relevant for clients
@@ -86,7 +91,6 @@ class NodeInfo
 
     friend  class NetworkDevice;
     friend  class Application;
-
 };
 
 //! Networking device
@@ -103,6 +107,29 @@ class NetworkDevice : public Singleton< NetworkDevice >
         };
 
         /**
+        * Setup a server session
+        * \param channel                Channel
+        * \param nodeInfo               Server information such as server and level name
+        * \return                       true if successful
+        */
+        bool                            setupServer( int channel, const NodeInfo& nodeInfo );
+
+        /**
+        * Setup a client session joining to a server
+        * \param URL                    Server URL
+        * \param channel                Channel
+        * \param nodeInfo               Client information
+        * \return                       true if successful
+        */
+        bool                            setupClient( const std::string& URL, int channel, const NodeInfo& nodeInfo );
+
+        /**
+        * Start the client processing. Call this after SetupClient.
+        * \return                       true if successfully started.
+        */
+        bool                            startClient();
+
+        /**
         * Get networking mode: NONE, CLIENT, SERVER
         */
         NetworkingMode                  getMode() { return _mode; }
@@ -112,6 +139,16 @@ class NetworkDevice : public Singleton< NetworkDevice >
         * \return                       Node information. NULL if the session is not stable.
         */
         NodeInfo*                       getNodeInfo();
+
+        /** 
+        * Lock object creation and deletion
+        */
+        void                            lockObjects();
+
+        /**
+        * Unlock object creation and deletion
+        */
+        void                            unlockObjects();
 
     protected:
 
@@ -140,29 +177,6 @@ class NetworkDevice : public Singleton< NetworkDevice >
         void                            shutdown();
 
         /**
-        * Setup a server session
-        * \param channel                Channel
-        * \param nodeInfo               Server information such as server and level name
-        * \return                       true if successful
-        */
-        bool                            setupServer( int channel, const NodeInfo& nodeInfo );
-
-        /**
-        * Setup a client session joining to a server
-        * \param URL                    Server URL
-        * \param channel                Channel
-        * \param nodeInfo               Client information
-        * \return                       true if successful
-        */
-        bool                            setupClient( const std::string& URL, int channel, const NodeInfo& nodeInfo );
-
-        /**
-        * Start the client processing. Call this after SetupClient.
-        * \return                       true if successfully started.
-        */
-        bool                            startClient();
-
-        /**
         * Update server session
         * \param deltaTime              Time past since last update
         */
@@ -174,21 +188,11 @@ class NetworkDevice : public Singleton< NetworkDevice >
         */
         void                            updateClient( float deltaTime );
 
-        /** 
-        * Lock object creation and deletion
-        */
-        void                            lockObjects();
-
-        /**
-        * Unlock object creation and deletion
-        */
-        void                            unlockObjects();
-
         //! Mode
         NetworkingMode                  _mode;
 
         //! Session instance
-        RNReplicaNet::ReplicaNet*        _p_session;
+        RNReplicaNet::ReplicaNet*       _p_session;
 
         //! Server's / client's node information
         NodeInfo                        _nodeInfo;
@@ -200,6 +204,7 @@ class NetworkDevice : public Singleton< NetworkDevice >
         bool                            _serverSessionStable;
 
     friend class Singleton< NetworkDevice >;
+    friend class Application;
 };
 
 } // namespace CTD

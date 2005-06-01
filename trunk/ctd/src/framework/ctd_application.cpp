@@ -36,6 +36,7 @@
 #include "ctd_configuration.h"
 #include "ctd_keymap.h"
 #include "ctd_gamestate.h"
+#include "ctd_network.h"
 #include "ctd_log.h"
 #include "ctd_application.h"
 
@@ -52,7 +53,8 @@ using namespace osg;
 CTD_SINGLETON_IMPL( Application );
 
 Application::Application():
-_entityManager( EntityManager::get() ),
+_p_networkDevice( NULL ),
+_p_entityManager( EntityManager::get() ),
 _p_gameState( GameState::get() ),
 _p_physics( Physics::get() ),
 _p_viewer( NULL ),
@@ -68,6 +70,7 @@ Application::~Application()
 
 void Application::shutdown()
 {
+    NetworkDevice::get()->shutdown();
     LevelManager::get()->shutdown();
     Configuration::get()->shutdown();
     GameState::get()->shutdown();
@@ -79,9 +82,6 @@ bool Application::initialize( int argc, char **argv )
 {
     // set game state
     _p_gameState->setState( GameState::Initializing );
-
-    // set mode to none; server or client must be choosen later
-    _p_gameState->setMode( GameState::None );
 
     string arg_levelname;
     // use an ArgumentParser object to manage the program arguments.
@@ -104,6 +104,21 @@ bool Application::initialize( int argc, char **argv )
     {
         enablePhysicsDebugRendering = true;
         arguments.remove( argpos );
+    }
+
+    if ( argpos = arguments.find( "-server" ) )
+    {
+        GameState::get()->setMode( GameState::Server );
+        arguments.remove( argpos );
+    }
+    else if ( argpos = arguments.find( "-client" ) )
+    {
+        GameState::get()->setMode( GameState::Client );
+        arguments.remove( argpos );
+    }
+    else
+    {
+        GameState::get()->setMode( GameState::Standalone );
     }
 
     // any option left unread are converted into errors to write out later.
@@ -185,18 +200,58 @@ bool Application::initialize( int argc, char **argv )
     else
         KeyMap::get()->setup( KeyMap::German );
 
-    log << Log::LogLevel( Log::L_INFO ) << "loading level '" << arg_levelname << "'" << endl;
-    // load the level and setup things
-    osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( arg_levelname );
-    if ( !sceneroot.valid() )
-        return false;
+    if ( GameState::get()->getMode() != GameState::Client )
+    {
+        log << Log::LogLevel( Log::L_INFO ) << "loading level '" << arg_levelname << "'" << endl;
+        // load the level and setup things
+        osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( arg_levelname );
+        if ( !sceneroot.valid() )
+            return false;
+    }
+
+    // get the instance of gui manager
+    _p_guiManager = GuiManager::get();
+
+    // setup networking
+    _p_networkDevice = NetworkDevice::get();
+    if ( GameState::get()->getMode() == GameState::Server )
+    {
+        //! TODO: try to get the servername from cmd option
+        string servername( "vrc-server" );
+        NodeInfo nodeinfo( arg_levelname, servername );
+        unsigned int channel;
+        Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
+        _p_networkDevice->setupServer( channel, nodeinfo );
+    }
+    else if ( GameState::get()->getMode() == GameState::Client )
+    {
+        //! TODO: get the url from cmd option
+        string url( "localhost" );
+        string clientname( "vrc-client" );
+        NodeInfo nodeinfo( "", clientname );
+        unsigned int channel;
+        Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
+
+        if ( _p_networkDevice->setupClient( url, channel, nodeinfo ) )
+            _p_networkDevice->startClient();
+
+        // now load level
+        string levelname = _p_networkDevice->getNodeInfo()->getLevelName();
+        log << Log::LogLevel( Log::L_INFO ) << "loading level '" << levelname << "'" << endl;
+        // load the level and setup things
+        osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( levelname );
+        if ( !sceneroot.valid() )
+            return false;
+
+        // if we directly start a client with cmd line option then we must send a leave-menu notification to entities
+        //  as many entities do special steps when leaving the menu
+        EntityNotification notify( CTD_NOTIFY_MENU_LEAVE, NULL );
+        EntityManager::get()->sendNotification( notify );
+    }
 
     // enable physics debug rendering
     if ( enablePhysicsDebugRendering )
         _p_physics->enableDebugRender();
-
-    // get the instance of gui manager
-    _p_guiManager = GuiManager::get();
 
     return true;
 }
@@ -223,24 +278,12 @@ void Application::run()
         else if ( deltaTime < 0.001f )
             deltaTime = 0.001f;
 
-        // update entities
-        _entityManager->update( deltaTime  );
-
-        // update physics
-        _p_physics->update( deltaTime );
-
-        // update gui manager
-        _p_guiManager->update( deltaTime );
-
-        // wait for all cullings and drawings to complete.
-        _p_viewer->sync();
-
-        // update the scene by traversing it with the the update visitor which will
-        // call all node update callbacks and animations.
-        _p_viewer->update();
-
-        // fire off the cull and draw traversals of the scene.
-        _p_viewer->frame();
+        // update game
+        if ( GameState::get()->getMode() == GameState::Server )
+            updateServer( deltaTime );
+        else if ( GameState::get()->getMode() == GameState::Client )
+            updateClient( deltaTime );
+        else updateStandalone( deltaTime );
     }   
 
     // for the case that we quited via entity request ( such as menu's quit button pressing )
@@ -248,6 +291,78 @@ void Application::run()
 
     // wait for all cull and draw threads to complete before exit.
     _p_viewer->sync();
+}
+
+void Application::updateClient( float deltaTime )
+{
+    // update client
+    _p_networkDevice->updateClient( deltaTime );
+
+    // update entities
+    _p_entityManager->update( deltaTime  );
+
+    // update physics
+    _p_physics->update( deltaTime );
+
+    // update gui manager
+    _p_guiManager->update( deltaTime );
+
+    // wait for all cullings and drawings to complete.
+    _p_viewer->sync();
+
+    // update the scene by traversing it with the the update visitor which will
+    // call all node update callbacks and animations.
+    _p_viewer->update();
+
+    // fire off the cull and draw traversals of the scene.
+    _p_viewer->frame();
+}
+
+void Application::updateServer( float deltaTime )
+{
+    // update server
+    _p_networkDevice->updateServer( deltaTime );
+
+    // update entities
+    _p_entityManager->update( deltaTime  );
+
+    // update physics
+    _p_physics->update( deltaTime );
+
+    //// update gui manager
+    //_p_guiManager->update( deltaTime );
+
+    //// wait for all cullings and drawings to complete.
+    //_p_viewer->sync();
+
+    //// update the scene by traversing it with the the update visitor which will
+    //// call all node update callbacks and animations.
+    //_p_viewer->update();
+
+    //// fire off the cull and draw traversals of the scene.
+    //_p_viewer->frame();
+}
+
+void Application::updateStandalone( float deltaTime )
+{
+    // update entities
+    _p_entityManager->update( deltaTime  );
+
+    // update physics
+    _p_physics->update( deltaTime );
+
+    // update gui manager
+    _p_guiManager->update( deltaTime );
+
+    // wait for all cullings and drawings to complete.
+    _p_viewer->sync();
+
+    // update the scene by traversing it with the the update visitor which will
+    // call all node update callbacks and animations.
+    _p_viewer->update();
+
+    // fire off the cull and draw traversals of the scene.
+    _p_viewer->frame();
 }
 
 void Application::stop()

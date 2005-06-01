@@ -40,6 +40,7 @@ namespace CTD
 class LevelManager;
 class EntityManager;
 class GuiManager;
+class NetworkDevice;
 class Physics;
 class GameState;
 
@@ -82,7 +83,15 @@ class Application : public Singleton< Application >
 
         virtual                                     ~Application();
 
-        EntityManager*                              _entityManager;
+        void                                        updateStandalone( float deltaTime );
+
+        void                                        updateServer( float deltaTime );
+
+        void                                        updateClient( float deltaTime );
+
+        NetworkDevice*                              _p_networkDevice;
+
+        EntityManager*                              _p_entityManager;
 
         GuiManager*                                 _p_guiManager;
 

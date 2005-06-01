@@ -36,6 +36,7 @@
 #include <ctd_attributemanager.h>
 #include <ctd_entitymanager.h>
 #include <ctd_guimanager.h>
+#include <ctd_gamestate.h>
 #include <tinyxml.h>
 
 using namespace std;
@@ -288,9 +289,34 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile, boo
         if ( !p_bufName ) 
             instancename = p_bufName;
 
-        // create entity
-        BaseEntity* p_entity = EntityManager::get()->createEntity( entitytype, instancename );
+        // create entity, considering the game mode
+        BaseEntityFactory* p_entfac = EntityManager::get()->getEntityFactory( entitytype );
+        unsigned int networkingtype = p_entfac->getNetworkingType();
+        bool         create         = false;
+        switch ( GameState::get()->getMode() )
+        {
+            case GameState::Standalone:                
+                if ( networkingtype & BaseEntityFactory::Standalone )
+                    create = true;                    
+                break;
 
+            case GameState::Server:                
+                if ( networkingtype & BaseEntityFactory::Server )
+                    create = true;                    
+                break;
+        
+            case GameState::Client:                
+                if ( networkingtype & BaseEntityFactory::Client )
+                    create = true;                    
+                break;
+
+            default:
+                assert( NULL && "unsupported game mode" );
+        }
+        if ( !create )
+            continue;
+
+        BaseEntity* p_entity = EntityManager::get()->createEntity( entitytype, instancename );
         // could we find entity type
         if ( !p_entity ) 
         {

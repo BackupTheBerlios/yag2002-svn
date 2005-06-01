@@ -65,6 +65,7 @@ BaseEntity* BaseEntity::clone( const string& instanceName, osg::Group* p_scenegr
     assert( p_entity );
 
     // copy attribute values
+    // TODO: now the copy operator in attribute manager is implemented, so use it
     vector< EntityAttributeBase* >& attributes = getAttributeManager().getAttributes();
     vector< EntityAttributeBase* >::iterator attr = attributes.begin(), attrEnd = attributes.end();
     for ( ; attr != attrEnd; attr++ )

@@ -32,7 +32,8 @@
 #include <ctd_attributemanager.h>
 
 using namespace std;
-using namespace CTD; 
+namespace CTD
+{
 
 bool AttributeManager::setAttributeValue( const string &name, const string &type, const string &value )
 {
@@ -131,3 +132,17 @@ void AttributeManager::removeAllAttributes()
     }
     _attributes.clear();
 }
+
+AttributeManager& AttributeManager::operator = ( const AttributeManager& attr )
+{
+    // copy attribute values
+    std::vector< EntityAttributeBase* >::iterator p_beg = const_cast< AttributeManager& >( attr ).getAttributes().begin(), p_end = const_cast< AttributeManager& >( attr ).getAttributes().end();
+    for ( ; p_beg != p_end; p_beg++ )
+    {
+        setAttributeValue( ( *p_beg )->getName(), **p_beg );
+    }
+
+    return *this;
+}
+
+} // namespace CTD
