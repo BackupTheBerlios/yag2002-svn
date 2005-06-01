@@ -43,9 +43,8 @@
 namespace CTD
 {
 
-class EnPlayerSound;
-class PlayerIHStandalone;
 class PlayerChatGui;
+template< class PlayerImplT > class PlayerIHCharacterCameraCtrl;
 
 //! Player implementation for game mode Standalone ( see framework class GameState )
 class BasePlayerImplStandalone : public BasePlayerImplementation
@@ -69,6 +68,9 @@ class BasePlayerImplStandalone : public BasePlayerImplementation
         //! Implementation's notification callback
         void                                        handleNotification( EntityNotification& notify );
 
+        //! TODO: shift these methods to base class so client and standalone both can use them 
+        //! TODO: ----------------------------------
+
         //! Set camera mode to Spheric or Ego
         void                                        setCameraMode( unsigned int mode );
 
@@ -81,6 +83,8 @@ class BasePlayerImplStandalone : public BasePlayerImplementation
         //! Enable / disable input processing and control
         void                                        enableControl( bool en );
 
+        //! TODO: ----------------------------------
+
     protected:
 
         //! Get the configuration settings
@@ -90,12 +94,12 @@ class BasePlayerImplStandalone : public BasePlayerImplementation
         std::auto_ptr< PlayerChatGui >              _p_chatGui;
 
         //! Input handler
-        PlayerIHStandalone*                         _p_inputHandler;
+        PlayerIHCharacterCameraCtrl< BasePlayerImplStandalone >* _p_inputHandler;
 
         //! Enable / disable input processing
         bool                                        _enabledControl;
 
-    friend PlayerIHStandalone;
+    friend class PlayerIHCharacterCameraCtrl< BasePlayerImplStandalone >;
 };
 
 } // namespace CTD

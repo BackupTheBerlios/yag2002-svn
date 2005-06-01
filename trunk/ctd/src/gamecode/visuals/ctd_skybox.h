@@ -99,7 +99,9 @@ class EnSkyBox :  public BaseEntity
 class SkyBoxEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    SkyBoxEntityFactory() : BaseEntityFactory( ENTITY_NAME_SKYBOX ) {}
+                                                    SkyBoxEntityFactory() : 
+                                                     BaseEntityFactory( ENTITY_NAME_SKYBOX, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~SkyBoxEntityFactory() {}
 

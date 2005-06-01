@@ -39,43 +39,57 @@
 
 #include <ctd_main.h>
 #include "ctd_playernetworking.h"
+#include "ctd_playerimpl.h"
+#include "ctd_playerimplClient.h"
+#include "ctd_playerimplServer.h"
 #include "ctd_player.h"
 
 using namespace std;
-using namespace CTD;
 using namespace osg;
 
 
-PlayerNetworking::PlayerNetworking( BaseEntity* p_member )
-{
-    EnPlayer* p_player = static_cast< EnPlayer* >( p_member );
-    
-//    //m_bIsRemoteClient = IsMaster();
-//    _remoteClient = false;
-//    if ( !p_member ) 
-//    {
-//        _remoteClient = true;
-//
-//        // create new entity for remote client
-//        p_member = new EnPlayer;
-////        pkMember->SetPlayerNetworking( this );
-//        p_member->initialize();
-//
-//        _p_playerName[ 0 ]   = 0;
-//        _p_animFileName[ 0 ] = 0;
-//    }
-//    _cmdAnimFlags = 0;
-//    _p_member        = p_member;
+PlayerNetworking::PlayerNetworking( CTD::BasePlayerImplementation* p_playerImpl )
+{    
+    // this constructor can be called either by player entity or networking system (in client or server mode)
+    //  when called by player entity then it means that we are a local client, otherwise we are a remote client
+    _remoteClient = false;
+    if ( !p_playerImpl ) 
+    {
+        _remoteClient = true;
+
+        // create new entity for remote client
+        CTD::EnPlayer* p_entity = static_cast< CTD::EnPlayer* > ( CTD::EntityManager::get()->createEntity( ENTITY_NAME_PLAYER, "_newRemoteClient_" ) );
+        assert( p_entity && "player entity cannot be created" );
+
+        if ( CTD::GameState::get()->getMode() == CTD::GameState::Server )
+        {
+            p_playerImpl = new CTD::BasePlayerImplServer( p_entity );
+        }
+        else if ( CTD::GameState::get()->getMode() == CTD::GameState::Client )
+        {
+            p_playerImpl = new CTD::BasePlayerImplClient( p_entity );
+        }
+        else
+            assert( NULL && "invalid game state" );
+
+        p_playerImpl->setPlayerNetworking( this );
+        p_playerImpl->initialize();
+
+        _p_playerName[ 0 ]   = 0;
+        _p_animFileName[ 0 ] = 0;
+    }
+    _cmdAnimFlags     = 0;
+    _p_playerImpl     = p_playerImpl;
 }
 
 PlayerNetworking::~PlayerNetworking()
 {
-    //// remove ghost from simulation ( server and client )
-    //if ( isRemoteClient() ) 
-    //{    
-    //    EntityManager::get()->deregisterUpdate( ( CTD::BaseEntity* )_p_member );
-    //    delete _p_member;
-    //}
+    // remove ghost from simulation ( server and client )
+    if ( isRemoteClient() ) 
+    {    
+        _p_playerImpl->setPlayerNetworking( NULL );
+        CTD::EntityManager::get()->deleteEntity( _p_playerImpl->getPlayerEntity() );
+    }
 }
 
 void PlayerNetworking::PostObjectCreate()

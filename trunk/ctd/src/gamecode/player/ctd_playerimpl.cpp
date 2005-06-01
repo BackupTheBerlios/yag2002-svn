@@ -51,6 +51,7 @@ _p_player( player ),
 _p_playerSound( NULL ),
 _p_playerPhysics( NULL ),
 _p_playerAnimation( NULL ),
+_p_playerNetworking( NULL ),
 _p_camera( NULL ),
 _cameraMode( Spheric ),
 _moveDir( Vec3f( 0, 1, 0 ) )
@@ -100,31 +101,6 @@ void BasePlayerImplementation::setCameraPitchYaw( float pitch, float yaw )
         float angleX = pitch * LIMIT_PITCH_ANGLE;
         _p_camera->setLocalPitch( angleX );
     }
-}
-
-void BasePlayerImplementation::setPlayerPosition( const osg::Vec3f& pos ) 
-{ 
-    _p_player->setPosition( pos ); 
-}
-
-void BasePlayerImplementation::setPlayerRotation( const osg::Quat& rot )
-{ 
-    _p_player->setRotation( rot ); 
-}
-
-const osg::Vec3d& BasePlayerImplementation::getPlayerPosition() 
-{
-    return _p_player->getPosition(); 
-}
-
-const osg::Quat& BasePlayerImplementation::getPlayerRotation()
-{ 
-    return _p_player->getRotation(); 
-}
-
-const osg::Vec3f& BasePlayerImplementation::getPlayerMoveDirection() 
-{ 
-    return _moveDir; 
 }
 
 } // namespace CTD

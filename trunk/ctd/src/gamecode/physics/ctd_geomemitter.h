@@ -76,7 +76,9 @@ class EnGeomEmitter : public BaseEntity
 class GeomEmitteEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    GeomEmitteEntityFactory() : BaseEntityFactory(ENTITY_NAME_GEOMEMITTER) {}
+                                                    GeomEmitteEntityFactory() : 
+                                                     BaseEntityFactory( ENTITY_NAME_GEOMEMITTER, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~GeomEmitteEntityFactory() {}
 

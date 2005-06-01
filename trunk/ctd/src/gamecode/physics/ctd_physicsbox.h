@@ -87,7 +87,9 @@ class EnPhysicsBox : public EnPhysicsBase
 class PhysicsBoxEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    PhysicsBoxEntityFactory() : BaseEntityFactory(ENTITY_NAME_PHYSICSBOX) {}
+                                                    PhysicsBoxEntityFactory() : 
+                                                     BaseEntityFactory( ENTITY_NAME_PHYSICSBOX, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~PhysicsBoxEntityFactory() {}
 

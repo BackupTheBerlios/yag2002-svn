@@ -127,7 +127,7 @@ class EnPlayerSound  : public BaseEntity
         //! Group where all sound nodes reside
         osg::ref_ptr< osg::Group >                  _p_soundGroup;
 
-        BasePlayerImplementation*                   _p_player;
+        BasePlayerImplementation*                   _p_playerImpl;
 
     friend class EnPlayerSound;
 };
@@ -136,7 +136,9 @@ class EnPlayerSound  : public BaseEntity
 class PlayerSoundEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    PlayerSoundEntityFactory() : BaseEntityFactory(ENTITY_NAME_PLSOUND) {}
+                                                    PlayerSoundEntityFactory() :
+                                                     BaseEntityFactory( ENTITY_NAME_PLSOUND, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~PlayerSoundEntityFactory() {}
 

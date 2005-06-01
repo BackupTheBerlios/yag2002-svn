@@ -87,7 +87,9 @@ class EnFPSDisplay :  public BaseEntity
 class FPSDisplayEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    FPSDisplayEntityFactory() : BaseEntityFactory( ENTITY_NAME_FPSDISPLAY ) {}
+                                                    FPSDisplayEntityFactory() : 
+                                                     BaseEntityFactory( ENTITY_NAME_FPSDISPLAY, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~FPSDisplayEntityFactory() {}
 

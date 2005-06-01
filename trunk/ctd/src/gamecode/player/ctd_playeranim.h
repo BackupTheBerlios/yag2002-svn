@@ -159,7 +159,9 @@ class EnPlayerAnimation  : public BaseEntity
 class PlayerAnimationEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    PlayerAnimationEntityFactory() : BaseEntityFactory(ENTITY_NAME_PLANIM) {}
+                                                    PlayerAnimationEntityFactory() :
+                                                     BaseEntityFactory( ENTITY_NAME_PLANIM, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~PlayerAnimationEntityFactory() {}
 

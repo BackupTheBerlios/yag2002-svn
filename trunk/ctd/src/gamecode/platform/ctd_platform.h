@@ -68,7 +68,9 @@ class EnPlatform : public BaseEntity
 class PlatformEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    PlatformEntityFactory() : BaseEntityFactory(ENTITY_NAME_PLATFORM) {}
+                                                    PlatformEntityFactory() : 
+                                                     BaseEntityFactory( ENTITY_NAME_PLATFORM, BaseEntityFactory::Server )
+                                                    {}
 
         virtual                                     ~PlatformEntityFactory() {}
 

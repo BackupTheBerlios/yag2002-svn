@@ -34,6 +34,8 @@
 #include <ctd_main.h>
 #include "ctd_player.h"
 #include "ctd_playerimplstandalone.h"
+#include "ctd_playerimplserver.h"
+#include "ctd_playerimplclient.h"
 
 using namespace osg;
 using namespace std;
@@ -55,7 +57,6 @@ _p_playerImpl( NULL )
     _attributeContainer._chatGuiConfig = "gui/chat.xml";
     _attributeContainer._rot = 0;
 
-    getAttributeManager().addAttribute( "name"                      , _attributeContainer._playerName           );
     getAttributeManager().addAttribute( "physicsentity"             , _attributeContainer._physicsEntity        );
     getAttributeManager().addAttribute( "animationentity"           , _attributeContainer._animationEntity      );
     getAttributeManager().addAttribute( "soundentity"               , _attributeContainer._soundEntity          );
@@ -87,7 +88,7 @@ void EnPlayer::initialize()
     osg::Quat rotation = osg::Quat( _attributeContainer._rot, osg::Vec3f( 0, 0, 1 ) );
     setRotation( rotation );
 
-    // build the player implementation
+    // build and init the player implementation
     switch ( _gameMode )
     {
         case GameState::Standalone:
@@ -97,6 +98,18 @@ void EnPlayer::initialize()
         }
         break;
 
+        case GameState::Client:
+        {
+            _p_playerImpl = new BasePlayerImplClient( this );
+            _p_playerImpl->initialize();
+        }
+        break;
+
+        //! TODO: the framework has to consider whether an entity is a pure server or server-client entity
+        //        when loading a level on server only pure server entities must be created!
+        case GameState::Server:
+            break;  // the server players are created by networking component when a new player is connected
+
         default:
             assert( NULL && "unsupported game mode" );
     }
@@ -104,12 +117,14 @@ void EnPlayer::initialize()
 
 void EnPlayer::postInitialize()
 {
-    _p_playerImpl->postInitialize();
+    if ( _p_playerImpl )
+        _p_playerImpl->postInitialize();
 }
 
 void EnPlayer::updateEntity( float deltaTime )
 {
-    _p_playerImpl->update( deltaTime );
+    if ( _p_playerImpl )
+        _p_playerImpl->update( deltaTime );
 }
 
 } // namespace CTD

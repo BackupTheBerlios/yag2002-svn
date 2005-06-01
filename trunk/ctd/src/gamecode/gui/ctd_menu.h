@@ -204,7 +204,9 @@ class EnMenu :  public BaseEntity
 class MenuEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    MenuEntityFactory() : BaseEntityFactory( ENTITY_NAME_MENU ) {}
+                                                    MenuEntityFactory() : 
+                                                     BaseEntityFactory( ENTITY_NAME_MENU, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~MenuEntityFactory() {}
 

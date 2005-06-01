@@ -41,6 +41,11 @@
 
 #include <ctd_main.h>
 #include "ctd_player.h"
+#include "ctd_playeranim.h"
+#include "ctd_playersound.h"
+#include "ctd_playerphysics.h"
+#include "ctd_chatgui.h"
+#include "../visuals/ctd_camera.h"
 
 namespace CTD
 {
@@ -49,16 +54,15 @@ namespace CTD
 #define LIMIT_PITCH_ANGLE               120.0f
 #define LIMIT_PITCH_OFFSET              -20.0f;
 
-class BasePlayerImplStandalone;
-
-//! Input handler class for player
-class PlayerIHStandalone : public GenericInputHandler< BasePlayerImplStandalone >
+//! Input handler class for player, it controls player character and camera
+template< class PlayerImplT >
+class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
 {
     public:
 
-                                            PlayerIHStandalone( BasePlayerImplStandalone* p_playerimpl, EnPlayer* p_playerentity );
+                                            PlayerIHCharacterCameraCtrl( PlayerImplT* p_playerimpl, EnPlayer* p_playerentity );
                                             
-        virtual                             ~PlayerIHStandalone();
+        virtual                             ~PlayerIHCharacterCameraCtrl();
 
         //! Handle input events.
         bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
@@ -88,7 +92,7 @@ class PlayerIHStandalone : public GenericInputHandler< BasePlayerImplStandalone 
 
         // used internally
         // ---------------
-        BasePlayerImplStandalone*           getPlayerImpl() { return _p_userObject; }
+        PlayerImplT*                        getPlayerImpl() { return _p_userObject; }
 
         EnPlayer*                           getPlayerEntity() { return _p_playerEntity; }
 
@@ -120,6 +124,8 @@ class PlayerIHStandalone : public GenericInputHandler< BasePlayerImplStandalone 
         unsigned int                        _keyCodeCameraMode;
         unsigned int                        _keyCodeChatMode;
 };
+
+#include "ctd_inputhandler.inl"
 
 } // namespace CTD
 

@@ -51,6 +51,7 @@
 namespace CTD
 {
     class BaseEntity;
+    class BasePlayerImplementation;
 }
 
 class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
@@ -58,7 +59,7 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
 
     public:
 
-                                                    PlayerNetworking( CTD::BaseEntity* p_player = NULL );
+                                                    PlayerNetworking( CTD::BasePlayerImplementation* p_playerImp = NULL );
                                                         
         virtual                                     ~PlayerNetworking();
 
@@ -118,7 +119,7 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
 
         bool                                        _remoteClient;
 
-        CTD::BaseEntity*                            _p_member;
+        CTD::BasePlayerImplementation*              _p_playerImpl;
 
         char                                        _p_playerName[ 32 ];
 

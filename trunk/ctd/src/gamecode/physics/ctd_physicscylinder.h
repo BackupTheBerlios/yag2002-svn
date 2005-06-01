@@ -97,7 +97,9 @@ class EnPhysicsCylinder : public EnPhysicsBase
 class PhysicsCylinderEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    PhysicsCylinderEntityFactory() : BaseEntityFactory(ENTITY_NAME_PHYSICSCYLINDER) {}
+                                                    PhysicsCylinderEntityFactory() : 
+                                                     BaseEntityFactory( ENTITY_NAME_PHYSICSCYLINDER, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~PhysicsCylinderEntityFactory() {}
 

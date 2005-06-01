@@ -393,6 +393,7 @@ _linearDamping( 0.2f ),
 _gravity( Physics::get()->getWorldGravity() )
 { 
     EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications about physics building
+    EntityManager::get()->registerUpdate( this, true );         // register entity for getting updated
 
     // add entity attributes
     getAttributeManager().addAttribute( "dimensions"    , _dimensions    );
@@ -541,7 +542,7 @@ void EnPlayerPhysics::initialize()
 void EnPlayerPhysics::postInitialize()
 {
     // check if the player has already set its association
-    assert( _p_playerImpl && "player entitiy has to set its association in initialize phase!" );
+    assert( _p_playerImpl && "player implementation has to set its association in initialize phase!" );
 
     // give this object the same name as player's
     setInstanceName( _p_playerImpl->getPlayerEntity()->getInstanceName() );
@@ -557,7 +558,7 @@ void EnPlayerPhysics::postInitialize()
     physicsSetTransform ( _p_body, mat.ptr() );
 }
 
-void EnPlayerPhysics::update( float deltaTime )
+void EnPlayerPhysics::updateEntity( float deltaTime )
 {
     _isAirBorne = true;
 }

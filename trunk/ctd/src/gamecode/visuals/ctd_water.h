@@ -152,7 +152,9 @@ class EnWater :  public BaseEntity
 class WaterEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    WaterEntityFactory() : BaseEntityFactory( ENTITY_NAME_WATER ) {}
+                                                    WaterEntityFactory() : 
+                                                     BaseEntityFactory( ENTITY_NAME_WATER, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~WaterEntityFactory() {}
 

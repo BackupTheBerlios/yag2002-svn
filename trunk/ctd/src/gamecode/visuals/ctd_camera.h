@@ -180,7 +180,9 @@ class EnCamera :  public BaseEntity
 class CameraEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    CameraEntityFactory() : BaseEntityFactory( ENTITY_NAME_CAMERA ) {}
+                                                    CameraEntityFactory() : 
+                                                     BaseEntityFactory( ENTITY_NAME_CAMERA, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~CameraEntityFactory() {}
 

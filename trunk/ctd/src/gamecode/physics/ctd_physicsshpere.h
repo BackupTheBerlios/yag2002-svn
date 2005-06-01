@@ -93,7 +93,9 @@ class EnPhysicsSphere : public EnPhysicsBase
 class PhysicsSphereEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    PhysicsSphereEntityFactory() : BaseEntityFactory(ENTITY_NAME_PHYSICSSPHERE) {}
+                                                    PhysicsSphereEntityFactory() : 
+                                                     BaseEntityFactory( ENTITY_NAME_PHYSICSSPHERE, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~PhysicsSphereEntityFactory() {}
 

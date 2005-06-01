@@ -183,8 +183,9 @@ _fresnel( 1.1f )
 
 EnWater::~EnWater()
 {
-    // as we always leave a level while beeing in menu, so we have to release the water node manually
-    //  however i don't know why removing from parent node does not work (it causes a crash)
+    // as we always leave a level while beeing in menu, so we have to release the water node manually. missing this
+    // leads to a crash.
+    // however i don't know why removing from parent node does not work ( it causes a crash, too )
     if ( _water.get() )
         _water.release();
 }

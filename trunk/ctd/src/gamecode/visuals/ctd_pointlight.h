@@ -64,7 +64,9 @@ class EnPointLight :  public BaseEntity, public BaseLight
 class PointLightEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    PointLightEntityFactory() : BaseEntityFactory( ENTITY_NAME_POINTLIGHT ) {}
+                                                    PointLightEntityFactory() : 
+                                                     BaseEntityFactory( ENTITY_NAME_POINTLIGHT, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~PointLightEntityFactory() {}
 

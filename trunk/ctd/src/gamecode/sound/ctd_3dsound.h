@@ -99,7 +99,9 @@ class En3DSound : public BaseEntity
 class ThreeDSoundEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    ThreeDSoundEntityFactory() : BaseEntityFactory(ENTITY_NAME_3DSOUND) {}
+                                                    ThreeDSoundEntityFactory() : 
+                                                     BaseEntityFactory( ENTITY_NAME_3DSOUND, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~ThreeDSoundEntityFactory() {}
 

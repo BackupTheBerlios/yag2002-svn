@@ -44,7 +44,7 @@ namespace CTD
 CTD_IMPL_ENTITYFACTORY_AUTO( PlayerSoundEntityFactory );
 
 EnPlayerSound::EnPlayerSound() :
-_p_player( NULL ),
+_p_playerImpl( NULL ),
 _volume( 0.8f ),
 _referenceDist( 10.0f )
 { 
@@ -64,13 +64,13 @@ EnPlayerSound::~EnPlayerSound()
 
 void EnPlayerSound::setPlayer( BasePlayerImplementation* p_player )
 {
-    _p_player = p_player;
+    _p_playerImpl = p_player;
 }
 
 void EnPlayerSound::postInitialize()
 {
     // check if the player has already set its association
-    assert( _p_player && "player entitiy has to set its association in initialize phase!" );
+    assert( _p_playerImpl && "player implementation has to set its association in initialize phase!" );
     
     _p_soundGroup = new osg::Group;
     osgAL::SoundState* p_soundState;
@@ -107,7 +107,7 @@ void EnPlayerSound::postInitialize()
     }
 
     // add the sound group into player node
-    _p_player->getPlayerEntity()->appendTransformationNode( _p_soundGroup.get() );
+    _p_playerImpl->getPlayerEntity()->appendTransformationNode( _p_soundGroup.get() );
 }
 
 osgAL::SoundState* EnPlayerSound::createSound( const string& filename )

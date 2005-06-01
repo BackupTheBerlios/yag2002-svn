@@ -84,7 +84,9 @@ class EnAmbientSound : public BaseEntity
 class AmbientSoundEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    AmbientSoundEntityFactory() : BaseEntityFactory( ENTITY_NAME_AMBIENTSOUND ) {}
+                                                    AmbientSoundEntityFactory() : 
+                                                     BaseEntityFactory( ENTITY_NAME_AMBIENTSOUND, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~AmbientSoundEntityFactory() {}
 

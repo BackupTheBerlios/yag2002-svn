@@ -68,7 +68,9 @@ class EnSpotLight :  public BaseEntity, public BaseLight
 class SpotLightEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    SpotLightEntityFactory() : BaseEntityFactory( ENTITY_NAME_SPOTLIGHT ) {}
+                                                    SpotLightEntityFactory() : 
+                                                     BaseEntityFactory( ENTITY_NAME_SPOTLIGHT, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~SpotLightEntityFactory() {}
 

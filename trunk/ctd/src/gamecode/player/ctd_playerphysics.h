@@ -60,6 +60,11 @@ class EnPlayerPhysics : public BaseEntity
         virtual                                     ~EnPlayerPhysics();
 
         /**
+        * This entity needs no transformation node.
+        */
+        bool                                        isTransformable() { return false; }
+
+        /**
         * Set player's implementation , player entity must call this in post-initialize phase.
         * \param p_player                           Player instance
         */
@@ -76,10 +81,10 @@ class EnPlayerPhysics : public BaseEntity
         void                                        postInitialize();
 
         /**
-        * Update called by EnPlayer entity. Note: this is not the framework update method!
+        * Update entity
         * \param deltaTime                          Time passed since last update
         */
-        void                                        update( float deltaTime );
+        void                                        updateEntity( float deltaTime );
 
         /**
         * Set force in x and y direction.
@@ -258,7 +263,9 @@ inline float EnPlayerPhysics::getAngularForce()
 class PlayerPhysicsEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    PlayerPhysicsEntityFactory() : BaseEntityFactory(ENTITY_NAME_PLPHYS) {}
+                                                    PlayerPhysicsEntityFactory() :
+                                                     BaseEntityFactory( ENTITY_NAME_PLPHYS, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~PlayerPhysicsEntityFactory() {}
 

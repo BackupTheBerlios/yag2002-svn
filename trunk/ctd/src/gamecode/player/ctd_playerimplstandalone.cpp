@@ -42,15 +42,13 @@ using namespace std;
 
 namespace CTD
 {
-// entity name of player's camera
-#define PLAYER_CAMERA_ENTITIY_NAME      "playercam"
 
 BasePlayerImplStandalone::BasePlayerImplStandalone( EnPlayer* player ) :
 BasePlayerImplementation( player ),
 _p_chatGui( new PlayerChatGui )
 {
     // create a new input handler for this player
-    _p_inputHandler = new PlayerIHStandalone( this, player );
+    _p_inputHandler = new PlayerIHCharacterCameraCtrl< BasePlayerImplStandalone >( this, player );
 }
 
 BasePlayerImplStandalone::~BasePlayerImplStandalone()
@@ -106,6 +104,9 @@ void BasePlayerImplStandalone::enableControl( bool en )
 
 void BasePlayerImplStandalone::initialize()
 {    
+    _currentPos = getPlayerEntity()->getPosition();
+    _currentRot = getPlayerEntity()->getRotation();
+
     _p_chatGui->initialize( this, _playerAttributes._chatGuiConfig );
     _p_inputHandler->setMenuEnabled( false );
 }
@@ -163,6 +164,10 @@ void BasePlayerImplStandalone::postInitialize()
 
 void BasePlayerImplStandalone::getConfiguration()
 {
+    std::string playername;
+    Configuration::get()->getSettingValue( CTD_GS_PLAYERNAME, playername );
+    _p_player->setPlayerName( playername );
+
     // setup key bindings
     std::string keyname;
     Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_FORWARD, keyname );
@@ -189,8 +194,9 @@ void BasePlayerImplStandalone::getConfiguration()
 
 void BasePlayerImplStandalone::update( float deltaTime )
 {
-    // update player physics
-    _p_playerPhysics->update( deltaTime );
+    // update player's actual position and rotation once per frame
+    getPlayerEntity()->setPosition( _currentPos ); 
+    getPlayerEntity()->setRotation( _currentRot ); 
 
     // adjust the camera to updated position and rotation. the physics updates the translation of player.
     _p_camera->setCameraTranslation( getPlayerPosition(), getPlayerRotation() );

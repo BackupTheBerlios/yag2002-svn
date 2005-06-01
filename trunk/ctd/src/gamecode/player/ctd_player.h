@@ -101,9 +101,6 @@ class EnPlayer : public BaseEntity
         {
             public:
 
-                //! Player name
-                std::string                                 _playerName;
-
                 //! Physics entity's instance name which will be attached to player
                 std::string                                 _physicsEntity;
 
@@ -138,7 +135,16 @@ class EnPlayer : public BaseEntity
         //! Return player's attribute container
         inline const PlayerAttributes&              getPlayerAttributes();
 
+        //! Get player name
+        inline const std::string&                   getPlayerName();
+
+        //! Set player name
+        inline void                                 setPlayerName( const std::string& name );
+
     protected:
+
+        //! Player name
+        std::string                                 _playerName;
 
         //! Player attributes encapsulated in a container, ready for transfering to player implementation
         PlayerAttributes                            _attributeContainer;
@@ -154,7 +160,9 @@ class EnPlayer : public BaseEntity
 class PlayerEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    PlayerEntityFactory() : BaseEntityFactory(ENTITY_NAME_PLAYER) {}
+                                                    PlayerEntityFactory() : 
+                                                     BaseEntityFactory( ENTITY_NAME_PLAYER, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~PlayerEntityFactory() {}
 
@@ -174,6 +182,16 @@ inline void EnPlayer::appendTransformationNode( osg::Node* p_node )
 inline void EnPlayer::removeTransformationNode( osg::Node* p_node )
 {
     removeFromTransformationNode( p_node );
+}
+
+inline const std::string& EnPlayer::getPlayerName()
+{
+    return _playerName;
+}
+
+inline void EnPlayer::setPlayerName( const std::string& name )
+{
+    _playerName = name;
 }
 
 } // namespace CTD

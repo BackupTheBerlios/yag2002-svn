@@ -71,7 +71,9 @@ class EnMesh :  public BaseEntity
 class MeshEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    MeshEntityFactory() : BaseEntityFactory( ENTITY_NAME_MESH ) {}
+                                                    MeshEntityFactory() : 
+                                                     BaseEntityFactory( ENTITY_NAME_MESH, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~MeshEntityFactory() {}
 

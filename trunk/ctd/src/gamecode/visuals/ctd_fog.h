@@ -69,7 +69,9 @@ class EnFog :  public BaseEntity
 class FogEntityFactory : public BaseEntityFactory
 {
     public:
-                                                    FogEntityFactory() : BaseEntityFactory( ENTITY_NAME_FOG ) {}
+                                                    FogEntityFactory() :
+                                                     BaseEntityFactory( ENTITY_NAME_FOG, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                    {}
 
         virtual                                     ~FogEntityFactory() {}
 

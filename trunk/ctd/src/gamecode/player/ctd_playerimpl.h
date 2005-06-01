@@ -44,6 +44,8 @@
 #include <ctd_main.h>
 #include "ctd_player.h"
 
+class PlayerNetworking;
+
 namespace CTD
 {
 
@@ -52,6 +54,9 @@ class EnPlayerSound;
 class EnPlayerPhysics;
 class EnPlayerAnimation;
 class PlayerInputHandler;
+
+// entity name of player's camera
+#define PLAYER_CAMERA_ENTITIY_NAME      "playercam"
 
 //! Player implementation base class
 /** 
@@ -79,19 +84,19 @@ class BasePlayerImplementation
         virtual void                                handleNotification( EntityNotification& notify ) {}
 
         //! Set player's position.
-        void                                        setPlayerPosition( const osg::Vec3f& pos );
+        inline void                                 setPlayerPosition( const osg::Vec3f& pos );
 
         //! Set player's rotation.
-        void                                        setPlayerRotation( const osg::Quat& rot );
+        inline void                                 setPlayerRotation( const osg::Quat& rot );
 
         //! Get player's position.
-        const osg::Vec3d&                           getPlayerPosition();
+        inline const osg::Vec3f&                    getPlayerPosition();
 
         //! Get player's rotation.
-        const osg::Quat&                            getPlayerRotation();
+        inline const osg::Quat&                     getPlayerRotation();
 
         //! Get player's move direction
-        const osg::Vec3f&                           getPlayerMoveDirection();
+        inline const osg::Vec3f&                    getPlayerMoveDirection();
 
         //! Set camera mode to Spheric or Ego
         virtual void                                setCameraMode( unsigned int mode ) {}
@@ -100,16 +105,22 @@ class BasePlayerImplementation
         virtual void                                enableControl( bool en ) {}
 
         //! Return player's animation component.
-        EnPlayerAnimation*                          getPlayerAnimation() { return _p_playerAnimation; }
+        inline EnPlayerAnimation*                   getPlayerAnimation();
 
         //! Return player's physics component.
-        EnPlayerPhysics*                            getPlayerPhysics() { return _p_playerPhysics; }
+        inline EnPlayerPhysics*                     getPlayerPhysics();
 
         //! Return player's sound component.
-        EnPlayerSound*                              getPlayerSound() { return _p_playerSound; }
+        inline EnPlayerSound*                       getPlayerSound();
+
+        //! Return player's networking component.
+        inline PlayerNetworking*                    getPlayerNetworking();
+
+        //! Set player's networking component ( used by networking component itself when a new remote client is created ).
+        inline void                                 setPlayerNetworking( PlayerNetworking* p_net );
 
         //! Get player entity
-        EnPlayer*                                   getPlayerEntity() { return _p_player; }
+        inline EnPlayer*                            getPlayerEntity();
 
     protected:
 
@@ -144,9 +155,74 @@ class BasePlayerImplementation
         //! Camera entity
         EnCamera*                                   _p_camera;
 
+        //! Networking component
+        PlayerNetworking*                           _p_playerNetworking;
+
         //! Movement direction
         osg::Vec3f                                  _moveDir;
+
+        //! Current position
+        osg::Vec3f                                  _currentPos;
+
+        //! Current rotation
+        osg::Quat                                   _currentRot;
 };
+
+// inlines
+inline void BasePlayerImplementation::setPlayerPosition( const osg::Vec3f& pos ) 
+{ 
+    _currentPos = pos;
+}
+
+inline void BasePlayerImplementation::setPlayerRotation( const osg::Quat& rot )
+{ 
+    _currentRot = rot;
+}
+
+inline const osg::Vec3f& BasePlayerImplementation::getPlayerPosition() 
+{
+    return _currentPos;
+}
+
+inline const osg::Quat& BasePlayerImplementation::getPlayerRotation()
+{ 
+    return _currentRot; 
+}
+
+inline const osg::Vec3f& BasePlayerImplementation::getPlayerMoveDirection() 
+{ 
+    return _moveDir; 
+}
+
+inline EnPlayerAnimation* BasePlayerImplementation::getPlayerAnimation() 
+{ 
+    return _p_playerAnimation; 
+}
+
+inline EnPlayerPhysics* BasePlayerImplementation::getPlayerPhysics() 
+{ 
+    return _p_playerPhysics; 
+}
+
+inline EnPlayerSound* BasePlayerImplementation::getPlayerSound() 
+{ 
+    return _p_playerSound; 
+}
+
+inline PlayerNetworking* BasePlayerImplementation::getPlayerNetworking() 
+{ 
+    return _p_playerNetworking; 
+}
+
+inline void BasePlayerImplementation::setPlayerNetworking( PlayerNetworking* p_net ) 
+{ 
+    _p_playerNetworking = p_net; 
+}
+
+inline EnPlayer* BasePlayerImplementation::getPlayerEntity() 
+{ 
+    return _p_player; 
+}
 
 } // namespace CTD
 
