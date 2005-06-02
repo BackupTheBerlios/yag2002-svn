@@ -105,6 +105,8 @@ class Application : public Singleton< Application >
 
         unsigned int                                _screenHeight;
 
+        bool                                        _fullScreen;
+
         osg::Group*                                 _p_rootSceneNode;
 
         std::string                                 _mediaPath;

@@ -60,7 +60,8 @@ _p_physics( Physics::get() ),
 _p_viewer( NULL ),
 _p_rootSceneNode( NULL ),
 _screenWidth( 600 ),
-_screenHeight( 400 )
+_screenHeight( 400 ),
+_fullScreen( false )
 {
 }
 
@@ -183,9 +184,8 @@ bool Application::initialize( int argc, char **argv )
     unsigned int colorbits = 24;
     Configuration::get()->getSettingValue( CTD_GS_COLORBITS, colorbits );
     p_rs->addPixelAttribute( Producer::RenderSurface::DepthSize, colorbits );
-    bool fullscreen;
-    Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN, fullscreen );
-    p_rs->fullScreen( fullscreen );
+    Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN, _fullScreen );
+    p_rs->fullScreen( _fullScreen );
     p_rs->useCursor( false ); //hide cursor
 
     // get details on keyboard and mouse bindings used by the viewer.
@@ -214,6 +214,8 @@ bool Application::initialize( int argc, char **argv )
 
     // setup networking
     _p_networkDevice = NetworkDevice::get();
+    // avoid creating of remote clients so long we are initializing the system
+    _p_networkDevice->lockObjects();
     if ( GameState::get()->getMode() == GameState::Server )
     {
         //! TODO: try to get the servername from cmd option
@@ -232,8 +234,11 @@ bool Application::initialize( int argc, char **argv )
         unsigned int channel;
         Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
 
-        if ( _p_networkDevice->setupClient( url, channel, nodeinfo ) )
-            _p_networkDevice->startClient();
+        if ( !_p_networkDevice->setupClient( url, channel, nodeinfo ) )
+        {
+            log << Log::LogLevel( Log::L_ERROR ) << "cannot setup client networking, exiting ..." << endl;
+            return false;
+        }
 
         // now load level
         string levelname = _p_networkDevice->getNodeInfo()->getLevelName();
@@ -266,6 +271,19 @@ void Application::run()
     osg::Timer_t     curTick   = 0;
     osg::Timer_t     lastTick  = 0;
 
+    // now the network can start
+    if ( GameState::get()->getMode() == GameState::Client )
+    {
+        _p_networkDevice->startClient();
+        _p_networkDevice->unlockObjects();
+    }
+    else if ( GameState::get()->getMode() == GameState::Server )
+    {
+        _p_networkDevice->unlockObjects();
+    }
+
+
+    // begin game loop
     while( ( _p_gameState->getState() != GameState::Quitting ) && !_p_viewer->done() )
     {
         lastTick  = curTick;
@@ -316,6 +334,10 @@ void Application::updateClient( float deltaTime )
 
     // fire off the cull and draw traversals of the scene.
     _p_viewer->frame();
+
+    // yield a little processor time for other tasks on system
+    if ( !_fullScreen )
+        OpenThreads::Thread::microSleep( 1000 );
 }
 
 void Application::updateServer( float deltaTime )
@@ -329,18 +351,8 @@ void Application::updateServer( float deltaTime )
     // update physics
     _p_physics->update( deltaTime );
 
-    //// update gui manager
-    //_p_guiManager->update( deltaTime );
-
-    //// wait for all cullings and drawings to complete.
-    //_p_viewer->sync();
-
-    //// update the scene by traversing it with the the update visitor which will
-    //// call all node update callbacks and animations.
-    //_p_viewer->update();
-
-    //// fire off the cull and draw traversals of the scene.
-    //_p_viewer->frame();
+    // yield a little processor time for other tasks on system
+    OpenThreads::Thread::microSleep( 1000 );
 }
 
 void Application::updateStandalone( float deltaTime )
@@ -363,6 +375,10 @@ void Application::updateStandalone( float deltaTime )
 
     // fire off the cull and draw traversals of the scene.
     _p_viewer->frame();
+
+    // yield a little processor time for other tasks on system
+    if ( !_fullScreen )
+        OpenThreads::Thread::microSleep( 1000 );
 }
 
 void Application::stop()
