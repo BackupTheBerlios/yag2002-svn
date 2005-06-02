@@ -44,13 +44,13 @@ namespace CTD
 {
 
 //! Player implementation for game mode Server ( see framework class GameState )
-class BasePlayerImplServer : public BasePlayerImplementation
+class PlayerImplServer : public BasePlayerImplementation
 {
     public:
 
-                                                    BasePlayerImplServer( EnPlayer* player );
+                                                    PlayerImplServer( EnPlayer* player );
 
-        virtual                                     ~BasePlayerImplServer();
+        virtual                                     ~PlayerImplServer();
 
 
         //! Initialize

@@ -45,7 +45,7 @@
 
 //typedef struct _tChatMsg 
 //{
-//    char    m_pcText[ 256 ];
+//    char    _text[ 256 ];
 //} tChatMsg;
 
 namespace CTD
@@ -107,6 +107,9 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         //! New incomming chat text
         void                                        RPC_AddChatText( tChatMsg chatMsg );
 
+        //! Return chat's log
+        static CTD::Log&                            getChatLog() { return *s_chatLog; }
+
     protected:
 
         float                                       _positionX;
@@ -124,6 +127,8 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         char                                        _p_playerName[ 32 ];
 
         char                                        _p_animFileName[ 64 ];
+
+        static CTD::Log*                            s_chatLog;
 
     friend class _MAKE_RO( PlayerNetworking );
 };

@@ -43,17 +43,16 @@
 namespace CTD
 {
 
-class PlayerChatGui;
 template< class PlayerImplT > class PlayerIHCharacterCameraCtrl;
 
 //! Player implementation for game mode Client ( see framework class GameState )
-class BasePlayerImplClient : public BasePlayerImplementation
+class PlayerImplClient : public BasePlayerImplementation
 {
     public:
 
-                                                    BasePlayerImplClient( EnPlayer* player );
+                                                    PlayerImplClient( EnPlayer* player );
 
-        virtual                                     ~BasePlayerImplClient();
+        virtual                                     ~PlayerImplClient();
 
 
         //! Initialize
@@ -73,16 +72,10 @@ class BasePlayerImplClient : public BasePlayerImplementation
         //! Get the configuration settings
         void                                        getConfiguration();
 
-        //! Chat gui
-        std::auto_ptr< PlayerChatGui >              _p_chatGui;
-
         //! Input handler
-        PlayerIHCharacterCameraCtrl< BasePlayerImplClient >* _p_inputHandler;
+        PlayerIHCharacterCameraCtrl< PlayerImplClient >* _p_inputHandler;
 
-        //! Enable / disable input processing
-        bool                                        _enabledControl;
-
-    friend class PlayerIHCharacterCameraCtrl< BasePlayerImplClient >;
+    friend class PlayerIHCharacterCameraCtrl< PlayerImplClient >;
 };
 
 } // namespace CTD

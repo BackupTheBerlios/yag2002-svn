@@ -50,6 +50,7 @@ namespace CTD
 {
 
 class EnCamera;
+class PlayerChatGui;
 class EnPlayerSound;
 class EnPlayerPhysics;
 class EnPlayerAnimation;
@@ -98,11 +99,11 @@ class BasePlayerImplementation
         //! Get player's move direction
         inline const osg::Vec3f&                    getPlayerMoveDirection();
 
-        //! Set camera mode to Spheric or Ego
-        virtual void                                setCameraMode( unsigned int mode ) {}
+        //! Add the given message to chat box
+        void                                        addChatMessage( const std::string& msg, const std::string& author );
 
-        //! Enable / disable input processing and control
-        virtual void                                enableControl( bool en ) {}
+        //! Distribute the given message to all other clients
+        void                                        distributeChatMessage( const std::string& msg );
 
         //! Return player's animation component.
         inline EnPlayerAnimation*                   getPlayerAnimation();
@@ -123,6 +124,9 @@ class BasePlayerImplementation
         inline EnPlayer*                            getPlayerEntity();
 
     protected:
+
+        //! Set camera mode to Spheric or Ego
+        void                                        setCameraMode( unsigned int mode );
 
         //! Set camera's pitch and yaw angles given the mouse position [-1..1, -1..1] for looking around 
         void                                        setCameraPitchYaw( float pitch, float yaw );
@@ -157,6 +161,9 @@ class BasePlayerImplementation
 
         //! Networking component
         PlayerNetworking*                           _p_playerNetworking;
+
+        //! Chat gui
+        std::auto_ptr< PlayerChatGui >              _p_chatGui;
 
         //! Movement direction
         osg::Vec3f                                  _moveDir;

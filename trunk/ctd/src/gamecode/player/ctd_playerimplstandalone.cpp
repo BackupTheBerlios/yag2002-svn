@@ -43,21 +43,22 @@ using namespace std;
 namespace CTD
 {
 
-BasePlayerImplStandalone::BasePlayerImplStandalone( EnPlayer* player ) :
+PlayerImplStandalone::PlayerImplStandalone( EnPlayer* player ) :
 BasePlayerImplementation( player ),
-_p_chatGui( new PlayerChatGui )
+_p_inputHandler( NULL )
 {
     // create a new input handler for this player
-    _p_inputHandler = new PlayerIHCharacterCameraCtrl< BasePlayerImplStandalone >( this, player );
+    _p_inputHandler = new PlayerIHCharacterCameraCtrl< PlayerImplStandalone >( this, player );
+    _p_chatGui = std::auto_ptr< PlayerChatGui >( new PlayerChatGui );
 }
 
-BasePlayerImplStandalone::~BasePlayerImplStandalone()
+PlayerImplStandalone::~PlayerImplStandalone()
 {
     // destroy input handler
     _p_inputHandler->destroyHandler();
 }
 
-void BasePlayerImplStandalone::handleNotification( EntityNotification& notify )
+void PlayerImplStandalone::handleNotification( EntityNotification& notify )
 {
     // handle some notifications
     switch( notify.getId() )
@@ -96,13 +97,7 @@ void BasePlayerImplStandalone::handleNotification( EntityNotification& notify )
     }
 }
 
-void BasePlayerImplStandalone::enableControl( bool en )
-{
-    _enabledControl = en;
-    _p_inputHandler->enable( en );
-}
-
-void BasePlayerImplStandalone::initialize()
+void PlayerImplStandalone::initialize()
 {    
     _currentPos = getPlayerEntity()->getPosition();
     _currentRot = getPlayerEntity()->getRotation();
@@ -111,7 +106,7 @@ void BasePlayerImplStandalone::initialize()
     _p_inputHandler->setMenuEnabled( false );
 }
 
-void BasePlayerImplStandalone::postInitialize()
+void PlayerImplStandalone::postInitialize()
 {
     log << Log::LogLevel( Log::L_INFO ) << "  setup player implementation Standalone ..." << endl;
 
@@ -162,7 +157,7 @@ void BasePlayerImplStandalone::postInitialize()
     log << Log::LogLevel( Log::L_INFO ) << "  player implementation successfully initialized" << endl;
 }
 
-void BasePlayerImplStandalone::getConfiguration()
+void PlayerImplStandalone::getConfiguration()
 {
     std::string playername;
     Configuration::get()->getSettingValue( CTD_GS_PLAYERNAME, playername );
@@ -192,7 +187,7 @@ void BasePlayerImplStandalone::getConfiguration()
     _p_inputHandler->_keyCodeChatMode = KeyMap::get()->getCode( keyname );
 }
 
-void BasePlayerImplStandalone::update( float deltaTime )
+void PlayerImplStandalone::update( float deltaTime )
 {
     // update player's actual position and rotation once per frame
     getPlayerEntity()->setPosition( _currentPos ); 
@@ -202,69 +197,6 @@ void BasePlayerImplStandalone::update( float deltaTime )
     _p_camera->setCameraTranslation( getPlayerPosition(), getPlayerRotation() );
 
     _p_chatGui->update( deltaTime );
-}
-
-void BasePlayerImplStandalone::setCameraMode( unsigned int mode )
-{
-    switch ( mode )
-    {
-        case Spheric:
-        {
-            _p_camera->setCameraOffsetPosition( _playerAttributes._camPosOffsetSpheric );
-            osg::Quat rot;
-            rot.makeRotate( 
-                osg::DegreesToRadians( _playerAttributes._camRotOffsetSpheric.x()  ), osg::Vec3f( 0, 1, 0 ), // roll
-                osg::DegreesToRadians( _playerAttributes._camRotOffsetSpheric.y()  ), osg::Vec3f( 1, 0, 0 ), // pitch
-                osg::DegreesToRadians( _playerAttributes._camRotOffsetSpheric.z()  ), osg::Vec3f( 0, 0, 1 )  // yaw
-                );
-            _p_camera->setCameraOffsetRotation( rot );
-            _p_playerAnimation->enableRendering( true );
-        } 
-        break;
-
-        case Ego:
-        {
-            _p_camera->setCameraOffsetPosition( _playerAttributes._camPosOffsetEgo );
-            osg::Quat rot;
-            rot.makeRotate( 
-                osg::DegreesToRadians( _playerAttributes._camRotOffsetEgo.x()  ), osg::Vec3f( 0, 1, 0 ), // roll
-                osg::DegreesToRadians( _playerAttributes._camRotOffsetEgo.y()  ), osg::Vec3f( 1, 0, 0 ), // pitch
-                osg::DegreesToRadians( _playerAttributes._camRotOffsetEgo.z()  ), osg::Vec3f( 0, 0, 1 )  // yaw
-                );
-            _p_camera->setCameraOffsetRotation( rot );
-            _p_playerAnimation->enableRendering( false );
-        }
-        break;
-
-        default:
-            assert( NULL && "requesting for an invalid camera mode" );
-
-    }
-    _cameraMode = ( CameraMode )mode;
-}
-
-void BasePlayerImplStandalone::setNextCameraMode()
-{
-    if ( _cameraMode == Spheric )
-        setCameraMode( Ego );
-    else
-        setCameraMode( Spheric );
-}
-
-void BasePlayerImplStandalone::setCameraPitchYaw( float pitch, float yaw )
-{
-    if ( _cameraMode == Spheric )
-    {
-        float angleY = yaw * 360.0f;
-        float angleX = ( pitch * LIMIT_PITCH_ANGLE ) + LIMIT_PITCH_OFFSET;
-        _p_camera->setLocalPitchYaw( angleX, angleY );
-    }
-    // in ego mode we turn the character instead of yawing the camera!
-    else
-    {
-        float angleX = pitch * LIMIT_PITCH_ANGLE;
-        _p_camera->setLocalPitch( angleX );
-    }
 }
 
 } // namespace CTD

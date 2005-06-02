@@ -30,6 +30,7 @@
 
 #include <ctd_main.h>
 #include "ctd_player.h"
+#include "ctd_chatgui.h"
 #include "ctd_playersound.h"
 #include "ctd_inputhandler.h"
 #include "ctd_playerphysics.h"
@@ -42,54 +43,114 @@ using namespace std;
 namespace CTD
 {
 
-BasePlayerImplClient::BasePlayerImplClient( EnPlayer* player ) :
-BasePlayerImplementation( player )
+PlayerImplClient::PlayerImplClient( EnPlayer* player ) :
+BasePlayerImplementation( player ),
+_p_inputHandler( NULL )
 {
 }
 
-BasePlayerImplClient::~BasePlayerImplClient()
+PlayerImplClient::~PlayerImplClient()
 {
     if ( _p_playerNetworking )
         delete _p_playerNetworking;
 }
 
-void BasePlayerImplClient::handleNotification( EntityNotification& notify )
+void PlayerImplClient::handleNotification( EntityNotification& notify )
 {
+    // handle some notifications
+    switch( notify.getId() )
+    {
+        case CTD_NOTIFY_MENU_ENTER:
+
+            if ( !getPlayerNetworking()->isRemoteClient() )
+            {
+                _p_chatGui->show( false );
+                _p_inputHandler->setMenuEnabled( true );
+
+                // reset player's movement and sound
+                _p_playerPhysics->stopMovement();
+                _p_playerAnimation->animIdle();
+                if ( _p_playerSound )
+                    _p_playerSound->stopPlayingAll();
+
+                // very important: diable the camera when we enter menu!
+                _p_camera->setEnable( false );
+            }
+            break;
+
+        case CTD_NOTIFY_MENU_LEAVE:
+        {
+            if ( !getPlayerNetworking()->isRemoteClient() )
+            {
+                _p_chatGui->show( true );
+                _p_inputHandler->setMenuEnabled( false );
+
+                // refresh our configuration settings
+                getConfiguration();
+
+                // very important: enable the camera when we leave menu!
+                _p_camera->setEnable( true );
+            }
+        }
+        break;
+
+        default:
+            ;
+    }
 }
 
-void BasePlayerImplClient::initialize()
+void PlayerImplClient::initialize()
 {
     _currentPos = getPlayerEntity()->getPosition();
     _currentRot = getPlayerEntity()->getRotation();
 
+    // get configuration settings
+    getConfiguration();
+
     // if the player networking component is created already then this implementation is created
     //  for a remote client on local machine, otherwise it's a local client.
-    if ( !_p_playerNetworking )
+    if ( !getPlayerNetworking() )
     {
         _p_playerNetworking = new PlayerNetworking( this );
+        _p_playerNetworking->Publish();
+    }
+    // actions to be taken for local client
+    if ( !getPlayerNetworking()->isRemoteClient() )
+    {
+        // init player's networking 
+        getPlayerNetworking()->initialize( _currentPos, getPlayerEntity()->getPlayerName(), "" ); //! TODO: player init file
+
+        // create chat gui
+        _p_chatGui = std::auto_ptr< PlayerChatGui >( new PlayerChatGui );
+        _p_chatGui->initialize( this, _playerAttributes._chatGuiConfig );
         // create a new input handler for this player
-        _p_inputHandler = new PlayerIHCharacterCameraCtrl< BasePlayerImplClient >( this, _p_player );
+        _p_inputHandler = new PlayerIHCharacterCameraCtrl< PlayerImplClient >( this, _p_player );
+        _p_inputHandler->setMenuEnabled( false );
     }
 }
 
-void BasePlayerImplClient::postInitialize()
+void PlayerImplClient::postInitialize()
 {
     log << Log::LogLevel( Log::L_INFO ) << "  setup player implementation Server ..." << endl;
 
-    // attach camera entity
-    log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for camera entity '" << PLAYER_CAMERA_ENTITIY_NAME << "'..." << endl;
-    // get camera entity
-    _p_camera = dynamic_cast< EnCamera* >( EntityManager::get()->findEntity( ENTITY_NAME_CAMERA, PLAYER_CAMERA_ENTITIY_NAME ) );
-    assert( _p_camera && "could not find the camera entity!" );
-    log << Log::LogLevel( Log::L_DEBUG ) << "   -  camera entity successfully attached" << endl;
+    // local client specific setup
+    if ( !getPlayerNetworking()->isRemoteClient() )
+    {
+        // attach camera entity
+        log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for camera entity '" << PLAYER_CAMERA_ENTITIY_NAME << "'..." << endl;
+        // get camera entity
+        _p_camera = dynamic_cast< EnCamera* >( EntityManager::get()->findEntity( ENTITY_NAME_CAMERA, PLAYER_CAMERA_ENTITIY_NAME ) );
+        assert( _p_camera && "could not find the camera entity!" );
+        log << Log::LogLevel( Log::L_DEBUG ) << "   -  camera entity successfully attached" << endl;
 
-    // attach physics entity
-    log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for physics entity '" << _playerAttributes._physicsEntity << "' ..." << endl;
-    // find and attach physics component
-    _p_playerPhysics = dynamic_cast< EnPlayerPhysics* >( EntityManager::get()->findEntity( ENTITY_NAME_PLPHYS, _playerAttributes._physicsEntity ) );
-    assert( _p_playerPhysics && "given instance name does not belong to a EnPlayerPhysics entity type!" );
-    _p_playerPhysics->setPlayer( this );
-    log << Log::LogLevel( Log::L_DEBUG ) << "   -  physics entity successfully attached" << endl;
+        // attach physics entity
+        log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for physics entity '" << _playerAttributes._physicsEntity << "' ..." << endl;
+        // find and attach physics component
+        _p_playerPhysics = dynamic_cast< EnPlayerPhysics* >( EntityManager::get()->findEntity( ENTITY_NAME_PLPHYS, _playerAttributes._physicsEntity ) );
+        assert( _p_playerPhysics && "given instance name does not belong to a EnPlayerPhysics entity type!" );
+        _p_playerPhysics->setPlayer( this );
+        log << Log::LogLevel( Log::L_DEBUG ) << "   -  physics entity successfully attached" << endl;
+    }
 
     // attach sound entity
     log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for sound entity '" << _playerAttributes._soundEntity << "' ..." << endl;
@@ -103,21 +164,66 @@ void BasePlayerImplClient::postInitialize()
         log << Log::LogLevel( Log::L_DEBUG ) << "   -  sound entity successfully attached" << endl;
     }
 
-    // get configuration settings
-    getConfiguration();
+    // attach animation entity
+    log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for animation entity '" << _playerAttributes._animationEntity << "' ..." << endl;
+    // find and attach animation component
+    _p_playerAnimation = dynamic_cast< EnPlayerAnimation* >( EntityManager::get()->findEntity( ENTITY_NAME_PLANIM, _playerAttributes._animationEntity ) );
+    assert( _p_playerAnimation && "given instance name does not belong to a EnPlayerAnimation entity type!" );
+    _p_playerAnimation->setPlayer( this );
+    if ( _cameraMode == Ego ) // in ego mode we won't render our character
+        _p_playerAnimation->enableRendering( false );
+
+    log << Log::LogLevel( Log::L_DEBUG ) << "   -  animation entity successfully attached" << endl;
 
     log << Log::LogLevel( Log::L_INFO ) << "  player implementation successfully initialized" << endl;
 }
 
-void BasePlayerImplClient::getConfiguration()
+void PlayerImplClient::getConfiguration()
 {
+    std::string playername;
+    Configuration::get()->getSettingValue( CTD_GS_PLAYERNAME, playername );
+    _p_player->setPlayerName( playername );
+
+    // setup key bindings if the handler is already created (e.g. remote clients have no handler)
+    if ( _p_inputHandler )
+    {
+        std::string keyname;
+        Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_FORWARD, keyname );
+        _p_inputHandler->_keyCodeMoveForward = KeyMap::get()->getCode( keyname );
+
+        Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_BACKWARD, keyname );
+        _p_inputHandler->_keyCodeMoveBackward = KeyMap::get()->getCode( keyname );
+
+        Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_LEFT, keyname );
+        _p_inputHandler->_keyCodeMoveLeft = KeyMap::get()->getCode( keyname );
+
+        Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_RIGHT, keyname );
+        _p_inputHandler->_keyCodeMoveRight = KeyMap::get()->getCode( keyname );
+
+        Configuration::get()->getSettingValue( CTD_GS_KEY_JUMP, keyname );
+        _p_inputHandler->_keyCodeJump = KeyMap::get()->getCode( keyname );
+
+        Configuration::get()->getSettingValue( CTD_GS_KEY_CAMERAMODE, keyname );
+        _p_inputHandler->_keyCodeCameraMode = KeyMap::get()->getCode( keyname );
+
+        Configuration::get()->getSettingValue( CTD_GS_KEY_CHATMODE, keyname );
+        _p_inputHandler->_keyCodeChatMode = KeyMap::get()->getCode( keyname );
+    }
 }
 
-void BasePlayerImplClient::update( float deltaTime )
+void PlayerImplClient::update( float deltaTime )
 {
     // update player's actual position and rotation once per frame
     getPlayerEntity()->setPosition( _currentPos ); 
     getPlayerEntity()->setRotation( _currentRot ); 
+
+    if ( !getPlayerNetworking()->isRemoteClient() )
+    {
+        // adjust the camera to updated position and rotation. the physics updates the translation of player.
+        _p_camera->setCameraTranslation( getPlayerPosition(), getPlayerRotation() );
+        // update chat gui
+        _p_chatGui->update( deltaTime );
+    }
 }
 
 } // namespace CTD

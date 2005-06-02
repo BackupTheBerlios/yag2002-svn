@@ -45,11 +45,22 @@
 #include "ctd_player.h"
 
 using namespace std;
-using namespace osg;
 
+CTD::Log* PlayerNetworking::s_chatLog = NULL;
 
 PlayerNetworking::PlayerNetworking( CTD::BasePlayerImplementation* p_playerImpl )
-{    
+{   
+    _p_playerImpl = p_playerImpl;
+
+    // setup chat log
+    if ( !s_chatLog )
+    {
+        s_chatLog = new CTD::Log;
+        s_chatLog->addSink( "chatlog", CTD::Application::get()->getMediaPath() + "chat.log", CTD::Log::L_ERROR );
+        s_chatLog->enableSeverityLevelPrinting( false );
+        *s_chatLog << CTD::Log::LogLevel( CTD::Log::L_INFO );
+    }
+
     // this constructor can be called either by player entity or networking system (in client or server mode)
     //  when called by player entity then it means that we are a local client, otherwise we are a remote client
     _remoteClient = false;
@@ -60,78 +71,84 @@ PlayerNetworking::PlayerNetworking( CTD::BasePlayerImplementation* p_playerImpl 
         // create new entity for remote client
         CTD::EnPlayer* p_entity = static_cast< CTD::EnPlayer* > ( CTD::EntityManager::get()->createEntity( ENTITY_NAME_PLAYER, "_newRemoteClient_" ) );
         assert( p_entity && "player entity cannot be created" );
-
-        if ( CTD::GameState::get()->getMode() == CTD::GameState::Server )
-        {
-            p_playerImpl = new CTD::BasePlayerImplServer( p_entity );
-        }
-        else if ( CTD::GameState::get()->getMode() == CTD::GameState::Client )
-        {
-            p_playerImpl = new CTD::BasePlayerImplClient( p_entity );
-        }
-        else
-            assert( NULL && "invalid game state" );
-
-        p_playerImpl->setPlayerNetworking( this );
-        p_playerImpl->initialize();
+        // for a remote client we must setup the player implementation ourself
+        _p_playerImpl = new CTD::PlayerImplClient( p_entity );
+        _p_playerImpl->setPlayerNetworking( this );
+        _p_playerImpl->initialize();
+        p_entity->setPlayerImplementation( _p_playerImpl );
+        // now we can init entity
+        p_entity->initialize();
 
         _p_playerName[ 0 ]   = 0;
         _p_animFileName[ 0 ] = 0;
+
+        CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "a new player is beeing created ..." << endl;
     }
+    strcpy( _p_playerName, _p_playerImpl->getPlayerEntity()->getPlayerName().c_str() );
     _cmdAnimFlags     = 0;
-    _p_playerImpl     = p_playerImpl;
 }
 
 PlayerNetworking::~PlayerNetworking()
 {
+    CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "player left: " << _p_playerName << endl;
+
     // remove ghost from simulation ( server and client )
     if ( isRemoteClient() ) 
     {    
+        // we have created the implementation, so set its networking to NULL in order to abvoid deleting it also by player's implementation
         _p_playerImpl->setPlayerNetworking( NULL );
         CTD::EntityManager::get()->deleteEntity( _p_playerImpl->getPlayerEntity() );
+    }
+    else
+    {
+        string enteringtext( string( "< " ) + _p_playerName + string ( " says goodbye >" ) );
+        putChatText( enteringtext );
     }
 }
 
 void PlayerNetworking::PostObjectCreate()
 {
+    // complete setting up ghost (remote client) or server-side player
+    if ( isRemoteClient() ) 
+    {
+        _p_playerImpl->getPlayerEntity()->setPlayerName( _p_playerName );
+        _p_playerImpl->getPlayerEntity()->postInitialize();
+        _p_playerImpl->getPlayerEntity()->setPlayerName( _p_playerName );
+        CTD::EntityManager::get()->addToScene( _p_playerImpl->getPlayerEntity() );
+    }
+    else
+    {
+        string enteringtext( string( "< " ) + _p_playerName + string ( " says hello >" ) );
+        putChatText( enteringtext );
+    }
 
-//    if ( isRemoteClient() && NetworkDevice::get()->getMode() == NetworkDevice::NetworkingMode::CLIENT ) {
-//
-////        m_pkMember->SetPlayerName( m_pcPlayerName );
-////        m_pkMember->SetAnimConfig( m_pcAnimFileName );
-//
-//        // integrate the entity into scene     
-////        assert ( Framework::Get()->AddEntiy( GetLevelSet(), ( CTD::BaseEntity* )m_pkMember ) == true );
-//        _p_member->postInitialize();
-//    
-//    }
+    CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << " player created: " << _p_playerName << endl;
 }
 
-void PlayerNetworking::initialize( const Vec3f& pos, const string& playerName, const string& meshFileName )
+void PlayerNetworking::initialize( const osg::Vec3f& pos, const string& playerName, const string& meshFileName )
 {
-    //_positionX = pos._v[ 0 ]; 
-    //_positionY = pos._v[ 1 ];
-    //_positionZ = pos._v[ 2 ];
-    //strcpy( _p_playerName, playerName.c_str() );
-    //strcpy( _p_animFileName, meshFileName.c_str() );
+    _positionX = pos._v[ 0 ]; 
+    _positionY = pos._v[ 1 ];
+    _positionZ = pos._v[ 2 ];
+    strcpy( _p_playerName, playerName.c_str() );
+    strcpy( _p_animFileName, meshFileName.c_str() );
 }
 
 void PlayerNetworking::putChatText( const string& text )
 {
-    //static tChatMsg s_textBuffer;
-    //strcpy( s_textBuffer.m_pcText, text.c_str() );
-    //ALL_REPLICAS_FUNCTION_CALL( RPC_AddChatText( s_textBuffer ) );
+    static tChatMsg s_textBuffer;
+    strcpy( s_textBuffer._text, text.c_str() );
+    ALL_REPLICAS_FUNCTION_CALL( RPC_AddChatText( s_textBuffer ) );
 }
 
 void PlayerNetworking::RPC_AddChatText( tChatMsg chatMsg )
 {
-//    // a server could direct all messages into a log file!
-//    if ( NetworkDevice::get()->getMode() == NetworkDevice::NetworkingMode::CLIENT ) {
-//
-//        chatMsg.m_pcText[ 255 ] = 0;
-////        _p_player->postChatText( pcText.m_pcText );
-//
-//    }
+    chatMsg._text[ 255 ] = 0; // limit text length
+    // server directs all messages into a log file!
+    if ( CTD::GameState::get()->getMode() == CTD::GameState::Server ) 
+        getChatLog() << chatMsg._text << endl;
+    else
+        _p_playerImpl->addChatMessage( chatMsg._text, _p_playerName );
 }
 
 void PlayerNetworking::update()
@@ -140,34 +157,34 @@ void PlayerNetworking::update()
 
 void PlayerNetworking::updateAnimationFlags( unsigned int cmdFlag )
 {
-    //_cmdAnimFlags = cmdFlag;
+    _cmdAnimFlags = cmdFlag;
 }
 
 void PlayerNetworking::getAnimationFlags( unsigned int& cmdFlag )
 {
-    //cmdFlag = _cmdAnimFlags;
+    cmdFlag = _cmdAnimFlags;
 }
 
 void PlayerNetworking::updatePosition( float x, float y, float z )
 {
-   //_positionX = x;
-   //_positionY = y;
-   //_positionZ = z;
+   _positionX = x;
+   _positionY = y;
+   _positionZ = z;
 }
 
 void PlayerNetworking::getPosition( float& x, float& y, float& z )
 {
-    //x = _positionX;
-    //y = _positionY;
-    //z = _positionZ;
+    x = _positionX;
+    y = _positionY;
+    z = _positionZ;
 }
 
 void PlayerNetworking::updateRotation( float yaw )
 {
-    //_yaw = yaw;
+    _yaw = yaw;
 }
 
 void PlayerNetworking::getRotation( float& yaw )
 {
-    //yaw =_yaw;
+    yaw =_yaw;
 }

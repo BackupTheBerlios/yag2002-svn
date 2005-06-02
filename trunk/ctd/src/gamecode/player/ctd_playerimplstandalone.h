@@ -43,17 +43,16 @@
 namespace CTD
 {
 
-class PlayerChatGui;
 template< class PlayerImplT > class PlayerIHCharacterCameraCtrl;
 
 //! Player implementation for game mode Standalone ( see framework class GameState )
-class BasePlayerImplStandalone : public BasePlayerImplementation
+class PlayerImplStandalone : public BasePlayerImplementation
 {
     public:
 
-                                                    BasePlayerImplStandalone( EnPlayer* player );
+                                                    PlayerImplStandalone( EnPlayer* player );
 
-        virtual                                     ~BasePlayerImplStandalone();
+        virtual                                     ~PlayerImplStandalone();
 
 
         //! Initialize
@@ -68,38 +67,15 @@ class BasePlayerImplStandalone : public BasePlayerImplementation
         //! Implementation's notification callback
         void                                        handleNotification( EntityNotification& notify );
 
-        //! TODO: shift these methods to base class so client and standalone both can use them 
-        //! TODO: ----------------------------------
-
-        //! Set camera mode to Spheric or Ego
-        void                                        setCameraMode( unsigned int mode );
-
-        //! Set next available camera mode
-        void                                        setNextCameraMode();
-
-        //! Set camera's pitch and yaw angles
-        void                                        setCameraPitchYaw( float pitch, float yaw );
-
-        //! Enable / disable input processing and control
-        void                                        enableControl( bool en );
-
-        //! TODO: ----------------------------------
-
     protected:
 
-        //! Get the configuration settings
+        //! Get the player relevant configuration settings
         void                                        getConfiguration();
 
-        //! Chat gui
-        std::auto_ptr< PlayerChatGui >              _p_chatGui;
-
         //! Input handler
-        PlayerIHCharacterCameraCtrl< BasePlayerImplStandalone >* _p_inputHandler;
+        PlayerIHCharacterCameraCtrl< PlayerImplStandalone >* _p_inputHandler;
 
-        //! Enable / disable input processing
-        bool                                        _enabledControl;
-
-    friend class PlayerIHCharacterCameraCtrl< BasePlayerImplStandalone >;
+    friend class PlayerIHCharacterCameraCtrl< PlayerImplStandalone >;
 };
 
 } // namespace CTD

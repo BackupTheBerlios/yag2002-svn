@@ -38,6 +38,8 @@
 #include "ctd_playeranim.h"
 #include "ctd_playersound.h"
 #include "ctd_inputhandler.h"
+#include "ctd_chatgui.h"
+#include "ctd_playernetworking.h"
 #include "../visuals/ctd_camera.h"
 
 using namespace osg;
@@ -101,6 +103,56 @@ void BasePlayerImplementation::setCameraPitchYaw( float pitch, float yaw )
         float angleX = pitch * LIMIT_PITCH_ANGLE;
         _p_camera->setLocalPitch( angleX );
     }
+}
+
+void BasePlayerImplementation::setCameraMode( unsigned int mode )
+{
+    switch ( mode )
+    {
+        case Spheric:
+        {
+            _p_camera->setCameraOffsetPosition( _playerAttributes._camPosOffsetSpheric );
+            osg::Quat rot;
+            rot.makeRotate( 
+                osg::DegreesToRadians( _playerAttributes._camRotOffsetSpheric.x()  ), osg::Vec3f( 0, 1, 0 ), // roll
+                osg::DegreesToRadians( _playerAttributes._camRotOffsetSpheric.y()  ), osg::Vec3f( 1, 0, 0 ), // pitch
+                osg::DegreesToRadians( _playerAttributes._camRotOffsetSpheric.z()  ), osg::Vec3f( 0, 0, 1 )  // yaw
+                );
+            _p_camera->setCameraOffsetRotation( rot );
+            _p_playerAnimation->enableRendering( true );
+        } 
+        break;
+
+        case Ego:
+        {
+            _p_camera->setCameraOffsetPosition( _playerAttributes._camPosOffsetEgo );
+            osg::Quat rot;
+            rot.makeRotate( 
+                osg::DegreesToRadians( _playerAttributes._camRotOffsetEgo.x()  ), osg::Vec3f( 0, 1, 0 ), // roll
+                osg::DegreesToRadians( _playerAttributes._camRotOffsetEgo.y()  ), osg::Vec3f( 1, 0, 0 ), // pitch
+                osg::DegreesToRadians( _playerAttributes._camRotOffsetEgo.z()  ), osg::Vec3f( 0, 0, 1 )  // yaw
+                );
+            _p_camera->setCameraOffsetRotation( rot );
+            _p_playerAnimation->enableRendering( false );
+        }
+        break;
+
+        default:
+            assert( NULL && "requesting for an invalid camera mode" );
+
+    }
+    _cameraMode = ( CameraMode )mode;
+}
+
+void BasePlayerImplementation::addChatMessage( const std::string& msg, const std::string& author )
+{
+    // now we have a static method for adding messages. this may change in future ( making PlayerGui a singleton ).
+    PlayerChatGui::addMessage( msg.c_str(), author.c_str() );
+}
+
+void BasePlayerImplementation::distributeChatMessage( const std::string& msg )
+{
+    _p_playerNetworking->putChatText( msg );
 }
 
 } // namespace CTD
