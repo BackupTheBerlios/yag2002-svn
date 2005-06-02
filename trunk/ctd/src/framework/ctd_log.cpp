@@ -43,6 +43,7 @@ Log log;
 //! Implementation of logging system
 Log::Log() :
 _severity( L_DEBUG ),
+_printSeverityLevel( true ),
 basic_ostream< char >( &_stream )
 {
     _stream.setLog( this );
@@ -110,6 +111,11 @@ void Log::removeSink( const string& sinkname )
     assert( NULL && "sink name does not exist!" );
 }
 
+void Log::enableSeverityLevelPrinting( bool en )
+{
+    _printSeverityLevel = en;
+}
+
 void Log::out( const string& msg )
 {
     vector< Sink* >::iterator pp_sink = _sinks.begin(), pp_sinkEnd = _sinks.end();
@@ -125,6 +131,9 @@ void Log::out( const string& msg )
 void Log::setSeverity( unsigned int severity )
 {
     _severity = severity;
+
+    if ( !_printSeverityLevel )
+        return;
 
     switch ( severity )
     {

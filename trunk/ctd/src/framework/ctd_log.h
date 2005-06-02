@@ -42,7 +42,7 @@ class Log;
 //! This is the default system log instance
 /** Usage:
 *            log << Log::LogLevel( Log::L_INFO ) << " this is an info log" << endl;
-*            log << " number: " << num << " string: " << mystring << endl;
+*            log << " number: " << mynum << " string: " << mystring << endl;
 */
 extern Log log;
 
@@ -59,24 +59,27 @@ class Log : public std::basic_ostream< char >
             L_INFO    = 0x4
         };
 
-                                                Log();
+                                                    Log();
 
-        virtual                                 ~Log();
+        virtual                                     ~Log();
 
         //! Add a file sink
-        void                                    addSink( const std::string& sinkname, const std::string& filename, unsigned int loglevel = Level::L_DEBUG );
+        void                                        addSink( const std::string& sinkname, const std::string& filename, unsigned int loglevel = Level::L_DEBUG );
 
         //! Add standard sink such as cout
-        void                                    addSink( const std::string& sinkname, std::ostream& sink = std::cout, unsigned int loglevel = Level::L_DEBUG );
+        void                                        addSink( const std::string& sinkname, std::ostream& sink = std::cout, unsigned int loglevel = Level::L_DEBUG );
 
         //! Remove a sink given its name
-        void                                    removeSink( const std::string& sinkname );
+        void                                        removeSink( const std::string& sinkname );
 
         //! Output a message on sinks with given severity
-        void                                    out( const std::string& msg );
+        void                                        out( const std::string& msg );
 
         //! Set current message severity
-        void                                    setSeverity( unsigned int severity );
+        void                                        setSeverity( unsigned int severity );
+
+        //! Enables/disables severity level printing in output, the default is 'enabled'.
+        void                                        enableSeverityLevelPrinting( bool en );
 
         //! Struct for setting new loglevel via stream operator <<
         struct LogLevel
@@ -87,60 +90,66 @@ class Log : public std::basic_ostream< char >
         };
 
         //! Stream operator for setting current logging severity
-        std::ostream&                           operator << ( Log::LogLevel& ll );
+        std::ostream&                               operator << ( Log::LogLevel& ll );
 
     protected:
 
-        //! Avoid copy constructor
-        Log&                                    operator = ( const Log& log );
+        //! Avoid assignment operator
+        Log&                                        operator = ( const Log& log );
 
-        // Currently set severity
-        unsigned int                            _severity;
+        //! Avoid copy constructor
+                                                    Log( const Log& );
+
+        //! Currently set severity
+        unsigned int                                _severity;
+
+        //! Severity level printing 
+        bool                                        _printSeverityLevel;
 
         //! Log sink 
         struct Sink
         {
-                                                Sink( const std::string& name, std::ostream* p_stream, unsigned int loglevel, bool stdstream = false ) :
-                                                    _p_stream( p_stream ), 
-                                                    _logLevel( loglevel ),
-                                                    _name( name ),
-                                                    _stdstream( stdstream )
-                                                {}
-                                                
-                                                ~Sink() { if ( _p_stream ) delete _p_stream; }
+                                                        Sink( const std::string& name, std::ostream* p_stream, unsigned int loglevel, bool stdstream = false ) :
+                                                            _p_stream( p_stream ), 
+                                                            _logLevel( loglevel ),
+                                                            _name( name ),
+                                                            _stdstream( stdstream )
+                                                        {}
+                                                        
+                                                        ~Sink() { if ( _p_stream ) delete _p_stream; }
 
-            std::string                         _name;
+            std::string                                 _name;
 
-            std::ostream*                       _p_stream;
+            std::ostream*                               _p_stream;
 
-            unsigned int                        _logLevel;
+            unsigned int                                _logLevel;
 
-            bool                                _stdstream;
+            bool                                        _stdstream;
         };
 
-        std::vector< Sink* >                    _sinks;
+        std::vector< Sink* >                        _sinks;
 
         //! Stream buffer class
         class LogStreamBuf : public std::basic_streambuf< char >
         {
             public:
 
-                                                LogStreamBuf();
+                                                        LogStreamBuf();
 
-                virtual                         ~LogStreamBuf();
+                virtual                                 ~LogStreamBuf();
 
-                void                            setLog( Log *p_log );
+                void                                    setLog( Log *p_log );
 
             protected:
 
-                virtual int_type                overflow( int_type c );
+                virtual int_type                        overflow( int_type c );
 
-                Log*                            _p_log;
+                Log*                                    _p_log;
 
-                std::string                     _msg;
+                std::string                             _msg;
 
 
-        }                                       _stream;
+        }                                               _stream;
 
 };
 
