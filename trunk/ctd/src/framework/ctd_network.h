@@ -108,100 +108,105 @@ class NetworkDevice : public Singleton< NetworkDevice >
 
         /**
         * Setup a server session
-        * \param channel                Channel
-        * \param nodeInfo               Server information such as server and level name
-        * \return                       true if successful
+        * \param channel                            Channel
+        * \param nodeInfo                           Server information such as server and level name
+        * \return                                   true if successful
         */
-        bool                            setupServer( int channel, const NodeInfo& nodeInfo );
+        bool                                        setupServer( int channel, const NodeInfo& nodeInfo );
 
         /**
         * Setup a client session joining to a server
-        * \param URL                    Server URL
-        * \param channel                Channel
-        * \param nodeInfo               Client information
-        * \return                       true if successful
+        * \param URL                                Server URL
+        * \param channel                            Channel
+        * \param nodeInfo                           Client information
+        * \return                                   true if successful
         */
-        bool                            setupClient( const std::string& URL, int channel, const NodeInfo& nodeInfo );
+        bool                                        setupClient( const std::string& URL, int channel, const NodeInfo& nodeInfo );
 
         /**
         * Start the client processing. Call this after SetupClient.
-        * \return                       true if successfully started.
+        * \return                                   true if successfully started.
         */
-        bool                            startClient();
+        bool                                        startClient();
+
+        /**
+        * Disconnect any connection and reset the networking states.
+        */
+        void                                        disconnect();
 
         /**
         * Get networking mode: NONE, CLIENT, SERVER
         */
-        NetworkingMode                  getMode() { return _mode; }
+        NetworkingMode                              getMode() { return _mode; }
 
         /**
         * Get server's / client's node info, call this after a a session is established.
-        * \return                       Node information. NULL if the session is not stable.
+        * \return                                   Node information. NULL if the session is not stable.
         */
-        NodeInfo*                       getNodeInfo();
+        NodeInfo*                                   getNodeInfo();
 
         /** 
         * Lock object creation and deletion
         */
-        void                            lockObjects();
+        void                                        lockObjects();
 
         /**
         * Unlock object creation and deletion
         */
-        void                            unlockObjects();
+        void                                        unlockObjects();
 
     protected:
 
         /**
         * Construction
         */
-                                        NetworkDevice();
+                                                    NetworkDevice();
         /**
         * Avoid the usage of copy constructor.
         */
-                                        NetworkDevice( NetworkDevice &kNetWorkDevice );
+                                                    NetworkDevice( const NetworkDevice &kNetWorkDevice );
 
         /**
-        * Avoid assigning this singleton
+        * Avoid assigning this singleton            
         */
-        NetworkDevice&                  operator = ( const NetworkDevice& );
+        NetworkDevice&                              operator = ( const NetworkDevice& );
 
         /**
         * Destruction
         */
-        virtual                        ~NetworkDevice();
+        virtual                                    ~NetworkDevice();
 
         /**
         * Shutdown the network device.
         */
-        void                            shutdown();
+        void                                        shutdown();
 
         /**
         * Update server session
-        * \param deltaTime              Time past since last update
+        * \param deltaTime                          Time past since last update
         */
-        void                            updateServer( float deltaTime );
+        void                                        updateServer( float deltaTime );
 
         /**
         * Update client session
-        * \param deltaTime              Time past since last update
+        * \param deltaTime                          Time past since last update
         */
-        void                            updateClient( float deltaTime );
+        void                                        updateClient( float deltaTime );
 
         //! Mode
-        NetworkingMode                  _mode;
+        NetworkingMode                              _mode;
 
         //! Session instance
-        RNReplicaNet::ReplicaNet*       _p_session;
+        RNReplicaNet::ReplicaNet*                   _p_session;
 
         //! Server's / client's node information
-        NodeInfo                        _nodeInfo;
+        NodeInfo                                    _nodeInfo;
 
         //! Flag for indicating a stable client session
-        bool                            _clientSessionStable;
+        bool                                        _clientSessionStable;
 
         //! Flag for indicating a stable server session
-        bool                            _serverSessionStable;
+        bool                                        _serverSessionStable;
 
     friend class Singleton< NetworkDevice >;
     friend class Application;

@@ -53,6 +53,21 @@ NetworkDevice::~NetworkDevice()
 {
 }
 
+void NetworkDevice::disconnect()
+{
+    if ( _p_session ) 
+    {       
+        _p_session->Disconnect();
+        delete _p_session;
+        _p_session = NULL;   
+    }
+    _clientSessionStable = false;
+    _serverSessionStable = false;
+    _mode = NetworkingMode::NONE;
+    _nodeInfo._levelName = "";
+    _nodeInfo._nodeName  = "";
+}
+
 void NetworkDevice::shutdown()
 {
     if ( _p_session ) 
@@ -232,7 +247,7 @@ bool NetworkDevice::startClient()
             return false;
         }
     }    
-    log << Log::LogLevel( Log::L_INFO ) << endl;
+    cout << endl;
     log << Log::LogLevel( Log::L_INFO ) << "nw client: successfully joined to session ..." << endl;
 
     return true;
