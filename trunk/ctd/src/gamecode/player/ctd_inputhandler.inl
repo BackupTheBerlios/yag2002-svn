@@ -91,7 +91,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             if ( !_chatSwitch )
             {
                 // this method has an side effect on _enable (see below)
-                getPlayerImpl()->enableControl( s_toggleChatMode );
+                enable( s_toggleChatMode );
                 s_toggleChatMode = !s_toggleChatMode;
                 _chatSwitch = true;
 
