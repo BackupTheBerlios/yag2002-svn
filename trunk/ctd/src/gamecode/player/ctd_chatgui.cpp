@@ -40,13 +40,14 @@ namespace CTD
 // layout prefix
 #define CHATLAYOUT_PREFIX   "chatbox_"
 #define FADE_TIME           1.0f
+
+CEGUI::MultiLineEditbox* PlayerChatGui::_p_messagebox = NULL;
  
 PlayerChatGui::PlayerChatGui() :
 _p_playerImpl( NULL ),
 _p_wnd( NULL ),
 _p_frame( NULL ),
 _p_editbox( NULL ),
-_p_messagebox( NULL ),
 _modeEdit( false ),
 _hidden( true ),
 _state( Idle ),
@@ -63,9 +64,9 @@ PlayerChatGui::~PlayerChatGui()
         CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
 }
 
-void PlayerChatGui::initialize( BasePlayerImplementation* p_playerimpl, const string& layoutFile )
+void PlayerChatGui::initialize( BasePlayerImplementation* p_playerImpl, const string& layoutFile )
 {   
-    _p_playerImpl = p_playerimpl;
+    _p_playerImpl = p_playerImpl;
 
     // get the player name
     Configuration::get()->getSettingValue( CTD_GS_PLAYERNAME, _playername );
@@ -238,11 +239,11 @@ void PlayerChatGui::show( bool visible )
 
 void PlayerChatGui::addMessage( const CEGUI::String& msg, const CEGUI::String& author )
 {
-    CEGUI::String buffer = _p_messagebox->getText();
+    CEGUI::String buffer = PlayerChatGui::_p_messagebox->getText();
     buffer += author + "> " + msg;
-    _p_messagebox->setText( buffer );
+    PlayerChatGui::_p_messagebox->setText( buffer );
     // set carat position in order to trigger text scrolling after a new line has been added
-    _p_messagebox->setCaratIndex( buffer.length() - 1 );
+    PlayerChatGui::_p_messagebox->setCaratIndex( buffer.length() - 1 );
 }
 
 bool PlayerChatGui::onCloseFrame( const CEGUI::EventArgs& arg )
@@ -257,6 +258,11 @@ bool PlayerChatGui::onEditboxTextChanged( const CEGUI::EventArgs& arg )
     CEGUI::KeyEventArgs* ke = static_cast< CEGUI::KeyEventArgs* >( &( CEGUI::EventArgs& )arg );
     if ( ke->codepoint == osgGA::GUIEventAdapter::KEY_Return )
     {
+        // in standalone mode we have no networking
+        if ( GameState::get()->getMode() != GameState::Standalone )
+            _p_playerImpl->distributeChatMessage( _p_editbox->getText().c_str() ); // send the msg over net
+
+        // add the msg to local chat box
         addMessage( _p_editbox->getText(), _playername );
         _p_editbox->setText( "" );
     }

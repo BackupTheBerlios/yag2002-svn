@@ -49,7 +49,7 @@ class PlayerChatGui
         virtual                                     ~PlayerChatGui();
 
         //! Initialize gui layout
-        void                                        initialize( BasePlayerImplementation* p_player, const std::string& layoutFile );
+        void                                        initialize( BasePlayerImplementation* p_playerImpl, const std::string& layoutFile );
 
         //! Update method for chat box animation, etc.
         void                                        update( float deltaTime );
@@ -59,6 +59,10 @@ class PlayerChatGui
 
         //! Set edit / walk mode
         void                                        setEditMode( bool edit );
+
+        //! Add new message into message box, author will be places at begin of message.
+        //! Make this method static, so all remote clients can use the same interface to post their messages.
+        static void                                 addMessage( const CEGUI::String& msg, const CEGUI::String& author );
 
     protected:
 
@@ -71,8 +75,6 @@ class PlayerChatGui
         //! Callback for button 'hide'
         bool                                        onClickedHide( const CEGUI::EventArgs& arg );
 
-        //! Add new message into message box, author will be places at begin of message
-        void                                        addMessage( const CEGUI::String& msg, const CEGUI::String& author );
 
         enum {
             Idle,
@@ -94,7 +96,7 @@ class PlayerChatGui
 
         CEGUI::Editbox*                             _p_editbox;
 
-        CEGUI::MultiLineEditbox*                    _p_messagebox;
+        static CEGUI::MultiLineEditbox*             _p_messagebox;
 
         CEGUI::Image*                               _p_mouseImageWalkMode;
 
