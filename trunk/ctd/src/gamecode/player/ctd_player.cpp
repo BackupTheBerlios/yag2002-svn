@@ -93,22 +93,26 @@ void EnPlayer::initialize()
     {
         case GameState::Standalone:
         {
-            _p_playerImpl = new BasePlayerImplStandalone( this );
+            _p_playerImpl = new PlayerImplStandalone( this );
             _p_playerImpl->initialize();
         }
         break;
 
         case GameState::Client:
         {
-            _p_playerImpl = new BasePlayerImplClient( this );
-            _p_playerImpl->initialize();
+            // the client can be local or remote. if it is remote then the player entity has been created
+            //  via player networking component; for remote clients _p_playerImpl ist aready created when we are ath this point
+            if ( !_p_playerImpl )
+            {
+                _p_playerImpl = new PlayerImplClient( this );
+                _p_playerImpl->initialize();
+            }
         }
         break;
 
-        //! TODO: the framework has to consider whether an entity is a pure server or server-client entity
-        //        when loading a level on server only pure server entities must be created!
         case GameState::Server:
-            break;  // the server players are created by networking component when a new player is connected
+            _p_playerImpl = new PlayerImplServer( this );
+            break;
 
         default:
             assert( NULL && "unsupported game mode" );
@@ -117,14 +121,12 @@ void EnPlayer::initialize()
 
 void EnPlayer::postInitialize()
 {
-    if ( _p_playerImpl )
-        _p_playerImpl->postInitialize();
+    _p_playerImpl->postInitialize();
 }
 
 void EnPlayer::updateEntity( float deltaTime )
 {
-    if ( _p_playerImpl )
-        _p_playerImpl->update( deltaTime );
+    _p_playerImpl->update( deltaTime );
 }
 
 } // namespace CTD

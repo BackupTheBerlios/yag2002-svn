@@ -89,6 +89,12 @@ class EnPlayer : public BaseEntity
         //! Use this method for removing a node from player's transformation node
         inline void                                 removeTransformationNode( osg::Node* p_node );
 
+        //! Set player's implementation. This method is used by player's networking component when new clients connect to networking session.
+        inline void                                 setPlayerImplementation( BasePlayerImplementation* p_impl );
+
+        //! Get player's implementation. This method is used by player's networking component when new clients connect to networking session.
+        inline BasePlayerImplementation*            getPlayerImplementation();
+
         //! All possible camera modes the player can have.
         enum CameraMode
         {
@@ -192,6 +198,16 @@ inline const std::string& EnPlayer::getPlayerName()
 inline void EnPlayer::setPlayerName( const std::string& name )
 {
     _playerName = name;
+}
+
+inline void EnPlayer::setPlayerImplementation( BasePlayerImplementation* p_impl )
+{
+    _p_playerImpl = p_impl;
+}
+
+inline BasePlayerImplementation* EnPlayer::getPlayerImplementation()
+{
+    return _p_playerImpl;
 }
 
 } // namespace CTD
