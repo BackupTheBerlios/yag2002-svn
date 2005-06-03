@@ -36,6 +36,9 @@
 namespace CTD
 {
 
+//! Returns a string with current date and time
+std::string getTimeStamp();
+
 //! Emplode a given std string into vector elements, borrowed from evoluioN engine
 std::string::size_type explode( const std::string& str, const std::string& separators, std::vector< std::string >* p_result );
 

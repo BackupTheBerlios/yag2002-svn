@@ -36,6 +36,12 @@ using namespace std;
 namespace CTD
 {
 
+string getTimeStamp()
+{
+    __time64_t ltime;
+    _time64( &ltime );
+    return string( _ctime64( &ltime ) );
+}
 string::size_type explode( const string& str, const string& separators, vector< string >* p_result )
 {
 	string::size_type len = str.length();
