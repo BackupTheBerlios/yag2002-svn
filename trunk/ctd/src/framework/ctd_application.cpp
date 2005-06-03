@@ -38,6 +38,7 @@
 #include "ctd_gamestate.h"
 #include "ctd_network.h"
 #include "ctd_log.h"
+#include "ctd_utils.h"
 #include "ctd_application.h"
 
 
@@ -88,8 +89,7 @@ bool Application::initialize( int argc, char **argv )
     // use an ArgumentParser object to manage the program arguments.
     osg::ArgumentParser arguments(&argc,argv);
     ArgumentParser::Parameter levelparam( arg_levelname );
-    if ( !arguments.read( "-level", arg_levelname ) )
-        arg_levelname = CTD_DEFAULT_LEVEL;              // if no level defined then take the default one
+    arguments.read( "-level", arg_levelname ); // read the level file if one given
 
     // fetch argument for using osgviewer instead of own camera and scene updating
     int   argpos;
@@ -157,6 +157,18 @@ bool Application::initialize( int argc, char **argv )
     log.addSink( "file", getMediaPath() + "vrc.log", Log::L_ERROR );
     log.addSink( "stdout", cout, Log::L_ERROR );
  
+    log.enableSeverityLevelPrinting( false );
+    log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "Virtual Reality Chat (VRC)"              << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "version: " << string( VRC_VERSION )      << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "project: Yag2002"                        << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "site:    http://yag2002.sourceforge.net" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "contact: info@botorabi.de"               << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << endl;
+    log.enableSeverityLevelPrinting( true );
+
+    log << Log::LogLevel( Log::L_INFO ) << "time: " << CTD::getTimeStamp() << endl;
     log << Log::LogLevel( Log::L_INFO ) << "initializing viewer" << endl;
     // construct the viewer
     //----------
@@ -200,26 +212,22 @@ bool Application::initialize( int argc, char **argv )
     else
         KeyMap::get()->setup( KeyMap::German );
 
-    if ( GameState::get()->getMode() != GameState::Client )
-    {
-        log << Log::LogLevel( Log::L_INFO ) << "loading level '" << arg_levelname << "'" << endl;
-        // load the level and setup things
-        osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( arg_levelname );
-        if ( !sceneroot.valid() )
-            return false;
-    }
-
     // get the instance of gui manager
     _p_guiManager = GuiManager::get();
-
     // setup networking
     _p_networkDevice = NetworkDevice::get();
     // avoid creating of remote clients so long we are initializing the system
     _p_networkDevice->lockObjects();
     if ( GameState::get()->getMode() == GameState::Server )
     {
-        //! TODO: try to get the servername from cmd option
-        string servername( "vrc-server" );
+        log << Log::LogLevel( Log::L_INFO ) << "loading level '" << arg_levelname << "'" << endl;
+        // load the level and setup things
+        osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( CTD_LEVEL_SERVER_DIR + arg_levelname );
+        if ( !sceneroot.valid() )
+            return false;
+
+        string servername;
+        Configuration::get()->getSettingValue( CTD_GS_SERVER_NAME, servername );
         NodeInfo nodeinfo( arg_levelname, servername );
         unsigned int channel;
         Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
@@ -227,8 +235,8 @@ bool Application::initialize( int argc, char **argv )
     }
     else if ( GameState::get()->getMode() == GameState::Client )
     {
-        //! TODO: get the url from cmd option
-        string url( "localhost" );
+        string url;
+        Configuration::get()->getSettingValue( CTD_GS_SERVER_IP, url );
         string clientname( "vrc-client" );
         NodeInfo nodeinfo( "", clientname );
         unsigned int channel;
@@ -241,7 +249,7 @@ bool Application::initialize( int argc, char **argv )
         }
 
         // now load level
-        string levelname = _p_networkDevice->getNodeInfo()->getLevelName();
+        string levelname = CTD_LEVEL_CLIENT_DIR + _p_networkDevice->getNodeInfo()->getLevelName();
         log << Log::LogLevel( Log::L_INFO ) << "loading level '" << levelname << "'" << endl;
         // load the level and setup things
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( levelname );
@@ -252,6 +260,15 @@ bool Application::initialize( int argc, char **argv )
         //  as many entities do special steps when leaving the menu
         EntityNotification notify( CTD_NOTIFY_MENU_LEAVE, NULL );
         EntityManager::get()->sendNotification( notify );
+    }
+    else if ( GameState::get()->getMode() == GameState::Standalone )
+    {
+        log << Log::LogLevel( Log::L_INFO ) << "loading level '" << arg_levelname << "'" << endl;
+        // load the level and setup things
+        string defaultlevel = arg_levelname.length() ? ( string( CTD_LEVEL_SALONE_DIR ) + arg_levelname ) : string( CTD_DEFAULT_LEVEL );
+        osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( defaultlevel );
+        if ( !sceneroot.valid() )
+            return false;
     }
 
     // enable physics debug rendering
