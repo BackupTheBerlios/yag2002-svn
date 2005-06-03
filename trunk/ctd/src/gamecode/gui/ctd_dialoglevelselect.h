@@ -47,7 +47,7 @@ class DialogLevelSelect
 
         virtual                                     ~DialogLevelSelect();
 
-        //! Initialize gui layout, return false when something went wrong.
+        //! Initialize gui layout, return false if something went wrong.
         bool                                        initialize( const std::string& layoutfile, CEGUI::Window* p_parent );
 
         //! Update dialog control
@@ -58,6 +58,9 @@ class DialogLevelSelect
 
         //! Set click sound object
         void                                        setClickSound( EnAmbientSound* p_sound );
+
+        //! Changes the search directory for finding level files
+        void                                        changeSearchDirectory( const std::string& dir );
 
     protected:
 

@@ -40,8 +40,6 @@ namespace CTD
 
 // some defines
 #define LDLG_PREFIX             "ls_"
-// relative path to level directory
-#define SCENE_DIR               "level/"
 
 DialogLevelSelect::DialogLevelSelect( EnMenu* p_menuEntity ) :
 _p_clickSound( NULL ),
@@ -50,42 +48,6 @@ _p_listbox( NULL ),
 _p_image( NULL ),
 _p_menuEntity( p_menuEntity )
 {
-    // get level file names
-    string searchdir = Application::get()->getMediaPath() + SCENE_DIR;
-    std::vector< string > files;
-    getDirectoryListing( files, searchdir, "lvl" );
-
-    // setup the preview pics for StaticImage field
-    if ( files.size() > 0 )
-    {
-        for ( size_t cnt = 0; cnt < files.size(); cnt++ )
-        {
-            std::string textureName  = string( SCENE_DIR ) + files[ cnt ] + ".tga";
-            std::string materialName = files[ cnt ];
-            try
-            {
-                // create a new imageset
-                CEGUI::Texture*  p_texture = GuiManager::get()->getGuiRenderer()->createTexture( textureName, "MenuResources" );
-                CEGUI::Imageset* p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( materialName, p_texture );
-             
-                if ( !p_imageSet->isImageDefined( textureName ) )
-                {
-                    p_imageSet->defineImage( materialName, CEGUI::Point( 0.0f, 0.0f ), CEGUI::Size( p_texture->getWidth(), p_texture->getHeight() ), CEGUI::Point( 0.0f,0.0f ) );
-                }
-
-                CEGUI::Image* p_image = &const_cast< CEGUI::Image& >( p_imageSet->getImage( materialName ) );
-                
-                // add new preview to map
-                _levelFiles.insert( make_pair( materialName, p_image ) );
-            }
-            catch ( CEGUI::Exception e )
-            {
-                CEGUI::Image* p_null = NULL;
-                // empty image identifies missing preview pic
-                _levelFiles.insert( make_pair( materialName, p_null ) );
-            }
-        }
-    }
 }
 
 DialogLevelSelect::~DialogLevelSelect()
@@ -136,6 +98,47 @@ bool DialogLevelSelect::initialize( const string& layoutfile, CEGUI::Window* p_p
     }
 
     return true;
+}
+
+void DialogLevelSelect::changeSearchDirectory( const string& dir )
+{
+    // get level file names
+    string searchdir = Application::get()->getMediaPath() + dir;
+    std::vector< string > files;
+    getDirectoryListing( files, searchdir, "lvl" );
+
+    _levelFiles.clear();
+    // setup the preview pics for StaticImage field
+    if ( files.size() > 0 )
+    {
+        for ( size_t cnt = 0; cnt < files.size(); cnt++ )
+        {
+            std::string textureName  = dir + files[ cnt ] + ".tga";
+            std::string materialName = files[ cnt ];
+            try
+            {
+                // create a new imageset
+                CEGUI::Texture*  p_texture = GuiManager::get()->getGuiRenderer()->createTexture( textureName, "MenuResources" );
+                CEGUI::Imageset* p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( materialName, p_texture );
+             
+                if ( !p_imageSet->isImageDefined( textureName ) )
+                {
+                    p_imageSet->defineImage( materialName, CEGUI::Point( 0.0f, 0.0f ), CEGUI::Size( p_texture->getWidth(), p_texture->getHeight() ), CEGUI::Point( 0.0f,0.0f ) );
+                }
+
+                CEGUI::Image* p_image = &const_cast< CEGUI::Image& >( p_imageSet->getImage( materialName ) );
+                
+                // add new preview to map
+                _levelFiles.insert( make_pair( materialName, p_image ) );
+            }
+            catch ( CEGUI::Exception e )
+            {
+                CEGUI::Image* p_null = NULL;
+                // empty image identifies missing preview pic
+                _levelFiles.insert( make_pair( materialName, p_null ) );
+            }
+        }
+    }
 }
 
 void DialogLevelSelect::setClickSound( EnAmbientSound* p_sound )
@@ -213,12 +216,8 @@ bool DialogLevelSelect::onClickedStart( const CEGUI::EventArgs& arg )
 
     _p_levelSelectDialog->hide();
 
-    if ( _p_parent )
-        _p_parent->enable();
-
-
     // let the menu system know that we load a new level
-    _p_menuEntity->loadLevel( string( SCENE_DIR ) + _currentSelection, _levelFiles[ _currentSelection ] );
+    _p_menuEntity->onLevelSelected( _currentSelection, _levelFiles[ _currentSelection ] );
 
     _currentSelection = "";
 
@@ -233,8 +232,7 @@ bool DialogLevelSelect::onClickedReturn( const CEGUI::EventArgs& arg )
 
     _p_levelSelectDialog->hide();
 
-    if ( _p_parent )
-        _p_parent->enable();
+    _p_menuEntity->onLevelSelectCanceled();
 
     _currentSelection = "";
 

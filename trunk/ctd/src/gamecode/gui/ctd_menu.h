@@ -75,16 +75,22 @@ class EnMenu :  public BaseEntity
         //! Leave menu
         void                                        leave();
 
-        //! Load a new level, optionally a background image can be shown during loading
-        void                                        loadLevel( std::string levelfile, CEGUI::Image* p_img = NULL );
-
         //! Leave current level and return to menu
         void                                        leaveLevel();
+
+        //! This method is called by DialogLevelSelect. p_img is an optional background image for the choosen level.
+        void                                        onLevelSelected( std::string levelfile, CEGUI::Image* p_img = NULL );
+
+        //! This method is called by DialogLevelSelect when canceling a level selection process.
+        void                                        onLevelSelectCanceled();
 
     protected:
 
         //! Override this method of BaseEntity to get notifications (from menu system)
         void                                        handleNotification( EntityNotification& notify );
+
+        //! Load a new level, optionally a background image can be shown during loading
+        void                                        loadLevel( std::string levelfile, CEGUI::Image* p_img = NULL );
 
         //! Entity parameters
 
@@ -123,11 +129,23 @@ class EnMenu :  public BaseEntity
         //! Callback for button click "game settings"        
         bool                                        onClickedGameSettings( const CEGUI::EventArgs& arg );
 
-        //! Callback for button click "quit" or return to level, this button has two functions  
-        bool                                        onClickedQuitReturnToLevel( const CEGUI::EventArgs& arg );
+        //! Callback for button click "return to level"
+        bool                                        onClickedReturnToLevel( const CEGUI::EventArgs& arg );
 
-        //! Callback for button click "start" or "leave", this button has two functions    
-        bool                                        onClickedStartLeave( const CEGUI::EventArgs& arg );
+        //! Callback for button click "quit"
+        bool                                        onClickedQuit( const CEGUI::EventArgs& arg );
+
+        //! Callback for button click "leave"
+        bool                                        onClickedLeave( const CEGUI::EventArgs& arg );
+
+        //! Callback for button click "join to chat"  
+        bool                                        onClickedJoin( const CEGUI::EventArgs& arg );
+
+        //! Callback for button click "start server"  
+        bool                                        onClickedServer( const CEGUI::EventArgs& arg );
+        
+        //! Callback for button click "start walk-through"  
+        bool                                        onClickedWT( const CEGUI::EventArgs& arg );
 
         //! Callback for mouse hover ( over a button ), used for playing sound
         bool                                        onButtonHover( const CEGUI::EventArgs& arg );
@@ -153,6 +171,13 @@ class EnMenu :  public BaseEntity
             Visible,
             Hidden
         }                                           _menuState;
+
+        //! Internal state used for loading a level for server or standalone mode
+        enum
+        {
+            ForServer,
+            ForStandalone
+        }                                           _levelSelectionState;
 
         osg::ref_ptr< osg::Group >                  _menuScene;
 
@@ -180,9 +205,15 @@ class EnMenu :  public BaseEntity
 
         CEGUI::Window*                              _p_loadingWindow;
 
-        CEGUI::PushButton*                          _p_btnStart;
+        CEGUI::PushButton*                          _p_btnStartJoin;
 
-        CEGUI::PushButton*                          _p_btnQuit;
+        CEGUI::PushButton*                          _p_btnStartServer;
+
+        CEGUI::PushButton*                          _p_btnStartWT;
+
+        CEGUI::PushButton*                          _p_btnReturn;
+
+        CEGUI::PushButton*                          _p_btnLeave;
 
         CEGUI::StaticImage*                         _p_loadingOverly;
 

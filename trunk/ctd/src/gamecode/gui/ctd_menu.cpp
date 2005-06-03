@@ -127,8 +127,11 @@ CTD_IMPL_ENTITYFACTORY_AUTO( MenuEntityFactory );
 
 EnMenu::EnMenu() :
 _p_menuWindow( NULL ),
-_p_btnStart( NULL ),
-_p_btnQuit( NULL ),
+_p_btnStartWT( NULL ),
+_p_btnStartJoin( NULL ),
+_p_btnStartServer( NULL ),
+_p_btnReturn( NULL ),
+_p_btnLeave( NULL ),
 _p_loadingWindow( NULL ),
 _p_loadingLevelPic( NULL ),
 _p_loadingOverlayImage( NULL ),
@@ -145,6 +148,7 @@ _introductionSound( "gui/sound/intro.wav" ),
 _menuSceneFile( MENU_SCENE ),
 _menuCameraPathFile( MENU_CAMERAPATH ),
 _menuState( None ),
+_levelSelectionState( ForStandalone ),
 _levelLoaded( false )
 {
     // this entity needs updates initially for getting the intro running
@@ -237,17 +241,33 @@ void EnMenu::initialize()
         _p_menuWindow->hide();
 
         // set button callbacks
+        _p_btnStartJoin = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_startjoin" ) );
+        _p_btnStartJoin->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedJoin, this ) );
+        _p_btnStartJoin->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
+
+        _p_btnStartServer = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_startserver" ) );
+        _p_btnStartServer->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedServer, this ) );
+        _p_btnStartServer->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
+
+        _p_btnStartWT = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_startwt" ) );
+        _p_btnStartWT->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedWT, this ) );
+        _p_btnStartWT->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
+
         CEGUI::PushButton* p_btnGS = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_game_settings" ) );
         p_btnGS->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedGameSettings, this ) );
         p_btnGS->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
 
-        _p_btnQuit = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_quit" ) );
-        _p_btnQuit->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedQuitReturnToLevel, this ) );
-        _p_btnQuit->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
+        CEGUI::PushButton* p_btnQuit = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_quit" ) );
+        p_btnQuit->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedQuit, this ) );
+        p_btnQuit->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
 
-        _p_btnStart = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_start" ) );
-        _p_btnStart->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedStartLeave, this ) );
-        _p_btnStart->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
+        _p_btnReturn = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_return" ) );
+        _p_btnReturn->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedReturnToLevel, this ) );
+        _p_btnReturn->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
+
+        _p_btnLeave = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_leave" ) );
+        _p_btnLeave->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedLeave, this ) );
+        _p_btnLeave->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
 
         // setup loading window
         _p_loadingWindow = static_cast< CEGUI::Window* >( CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", ( MENU_PREFIX "wnd_loading" ) ) );
@@ -419,34 +439,33 @@ bool EnMenu::onClickedGameSettings( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool EnMenu::onClickedQuitReturnToLevel( const CEGUI::EventArgs& arg )
+bool EnMenu::onClickedQuit( const CEGUI::EventArgs& arg )
 {
     if ( _clickSound.get() )
         _clickSound->startPlaying();
 
-    if ( !_levelLoaded )
-    {
-        Application::get()->stop();
-    }
-    else
-    {
-        leave();
-    }
+    Application::get()->stop();
+
     return true;
 }
 
-bool EnMenu::onClickedStartLeave( const CEGUI::EventArgs& arg )
+bool EnMenu::onClickedReturnToLevel( const CEGUI::EventArgs& arg )
 {
     if ( _clickSound.get() )
         _clickSound->startPlaying();
 
-    if ( !_levelLoaded )
+    leave();
+
+    return true;
+}
+
+bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
+{
+    if ( _clickSound.get() )
+        _clickSound->startPlaying();
+
+    // ask user before leaving
     {
-        _levelSelectDialog->show( true );
-    }
-    else
-    {
-        // ask user before leaving
         MessageBoxDialog* p_msg = new MessageBoxDialog( "", "You want to leave the level?", MessageBoxDialog::YES_NO, true );
 
         // create a call back for yes/no buttons of messagebox
@@ -475,6 +494,70 @@ bool EnMenu::onClickedStartLeave( const CEGUI::EventArgs& arg )
         p_msg->show();
         _p_menuWindow->disable();
     }
+
+    return true;
+}
+
+//! TODO: show a dialog with all found servers and let the user choose one
+//   currently only the local net is checked and the first found server is used
+bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
+{
+    if ( _clickSound.get() )
+        _clickSound->startPlaying();
+
+    string url;
+    Configuration::get()->getSettingValue( CTD_GS_SERVER_IP, url );
+    string clientname( "vrc-client" );
+    NodeInfo nodeinfo( "", clientname );
+    unsigned int channel;
+    Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
+
+    if ( !NetworkDevice::get()->setupClient( url, channel, nodeinfo ) )
+    {
+        log << Log::LogLevel( Log::L_WARNING ) << "cannot setup client networking" << endl;
+
+        MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "Cannot connect to server!", MessageBoxDialog::OK, true );
+        p_msg->show();
+
+        return true;
+    }
+    // set the game mode to Client before loading the level
+    GameState::get()->setMode( GameState::Client );
+    // now prepare loading level
+    _queuedLevelFile = CTD_LEVEL_CLIENT_DIR + NetworkDevice::get()->getNodeInfo()->getLevelName();
+
+    _menuState = BeginLoadingLevel;
+
+    return true;
+}
+
+bool EnMenu::onClickedServer( const CEGUI::EventArgs& arg )
+{
+    if ( _clickSound.get() )
+        _clickSound->startPlaying();
+
+    // CTD_LEVEL_CLIENT_DIR
+
+//! TODO
+    _levelSelectDialog->changeSearchDirectory( CTD_LEVEL_SERVER_DIR );
+    _levelSelectDialog->show( true );
+
+    // set level loading state
+    _levelSelectionState = ForServer;
+
+    return true;
+}
+
+bool EnMenu::onClickedWT( const CEGUI::EventArgs& arg )
+{
+    if ( _clickSound.get() )
+        _clickSound->startPlaying();
+
+    _levelSelectDialog->changeSearchDirectory( CTD_LEVEL_SALONE_DIR );
+    _levelSelectDialog->show( true );
+
+    // set level loading state
+    _levelSelectionState = ForStandalone;
 
     return true;
 }
@@ -529,7 +612,17 @@ void EnMenu::updateEntity( float deltaTime )
             // leave the menu system
             leave();
 
-            GuiManager::get()->showMousePointer( true ); // let the mouse appear again 
+            GuiManager::get()->showMousePointer( true ); // let the mouse appear again
+
+            // now start client networking when we joined to a session
+            if ( GameState::get()->getMode() == GameState::Client )
+            {
+                if ( !NetworkDevice::get()->startClient() )
+                {
+                    MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "Problem starting client!", MessageBoxDialog::OK, true );
+                    p_msg->show();
+                }
+            }
         }
         break;
 
@@ -600,13 +693,21 @@ void EnMenu::enter()
     // set the right text for the multi-function buttons
     if ( _levelLoaded )
     {
-        _p_btnStart->setText( "Leave Level" );
-        _p_btnQuit->setText( "Return" );
+        _p_btnStartJoin->hide();
+        _p_btnStartWT->hide();
+        _p_btnStartServer->hide();
+
+        _p_btnReturn->show();
+        _p_btnLeave->show();
     }
     else
     {
-        _p_btnStart->setText( "Start" );
-        _p_btnQuit->setText( "Quit" );
+        _p_btnStartJoin->show();
+        _p_btnStartWT->show();
+        _p_btnStartServer->show();
+
+        _p_btnReturn->hide();
+        _p_btnLeave->hide();
     }
 
     // reset the input handler
@@ -663,6 +764,36 @@ void EnMenu::switchMenuScene( bool tomenu )
     }
 }
 
+void EnMenu::onLevelSelectCanceled()
+{
+    _p_menuWindow->enable();
+}
+
+// called by DialogLevelSelect when a level has been selected by user
+void EnMenu::onLevelSelected( string levelfile, CEGUI::Image* p_img )
+{
+    if ( _levelSelectionState == ForStandalone ) 
+    {
+        // prepare the level loading; the actual loading is done in update method
+        _menuState = BeginLoadingLevel;
+        _queuedLevelFile = CTD_LEVEL_SALONE_DIR + levelfile;
+
+        _p_loadingLevelPic->setImage( p_img );
+
+        _p_loadingWindow->show();
+        _p_menuWindow->hide();
+    }
+    else if ( _levelSelectionState == ForServer ) 
+    {
+
+        _p_menuWindow->enable();
+    }
+    else
+    {
+        assert( NULL && "invalid level select state!" );
+    }
+}
+
 void EnMenu::loadLevel( string levelfile, CEGUI::Image* p_img )
 {
     // prepare the level loading; the actual loading is done in update method
@@ -681,8 +812,17 @@ void EnMenu::leaveLevel()
         return;
 
     _menuState = UnloadLevel;
-    _p_btnStart->setText( "Start" );
-    _p_btnQuit->setText( "Quit" );
+    _p_btnStartJoin->show();
+    _p_btnStartWT->show();
+    _p_btnStartServer->show();
+    _p_btnReturn->hide();
+    _p_btnLeave->hide();
+
+    // end networking
+    NetworkDevice::get()->disconnect();
+
+    // reset the game state to standalone
+    GameState::get()->setMode( GameState::Standalone );
 }
 
 } // namespace CTD
