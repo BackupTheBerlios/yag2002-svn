@@ -64,13 +64,7 @@ void PlayerImplServer::postInitialize()
 {
     log << Log::LogLevel( Log::L_INFO ) << "  setup player implementation Server ..." << endl;
 
-    //// attach physics entity
-    //log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for physics entity '" << _playerAttributes._physicsEntity << "' ..." << endl;
-    //// find and attach physics component
-    //_p_playerPhysics = dynamic_cast< EnPlayerPhysics* >( EntityManager::get()->findEntity( ENTITY_NAME_PLPHYS, _playerAttributes._physicsEntity ) );
-    //assert( _p_playerPhysics && "given instance name does not belong to a EnPlayerPhysics entity type!" );
-    //_p_playerPhysics->setPlayer( this );
-    //log << Log::LogLevel( Log::L_DEBUG ) << "   -  physics entity successfully attached" << endl;
+    //! TODO: check if we need physics on server
 
     // get configuration settings
     getConfiguration();

@@ -48,7 +48,8 @@ using namespace std;
 
 CTD::Log* PlayerNetworking::s_chatLog = NULL;
 
-PlayerNetworking::PlayerNetworking( CTD::BasePlayerImplementation* p_playerImpl )
+PlayerNetworking::PlayerNetworking( CTD::BasePlayerImplementation* p_playerImpl ) :
+_loadedPlayerEntity( NULL )
 {   
     _p_playerImpl = p_playerImpl;
 
@@ -68,21 +69,63 @@ PlayerNetworking::PlayerNetworking( CTD::BasePlayerImplementation* p_playerImpl 
     {
         _remoteClient = true;
 
-        // create new entity for remote client
-        CTD::EnPlayer* p_entity = static_cast< CTD::EnPlayer* > ( CTD::EntityManager::get()->createEntity( ENTITY_NAME_PLAYER, "_newRemoteClient_" ) );
-        assert( p_entity && "player entity cannot be created" );
-        // for a remote client we must setup the player implementation ourself
-        _p_playerImpl = new CTD::PlayerImplClient( p_entity );
-        _p_playerImpl->setPlayerNetworking( this );
-        _p_playerImpl->initialize();
-        p_entity->setPlayerImplementation( _p_playerImpl );
-        // now we can init entity
-        p_entity->initialize();
+        CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "creating a new player instance ... " << endl;            
+
+        // TODO: get the character config file over net
+        std::string playerconfig;
+        if ( CTD::GameState::get()->getMode() == CTD::GameState::Server )
+            playerconfig = string( CTD_LEVEL_SERVER_DIR ) + "player-banana";
+        else if ( CTD::GameState::get()->getMode() == CTD::GameState::Client )
+            playerconfig = string( CTD_LEVEL_CLIENT_DIR ) + "player-banana" + "_remote";
+        else assert( NULL && "something weird is happening here! no mode except server or client is allowed to use networking." );
+
+        CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "loading player configuration file: " << playerconfig << endl;            
+        std::stringstream postfix;
+        static unsigned int postcnt = 0;
+        postfix << "_" << postcnt;
+        postcnt++;
+        // we force creation of all entity types on server
+        if ( !CTD::LevelManager::get()->loadEntities( playerconfig, _loadedEntities, postfix.str() ) )
+        {
+            CTD::log << CTD::Log::LogLevel( CTD::Log::L_ERROR ) << "cannot find player configuration file: " << playerconfig << endl;            
+            return;
+        }
+
+        // search for player entity
+        std::vector< CTD::BaseEntity* >::iterator p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
+        {
+            for ( ; p_beg != p_end; p_beg++ )
+            {
+                if ( ( *p_beg )->getTypeName() == ENTITY_NAME_PLAYER )
+                    break;
+            }
+            if ( p_beg == p_end )
+            {
+                CTD::log << CTD::Log::LogLevel( CTD::Log::L_ERROR ) << "cannot find player entity in file: " << playerconfig << endl;            
+                return;
+            }
+            _loadedPlayerEntity = static_cast< CTD::EnPlayer* >( *p_beg );
+            // for a remote client we must setup the player implementation before initializing
+            _p_playerImpl = new CTD::PlayerImplClient( _loadedPlayerEntity );
+            _p_playerImpl->setPlayerNetworking( this );
+            _p_playerImpl->initialize();
+            _loadedPlayerEntity->setPlayerImplementation( _p_playerImpl );
+            // set loading prefix
+            _p_playerImpl->setLoadingPostfix( postfix.str() );
+        }
+
+        // begin initialization of player and its components
+        CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "initializing new player instance ... " << endl;
+        {
+            p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
+            for ( ; p_beg != p_end; p_beg++ )
+            {
+                ( *p_beg )->initialize();
+            }
+        }
 
         _p_playerName[ 0 ]   = 0;
         _p_animFileName[ 0 ] = 0;
-
-        CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "a new player is beeing created ..." << endl;
     }
     strcpy( _p_playerName, _p_playerImpl->getPlayerEntity()->getPlayerName().c_str() );
     _cmdAnimFlags     = 0;
@@ -95,9 +138,16 @@ PlayerNetworking::~PlayerNetworking()
     // remove ghost from simulation ( server and client )
     if ( isRemoteClient() ) 
     {    
-        // we have created the implementation, so set its networking to NULL in order to abvoid deleting it also by player's implementation
+        // PlayerNetworking has created the player implementation, so set its networking and other components to NULL in order to abvoid deleting it also by player's implementation
         _p_playerImpl->setPlayerNetworking( NULL );
-        CTD::EntityManager::get()->deleteEntity( _p_playerImpl->getPlayerEntity() );
+        _p_playerImpl->setPlayerSound( NULL );
+        _p_playerImpl->setPlayerAnimation( NULL );
+        _p_playerImpl->setPlayerPhysics( NULL );
+
+        // remove all associated entities
+        std::vector< CTD::BaseEntity* >::iterator p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
+        for ( ; p_beg != p_end; p_beg++ )
+            CTD::EntityManager::get()->deleteEntity( *p_beg );
     }
     else
     {
@@ -108,13 +158,19 @@ PlayerNetworking::~PlayerNetworking()
 
 void PlayerNetworking::PostObjectCreate()
 {
-    // complete setting up ghost (remote client) or server-side player
+    // complete setting up ghost ( remote client ) or server-side player
     if ( isRemoteClient() ) 
     {
-        _p_playerImpl->getPlayerEntity()->setPlayerName( _p_playerName );
-        _p_playerImpl->getPlayerEntity()->postInitialize();
-        _p_playerImpl->getPlayerEntity()->setPlayerName( _p_playerName );
-        CTD::EntityManager::get()->addToScene( _p_playerImpl->getPlayerEntity() );
+        // now begin post-initialization of player and its components
+        CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "post-initializing new player ..." << endl;
+        {
+            std::vector< CTD::BaseEntity* >::iterator p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
+            for ( ; p_beg != p_end; p_beg++ )
+            {
+                ( *p_beg )->postInitialize();
+            }
+        }
+        _loadedPlayerEntity->setPlayerName( _p_playerName );
     }
     else
     {

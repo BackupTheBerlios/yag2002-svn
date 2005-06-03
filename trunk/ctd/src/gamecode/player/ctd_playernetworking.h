@@ -50,6 +50,7 @@
 
 namespace CTD
 {
+    class EnPlayer;
     class BaseEntity;
     class BasePlayerImplementation;
 }
@@ -129,6 +130,10 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         char                                        _p_animFileName[ 64 ];
 
         static CTD::Log*                            s_chatLog;
+
+        std::vector< CTD::BaseEntity* >             _loadedEntities;
+
+        CTD::EnPlayer*                              _loadedPlayerEntity;
 
     friend class _MAKE_RO( PlayerNetworking );
 };

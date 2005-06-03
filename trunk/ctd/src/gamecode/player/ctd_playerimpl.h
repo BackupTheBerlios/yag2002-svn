@@ -108,11 +108,20 @@ class BasePlayerImplementation
         //! Return player's animation component.
         inline EnPlayerAnimation*                   getPlayerAnimation();
 
+        //! Set player's animation component.
+        inline void                                 setPlayerAnimation( EnPlayerAnimation* p_anim );
+
         //! Return player's physics component.
         inline EnPlayerPhysics*                     getPlayerPhysics();
 
+        //! Set player's physics component.
+        inline void                                 setPlayerPhysics( EnPlayerPhysics* p_phys );
+
         //! Return player's sound component.
         inline EnPlayerSound*                       getPlayerSound();
+
+        //! Set player's sound component.
+        inline void                                 setPlayerSound( EnPlayerSound* p_snd );
 
         //! Return player's networking component.
         inline PlayerNetworking*                    getPlayerNetworking();
@@ -122,6 +131,9 @@ class BasePlayerImplementation
 
         //! Get player entity
         inline EnPlayer*                            getPlayerEntity();
+
+        //! Set a loading post-fix, this is used for loading players when remote clients connect.
+        inline void                                 setLoadingPostfix( const std::string& postFix );
 
     protected:
 
@@ -136,6 +148,9 @@ class BasePlayerImplementation
 
         //! A copy of player attributes
         EnPlayer::PlayerAttributes                  _playerAttributes;
+
+        //! Post-fix used for loading remote clients
+        std::string                                 _loadingPostFix;
 
         //! Association to player entity
         EnPlayer*                                   _p_player;
@@ -173,6 +188,9 @@ class BasePlayerImplementation
 
         //! Current rotation
         osg::Quat                                   _currentRot;
+
+        //! Rotation about Z axis (yaw), this is used in addition to _currentRot for a better networking performance
+        float                                       _rotZ;
 };
 
 // inlines
@@ -206,14 +224,29 @@ inline EnPlayerAnimation* BasePlayerImplementation::getPlayerAnimation()
     return _p_playerAnimation; 
 }
 
+inline void BasePlayerImplementation::setPlayerAnimation( EnPlayerAnimation* p_anim )
+{ 
+    _p_playerAnimation = p_anim; 
+}
+
 inline EnPlayerPhysics* BasePlayerImplementation::getPlayerPhysics() 
 { 
     return _p_playerPhysics; 
 }
 
+inline void BasePlayerImplementation::setPlayerPhysics( EnPlayerPhysics*  p_phys ) 
+{ 
+    _p_playerPhysics = p_phys; 
+}
+
 inline EnPlayerSound* BasePlayerImplementation::getPlayerSound() 
 { 
     return _p_playerSound; 
+}
+
+inline void BasePlayerImplementation::setPlayerSound( EnPlayerSound* p_snd ) 
+{ 
+    _p_playerSound = p_snd; 
 }
 
 inline PlayerNetworking* BasePlayerImplementation::getPlayerNetworking() 
@@ -229,6 +262,11 @@ inline void BasePlayerImplementation::setPlayerNetworking( PlayerNetworking* p_n
 inline EnPlayer* BasePlayerImplementation::getPlayerEntity() 
 { 
     return _p_player; 
+}
+
+inline void BasePlayerImplementation::setLoadingPostfix( const std::string& postFix )
+{
+    _loadingPostFix = postFix;
 }
 
 } // namespace CTD

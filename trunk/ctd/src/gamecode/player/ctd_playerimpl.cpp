@@ -56,10 +56,12 @@ _p_playerAnimation( NULL ),
 _p_playerNetworking( NULL ),
 _p_camera( NULL ),
 _cameraMode( Spheric ),
-_moveDir( Vec3f( 0, 1, 0 ) )
+_moveDir( Vec3f( 0, 1, 0 ) ),
+_rotZ( 0 )
 {
     // copy player's attributes
     _playerAttributes = _p_player->getPlayerAttributes();
+    _rotZ = _p_player->getPlayerAttributes()._rot;
 }
 
 BasePlayerImplementation::~BasePlayerImplementation()

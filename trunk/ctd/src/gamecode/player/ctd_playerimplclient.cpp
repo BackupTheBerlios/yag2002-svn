@@ -105,6 +105,7 @@ void PlayerImplClient::initialize()
     _currentRot = getPlayerEntity()->getRotation();
 
     // get configuration settings
+    //! TODO: check if this is the right place for loading the config, what about remote clients? do they need the config at all?
     getConfiguration();
 
     // if the player networking component is created already then this implementation is created
@@ -137,43 +138,76 @@ void PlayerImplClient::postInitialize()
     if ( !getPlayerNetworking()->isRemoteClient() )
     {
         // attach camera entity
-        log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for camera entity '" << PLAYER_CAMERA_ENTITIY_NAME << "'..." << endl;
-        // get camera entity
-        _p_camera = dynamic_cast< EnCamera* >( EntityManager::get()->findEntity( ENTITY_NAME_CAMERA, PLAYER_CAMERA_ENTITIY_NAME ) );
-        assert( _p_camera && "could not find the camera entity!" );
-        log << Log::LogLevel( Log::L_DEBUG ) << "   -  camera entity successfully attached" << endl;
-
+        {
+            log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for camera entity '" << PLAYER_CAMERA_ENTITIY_NAME << "'..." << endl;
+            // get camera entity
+            _p_camera = dynamic_cast< EnCamera* >( EntityManager::get()->findEntity( ENTITY_NAME_CAMERA, PLAYER_CAMERA_ENTITIY_NAME ) );
+            assert( _p_camera && "could not find the camera entity!" );
+            log << Log::LogLevel( Log::L_DEBUG ) << "   -  camera entity successfully attached" << endl;
+        }
         // attach physics entity
-        log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for physics entity '" << _playerAttributes._physicsEntity << "' ..." << endl;
-        // find and attach physics component
-        _p_playerPhysics = dynamic_cast< EnPlayerPhysics* >( EntityManager::get()->findEntity( ENTITY_NAME_PLPHYS, _playerAttributes._physicsEntity ) );
-        assert( _p_playerPhysics && "given instance name does not belong to a EnPlayerPhysics entity type!" );
-        _p_playerPhysics->setPlayer( this );
-        log << Log::LogLevel( Log::L_DEBUG ) << "   -  physics entity successfully attached" << endl;
-    }
+        {
+            log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for physics entity '" << _playerAttributes._physicsEntity << "' ..." << endl;
+            // find and attach physics component
+            _p_playerPhysics = dynamic_cast< EnPlayerPhysics* >( EntityManager::get()->findEntity( ENTITY_NAME_PLPHYS, _playerAttributes._physicsEntity ) );
+            assert( _p_playerPhysics && "given instance name does not belong to a EnPlayerPhysics entity type, or entity is missing!" );
+            _p_playerPhysics->setPlayer( this );
+            log << Log::LogLevel( Log::L_DEBUG ) << "   -  physics entity successfully attached" << endl;
+        }
+        // attach sound entity
+        {
+            log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for sound entity '" << _playerAttributes._soundEntity << "' ..." << endl;
+            // find and attach sound component, tollerate missing sound for now
+            _p_playerSound = dynamic_cast< EnPlayerSound* >( EntityManager::get()->findEntity( ENTITY_NAME_PLSOUND, _playerAttributes._soundEntity ) );
+            if ( !_p_playerSound )
+                log << Log::LogLevel( Log::L_ERROR ) << "  *** could not find sound entity '" << _playerAttributes._soundEntity << "' of type PlayerSound. player sound deactivated" << endl;
+            else
+            {
+                _p_playerSound->setPlayer( this );
+                log << Log::LogLevel( Log::L_DEBUG ) << "   -  sound entity successfully attached" << endl;
+            }
+        }
+        // attach animation entity
+        {
+            log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for animation entity '" << _playerAttributes._animationEntity << "' ..." << endl;
+            // find and attach animation component
+            _p_playerAnimation = dynamic_cast< EnPlayerAnimation* >( EntityManager::get()->findEntity( ENTITY_NAME_PLANIM, _playerAttributes._animationEntity ) );
+            assert( _p_playerAnimation && "given instance name does not belong to a EnPlayerAnimation entity type, or entity is missing!" );
+            _p_playerAnimation->setPlayer( this );
+            if ( _cameraMode == Ego ) // in ego mode we won't render our character
+                _p_playerAnimation->enableRendering( false );
+        }
 
-    // attach sound entity
-    log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for sound entity '" << _playerAttributes._soundEntity << "' ..." << endl;
-    // find and attach sound component, tollerate missing sound for now
-    _p_playerSound = dynamic_cast< EnPlayerSound* >( EntityManager::get()->findEntity( ENTITY_NAME_PLSOUND, _playerAttributes._soundEntity ) );
-    if ( !_p_playerSound )
-        log << Log::LogLevel( Log::L_ERROR ) << "  *** could not find sound entity '" << _playerAttributes._soundEntity << "' of type PlayerSound. player sound deactivated" << endl;
+        log << Log::LogLevel( Log::L_DEBUG ) << "   -  animation entity successfully attached" << endl;
+    }
     else
     {
-        _p_playerSound->setPlayer( this );
-        log << Log::LogLevel( Log::L_DEBUG ) << "   -  sound entity successfully attached" << endl;
+        // attach sound entity
+        {
+            log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for sound entity '" << _playerAttributes._soundEntity + _loadingPostFix << "' ..." << endl;
+            // find and attach sound component, tollerate missing sound for now
+            _p_playerSound = dynamic_cast< EnPlayerSound* >( EntityManager::get()->findEntity( ENTITY_NAME_PLSOUND, _playerAttributes._soundEntity + _loadingPostFix ) );
+            if ( !_p_playerSound )
+                log << Log::LogLevel( Log::L_ERROR ) << "  *** could not find sound entity '" << _playerAttributes._soundEntity << "' of type PlayerSound. player sound deactivated" << endl;
+            else
+            {
+                _p_playerSound->setPlayer( this );
+                log << Log::LogLevel( Log::L_DEBUG ) << "   -  sound entity successfully attached" << endl;
+            }
+        }
+
+        // attach animation entity
+        {
+            log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for animation entity '" << _playerAttributes._animationEntity + _loadingPostFix << "' ..." << endl;
+            // find and attach animation component
+            _p_playerAnimation = dynamic_cast< EnPlayerAnimation* >( EntityManager::get()->findEntity( ENTITY_NAME_PLANIM, _playerAttributes._animationEntity + _loadingPostFix ) );
+            assert( _p_playerAnimation && "given instance name does not belong to a EnPlayerAnimation entity type, or entity is missing!" );
+            _p_playerAnimation->setPlayer( this );
+            if ( _cameraMode == Ego ) // in ego mode we won't render our character
+                _p_playerAnimation->enableRendering( false );
+            log << Log::LogLevel( Log::L_DEBUG ) << "   -  animation entity successfully attached" << endl;
+        }
     }
-
-    // attach animation entity
-    log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for animation entity '" << _playerAttributes._animationEntity << "' ..." << endl;
-    // find and attach animation component
-    _p_playerAnimation = dynamic_cast< EnPlayerAnimation* >( EntityManager::get()->findEntity( ENTITY_NAME_PLANIM, _playerAttributes._animationEntity ) );
-    assert( _p_playerAnimation && "given instance name does not belong to a EnPlayerAnimation entity type!" );
-    _p_playerAnimation->setPlayer( this );
-    if ( _cameraMode == Ego ) // in ego mode we won't render our character
-        _p_playerAnimation->enableRendering( false );
-
-    log << Log::LogLevel( Log::L_DEBUG ) << "   -  animation entity successfully attached" << endl;
 
     log << Log::LogLevel( Log::L_INFO ) << "  player implementation successfully initialized" << endl;
 }
@@ -213,16 +247,28 @@ void PlayerImplClient::getConfiguration()
 
 void PlayerImplClient::update( float deltaTime )
 {
-    // update player's actual position and rotation once per frame
-    getPlayerEntity()->setPosition( _currentPos ); 
-    getPlayerEntity()->setRotation( _currentRot ); 
-
     if ( !getPlayerNetworking()->isRemoteClient() )
     {
+        // update player's actual position and rotation once per frame
+        getPlayerEntity()->setPosition( _currentPos );
+        getPlayerEntity()->setRotation( _currentRot );
+
+        getPlayerNetworking()->updatePosition( _currentPos._v[ 0 ], _currentPos._v[ 1 ], _currentPos._v[ 2 ] );
+        getPlayerNetworking()->updateRotation( _rotZ );
+
         // adjust the camera to updated position and rotation. the physics updates the translation of player.
         _p_camera->setCameraTranslation( getPlayerPosition(), getPlayerRotation() );
         // update chat gui
         _p_chatGui->update( deltaTime );
+    }
+    else
+    {
+        // update remote client's rotation and position
+        getPlayerNetworking()->getPosition( _currentPos._v[ 0 ], _currentPos._v[ 1 ], _currentPos._v[ 2 ] );
+        getPlayerNetworking()->getRotation( _rotZ );
+        _currentRot.makeRotate( _rotZ, osg::Vec3f( 0, 0, 1 ) );
+        getPlayerEntity()->setPosition( _currentPos );
+        getPlayerEntity()->setRotation( _currentRot );
     }
 }
 
