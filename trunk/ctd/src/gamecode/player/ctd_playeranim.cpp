@@ -44,9 +44,6 @@ namespace CTD
 //! Implement and register the player animation entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( PlayerAnimationEntityFactory );
 
-// a small model cache for sharing same animation models
-std::map< std::string, osgCal::Model* >    s_modelCache;
-
 EnPlayerAnimation::EnPlayerAnimation() :
 _p_player( NULL ),
 _scale( 1.0f ),
@@ -59,8 +56,6 @@ _renderingEnabled( true )
 { 
     // register entity in order to get updated per simulation step
     EntityManager::get()->registerUpdate( this, true );
-    // register entity in order to get notifications
-    EntityManager::get()->registerNotification( this, true );   
 
     // register attributes
     getAttributeManager().addAttribute( "animconfig"   , _animCfgFile );
@@ -73,21 +68,6 @@ EnPlayerAnimation::~EnPlayerAnimation()
 {
 }
 
-void EnPlayerAnimation::handleNotification( EntityNotification& notify )
-{
-    // handle some notifications
-    switch( notify.getId() )
-    {
-        case CTD_NOTIFY_DELETING_ENTITIES:
-            // clear the model cache
-            s_modelCache.clear();
-            break;
-
-        default:
-            ;
-    }
-}
-
 void EnPlayerAnimation::initialize()
 {
     log << Log::LogLevel( Log::L_INFO ) << "  initializing player animation instance '" << getInstanceName() << "' ..." << endl;
@@ -98,31 +78,7 @@ void EnPlayerAnimation::initialize()
         return;
     }
     
-    // look up the model cache first
-    std::map< std::string, osgCal::Model* >::iterator p_model;
-    p_model = s_modelCache.find( _animCfgFile );
-    if ( p_model != s_modelCache.end() )
-    {
-        log << Log::LogLevel( Log::L_DEBUG ) << "  using cached model '" << _animCfgFile << "' ..." << endl;
-
-        _model = new osgCal::Model( *( p_model->second ) );
-        // create a transform node in order to set position and rotation offsets
-        _animNode = new PositionAttitudeTransform;
-        _animNode->setPosition( _position );
-        Quat quat( 
-            _rotation.x() * PI / 180.0f, Vec3f( 1, 0, 0 ),
-            _rotation.y() * PI / 180.0f, Vec3f( 0, 1, 0 ),
-            _rotation.z() * PI / 180.0f, Vec3f( 0, 0, 1 )
-            );
-        _animNode->setAttitude( quat );
-        _animNode->addChild( _model.get() );
-
-        log << Log::LogLevel( Log::L_INFO ) << "  initializing player animation instance completed" << endl;
-
-        return;
-    }
-
-    // if no cache hit then setup and create a new model
+    // setup and create a new model
     string file     = Application::get()->getMediaPath() + _animCfgFile;
     string rootDir  = extractPath( file );
     string configfilename = extractFileName( file );
@@ -147,9 +103,6 @@ void EnPlayerAnimation::initialize()
         );
     _animNode->setAttitude( quat );
     _animNode->addChild( _model.get() );
-
-    // register model
-    s_modelCache.insert( std::make_pair( _animCfgFile, _model.get() ) );
 
     log << Log::LogLevel( Log::L_INFO ) << "  initializing player animation instance completed" << endl;
 }

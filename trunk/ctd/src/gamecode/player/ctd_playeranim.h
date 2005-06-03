@@ -71,9 +71,6 @@ class EnPlayerAnimation  : public BaseEntity
         */
         void                                        updateEntity( float deltaTime );
 
-        //! Override this method of BaseEntity to get notifications (from menu system)
-        void                                        handleNotification( EntityNotification& notify );
-
         /**
         * Set player association before using this entity.
         * \param p_player                           Player instance
