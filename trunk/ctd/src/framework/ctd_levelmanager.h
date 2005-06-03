@@ -50,6 +50,13 @@ class LevelManager : public Singleton< LevelManager >
         */
         osg::ref_ptr< osg::Group >                  loadLevel( const std::string& levelName, bool keepPhysicsWorld = false, bool keepEntities = false );
 
+        //! Load entities defined in specified file and put all created entities into given vector.
+        /*!
+        * Be aware that this method does not initialize the entities. instPostfix is appended to entities instance names in the case that the same file is loaded 
+        * several times, so the instance names can differ using a postfix on every loading.
+        */
+        bool                                        loadEntities( const std::string& levelFile, std::vector< BaseEntity* >& entities, const std::string& instPostfix = "" );
+
         //! Unload an already loaded level and free up allocated resources and entities (except persistent entities).
         bool                                        unloadLevel( bool clearPhysics = true, bool clearEntities = true );
 
@@ -105,6 +112,9 @@ class LevelManager : public Singleton< LevelManager >
 
         //! This flag shows whether we are loading a level for first time
         bool                                        _firstLoading;
+
+        //! Internal flag showing that a level file contains a map entry
+        bool                                        _levelHasMap;
 
     friend class Singleton< LevelManager >;
     friend class Application;

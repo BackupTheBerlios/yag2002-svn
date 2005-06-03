@@ -67,7 +67,8 @@ LevelManager::LevelManager() :
 _topGroup( new osg::Group() ),
 _nodeGroup( new osg::Group() ),
 _entityGroup( new osg::Group() ),
-_firstLoading( true )
+_firstLoading( true ),
+_levelHasMap( false )
 {
     // set name of top group
     _topGroup->setName( CTD_TOP_GROUP_NAME );
@@ -137,22 +138,7 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
 
 osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile, bool keepPhysicsWorld, bool keepEntities )
 {
-    // this shows whether the new level has a map in order to decide rebuilding physics when necessary (keepPhysicsWorld == false)
-    bool haveMap = false;
-
-    log << Log::LogLevel( Log::L_INFO ) << "loading level ..." << endl;
-    
-    ifstream    file;
-    file.open( string( Application::get()->getMediaPath() + levelFile ).c_str(), std::ios::in, std::ios::binary );
-    if ( !file )
-    {
-        log << Log::LogLevel( Log::L_DEBUG ) << "*** cannot open level file: '" << levelFile << "'" << endl;
-        return false;
-    }
-
-    // Note: all following notifications are sent to already existing entities, so they have the change to do 
-    //       particular actions such as rebuilding their physics, etc.
-    //       the entities of initial level won't get those notifications as they are not created yet (see below)
+    log << Log::LogLevel( Log::L_INFO ) << "start loading level: " << levelFile << endl;
 
     // send loading notification
     {
@@ -172,6 +158,65 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile, boo
     else if ( !keepPhysicsWorld ) // reinit physics world?
     {
         unloadLevel( true, false );
+    }
+
+    std::vector< BaseEntity* > entities; // list of all entities which are created during loading
+    if ( !loadEntities( levelFile, entities ) )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "error loading entities" << endl;
+        return NULL;
+    }
+
+    Application::get()->setSceneRootNode( _topGroup.get() );
+    Application::get()->getViewer()->setSceneData( _topGroup.get() );
+
+
+    // are we loading for first time?
+    if ( _firstLoading )
+    {
+        if ( _levelHasMap )
+            buildPhysicsStaticGeometry();
+
+        initializeFirstTime();
+    }
+    else
+    {
+        // if the existing static physics world is not to be kept and the new level has a map then rebuild physics
+        if ( !keepPhysicsWorld && _levelHasMap )
+            buildPhysicsStaticGeometry();
+    }
+
+    // init and post-init entities which has been created
+    setupEntities( entities );
+
+    // send the notification that the a new level has been loaded and initialized
+    // in this phase entites can register themselves for getting updates or notifications
+    // note: take care that after every level loading the entity update registration list is cleared,
+    //       so after every level loading the registration must be done again in entities' notification callback
+    if ( !_firstLoading )
+    {
+        EntityNotification ennotify( CTD_NOTIFY_NEW_LEVEL_INITIALIZED );
+        EntityManager::get()->sendNotification( ennotify );
+    }
+    else
+    {
+        // mark that we have done the first level loading
+        _firstLoading = false;
+    }
+
+    return _topGroup;
+}
+
+bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntity* >& entities, const std::string& instPostfix )
+{
+    log << Log::LogLevel( Log::L_INFO ) << "loading entities ..." << endl;
+    
+    ifstream    file;
+    file.open( string( Application::get()->getMediaPath() + levelFile ).c_str(), std::ios::in, std::ios::binary );
+    if ( !file )
+    {
+        log << Log::LogLevel( Log::L_DEBUG ) << "*** cannot open level file: '" << levelFile << "'" << endl;
+        return false;
     }
 
     // read in the file into char buffer for tinyxml
@@ -194,7 +239,7 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile, boo
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** CTD (XML parser) error parsing level config file. " << endl;
         log << Log::LogLevel( Log::L_ERROR ) << doc.ErrorDesc() << endl;
-        return NULL;
+        return false;
     }
 
     log << Log::LogLevel( Log::L_INFO ) << "initializing physics ..." << endl;
@@ -217,31 +262,32 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile, boo
         if ( !p_levelElement ) 
         {
             log << Log::LogLevel( Log::L_ERROR ) << "**** could not find level element. " << endl;
-            return NULL;
+            return false;
         }
 
         p_bufName = ( char* )p_levelElement->Attribute( CTD_LVL_ELEM_NAME );
         if ( p_bufName )
             staticNodeName = p_bufName;
         else 
-            return NULL;  
+            return false;  
     }
 
     // get map files, load them and add them to main group
+    _levelHasMap = false; // reset the map flag
     p_node = p_levelElement->FirstChild( CTD_LVL_ELEM_MAP );
-    do {
-
+    do 
+    {
         // a level file can also be without a map
         if ( !p_node )
             break;
 
-        haveMap = true;
+        _levelHasMap = true;
         p_mapElement = p_node->ToElement();
         p_bufName    = ( char* )p_mapElement->Attribute( CTD_LVL_ELEM_NAME );
         if ( p_bufName == NULL ) 
         {
             log << Log::LogLevel( Log::L_ERROR ) << "*** missing map name in MAP entry" << endl;
-            return NULL;
+            return false;
         } 
         else 
         {
@@ -255,7 +301,7 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile, boo
                 _staticMesh->setName( staticNodeName );
             }
             else
-                return NULL;
+                return false;
         }
 
     } while ( p_node = p_node->NextSiblingElement( CTD_LVL_ELEM_MAP ) );
@@ -266,8 +312,6 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile, boo
     log << Log::LogLevel( Log::L_INFO ) << " creating entities ..." << endl;
 
     unsigned int entityCounter = 0;
-    vector< BaseEntity* > entities; // list of all entities which are created during loading
-
     p_node = p_levelElement;
     for ( p_node = p_node->FirstChild( CTD_LVL_ELEM_ENTITY ); p_node; p_node = p_node->NextSiblingElement( CTD_LVL_ELEM_ENTITY ) ) 
     {
@@ -286,8 +330,10 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile, boo
 
         entitytype = p_bufName;
         p_bufName = ( char* )p_entityElement->Attribute( CTD_LVL_ENTITY_INST_NAME );
-        if ( !p_bufName ) 
+        if ( p_bufName )
             instancename = p_bufName;
+
+        instancename += instPostfix;
 
         // create entity, considering the game mode
         BaseEntityFactory* p_entfac = EntityManager::get()->getEntityFactory( entitytype );
@@ -331,8 +377,8 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile, boo
         p_bufName = ( char* )p_entityElement->Attribute( CTD_LVL_ENTITY_INST_NAME );
         if ( p_bufName ) {
             // set entity's instance name
-            p_entity->setInstanceName( p_bufName );
-            log << Log::LogLevel( Log::L_DEBUG ) << "  instance name: '" << p_bufName << " '" << endl;
+            p_entity->setInstanceName( instancename );
+            log << Log::LogLevel( Log::L_DEBUG ) << "  instance name: '" << instancename << " '" << endl;
         }
 
         entityCounter++;
@@ -367,47 +413,9 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile, boo
 
     log << Log::LogLevel( Log::L_INFO ) << endl;
     log << Log::LogLevel( Log::L_INFO ) << " total number of created entities: '" << entityCounter << "'" << endl;
-    log << Log::LogLevel( Log::L_INFO ) << "entity setup completed" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "entity loading completed" << endl;
 
-    // store the main group in application and set it in viewer
-    Application::get()->setSceneRootNode( _topGroup.get() );
-    Application::get()->getViewer()->setSceneData( _topGroup.get() );
-
-
-    // are we loading for first time?
-    if ( _firstLoading )
-    {
-        if ( haveMap )
-            buildPhysicsStaticGeometry();
-
-        initializeFirstTime();
-    }
-    else
-    {
-        // if the existing static physics world is not to be kept and the new level has a map then rebuild physics
-        if ( !keepPhysicsWorld && haveMap )
-            buildPhysicsStaticGeometry();
-    }
-
-    // init and post-init entities which has been created
-    setupEntities( entities );
-
-    // send the notification that the a new level has been loaded and initialized
-    // in this phase entites can register themselves for getting updates or notifications
-    // note: take care that after every level loading the entity update registration list is cleared,
-    //       so after every level loading the registration must be done again in entities' notification callback
-    if ( !_firstLoading )
-    {
-        EntityNotification ennotify( CTD_NOTIFY_NEW_LEVEL_INITIALIZED );
-        EntityManager::get()->sendNotification( ennotify );
-    }
-    else
-    {
-        // mark that we have done the first level loading
-        _firstLoading = false;
-    }
-
-    return _topGroup;
+    return true;
 }
 
 void LevelManager::setupEntities( vector< BaseEntity* >& entities )
@@ -457,6 +465,7 @@ void LevelManager::setupEntities( vector< BaseEntity* >& entities )
 void LevelManager::initializeFirstTime()
 {
     // initialize sound manager
+    log << Log::LogLevel( Log::L_INFO ) << "initializing sound system..." << endl;
     osgAL::SoundManager* p_soundManager = osgAL::SoundManager::instance();
     try 
     {
