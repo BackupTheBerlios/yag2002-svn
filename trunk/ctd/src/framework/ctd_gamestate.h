@@ -65,6 +65,9 @@ class GameState : public Singleton< GameState >
             Quitting        // quitting application
         };
 
+        //! Set game mode to Server, Client, or Standalone
+        void                                    setMode( unsigned int mode );
+
         //! Set new state
         void                                    setState( unsigned int state );
 
@@ -92,9 +95,6 @@ class GameState : public Singleton< GameState >
 
         //! Shutdown
         void                                    shutdown();
-
-        //! Set game mode, used by class Application 
-        void                                    setMode( unsigned int mode );
 
         //! Current game state
         unsigned int                            _curState;
