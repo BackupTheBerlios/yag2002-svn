@@ -98,4 +98,7 @@
 #include <memory>
 #include <assert.h>
 
+// VRC version
+#define VRC_VERSION     "SilverOrange"
+
 #endif // _CTD_BASE_H_
