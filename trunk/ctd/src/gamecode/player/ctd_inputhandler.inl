@@ -41,7 +41,6 @@ _moveForward( false ),
 _moveBackward( false ),
 _camSwitch( false ),
 _chatSwitch( false ),
-_rotZ( 0 ),
 _keyCodeMoveForward( osgGA::GUIEventAdapter::KEY_Up ),
 _keyCodeMoveBackward( osgGA::GUIEventAdapter::KEY_Down ),
 _keyCodeMoveLeft( osgGA::GUIEventAdapter::KEY_Left ),
@@ -203,12 +202,15 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         {
             case EnPlayer::Spheric:
             {
-                _rotZ += getPlayerImpl()->_p_playerPhysics->getAngularForce();
-                if ( _rotZ > osg::PI * 2.0f )
-                    _rotZ -= osg::PI * 2.0f;
+                float& rotZ = getPlayerImpl()->_rotZ;
+                rotZ += getPlayerImpl()->_p_playerPhysics->getAngularForce();
 
-                getPlayerImpl()->_moveDir._v[ 0 ] = sinf( _rotZ );
-                getPlayerImpl()->_moveDir._v[ 1 ] = cosf( _rotZ );
+                //! Note: non-static value changes in rotZ are poison for networking interpolators
+                if ( rotZ > osg::PI * 2.0f )
+                    rotZ -= osg::PI * 2.0f;
+
+                getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
+                getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
 
                 getPlayerImpl()->_p_playerAnimation->animTurn();
             }
@@ -238,12 +240,15 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         {
             case EnPlayer::Spheric:
             {
-                _rotZ -= getPlayerImpl()->_p_playerPhysics->getAngularForce();
-                if ( _rotZ < 0 )
-                    _rotZ += osg::PI * 2.0f;
+                float& rotZ = getPlayerImpl()->_rotZ;
+                rotZ -= getPlayerImpl()->_p_playerPhysics->getAngularForce();
 
-                getPlayerImpl()->_moveDir._v[ 0 ] = sinf( _rotZ );
-                getPlayerImpl()->_moveDir._v[ 1 ] = cosf( _rotZ );
+                //! Note: non-static value changes in rotZ are poison for networking interpolators
+                //if ( rotZ < 0 )
+                //    rotZ += osg::PI * 2.0f;
+
+                getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
+                getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
 
                 getPlayerImpl()->_p_playerAnimation->animTurn();
             }
@@ -307,8 +312,6 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 if ( !_left && !_right )
                     getPlayerImpl()->_p_playerAnimation->animIdle();
 
-                //getPlayerImpl()->_p_playerPhysics->stopMovement();
-
                if ( getPlayerImpl()->getPlayerSound() )
                     getPlayerImpl()->getPlayerSound()->stopPlayingAll();
 
@@ -350,16 +353,18 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         if ( getPlayerImpl()->_cameraMode == EnPlayer::Ego )
         {
             static float lastX = 0;
-            _rotZ = mcoordX * osg::PI * 2.0f; 
+            float& rotZ = getPlayerImpl()->_rotZ;
+            rotZ = mcoordX * osg::PI * 2.0f; 
             lastX = mcoordX;
 
-            if ( _rotZ > osg::PI * 2.0f )
-                _rotZ -= osg::PI * 2.0f;
-            else if ( _rotZ < 0 )
-                _rotZ += osg::PI * 2.0f;
+            //! Note: non-static value changes in rotZ are poison for networking interpolators
+            //if ( rotZ > osg::PI * 2.0f )
+            //    rotZ -= osg::PI * 2.0f;
+            //else if ( rotZ < 0 )
+            //    rotZ += osg::PI * 2.0f;
 
-            getPlayerImpl()->_moveDir._v[ 0 ] = sinf( _rotZ );
-            getPlayerImpl()->_moveDir._v[ 1 ] = cosf( _rotZ );
+            getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
+            getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
             getPlayerImpl()->_p_playerAnimation->animTurn();
 
             // adjust pitch / yaw depending on mouse movement

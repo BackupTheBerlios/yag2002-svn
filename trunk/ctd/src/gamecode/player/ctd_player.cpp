@@ -50,7 +50,8 @@ EnPlayer::EnPlayer() :
 _gameMode( GameState::get()->getMode() ),
 _p_playerImpl( NULL )
 {
-    EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
+    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "creating player entity"  << getInstanceName() << ", time: " << CTD::getTimeStamp() << endl;
+
     EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 
     // assign some defaults
@@ -71,6 +72,8 @@ _p_playerImpl( NULL )
 
 EnPlayer::~EnPlayer()
 {
+    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "destroying player entity"  << getInstanceName() << ", time: " << CTD::getTimeStamp() << endl;
+
     if ( _p_playerImpl )
         delete _p_playerImpl;
 }
@@ -122,6 +125,8 @@ void EnPlayer::initialize()
 void EnPlayer::postInitialize()
 {
     _p_playerImpl->postInitialize();
+    // register entity in order to get updated per simulation step.
+    EntityManager::get()->registerUpdate( this, true );
 }
 
 void EnPlayer::updateEntity( float deltaTime )

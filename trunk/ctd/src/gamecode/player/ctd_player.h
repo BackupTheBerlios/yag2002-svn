@@ -167,7 +167,7 @@ class PlayerEntityFactory : public BaseEntityFactory
 {
     public:
                                                     PlayerEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_PLAYER, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     BaseEntityFactory( ENTITY_NAME_PLAYER, BaseEntityFactory::Standalone | BaseEntityFactory::Client | BaseEntityFactory::Server )
                                                     {}
 
         virtual                                     ~PlayerEntityFactory() {}

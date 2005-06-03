@@ -110,9 +110,6 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
         bool                                _camSwitch;
         bool                                _chatSwitch;
 
-        // rotation about Z axis
-        float                               _rotZ;
-
     public:
 
         // key binding codes
