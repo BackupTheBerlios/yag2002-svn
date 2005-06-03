@@ -31,6 +31,8 @@
 #include <ctd_base.h>
 #include "ctd_network.h"
 #include "ctd_log.h"
+#include "ctd_utils.h"
+#include "ctd_configuration.h"
 #include <RNPlatform/Inc/FreewareCode.h>
 
 using namespace std;
@@ -92,10 +94,15 @@ bool NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
 {
     // do we already have a session created?
     assert( _p_session == NULL );
+
+    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "starting server, time: " << CTD::getTimeStamp() << endl;
+
     _nodeInfo  = nodeInfo;
     _p_session = new ReplicaNet;
     if ( !_p_session ) 
         return false;
+
+    log << Log::LogLevel( Log::L_INFO ) << "nw server: starting network session: " << nodeInfo._nodeName << endl;
 
     _p_session->SetManualPoll();
     _p_session->SetLoadBalancing( true );
@@ -115,16 +122,22 @@ bool NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
         // try up to 10 seconds
         if ( tryCounter > 20 ) 
         {
-            shutdown();
+            _p_session->Disconnect();
+            delete _p_session;
+            _p_session = NULL;   
+
             return false;
         }
 	}
     _serverSessionStable  = true;
     _mode = NetworkingMode::SERVER;
+
+    string url = _p_session->SessionExportURL();
+    log << Log::LogLevel( Log::L_INFO ) << "nw server: session established: " << url << endl;
     return true;
 }
 
-bool NetworkDevice::setupClient( const string& URL, int channel, const NodeInfo& nodeInfo )
+bool NetworkDevice::setupClient( const string& serverIp, int channel, const NodeInfo& nodeInfo )
 {
     // do we already have a session created?
     assert( _p_session == NULL );
@@ -145,29 +158,58 @@ bool NetworkDevice::setupClient( const string& URL, int channel, const NodeInfo&
     _p_session->SetDataRetention( true );
     _p_session->SetPreConnect( true );
 
-    //! TODO: the url must also be given by user
-    log << Log::LogLevel( Log::L_INFO ) << "nw client: trying to find sessions ..." << endl;
-    _p_session->SessionFind();
-	Sleep( 500 );
-    string Url = _p_session->SessionEnumerateFound();
-    if ( Url.length() > 0 ) {
-        cout << "nw client: session found, url: '" +Url + "'" << endl;
-    } 
-    else 
+    //! if the URL is empty then auto-search for sessions in loacal net
+    string Url;
+    if ( !serverIp.length() )
     {
-        cout << "nw client:   could not find any session!" << endl;
-        shutdown();
-        return false;
+        log << Log::LogLevel( Log::L_INFO ) << "nw client: trying to find sessions ..." << endl;
+        _p_session->SessionFind();
+        Sleep( 500 );
+        Url = _p_session->SessionEnumerateFound();
+        if ( Url.length() > 0 ) {
+            log << Log::LogLevel( Log::L_INFO ) << "nw client: session found, url: '" + Url + "'" << endl;
+        } 
+        else 
+        {
+            log << Log::LogLevel( Log::L_WARNING ) << "nw client:   could not find any session!" << endl;
+            _p_session->Disconnect();
+            delete _p_session;
+            _p_session = NULL;   
+            return false;
+        }
     }
-    log << Log::LogLevel( Log::L_INFO ) << "nw client: joining to session ..." << endl;
-    _p_session->SessionJoin( Url );
-    //_p_session->SessionJoin( URL );
+    else
+    {	
+        //example url: "SESSION://UDP@127.0.0.1:32001/gameserver"}
+        string servername;
+        Configuration::get()->getSettingValue( CTD_GS_SERVER_NAME, servername );
+        unsigned int channel;
+        Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
+        stringstream assembledUrl;
+        assembledUrl << "SESSION://UDP@" << serverIp << ":" << channel << "/" << servername;
+        Url = assembledUrl.str();
+    }
 
-    // wait for pre-connect state
-    while ( !_p_session->GetPreConnectStatus() ) 
+    log << Log::LogLevel( Log::L_INFO ) << "nw client: try to join to session: " << Url << endl;
+    _p_session->SessionJoin( Url );
+
+    unsigned int tryCounter = 0;
+    // wait for pre-connect state for 10 seconds
+    while ( !_p_session->GetPreConnectStatus() && tryCounter < 100 ) 
     {
         _p_session->Poll();
         CurrentThread::Sleep( 100 );
+        tryCounter++;
+    }
+    if ( tryCounter == 100 )
+    {
+        log << Log::LogLevel( Log::L_WARNING ) << "nw client: cannot connect to server: " << Url << endl;
+
+        _p_session->Disconnect();
+        delete _p_session;
+        _p_session = NULL;   
+
+        return false;
     }
 
     log << Log::LogLevel( Log::L_INFO ) << "nw client: negotiating with server ..." << endl;
@@ -184,7 +226,7 @@ bool NetworkDevice::setupClient( const string& URL, int channel, const NodeInfo&
     void*        p_buffer[ 512 ];
     int          bufferLength;
     bool         gotServerInfo = false;
-    unsigned int tryCounter    = 0;
+    tryCounter = 0;
     while ( !gotServerInfo ) 
     {        
         _p_session->Poll();
@@ -205,8 +247,12 @@ bool NetworkDevice::setupClient( const string& URL, int channel, const NodeInfo&
         // try up to 10 seconds
         if ( tryCounter > 100 ) 
         {
-            shutdown();
             log << Log::LogLevel( Log::L_WARNING ) << "*** nw client: problems negotiating with server" << endl;
+
+            _p_session->Disconnect();
+            delete _p_session;
+            _p_session = NULL;   
+
             return false;
         }
     }
@@ -218,6 +264,14 @@ bool NetworkDevice::setupClient( const string& URL, int channel, const NodeInfo&
 
 bool NetworkDevice::startClient()
 {
+    if ( !_clientSessionStable )
+    {
+        log << Log::LogLevel( Log::L_WARNING ) << "nw client: starting client without a stable session, cannot start client!" << endl;
+        return false;
+    }
+
+    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "starting client, time: " << CTD::getTimeStamp() << endl;
+
     _p_session->PreConnectHasFinished();
 
     log << Log::LogLevel( Log::L_INFO ) << "nw client: successfully integrated to network" << endl;
@@ -242,13 +296,19 @@ bool NetworkDevice::startClient()
         // try up to 10 seconds
         if ( tryCounter > 50 ) 
         {
-            shutdown();
             log << Log::LogLevel( Log::L_WARNING ) << "*** nw client: problems connecting to server" << endl;
+
+            _p_session->Disconnect();
+            delete _p_session;
+            _p_session = NULL;   
+
             return false;
         }
     }    
     cout << endl;
-    log << Log::LogLevel( Log::L_INFO ) << "nw client: successfully joined to session ..." << endl;
+
+    string sessionurl = _p_session->SessionExportURL();
+    log << Log::LogLevel( Log::L_INFO ) << "nw client: successfully joined to session: " << sessionurl << endl;
 
     return true;
 }

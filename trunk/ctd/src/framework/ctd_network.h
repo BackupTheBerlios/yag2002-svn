@@ -116,12 +116,12 @@ class NetworkDevice : public Singleton< NetworkDevice >
 
         /**
         * Setup a client session joining to a server
-        * \param URL                                Server URL
+        * \param ServerIp                           Server IP address
         * \param channel                            Channel
         * \param nodeInfo                           Client information
         * \return                                   true if successful
         */
-        bool                                        setupClient( const std::string& URL, int channel, const NodeInfo& nodeInfo );
+        bool                                        setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo );
 
         /**
         * Start the client processing. Call this after SetupClient.
