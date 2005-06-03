@@ -42,6 +42,11 @@
 namespace CTD
 {
 
+//! Location of level file directory for Server, Client, and Standalone level
+#define CTD_LEVEL_SERVER_DIR            "level/server/"
+#define CTD_LEVEL_CLIENT_DIR            "level/client/"
+#define CTD_LEVEL_SALONE_DIR            "level/standalone/"
+
 //! Profile name of game settings
 #define CTD_GAMESETTING_PROFILENAME     "gamesettings"
 //! File name for game settings storage
