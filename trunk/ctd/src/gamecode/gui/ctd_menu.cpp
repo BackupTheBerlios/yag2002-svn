@@ -507,7 +507,8 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
 
     string url;
     Configuration::get()->getSettingValue( CTD_GS_SERVER_IP, url );
-    string clientname( "vrc-client" );
+    string clientname;
+    Configuration::get()->getSettingValue( CTD_GS_PLAYERNAME, clientname );
     NodeInfo nodeinfo( "", clientname );
     unsigned int channel;
     Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
@@ -536,9 +537,7 @@ bool EnMenu::onClickedServer( const CEGUI::EventArgs& arg )
     if ( _clickSound.get() )
         _clickSound->startPlaying();
 
-    // CTD_LEVEL_CLIENT_DIR
-
-//! TODO
+//! TODO: start a server in background, don't change the game mode
     _levelSelectDialog->changeSearchDirectory( CTD_LEVEL_SERVER_DIR );
     _levelSelectDialog->show( true );
 
@@ -553,6 +552,7 @@ bool EnMenu::onClickedWT( const CEGUI::EventArgs& arg )
     if ( _clickSound.get() )
         _clickSound->startPlaying();
 
+    GameState::get()->setMode( GameState::Standalone );
     _levelSelectDialog->changeSearchDirectory( CTD_LEVEL_SALONE_DIR );
     _levelSelectDialog->show( true );
 
@@ -631,7 +631,7 @@ void EnMenu::updateEntity( float deltaTime )
             LevelManager::get()->unloadLevel();
             _levelLoaded = false;
             switchMenuScene( true );
-            _menuState = None;
+            _menuState = Visible;
         }
         break;
 
@@ -819,10 +819,11 @@ void EnMenu::leaveLevel()
     _p_btnLeave->hide();
 
     // end networking
-    NetworkDevice::get()->disconnect();
+    if ( GameState::get()->getMode() == GameState::Client || GameState::get()->getMode() == GameState::Server )
+        NetworkDevice::get()->disconnect();
 
-    // reset the game state to standalone
-    GameState::get()->setMode( GameState::Standalone );
+    // reset the game state
+    GameState::get()->setMode( GameState::None );
 }
 
 } // namespace CTD
