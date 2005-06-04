@@ -41,7 +41,7 @@ CTD_SINGLETON_IMPL( GameState );
 //! Implementation of GameState
 GameState::GameState() :
 _curState( GameState::Initializing ),
-_gameMode( GameState::Standalone )
+_gameMode( GameState::None )
 {
 }
 
@@ -82,6 +82,7 @@ unsigned int GameState::getMode()
 void GameState::setMode( unsigned int mode )
 {
     assert( 
+            ( mode == GameState::None       ) || 
             ( mode == GameState::Standalone ) || 
             ( mode == GameState::Client     ) || 
             ( mode == GameState::Server     ) && 

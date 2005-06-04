@@ -50,6 +50,7 @@ class GameState : public Singleton< GameState >
         //! Game mode
         enum GameMode
         {
+            None,
             Standalone,
             Server,
             Client
