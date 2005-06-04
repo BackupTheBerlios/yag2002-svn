@@ -174,6 +174,7 @@ void PlayerChatGui::update( float deltaTime )
                 _p_frame->setAlpha( _frameAlphaValue );
                 _p_frame->setSize( size );
                 _p_btnHide->hide();
+                _p_editbox->activate();
                 _state = Idle;
                 break;
             }
@@ -299,6 +300,7 @@ void PlayerChatGui::setEditMode( bool edit )
         CEGUI::MouseCursor::getSingleton().setImage( _p_mouseImageDefault );
         CEGUI::System::getSingleton().setDefaultMouseCursor( _p_mouseImageDefault );
         GuiManager::get()->releasePointer();
+        _p_editbox->activate();
     }
     else
     {
@@ -307,6 +309,7 @@ void PlayerChatGui::setEditMode( bool edit )
         CEGUI::System::getSingleton().setDefaultMouseCursor( _p_mouseImageWalkMode );
         // in walk mode we fix the pointer (crosshair) in the middle of screen
         GuiManager::get()->lockPointer( 0.0f, 0.0f );
+        _p_editbox->deactivate();
     }
 
     _modeEdit = edit;
