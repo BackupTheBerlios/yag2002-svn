@@ -348,7 +348,13 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
                 assert( NULL && "invalid jump state" );
         }
     }
-	p_phys->_jumpTimer = p_phys->_jumpTimer ? p_phys->_jumpTimer - 1 : 0;
+    p_phys->_jumpTimer = p_phys->_jumpTimer ? p_phys->_jumpTimer - 1 : 0;
+
+    //!FIXME: rotate the force direction to align with the camera, currently it does not work
+    //heading = matrix * p_phys->getPlayer()->getPlayerMoveDirection();
+    //heading *= ( 1.0f / sqrtf( ( heading * heading ) + 1.0e-6f ) );
+    //force += ( heading * ( mass /** 30.0f*/ - 2.0f * ( velocity * heading ) ) ); 
+
     NewtonBodySetForce( p_body, &force._v[ 0 ] );
 
     p_phys->_isStopped = ( ( force._v[ 0 ] == 0 ) && ( force._v[ 1 ] == 0 ) );	
@@ -516,6 +522,12 @@ void EnPlayerPhysics::initialize()
     NewtonBodySetUserData( _p_body, this );
     
     NewtonBodySetLinearDamping( _p_body, _linearDamping );
+
+	float damp[3];
+	damp[0] = 0.0f;
+	damp[1] = 0.0f;
+	damp[2] = 0.0f;
+    NewtonBodySetAngularDamping( _p_body, damp );
 
     // disable auto freeze management for the player
     NewtonBodySetAutoFreeze( _p_body, 0 );
