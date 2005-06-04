@@ -107,6 +107,8 @@ bool Application::initialize( int argc, char **argv )
         arguments.remove( argpos );
     }
 
+    // set proper game mode
+    GameState::get()->setMode( GameState::Standalone );
     if ( argpos = arguments.find( "-server" ) )
     {
         GameState::get()->setMode( GameState::Server );
@@ -116,10 +118,6 @@ bool Application::initialize( int argc, char **argv )
     {
         GameState::get()->setMode( GameState::Client );
         arguments.remove( argpos );
-    }
-    else
-    {
-        GameState::get()->setMode( GameState::Standalone );
     }
 
     // any option left unread are converted into errors to write out later.
@@ -261,14 +259,21 @@ bool Application::initialize( int argc, char **argv )
         EntityNotification notify( CTD_NOTIFY_MENU_LEAVE, NULL );
         EntityManager::get()->sendNotification( notify );
     }
-    else if ( GameState::get()->getMode() == GameState::Standalone )
+    else // check for any level file name, so we try to start in Standalone mode
     {
         log << Log::LogLevel( Log::L_INFO ) << "loading level '" << arg_levelname << "'" << endl;
+        // set game mode
+        GameState::get()->setMode( GameState::Standalone );
         // load the level and setup things
         string defaultlevel = arg_levelname.length() ? ( string( CTD_LEVEL_SALONE_DIR ) + arg_levelname ) : string( CTD_DEFAULT_LEVEL );
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( defaultlevel );
         if ( !sceneroot.valid() )
             return false;
+
+        // if we directly start a client with cmd line option then we must send a leave-menu notification to entities
+        //  as many entities do special steps when leaving the menu
+        EntityNotification notify( CTD_NOTIFY_MENU_LEAVE, NULL );
+        EntityManager::get()->sendNotification( notify );
     }
 
     // enable physics debug rendering
