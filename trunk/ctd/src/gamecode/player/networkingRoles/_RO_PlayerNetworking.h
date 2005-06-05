@@ -6,7 +6,7 @@
 
 typedef struct _tChatMsg 
 {
-    char    m_pcText[ 256 ];
+    char    _text[ 256 ];
 } tChatMsg;
 
 _RO_DEF_ALLOCATEFUNC(PlayerNetworking);
