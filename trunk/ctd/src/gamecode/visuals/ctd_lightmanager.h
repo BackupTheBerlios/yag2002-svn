@@ -81,6 +81,7 @@ class BaseLight
         float                                       _quadraticAttenuation;
 };
 
+class LightCallback;
 //! Class for enabling up to CTD_MAX_GL_LIGHTS gl lights per frame considering light source culling
 class LightManager : public Singleton< LightManager >, public Producer::Camera::Callback
 {
@@ -92,13 +93,18 @@ class LightManager : public Singleton< LightManager >, public Producer::Camera::
                                                         flush();
                                                     }
 
-        void                                        addLight( BaseLight* p_light );
+        //! Initialize the light manager
+        void                                        initialize();
 
     protected:
 
                                                     LightManager();
    
+
         virtual                                     ~LightManager(){}
+
+        //! Add a new light to frame
+        void                                        addLight( BaseLight* p_light );
 
         //! Enable those lights which are not culled during this frame
         void                                        flush();
@@ -109,7 +115,10 @@ class LightManager : public Singleton< LightManager >, public Producer::Camera::
         //! Is used for holding an available light id for next light object
         GLint                                       _currId;
 
+        bool                                        _initialized;
+
     friend class Singleton< LightManager >;
+    friend class LightCallback;
 };
 
 //! Culling callback class for auto-activating light per frame using the light manager
@@ -127,7 +136,6 @@ class LightCallback : public osg::NodeCallback
         void                                        operator()( osg::Node* node, osg::NodeVisitor* nv );
 
         BaseLight*                                  _lightEntity;
-
 };
 
 }

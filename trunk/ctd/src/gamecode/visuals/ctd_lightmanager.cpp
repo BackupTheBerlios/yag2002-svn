@@ -38,6 +38,27 @@ namespace CTD
 
 CTD_SINGLETON_IMPL( LightManager );
 
+LightManager::LightManager() : 
+_currId( 0 ),
+_initialized( false )
+{
+}
+
+void LightManager::initialize()
+{
+    // register a pre-draw callback where the light management happens
+    if ( !_initialized ) // we register the callback only once
+    {
+        _initialized = true;
+        osgProducer::Viewer* p_viewer = Application::get()->getViewer();
+        Producer::Camera* p_cam = p_viewer->getCamera( 0 );
+        p_cam->addPreDrawCallback( this );
+
+        // enable the lighting for scene
+        Application::get()->getViewer()->getGlobalStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::ON );
+    }
+}
+
 void LightManager::addLight( BaseLight* p_light )
 {
     _lights.push_back( p_light );
@@ -47,22 +68,13 @@ void LightManager::addLight( BaseLight* p_light )
         _currId++;
 }
 
-
-LightManager::LightManager() : _currId( 0 )
-{
-    // ouch, registing a callback for camera in constructor of a singleton! but here it is no problem as
-    //  the singleton is created in first light's initialize() method
-    osgProducer::Viewer* p_viewer = Application::get()->getViewer();
-    Producer::Camera* p_cam = p_viewer->getCamera( 0 );
-    p_cam->addPreDrawCallback( this ); 
-}
-   
 void LightManager::flush()
 {
+    unsigned int numlights = std::min( ( int )_lights.size(), CTD_MAX_GL_LIGHTS - 1 );
+    
     osg::StateSet*  p_stateset = Application::get()->getViewer()->getGlobalStateSet();
     // first turn off all lights
-    unsigned int numlights = std::min( (int)_lights.size(), CTD_MAX_GL_LIGHTS - 1 );
-    for ( unsigned int cnt = 0; cnt < numlights; cnt++ )
+    for ( unsigned int cnt = 0; cnt < CTD_MAX_GL_LIGHTS - 1; cnt++ )
         p_stateset->setMode( GL_LIGHT0 + cnt, osg::StateAttribute::OFF );
 
     // now turn on lights which are not culled

@@ -61,14 +61,15 @@ EnPointLight::~EnPointLight()
 
 void EnPointLight::initialize()
 {
-    // call the get method of light manager so it can register itself for getting camera callbacks (see constructor)
-    LightManager::get();
+    // light manager's initialize method is resistent against multiple calls ( we can have several light entities )
+    LightManager::get()->initialize();
 
     // create a new light
     _lightSource = new osg::LightSource;
     osg::Light* p_light = new osg::Light;
     _lightSource->setLight( p_light );
     _lightSource->setLocalStateSetModes( osg::StateAttribute::ON );
+    _lightSource->setReferenceFrame( osg::LightSource::RELATIVE_RF );
     // we do culling ourselves
     _lightSource->setCullingActive( false );
 
@@ -78,8 +79,8 @@ void EnPointLight::initialize()
     _lightSource->setCullCallback( cullcallback.get() );
 
     // setup bounding sphere used for culling
-    _bSphere.set( _position, _lightRadius );
-    // the id will be set by light manager
+    _bSphere.set( osg::Vec3f( 0, 0, 0 ), _lightRadius );
+    // the actual id will be set by light manager
     p_light->setLightNum( _lightId );
 
     p_light->setPosition( osg::Vec4( 0, 0, 0, 1.0f ) );
@@ -92,7 +93,6 @@ void EnPointLight::initialize()
 
     // add light to entity's transform node
     addToTransformationNode( _lightSource.get() );
-       
     // set mesh if one defined
     if ( _meshFile.length() )
     {
