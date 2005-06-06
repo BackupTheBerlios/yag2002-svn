@@ -101,7 +101,7 @@ class EnWater :  public BaseEntity
         //--------------------------------------------------------//
 
         //! Notification call-back
-        void                                        handleNotification( EntityNotification& notify );
+        void                                        handleNotification( const EntityNotification& notify );
 
         //! Given the step width calculate the liquid equation constants
         void                                        calcConstants( float stepWidth );

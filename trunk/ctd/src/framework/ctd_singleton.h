@@ -52,6 +52,14 @@ class Singleton
 
         void                                destroy();
 
+    private:
+
+        //! Avoid copy constructor
+                                            Singleton( const Singleton& );
+ 
+        //! Avoid assignment operator
+        Singleton&                          operator = ( const Singleton& );
+
     friend class TypeT;
 };
 

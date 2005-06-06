@@ -114,11 +114,7 @@ class Physics : public Singleton< Physics >
 
                                                     Physics();
 
-                                                    Physics( const Physics& );
-
         virtual                                     ~Physics();
-
-        Physics&                                    operator = ( const Physics& );
 
         //! Initialize physics system
         bool                                        initialize();

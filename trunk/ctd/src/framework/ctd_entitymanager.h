@@ -119,12 +119,7 @@ class EntityManager : public Singleton< EntityManager >
 
                                                     EntityManager();
 
-                                                    EntityManager( const EntityManager& );
-
         virtual                                     ~EntityManager();
-
-
-        EntityManager&                              operator = ( const EntityManager& );
 
         //! Shutdown entity manager
         void                                        shutdown();
@@ -232,6 +227,7 @@ class BaseEntityFactory
         //! Get networking type. It can be a bitwise-or of BaseEntityFactory::Standalone, BaseEntityFactory::Server, and BaseEntityFactory::Client.
         inline unsigned int                         getNetworkingType();
 
+        //! Comparision operator for entity factories
         inline bool                                 operator == ( BaseEntityFactory& factory );
 
         //! Entity's networking type. This is used by level loader in order to decide whether to create an entity described by a level file

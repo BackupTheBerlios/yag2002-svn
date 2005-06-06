@@ -74,11 +74,8 @@ class LevelManager : public Singleton< LevelManager >
 
                                                     LevelManager();
 
-                                                    LevelManager( const LevelManager& );
 
         virtual                                     ~LevelManager();
-
-        LevelManager&                               operator = ( const LevelManager& );
 
         //! Shutdown level manager
         void                                        shutdown();
@@ -96,7 +93,7 @@ class LevelManager : public Singleton< LevelManager >
         void                                        buildPhysicsStaticGeometry();
 
         //! Static level mesh
-        osg::Node*                                 _staticMesh;
+        osg::Node*                                  _staticMesh;
 
         //! The node group where all nodes reside
         osg::ref_ptr< osg::Group >                  _nodeGroup;

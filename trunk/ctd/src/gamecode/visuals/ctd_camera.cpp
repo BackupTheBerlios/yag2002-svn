@@ -135,7 +135,7 @@ EnCamera::~EnCamera()
     _p_cameraHandler->destroyHandler();
 }
 
-void EnCamera::handleNotification( EntityNotification& notify )
+void EnCamera::handleNotification( const EntityNotification& notify )
 {
     // handle notifications
     switch( notify.getId() )

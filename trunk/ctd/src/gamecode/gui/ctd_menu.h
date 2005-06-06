@@ -87,7 +87,7 @@ class EnMenu :  public BaseEntity
     protected:
 
         //! Override this method of BaseEntity to get notifications (from menu system)
-        void                                        handleNotification( EntityNotification& notify );
+        void                                        handleNotification( const EntityNotification& notify );
 
         //! Load a new level, optionally a background image can be shown during loading
         void                                        loadLevel( std::string levelfile, CEGUI::Image* p_img = NULL );

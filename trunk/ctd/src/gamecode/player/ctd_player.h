@@ -81,7 +81,7 @@ class EnPlayer : public BaseEntity
         void                                        updateEntity( float deltaTime );
 
         //! Override this method of BaseEntity to get notifications (from menu system)
-        void                                        handleNotification( EntityNotification& notify );
+        void                                        handleNotification( const EntityNotification& notify );
 
         //! Use this method for adding a node to player's transformation node
         inline void                                 appendTransformationNode( osg::Node* p_node );

@@ -117,7 +117,7 @@ class EnCamera :  public BaseEntity
 
         //! This entity is persistent so we have to handle entity's update registration on every level loading and
         //  destruction ourselves.
-        void                                        handleNotification( EntityNotification& notify );
+        void                                        handleNotification( const EntityNotification& notify );
 
         //! Overriden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraPosition!
         void                                        setPosition( osg::Vec3f& pos );

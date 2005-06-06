@@ -183,7 +183,7 @@ basic_ios< char >::int_type Log::LogStreamBuf::overflow( int_type c )
     return char_traits< char >::not_eof( c );
 }
 
-ostream& Log::operator << ( Log::LogLevel& ll )
+ostream& Log::operator << ( const Log::LogLevel& ll )
 {
     setSeverity( ll._level );    
     return *this;

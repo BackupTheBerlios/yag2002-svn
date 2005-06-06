@@ -190,7 +190,7 @@ EnWater::~EnWater()
         _water.release();
 }
 
-void EnWater::handleNotification( EntityNotification& notify )
+void EnWater::handleNotification( const EntityNotification& notify )
 {
     // handle notifications
     switch( notify.getId() )

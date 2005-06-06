@@ -78,16 +78,6 @@ class KeyMap : public Singleton< KeyMap >
 
                                                 KeyMap();
 
-        /**
-        * Avoid the usage of copy constructor.
-        */
-                                                KeyMap( KeyMap& );
-
-        /**
-        * Avoid assigning this singleton
-        */
-        KeyMap&                                 operator = ( const KeyMap& );
-
         virtual                                 ~KeyMap();
 
         //! Mapping of key names to key codes

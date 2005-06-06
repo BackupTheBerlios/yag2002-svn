@@ -200,7 +200,7 @@ EnMenu::~EnMenu()
     _p_inputHandler->destroyHandler();
 }
 
-void EnMenu::handleNotification( EntityNotification& notify )
+void EnMenu::handleNotification( const EntityNotification& notify )
 {
     // handle notifications
     switch( notify.getId() )
@@ -688,7 +688,7 @@ void EnMenu::enter()
         return;
 
     // send notification to all notification-registered entities about entering menu
-    EntityManager::get()->sendNotification( EntityNotification( CTD_NOTIFY_MENU_ENTER, this ) );
+    EntityManager::get()->sendNotification( EntityNotification( CTD_NOTIFY_MENU_ENTER ) );
 
     // set the right text for the multi-function buttons
     if ( _levelLoaded )
@@ -729,7 +729,7 @@ void EnMenu::leave()
         return;
 
     // send notification to all notification-registered entities about leaving menu
-    EntityManager::get()->sendNotification( EntityNotification( CTD_NOTIFY_MENU_LEAVE, this ) );
+    EntityManager::get()->sendNotification( EntityNotification( CTD_NOTIFY_MENU_LEAVE ) );
 
     _p_menuWindow->hide();
     _settingsDialog->show( false );

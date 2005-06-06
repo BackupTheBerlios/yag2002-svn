@@ -62,7 +62,7 @@ EnSkyBox::~EnSkyBox()
 {
 }
 
-void EnSkyBox::handleNotification( EntityNotification& notify )
+void EnSkyBox::handleNotification( const EntityNotification& notify )
 {
     // handle notifications
     switch( notify.getId() )

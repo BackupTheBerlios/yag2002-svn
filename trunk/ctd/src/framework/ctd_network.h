@@ -157,23 +157,8 @@ class NetworkDevice : public Singleton< NetworkDevice >
 
     protected:
 
-        /**
-        * Construction
-        */
                                                     NetworkDevice();
-        /**
-        * Avoid the usage of copy constructor.
-        */
-                                                    NetworkDevice( const NetworkDevice &kNetWorkDevice );
 
-        /**
-        * Avoid assigning this singleton            
-        */
-        NetworkDevice&                              operator = ( const NetworkDevice& );
-
-        /**
-        * Destruction
-        */
         virtual                                    ~NetworkDevice();
 
         /**

@@ -82,7 +82,7 @@ class BasePlayerImplementation
         virtual void                                update( float deltaTime ) = 0;
 
         //! Implementation's notification callback
-        virtual void                                handleNotification( EntityNotification& notify ) {}
+        virtual void                                handleNotification( const EntityNotification& notify ) {}
 
         //! Set player's position.
         inline void                                 setPlayerPosition( const osg::Vec3f& pos );

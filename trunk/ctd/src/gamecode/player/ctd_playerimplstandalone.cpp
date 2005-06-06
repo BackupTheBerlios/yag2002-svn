@@ -58,7 +58,7 @@ PlayerImplStandalone::~PlayerImplStandalone()
     _p_inputHandler->destroyHandler();
 }
 
-void PlayerImplStandalone::handleNotification( EntityNotification& notify )
+void PlayerImplStandalone::handleNotification( const EntityNotification& notify )
 {
     // handle some notifications
     switch( notify.getId() )

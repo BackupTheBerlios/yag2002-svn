@@ -69,9 +69,8 @@ class SettingsManager : public Singleton< SettingsManager >
 
                                                 SettingsManager();
 
-                                                ~SettingsManager();
+        virtual                                 ~SettingsManager();
 
-        SettingsManager&                        operator = ( const SettingsManager& );
 
         std::map< std::string, Settings* >      _profiles;
 
@@ -100,7 +99,7 @@ class Settings
 
                                                 Settings();
 
-                                                ~Settings();
+        virtual                                 ~Settings();
 
         Settings&                               operator = ( const Settings& );
 
@@ -153,7 +152,7 @@ class Settings
                                                     _value = value;
                                                 }
 
-                                                ~Setting() {}
+                virtual                         ~Setting() {}
 
                 const std::type_info&           getTypeInfo()
                                                 {

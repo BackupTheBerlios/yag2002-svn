@@ -294,7 +294,8 @@ void GuiManager::changeDisplayResolution( float width, float height )
 
     CEGUI::FontManager::getSingleton().notifyScreenResolution( CEGUI::Size( _windowWidth, _windowHeight ) );
 	CEGUI::ImagesetManager::getSingleton().notifyScreenResolution( CEGUI::Size( _windowWidth, _windowHeight ) );
-	CEGUI::MouseCursor::getSingleton().setConstraintArea( &CEGUI::Rect( 0, 0, _windowWidth, _windowHeight ) );
+    CEGUI::Rect rect( 0, 0, _windowWidth, _windowHeight );
+    CEGUI::MouseCursor::getSingleton().setConstraintArea( &rect );
 }
 
 void GuiManager::showMousePointer( bool show )

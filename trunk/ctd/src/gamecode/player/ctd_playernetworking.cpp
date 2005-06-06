@@ -29,12 +29,6 @@
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
  #
- # change history:
- #
- #  date       nick name  comment
- #----------------------------------------------------------
- #  12/25/2004 boto       creation of PlayerNetworking
- #
  ################################################################*/
 
 #include <ctd_main.h>
@@ -65,13 +59,13 @@ _loadedPlayerEntity( NULL )
     // this constructor can be called either by player entity or networking system (in client or server mode)
     //  when called by player entity then it means that we are a local client, otherwise we are a remote client
     _remoteClient = false;
-    if ( !p_playerImpl ) 
+    if ( !p_playerImpl )
     {
         _remoteClient = true;
 
-        CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "creating a new player instance ... " << endl;            
+        CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "creating a new player instance ... " << endl;      
 
-        // TODO: get the character config file over net
+        // TODO: get the character config file over net!
         std::string playerconfig;
         if ( CTD::GameState::get()->getMode() == CTD::GameState::Server )
             playerconfig = string( CTD_LEVEL_SERVER_DIR ) + "player-banana";

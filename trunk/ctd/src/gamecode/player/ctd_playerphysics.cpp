@@ -418,7 +418,7 @@ EnPlayerPhysics::~EnPlayerPhysics()
         NewtonDestroyBody( Physics::get()->getWorld(), _p_body );
 }
 
-void EnPlayerPhysics::handleNotification( EntityNotification& notify )
+void EnPlayerPhysics::handleNotification( const EntityNotification& notify )
 {
     switch( notify.getId() )
     {

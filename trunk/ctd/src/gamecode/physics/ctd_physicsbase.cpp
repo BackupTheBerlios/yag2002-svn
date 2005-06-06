@@ -50,7 +50,7 @@ _pastTime( 0 )
 }
 
 // catch the physics notifications
-void EnPhysicsBase::handleNotification( EntityNotification& notify )
+void EnPhysicsBase::handleNotification( const EntityNotification& notify )
 {
     switch( notify.getId() )
     {

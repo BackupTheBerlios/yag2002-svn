@@ -82,16 +82,6 @@ class GameState : public Singleton< GameState >
 
                                                 GameState();
 
-        /**
-        * Avoid the usage of copy constructor.
-        */
-                                                GameState( GameState& );
-
-        /**
-        * Avoid assigning this singleton
-        */
-        GameState&                              operator = ( const GameState& );
-
         virtual                                 ~GameState();
 
         //! Shutdown
@@ -106,7 +96,6 @@ class GameState : public Singleton< GameState >
     friend class Singleton< GameState >;
     friend class Application;
 };
-
 
 } // namespace CTD
 

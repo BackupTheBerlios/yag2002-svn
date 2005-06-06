@@ -104,7 +104,7 @@ class EntityAttribute : public EntityAttributeBase
         */
                                             EntityAttribute( const std::string& name, TypeT &ref );
 
-                                            ~EntityAttribute() {}
+        virtual                             ~EntityAttribute() {}
 
         /**
         * Get attribute value
@@ -157,7 +157,7 @@ class AttributeManager
 
                                             AttributeManager() {} 
 
-                                            ~AttributeManager() {}
+        virtual                             ~AttributeManager() {}
 
 
         /**
@@ -215,15 +215,15 @@ class AttributeManager
         void                                removeAllAttributes();
 
         /**
-        * Copy operator
+        * Assignement operator.
+        * It copies all attributes to a given attribute manager after removing its exisiting ones ( hence the parameter ist not 'const' ).
         */
-        AttributeManager&                   operator = ( const AttributeManager& attr );
+        AttributeManager&                   operator = ( AttributeManager& attr );
 
     protected:
 
         //! Attributes
         std::vector< EntityAttributeBase* > _attributes;
-
 };
 
 #include "ctd_attributemanager.inl"

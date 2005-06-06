@@ -55,29 +55,21 @@ class EntityNotification
 {
     public:
                                                     
-                                                    EntityNotification( unsigned int id, BaseEntity* p_sender = NULL ) :
-                                                     _id( id ),
-                                                     _p_sender( p_sender )
+                                                    EntityNotification( unsigned int id ) :
+                                                     _id( id )
                                                     {}
 
         virtual                                     ~EntityNotification() {}
 
         //! Return the notification id
-        unsigned int                                getId()
+        const unsigned int                          getId() const
                                                     {
                                                         return _id;
-                                                    }
-
-        BaseEntity*                                 getSender()
-                                                    {
-                                                        return _p_sender;
                                                     }
 
     protected:
 
         unsigned int                                _id;
-
-        BaseEntity*                                 _p_sender;
 };
 //! Some standard notification ids
 #define     CTD_NOTIFY_LOADING_LEVEL                0xF0000010  // sent when we load a level
@@ -200,7 +192,7 @@ class BaseEntity
         * \param notify                             The notification struct. It may be useful to cast it to appropriate type for 
         *                                           game-codespecific structs. 
         */
-        virtual void                                handleNotification( EntityNotification& notify ) {}
+        virtual void                                handleNotification( const EntityNotification& notify ) {}
 
         /**
         * Set transformation node. An application developer does not need this method in normal case.

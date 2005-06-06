@@ -183,8 +183,6 @@ bool NetworkDevice::setupClient( const string& serverIp, int channel, const Node
         //example url: "SESSION://UDP@127.0.0.1:32001/gameserver"}
         string servername;
         Configuration::get()->getSettingValue( CTD_GS_SERVER_NAME, servername );
-        unsigned int channel;
-        Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
         stringstream assembledUrl;
         assembledUrl << "SESSION://UDP@" << serverIp << ":" << channel << "/" << servername;
         Url = assembledUrl.str();

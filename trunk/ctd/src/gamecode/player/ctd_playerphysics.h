@@ -151,7 +151,7 @@ class EnPlayerPhysics : public BaseEntity
     protected:
 
         // handle physics building when notified
-        void                                        handleNotification( EntityNotification& notify );
+        void                                        handleNotification( const EntityNotification& notify );
 
         // init physics materials
         void                                        initializePhysicsMaterials();

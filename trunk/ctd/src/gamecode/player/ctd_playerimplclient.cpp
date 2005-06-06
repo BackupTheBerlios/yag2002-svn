@@ -55,7 +55,7 @@ PlayerImplClient::~PlayerImplClient()
         delete _p_playerNetworking;
 }
 
-void PlayerImplClient::handleNotification( EntityNotification& notify )
+void PlayerImplClient::handleNotification( const EntityNotification& notify )
 {
     // handle some notifications
     switch( notify.getId() )

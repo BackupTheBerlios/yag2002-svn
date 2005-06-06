@@ -256,7 +256,7 @@ bool Application::initialize( int argc, char **argv )
 
         // if we directly start a client with cmd line option then we must send a leave-menu notification to entities
         //  as many entities do special steps when leaving the menu
-        EntityNotification notify( CTD_NOTIFY_MENU_LEAVE, NULL );
+        EntityNotification notify( CTD_NOTIFY_MENU_LEAVE );
         EntityManager::get()->sendNotification( notify );
     }
     else // check for any level file name, so we try to start in Standalone mode
@@ -272,7 +272,7 @@ bool Application::initialize( int argc, char **argv )
 
         // if we directly start a client with cmd line option then we must send a leave-menu notification to entities
         //  as many entities do special steps when leaving the menu
-        EntityNotification notify( CTD_NOTIFY_MENU_LEAVE, NULL );
+        EntityNotification notify( CTD_NOTIFY_MENU_LEAVE );
         EntityManager::get()->sendNotification( notify );
     }
 

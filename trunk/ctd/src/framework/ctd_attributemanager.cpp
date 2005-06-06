@@ -133,10 +133,12 @@ void AttributeManager::removeAllAttributes()
     _attributes.clear();
 }
 
-AttributeManager& AttributeManager::operator = ( const AttributeManager& attr )
+AttributeManager& AttributeManager::operator = ( AttributeManager& attr )
 {
+    attr.removeAllAttributes();
+
     // copy attribute values
-    std::vector< EntityAttributeBase* >::iterator p_beg = const_cast< AttributeManager& >( attr ).getAttributes().begin(), p_end = const_cast< AttributeManager& >( attr ).getAttributes().end();
+    std::vector< EntityAttributeBase* >::iterator p_beg = attr.getAttributes().begin(), p_end = attr.getAttributes().end();
     for ( ; p_beg != p_end; p_beg++ )
     {
         setAttributeValue( ( *p_beg )->getName(), **p_beg );

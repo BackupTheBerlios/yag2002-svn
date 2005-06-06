@@ -63,7 +63,7 @@ class EnFPSDisplay :  public BaseEntity
     protected:
 
         //! Override notification callback
-        void                                        handleNotification( EntityNotification& notify );
+        void                                        handleNotification( const EntityNotification& notify );
 
         //! Override this method and return true to get a persisten entity
         const bool                                  isPersistent() const { return true; }

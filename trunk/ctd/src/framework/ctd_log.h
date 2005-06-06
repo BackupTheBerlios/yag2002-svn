@@ -32,7 +32,6 @@
 #define _CTD_LOG_H_
 
 #include <ctd_base.h>
-#include <ctd_singleton.h>
 
 namespace CTD
 {
@@ -90,7 +89,7 @@ class Log : public std::basic_ostream< char >
         };
 
         //! Stream operator for setting current logging severity
-        std::ostream&                               operator << ( Log::LogLevel& ll );
+        std::ostream&                               operator << ( const Log::LogLevel& ll );
 
     protected:
 
@@ -116,7 +115,7 @@ class Log : public std::basic_ostream< char >
                                                             _stdstream( stdstream )
                                                         {}
                                                         
-                                                        ~Sink() { if ( _p_stream ) delete _p_stream; }
+            virtual                                     ~Sink() { if ( _p_stream ) delete _p_stream; }
 
             std::string                                 _name;
 
@@ -152,9 +151,6 @@ class Log : public std::basic_ostream< char >
         }                                               _stream;
 
 };
-
-// stream operator for setting log severity
-std::ostream& operator << ( std::ostream& stream, Log::LogLevel& ll );
 
 } // namespace CTD
 

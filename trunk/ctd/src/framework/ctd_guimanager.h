@@ -120,9 +120,6 @@ class GuiManager : public Singleton< GuiManager >
 
         virtual                                 ~GuiManager();
 
-        //! Avoid copy constructor
-        GuiManager&                             operator = ( const GuiManager& guimgr );
-
         //! Prepare initializing the gui system
         void                                    initialize();
 
@@ -186,10 +183,10 @@ class GuiManager : public Singleton< GuiManager >
         bool                                    _lockMouse;
                                          
     friend class Singleton< GuiManager >;
-    friend class GuiRenderCallback;
     friend class GuiViewerRealizeCallback;
-    friend class Application;
+    friend class GuiRenderCallback;
     friend class LevelManager;
+    friend class Application;
 };
 
 } // namespace CTD

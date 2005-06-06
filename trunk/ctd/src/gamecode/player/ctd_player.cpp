@@ -78,7 +78,7 @@ EnPlayer::~EnPlayer()
         delete _p_playerImpl;
 }
 
-void EnPlayer::handleNotification( EntityNotification& notify )
+void EnPlayer::handleNotification( const EntityNotification& notify )
 {
     if ( _p_playerImpl )
         _p_playerImpl->handleNotification( notify );

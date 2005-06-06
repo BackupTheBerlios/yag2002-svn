@@ -90,11 +90,6 @@ class Configuration : public Singleton< Configuration >
 {
     public:
 
-                                                Configuration();
-
-        virtual                                 ~Configuration();
-
-
         //! Given a setting name ( e.g. screen width CTD_GS_SCREENWIDTH ) return its value in 'value'
         template< typename TypeT >
         inline bool                             getSettingValue( const std::string& name, TypeT& value );
@@ -108,15 +103,15 @@ class Configuration : public Singleton< Configuration >
 
     protected:
 
+                                                Configuration();
+
+        virtual                                 ~Configuration();
+
         //! Update the gui system including drawing
         void                                    update( float deltaTime );
-
         
         //! Shutdown the network device.
         void                                    shutdown();
-
-        //! Avoid copy constructor
-        Configuration&                          operator = ( const Configuration& config );
 
         //! Configuration settings
         Settings*                               _p_settings;

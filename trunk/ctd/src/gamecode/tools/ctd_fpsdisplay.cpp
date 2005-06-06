@@ -62,7 +62,7 @@ EnFPSDisplay::~EnFPSDisplay()
     CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
 }
 
-void EnFPSDisplay::handleNotification( EntityNotification& notify )
+void EnFPSDisplay::handleNotification( const EntityNotification& notify )
 {
     // handle some notifications
     switch( notify.getId() )

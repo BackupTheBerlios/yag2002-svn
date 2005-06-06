@@ -41,7 +41,6 @@ _p_clb( NULL ),
 _p_parent( NULL ),
 _autodel( autodelete )
 {
-    CEGUI::Window* p_root = NULL;
     if ( !p_parent )
     {
         _p_parent = CEGUI::WindowManager::getSingleton().getWindow( "Root" );
