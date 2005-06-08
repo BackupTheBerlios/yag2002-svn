@@ -29,7 +29,9 @@
  ################################################################*/
 
 #include <ctd_main.h>
+#include "ctd_menu.h"
 #include "ctd_dialogsettings.h"
+#include "ctd_dialogplayercfg.h"
 #include "../sound/ctd_ambientsound.h"
 
 using namespace std;
@@ -38,17 +40,15 @@ namespace CTD
 {
 
 // some defines
-#define SDLG_PREFIX     "sd_"
-// currently supported fixed screen resolutions
-#define RESOLUTION1     "800x600"
-#define RESOLUTION2     "1024x768"
-#define RESOLUTION3     "1600x1200"
+#define SDLG_PREFIX                 "sd_"
+#define PLAYER_CONFIG_GUI_LAYOUT    "gui/playerconfig.xml"
 
-DialogGameSettings::DialogGameSettings() :
+DialogGameSettings::DialogGameSettings( EnMenu* p_menuEntity ) :
+_p_menuEntity( p_menuEntity ),
 _busy( false ),
 _p_clickSound( NULL ),
 _p_settingsDialog( NULL ),
-_p_playername( NULL ),
+_p_playerName( NULL ),
 _p_mouseSensivity( NULL ),
 _p_keyMoveForward( NULL ),
 _p_keyMoveBackward( NULL ),
@@ -75,9 +75,8 @@ DialogGameSettings::~DialogGameSettings()
     assert( !_busy && "this object must not be destroyed before the message box has been closed! see method onClickedOk" );
 }
 
-bool DialogGameSettings::initialize( const string& layoutfile, CEGUI::Window* p_parent )
+bool DialogGameSettings::initialize( const string& layoutfile )
 {    
-    _p_parent = p_parent;
     _p_settingsDialog = GuiManager::get()->loadLayout( layoutfile, NULL, SDLG_PREFIX );
     if ( !_p_settingsDialog )
     {
@@ -96,12 +95,16 @@ bool DialogGameSettings::initialize( const string& layoutfile, CEGUI::Window* p_
         CEGUI::PushButton* p_btnok = static_cast< CEGUI::PushButton* >( _p_settingsDialog->getChild( SDLG_PREFIX "btn_ok" ) );
         p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedOk, this ) );
 
+        // setup ok button
+        CEGUI::PushButton* p_btnplayercfg = static_cast< CEGUI::PushButton* >( _p_settingsDialog->getChild( SDLG_PREFIX "btn_playercfg" ) );
+        p_btnplayercfg->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedPlayerConfig, this ) );
+
         // setup cancel button
         CEGUI::PushButton* p_btncancel = static_cast< CEGUI::PushButton* >( _p_settingsDialog->getChild( SDLG_PREFIX "btn_cancel" ) );
         p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedCancel, this ) );
 
         // get player name text box
-        _p_playername = static_cast< CEGUI::Editbox* >( _p_settingsDialog->getChild( SDLG_PREFIX "text_playername" ) );
+        _p_playerName = static_cast< CEGUI::Editbox* >( _p_settingsDialog->getChild( SDLG_PREFIX "text_playername" ) );
 
         // get tab control contents
         //-------------------------
@@ -187,6 +190,11 @@ bool DialogGameSettings::initialize( const string& layoutfile, CEGUI::Window* p_
         log << "      reason: " << e.getMessage().c_str() << endl;
     }
 
+    // create player config dialog
+    _playerConfigDialog = std::auto_ptr< DialogPlayerConfig >( new DialogPlayerConfig( this ) );
+    _playerConfigDialog->initialize( PLAYER_CONFIG_GUI_LAYOUT );
+    _playerConfigDialog->show( false );
+
     // setup all control contents
     setupControls();
 
@@ -210,9 +218,9 @@ void DialogGameSettings::setupControls()
     //-----------------------------------
     {
         string cfg_playername;
-        Configuration::get()->getSettingValue( CTD_GS_PLAYERNAME, cfg_playername );
+        Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, cfg_playername );
         // set player name
-        _p_playername->setText( cfg_playername );
+        _p_playerName->setText( cfg_playername );
     }
 
     // get network settings
@@ -324,8 +332,8 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
 {
     // set player name
     {
-        string playername = _p_playername->getText().c_str();
-        Configuration::get()->setSettingValue( CTD_GS_PLAYERNAME, playername );
+        string playername = _p_playerName->getText().c_str();
+        Configuration::get()->setSettingValue( CTD_GS_PLAYER_NAME, playername );
     }
 
     // set key bindings
@@ -412,14 +420,38 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
 
     // store all settings into file
     Configuration::get()->store();
-    // disappear the dialog
-    show( false );
 
     // play click sound
     if ( _p_clickSound )
         _p_clickSound->startPlaying();
 
+    // let the menu know that we are finish
+    _p_menuEntity->onSettingsDialogClose();
+
     return true;
+}
+
+bool DialogGameSettings::onClickedPlayerConfig( const CEGUI::EventArgs& arg )
+{
+    // store the settings changes ( in particular the player name, as the player dialog also can change the player name )
+    string playername = _p_playerName->getText().c_str();
+    Configuration::get()->setSettingValue( CTD_GS_PLAYER_NAME, playername );
+    Configuration::get()->store();
+
+    _p_settingsDialog->hide();
+    _playerConfigDialog->show( true );
+
+    return true;
+}
+
+void DialogGameSettings::onPlayerConfigDialogClose()
+{
+    _p_settingsDialog->show();
+    _playerConfigDialog->show( false );
+    // update player name
+    string playername;
+    Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, playername );
+    _p_playerName->setText( playername.c_str() );
 }
 
 bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
@@ -461,6 +493,8 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
                                         {
                                             // just disappear the dialog
                                             _p_dialogSettings->show( false );
+                                            _p_dialogSettings->_p_menuEntity->onSettingsDialogClose();
+
                                         }
 
                                         // release the busy lock
@@ -675,12 +709,8 @@ void DialogGameSettings::show( bool visible )
     if ( visible )
     {
         setupControls();
+        _p_settingsDialog->enable();
         _p_settingsDialog->show();
-        if ( _p_parent )
-        {
-            _p_parent->disable();
-            _p_settingsDialog->enable();
-        }
     }
     else
     {
@@ -691,7 +721,6 @@ void DialogGameSettings::show( bool visible )
         _inputHandlerDestructionQueue.clear();
 
         _p_settingsDialog->hide();
-        _p_parent->enable();
     }
 }
 

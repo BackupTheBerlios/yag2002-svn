@@ -36,8 +36,10 @@
 namespace CTD
 {
 
-class DialogGameSettings;
+class EnMenu;
 class EnAmbientSound;
+class DialogGameSettings;
+class DialogPlayerConfig;
 
 //! Input handler for sensing
 class BtnInputHandler : public GenericInputHandler< CEGUI::PushButton >
@@ -64,15 +66,16 @@ class BtnInputHandler : public GenericInputHandler< CEGUI::PushButton >
         bool                                        _lockInput;
 };
 
+//! Class for game settings dialog 
 class DialogGameSettings
 {
     public:
-                                                    DialogGameSettings();
+                                                    DialogGameSettings( EnMenu* p_menuEntity );
 
         virtual                                     ~DialogGameSettings();
 
         //! Initialize gui layout, return false when something went wrong.
-        bool                                        initialize( const std::string& layoutfile, CEGUI::Window* p_parent );
+        bool                                        initialize( const std::string& layoutfile );
 
         //! Update dialog control
         void                                        update( float deltaTime );
@@ -85,11 +88,20 @@ class DialogGameSettings
 
     protected:
 
+        // Interface method for player configuration dialog
+        //---
+        //! This is called by player configuration instance when the player closes player configuration dialog
+        void                                        onPlayerConfigDialogClose();
+        //---
+
         //! Is asked on canceling dialog
         bool                                        isDirty();
 
         //! Setup all controls when the dialog is opening ( show( true ) )
         void                                        setupControls();
+
+        //! Dialog callback for config player button        
+        bool                                        onClickedPlayerConfig( const CEGUI::EventArgs& arg );
 
         //! Dialog callback for Ok button        
         bool                                        onClickedOk( const CEGUI::EventArgs& arg );
@@ -148,13 +160,11 @@ class DialogGameSettings
         //! Busy flag ( see method onClickedOk for more details )
         bool                                        _busy;
     
-        CEGUI::Window*                              _p_parent;
-
         EnAmbientSound*                             _p_clickSound;
 
         CEGUI::Window*                              _p_settingsDialog;
 
-        CEGUI::Editbox*                             _p_playername;
+        CEGUI::Editbox*                             _p_playerName;
 
         CEGUI::Editbox*                             _p_serverName;
 
@@ -194,11 +204,16 @@ class DialogGameSettings
 
         CEGUI::RadioButton*                        _p_wndscreen;
 
+        EnMenu*                                    _p_menuEntity;
+
+        std::auto_ptr< DialogPlayerConfig >        _playerConfigDialog;
+
         //! Lookup for current key bindings, it is used for detecting an overriding key binding
         std::vector< std::pair< std::string, CEGUI::PushButton* > > _keyBindingLookup;
         typedef std::vector< std::pair< std::string, CEGUI::PushButton* > >     tBindingLookup;
 
     friend class BtnInputHandler;
+    friend class DialogPlayerConfig;
 };
 
 }
