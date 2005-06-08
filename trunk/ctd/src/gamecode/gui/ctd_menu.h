@@ -54,21 +54,23 @@ class EnMenu :  public BaseEntity
 
         virtual                                     ~EnMenu();
 
-
-        //! This entity does not need a transform node, which would be created by level manager on loading
-        //!   We create an own one and add it into scene's root node
-        const bool                                  isTransformable() const { return false; }
-
-        //! Make this entity persistent, thus on level changing this entity will not be deleted by entity manager
-        //  and update and notification registries will be kept.
-        const bool                                  isPersistent() const { return true; }
-
         //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
 
         //! This entity needs updating
         void                                        updateEntity( float deltaTime );
 
+    protected:
+
+        //! This entity does not need a transform node, which would be created by level manager on loading
+        const bool                                  isTransformable() const { return false; }
+
+        //! Make this entity persistent, thus on level changing this entity will not be deleted by entity manager
+        //  and update and notification registries will be kept.
+        const bool                                  isPersistent() const { return true; }
+
+        // Interface methods for intro and settings dialog
+        //-----
         //! Enter the menu
         void                                        enter();
 
@@ -83,8 +85,7 @@ class EnMenu :  public BaseEntity
 
         //! This method is called by DialogLevelSelect when canceling a level selection process.
         void                                        onLevelSelectCanceled();
-
-    protected:
+        //-----
 
         //! Override this method of BaseEntity to get notifications (from menu system)
         void                                        handleNotification( const EntityNotification& notify );
@@ -118,12 +119,18 @@ class EnMenu :  public BaseEntity
 
     protected:
 
+        //! Interface method used by settings dialog
+        //---
+        void                                        onSettingsDialogClose();
+        //---
+
         //! Begin intro
         void                                        beginIntro();
 
         //! Stop intro
         void                                        stopIntro();
 
+        //! Ued to turn on / off skybox when entering / leaving menu
         void                                        enableSkybox( bool en );
 
         //! Callback for button click "game settings"        
@@ -228,7 +235,10 @@ class EnMenu :  public BaseEntity
         //! Shows that a level is already loaded
         bool                                        _levelLoaded;
 
+    friend class DialogGameSettings;
+    friend class DialogLevelSelect;
     friend class MenuInputHandler;
+    friend class IntroControl;
 };
 
 //! Entity type definition used for type registry

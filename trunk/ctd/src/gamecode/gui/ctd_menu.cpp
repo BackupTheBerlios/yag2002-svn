@@ -311,15 +311,15 @@ void EnMenu::initialize()
     }
 
     // setup dialog for editing game settings
-    _settingsDialog = auto_ptr< DialogGameSettings >( new DialogGameSettings );
-    if ( !_settingsDialog->initialize( _settingsDialogConfig, _p_menuWindow ) )
+    _settingsDialog = auto_ptr< DialogGameSettings >( new DialogGameSettings( this ) );
+    if ( !_settingsDialog->initialize( _settingsDialogConfig ) )
         return;
     // set the click sound object
     _settingsDialog->setClickSound( _clickSound.get() );
 
     // setup dialog for selecting a level
     _levelSelectDialog = auto_ptr< DialogLevelSelect >( new DialogLevelSelect( this ) );
-    if ( !_levelSelectDialog->initialize( _levelSelectDialogConfig, _p_menuWindow ) )
+    if ( !_levelSelectDialog->initialize( _levelSelectDialogConfig ) )
         return;
     // set the click sound object
     _levelSelectDialog->setClickSound( _clickSound.get() );
@@ -435,6 +435,7 @@ bool EnMenu::onClickedGameSettings( const CEGUI::EventArgs& arg )
         _clickSound->startPlaying();
 
     _settingsDialog->show( true );
+    _p_menuWindow->disable();
 
     return true;
 }
@@ -508,7 +509,7 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
     string url;
     Configuration::get()->getSettingValue( CTD_GS_SERVER_IP, url );
     string clientname;
-    Configuration::get()->getSettingValue( CTD_GS_PLAYERNAME, clientname );
+    Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, clientname );
     NodeInfo nodeinfo( "", clientname );
     unsigned int channel;
     Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
@@ -529,6 +530,8 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
 
     _menuState = BeginLoadingLevel;
 
+    _p_menuWindow->disable();
+
     return true;
 }
 
@@ -539,6 +542,7 @@ bool EnMenu::onClickedServer( const CEGUI::EventArgs& arg )
 
 //! TODO: start a server in background, don't change the game mode
     _levelSelectDialog->changeSearchDirectory( CTD_LEVEL_SERVER_DIR );
+    _p_menuWindow->disable();
     _levelSelectDialog->show( true );
 
     // set level loading state
@@ -554,10 +558,13 @@ bool EnMenu::onClickedWT( const CEGUI::EventArgs& arg )
 
     GameState::get()->setMode( GameState::Standalone );
     _levelSelectDialog->changeSearchDirectory( CTD_LEVEL_SALONE_DIR );
+    _p_menuWindow->disable();
     _levelSelectDialog->show( true );
 
     // set level loading state
     _levelSelectionState = ForStandalone;
+
+    _p_menuWindow->disable();
 
     return true;
 }
@@ -714,6 +721,7 @@ void EnMenu::enter()
     _p_inputHandler->reset( true );
 
     // show menu layout
+    _p_menuWindow->enable();
     _p_menuWindow->show();
 
     // activate the menu scene
@@ -732,6 +740,8 @@ void EnMenu::leave()
     EntityManager::get()->sendNotification( EntityNotification( CTD_NOTIFY_MENU_LEAVE ) );
 
     _p_menuWindow->hide();
+    _p_menuWindow->enable();
+
     _settingsDialog->show( false );
     _levelSelectDialog->show( false );
 
@@ -764,8 +774,14 @@ void EnMenu::switchMenuScene( bool tomenu )
     }
 }
 
-void EnMenu::onLevelSelectCanceled()
+void EnMenu::onSettingsDialogClose()
 {
+    _p_menuWindow->enable();
+    _settingsDialog->show( false );
+}
+
+void EnMenu::onLevelSelectCanceled()
+{    
     _p_menuWindow->enable();
 }
 
@@ -785,13 +801,14 @@ void EnMenu::onLevelSelected( string levelfile, CEGUI::Image* p_img )
     }
     else if ( _levelSelectionState == ForServer ) 
     {
-
-        _p_menuWindow->enable();
+        //! TODO:
     }
     else
     {
         assert( NULL && "invalid level select state!" );
     }
+
+    _p_menuWindow->enable();
 }
 
 void EnMenu::loadLevel( string levelfile, CEGUI::Image* p_img )
