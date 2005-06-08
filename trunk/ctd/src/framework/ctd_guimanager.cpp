@@ -337,12 +337,22 @@ CEGUI::Window* GuiManager::loadLayout( const string& filename, CEGUI::Window* p_
     else
         pref << handle;
 
-    Window* p_layout = WindowManager::getSingleton().loadWindowLayout( filename.c_str(), pref.str() );
+    Window* p_layout = NULL;
+    try
+    {
+        p_layout = WindowManager::getSingleton().loadWindowLayout( filename.c_str(), pref.str() );
 
-    if ( !p_parent )
-        _p_root->addChildWindow( p_layout );
-    else
-        p_parent->addChildWindow( p_layout );
+        if ( !p_parent )
+            _p_root->addChildWindow( p_layout );
+        else
+            p_parent->addChildWindow( p_layout );
+
+    }
+    catch ( CEGUI::Exception e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << " GuiManager: cannot load layout: '" << filename << "'" << endl;
+        return NULL;
+    }
 
     p_layout->show();
 
