@@ -69,7 +69,7 @@ void PlayerChatGui::initialize( BasePlayerImplementation* p_playerImpl, const st
     _p_playerImpl = p_playerImpl;
 
     // get the player name
-    Configuration::get()->getSettingValue( CTD_GS_PLAYERNAME, _playername );
+    Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, _playername );
 
     try
     {
