@@ -58,6 +58,8 @@ _fullScreen( true ),
 _mouseSensitivity( 1.0f ),
 _guiScheme( CTD_GUI_DEFUALT_SCHEME ),
 _playerName( "NoName" ),
+_playerConfigDir( "player" ),
+_playerConfig( "player.cfg" ),
 _mouseInverted( false ),
 _moveForward( "W" ),
 _moveBackward( "S" ),
@@ -74,13 +76,10 @@ _chatmode( "RMB" )
     _p_settings->registerSetting( CTD_GS_COLORBITS,           _colorBits        );
     _p_settings->registerSetting( CTD_GS_FULLSCREEN,          _fullScreen       );
     _p_settings->registerSetting( CTD_GS_GUISCHEME,           _guiScheme        );
-    _p_settings->registerSetting( CTD_GS_PLAYERNAME,          _playerName       );
-    _p_settings->registerSetting( CTD_GS_MOUSESENS,           _mouseSensitivity );
-    _p_settings->registerSetting( CTD_GS_INVERTMOUSE,         _mouseInverted    );
-    _p_settings->registerSetting( CTD_GS_SERVER_NAME,         _serverName       );
-    _p_settings->registerSetting( CTD_GS_SERVER_IP,           _serverIP         );
-    _p_settings->registerSetting( CTD_GS_SERVER_PORT,         _serverPort       );
 
+    _p_settings->registerSetting( CTD_GS_PLAYER_NAME,         _playerName       );
+    _p_settings->registerSetting( CTD_GS_PLAYER_CONFIG_DIR,   _playerConfigDir  );
+    _p_settings->registerSetting( CTD_GS_PLAYER_CONFIG,       _playerConfig     );
     _p_settings->registerSetting( CTD_GS_KEY_MOVE_FORWARD,    _moveForward      );
     _p_settings->registerSetting( CTD_GS_KEY_MOVE_BACKWARD,   _moveBackward     );
     _p_settings->registerSetting( CTD_GS_KEY_MOVE_LEFT,       _moveLeft         );
@@ -88,6 +87,12 @@ _chatmode( "RMB" )
     _p_settings->registerSetting( CTD_GS_KEY_JUMP,            _jump             );
     _p_settings->registerSetting( CTD_GS_KEY_CAMERAMODE,      _cameramode       );
     _p_settings->registerSetting( CTD_GS_KEY_CHATMODE,        _chatmode         );
+
+    _p_settings->registerSetting( CTD_GS_MOUSESENS,           _mouseSensitivity );
+    _p_settings->registerSetting( CTD_GS_INVERTMOUSE,         _mouseInverted    );
+    _p_settings->registerSetting( CTD_GS_SERVER_NAME,         _serverName       );
+    _p_settings->registerSetting( CTD_GS_SERVER_IP,           _serverIP         );
+    _p_settings->registerSetting( CTD_GS_SERVER_PORT,         _serverPort       );
 
     // load profile
     bool exists = SettingsManager::get()->loadProfile( CTD_GAMESETTING_PROFILENAME );

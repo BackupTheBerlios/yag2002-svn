@@ -66,10 +66,11 @@ namespace CTD
 // gui
 #define CTD_GS_GUISCHEME                "guiScheme"
 // player
-#define CTD_GS_PLAYERNAME               "playerName"
-#define CTD_GS_MOUSESENS                "mouseSensitivity"
-#define CTD_GS_MAX_MOUSESENS            3.0f                /* maximal mouse sensitivity */
-#define CTD_GS_INVERTMOUSE              "mouseInverted"
+#define CTD_GS_PLAYER_NAME              "playerName"
+//   folder in media directory for player configuration files
+#define CTD_GS_PLAYER_CONFIG_DIR        "playerConfigDir"
+//   player configuration
+#define CTD_GS_PLAYER_CONFIG            "playerConfig"
 //   player key bindings
 #define CTD_GS_KEY_MOVE_FORWARD         "moveForward"
 #define CTD_GS_KEY_MOVE_BACKWARD        "moveBackward"
@@ -78,6 +79,10 @@ namespace CTD
 #define CTD_GS_KEY_JUMP                 "jump"
 #define CTD_GS_KEY_CAMERAMODE           "cameramode"
 #define CTD_GS_KEY_CHATMODE             "chatmode"
+// mouse settings
+#define CTD_GS_MOUSESENS                "mouseSensitivity"
+#define CTD_GS_MAX_MOUSESENS            3.0f                /* maximal mouse sensitivity */
+#define CTD_GS_INVERTMOUSE              "mouseInverted"
 // networking
 #define CTD_GS_SERVER_NAME              "serverName"
 #define CTD_GS_SERVER_IP                "serverIP"
@@ -130,6 +135,10 @@ class Configuration : public Singleton< Configuration >
         std::string                             _guiScheme;
 
         std::string                             _playerName;
+
+        std::string                             _playerConfig;
+
+        std::string                             _playerConfigDir;
 
         float                                   _mouseSensitivity;
 
