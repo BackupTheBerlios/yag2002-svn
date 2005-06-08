@@ -160,7 +160,7 @@ void PlayerImplStandalone::postInitialize()
 void PlayerImplStandalone::getConfiguration()
 {
     std::string playername;
-    Configuration::get()->getSettingValue( CTD_GS_PLAYERNAME, playername );
+    Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, playername );
     _p_player->setPlayerName( playername );
 
     // setup key bindings
