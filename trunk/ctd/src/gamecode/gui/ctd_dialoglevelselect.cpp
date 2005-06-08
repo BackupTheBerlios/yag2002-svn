@@ -63,9 +63,8 @@ DialogLevelSelect::~DialogLevelSelect()
         CEGUI::WindowManager::getSingleton().destroyWindow( _p_levelSelectDialog );
 }
 
-bool DialogLevelSelect::initialize( const string& layoutfile, CEGUI::Window* p_parent )
+bool DialogLevelSelect::initialize( const string& layoutfile )
 {    
-    _p_parent = p_parent;
     _p_levelSelectDialog = GuiManager::get()->loadLayout( layoutfile, NULL, LDLG_PREFIX );
     if ( !_p_levelSelectDialog )
     {
@@ -258,17 +257,11 @@ void DialogLevelSelect::show( bool visible )
     {
         setupControls();
         _p_levelSelectDialog->show();
-        if ( _p_parent )
-        {
-            _p_parent->disable();
-            _p_levelSelectDialog->enable();
-        }
     }
     else
     {
         _p_listbox->resetList();
         _p_levelSelectDialog->hide();
-        _p_parent->enable();
     }
 }
 

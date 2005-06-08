@@ -48,7 +48,7 @@ class DialogLevelSelect
         virtual                                     ~DialogLevelSelect();
 
         //! Initialize gui layout, return false if something went wrong.
-        bool                                        initialize( const std::string& layoutfile, CEGUI::Window* p_parent );
+        bool                                        initialize( const std::string& layoutfile );
 
         //! Update dialog control
         void                                        update( float deltaTime );
@@ -79,8 +79,6 @@ class DialogLevelSelect
         //! Dialog callback for changed list item selection        
         bool                                        onListItemSelChanged( const CEGUI::EventArgs& arg );
         //  internal variables
-
-        CEGUI::Window*                              _p_parent;
 
         EnAmbientSound*                             _p_clickSound;
 
