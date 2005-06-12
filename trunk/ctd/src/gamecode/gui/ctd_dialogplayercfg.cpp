@@ -47,8 +47,9 @@ DialogPlayerConfig::DialogPlayerConfig( DialogGameSettings* p_menuEntity ) :
 _p_clickSound( NULL ),
 _p_playerConfigDialog( NULL ),
 _p_listbox( NULL ),
-_p_playerType( NULL ),
+_p_playerName( NULL ),
 _p_image( NULL ),
+_p_lastListSelection( NULL ),
 _p_settingsDialog( p_menuEntity )
 {
     // get the player config folder
@@ -120,7 +121,7 @@ DialogPlayerConfig::~DialogPlayerConfig()
     std::map< std::string, CEGUI::Image* >::iterator p_beg = _players.begin(), p_end = _players.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
-        CEGUI::ImagesetManager::getSingleton().destroyImageset( p_beg->first + ".tga" );
+        CEGUI::ImagesetManager::getSingleton().destroyImageset( p_beg->first );
     }
 
     if ( _p_playerConfigDialog )
@@ -147,7 +148,7 @@ bool DialogPlayerConfig::initialize( const string& layoutfile )
         p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogPlayerConfig::onClickedCancel, this ) );
 
         // setup editbox for player name
-        _p_playerType = static_cast< CEGUI::Editbox* >( _p_playerConfigDialog->getChild( ADLG_PREFIX "eb_playername" ) );
+        _p_playerName = static_cast< CEGUI::Editbox* >( _p_playerConfigDialog->getChild( ADLG_PREFIX "eb_playername" ) );
 
         // get list box
         _p_listbox = static_cast< CEGUI::Listbox* >( _p_playerConfigDialog->getChild( ADLG_PREFIX "lst_players" ) );
@@ -206,43 +207,42 @@ void DialogPlayerConfig::setupControls()
         _p_listbox->insertItem( p_item, NULL );
     }
 
-    if ( _players.size() > 0 )
+    // get settings
     {
-        _p_listbox->getListboxItemFromIndex( 0 )->setSelected( true );
-        // set preview image
-        setPreviewPic( _p_listbox->getListboxItemFromIndex( 0 ) );
-    }
-
-    // setup controls
-    {
-        string playertype;
-        Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, playertype );
-        _p_playerType->setText( playertype.c_str() );
+        string playername;
+        Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, playername );
+        _p_playerName->setText( playername.c_str() );
 
         string playercfg;
         Configuration::get()->getSettingValue( CTD_GS_PLAYER_CONFIG, playercfg );
 
-        // TODO: set the list selection        
+        // get the player type out of file list lookup table
+        std::map< std::string, std::string >::iterator p_beg = _cfgFiles.begin(), p_end = _cfgFiles.end();
+        string playertype;
+        for ( ; p_beg != p_end; p_beg++ )
+        {
+            if ( p_beg->second == playercfg )
+            {
+                playertype = p_beg->first;
+                break;
+            }
+        }
+
+        if ( _players.size() > 0 )
+        {
+            CEGUI::ListboxItem* p_sel = _p_listbox->findItemWithText( playertype.c_str(), NULL );
+            assert( p_sel && "cannot find the player type in list!" );
+                
+            p_sel->setSelected( true );
+            _p_lastListSelection = p_sel;
+            // set preview image
+            setPreviewPic( p_sel );
+        }
     }
-    // store the settings changes
-    Configuration::get()->store();
 }
 
 void DialogPlayerConfig::setPreviewPic( CEGUI::ListboxItem* p_item )
 {
-    // NULL means deselection of all, no list elements selected anymore
-    if ( !p_item )
-    {
-        _p_image->setImage( NULL );
-        _currentSelection = "";
-        return;
-    }
-    _currentSelection = p_item->getText().c_str();
-
-    // play click sound
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
-
     string* p_texname = static_cast< string* >( p_item->getUserData() );
     CEGUI::Image*  p_image = _players[ *p_texname ];
     if ( !p_image )
@@ -266,7 +266,7 @@ bool DialogPlayerConfig::onClickedOk( const CEGUI::EventArgs& arg )
 
     // write back the settings to configuration
     {
-        string playername = _p_playerType->getText().c_str();
+        string playername = _p_playerName->getText().c_str();
         Configuration::get()->setSettingValue( CTD_GS_PLAYER_NAME, playername );
         string playercfg = _cfgFiles[ _currentSelection ];
         Configuration::get()->setSettingValue( CTD_GS_PLAYER_CONFIG, playercfg );
@@ -274,7 +274,10 @@ bool DialogPlayerConfig::onClickedOk( const CEGUI::EventArgs& arg )
 
     _currentSelection = "";
 
-    // let the parent dialog know that we are finish
+    // store the settings changes
+    Configuration::get()->store();
+
+    // let the parent dialog know that we are done configuring the player
     _p_settingsDialog->onPlayerConfigDialogClose();
 
     return true;
@@ -288,6 +291,9 @@ bool DialogPlayerConfig::onClickedCancel( const CEGUI::EventArgs& arg )
 
     _currentSelection = "";
 
+    // let the parent dialog know that we are done configuring the player
+    _p_settingsDialog->onPlayerConfigDialogClose();
+
     return true;
 }
 
@@ -295,6 +301,21 @@ bool DialogPlayerConfig::onListItemSelChanged( const CEGUI::EventArgs& arg )
 {
     // get selection
     CEGUI::ListboxItem* p_sel = _p_listbox->getFirstSelectedItem();
+    if ( !p_sel )
+    {
+        if ( _p_lastListSelection )
+        {
+            _p_lastListSelection->setSelected( true );
+            _currentSelection = _p_lastListSelection->getText().c_str();
+            setPreviewPic( _p_lastListSelection );
+            return true;
+        }
+        else
+            return true;
+    }
+
+    _p_lastListSelection = p_sel;
+    _currentSelection = p_sel->getText().c_str();
     setPreviewPic( p_sel );
 
     return true;

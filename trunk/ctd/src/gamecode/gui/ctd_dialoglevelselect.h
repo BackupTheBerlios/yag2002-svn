@@ -88,6 +88,8 @@ class DialogLevelSelect
 
         CEGUI::StaticImage*                         _p_image;
 
+        CEGUI::ListboxItem*                         _p_lastListSelection;
+
         //! Lookup for available level file names and their preview pics
         std::map< std::string, CEGUI::Image* >      _levelFiles;
 

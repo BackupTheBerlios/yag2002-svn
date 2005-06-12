@@ -82,9 +82,11 @@ class DialogPlayerConfig
 
         CEGUI::Listbox*                             _p_listbox;
 
-        CEGUI::Editbox*                             _p_playerType;
+        CEGUI::Editbox*                             _p_playerName;
 
         CEGUI::StaticImage*                         _p_image;
+
+        CEGUI::ListboxItem*                         _p_lastListSelection;
 
         //! Lookup for available player types and their preview pics
         std::map< std::string, CEGUI::Image* >      _players;

@@ -46,6 +46,7 @@ _p_clickSound( NULL ),
 _p_levelSelectDialog( NULL ),
 _p_listbox( NULL ),
 _p_image( NULL ),
+_p_lastListSelection( NULL ),
 _p_menuEntity( p_menuEntity )
 {
 }
@@ -56,7 +57,7 @@ DialogLevelSelect::~DialogLevelSelect()
     std::map< std::string, CEGUI::Image* >::iterator p_beg = _levelFiles.begin(), p_end = _levelFiles.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
-        CEGUI::ImagesetManager::getSingleton().destroyImageset( p_beg->first + ".tga" );
+        CEGUI::ImagesetManager::getSingleton().destroyImageset( p_beg->first );
     }
 
     if ( _p_levelSelectDialog )
@@ -106,7 +107,14 @@ void DialogLevelSelect::changeSearchDirectory( const string& dir )
     std::vector< string > files;
     getDirectoryListing( files, searchdir, "lvl" );
 
+    // free up existing preview images
+    std::map< std::string, CEGUI::Image* >::iterator p_beg = _levelFiles.begin(), p_end = _levelFiles.end();
+    for ( ; p_beg != p_end; p_beg++ )
+    {
+        CEGUI::ImagesetManager::getSingleton().destroyImageset( p_beg->first );
+    }
     _levelFiles.clear();
+
     // setup the preview pics for StaticImage field
     if ( files.size() > 0 )
     {
@@ -174,24 +182,13 @@ void DialogLevelSelect::setupControls()
         _p_listbox->getListboxItemFromIndex( 0 )->setSelected( true );
         // set preview image
         setPreviewPic( _p_listbox->getListboxItemFromIndex( 0 ) );
+        _currentSelection = _p_listbox->getListboxItemFromIndex( 0 )->getText().c_str();
+        _p_lastListSelection = _p_listbox->getListboxItemFromIndex( 0 );
     }
 }
 
 void DialogLevelSelect::setPreviewPic( CEGUI::ListboxItem* p_item )
 {
-    // NULL means deselection of all, no list elements selected anymore
-    if ( !p_item )
-    {
-        _p_image->setImage( NULL );
-        _currentSelection = "";
-        return;
-    }
-    _currentSelection = p_item->getText().c_str();
-
-    // play click sound
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
-
     string* p_texname = static_cast< string* >( p_item->getUserData() );
     CEGUI::Image*  p_image = _levelFiles[ *p_texname ];
     if ( !p_image )
@@ -242,7 +239,18 @@ bool DialogLevelSelect::onListItemSelChanged( const CEGUI::EventArgs& arg )
 {
     // get selection
     CEGUI::ListboxItem* p_sel = _p_listbox->getFirstSelectedItem();
+    if ( !p_sel )
+    {
+        _p_lastListSelection->setSelected( true );
+        p_sel = _p_lastListSelection;
+    }
+    else
+    {
+        _p_lastListSelection = p_sel;
+    }
+
     setPreviewPic( p_sel );
+    _currentSelection = p_sel->getText().c_str();
 
     return true;
 }
