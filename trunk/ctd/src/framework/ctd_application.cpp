@@ -187,17 +187,35 @@ bool Application::initialize( int argc, char **argv )
     _p_viewer->setUpViewer( opt );
     //----------
 
-    // set fullscreen / windowed mode
-    Producer::Camera *p_cam = _p_viewer->getCamera( 0 );
-    Producer::RenderSurface* p_rs = p_cam->getRenderSurface();
-    p_rs->setWindowRectangle( 100, 100, _screenWidth, _screenHeight );
-    unsigned int colorbits = 24;
-    Configuration::get()->getSettingValue( CTD_GS_COLORBITS, colorbits );
-    p_rs->addPixelAttribute( Producer::RenderSurface::DepthSize, colorbits );
-    Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN, _fullScreen );
-    p_rs->fullScreen( _fullScreen );
-    p_rs->useCursor( false ); //hide cursor
+    // setup render surface 
+    {
+        Producer::Camera *p_cam = _p_viewer->getCamera( 0 );
+        Producer::RenderSurface* p_rs = p_cam->getRenderSurface();
+        unsigned int width = 0, height = 0;
+        p_rs->getScreenSize( width, height );
+        int posx = int( ( width - _screenWidth ) * 0.5f );
+        int posy = int( ( height - _screenHeight ) * 0.5f );
 
+        // auto-correct a app window size which is greater than the screen size
+        if ( width < _screenWidth )
+        {
+            log << Log::LogLevel( Log::L_WARNING ) << " window width is greater than screen width, adapted to: " << width << endl;
+            _screenWidth = width;
+        }
+        if ( height < _screenHeight )
+        {
+            log << Log::LogLevel( Log::L_WARNING ) << " window height is greater than screen height, adapted to: " << height << endl;
+            _screenHeight = height;
+        }
+
+        p_rs->setWindowRectangle( posx, posy, _screenWidth, _screenHeight );
+        unsigned int colorbits = 24;
+        Configuration::get()->getSettingValue( CTD_GS_COLORBITS, colorbits );
+        p_rs->addPixelAttribute( Producer::RenderSurface::DepthSize, colorbits );
+        Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN, _fullScreen );
+        p_rs->fullScreen( _fullScreen );
+        p_rs->useCursor( false ); //hide cursor
+    }
     // get details on keyboard and mouse bindings used by the viewer.
     _p_viewer->getUsage( *arguments.getApplicationUsage() );
 
