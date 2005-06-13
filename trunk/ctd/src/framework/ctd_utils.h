@@ -54,6 +54,11 @@ void getDirectoryListing( std::vector< std::string >& listing, const std::string
 //! Returns a sorted string list with possible display settings above given colorbits filter value (format: WidthxHeight@ColorBits)
 void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned int colorbitsfilter = 0 );
 
+//! Spawn an appication given its executable file name and its parameters in param ( white space separated )
+#ifdef WIN32
+HANDLE spawnApplication( const std::string& cmd, const std::string& params );
+#endif
+
 //! A generic input handler class with automatic adding and removing to / from viewer's event hanlder list
 struct NullType {};
 template< class T = NullType >

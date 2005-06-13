@@ -31,6 +31,10 @@
 #include <ctd_base.h>
 #include "ctd_utils.h"
 
+#ifdef WIN32
+ #include <shellapi.h>
+#endif
+
 using namespace std;
 
 namespace CTD
@@ -183,5 +187,24 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
     }
 
 }
+
+#ifdef WIN32
+HANDLE spawnApplication( const std::string& cmd, const std::string& params )
+{
+    HANDLE hProc = NULL;
+    SHELLEXECUTEINFO shellInfo;
+    ::ZeroMemory( &shellInfo, sizeof( shellInfo ) );
+    shellInfo.cbSize = sizeof( shellInfo );
+    shellInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+    shellInfo.lpFile = cmd.c_str();
+    shellInfo.lpParameters = params.c_str();
+    shellInfo.nShow = SW_SHOWMINIMIZED;
+    if( ::ShellExecuteEx( &shellInfo ) )
+    { 
+        hProc = shellInfo.hProcess;
+    }
+    return hProc;
+}
+#endif
 
 } // namespace CTD
