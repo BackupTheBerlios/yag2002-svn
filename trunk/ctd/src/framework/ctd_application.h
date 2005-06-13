@@ -62,7 +62,10 @@ class Application : public Singleton< Application >
         virtual void                                shutdown();
 
         //! Retrieve the media path root where the multimedia content resides
-        const std::string&                          getMediaPath();
+        inline const std::string&                   getMediaPath();
+
+        //! Retrieve the full path of application binary
+        inline const std::string&                   getFullBinPath();
 
         //! Get osgProducer's viewer instance for this application
         inline osgProducer::Viewer*                 getViewer();
@@ -111,6 +114,8 @@ class Application : public Singleton< Application >
 
         std::string                                 _mediaPath;
 
+        std::string                                 _fulBinaryPath;
+
         float                                       _mouseSensivity;
 
     friend class Singleton< Application >;
@@ -124,6 +129,11 @@ inline osgProducer::Viewer* Application::getViewer()
 inline const std::string& Application::getMediaPath()
 {
     return _mediaPath;
+}
+
+inline const std::string& Application::getFullBinPath()
+{
+    return _fulBinaryPath;
 }
 
 inline void Application::setSceneRootNode( osg::Group* p_root )

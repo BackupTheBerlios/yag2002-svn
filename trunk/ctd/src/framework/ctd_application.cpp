@@ -46,6 +46,10 @@ using namespace std;
 using namespace CTD; 
 using namespace osg; 
 
+// log file names
+#define LOG_FILE_NAME            "vrc.log"
+#define LOG_FILE_NAME_SERVER     "vrc-server.log"
+
 // media path relative to inst dir
 #define CTD_MEDIA_PATH      "/media/"
 // default level
@@ -72,6 +76,9 @@ Application::~Application()
 
 void Application::shutdown()
 {
+    log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "shutting down, time: " << CTD::getTimeStamp() << endl;
+
     NetworkDevice::get()->shutdown();
     LevelManager::get()->shutdown();
     Configuration::get()->shutdown();
@@ -80,14 +87,37 @@ void Application::shutdown()
     destroy();
 }
 
+#ifdef WIN32
+// console handler for catching Ctrl+C events on WIN32 platform
+BOOL WINAPI consoleHandler( DWORD ctrlType )
+{
+    switch ( ctrlType )
+    {
+        case CTRL_CLOSE_EVENT:
+        case CTRL_C_EVENT:
+            Application::get()->stop();
+            break;
+
+        default:
+            ;
+    }
+    return TRUE;
+}
+#endif
+
 bool Application::initialize( int argc, char **argv )
 {
+    // set console handler in order to catch Ctrl+C and close events
+#ifdef WIN32
+    SetConsoleCtrlHandler( consoleHandler, true );
+#endif
+
     // set game state
     _p_gameState->setState( GameState::Initializing );
 
     string arg_levelname;
     // use an ArgumentParser object to manage the program arguments.
-    osg::ArgumentParser arguments(&argc,argv);
+    osg::ArgumentParser arguments( &argc,argv );
     ArgumentParser::Parameter levelparam( arg_levelname );
     arguments.read( "-level", arg_levelname ); // read the level file if one given
 
@@ -129,7 +159,7 @@ bool Application::initialize( int argc, char **argv )
         arguments.writeErrorMessages( cout );
     }
 
-    // set the media path as first step, other modules need the variable _mediaPath
+    // set the media path as first step, other modules need it for loading resources etc.
     //-------------------
     _mediaPath = arguments.getApplicationName();
     //  clean path
@@ -140,6 +170,8 @@ bool Application::initialize( int argc, char **argv )
     _mediaPath = tmp;
     _mediaPath += CTD_MEDIA_PATH;
     //-------------------
+    // set the ful binary path of application
+    _fulBinaryPath = arguments.getApplicationName();
 
     // load the settings
     //-------------------
@@ -151,10 +183,14 @@ bool Application::initialize( int argc, char **argv )
 
     // setup log system
     //-----------------
-    //! TODO: set the loglevels basing on config file
-    log.addSink( "file", getMediaPath() + "vrc.log", Log::L_ERROR );
+    //! TODO: set the loglevel basing on config file
+    if ( GameState::get()->getMode() != GameState::Server )
+        log.addSink( "file", getMediaPath() + std::string( LOG_FILE_NAME ), Log::L_ERROR );
+    else
+        log.addSink( "file", getMediaPath() + std::string( LOG_FILE_NAME_SERVER ), Log::L_ERROR );
+
     log.addSink( "stdout", cout, Log::L_ERROR );
- 
+
     log.enableSeverityLevelPrinting( false );
     log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------" << endl;
     log << Log::LogLevel( Log::L_INFO ) << "Virtual Reality Chat (VRC)"              << endl;
@@ -191,24 +227,34 @@ bool Application::initialize( int argc, char **argv )
     {
         Producer::Camera *p_cam = _p_viewer->getCamera( 0 );
         Producer::RenderSurface* p_rs = p_cam->getRenderSurface();
+
         unsigned int width = 0, height = 0;
-        p_rs->getScreenSize( width, height );
-        int posx = int( ( width - _screenWidth ) * 0.5f );
-        int posy = int( ( height - _screenHeight ) * 0.5f );
-
-        // auto-correct a app window size which is greater than the screen size
-        if ( width < _screenWidth )
+        if ( GameState::get()->getMode() != GameState::Server )
         {
-            log << Log::LogLevel( Log::L_WARNING ) << " window width is greater than screen width, adapted to: " << width << endl;
-            _screenWidth = width;
+            p_rs->getScreenSize( width, height );
+            int posx = int( ( width - _screenWidth ) * 0.5f );
+            int posy = int( ( height - _screenHeight ) * 0.5f );
+
+            // auto-correct a app window size which is greater than the screen size
+            if ( width < _screenWidth )
+            {
+                log << Log::LogLevel( Log::L_WARNING ) << " window width is greater than screen width, adapted to: " << width << endl;
+                _screenWidth = width;
+            }
+            if ( height < _screenHeight )
+            {
+                log << Log::LogLevel( Log::L_WARNING ) << " window height is greater than screen height, adapted to: " << height << endl;
+                _screenHeight = height;
+            }
+
+            p_rs->setWindowRectangle( posx, posy, _screenWidth, _screenHeight );
         }
-        if ( height < _screenHeight )
+        else
         {
-            log << Log::LogLevel( Log::L_WARNING ) << " window height is greater than screen height, adapted to: " << height << endl;
-            _screenHeight = height;
+            // the server should better have a null-device as render surface! does osg have something like a null-device?
+            p_rs->setWindowRectangle( 0, 0, 0, 0 );
         }
 
-        p_rs->setWindowRectangle( posx, posy, _screenWidth, _screenHeight );
         unsigned int colorbits = 24;
         Configuration::get()->getSettingValue( CTD_GS_COLORBITS, colorbits );
         p_rs->addPixelAttribute( Producer::RenderSurface::DepthSize, colorbits );
@@ -241,6 +287,8 @@ bool Application::initialize( int argc, char **argv )
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( CTD_LEVEL_SERVER_DIR + arg_levelname );
         if ( !sceneroot.valid() )
             return false;
+        // complete level loading
+        LevelManager::get()->finalizeLoading();
 
         string servername;
         Configuration::get()->getSettingValue( CTD_GS_SERVER_NAME, servername );
@@ -271,6 +319,8 @@ bool Application::initialize( int argc, char **argv )
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( levelname );
         if ( !sceneroot.valid() )
             return false;
+        // complete level loading
+        LevelManager::get()->finalizeLoading();
 
         // if we directly start a client with cmd line option then we must send a leave-menu notification to entities
         //  as many entities do special steps when leaving the menu
@@ -287,6 +337,8 @@ bool Application::initialize( int argc, char **argv )
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( defaultlevel );
         if ( !sceneroot.valid() )
             return false;
+        // complete level loading
+        LevelManager::get()->finalizeLoading();
 
         // if we directly start a client with cmd line option then we must send a leave-menu notification to entities
         //  as many entities do special steps when leaving the menu
