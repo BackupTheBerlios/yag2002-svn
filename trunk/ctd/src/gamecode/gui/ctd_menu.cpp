@@ -37,6 +37,9 @@
 #include "../visuals/ctd_camera.h"
 #include "../visuals/ctd_skybox.h"
 
+// used for starting server process
+HANDLE _serverProcHandle = NULL;
+
 using namespace std;
 
 namespace CTD
@@ -514,11 +517,36 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
     unsigned int channel;
     Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
 
+    _p_menuWindow->disable();
+
+    // try to join
     if ( !NetworkDevice::get()->setupClient( url, channel, nodeinfo ) )
     {
         log << Log::LogLevel( Log::L_WARNING ) << "cannot setup client networking" << endl;
 
         MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "Cannot connect to server!", MessageBoxDialog::OK, true );
+        // create a call back for Ok button of messagebox
+        class MsgOkClick: public MessageBoxDialog::ClickCallback
+        {
+        public:
+
+                                    MsgOkClick( EnMenu* p_menu ) : _p_menu( p_menu ) {}
+
+            virtual                 ~MsgOkClick() {}
+
+            void                    onClicked( unsigned int btnId )
+                                    {
+                                        _p_menu->_p_menuWindow->enable();
+
+                                        // play click sound
+                                        if ( _p_menu->_clickSound.get() )
+                                            _p_menu->_clickSound->startPlaying();
+
+                                    }
+
+            EnMenu*                 _p_menu;
+        };    
+        p_msg->setClickCallback( new MsgOkClick( this ) );    
         p_msg->show();
 
         return true;
@@ -530,8 +558,6 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
 
     _menuState = BeginLoadingLevel;
 
-    _p_menuWindow->disable();
-
     return true;
 }
 
@@ -540,7 +566,6 @@ bool EnMenu::onClickedServer( const CEGUI::EventArgs& arg )
     if ( _clickSound.get() )
         _clickSound->startPlaying();
 
-//! TODO: start a server in background, don't change the game mode
     _levelSelectDialog->changeSearchDirectory( CTD_LEVEL_SERVER_DIR );
     _p_menuWindow->disable();
     _levelSelectDialog->show( true );
@@ -604,8 +629,17 @@ void EnMenu::updateEntity( float deltaTime )
         {
             // load a new level, don't keep physics and entities
             // note: the menu entity is persistent anyway, it handles the level switch itself!
-            LevelManager::get()->loadLevel( _queuedLevelFile, false, false );
+            LevelManager::get()->unloadLevel( true, true );
+            LevelManager::get()->loadLevel( _queuedLevelFile );
             _queuedLevelFile = ""; // reset the queue
+
+            // now load the player
+            string playerCfgFile = getPlayerConfig( GameState::get()->getMode() );
+            std::vector< BaseEntity* > entities;
+            LevelManager::get()->loadEntities( playerCfgFile );
+
+            // complete level loading
+            LevelManager::get()->finalizeLoading();
 
             // store level scene's static mesh for later switching
             _levelScene = LevelManager::get()->getStaticMesh();
@@ -667,6 +701,49 @@ void EnMenu::updateEntity( float deltaTime )
             assert( NULL && "invalid menu state!" );
 
     }
+}
+
+std::string EnMenu::getPlayerConfig( unsigned int mode )
+{
+    string playercfgdir;
+    string playercfgfile;
+    Configuration::get()->getSettingValue( CTD_GS_PLAYER_CONFIG_DIR, playercfgdir );
+    Configuration::get()->getSettingValue( CTD_GS_PLAYER_CONFIG, playercfgfile );
+    // assemble full path of player cfg file
+    string cfg = Application::get()->getMediaPath() + playercfgdir + "/" + playercfgfile;
+
+    // load player config
+    string profile( cfg );
+    Settings* p_settings = SettingsManager::get()->createProfile( profile, cfg );
+    if ( !p_settings )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "Menu: cannot find player settings: " << cfg << endl;
+        MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "Error loading player!", MessageBoxDialog::OK, true );
+        p_msg->show();
+        return "";
+    }
+
+    string key, value;
+    switch ( mode )
+    {
+        case GameState::Standalone:
+            key = "standaloneConfig";
+            break;
+
+        case GameState::Client:
+            key = "clientConfig";
+            break;
+
+        default:
+            assert( NULL && "unknown game mode for player configuration in Menu!" );
+    }
+
+    p_settings->registerSetting( key, value );
+    SettingsManager::get()->loadProfile( profile );
+    p_settings->getValue( key, value );
+    SettingsManager::get()->destroyProfile( profile );
+
+    return value;
 }
 
 void EnMenu::beginIntro()
@@ -788,6 +865,10 @@ void EnMenu::onLevelSelectCanceled()
 // called by DialogLevelSelect when a level has been selected by user
 void EnMenu::onLevelSelected( string levelfile, CEGUI::Image* p_img )
 {
+    // if we have already started a server then return without starting a new one
+    if ( _serverProcHandle )
+        return;
+
     if ( _levelSelectionState == ForStandalone ) 
     {
         // prepare the level loading; the actual loading is done in update method
@@ -801,7 +882,18 @@ void EnMenu::onLevelSelected( string levelfile, CEGUI::Image* p_img )
     }
     else if ( _levelSelectionState == ForServer ) 
     {
-        //! TODO:
+        // disable the start server button
+        _p_btnStartServer->disable();
+
+        // get the full binary path
+        string cmd = Application::get()->getFullBinPath();
+        string arg1( "-server" );
+        string arg2( "-level" );
+        string arg3( levelfile );
+
+        // use utility function to start the server
+        string args = arg1 + "  " + arg2 + "  " + arg3;
+        _serverProcHandle = spawnApplication( cmd, args );
     }
     else
     {
