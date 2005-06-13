@@ -40,22 +40,39 @@ class Application;
 class BaseEntity;
 
 //! Level manager used only by class Application
+/*!
+* In order to load a level proceed as follows:
+* --------------------------------------------
+*
+* // decide if you want to keep exsiting physics setup and entities
+* LevelManager::get()->unloadLevel( true, true );
+*
+* // load the level given its file name relative to media folder
+* LevelManager::get()->loadLevel( levelfile );
+*
+* // now load the player
+* std::vector< BaseEntity* > entities;
+* LevelManager::get()->loadEntities( playercfgfile, entities );
+*
+* // complete level loading, it will properly setup physics and loaded entities
+* LevelManager::get()->finalizeLoading();
+*/
 class LevelManager : public Singleton< LevelManager >
 {
     public:
 
         //! Load a level given its file name. Returns top most node in scenegraph.
-        /*!
-        * The 'keep' flags care about destroying entities and physics world of an already loaded level.
-        */
-        osg::ref_ptr< osg::Group >                  loadLevel( const std::string& levelName, bool keepPhysicsWorld = false, bool keepEntities = false );
+        osg::ref_ptr< osg::Group >                  loadLevel( const std::string& levelName );
 
         //! Load entities defined in specified file and put all created entities into given vector.
         /*!
         * Be aware that this method does not initialize the entities. instPostfix is appended to entities instance names in the case that the same file is loaded 
-        * several times, so the instance names can differ using a postfix on every loading.
+        * several times, so the instance names can differ using a postfix on every loading. If not NULL the new loaded entities are stored in p_entities.
         */
-        bool                                        loadEntities( const std::string& levelFile, std::vector< BaseEntity* >& entities, const std::string& instPostfix = "" );
+        bool                                        loadEntities( const std::string& levelFile, std::vector< BaseEntity* >* p_entities = NULL, const std::string& instPostfix = "" );
+
+        //! After loading usage of loadLevel and loadEntities this method must be called to finalize the loading process
+        void                                        finalizeLoading();
 
         //! Unload an already loaded level and free up allocated resources and entities (except persistent entities).
         bool                                        unloadLevel( bool clearPhysics = true, bool clearEntities = true );
@@ -112,6 +129,9 @@ class LevelManager : public Singleton< LevelManager >
 
         //! Internal flag showing that a level file contains a map entry
         bool                                        _levelHasMap;
+
+        //! A queue for all entities which have been loaded before calling filanlizeLoading
+        std::vector< BaseEntity* >                  _setupQueue;
 
     friend class Singleton< LevelManager >;
     friend class Application;

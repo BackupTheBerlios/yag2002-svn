@@ -136,7 +136,7 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
     return true;
 }
 
-osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile, bool keepPhysicsWorld, bool keepEntities )
+osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile )
 {
     log << Log::LogLevel( Log::L_INFO ) << "start loading level: " << levelFile << endl;
 
@@ -146,68 +146,17 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile, boo
         EntityManager::get()->sendNotification( ennotify );
     }
 
-    // delete existing entities?
-    if ( !keepEntities )
-        unloadLevel( false, true );
-
-    // init physics
-    if( _firstLoading )
-    {
-        assert( Physics::get()->initialize() );
-    }
-    else if ( !keepPhysicsWorld ) // reinit physics world?
-    {
-        unloadLevel( true, false );
-    }
-
     std::vector< BaseEntity* > entities; // list of all entities which are created during loading
-    if ( !loadEntities( levelFile, entities ) )
+    if ( !loadEntities( levelFile, &entities ) )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "error loading entities" << endl;
         return NULL;
     }
 
-    Application::get()->setSceneRootNode( _topGroup.get() );
-    Application::get()->getViewer()->setSceneData( _topGroup.get() );
-
-
-    // are we loading for first time?
-    if ( _firstLoading )
-    {
-        if ( _levelHasMap )
-            buildPhysicsStaticGeometry();
-
-        initializeFirstTime();
-    }
-    else
-    {
-        // if the existing static physics world is not to be kept and the new level has a map then rebuild physics
-        if ( !keepPhysicsWorld && _levelHasMap )
-            buildPhysicsStaticGeometry();
-    }
-
-    // init and post-init entities which has been created
-    setupEntities( entities );
-
-    // send the notification that the a new level has been loaded and initialized
-    // in this phase entites can register themselves for getting updates or notifications
-    // note: take care that after every level loading the entity update registration list is cleared,
-    //       so after every level loading the registration must be done again in entities' notification callback
-    if ( !_firstLoading )
-    {
-        EntityNotification ennotify( CTD_NOTIFY_NEW_LEVEL_INITIALIZED );
-        EntityManager::get()->sendNotification( ennotify );
-    }
-    else
-    {
-        // mark that we have done the first level loading
-        _firstLoading = false;
-    }
-
     return _topGroup;
 }
 
-bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntity* >& entities, const std::string& instPostfix )
+bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntity* >* p_entities, const std::string& instPostfix )
 {
     log << Log::LogLevel( Log::L_INFO ) << "loading entities ..." << endl;
     
@@ -241,8 +190,6 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
         log << Log::LogLevel( Log::L_ERROR ) << doc.ErrorDesc() << endl;
         return false;
     }
-
-    log << Log::LogLevel( Log::L_INFO ) << "initializing physics ..." << endl;
 
     // start evaluating the xml structure
     //---------------------------------//
@@ -369,8 +316,9 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
             log << Log::LogLevel( Log::L_ERROR ) << "*** could not find entity type ' " << entitytype << " ', skipping entity!" << endl;
             continue;
         }
-        // add to list in order to get it set up later
-        entities.push_back( p_entity );
+        // add to given list if it was desired
+        if ( p_entities )
+            p_entities->push_back( p_entity );
 
         log << Log::LogLevel( Log::L_DEBUG ) << "  entity created, type: '" << enttype << " '" << endl;
         // get instance name if one provided
@@ -409,6 +357,9 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
         // append the transformation node if the entity has one
         if ( p_entity->isTransformable() ) 
             _entityGroup->addChild( p_entity->getTransformationNode() );
+
+        // enqueue entitiy for later setup in finalizeLoading
+        _setupQueue.push_back( p_entity );
     }
 
     log << Log::LogLevel( Log::L_INFO ) << endl;
@@ -416,6 +367,44 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
     log << Log::LogLevel( Log::L_INFO ) << "entity loading completed" << endl;
 
     return true;
+}
+
+void LevelManager::finalizeLoading()
+{
+    Application::get()->setSceneRootNode( _topGroup.get() );
+    Application::get()->getViewer()->setSceneData( _topGroup.get() );
+
+    // are we loading for first time?
+    if ( _firstLoading )
+    {
+        assert( Physics::get()->initialize() );
+     
+        if ( _levelHasMap )
+            buildPhysicsStaticGeometry();
+
+        initializeFirstTime();
+    }
+    else
+    {
+        // build the physics static geometry on every finalizing
+        buildPhysicsStaticGeometry();
+    }
+
+    // init and post-init entities which have been created before
+    setupEntities( _setupQueue );
+    _setupQueue.clear();
+
+    // send the notification that the a new level has been loaded and initialized
+    if ( !_firstLoading )
+    {
+        EntityNotification ennotify( CTD_NOTIFY_NEW_LEVEL_INITIALIZED );
+        EntityManager::get()->sendNotification( ennotify );
+    }
+    else
+    {
+        // mark that we have done the first level loading
+        _firstLoading = false;
+    }
 }
 
 void LevelManager::setupEntities( vector< BaseEntity* >& entities )
@@ -459,7 +448,6 @@ void LevelManager::setupEntities( vector< BaseEntity* >& entities )
     log << Log::LogLevel( Log::L_INFO ) << "needed time for post-initialization: " << time4PostInit << " seconds" <<  endl;
     log << Log::LogLevel( Log::L_INFO ) << "total time for setting up: " << time4Init + time4PostInit << " seconds" <<  endl;
     log << Log::LogLevel( Log::L_INFO ) << "--------------------------------------------" << endl;
-    //--------------//
 }
 
 void LevelManager::initializeFirstTime()
