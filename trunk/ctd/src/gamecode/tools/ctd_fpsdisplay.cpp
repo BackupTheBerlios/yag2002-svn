@@ -102,6 +102,9 @@ void EnFPSDisplay::initialize()
 
 void EnFPSDisplay::updateEntity( float deltaTime )
 {
+    if ( !_enable )
+        return;
+
     _fpsTimer += deltaTime;
     if ( _fpsTimer > 1.0f )
     {
@@ -115,6 +118,23 @@ void EnFPSDisplay::updateEntity( float deltaTime )
     {
         _fps++;
     }
+}
+
+void EnFPSDisplay::enable( bool en )
+{
+    if ( _enable == en )
+        return;
+
+    if ( en )
+    {
+        GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
+    }
+    else
+    {
+        GuiManager::get()->getRootWindow()->removeChildWindow( _p_wnd );
+    }
+
+    _enable = en;
 }
 
 } // namespace CTD

@@ -69,7 +69,7 @@ class EnFPSDisplay :  public BaseEntity
         const bool                                  isPersistent() const { return true; }
 
         //! This entity needs no transformation
-        const bool                                  isTransformable() const { return true; }
+        const bool                                  isTransformable() const { return false; }
 
         float                                       _fpsTimer;
 
