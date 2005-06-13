@@ -391,6 +391,34 @@
 				<File
 					RelativePath="..\..\..\..\src\gamecode\tools\ctd_fpsdisplay.h">
 				</File>
+				<Filter
+					Name="console"
+					Filter="">
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_basecmd.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_basecmd.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdregistry.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdregistry.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdshowfps.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdshowfps.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_console.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_console.h">
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<File
