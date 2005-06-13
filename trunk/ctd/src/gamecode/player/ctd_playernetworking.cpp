@@ -68,9 +68,9 @@ _loadedPlayerEntity( NULL )
         // TODO: get the character config file over net!
         std::string playerconfig;
         if ( CTD::GameState::get()->getMode() == CTD::GameState::Server )
-            playerconfig = string( CTD_LEVEL_SERVER_DIR ) + "player-banana";
+            playerconfig = "player/banana.server";
         else if ( CTD::GameState::get()->getMode() == CTD::GameState::Client )
-            playerconfig = string( CTD_LEVEL_CLIENT_DIR ) + "player-banana" + "_remote";
+            playerconfig = "player/banana.client";
         else assert( NULL && "something weird is happening here! no mode except server or client is allowed to use networking." );
 
         CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "loading player configuration file: " << playerconfig << endl;            
@@ -79,7 +79,7 @@ _loadedPlayerEntity( NULL )
         postfix << "_" << postcnt;
         postcnt++;
         // we force creation of all entity types on server
-        if ( !CTD::LevelManager::get()->loadEntities( playerconfig, _loadedEntities, postfix.str() ) )
+        if ( !CTD::LevelManager::get()->loadEntities( playerconfig, &_loadedEntities, postfix.str() ) )
         {
             CTD::log << CTD::Log::LogLevel( CTD::Log::L_ERROR ) << "cannot find player configuration file: " << playerconfig << endl;            
             return;
