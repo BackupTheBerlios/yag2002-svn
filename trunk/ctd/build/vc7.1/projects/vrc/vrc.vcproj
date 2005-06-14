@@ -401,16 +401,40 @@
 						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_basecmd.h">
 					</File>
 					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdgetconfig.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdgetconfig.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdhelp.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdhelp.h">
+					</File>
+					<File
 						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdregistry.cpp">
 					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdregistry.h">
 					</File>
 					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdsetconfig.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdsetconfig.h">
+					</File>
+					<File
 						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdshowfps.cpp">
 					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdshowfps.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdversion.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdversion.h">
 					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_console.cpp">
