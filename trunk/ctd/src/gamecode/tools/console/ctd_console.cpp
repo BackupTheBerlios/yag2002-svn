@@ -216,15 +216,15 @@ void EnConsole::cmdHistory( bool prev )
         return;
 
     if ( prev )
-    {
-        if ( _cmdHistoryIndex > 0 )
-            _cmdHistoryIndex--;
-    }
+        _cmdHistoryIndex--;
     else
-    {
-        if ( _cmdHistoryIndex < ( _cmdHistory.size() - 1 ) )
-            _cmdHistoryIndex++;
-    }
+        _cmdHistoryIndex++;
+
+    // clamp
+    if ( int( _cmdHistoryIndex ) < 0 )
+        _cmdHistoryIndex = 0;
+    else if ( _cmdHistoryIndex > ( _cmdHistory.size() - 1 ) )
+        _cmdHistoryIndex = _cmdHistory.size() - 1;
 
     CEGUI::String text( _cmdHistory[ _cmdHistoryIndex ] );
     _p_inputWindow->setText( text );
@@ -279,11 +279,22 @@ void EnConsole::applyCmd( const std::string& cmd )
     // set carat position in order to trigger text scrolling after a new line has been added
     _p_outputWindow->setCaratIndex( text.length() - 1 );
 
-    // store the command in history
+    // store the command in history if it is not the exact same as before
     if ( cmd.length() )
     {
-        _cmdHistory.push_back( cmd );
-        _cmdHistoryIndex = _cmdHistory.size();
+        if ( !_cmdHistory.size() )
+        {
+            _cmdHistory.push_back( cmd );
+            _cmdHistoryIndex = _cmdHistory.size() - 1;
+        }
+        else
+        {
+            if ( _cmdHistory.back() != cmd )
+            {
+                _cmdHistory.push_back( cmd );
+                _cmdHistoryIndex = _cmdHistory.size() - 1;
+            }
+        }
     }
 }
 

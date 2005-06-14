@@ -36,12 +36,12 @@
 namespace CTD
 {
 // console command name
-#define CMD_NAME_GETCONFIG  "getconfiguration"
-#define CMD_GETCONFIG_USAGE  "get current game configuration\n" "use: getconfiguration"
+#define CMD_NAME_GETCONFIG  "get.configuration"
+#define CMD_GETCONFIG_USAGE  "get current game configuration\n" "use: get.configuration"
 
 class BaseConsoleCommand;
 
-//! Class for command 'getconfiguration'
+//! Class for command 'get.configuration'
 class CmdGetConfig : public BaseConsoleCommand
 {
     public:

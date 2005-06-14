@@ -36,12 +36,12 @@
 namespace CTD
 {
 // console command name
-#define CMD_NAME_SETCONFIG  "setconfiguration"
-#define CMD_SETCONFIG_USAGE  "set a single value in current game configuration\n" "use: setconfiguration < setting name > < value >"
+#define CMD_NAME_SETCONFIG  "set.configuration"
+#define CMD_SETCONFIG_USAGE  "set a single value in current game configuration\n" "use: set.configuration < setting name > < value >"
 
 class BaseConsoleCommand;
 
-//! Class for command 'setconfiguration'
+//! Class for command 'set.configuration'
 class CmdSetConfig : public BaseConsoleCommand
 {
     public:
