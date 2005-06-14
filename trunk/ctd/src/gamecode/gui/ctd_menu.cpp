@@ -154,13 +154,6 @@ _menuState( None ),
 _levelSelectionState( ForStandalone ),
 _levelLoaded( false )
 {
-    // this entity needs updates initially for getting the intro running
-    EntityManager::get()->registerUpdate( this, true );
-
-    // we register outself to get notifications. interesting one is the shutdown notification
-    //  as we have to trigger the destruction outself -- because of setAutoDelete( false )
-    EntityManager::get()->registerNotification( this, true );
-
     // register entity attributes
     _attributeManager.addAttribute( "menuConfig"                , _menuConfig               );
     _attributeManager.addAttribute( "settingsDialogConfig"      , _settingsDialogConfig     );
@@ -340,6 +333,13 @@ void EnMenu::initialize()
 
     // start intro
     beginIntro();
+
+    // this entity needs updates initially for getting the intro running
+    EntityManager::get()->registerUpdate( this, true );
+
+    // we register outself to get notifications. interesting one is the shutdown notification
+    //  as we have to trigger the destruction outself -- because of setAutoDelete( false )
+    EntityManager::get()->registerNotification( this, true );
 }
 
 void EnMenu::createMenuScene()

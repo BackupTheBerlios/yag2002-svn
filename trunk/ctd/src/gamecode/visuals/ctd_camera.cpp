@@ -117,9 +117,6 @@ _p_cameraHandler( NULL ),
 _pitch( 0 ),
 _yaw( 0 )
 {
-    EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
-    EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
-
     // register entity attributes
     _attributeManager.addAttribute( "position"          , _position         );
     _attributeManager.addAttribute( "rotation"          , _rotation         );
@@ -178,6 +175,9 @@ void EnCamera::initialize()
 
     // setup the event handler for handling 'frame' callbacks (for setting the view matrix)
     _p_cameraHandler = new CameraFrameHandler( this );
+
+    EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
+    EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 }
 
 void EnCamera::setEnable( bool enable )

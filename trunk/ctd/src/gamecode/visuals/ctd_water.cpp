@@ -159,9 +159,6 @@ _p_geom( NULL ),
 _refract( 1.01f ),
 _fresnel( 1.1f )
 {
-    EntityManager::get()->registerUpdate( this );               // register entity in order to get updated per simulation step
-    EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
-
     // register entity attributes
     _attributeManager.addAttribute( "sizeX"                 , _sizeX                 );
     _attributeManager.addAttribute( "sizeY"                 , _sizeY                 );
@@ -221,6 +218,9 @@ void EnWater::initialize()
     _stimulationPeriod = 1.0f / _stimulationRate;
     // calculate the liquid equation constants
     calcConstants( 0.03f );
+
+    EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
+    EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 }
 
 TextureCubeMap* EnWater::readCubeMap()

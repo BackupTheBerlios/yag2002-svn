@@ -54,9 +54,6 @@ _IdAnimJump( -1 ),
 _IdAnimLand( -1 ),
 _renderingEnabled( true )
 { 
-    // register entity in order to get updated per simulation step
-    EntityManager::get()->registerUpdate( this, true );
-
     // register attributes
     getAttributeManager().addAttribute( "animconfig"   , _animCfgFile );
     getAttributeManager().addAttribute( "position"     , _position    );
@@ -105,6 +102,9 @@ void EnPlayerAnimation::initialize()
     _animNode->addChild( _model.get() );
 
     log << Log::LogLevel( Log::L_INFO ) << "  initializing player animation instance completed" << endl;
+
+    // register entity in order to get updated per simulation step
+    EntityManager::get()->registerUpdate( this, true );
 }
 
 void EnPlayerAnimation::updateEntity( float deltaTime )

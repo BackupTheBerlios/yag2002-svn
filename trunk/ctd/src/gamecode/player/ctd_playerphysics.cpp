@@ -399,7 +399,6 @@ _linearDamping( 0.2f ),
 _gravity( Physics::get()->getWorldGravity() )
 { 
     EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications about physics building
-    EntityManager::get()->registerUpdate( this, true );         // register entity for getting updated
 
     // add entity attributes
     getAttributeManager().addAttribute( "dimensions"    , _dimensions    );
@@ -568,6 +567,9 @@ void EnPlayerPhysics::postInitialize()
     // set the matrix for both the rigid body and the entity
     NewtonBodySetMatrix ( _p_body, mat.ptr() );
     physicsSetTransform ( _p_body, mat.ptr() );
+
+    // register entity for getting updated
+    EntityManager::get()->registerUpdate( this, true );
 }
 
 void EnPlayerPhysics::updateEntity( float deltaTime )

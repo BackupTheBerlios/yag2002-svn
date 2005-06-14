@@ -50,9 +50,6 @@ _dimensions( Vec3f( 1.0f, 1.0f, 1.0f ) ),
 _p_body( NULL ),
 _p_world( Physics::get()->getWorld() )
 {
-    // register entity in order to get updated per simulation step
-    EntityManager::get()->registerUpdate( this ); 
-
     // register entity attributes
     // note: this must be done in constructor!
     _attributeManager.addAttribute( "meshFile"      , _meshFile             );
@@ -237,6 +234,9 @@ void EnPhysicsBox::postInitialize()
         _pp_sounds[ 3 ] = getSoundEntity( _soundEntities[ 3 ] );
     else
         log << Log::LogLevel( Log::L_WARNING ) << "* grass sound is not defined. it will be disabled " << endl;
+
+    // register entity in order to get updated per simulation step
+    EntityManager::get()->registerUpdate( this ); 
 }
 
 void EnPhysicsBox::updateEntity( float deltaTime )

@@ -51,9 +51,6 @@ _height( 1.0f ),
 _p_body( NULL ),
 _p_world( Physics::get()->getWorld() )
 {
-    // register entity in order to get updated per simulation step
-    EntityManager::get()->registerUpdate( this ); 
-
     // register entity attributes
     _attributeManager.addAttribute( "meshFile"      , _meshFile             );
     _attributeManager.addAttribute( "position"      , _position             );
@@ -245,6 +242,9 @@ void EnPhysicsCylinder::postInitialize()
         _pp_sounds[ 3 ] = getSoundEntity( _soundEntities[ 3 ] );
     else
         log << Log::LogLevel( Log::L_WARNING ) << "* grass sound is not defined. it will be disabled " << endl;
+
+    // register entity in order to get updated per simulation step
+    EntityManager::get()->registerUpdate( this ); 
 }
 
 void EnPhysicsCylinder::updateEntity( float deltaTime )
