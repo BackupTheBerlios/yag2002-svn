@@ -47,5 +47,4 @@
 // main header of framework itself
 #include <ctd_framework.h>
 
-
 #endif // _CTD_MAIN_H_
