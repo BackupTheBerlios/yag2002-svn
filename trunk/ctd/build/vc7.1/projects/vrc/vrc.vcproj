@@ -413,6 +413,12 @@
 						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdhelp.h">
 					</File>
 					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdlistentity.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdlistentity.h">
+					</File>
+					<File
 						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdregistry.cpp">
 					</File>
 					<File
