@@ -72,6 +72,11 @@ inline bool Settings::setValue( const std::string &token, const TypeT& value )
     ( static_cast< Setting< TypeT >* >( p_setting ) )->_value = value;
     return true;
 }
+        
+inline const std::vector< Settings::SettingBase* >& Settings::getAllSettingStorages()
+{
+    return _settings;
+}
 
 inline Settings::SettingBase* Settings::findSetting( const std::string& token )
 {

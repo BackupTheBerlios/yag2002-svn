@@ -80,38 +80,7 @@ class SettingsManager : public Singleton< SettingsManager >
 //! Class for managing game settings
 class Settings
 {
-
     public:
-
-        //! Register one single setting
-        template< typename TypeT >
-        bool                                    registerSetting( const std::string& token, const TypeT& value );
-
-        //! Get token value
-        template< class TypeT >
-        bool                                    getValue( const std::string& token, TypeT& value );
-
-        //! Set token value
-        template< class TypeT >
-        bool                                    setValue( const std::string& token, const TypeT& value );
-
-    protected:
-
-                                                Settings();
-
-        virtual                                 ~Settings();
-
-        Settings&                               operator = ( const Settings& );
-
-
-        //! Load settings from given file. If filename is empty the preset file name is used.
-        bool                                    load( const std::string& filename = "" );
-
-        //! Store settings. If filename is empty the already loaded file is used for storing.
-        bool                                    store( const std::string& filename = "" );
-
-        //! Set file name associated with this settings instance
-        void                                    setFileName( const std::string& filename );
 
         //! Base class for all types of settings
         class SettingBase
@@ -169,6 +138,41 @@ class Settings
 
         };
 
+    public:
+
+        //! Register one single setting
+        template< typename TypeT >
+        bool                                    registerSetting( const std::string& token, const TypeT& value );
+
+        //! Get token value
+        template< class TypeT >
+        bool                                    getValue( const std::string& token, TypeT& value );
+
+        //! Set token value
+        template< class TypeT >
+        bool                                    setValue( const std::string& token, const TypeT& value );
+
+        //! Get all storage objects for settings
+        inline const std::vector< Settings::SettingBase* >& getAllSettingStorages();
+
+    protected:
+
+                                                Settings();
+
+        virtual                                 ~Settings();
+
+        Settings&                               operator = ( const Settings& );
+
+
+        //! Load settings from given file. If filename is empty the preset file name is used.
+        bool                                    load( const std::string& filename = "" );
+
+        //! Store settings. If filename is empty the already loaded file is used for storing.
+        bool                                    store( const std::string& filename = "" );
+
+        //! Set file name associated with this settings instance
+        void                                    setFileName( const std::string& filename );
+
         //! Find the setting with given name in settings list 
         SettingBase*                            findSetting( const std::string& token );
 
@@ -208,7 +212,7 @@ class Settings
         //! Helper method for reading given setting and its value of type Vector3d
         bool                                    read( const std::string& token, osg::Vec3f& value );
 
-        //! List of game settings
+        //! List of settings
         std::vector< SettingBase* >             _settings;
 
         //! File buffer
