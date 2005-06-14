@@ -50,6 +50,7 @@ class ConsoleIH : public GenericInputHandler< EnConsole >
                                              _toggleEnable( false )
                                             {
                                                 _retCode = KeyMap::get()->getKeyCode( "Return" );
+                                                _autoCompleteCode = KeyMap::get()->getKeyCode( "Tab" );
                                             }
                                 
         virtual                             ~ConsoleIH() {}
@@ -68,6 +69,18 @@ class ConsoleIH : public GenericInputHandler< EnConsole >
                                                     {
                                                         _p_userObject->applyCmd( _p_userObject->_p_inputWindow->getText().c_str() );
                                                     }
+                                                    else if ( ea.getKey() == _autoCompleteCode )
+                                                    {
+                                                        _p_userObject->autoCompleteCmd( _p_userObject->_p_inputWindow->getText().c_str() );
+                                                    }
+                                                    else if ( ea.getKey() == osgGA::GUIEventAdapter::KEY_Up )
+                                                    {
+                                                        _p_userObject->cmdHistory( true );
+                                                    }
+                                                    else if ( ea.getKey() == osgGA::GUIEventAdapter::KEY_Down )
+                                                    {
+                                                        _p_userObject->cmdHistory( false );
+                                                    }
                                                 }
 
                                                 return false;
@@ -82,6 +95,8 @@ class ConsoleIH : public GenericInputHandler< EnConsole >
 
         unsigned int                        _retCode;
         
+        unsigned int                        _autoCompleteCode;
+
         bool                                _toggleEnable;
 };
 
@@ -93,7 +108,8 @@ _enable( false ),
 _p_wnd( NULL ),
 _p_inputWindow( NULL ),
 _p_outputWindow( NULL ),
-_p_inputHandler( NULL )
+_p_inputHandler( NULL ),
+_cmdHistoryIndex( 0 )
 {
     // register entity in order to get updated per simulation step
     EntityManager::get()->registerUpdate( this, true );
@@ -194,16 +210,81 @@ void EnConsole::enable( bool en )
     _enable = en;
 }
 
+void EnConsole::cmdHistory( bool prev )
+{
+    if ( !_cmdHistory.size() )
+        return;
+
+    if ( prev )
+    {
+        if ( _cmdHistoryIndex > 0 )
+            _cmdHistoryIndex--;
+    }
+    else
+    {
+        if ( _cmdHistoryIndex < ( _cmdHistory.size() - 1 ) )
+            _cmdHistoryIndex++;
+    }
+
+    CEGUI::String text( _cmdHistory[ _cmdHistoryIndex ] );
+    _p_inputWindow->setText( text );
+    _p_inputWindow->setCaratIndex( text.length() );
+}
+
+void EnConsole::autoCompleteCmd( const std::string& cmd )
+{
+    CEGUI::String text;
+
+    // get matching candidates
+    std::vector< std::string > candidates;
+    unsigned int matchcnt = ConsoleCommandRegistry::get()->autoCompleteCmd( cmd, candidates );
+
+    if ( !matchcnt ) // we have no match and no candidates
+    {
+        text = _p_outputWindow->getText();
+        text += "> type 'help' in order to get a complete list of possible commands.\n";
+        _p_outputWindow->setText( text );
+        _p_outputWindow->setCaratIndex( text.length() );
+        return;
+    }
+
+    std::vector< std::string >::iterator p_beg = candidates.begin(), p_end = candidates.end();
+    if ( matchcnt > 1 ) // we have several candidates
+    {
+        text = _p_outputWindow->getText();
+        text += "> possible commands: ";
+        for ( ; p_beg != p_end; p_beg++ )
+        {
+            text += ( *p_beg ) + "  ";
+        }
+        text += "\n";
+        _p_outputWindow->setText( text );
+    }
+    else // we have one single match
+    {
+        text = *p_beg;
+        _p_inputWindow->setText( text );
+        _p_inputWindow->setCaratIndex( text.length() );
+    }
+}
+
 void EnConsole::applyCmd( const std::string& cmd )
 {
     CEGUI::String text = _p_outputWindow->getText();
-    text += cmd + "\n";
+    text += "> " + cmd + "\n";
     // dispatch the command
     text += dispatchCmdLine( cmd ) + "\n";
     _p_outputWindow->setText( text );
     _p_inputWindow->setText( "" );
     // set carat position in order to trigger text scrolling after a new line has been added
     _p_outputWindow->setCaratIndex( text.length() - 1 );
+
+    // store the command in history
+    if ( cmd.length() )
+    {
+        _cmdHistory.push_back( cmd );
+        _cmdHistoryIndex = _cmdHistory.size();
+    }
 }
 
 const std::string& EnConsole::dispatchCmdLine( const std::string& cmdline )
@@ -248,11 +329,50 @@ const std::string& EnConsole::executeCmd( const std::string& cmd )
         result = "* cannot find command '" + command + "'";
         return result;
     }
+
+    // format the arguments into a list
+    std::vector< std::string > args;
+    parseArguments( arguments, args );
     // execute command
-    //result = "executing command(" + command + "), args(" + arguments + ") ...";
-    result = p_cmd->execute( arguments );
+    result = p_cmd->execute( args );
 
     return result;
+}
+
+void EnConsole::parseArguments( const std::string& cmdline, std::vector< std::string >& args )
+{
+    // arguments are white space separated, except they are placed in "" like: "my server name"
+    size_t strsize = cmdline.size();
+    size_t marker = 0;
+    string curstr;
+    for ( size_t cnt = 0; cnt <= strsize; cnt++ ) // merge string areas noted by ""
+    {
+        if ( ( marker == 0 ) && ( cmdline[ cnt ] == '\"' ) )
+        {
+             marker = cnt;
+        }
+        else if ( cmdline[ cnt ] == '\"' )
+        {
+            string merge = cmdline.substr( marker + 1, cnt - marker - 1 ); // cut the "" from string
+            args.push_back( merge );
+            marker = 0;
+        }
+        else
+        {
+            if ( marker == 0 ) 
+            {
+                if ( cmdline[ cnt ] == ' ' || cmdline.length() == cnt )
+                {
+                    args.push_back( curstr );
+                    curstr = "";
+                }
+                else
+                {
+                    curstr += cmdline[ cnt ];
+                }
+            }
+        }
+    }
 }
 
 void EnConsole::updateEntity( float deltaTime )

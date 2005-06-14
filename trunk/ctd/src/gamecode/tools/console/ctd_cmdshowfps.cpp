@@ -52,17 +52,26 @@ CmdShowFps::~CmdShowFps()
 {
 }
 
-const std::string& CmdShowFps::execute( const std::string& argmument )
+const std::string& CmdShowFps::execute( const std::vector< std::string >& argmuments )
 {
+    _cmdResult = "";
+
+    if ( !argmuments.size() )
+    {
+        _cmdResult = "* error executing command '" + string( CMD_NAME_SHOWFPS ) + "'\n ";
+        _cmdResult += getUsage();
+        return _cmdResult;
+    }
+
     bool enable = false;
-    if ( argmument == "true" )
+    if ( argmuments[ 0 ] == "true" )
         enable = true;
-    else if ( argmument == "false" )
+    else if ( argmuments[ 0 ] == "false" )
         enable = false;
     else 
     {
         _cmdResult = "* error executing command '" + string( CMD_NAME_SHOWFPS ) + "'\n ";
-        _cmdResult += _usage;
+        _cmdResult += getUsage();
         return _cmdResult;
     }
 
@@ -83,7 +92,6 @@ const std::string& CmdShowFps::execute( const std::string& argmument )
         }
     }
 
-    _cmdResult = "ok";
     return _cmdResult;
 }
 

@@ -52,11 +52,13 @@ class BaseConsoleCommand
         inline const std::string&                   getCmdName();
 
         //! Execute the command
-        virtual const std::string&                  execute( const std::string& argmuments ) = 0;
+        virtual const std::string&                  execute( const std::vector< std::string >& argmuments ) = 0;
 
     protected:
 
         inline void                                 setUsage( const std::string& usage );
+
+        inline const std::string&                   getUsage();
 
         std::string                                 _cmdName;
 
@@ -75,6 +77,11 @@ inline const std::string& BaseConsoleCommand::getCmdName()
 inline void BaseConsoleCommand::setUsage( const std::string& usage )
 {
     _usage = usage;
+}
+
+inline const std::string& BaseConsoleCommand::getUsage()
+{
+    return _usage;
 }
 
 } // namespace CTD

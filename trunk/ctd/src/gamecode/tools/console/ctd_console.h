@@ -57,6 +57,9 @@ class EnConsole :  public BaseEntity
         //! Apply given command
         void                                        applyCmd( const std::string& cmd );
 
+        //! Try to find a cmd match given the string
+        void                                        autoCompleteCmd( const std::string& cmd );
+
     protected:
 
         //! Enable / disable statistics rendering
@@ -67,6 +70,12 @@ class EnConsole :  public BaseEntity
 
         //! Execute one single command including its arguments and return its result as string
         const std::string&                          executeCmd( const std::string& cmd );
+
+        //! Extract the arguments from given cmdline and store them into 'args'.
+        void                                        parseArguments( const std::string& cmdline, std::vector< std::string >& args );
+
+        //! Restores an already used command from history. If prev is true then the history is stepped forward, otherwise it is stepped backward.
+        void                                        cmdHistory( bool prev );
 
         //! Override notification callback
         void                                        handleNotification( const EntityNotification& notify );
@@ -90,6 +99,10 @@ class EnConsole :  public BaseEntity
         bool                                        _enable;
 
         ConsoleIH*                                  _p_inputHandler;
+
+        std::vector< std::string >                  _cmdHistory;
+
+        unsigned int                                _cmdHistoryIndex;
 
     friend class ConsoleIH;
 };

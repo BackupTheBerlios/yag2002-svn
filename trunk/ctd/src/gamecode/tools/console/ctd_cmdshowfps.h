@@ -41,7 +41,7 @@ namespace CTD
 
 class BaseConsoleCommand;
 
-//! Base class for all console command classes
+//! Class for command 'showfps'
 class CmdShowFps : public BaseConsoleCommand
 {
     public:
@@ -49,7 +49,7 @@ class CmdShowFps : public BaseConsoleCommand
 
         virtual                                     ~CmdShowFps();
 
-        virtual const std::string&                  execute( const std::string& argmuments );
+        const std::string&                          execute( const std::vector< std::string >& argmuments );
 };
 
 

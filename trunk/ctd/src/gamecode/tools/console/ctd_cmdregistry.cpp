@@ -52,8 +52,11 @@ ConsoleCommandRegistry::~ConsoleCommandRegistry()
 
 bool ConsoleCommandRegistry::registerCmd( BaseConsoleCommand* p_cmd )
 {
-    if ( _cmdRegistry[ p_cmd->getCmdName() ] )
+    if ( _cmdRegistry.find( p_cmd->getCmdName() ) != _cmdRegistry.end() )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "ConsoleCommandRegistry: the command '" << p_cmd->getCmdName() << "' is already registered, ignoring it!" << endl;
         return false;
+    }
 
     _cmdRegistry[ p_cmd->getCmdName() ] = p_cmd;
 
@@ -62,7 +65,38 @@ bool ConsoleCommandRegistry::registerCmd( BaseConsoleCommand* p_cmd )
 
 BaseConsoleCommand* ConsoleCommandRegistry::getCmd( const std::string& cmdname )
 {
-    return _cmdRegistry[ cmdname ];
+    std::map< std::string, BaseConsoleCommand* >::iterator p_find = _cmdRegistry.find( cmdname );
+    BaseConsoleCommand* p_cmd = ( p_find != _cmdRegistry.end() ) ? p_find->second : NULL;
+    return p_cmd;
+}
+
+unsigned int ConsoleCommandRegistry::getAllCmds( std::vector< std::string >& commands )
+{
+    unsigned int cnt = 0;
+    std::map< std::string, BaseConsoleCommand* >::iterator p_beg = _cmdRegistry.begin(), p_end = _cmdRegistry.end();
+    for ( ; p_beg != p_end; p_beg++ )
+    {
+        commands.push_back( p_beg->first );
+        cnt++;
+    }
+
+    return cnt;
+}
+
+unsigned int ConsoleCommandRegistry::autoCompleteCmd( const std::string& text, std::vector< std::string >& candidates )
+{
+    unsigned int matchfound = 0;
+    std::map< std::string, BaseConsoleCommand* >::iterator p_beg = _cmdRegistry.begin(), p_end = _cmdRegistry.end();
+    for ( ; p_beg != p_end; p_beg++ )
+    {        
+        if ( p_beg->first.find( text ) == 0 )
+        {
+            candidates.push_back( p_beg->first );
+            matchfound++;
+        }
+    }
+
+    return matchfound;
 }
 
 } // namespace CTD
