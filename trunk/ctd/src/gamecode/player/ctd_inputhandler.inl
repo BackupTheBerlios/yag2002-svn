@@ -375,6 +375,10 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             // adjust pitch / yaw depending on mouse movement
             getPlayerImpl()->setCameraPitchYaw( mcoordY, -mcoordX );
         }
+
+        // reset pointer
+        //osgProducer::Viewer* p_viewer = Application::get()->getViewer();
+        //p_viewer->getKeyboardMouse()->positionPointer( 0, 0 );
     }
 
     return false; // let other handlers get all inputs handled here
