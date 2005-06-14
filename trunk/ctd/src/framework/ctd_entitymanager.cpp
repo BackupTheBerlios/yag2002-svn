@@ -164,7 +164,7 @@ bool EntityManager::registerFactory( BaseEntityFactory* p_entityFactory, bool re
 BaseEntityFactory* EntityManager::getEntityFactory( const string& type )
 {
     vector< BaseEntityFactory* >::iterator pp_entity = _entityFactories.begin(), pp_entityEnd = _entityFactories.end();
-    for(; pp_entity != pp_entityEnd; pp_entity++ )
+    for( ; pp_entity != pp_entityEnd; pp_entity++ )
     {
         if ( ( *pp_entity )->getType() == type )
             return *pp_entity;
@@ -173,6 +173,13 @@ BaseEntityFactory* EntityManager::getEntityFactory( const string& type )
     return NULL;
 }
  
+void EntityManager::getAllEntityFactories( std::vector< BaseEntityFactory* >& factories )
+{
+    vector< BaseEntityFactory* >::iterator pp_fac = _entityFactories.begin(), pp_facEnd = _entityFactories.end();
+    for( ; pp_fac != pp_facEnd; pp_fac++ )
+        factories.push_back( *pp_fac );
+}
+
 BaseEntity* EntityManager::createEntity( const string& type, const string& instanceName, bool addToPool )
 {
     BaseEntityFactory* p_type = getEntityFactory( type );
@@ -231,6 +238,13 @@ BaseEntity* EntityManager::findInstance( const string& instanceName )
     }
 
     return NULL;
+}
+
+void EntityManager::getAllEntities( std::vector< BaseEntity* >& entities )
+{
+    vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
+    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+        entities.push_back( *pp_entity );
 }
 
 bool EntityManager::registerUpdate( CTD::BaseEntity* p_entity, bool reg )
@@ -388,7 +402,7 @@ void EntityManager::removeFromEntityPool( BaseEntity* p_entity, bool del )
     } 
     else
     {
-        assert( NULL && "to be removed entity does not exist!" );
+        log << Log::LogLevel( Log::L_ERROR ) << "EntityManager::removeFromEntityPool: request for entity removal which does not exist!" << endl;
     }
 }
 

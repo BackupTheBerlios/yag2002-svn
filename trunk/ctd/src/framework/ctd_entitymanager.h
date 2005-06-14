@@ -61,7 +61,6 @@ class EntityManager : public Singleton< EntityManager >
 
         //! Register or deregister an entity for getting notifications.
         /*! Returns false if the given entity is already registered (or it was not previousely registered in case of deregistering).
-
         */
         bool                                        registerNotification( BaseEntity* p_entity, bool reg = true );
 
@@ -76,16 +75,19 @@ class EntityManager : public Singleton< EntityManager >
         */
         bool                                        registerFactory( BaseEntityFactory* p_entityName, bool reg = true );
 
+        //! Return an entity factory object given entity's type name. Use it as creator instance of desired entity factory.
+        /*! Returns NULL if entity type is not registered.
+        */
+        BaseEntityFactory*                          getEntityFactory( const std::string& type );
+
+        //! Retrieve all existing entity factories
+        void                                        getAllEntityFactories( std::vector< BaseEntityFactory* >& factories );
+
         //! Add the given entity to scene.
         /* \param p_entity                          Entity to add to scene
          * \param p_scenegrp                        Scene group into which the entity is attached. If it's NULL then the root group is used.
         */
         void                                        addToScene( BaseEntity* p_entity, osg::Group *p_scenegrp = NULL );
-
-        //! Return an entity factory object given entity's type name. Use it as creator instance of desired entity factory.
-        /*! Returns NULL if entity type is not registered.
-        */
-        BaseEntityFactory*                          getEntityFactory( const std::string& type );
 
         //! Create a new entity given its type and optional instance name.
         /*! If addToPool is true then the entity will be added to entity pool. Set this to false if you are
@@ -93,6 +95,9 @@ class EntityManager : public Singleton< EntityManager >
         *   Returns NULL if entity type does not exist.
         */
         BaseEntity*                                 createEntity( const std::string& type, const std::string& instanceName = "", bool addToPool = true );
+
+        //! Retrieve all existing entities
+        void                                        getAllEntities( std::vector< BaseEntity* >& entities );
 
         //! Delete given entitiy
         /*! \param  p_entity                        Entity to delete
