@@ -274,10 +274,10 @@
 					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicscylinder.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicsshpere.h">
+					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicssphere.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicssphere.cpp">
+					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicssphere.h">
 				</File>
 			</Filter>
 			<Filter
@@ -417,6 +417,24 @@
 					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdlistentity.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdloadentities.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdloadentities.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdloadfinalize.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdloadfinalize.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdloadlevel.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdloadlevel.h">
 					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdregistry.cpp">
