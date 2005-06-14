@@ -77,8 +77,8 @@ namespace CTD
 #define CTD_GS_KEY_MOVE_LEFT            "moveLeft"
 #define CTD_GS_KEY_MOVE_RIGHT           "moveRight"
 #define CTD_GS_KEY_JUMP                 "jump"
-#define CTD_GS_KEY_CAMERAMODE           "cameramode"
-#define CTD_GS_KEY_CHATMODE             "chatmode"
+#define CTD_GS_KEY_CAMERAMODE           "cameraMode"
+#define CTD_GS_KEY_CHATMODE             "chatMode"
 // mouse settings
 #define CTD_GS_MOUSESENS                "mouseSensitivity"
 #define CTD_GS_MAX_MOUSESENS            3.0f                /* maximal mouse sensitivity */
@@ -103,6 +103,9 @@ class Configuration : public Singleton< Configuration >
         template< class TypeT >
         inline bool                             setSettingValue( const std::string& name, const TypeT& value );
 
+        //! Get the settings object where all settings are stored.
+        inline const Settings*                  getAllSettings();
+
         //! Store the settings to file
         void                                    store();
 
@@ -111,9 +114,6 @@ class Configuration : public Singleton< Configuration >
                                                 Configuration();
 
         virtual                                 ~Configuration();
-
-        //! Update the gui system including drawing
-        void                                    update( float deltaTime );
         
         //! Shutdown the network device.
         void                                    shutdown();
@@ -180,6 +180,11 @@ template< typename TypeT >
 inline bool Configuration::setSettingValue( const std::string& name, const TypeT& value )
 {
     return _p_settings->setValue( name, value );
+}
+
+inline const Settings* Configuration::getAllSettings()
+{
+    return _p_settings;
 }
 
 } // namespace CTD
