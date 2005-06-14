@@ -44,7 +44,7 @@ CTD_IMPL_CONSOLE_CMD( CmdSetConfig );
 CmdSetConfig::CmdSetConfig() :
  BaseConsoleCommand( CMD_NAME_SETCONFIG )
 {
-    setUsage( CMD_SETCONFIG_USAGE );
+    setUsage( CMD_USAGE_SETCONFIG );
 }
 
 CmdSetConfig::~CmdSetConfig()
@@ -56,7 +56,7 @@ const std::string& CmdSetConfig::execute( const std::vector< std::string >& argm
     _cmdResult = "";
     if ( argmuments.size() < 2 )
     {
-        _cmdResult = CMD_SETCONFIG_USAGE;
+        _cmdResult = CMD_USAGE_SETCONFIG;
         _cmdResult += "\n";
         return _cmdResult;
     }

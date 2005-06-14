@@ -44,7 +44,7 @@ CTD_IMPL_CONSOLE_CMD( CmdListEntity );
 CmdListEntity::CmdListEntity() :
  BaseConsoleCommand( CMD_NAME_LISTENTITY )
 {
-    setUsage( CMD_LISTENTITY_USAGE );
+    setUsage( CMD_USAGE_LISTENTITY );
 }
 
 CmdListEntity::~CmdListEntity()

@@ -45,7 +45,7 @@ CTD_IMPL_CONSOLE_CMD( CmdHelp );
 CmdHelp::CmdHelp() :
  BaseConsoleCommand( CMD_NAME_HELP )
 {
-    setUsage( CMD_HELP_USAGE );
+    setUsage( CMD_USAGE_HELP );
 }
 
 CmdHelp::~CmdHelp()

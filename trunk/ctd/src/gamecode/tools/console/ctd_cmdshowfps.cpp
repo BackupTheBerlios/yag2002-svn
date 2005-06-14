@@ -45,7 +45,7 @@ CTD_IMPL_CONSOLE_CMD( CmdShowFps );
 CmdShowFps::CmdShowFps() :
  BaseConsoleCommand( CMD_NAME_SHOWFPS )
 {
-    setUsage( CMD_SHOWFPS_USAGE );
+    setUsage( CMD_USAGE_SHOWFPS );
 }
 
 CmdShowFps::~CmdShowFps()

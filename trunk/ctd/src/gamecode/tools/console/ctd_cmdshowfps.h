@@ -37,7 +37,7 @@ namespace CTD
 {
 // console command name
 #define CMD_NAME_SHOWFPS    "showfps"
-#define CMD_SHOWFPS_USAGE   "use: showfps <true / false>"
+#define CMD_USAGE_SHOWFPS   "use: showfps <true / false>"
 
 class BaseConsoleCommand;
 

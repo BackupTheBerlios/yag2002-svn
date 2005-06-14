@@ -374,8 +374,11 @@ void EnConsole::parseArguments( const std::string& cmdline, std::vector< std::st
             {
                 if ( cmdline[ cnt ] == ' ' || cmdline.length() == cnt )
                 {
-                    args.push_back( curstr );
-                    curstr = "";
+                    if ( curstr != "" )
+                    {
+                      args.push_back( curstr );
+                      curstr = "";
+                    }
                 }
                 else
                 {

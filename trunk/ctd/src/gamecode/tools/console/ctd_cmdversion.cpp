@@ -44,7 +44,7 @@ CTD_IMPL_CONSOLE_CMD( CmdVersion );
 CmdVersion::CmdVersion() :
  BaseConsoleCommand( CMD_NAME_VERSION )
 {
-    setUsage( CMD_VERSION_USAGE );
+    setUsage( CMD_USAGE_VERSION );
 }
 
 CmdVersion::~CmdVersion()

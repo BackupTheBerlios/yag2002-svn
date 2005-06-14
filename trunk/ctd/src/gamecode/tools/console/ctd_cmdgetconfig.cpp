@@ -44,7 +44,7 @@ CTD_IMPL_CONSOLE_CMD( CmdGetConfig );
 CmdGetConfig::CmdGetConfig() :
  BaseConsoleCommand( CMD_NAME_GETCONFIG )
 {
-    setUsage( CMD_GETCONFIG_USAGE );
+    setUsage( CMD_USAGE_GETCONFIG );
 }
 
 CmdGetConfig::~CmdGetConfig()
