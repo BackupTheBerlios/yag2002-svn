@@ -129,16 +129,14 @@ class EntityManager : public Singleton< EntityManager >
         //! Shutdown entity manager
         void                                        shutdown();
 
-    private:
-
-        //! Initialize all registered entities
-        void                                        initializeEntities();
-
-        //! Post-initialize all registered entities
-        void                                        postInitializeEntities();
+        //! Sets up given entities considering persistence etc.
+        void                                        setupEntities( std::vector< BaseEntity* >& entities );
 
         //! Update entity manager, call this in every game loop step
         void                                        update( float deltaTime  );
+
+    private:
+
 
         //! Update all registered active entities
         void                                        updateEntities( float deltaTime  );

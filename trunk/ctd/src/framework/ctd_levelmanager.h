@@ -103,9 +103,6 @@ class LevelManager : public Singleton< LevelManager >
         //! This method initializes other cores such as sound, gui, etc. (it is called during first level loading)
         void                                        initializeFirstTime();
 
-        //! Initialize and Post-Initialize given entities
-        void                                        setupEntities( std::vector< BaseEntity* >& entities );
-
         //! Build the physics's static collision geometry
         void                                        buildPhysicsStaticGeometry();
 

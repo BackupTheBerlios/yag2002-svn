@@ -406,44 +406,131 @@ void EntityManager::removeFromEntityPool( BaseEntity* p_entity, bool del )
     }
 }
 
-void EntityManager::initializeEntities()
+void EntityManager::setupEntities( vector< BaseEntity* >& entities )
 {
-    // set internal state
-    _internalState = InitializingEntities;
+    osg::Timer      timer;
+    osg::Timer_t    curTick         = 0;
+    osg::Timer_t    startTick       = 0;
+    float           time4Init       = 0;
+    float           time4PostInit   = 0;
 
-    vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
-    for(; pp_entity != pp_entityEnd; pp_entity++ )
+    log << Log::LogLevel( Log::L_INFO ) << "starting entity setup ..." << endl;
+
+    vector< BaseEntity* >::iterator pp_beg = entities.begin(), pp_end = entities.end();
+    BaseEntity* p_entity = NULL;
+    log << Log::LogLevel( Log::L_INFO ) << " initializing entities ..." << endl;
+    // setup entities
     {
-        log << Log::LogLevel( Log::L_DEBUG ) << " initializing entity '" << ( *pp_entity )->getInstanceName() << 
-            "', of type '" << ( *pp_entity )->getTypeName() << "'" << endl;
-        ( *pp_entity )->initialize();
+        // set internal state
+        _internalState = InitializingEntities;
+
+        startTick  = timer.tick();
+        // consider persistence and avoid re-initialization of persistent entities
+        for( ; pp_beg != pp_end; pp_beg++ )
+        {
+            p_entity = *pp_beg;
+            if ( p_entity->isPersistent() )
+            {
+                if ( !p_entity->isInitialized() )
+                {
+                    p_entity->initialize();
+                }
+            }
+            else
+            {
+                p_entity->setInitialized( true ); // there is no actual sense for setting the flag for non-persitent entities!
+                p_entity->initialize();
+            }
+        }
+        
+        curTick    = timer.tick();
+        time4Init  = timer.delta_s( startTick, curTick );
     }
 
-    // set internal state
-    _internalState = None;
-}
-
-void EntityManager::postInitializeEntities()
-{
-    // set internal state
-    _internalState = PostInitializingEntities;
-
-    vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
-    for(; pp_entity != pp_entityEnd; pp_entity++ )
+    pp_beg = entities.begin(); pp_end = entities.end();
+    log << Log::LogLevel( Log::L_INFO ) << " post-initializing entities ..." << endl;
     {
-        log << Log::LogLevel( Log::L_DEBUG ) << " post-initializing entity '" << ( *pp_entity )->getInstanceName() << 
-            "', of type '" << ( *pp_entity )->getTypeName() << "'" << endl;
-        ( *pp_entity )->postInitialize();
+        // set internal state
+        _internalState = PostInitializingEntities;
+
+        startTick  = timer.tick();
+        // consider persistence and avoid re-initialization of persistent entities
+        for( ; pp_beg != pp_end; pp_beg++ )
+        {
+            p_entity = *pp_beg;
+            if ( p_entity->isPersistent() )
+            {
+                if ( !p_entity->isInitialized() )
+                {
+                    p_entity->postInitialize();
+                    p_entity->setInitialized( true ); // now set the flag to avoid a new setup later
+                }
+            }
+            else
+            {
+                p_entity->setInitialized( true ); // there is no actual sense for setting the flag for non-persitent entities!
+                p_entity->postInitialize();
+            }
+        }
+        curTick        = timer.tick();
+        time4PostInit  = timer.delta_s( startTick, curTick );
+    }
+    {
+        // add new entities to pool if the request came in during initialization or post-initialization
+        vector< BaseEntity* >::iterator pp_addtopoolentity = _queueAddToPoolEntities.begin(), pp_addtopoolentitiyEnd = _queueAddToPoolEntities.end();
+        for ( ; pp_addtopoolentity != pp_addtopoolentitiyEnd; pp_addtopoolentity++ )
+            _entityPool.push_back( *pp_addtopoolentity );
+
+        // set internal state
+        _internalState = None;
     }
 
-    // add new entities to pool if the request came in during initialization or post-initialization
-    vector< BaseEntity* >::iterator pp_addtopoolentity = _queueAddToPoolEntities.begin(), pp_addtopoolentitiyEnd = _queueAddToPoolEntities.end();
-    for ( ; pp_addtopoolentity != pp_addtopoolentitiyEnd; pp_addtopoolentity++ )
-        _entityPool.push_back( *pp_addtopoolentity );
+    log << Log::LogLevel( Log::L_INFO ) << "--------------------------------------------" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "needed time for initialization: " << time4Init << " seconds" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "needed time for post-initialization: " << time4PostInit << " seconds" <<  endl;
+    log << Log::LogLevel( Log::L_INFO ) << "total time for setting up: " << time4Init + time4PostInit << " seconds" <<  endl;
+    log << Log::LogLevel( Log::L_INFO ) << "--------------------------------------------" << endl;
 
-    // set internal state
-    _internalState = None;
 }
+//
+//void EntityManager::initializeEntities()
+//{
+//    // set internal state
+//    _internalState = InitializingEntities;
+//
+//    vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
+//    for(; pp_entity != pp_entityEnd; pp_entity++ )
+//    {
+//        log << Log::LogLevel( Log::L_DEBUG ) << " initializing entity '" << ( *pp_entity )->getInstanceName() << 
+//            "', of type '" << ( *pp_entity )->getTypeName() << "'" << endl;
+//        ( *pp_entity )->initialize();
+//    }
+//
+//    // set internal state
+//    _internalState = None;
+//}
+//
+//void EntityManager::postInitializeEntities()
+//{
+//    // set internal state
+//    _internalState = PostInitializingEntities;
+//
+//    vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
+//    for(; pp_entity != pp_entityEnd; pp_entity++ )
+//    {
+//        log << Log::LogLevel( Log::L_DEBUG ) << " post-initializing entity '" << ( *pp_entity )->getInstanceName() << 
+//            "', of type '" << ( *pp_entity )->getTypeName() << "'" << endl;
+//        ( *pp_entity )->postInitialize();
+//    }
+//
+//    // add new entities to pool if the request came in during initialization or post-initialization
+//    vector< BaseEntity* >::iterator pp_addtopoolentity = _queueAddToPoolEntities.begin(), pp_addtopoolentitiyEnd = _queueAddToPoolEntities.end();
+//    for ( ; pp_addtopoolentity != pp_addtopoolentitiyEnd; pp_addtopoolentity++ )
+//        _entityPool.push_back( *pp_addtopoolentity );
+//
+//    // set internal state
+//    _internalState = None;
+//}
 
 void EntityManager::updateEntities( float deltaTime  )
 {

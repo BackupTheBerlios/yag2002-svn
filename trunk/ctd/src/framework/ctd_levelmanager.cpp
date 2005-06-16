@@ -92,11 +92,23 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
     if ( _firstLoading )
         return false;
 
+    // first send out notification so the entities can do appropriate actions before level unloading happens
     if ( clearEntities )
     {
         // first send out a notification about deleting entities
         EntityNotification ennotify( CTD_NOTIFY_DELETING_ENTITIES );
         EntityManager::get()->sendNotification( ennotify );
+    }
+    if ( clearPhysics )
+    {
+        EntityNotification ennotify( CTD_NOTIFY_DELETING_PHYSICSWORLD );
+        EntityManager::get()->sendNotification( ennotify );
+    }
+    // flush the notification queue so perior and new entities get the notification
+    EntityManager::get()->flushNotificationQueue();
+
+    if ( clearEntities )
+    {
         // now delete entities (note: no-autodelete entities will remain -- see BaseEntity::getAutoDelete() )
         EntityManager::get()->deleteAllEntities();
         // (re-)create entiy transform node group
@@ -126,8 +138,6 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
         _nodeGroup->setName( CTD_NODE_GROUP_NAME );
         _topGroup->addChild( _nodeGroup.get() );
 
-        EntityNotification ennotify( CTD_NOTIFY_DELETING_PHYSICSWORLD );
-        EntityManager::get()->sendNotification( ennotify );
         assert( Physics::get()->reinitialize() );
 
         _staticMesh = NULL;
@@ -144,6 +154,8 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile )
     {
         EntityNotification ennotify( CTD_NOTIFY_LOADING_LEVEL );
         EntityManager::get()->sendNotification( ennotify );
+        // flush the notification queue so perior and new entities get the notification
+        EntityManager::get()->flushNotificationQueue();
     }
 
     std::vector< BaseEntity* > entities; // list of all entities which are created during loading
@@ -391,7 +403,7 @@ void LevelManager::finalizeLoading()
     }
 
     // init and post-init entities which have been created before
-    setupEntities( _setupQueue );
+    EntityManager::get()->setupEntities( _setupQueue );
     _setupQueue.clear();
 
     // send the notification that the a new level has been loaded and initialized
@@ -399,55 +411,14 @@ void LevelManager::finalizeLoading()
     {
         EntityNotification ennotify( CTD_NOTIFY_NEW_LEVEL_INITIALIZED );
         EntityManager::get()->sendNotification( ennotify );
+        // flush the notification queue so perior and new entities get the notification
+        EntityManager::get()->flushNotificationQueue();
     }
     else
     {
         // mark that we have done the first level loading
         _firstLoading = false;
     }
-}
-
-void LevelManager::setupEntities( vector< BaseEntity* >& entities )
-{
-    osg::Timer      timer;
-    osg::Timer_t    curTick         = 0;
-    osg::Timer_t    startTick       = 0;
-    float           time4Init       = 0;
-    float           time4PostInit   = 0;
-
-    vector< BaseEntity* >::iterator pp_beg = entities.begin(), pp_end = entities.end();
-
-    log << Log::LogLevel( Log::L_INFO ) << "starting entity setup ..." << endl;
-    // setup entities
-    log << Log::LogLevel( Log::L_INFO ) << " initializing entities ..." << endl;
-    
-    {
-        startTick  = timer.tick();
-
-        for( ; pp_beg != pp_end; pp_beg++ )
-            ( *pp_beg )->initialize();
-        
-        curTick    = timer.tick();
-        time4Init  = timer.delta_s( startTick, curTick );
-    }
-
-    pp_beg = entities.begin(); pp_end = entities.end();
-    log << Log::LogLevel( Log::L_INFO ) << " post-initializing entities ..." << endl;
-    {
-        startTick  = timer.tick();
-    
-
-        for( ; pp_beg != pp_end; pp_beg++ )
-            ( *pp_beg )->postInitialize();
-
-        curTick        = timer.tick();
-        time4PostInit  = timer.delta_s( startTick, curTick );
-    }
-    log << Log::LogLevel( Log::L_INFO ) << "--------------------------------------------" << endl;
-    log << Log::LogLevel( Log::L_INFO ) << "needed time for initialization: " << time4Init << " seconds" << endl;
-    log << Log::LogLevel( Log::L_INFO ) << "needed time for post-initialization: " << time4PostInit << " seconds" <<  endl;
-    log << Log::LogLevel( Log::L_INFO ) << "total time for setting up: " << time4Init + time4PostInit << " seconds" <<  endl;
-    log << Log::LogLevel( Log::L_INFO ) << "--------------------------------------------" << endl;
 }
 
 void LevelManager::initializeFirstTime()
