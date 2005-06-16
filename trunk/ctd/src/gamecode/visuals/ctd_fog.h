@@ -49,6 +49,13 @@ class EnFog :  public BaseEntity
         //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
 
+        //! As the actual fog object is shared between entities so call this method to set the right 
+        //!  attributes for particular entity.
+        void                                        activateFog();
+
+        //! Disable fog. This method diables the entire fog ( also for all other fog entities ).
+        static void                                 deactivateFog();
+
     protected:
 
         float                                       _density;
@@ -62,7 +69,7 @@ class EnFog :  public BaseEntity
 
     protected:
 
-        osg::Fog*                                   _p_fog;
+        static osg::Fog*                            _p_fog;
 };
 
 //! Entity type definition used for type registry

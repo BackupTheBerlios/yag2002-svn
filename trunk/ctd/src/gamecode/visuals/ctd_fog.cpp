@@ -37,12 +37,13 @@ namespace CTD
 //! Implement and register the fog entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( FogEntityFactory );
 
+osg::Fog* EnFog::_p_fog = NULL;
+
 EnFog::EnFog() :
 _density( 0.3f ),
 _start( 300.0f ),
 _end( 1000.0f ),
-_fogColor( osg::Vec3f( 0.2f, 0.2f, 0.2f ) ),
-_p_fog( NULL )
+_fogColor( osg::Vec3f( 0.2f, 0.2f, 0.2f ) )
 {
     // register entity attributes
     _attributeManager.addAttribute( "density"   , _density   );
@@ -58,11 +59,16 @@ EnFog::~EnFog()
         osgProducer::Viewer* p_viewer = Application::get()->getViewer();
         osg::StateSet* p_stateset = p_viewer->getGlobalStateSet();
         p_stateset->removeAttribute( _p_fog );
+        _p_fog = NULL;
     }
 }
 
 void EnFog::initialize()
 {
+    // the fog is global and must be shared between all fog entities
+    if ( _p_fog )
+        return;
+
     osgProducer::Viewer* p_viewer = Application::get()->getViewer();
     osg::StateSet* p_stateset = p_viewer->getGlobalStateSet();
     _p_fog = new osg::Fog;
@@ -74,6 +80,26 @@ void EnFog::initialize()
 
     p_stateset->setAttributeAndModes( _p_fog, osg::StateAttribute::ON );
     p_stateset->setMode( GL_FOG, osg::StateAttribute::ON );
+}
+
+void EnFog::activateFog()
+{
+    osgProducer::Viewer* p_viewer = Application::get()->getViewer();
+    osg::StateSet* p_stateset = p_viewer->getGlobalStateSet();
+    _p_fog->setDensity( _density );
+    _p_fog->setStart( _start );
+    _p_fog->setEnd( _end );
+    _p_fog->setColor( osg::Vec4f( _fogColor, 1.0f ) );
+    p_stateset->setAttributeAndModes( _p_fog, osg::StateAttribute::ON );
+    p_stateset->setMode( GL_FOG, osg::StateAttribute::ON );
+}
+
+void EnFog::deactivateFog()
+{
+    osgProducer::Viewer* p_viewer = Application::get()->getViewer();
+    osg::StateSet* p_stateset = p_viewer->getGlobalStateSet();
+    p_stateset->setAttributeAndModes( _p_fog, osg::StateAttribute::OFF );
+    p_stateset->setMode( GL_FOG, osg::StateAttribute::OFF );
 }
 
 } // namespace CTD
