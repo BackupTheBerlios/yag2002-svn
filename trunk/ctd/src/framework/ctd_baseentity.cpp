@@ -35,7 +35,12 @@
 
 using namespace std;
 using namespace CTD;
- 
+
+BaseEntity::BaseEntity() :
+_initialized( false )
+{
+}
+
 BaseEntity::~BaseEntity()
 {
     if ( _p_transformNode.valid() )

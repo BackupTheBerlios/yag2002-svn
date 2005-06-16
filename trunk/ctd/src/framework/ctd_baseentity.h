@@ -88,7 +88,7 @@ class BaseEntity
 
     public:
 
-                                                    BaseEntity() {} 
+                                                    BaseEntity();
 
         virtual                                     ~BaseEntity();
 
@@ -114,19 +114,19 @@ class BaseEntity
         * Get entity's type name.
         * \return                                   Type name
         */
-        const std::string&                          getTypeName();
+        inline const std::string&                   getTypeName();
 
         /**
         * Get instance name. Instance name is used to find and attach entities to eachother.
         * \return                                   Instance name
         */
-        const std::string&                          getInstanceName();
+        inline const std::string&                   getInstanceName();
 
         /**
         * Get entity's attribute manager
         * \return                                   Attribute manager
         */
-        AttributeManager&                           getAttributeManager();
+        inline AttributeManager&                    getAttributeManager();
 
         /**
         * Get transformation node.
@@ -136,22 +136,22 @@ class BaseEntity
         /** 
         * Set position of the transform node
         */
-        void                                        setPosition( const osg::Vec3d& pos );
+        inline void                                 setPosition( const osg::Vec3d& pos );
 
         /** 
         * Get position of the transform node
         */
-        const osg::Vec3d&                           getPosition();
+        inline const osg::Vec3d&                    getPosition();
 
         /** 
         * Set rotation of the transform node
         */
-        void                                        setRotation( const osg::Quat& quats );
+        inline void                                 setRotation( const osg::Quat& quats );
 
         /**
         * Get rotation of the transform node
         */
-        const osg::Quat&                            getRotation();
+        inline const osg::Quat&                     getRotation();
 
         /**
         * Clone this entity and name it instanceName.
@@ -203,13 +203,25 @@ class BaseEntity
         /**
         * Add a node to our transformation node, assume that we use a transform node
         */
-        void                                        addToTransformationNode( osg::Node* p_node );
+        inline void                                 addToTransformationNode( osg::Node* p_node );
 
         /**
-        * Remove a node from our transformation node, assume that we use a transform node
-        * For example it can be used to remove dynamically attached nodes such as rucksack, etc..
+        * Remove a node from our transformation node, assume that we use a transform node.
+        * For example it can be used to remove dynamically attached nodes such as rucksack, etc.
         */
-        void                                        removeFromTransformationNode( osg::Node* p_node );
+        inline void                                 removeFromTransformationNode( osg::Node* p_node );
+
+        /**
+        * This method is used by EntityManager to avoid a reinitialization of and persistent entity on every level loading.
+        * \param  init                              Initialization flag
+        */
+        inline void                                 setInitialized( bool init );
+
+        /**
+        * Returns the information wether the entity is already initialized ( usen by EntityManager ).
+        * \return                                   Initialization flag
+        */
+        inline bool                                 isInitialized();
 
         //! Entity attribute manager
         AttributeManager                            _attributeManager;
@@ -238,6 +250,11 @@ class BaseEntity
         * Entity instance name
         */
         std::string                                 _instanceName;
+
+        /**
+        * Initialization flag used by EntityManger.
+        */
+        bool                                        _initialized;
 
     friend class Application;
     friend class EntityManager;

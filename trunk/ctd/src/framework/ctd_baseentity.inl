@@ -90,3 +90,13 @@ inline const osg::Quat& BaseEntity::getRotation()
     return _p_transformNode->getAttitude();
 }
 
+inline void BaseEntity::setInitialized( bool init )
+{
+    _initialized = init;
+}
+
+inline bool BaseEntity::isInitialized()
+{
+    return _initialized;
+}
+
