@@ -44,8 +44,6 @@ EnGeomEmitter::EnGeomEmitter():
 _time( 0 ),
 _geomCount( 0 )
 {
-    EntityManager::get()->registerUpdate( this );     // register entity in order to get updated per simulation step
-
     // register entity attributes
     _attributeManager.addAttribute( "geomTypes"  , _geomTypes  );
     _attributeManager.addAttribute( "position"   , _position   );
@@ -72,6 +70,8 @@ void EnGeomEmitter::postInitialize()
 
         _geomStock.push_back( p_entity );
     }
+
+    EntityManager::get()->registerUpdate( this );     // register entity in order to get updated per simulation step
 }
 
 void EnGeomEmitter::updateEntity( float deltaTime )
