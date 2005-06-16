@@ -19,7 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # console command for finalizing level loading
+ # console command for setting a value in current configuration
  #
  #   date of creation:  06/14/2005
  #
@@ -30,7 +30,7 @@
 
 #include <ctd_main.h>
 #include "ctd_basecmd.h"
-#include "ctd_cmdloadfinalize.h"
+#include "ctd_cmdconfigset.h"
 
 using namespace std;
 
@@ -38,23 +38,33 @@ namespace CTD
 {
 
 //! Implement and register the command
-CTD_IMPL_CONSOLE_CMD( CmdLoadFinalize );
+CTD_IMPL_CONSOLE_CMD( CmdConfigSet );
 
 
-CmdLoadFinalize::CmdLoadFinalize() :
- BaseConsoleCommand( CMD_NAME_LOADFINALIZE )
+CmdConfigSet::CmdConfigSet() :
+ BaseConsoleCommand( CMD_NAME_CONFIGSET )
 {
-    setUsage( CMD_USAGE_LOADFINALIZE );
+    setUsage( CMD_USAGE_CONFIGSET );
 }
 
-CmdLoadFinalize::~CmdLoadFinalize()
+CmdConfigSet::~CmdConfigSet()
 {
 }
 
-const std::string& CmdLoadFinalize::execute( const std::vector< std::string >& arguments )
+const std::string& CmdConfigSet::execute( const std::vector< std::string >& arguments )
 {
-    LevelManager::get()->finalizeLoading();
-    _cmdResult = "level finalized";
+    _cmdResult = "";
+    if ( arguments.size() < 2 )
+    {
+        _cmdResult = getUsage();
+        return _cmdResult;
+    }
+
+    // set the token using value string
+    Configuration::get()->setSettingValue( arguments[ 0 ], arguments[ 1 ] );
+    
+    // store changes
+    Configuration::get()->store();
 
     return _cmdResult;
 }

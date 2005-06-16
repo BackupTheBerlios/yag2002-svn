@@ -21,7 +21,7 @@
 /*###############################################################
  # all console commands are registered using this registry instance
  #
- #   date of creation:  13/06/2005
+ #   date of creation:  06/13/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net

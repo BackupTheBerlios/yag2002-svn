@@ -19,9 +19,9 @@
  ****************************************************************/
 
 /*###############################################################
- # console command for finalizing level loading
+ # console command for starting a server
  #
- #   date of creation:  06/14/2005
+ #   date of creation:  06/15/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
@@ -30,7 +30,7 @@
 
 #include <ctd_main.h>
 #include "ctd_basecmd.h"
-#include "ctd_cmdloadfinalize.h"
+#include "ctd_cmdserverstart.h"
 
 using namespace std;
 
@@ -38,23 +38,43 @@ namespace CTD
 {
 
 //! Implement and register the command
-CTD_IMPL_CONSOLE_CMD( CmdLoadFinalize );
+CTD_IMPL_CONSOLE_CMD( CmdServerStart );
 
 
-CmdLoadFinalize::CmdLoadFinalize() :
- BaseConsoleCommand( CMD_NAME_LOADFINALIZE )
+CmdServerStart::CmdServerStart() :
+ BaseConsoleCommand( CMD_NAME_SERVERSTART )
 {
-    setUsage( CMD_USAGE_LOADFINALIZE );
+    setUsage( CMD_USAGE_SERVERSTART );
 }
 
-CmdLoadFinalize::~CmdLoadFinalize()
+CmdServerStart::~CmdServerStart()
 {
 }
 
-const std::string& CmdLoadFinalize::execute( const std::vector< std::string >& arguments )
+const std::string& CmdServerStart::execute( const std::vector< std::string >& arguments )
 {
-    LevelManager::get()->finalizeLoading();
-    _cmdResult = "level finalized";
+    _cmdResult = "";
+    if ( arguments.size() < 1 )
+    {
+        _cmdResult = getUsage();
+        return _cmdResult;
+    }
+
+    // get the full binary path
+    string cmd = Application::get()->getFullBinPath();
+    std::string levelfile = arguments[ 0 ];
+    string arg1( "-server" );
+    string arg2( "-level" );
+    string arg3( levelfile );
+
+    // use utility function to start the server
+    string args = arg1 + "  " + arg2 + "  " + arg3;
+    HANDLE serverProcHandle = spawnApplication( cmd, args );
+
+    if ( serverProcHandle )
+        _cmdResult = "trying to start server with level file '" + levelfile + "'.";
+    else
+        _cmdResult = "* error starting server with level file '" + levelfile + "'.";
 
     return _cmdResult;
 }

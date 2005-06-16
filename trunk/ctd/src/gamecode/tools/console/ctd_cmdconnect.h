@@ -21,7 +21,7 @@
 /*###############################################################
  # console command for connecting to a server
  #
- #   date of creation:  15/06/2005
+ #   date of creation:  06/15/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
@@ -38,7 +38,8 @@ namespace CTD
 // console command name
 #define CMD_NAME_CONNECT    "connect"
 #define CMD_USAGE_CONNECT   "connect to a server. if the ip address is not specified then the local net is searched for a server.\n"\
-                            "use: connect < server ip address >"
+                            "if the channel is omitted then the channel specified in game configuration is taken.\n"\
+                            "use: connect [ server ip address [: channel ] ]"
 
 class BaseConsoleCommand;
 

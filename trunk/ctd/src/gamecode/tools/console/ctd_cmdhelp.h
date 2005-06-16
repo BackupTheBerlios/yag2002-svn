@@ -21,7 +21,7 @@
 /*###############################################################
  # console command 'help'
  #
- #   date of creation:  14/06/2005
+ #   date of creation:  06/14/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
@@ -37,7 +37,7 @@ namespace CTD
 {
 // console command name
 #define CMD_NAME_HELP    "help"
-#define CMD_USAGE_HELP   "use: help"
+#define CMD_USAGE_HELP   "use: help [ command name ]"
 
 class BaseConsoleCommand;
 

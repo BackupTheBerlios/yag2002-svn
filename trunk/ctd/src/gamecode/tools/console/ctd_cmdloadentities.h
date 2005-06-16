@@ -21,7 +21,7 @@
 /*###############################################################
  # console command for loading entity description files
  #
- #   date of creation:  14/06/2005
+ #   date of creation:  06/14/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net

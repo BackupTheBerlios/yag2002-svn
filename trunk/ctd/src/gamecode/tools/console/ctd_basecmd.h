@@ -21,7 +21,7 @@
 /*###############################################################
  # base class of all console command classes
  #
- #   date of creation:  13/06/2005
+ #   date of creation:  06/13/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
@@ -54,11 +54,12 @@ class BaseConsoleCommand
         //! Execute the command
         virtual const std::string&                  execute( const std::vector< std::string >& arguments ) = 0;
 
+        //! Get command help and usage text.
+        inline const std::string&                   getUsage();
+
     protected:
 
         inline void                                 setUsage( const std::string& usage );
-
-        inline const std::string&                   getUsage();
 
         std::string                                 _cmdName;
 

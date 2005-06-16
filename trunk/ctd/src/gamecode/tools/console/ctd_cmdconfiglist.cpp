@@ -19,7 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # console command for finalizing level loading
+ # console command for showing the current configuration
  #
  #   date of creation:  06/14/2005
  #
@@ -30,31 +30,40 @@
 
 #include <ctd_main.h>
 #include "ctd_basecmd.h"
-#include "ctd_cmdloadfinalize.h"
-
-using namespace std;
+#include "ctd_cmdconfiglist.h"
 
 namespace CTD
 {
 
 //! Implement and register the command
-CTD_IMPL_CONSOLE_CMD( CmdLoadFinalize );
+CTD_IMPL_CONSOLE_CMD( CmdConfigList );
 
 
-CmdLoadFinalize::CmdLoadFinalize() :
- BaseConsoleCommand( CMD_NAME_LOADFINALIZE )
+CmdConfigList::CmdConfigList() :
+ BaseConsoleCommand( CMD_NAME_CONFIGLIST )
 {
-    setUsage( CMD_USAGE_LOADFINALIZE );
+    setUsage( CMD_USAGE_CONFIGLIST );
 }
 
-CmdLoadFinalize::~CmdLoadFinalize()
+CmdConfigList::~CmdConfigList()
 {
 }
 
-const std::string& CmdLoadFinalize::execute( const std::vector< std::string >& arguments )
+const std::string& CmdConfigList::execute( const std::vector< std::string >& arguments )
 {
-    LevelManager::get()->finalizeLoading();
-    _cmdResult = "level finalized";
+    _cmdResult =  "setting file: " + std::string( CTD_GAMESETTING_FILENAME ) + "\n";
+    _cmdResult += "-----------------\n";
+
+    std::vector< std::pair< std::string, std::string > > settings;
+    Configuration::get()->getConfigurationAsString( settings );
+    std::vector< std::pair< std::string, std::string > >::iterator p_beg = settings.begin(), p_end = settings.end();
+    for ( ; p_beg != p_end; p_beg++ )
+    {
+        _cmdResult += p_beg->first;
+        _cmdResult += " [ ";
+        _cmdResult += p_beg->second;
+        _cmdResult += " ]\n";
+    }
 
     return _cmdResult;
 }

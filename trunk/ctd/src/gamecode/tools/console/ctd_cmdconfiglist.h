@@ -19,7 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # console command for finalizing level loading
+ # console command for showing the current configuration
  #
  #   date of creation:  06/14/2005
  #
@@ -28,35 +28,33 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdloadfinalize.h"
+#ifndef _CTD_CMDCONFIGLIST_H_
+#define _CTD_CMDCONFIGLIST_H_
 
-using namespace std;
+#include <ctd_main.h>
 
 namespace CTD
 {
+// console command name
+#define CMD_NAME_CONFIGLIST   "configuration.list"
+#define CMD_USAGE_CONFIGLIST  "get current game configuration\n"\
+                              "use: configuration.list"
 
-//! Implement and register the command
-CTD_IMPL_CONSOLE_CMD( CmdLoadFinalize );
+class BaseConsoleCommand;
 
-
-CmdLoadFinalize::CmdLoadFinalize() :
- BaseConsoleCommand( CMD_NAME_LOADFINALIZE )
+//! Class for command 'configuration.list'
+class CmdConfigList : public BaseConsoleCommand
 {
-    setUsage( CMD_USAGE_LOADFINALIZE );
-}
+    public:
+                                                    CmdConfigList();
 
-CmdLoadFinalize::~CmdLoadFinalize()
-{
-}
+        virtual                                     ~CmdConfigList();
 
-const std::string& CmdLoadFinalize::execute( const std::vector< std::string >& arguments )
-{
-    LevelManager::get()->finalizeLoading();
-    _cmdResult = "level finalized";
+        const std::string&                          execute( const std::vector< std::string >& arguments );
+};
 
-    return _cmdResult;
-}
+
 
 } // namespace CTD
+
+#endif // _CTD_CMDCONFIGLIST_H_

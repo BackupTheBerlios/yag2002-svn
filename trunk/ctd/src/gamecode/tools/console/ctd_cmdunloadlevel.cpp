@@ -21,7 +21,7 @@
 /*###############################################################
  # console command for unloading current level
  #
- #   date of creation:  15/06/2005
+ #   date of creation:  06/15/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net

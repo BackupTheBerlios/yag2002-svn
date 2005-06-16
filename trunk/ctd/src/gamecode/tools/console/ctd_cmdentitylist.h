@@ -19,7 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # console command for finalizing level loading
+ # console command for getting an entity list
  #
  #   date of creation:  06/14/2005
  #
@@ -28,35 +28,33 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdloadfinalize.h"
+#ifndef _CTD_CMDENTITYLIST_H_
+#define _CTD_CMDENTITYLIST_H_
 
-using namespace std;
+#include <ctd_main.h>
 
 namespace CTD
 {
+// console command name
+#define CMD_NAME_ENTITYLIST   "entity.list"
+#define CMD_USAGE_ENTITYLIST  "get all currently existing entities\n"\
+                              "use: entity.list"
 
-//! Implement and register the command
-CTD_IMPL_CONSOLE_CMD( CmdLoadFinalize );
+class BaseConsoleCommand;
 
-
-CmdLoadFinalize::CmdLoadFinalize() :
- BaseConsoleCommand( CMD_NAME_LOADFINALIZE )
+//! Class for command 'entity.list'
+class CmdEntityList : public BaseConsoleCommand
 {
-    setUsage( CMD_USAGE_LOADFINALIZE );
-}
+    public:
+                                                    CmdEntityList();
 
-CmdLoadFinalize::~CmdLoadFinalize()
-{
-}
+        virtual                                     ~CmdEntityList();
 
-const std::string& CmdLoadFinalize::execute( const std::vector< std::string >& arguments )
-{
-    LevelManager::get()->finalizeLoading();
-    _cmdResult = "level finalized";
+        const std::string&                          execute( const std::vector< std::string >& arguments );
+};
 
-    return _cmdResult;
-}
+
 
 } // namespace CTD
+
+#endif // _CTD_CMDENTITYLIST_H_

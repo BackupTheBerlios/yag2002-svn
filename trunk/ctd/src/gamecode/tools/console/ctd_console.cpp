@@ -21,7 +21,7 @@
 /*###############################################################
  # entity for an in-game console
  #
- #   date of creation:  13/06/2005
+ #   date of creation:  06/13/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
@@ -67,7 +67,7 @@ class ConsoleIH : public GenericInputHandler< EnConsole >
                                                     }
                                                     else if ( _toggleEnable && ea.getKey() == _retCode )
                                                     {
-                                                        _p_userObject->queueCmd( _p_userObject->_p_inputWindow->getText().c_str() );
+                                                        _p_userObject->applyCmd( _p_userObject->_p_inputWindow->getText().c_str() );
                                                     }
                                                     else if ( ea.getKey() == _autoCompleteCode )
                                                     {
@@ -109,7 +109,10 @@ _p_wnd( NULL ),
 _p_inputWindow( NULL ),
 _p_outputWindow( NULL ),
 _p_inputHandler( NULL ),
-_cmdHistoryIndex( 0 )
+_cmdHistoryIndex( 0 ),
+_shutdownInProgress( false ),
+_shutdownCounter( 0 ),
+_p_log( NULL )
 {
     // register entity in order to get updated per simulation step
     EntityManager::get()->registerUpdate( this, true );
@@ -208,6 +211,48 @@ void EnConsole::enable( bool en )
     }
 
     _enable = en;
+}
+
+void EnConsole::triggerShutdown( float delay )
+{
+    _shutdownInProgress = true;
+    _shutdownCounter = delay;
+}
+
+bool EnConsole::createLog( const std::string& filename, bool append )
+{
+    if ( _p_log )
+        return false;
+
+    _p_log = new std::ofstream;
+    std::ios_base::open_mode mode = std::ios_base::out | std::ios_base::binary;
+    if ( append )
+        mode |= std::ios_base::app;
+
+    _p_log->open( ( Application::get()->getMediaPath() + filename ).c_str(), mode );
+    if ( !*_p_log )
+    {
+        delete _p_log;
+        _p_log = NULL;
+        return false;
+    }
+
+    std::string text = ( append ? "' appended on " : "' created on " );
+    *_p_log << "# log file '" << filename << text << getTimeStamp() << std::endl;
+
+    return true;
+}
+
+bool EnConsole::closeLog()
+{
+    if ( !_p_log )
+        return false;
+
+    _p_log->close();
+    delete _p_log;
+    _p_log = NULL;
+
+    return true;
 }
 
 void EnConsole::cmdHistory( bool prev )
@@ -319,7 +364,18 @@ const std::string& EnConsole::dispatchCmdLine( const std::string& cmdline )
         string cmd = *p_beg;
         cmd.erase( 0, cmd.find_first_not_of( " " ) );
 
+        // append to log if log is created
+        if ( _p_log )
+            *_p_log << ">" << cmd << std::endl;
+
         result += executeCmd( cmd );
+
+        // append to log if log is created
+        if ( _p_log )
+        {
+            *_p_log << result << std::endl;
+            _p_log->flush();
+        }
     }
 
     return result;
@@ -411,6 +467,14 @@ void EnConsole::updateEntity( float deltaTime )
         applyCmd( p_beg->first, p_beg->second );
 
     _cmdQueue.clear();
+
+    if ( _shutdownInProgress )
+    {
+        if ( _shutdownCounter < 0 )
+            Application::get()->stop();
+        else
+            _shutdownCounter -= deltaTime;
+    }
 }
 
 } // namespace CTD

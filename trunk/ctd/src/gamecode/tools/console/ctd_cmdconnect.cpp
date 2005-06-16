@@ -21,7 +21,7 @@
 /*###############################################################
  # console command for connecting to a server
  #
- #   date of creation:  15/06/2005
+ #   date of creation:  06/15/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
@@ -31,8 +31,7 @@
 #include <ctd_main.h>
 #include "ctd_basecmd.h"
 #include "ctd_cmdconnect.h"
-
-using namespace std;
+#include <ctd_gameutils.h>
 
 namespace CTD
 {
@@ -54,15 +53,35 @@ CmdConnect::~CmdConnect()
 const std::string& CmdConnect::execute( const std::vector< std::string >& arguments )
 {
     _cmdResult = "";
+    
+    unsigned int channel;
     std::string serverip;
-    if ( arguments.size() > 0 )
-        serverip = arguments[ 0 ];
-
-    string clientname;
+    std::string clientname;
     Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, clientname );
     NodeInfo nodeinfo( "", clientname );
-    unsigned int channel;
     Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
+    // parse the argument for ip and channel information
+    if ( arguments.size() > 0 )
+    {
+        std::string addr = arguments[ 0 ];
+        std::vector< std::string > ip;
+        explode( addr, ":", &ip );
+        if ( ip.size() > 1 )
+        {
+            std::stringstream chan;
+            chan << ip[ 1 ];
+            chan >> channel;
+            addr = ip[ 0 ];
+            ip.clear();
+        }
+        explode( addr, ".", &ip );
+        if ( ip.size() < 4 )
+        {
+            _cmdResult = "the ip address must have the format 'X.X.X.X'";
+            return _cmdResult;
+        }
+        serverip = addr;
+    }
 
     // try to join
     if ( !NetworkDevice::get()->setupClient( serverip, channel, nodeinfo ) )
@@ -73,22 +92,34 @@ const std::string& CmdConnect::execute( const std::vector< std::string >& argume
 
     // set the game mode to Client before loading the level
     GameState::get()->setMode( GameState::Client );
+    std::string playerCfgFile;
+    if ( !gameutils::getPlayerConfig( GameState::Client, playerCfgFile ) )
+    {
+        _cmdResult = "* error: cannot determine player configuration file";
+        return _cmdResult;
+    }
+
     // now prepare loading level
+    _cmdResult += "unload level ...\n";
     LevelManager::get()->unloadLevel( true, true );
+    _cmdResult += "loading level '" + NetworkDevice::get()->getNodeInfo()->getLevelName() + "' ...\n";
     LevelManager::get()->loadLevel( CTD_LEVEL_CLIENT_DIR + NetworkDevice::get()->getNodeInfo()->getLevelName() );
     // now load the player
-//string playerCfgFile = getPlayerConfig( GameState::get()->getMode() );
-//std::vector< BaseEntity* > entities;
-//LevelManager::get()->loadEntities( playerCfgFile );
-//// complete level loading
-//LevelManager::get()->finalizeLoading();
+    std::vector< BaseEntity* > entities;
+    _cmdResult += "loading player '" + playerCfgFile + "' ...\n";
+    LevelManager::get()->loadEntities( playerCfgFile );
+    // complete level loading
+    _cmdResult += "finalizing level loading ...\n";
+    LevelManager::get()->finalizeLoading();
 
+    _cmdResult += "starting client ...\n";
     if ( !NetworkDevice::get()->startClient() )
     {
         _cmdResult = "* cannot start client";
         return _cmdResult;
     }
 
+    _cmdResult += "connection successful\n";
     return _cmdResult;
 }
 

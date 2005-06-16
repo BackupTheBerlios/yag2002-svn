@@ -19,7 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # console command for finalizing level loading
+ # console command for setting a value in current configuration
  #
  #   date of creation:  06/14/2005
  #
@@ -28,35 +28,33 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdloadfinalize.h"
+#ifndef _CTD_CMDCONFIGSET_H_
+#define _CTD_CMDCONFIGSET_H_
 
-using namespace std;
+#include <ctd_main.h>
 
 namespace CTD
 {
+// console command name
+#define CMD_NAME_CONFIGSET   "configuration.set"
+#define CMD_USAGE_CONFIGSET  "set a single value in current game configuration\n"\
+                             "use: configuration.set < setting name > < value >"
 
-//! Implement and register the command
-CTD_IMPL_CONSOLE_CMD( CmdLoadFinalize );
+class BaseConsoleCommand;
 
-
-CmdLoadFinalize::CmdLoadFinalize() :
- BaseConsoleCommand( CMD_NAME_LOADFINALIZE )
+//! Class for command 'configuration.set'
+class CmdConfigSet : public BaseConsoleCommand
 {
-    setUsage( CMD_USAGE_LOADFINALIZE );
-}
+    public:
+                                                    CmdConfigSet();
 
-CmdLoadFinalize::~CmdLoadFinalize()
-{
-}
+        virtual                                     ~CmdConfigSet();
 
-const std::string& CmdLoadFinalize::execute( const std::vector< std::string >& arguments )
-{
-    LevelManager::get()->finalizeLoading();
-    _cmdResult = "level finalized";
+        const std::string&                          execute( const std::vector< std::string >& arguments );
+};
 
-    return _cmdResult;
-}
+
 
 } // namespace CTD
+
+#endif // _CTD_CMDCONFIGSET_H_

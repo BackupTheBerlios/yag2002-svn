@@ -19,7 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # console command for finalizing level loading
+ # console command for getting an entity list
  #
  #   date of creation:  06/14/2005
  #
@@ -30,7 +30,7 @@
 
 #include <ctd_main.h>
 #include "ctd_basecmd.h"
-#include "ctd_cmdloadfinalize.h"
+#include "ctd_cmdentitylist.h"
 
 using namespace std;
 
@@ -38,24 +38,32 @@ namespace CTD
 {
 
 //! Implement and register the command
-CTD_IMPL_CONSOLE_CMD( CmdLoadFinalize );
+CTD_IMPL_CONSOLE_CMD( CmdEntityList );
 
 
-CmdLoadFinalize::CmdLoadFinalize() :
- BaseConsoleCommand( CMD_NAME_LOADFINALIZE )
+CmdEntityList::CmdEntityList() :
+ BaseConsoleCommand( CMD_NAME_ENTITYLIST )
 {
-    setUsage( CMD_USAGE_LOADFINALIZE );
+    setUsage( CMD_USAGE_ENTITYLIST );
 }
 
-CmdLoadFinalize::~CmdLoadFinalize()
+CmdEntityList::~CmdEntityList()
 {
 }
 
-const std::string& CmdLoadFinalize::execute( const std::vector< std::string >& arguments )
+const std::string& CmdEntityList::execute( const std::vector< std::string >& arguments )
 {
-    LevelManager::get()->finalizeLoading();
-    _cmdResult = "level finalized";
+    _cmdResult = "list of currently existing entities:\n";
 
+    string info;
+    std::vector< BaseEntity* > entities;
+    EntityManager::get()->getAllEntities( entities );
+    std::vector< BaseEntity* >::iterator p_beg = entities.begin(), p_end = entities.end();
+    for ( ; p_beg != p_end; p_beg++ )
+    {
+        info += ( *p_beg )->getInstanceName() + "(" + ( *p_beg )->getTypeName() + ")    ";
+    }
+    _cmdResult = info + "\n";
     return _cmdResult;
 }
 

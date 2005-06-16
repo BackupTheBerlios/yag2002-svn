@@ -21,7 +21,7 @@
 /*###############################################################
  # console command 'help'
  #
- #   date of creation:  14/06/2005
+ #   date of creation:  06/14/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
@@ -54,15 +54,29 @@ CmdHelp::~CmdHelp()
 
 const std::string& CmdHelp::execute( const std::vector< std::string >& arguments )
 {
-    _cmdResult = "possible commands: \n";
-    std::vector< std::string > cmds;
-    ConsoleCommandRegistry::get()->getAllCmds( cmds );
-    std::vector< std::string >::iterator p_beg = cmds.begin(), p_end = cmds.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    if ( arguments.size() > 0 )
     {
-        _cmdResult += ( *p_beg ) + "  ";
+        BaseConsoleCommand* p_cmd = ConsoleCommandRegistry::get()->getCmd( arguments[ 0 ] );
+        if ( !p_cmd )
+        {
+            _cmdResult = "* command '" + arguments[ 0 ] + "' does not exist.";
+            return _cmdResult;
+        }
+        _cmdResult = p_cmd->getUsage();
     }
-    _cmdResult += "\n";
+    else
+    {
+        _cmdResult = "possible commands: \n";
+        std::vector< std::string > cmds;
+        ConsoleCommandRegistry::get()->getAllCmds( cmds );
+        std::vector< std::string >::iterator p_beg = cmds.begin(), p_end = cmds.end();
+        for ( ; p_beg != p_end; p_beg++ )
+        {
+            _cmdResult += ( *p_beg ) + "  ";
+        }
+        _cmdResult += "\n";
+    }
+
     return _cmdResult;
 }
 

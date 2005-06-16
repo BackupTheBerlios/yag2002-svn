@@ -19,44 +19,43 @@
  ****************************************************************/
 
 /*###############################################################
- # console command for finalizing level loading
+ # console command for starting a server
  #
- #   date of creation:  06/14/2005
+ #   date of creation:  06/15/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdloadfinalize.h"
+#ifndef _CTD_CMDSERVERSTART_H_
+#define _CTD_CMDSERVERSTART_H_
 
-using namespace std;
+#include <ctd_main.h>
 
 namespace CTD
 {
+// console command name
+#define CMD_NAME_SERVERSTART    "server.start"
+#define CMD_USAGE_SERVERSTART   "start a server with given level file. the level file path is determined by application itself.\n"\
+                                "the server channel specified in game configuration is taken.\n"\
+                                "use: server.start < level file >"
 
-//! Implement and register the command
-CTD_IMPL_CONSOLE_CMD( CmdLoadFinalize );
+class BaseConsoleCommand;
 
-
-CmdLoadFinalize::CmdLoadFinalize() :
- BaseConsoleCommand( CMD_NAME_LOADFINALIZE )
+//! Class for command 'server.start'
+class CmdServerStart : public BaseConsoleCommand
 {
-    setUsage( CMD_USAGE_LOADFINALIZE );
-}
+    public:
+                                                    CmdServerStart();
 
-CmdLoadFinalize::~CmdLoadFinalize()
-{
-}
+        virtual                                     ~CmdServerStart();
 
-const std::string& CmdLoadFinalize::execute( const std::vector< std::string >& arguments )
-{
-    LevelManager::get()->finalizeLoading();
-    _cmdResult = "level finalized";
+        const std::string&                          execute( const std::vector< std::string >& arguments );
+};
 
-    return _cmdResult;
-}
+
 
 } // namespace CTD
+
+#endif // _CTD_CMDSERVERSTART_H_

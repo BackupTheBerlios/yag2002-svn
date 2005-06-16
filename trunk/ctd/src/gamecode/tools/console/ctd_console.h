@@ -21,7 +21,7 @@
 /*###############################################################
  # entity for an in-game console
  #
- #   date of creation:  13/06/2005
+ #   date of creation:  06/13/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
@@ -62,6 +62,16 @@ class EnConsole :  public BaseEntity
 
         //! Try to find a cmd match given the string
         void                                        autoCompleteCmd( const std::string& cmd );
+
+        //! Triggers the application shutdown after 'delay' elapsed.
+        void                                        triggerShutdown( float delay );
+
+        //! Creates a log file and directs all console outputs also to that file. Returns fals if the log file could not be created.
+        //! If append is false then an existing lod file will be recreated.
+        bool                                        createLog( const std::string& filename, bool append = false );
+
+        //! Closes the currently active log. Returns false if there is no active log previously created with createLog.
+        bool                                        closeLog();
 
     protected:
 
@@ -108,6 +118,12 @@ class EnConsole :  public BaseEntity
         unsigned int                                _cmdHistoryIndex;
 
         std::vector< std::pair< std::string, bool > > _cmdQueue;
+
+        bool                                        _shutdownInProgress;
+
+        float                                       _shutdownCounter;
+
+        std::ofstream*                              _p_log;
 
     friend class ConsoleIH;
 };
