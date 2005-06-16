@@ -175,6 +175,12 @@ class AttributeManager
         std::vector< EntityAttributeBase* >& getAttributes();
 
         /**
+        * Get all attribute names and values as string.
+        * \param attributes                 The result will be stored in this list.
+        */
+        void                                getAttributesAsString( std::vector< std::pair< std::string, std::string > >& attributes );
+
+        /**
         * Get attribute value given its name. This method does a type check.
         * \param name                       Attribute name
         * \param value                      Requested Value
@@ -191,6 +197,14 @@ class AttributeManager
         */
         template< class TypeT >
         bool                                setAttributeValue( const std::string& name, TypeT value );
+
+       /**
+        * Set attribute value using a string. This method does only a format check, not type check ( e.g. the value of an attribute with type boolean can be only "true" or "false" ).
+        * \param name                       Attribute name
+        * \param valuestring                New Value to be set
+        * \return                           true if the value has been found and the value string had a proper format, otherwise false
+        */
+        bool                                setAttributeValue( const std::string& name, const std::string& valuestring );
 
         /**
         * Set attribute value given an existing attribute.

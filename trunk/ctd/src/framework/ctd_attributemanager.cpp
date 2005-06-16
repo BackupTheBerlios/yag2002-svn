@@ -35,6 +35,58 @@ using namespace std;
 namespace CTD
 {
 
+void AttributeManager::getAttributesAsString( vector< pair< string, string > >& attributes )
+{
+    vector< EntityAttributeBase* >::iterator p_beg = _attributes.begin(), p_end = _attributes.end();
+    for ( ; p_beg != p_end; p_beg++ )
+    {
+        EntityAttributeBase* p_attribute = *p_beg;
+        stringstream strvalue;
+        unsigned int type = p_attribute->getType();
+        switch ( type ) 
+        {
+            case EntityAttributeType::FLOAT:
+            {
+                float value = ( ( EntityAttribute< float >* )p_attribute )->getValue();
+                strvalue << value;
+            }
+            break;
+
+            case EntityAttributeType::BOOL:
+            {
+                bool value = ( ( EntityAttribute< bool >* )p_attribute )->getValue();
+                strvalue << ( value ? "true" : "false" );
+            }
+            break;
+
+            case EntityAttributeType::INTEGER:
+            {
+                int value = ( ( EntityAttribute< int >* )p_attribute )->getValue();
+                strvalue << value;
+            }
+            break;
+
+            case EntityAttributeType::VECTOR3:
+            {
+                osg::Vec3f value = ( ( EntityAttribute< osg::Vec3f >* )p_attribute )->getValue();
+                strvalue << value.x() << " " << value.y() << " " << value.z();
+            }
+            break;
+
+            case EntityAttributeType::STRING:
+            {
+                string value = ( ( EntityAttribute< string >* )p_attribute )->getValue();
+                strvalue << value;
+            }
+            break;
+
+            default:
+                assert( NULL && "invalid attribute type!" );
+        }
+        attributes.push_back( make_pair( p_attribute->getName(), strvalue.str() ) );
+    }
+}
+
 bool AttributeManager::setAttributeValue( const string &name, const string &type, const string &value )
 {
     bool bRet = false;
@@ -44,36 +96,98 @@ bool AttributeManager::setAttributeValue( const string &name, const string &type
     string citype;    
     for ( size_t i = 0; i < type.size(); i++ ) citype += toupper( type[ i ] );
 
-    if ( ( citype == "BOOLEAN" ) || ( citype == "BOOL" ) ) {
+    if ( ( citype == "BOOLEAN" ) || ( citype == "BOOL" ) ) 
+    {
         string bVal;
         strBuffer >> bVal;
         bool   bValue = ( bVal == "true" ) ? true : false;
         bRet = setAttributeValue( name, bValue );
     }
-    else 
-    if ( citype == "INTEGER" ) {
+    else if ( citype == "INTEGER" ) 
+    {
         int iValue;
         strBuffer >> iValue;
         bRet = setAttributeValue( name, iValue );
     }
-    else 
-    if ( citype == "FLOAT" ) {
+    else if ( citype == "FLOAT" ) 
+    {
         float fValue;
         strBuffer >> fValue;
         bRet = setAttributeValue( name, fValue );
     }
-    else 
-    if ( citype == "VECTOR3" ) {
+    else if ( citype == "VECTOR3" ) 
+    {
         osg::Vec3f vecValue;
         strBuffer >> vecValue._v[0] >> vecValue._v[1] >> vecValue._v[2];
         bRet = setAttributeValue( name, vecValue );
     }
-    else 
-    if ( citype == "STRING" ) {
+    else if ( citype == "STRING" ) 
+    {
         bRet = setAttributeValue( name, value );
     }
 
     return bRet;
+}
+
+bool AttributeManager::setAttributeValue( const string& name, const string& valuestring )
+{        
+    vector< EntityAttributeBase* >::iterator p_beg = _attributes.begin(), p_end = _attributes.end();
+    for ( ; p_beg != p_end; p_beg++ )
+    {
+        if ( ( *p_beg )->getName() == name )
+            break;
+    }
+    if ( p_beg == p_end )
+        return false;
+
+    EntityAttributeBase* p_attribute = *p_beg;
+    stringstream strvalue;
+    strvalue << valuestring;
+    unsigned int type = p_attribute->getType();
+    switch ( type ) 
+    {
+        case EntityAttributeType::FLOAT:
+        {
+            float value;
+            strvalue >> value;
+            setAttributeValue( name, value );
+        }
+        break;
+
+        case EntityAttributeType::BOOL:
+        {
+            bool value = ( valuestring == "true" ? true : false );
+            setAttributeValue( name, value );
+        }
+        break;
+
+        case EntityAttributeType::INTEGER:
+        {
+            int value;
+            strvalue >> value;
+            setAttributeValue( name, value );
+        }
+        break;
+
+        case EntityAttributeType::VECTOR3:
+        {
+            osg::Vec3f value;
+            strvalue >> value._v[ 0 ] >> value._v[ 1 ] >> value._v[ 2 ];
+            setAttributeValue( name, value );
+        }
+        break;
+
+        case EntityAttributeType::STRING:
+        {
+            setAttributeValue( name, valuestring );
+        }
+        break;
+
+        default:
+            assert( NULL && "invalid attribute type!" );
+    }
+
+    return true;
 }
 
 bool AttributeManager::setAttributeValue( const string& name, const EntityAttributeBase& attribute )
@@ -126,7 +240,8 @@ bool AttributeManager::setAttributeValue( const string& name, const EntityAttrib
 void AttributeManager::removeAllAttributes()
 {
     std::vector< EntityAttributeBase* >::iterator pp_attr = _attributes.begin(), pp_end = _attributes.end();
-    while ( pp_attr != pp_end ) {
+    while ( pp_attr != pp_end ) 
+    {
         delete *pp_attr;
         pp_attr++;
     }
