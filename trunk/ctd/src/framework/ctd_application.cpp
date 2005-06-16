@@ -258,8 +258,17 @@ bool Application::initialize( int argc, char **argv )
         unsigned int colorbits = 24;
         Configuration::get()->getSettingValue( CTD_GS_COLORBITS, colorbits );
         p_rs->addPixelAttribute( Producer::RenderSurface::DepthSize, colorbits );
-        Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN, _fullScreen );
-        p_rs->fullScreen( _fullScreen );
+        
+        if ( GameState::get()->getMode() == GameState::Server )
+        {
+            p_rs->fullScreen( false );
+        }
+        else
+        {
+            Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN, _fullScreen );
+            p_rs->fullScreen( _fullScreen );
+        }
+
         p_rs->useCursor( false ); //hide cursor
     }
     // get details on keyboard and mouse bindings used by the viewer.
