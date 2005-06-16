@@ -167,7 +167,7 @@
 <cloud COLOR="#ffff99"/>
 <node TEXT="player">
 <node TEXT="physics">
-<node TEXT="90%">
+<node TEXT="95%">
 <icon BUILTIN="idea"/>
 </node>
 </node>
@@ -177,7 +177,7 @@
 </node>
 </node>
 <node TEXT="animation">
-<node TEXT="90%">
+<node TEXT="95%">
 <icon BUILTIN="idea"/>
 </node>
 </node>
@@ -187,12 +187,12 @@
 </node>
 </node>
 <node TEXT="networking">
-<node TEXT="0%">
+<node TEXT="80%">
 <icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
 <node TEXT="chat functionality">
-<node TEXT="10%">
+<node TEXT="90%">
 <icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
@@ -202,7 +202,7 @@
 </node>
 </node>
 <node TEXT="control / logic">
-<node TEXT="50%">
+<node TEXT="70%">
 <icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
@@ -326,6 +326,11 @@
 <node TEXT="100%">
 <icon BUILTIN="button_ok"/>
 </node>
+</node>
+</node>
+<node TEXT="console">
+<node TEXT="70%">
+<icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
 </node>
