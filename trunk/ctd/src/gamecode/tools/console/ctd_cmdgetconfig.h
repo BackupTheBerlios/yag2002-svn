@@ -49,7 +49,7 @@ class CmdGetConfig : public BaseConsoleCommand
 
         virtual                                     ~CmdGetConfig();
 
-        const std::string&                          execute( const std::vector< std::string >& argmuments );
+        const std::string&                          execute( const std::vector< std::string >& arguments );
 };
 
 

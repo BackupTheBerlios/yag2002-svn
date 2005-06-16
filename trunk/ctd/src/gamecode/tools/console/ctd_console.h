@@ -54,8 +54,11 @@ class EnConsole :  public BaseEntity
         //! Update entity
         void                                        updateEntity( float deltaTime );
 
-        //! Apply given command
-        void                                        applyCmd( const std::string& cmd );
+        //! Apply given command, it will be immediately executed. If hashcmd is true then the command will be stored in an internal hash.
+        void                                        applyCmd( const std::string& cmd, bool hashcmd = true );
+
+        //! Queue command for execution in next update ( is used when commands need other commands for execution, e.g. 'exec' )
+        void                                        queueCmd( std::string cmd, bool hashcmd = true );
 
         //! Try to find a cmd match given the string
         void                                        autoCompleteCmd( const std::string& cmd );
@@ -103,6 +106,8 @@ class EnConsole :  public BaseEntity
         std::vector< std::string >                  _cmdHistory;
 
         unsigned int                                _cmdHistoryIndex;
+
+        std::vector< std::pair< std::string, bool > > _cmdQueue;
 
     friend class ConsoleIH;
 };

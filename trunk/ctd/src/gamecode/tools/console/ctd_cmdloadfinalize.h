@@ -50,7 +50,7 @@ class CmdLoadFinalize : public BaseConsoleCommand
 
         virtual                                     ~CmdLoadFinalize();
 
-        const std::string&                          execute( const std::vector< std::string >& argmuments );
+        const std::string&                          execute( const std::vector< std::string >& arguments );
 };
 
 

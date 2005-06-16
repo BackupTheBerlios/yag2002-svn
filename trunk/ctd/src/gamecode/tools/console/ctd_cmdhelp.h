@@ -49,7 +49,7 @@ class CmdHelp : public BaseConsoleCommand
 
         virtual                                     ~CmdHelp();
 
-        const std::string&                          execute( const std::vector< std::string >& argmuments );
+        const std::string&                          execute( const std::vector< std::string >& arguments );
 };
 
 

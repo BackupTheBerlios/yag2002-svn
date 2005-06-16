@@ -52,7 +52,7 @@ CmdHelp::~CmdHelp()
 {
 }
 
-const std::string& CmdHelp::execute( const std::vector< std::string >& argmuments )
+const std::string& CmdHelp::execute( const std::vector< std::string >& arguments )
 {
     _cmdResult = "possible commands: \n";
     std::vector< std::string > cmds;

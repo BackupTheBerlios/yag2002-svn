@@ -49,7 +49,7 @@ class CmdShowFps : public BaseConsoleCommand
 
         virtual                                     ~CmdShowFps();
 
-        const std::string&                          execute( const std::vector< std::string >& argmuments );
+        const std::string&                          execute( const std::vector< std::string >& arguments );
 };
 
 

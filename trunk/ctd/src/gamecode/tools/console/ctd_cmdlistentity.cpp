@@ -51,7 +51,7 @@ CmdListEntity::~CmdListEntity()
 {
 }
 
-const std::string& CmdListEntity::execute( const std::vector< std::string >& argmuments )
+const std::string& CmdListEntity::execute( const std::vector< std::string >& arguments )
 {
     _cmdResult = "list of currently existing entities:\n";
 

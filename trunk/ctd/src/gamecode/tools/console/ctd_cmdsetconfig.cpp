@@ -51,17 +51,17 @@ CmdSetConfig::~CmdSetConfig()
 {
 }
 
-const std::string& CmdSetConfig::execute( const std::vector< std::string >& argmuments )
+const std::string& CmdSetConfig::execute( const std::vector< std::string >& arguments )
 {
     _cmdResult = "";
-    if ( argmuments.size() < 2 )
+    if ( arguments.size() < 2 )
     {
         _cmdResult = CMD_USAGE_SETCONFIG;
         _cmdResult += "\n";
         return _cmdResult;
     }
     // get the token name to be set with new value
-    std::string reqtoken = argmuments[ 0 ];
+    std::string reqtoken = arguments[ 0 ];
 
     Settings* p_settings = const_cast< Settings* >( Configuration::get()->getAllSettings() );
     std::vector< Settings::SettingBase* >& settingStorages = const_cast< std::vector< Settings::SettingBase* >& >( p_settings->getAllSettingStorages() );
@@ -78,49 +78,49 @@ const std::string& CmdSetConfig::execute( const std::vector< std::string >& argm
         const type_info& settings_typeinfo = ( *p_beg )->getTypeInfo();
         if ( settings_typeinfo == typeid( bool ) ) 
         {
-            bool value = ( argmuments[ 1 ] == "true" ) ? true : false;
+            bool value = ( arguments[ 1 ] == "true" ) ? true : false;
             p_settings->setValue( token, value );
             break;
         } 
         else if ( settings_typeinfo == typeid( int ) ) 
         {
-            tokenvalue << argmuments[ 1 ];
-            int value;
+            tokenvalue << arguments[ 1 ];
+            int value = -1;
             tokenvalue >> value;
             p_settings->setValue( token, value );
             break;
         }
         else if ( settings_typeinfo == typeid( unsigned int ) ) 
         {
-            tokenvalue << argmuments[ 1 ];
-            unsigned int value;
+            tokenvalue << arguments[ 1 ];
+            unsigned int value = -1;
             tokenvalue >> value;
             p_settings->setValue( token, value );
             break;
         }
         else if ( settings_typeinfo == typeid( string ) ) 
         {
-            string value = argmuments[ 1 ];
+            string value = arguments[ 1 ];
             p_settings->setValue( token, value );
             break;
         }
         else if ( settings_typeinfo == typeid( float ) ) 
         {
-            tokenvalue << argmuments[ 1 ];
-            float value;
+            tokenvalue << arguments[ 1 ];
+            float value = -1;
             tokenvalue >> value;
             p_settings->setValue( token, value );
             break;
         }
         else if ( settings_typeinfo == typeid( osg::Vec3f ) ) 
         {
-            if ( argmuments.size() < 4 )
+            if ( arguments.size() < 4 )
             {
                 _cmdResult += "could not set requested setting name '" + reqtoken + "'. a vector with 3 elements is expected as value!\n";
                 return _cmdResult;
             }
 
-            tokenvalue << argmuments[ 1 ] << " " << argmuments[ 2 ] << " " << argmuments[ 2 ];
+            tokenvalue << arguments[ 1 ] << " " << arguments[ 2 ] << " " << arguments[ 2 ];
             osg::Vec3f value;
             tokenvalue >> value._v[ 0 ] >> value._v[ 1 ] >> value._v[ 2 ];
             p_settings->setValue( token, value );

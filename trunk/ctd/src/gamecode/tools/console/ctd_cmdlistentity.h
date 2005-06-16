@@ -49,7 +49,7 @@ class CmdListEntity : public BaseConsoleCommand
 
         virtual                                     ~CmdListEntity();
 
-        const std::string&                          execute( const std::vector< std::string >& argmuments );
+        const std::string&                          execute( const std::vector< std::string >& arguments );
 };
 
 

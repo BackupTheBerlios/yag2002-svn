@@ -51,7 +51,7 @@ CmdLoadFinalize::~CmdLoadFinalize()
 {
 }
 
-const std::string& CmdLoadFinalize::execute( const std::vector< std::string >& argmuments )
+const std::string& CmdLoadFinalize::execute( const std::vector< std::string >& arguments )
 {
     LevelManager::get()->finalizeLoading();
     _cmdResult = "level finalized";

@@ -52,7 +52,7 @@ class BaseConsoleCommand
         inline const std::string&                   getCmdName();
 
         //! Execute the command
-        virtual const std::string&                  execute( const std::vector< std::string >& argmuments ) = 0;
+        virtual const std::string&                  execute( const std::vector< std::string >& arguments ) = 0;
 
     protected:
 

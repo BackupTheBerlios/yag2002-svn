@@ -51,7 +51,7 @@ CmdVersion::~CmdVersion()
 {
 }
 
-const std::string& CmdVersion::execute( const std::vector< std::string >& argmuments )
+const std::string& CmdVersion::execute( const std::vector< std::string >& arguments )
 {
     _cmdResult =  "Virtual Reality Chat (VRC)\n";     
     _cmdResult += "version: '" + string( VRC_VERSION ) + "'\n";

@@ -51,11 +51,11 @@ CmdLoadEntities::~CmdLoadEntities()
 {
 }
 
-const std::string& CmdLoadEntities::execute( const std::vector< std::string >& argmuments )
+const std::string& CmdLoadEntities::execute( const std::vector< std::string >& arguments )
 {
     _cmdResult = "";
 
-    if ( !argmuments.size() )
+    if ( !arguments.size() )
     {
         _cmdResult = getUsage();
         return _cmdResult;
@@ -63,26 +63,26 @@ const std::string& CmdLoadEntities::execute( const std::vector< std::string >& a
     std::string postfix;
     std::string file;
     bool        initentities = false;
-    size_t      argsize = argmuments.size();
+    size_t      argsize = arguments.size();
     if ( argsize > 1 )
     {
-        if ( argmuments[ 0 ] == "-init" )
+        if ( arguments[ 0 ] == "-init" )
         {
             initentities = true;
-            file = argmuments[ 1 ];
+            file = arguments[ 1 ];
 
             if ( argsize > 2 )
-                postfix = argmuments[ 2 ];
+                postfix = arguments[ 2 ];
         }
         else
         {
-            file = argmuments[ 0 ];
-            postfix = argmuments[ 1 ];
+            file = arguments[ 0 ];
+            postfix = arguments[ 1 ];
         }
     }
     else
     {
-        file = argmuments[ 0 ];
+        file = arguments[ 0 ];
     }
 
     _cmdResult = "loading entities ...\n";

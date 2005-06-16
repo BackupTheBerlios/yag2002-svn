@@ -49,7 +49,7 @@ class CmdVersion : public BaseConsoleCommand
 
         virtual                                     ~CmdVersion();
 
-        const std::string&                          execute( const std::vector< std::string >& argmuments );
+        const std::string&                          execute( const std::vector< std::string >& arguments );
 };
 
 

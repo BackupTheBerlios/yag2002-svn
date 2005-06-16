@@ -52,11 +52,11 @@ CmdShowFps::~CmdShowFps()
 {
 }
 
-const std::string& CmdShowFps::execute( const std::vector< std::string >& argmuments )
+const std::string& CmdShowFps::execute( const std::vector< std::string >& arguments )
 {
     _cmdResult = "";
 
-    if ( !argmuments.size() )
+    if ( !arguments.size() )
     {
         _cmdResult = "* error executing command '" + string( CMD_NAME_SHOWFPS ) + "'\n ";
         _cmdResult += getUsage();
@@ -64,9 +64,9 @@ const std::string& CmdShowFps::execute( const std::vector< std::string >& argmum
     }
 
     bool enable = false;
-    if ( argmuments[ 0 ] == "true" )
+    if ( arguments[ 0 ] == "true" )
         enable = true;
-    else if ( argmuments[ 0 ] == "false" )
+    else if ( arguments[ 0 ] == "false" )
         enable = false;
     else 
     {

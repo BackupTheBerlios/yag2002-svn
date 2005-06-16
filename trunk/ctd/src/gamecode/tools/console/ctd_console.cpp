@@ -67,7 +67,7 @@ class ConsoleIH : public GenericInputHandler< EnConsole >
                                                     }
                                                     else if ( _toggleEnable && ea.getKey() == _retCode )
                                                     {
-                                                        _p_userObject->applyCmd( _p_userObject->_p_inputWindow->getText().c_str() );
+                                                        _p_userObject->queueCmd( _p_userObject->_p_inputWindow->getText().c_str() );
                                                     }
                                                     else if ( ea.getKey() == _autoCompleteCode )
                                                     {
@@ -259,6 +259,7 @@ void EnConsole::autoCompleteCmd( const std::string& cmd )
         }
         text += "\n";
         _p_outputWindow->setText( text );
+        _p_outputWindow->setCaratIndex( text.length() );
     }
     else // we have one single match
     {
@@ -268,24 +269,30 @@ void EnConsole::autoCompleteCmd( const std::string& cmd )
     }
 }
 
-void EnConsole::applyCmd( const std::string& cmd )
+void EnConsole::queueCmd( std::string cmd, bool hashcmd )
+{
+    // enqueue the command, it will be executed on next update
+    _cmdQueue.push_back( make_pair( cmd, hashcmd ) );
+}
+
+void EnConsole::applyCmd( const std::string& cmd, bool hashcmd )
 {
     CEGUI::String text = _p_outputWindow->getText();
     text += "> " + cmd + "\n";
     // dispatch the command
-    text += dispatchCmdLine( cmd ) + "\n";
+    text += dispatchCmdLine( cmd );
     _p_outputWindow->setText( text );
     _p_inputWindow->setText( "" );
     // set carat position in order to trigger text scrolling after a new line has been added
     _p_outputWindow->setCaratIndex( text.length() - 1 );
 
     // store the command in history if it is not the exact same as before
-    if ( cmd.length() )
+    if ( hashcmd && cmd.length() )
     {
         if ( !_cmdHistory.size() )
         {
             _cmdHistory.push_back( cmd );
-            _cmdHistoryIndex = _cmdHistory.size() - 1;
+            _cmdHistoryIndex = 0;
         }
         else
         {
@@ -354,11 +361,11 @@ void EnConsole::parseArguments( const std::string& cmdline, std::vector< std::st
 {
     // arguments are white space separated, except they are placed in "" like: "my server name"
     size_t strsize = cmdline.size();
-    size_t marker = 0;
+    int  marker = -1;
     string curstr;
     for ( size_t cnt = 0; cnt <= strsize; cnt++ ) // merge string areas noted by ""
     {
-        if ( ( marker == 0 ) && ( cmdline[ cnt ] == '\"' ) )
+        if ( ( marker == -1 ) && ( cmdline[ cnt ] == '\"' ) )
         {
              marker = cnt;
         }
@@ -366,19 +373,26 @@ void EnConsole::parseArguments( const std::string& cmdline, std::vector< std::st
         {
             string merge = cmdline.substr( marker + 1, cnt - marker - 1 ); // cut the "" from string
             args.push_back( merge );
-            marker = 0;
+            marker = -1;
+            // skip white spaces until next argument
+            cnt = ( cnt < strsize ) ? cnt + 1 : cnt;
+            cnt = cmdline.find_first_not_of( " ", cnt ); // skip white spaces until next argument
+            if ( ( int )cnt < 0 ) // if end of line reached then we are finish parsing arguments
+                break;
+            cnt--;
         }
         else
         {
-            if ( marker == 0 ) 
+            if ( marker == -1 ) 
             {
-                if ( cmdline[ cnt ] == ' ' || cmdline.length() == cnt )
+                if ( ( ( cmdline[ cnt ] == ' ' ) || ( cmdline.length() == cnt ) ) && curstr.size() > 0 )
                 {
-                    if ( curstr != "" )
-                    {
-                      args.push_back( curstr );
-                      curstr = "";
-                    }
+                    args.push_back( curstr );
+                    curstr = "";
+                    cnt = cmdline.find_first_not_of( " ", cnt ); // skip white spaces until next argument
+                    if ( ( int )cnt < 0 ) // if end of line reached then we are finish parsing arguments
+                        break;
+                    cnt--;
                 }
                 else
                 {
@@ -391,7 +405,12 @@ void EnConsole::parseArguments( const std::string& cmdline, std::vector< std::st
 
 void EnConsole::updateEntity( float deltaTime )
 {
+    // execute all queued commands
+    std::vector< std::pair< std::string, bool > >::iterator p_beg = _cmdQueue.begin(), p_end = _cmdQueue.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        applyCmd( p_beg->first, p_beg->second );
 
+    _cmdQueue.clear();
 }
 
 } // namespace CTD

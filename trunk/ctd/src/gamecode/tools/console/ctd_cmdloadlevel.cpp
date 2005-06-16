@@ -51,11 +51,11 @@ CmdLoadLevel::~CmdLoadLevel()
 {
 }
 
-const std::string& CmdLoadLevel::execute( const std::vector< std::string >& argmuments )
+const std::string& CmdLoadLevel::execute( const std::vector< std::string >& arguments )
 {
     _cmdResult = "";
 
-    if ( !argmuments.size() )
+    if ( !arguments.size() )
     {
         _cmdResult = getUsage();
         return _cmdResult;
@@ -63,28 +63,28 @@ const std::string& CmdLoadLevel::execute( const std::vector< std::string >& argm
 
     std::string levelfile;
     bool        finalize = true;
-    if ( argmuments[ 0 ] == "-nf" )
+    if ( arguments[ 0 ] == "-nf" )
     {
         finalize = false;
-        if ( argmuments.size() < 2 )
+        if ( arguments.size() < 2 )
         {
             _cmdResult = getUsage();
             return _cmdResult;
         }
 
-        levelfile = argmuments[ 1 ];
+        levelfile = arguments[ 1 ];
     }
     else
     {
-        levelfile = argmuments[ 0 ];
+        levelfile = arguments[ 0 ];
     }    
     
-    _cmdResult = "loading level ...";
+    _cmdResult = "loading level ...\n";
     LevelManager::get()->loadLevel( levelfile );
 
     if ( finalize )
     {
-        _cmdResult += "finalizing loading ...";
+        _cmdResult += "finalizing loading ...\n";
         LevelManager::get()->finalizeLoading();
     }
     _cmdResult += "loading completed";

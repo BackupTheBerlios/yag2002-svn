@@ -51,7 +51,7 @@ CmdGetConfig::~CmdGetConfig()
 {
 }
 
-const std::string& CmdGetConfig::execute( const std::vector< std::string >& argmuments )
+const std::string& CmdGetConfig::execute( const std::vector< std::string >& arguments )
 {
 
     Settings* p_settings = const_cast< Settings* >( Configuration::get()->getAllSettings() );
