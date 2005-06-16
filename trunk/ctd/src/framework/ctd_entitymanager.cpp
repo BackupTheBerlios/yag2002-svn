@@ -332,6 +332,11 @@ void EntityManager::sendNotification( const EntityNotification& notify )
     _queueNotifications.push_back( notify );
 }
 
+void EntityManager::sendNotification( const EntityNotification& notify, BaseEntity* p_entity )
+{
+    p_entity->handleNotification( notify );
+}
+
 void EntityManager::flushNotificationQueue()
 {
     vector< EntityNotification >::iterator p_notify = _queueNotifications.begin(), p_notifyEnd = _queueNotifications.end();
@@ -612,7 +617,7 @@ void EntityManager::getPersistentEntities( std::vector< BaseEntity* >& entities 
 //-----------------------
 BaseEntityFactory::BaseEntityFactory( const std::string& entityTypeName, unsigned int ntype ) : 
 _typeTypeName( entityTypeName ),
-_networkingType( ntype )
+_creationPolicy( ntype )
 {
     // register factory
     EntityManager::get()->registerFactory( this, true );

@@ -117,8 +117,16 @@ class EntityManager : public Singleton< EntityManager >
 
         //! Send a notification to all notification-registered entities.
         /*! This mechanism allows to notify all entities about actions such as entering or leaving menu.
+        * The notification will be sent out at begin of next game loop update.
         */
         void                                        sendNotification( const EntityNotification& notify );
+
+        //! Send a notification to the given entity.
+        /*! This notification is sent out only to the given entity. This method immediately sends out the notification to given entity regardless 
+        *   of its registration for getting notifications. This mechanism is used by tools such as level editor, command console, etc. for notifying an
+        *   entity about its attribute modifications from outside.
+        */
+        void                                        sendNotification( const EntityNotification& notify, BaseEntity* p_entity );
 
     protected:
 
@@ -227,15 +235,15 @@ class BaseEntityFactory
         //! Get the entity type. Entity types must be unique and are described by a string.
         inline const std::string&                   getType();
 
-        //! Get networking type. It can be a bitwise-or of BaseEntityFactory::Standalone, BaseEntityFactory::Server, and BaseEntityFactory::Client.
-        inline unsigned int                         getNetworkingType();
+        //! Get creation policy. It can be a bitwise-or of BaseEntityFactory::Standalone, BaseEntityFactory::Server, and BaseEntityFactory::Client.
+        inline unsigned int                         getCreationPolicy();
 
         //! Comparision operator for entity factories
         inline bool                                 operator == ( BaseEntityFactory& factory );
 
-        //! Entity's networking type. This is used by level loader in order to decide whether to create an entity described by a level file
+        //! Entity's creation policy. This is used by level loader in order to decide whether to create an entity described by a level file
         //!  depending on the game mode ( server, client, or standalone ).
-        enum NetworkingType
+        enum CreationPolicy
         {
             Standalone = 0x1,
             Server     = 0x2,
@@ -248,7 +256,7 @@ class BaseEntityFactory
 
         const std::string                           _typeTypeName;
 
-        unsigned int                                _networkingType;
+        unsigned int                                _creationPolicy;
 };
 
 //! Use this convenient macro in your derived entity factories
@@ -280,9 +288,9 @@ inline bool BaseEntityFactory::operator == ( BaseEntityFactory& factory )
     return ( _typeTypeName == const_cast< std::string& >( factory.getType() ) );
 }
 
-inline unsigned int BaseEntityFactory::getNetworkingType()
+inline unsigned int BaseEntityFactory::getCreationPolicy()
 {
-    return _networkingType;
+    return _creationPolicy;
 }
 
 inline void BaseEntityFactory::setEntityType( BaseEntity* p_entity ) 
