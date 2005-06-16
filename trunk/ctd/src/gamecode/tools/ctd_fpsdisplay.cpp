@@ -78,6 +78,13 @@ void EnFPSDisplay::handleNotification( const EntityNotification& notify )
             EntityManager::get()->deleteEntity( this );
             break;
 
+        case CTD_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
+        {
+            enable( _enable );
+            _p_wnd->setPosition( CEGUI::Point( _position.x(), _position.y() ) );
+        }
+        break;
+
         default:
             ;
     }
@@ -122,9 +129,6 @@ void EnFPSDisplay::updateEntity( float deltaTime )
 
 void EnFPSDisplay::enable( bool en )
 {
-    if ( _enable == en )
-        return;
-
     if ( en )
     {
         GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
