@@ -294,24 +294,24 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
 
         instancename += instPostfix;
 
-        // create entity, considering the game mode
+        // create entity, considering the game mode and entity's creation policy
         BaseEntityFactory* p_entfac = EntityManager::get()->getEntityFactory( entitytype );
-        unsigned int networkingtype = p_entfac->getNetworkingType();
+        unsigned int creationpolicy = p_entfac->getCreationPolicy();
         bool         create         = false;
         switch ( GameState::get()->getMode() )
         {
             case GameState::Standalone:                
-                if ( networkingtype & BaseEntityFactory::Standalone )
+                if ( creationpolicy & BaseEntityFactory::Standalone )
                     create = true;                    
                 break;
 
             case GameState::Server:                
-                if ( networkingtype & BaseEntityFactory::Server )
+                if ( creationpolicy & BaseEntityFactory::Server )
                     create = true;                    
                 break;
         
             case GameState::Client:                
-                if ( networkingtype & BaseEntityFactory::Client )
+                if ( creationpolicy & BaseEntityFactory::Client )
                     create = true;                    
                 break;
 
