@@ -93,7 +93,7 @@ void NetworkDevice::shutdown()
 bool NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
 {
     // do we already have a session created?
-    assert( _p_session == NULL );
+    assert( _p_session == NULL && "there is already a running session!" );
 
     CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "starting server, time: " << CTD::getTimeStamp() << endl;
 
@@ -140,7 +140,7 @@ bool NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
 bool NetworkDevice::setupClient( const string& serverIp, int channel, const NodeInfo& nodeInfo )
 {
     // do we already have a session created?
-    assert( _p_session == NULL );
+    assert( _p_session == NULL && "there is already a running session!" );
     _nodeInfo  = nodeInfo;
     _p_session = new ReplicaNet;
     if ( !_p_session ) 
