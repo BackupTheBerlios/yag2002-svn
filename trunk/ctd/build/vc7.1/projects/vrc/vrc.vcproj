@@ -401,6 +401,18 @@
 						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_basecmd.h">
 					</File>
 					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdconnect.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdconnect.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdexec.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdexec.h">
+					</File>
+					<File
 						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdgetconfig.cpp">
 					</File>
 					<File
@@ -453,6 +465,18 @@
 					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdshowfps.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdstartserver.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdstartserver.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdunloadlevel.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdunloadlevel.h">
 					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdversion.cpp">
