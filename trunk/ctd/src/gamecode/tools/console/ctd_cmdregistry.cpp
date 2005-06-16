@@ -83,7 +83,7 @@ unsigned int ConsoleCommandRegistry::getAllCmds( std::vector< std::string >& com
     return cnt;
 }
 
-unsigned int ConsoleCommandRegistry::autoCompleteCmd( const std::string& text, std::vector< std::string >& candidates )
+unsigned int ConsoleCommandRegistry::getCmdCandidates( const std::string& text, std::vector< std::string >& candidates )
 {
     unsigned int matchfound = 0;
     std::map< std::string, BaseConsoleCommand* >::iterator p_beg = _cmdRegistry.begin(), p_end = _cmdRegistry.end();

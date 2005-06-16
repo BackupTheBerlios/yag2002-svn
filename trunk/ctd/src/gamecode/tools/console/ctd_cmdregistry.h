@@ -50,7 +50,7 @@ class ConsoleCommandRegistry : public Singleton< ConsoleCommandRegistry >
         BaseConsoleCommand*                         getCmd( const std::string& cmdname );
 
         //! Given a text all possible matching commands are stored in 'candidates'. Returns the count of found matches.
-        unsigned int                                autoCompleteCmd( const std::string& text, std::vector< std::string >& candidates );
+        unsigned int                                getCmdCandidates( const std::string& text, std::vector< std::string >& candidates );
 
         //! Get all registered command names. Returns the total count of commands ( is the same as the vector size of 'commands' ).
         unsigned int                                getAllCmds( std::vector< std::string >& commands );
