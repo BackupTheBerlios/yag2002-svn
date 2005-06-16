@@ -68,7 +68,7 @@ const std::string& CmdEntityAttributeSet::execute( const std::vector< std::strin
     }
 
     // set attribute value using value string
-    if ( !p_entity->getAttributeManager().setAttributeValue( arguments[ 1 ], arguments[ 2 ] ) )
+    if ( !p_entity->getAttributeManager().setAttributeValueByString( arguments[ 1 ], arguments[ 2 ] ) )
     {
         _cmdResult = "* error setting attribute value, check the value format!";
     }
