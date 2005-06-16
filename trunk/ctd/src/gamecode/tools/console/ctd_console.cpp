@@ -282,7 +282,7 @@ void EnConsole::autoCompleteCmd( const std::string& cmd )
 
     // get matching candidates
     std::vector< std::string > candidates;
-    unsigned int matchcnt = ConsoleCommandRegistry::get()->autoCompleteCmd( cmd, candidates );
+    unsigned int matchcnt = ConsoleCommandRegistry::get()->getCmdCandidates( cmd, candidates );
 
     if ( !matchcnt ) // we have no match and no candidates
     {
@@ -305,6 +305,33 @@ void EnConsole::autoCompleteCmd( const std::string& cmd )
         text += "\n";
         _p_outputWindow->setText( text );
         _p_outputWindow->setCaratIndex( text.length() );
+
+        // now auto-complete up to next unmatching character in candidates
+        bool dobreak = false;
+        size_t cnt = cmd.size();
+        do
+        {
+            p_beg = candidates.begin(), p_end = candidates.end();
+            char matchc = ( *p_beg )[ cnt ];
+            p_beg++;
+            for ( ; p_beg != p_end; p_beg++ )
+            {
+                std::string curcmd = *p_beg;
+                if ( ( cnt >= curcmd.length() ) || ( matchc != curcmd[ cnt ] ) )
+                {
+                    dobreak = true;
+                    break;
+                }
+            }
+
+            cnt++;
+
+        } while ( !dobreak );
+
+        std::string cmdc = *candidates.begin();
+        cmdc = cmdc.substr( 0, cnt - 1 );
+        _p_inputWindow->setText( cmdc );
+        _p_inputWindow->setCaratIndex( cmdc.length() );
     }
     else // we have one single match
     {
