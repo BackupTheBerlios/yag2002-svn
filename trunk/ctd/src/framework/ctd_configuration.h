@@ -99,12 +99,15 @@ class Configuration : public Singleton< Configuration >
         template< typename TypeT >
         inline bool                             getSettingValue( const std::string& name, TypeT& value );
 
-        //! Set setting value. Returns false if setting does not exist.
+        //! Set value for given setting. Returns false if setting does not exist.
         template< class TypeT >
         inline bool                             setSettingValue( const std::string& name, const TypeT& value );
 
-        //! Get the settings object where all settings are stored.
-        inline const Settings*                  getAllSettings();
+        //! Set setting given its name and its value as string.
+        bool                                   setSettingValue( const std::string& name, const std::string& value );
+
+        //! Get the configuration settings as string pair < setting name, setting value >
+        void                                    getConfigurationAsString( std::vector< std::pair< std::string, std::string > >& settings );
 
         //! Store the settings to file
         void                                    store();
@@ -180,11 +183,6 @@ template< typename TypeT >
 inline bool Configuration::setSettingValue( const std::string& name, const TypeT& value )
 {
     return _p_settings->setValue( name, value );
-}
-
-inline const Settings* Configuration::getAllSettings()
-{
-    return _p_settings;
 }
 
 } // namespace CTD

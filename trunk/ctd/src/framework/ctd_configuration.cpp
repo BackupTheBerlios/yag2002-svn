@@ -37,8 +37,6 @@
 #include "ctd_application.h"
 #include "ctd_settings.h"
 
-using namespace std;
-
 // default gui scheme
 #define CTD_GUI_DEFUALT_SCHEME "gui/schemes/TaharezLook.scheme"
 
@@ -104,6 +102,121 @@ _chatmode( "RMB" )
 
 Configuration::~Configuration()
 {
+}
+
+void Configuration::getConfigurationAsString( std::vector< std::pair< std::string, std::string > >& settings )
+{
+    std::vector< Settings::SettingBase* >& settingStorages = const_cast< std::vector< Settings::SettingBase* >& >( _p_settings->getAllSettingStorages() );
+    std::vector< Settings::SettingBase* >::iterator p_beg = settingStorages.begin(), p_end = settingStorages.end();
+    for ( ; p_beg != p_end; p_beg++ )
+    {
+        // get the setting value
+        std::string token = ( *p_beg )->getTokenName();
+        std::stringstream tokenvalue;
+        const type_info& settings_typeinfo = ( *p_beg )->getTypeInfo();
+        if ( settings_typeinfo == typeid( bool ) ) 
+        {
+            bool value;
+            _p_settings->getValue( token, value );
+            tokenvalue << ( value ? "true" : "false" );
+        } 
+        else if ( settings_typeinfo == typeid( int ) ) 
+        {
+            int value;
+            _p_settings->getValue( token, value );
+            tokenvalue << value;
+        }
+        else if ( settings_typeinfo == typeid( unsigned int ) ) 
+        {
+            unsigned int value;
+            _p_settings->getValue( token, value );
+            tokenvalue << value;
+        }
+        else if ( settings_typeinfo == typeid( std::string ) ) 
+        {
+            std::string value;
+            _p_settings->getValue( token, value );
+            tokenvalue << value;
+        }
+        else if ( settings_typeinfo == typeid( float ) ) 
+        {
+            float value;
+            _p_settings->getValue( token, value );
+            tokenvalue << value;
+        }
+        else if ( settings_typeinfo == typeid( osg::Vec3f ) ) 
+        {
+            osg::Vec3f value;
+            _p_settings->getValue( token, value );
+            tokenvalue << value.x() << " " << value.y() << " " << value.z();
+        }
+        settings.push_back( make_pair( token, tokenvalue.str() ) );
+    }
+}
+
+bool Configuration::setSettingValue( const std::string& name, const std::string& valuestring )
+{
+    std::vector< Settings::SettingBase* >& settingStorages = const_cast< std::vector< Settings::SettingBase* >& >( _p_settings->getAllSettingStorages() );
+    std::vector< Settings::SettingBase* >::iterator p_beg = settingStorages.begin(), p_end = settingStorages.end();
+    for ( ; p_beg != p_end; p_beg++ )
+    {
+        std::string token = ( *p_beg )->getTokenName();
+        if ( token != name ) // search for given token
+            continue;
+
+        // set the setting value
+        std::stringstream tokenvalue;
+        const type_info& settings_typeinfo = ( *p_beg )->getTypeInfo();
+        if ( settings_typeinfo == typeid( bool ) ) 
+        {
+            bool value = ( valuestring == "true" ) ? true : false;
+            _p_settings->setValue( token, value );
+            break;
+        } 
+        else if ( settings_typeinfo == typeid( int ) ) 
+        {
+            tokenvalue << valuestring;
+            int value = -1;
+            tokenvalue >> value;
+            _p_settings->setValue( token, value );
+            break;
+        }
+        else if ( settings_typeinfo == typeid( unsigned int ) ) 
+        {
+            tokenvalue << valuestring;
+            unsigned int value = -1;
+            tokenvalue >> value;
+            _p_settings->setValue( token, value );
+            break;
+        }
+        else if ( settings_typeinfo == typeid( std::string ) ) 
+        {
+            std::string value = valuestring;
+            _p_settings->setValue( token, value );
+            break;
+        }
+        else if ( settings_typeinfo == typeid( float ) ) 
+        {
+            tokenvalue << valuestring;
+            float value = -1;
+            tokenvalue >> value;
+            _p_settings->setValue( token, value );
+            break;
+        }
+        else if ( settings_typeinfo == typeid( osg::Vec3f ) ) 
+        {
+            tokenvalue << valuestring;
+            osg::Vec3f value;
+            tokenvalue >> value._v[ 0 ] >> value._v[ 1 ] >> value._v[ 2 ];
+            _p_settings->setValue( token, value );
+            break;
+        }
+    }
+
+    if ( p_beg == p_end )
+        return false;
+
+    return true;
 }
 
 void Configuration::store()
