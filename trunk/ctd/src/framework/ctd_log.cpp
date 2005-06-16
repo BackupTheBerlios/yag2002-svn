@@ -124,6 +124,7 @@ void Log::out( const string& msg )
         if ( ( *pp_sink )->_logLevel <= _severity )
         {
             *( ( *pp_sink )->_p_stream ) << msg;
+            ( ( *pp_sink )->_p_stream )->flush();
         }
     }
 }
