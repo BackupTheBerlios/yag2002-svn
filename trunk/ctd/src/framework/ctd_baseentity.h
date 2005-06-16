@@ -79,6 +79,7 @@ class EntityNotification
 #define     CTD_NOTIFY_NEW_LEVEL_INITIALIZED        0xF0000023  // sent when a new level has been loaded and initialized, register your entities for updates and other things in this phase
 #define     CTD_NOTIFY_MENU_ENTER                   0xF0000030  // sent when entering menu system
 #define     CTD_NOTIFY_MENU_LEAVE                   0xF0000031  // sent when leaving menu system
+#define     CTD_NOTIFY_ENTITY_ATTRIBUTE_CHANGED     0xF0000040  // sent when an entity attribute has been changed ( e.g. by an level editor )
 #define     CTD_NOTIFY_SHUTDOWN                     0xF00000FF  // sent when shutting down the system
 
 
