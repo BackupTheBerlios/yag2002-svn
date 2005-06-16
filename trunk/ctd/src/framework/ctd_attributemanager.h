@@ -204,7 +204,7 @@ class AttributeManager
         * \param valuestring                New Value to be set
         * \return                           true if the value has been found and the value string had a proper format, otherwise false
         */
-        bool                                setAttributeValue( const std::string& name, const std::string& valuestring );
+        bool                                setAttributeValueByString( const std::string& name, const std::string& valuestring );
 
         /**
         * Set attribute value given an existing attribute.

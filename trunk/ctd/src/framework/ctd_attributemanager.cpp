@@ -129,7 +129,7 @@ bool AttributeManager::setAttributeValue( const string &name, const string &type
     return bRet;
 }
 
-bool AttributeManager::setAttributeValue( const string& name, const string& valuestring )
+bool AttributeManager::setAttributeValueByString( const string& name, const string& valuestring )
 {        
     vector< EntityAttributeBase* >::iterator p_beg = _attributes.begin(), p_end = _attributes.end();
     for ( ; p_beg != p_end; p_beg++ )
