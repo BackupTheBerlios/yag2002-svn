@@ -879,6 +879,9 @@ void EnMenu::onLevelSelected( string levelfile, CEGUI::Image* p_img )
 
         _p_loadingWindow->show();
         _p_menuWindow->hide();
+
+        // set game mode to standalone
+        GameState::get()->setMode( GameState::Standalone );
     }
     else if ( _levelSelectionState == ForServer ) 
     {
