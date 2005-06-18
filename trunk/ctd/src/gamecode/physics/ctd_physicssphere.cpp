@@ -29,7 +29,7 @@
  ################################################################*/
 
 #include <ctd_main.h>
-#include "ctd_physicsshpere.h"
+#include "ctd_physicssphere.h"
 
 using namespace std;
 using namespace osg; 
