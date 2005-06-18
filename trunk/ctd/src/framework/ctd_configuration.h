@@ -104,7 +104,7 @@ class Configuration : public Singleton< Configuration >
         inline bool                             setSettingValue( const std::string& name, const TypeT& value );
 
         //! Set setting given its name and its value as string.
-        bool                                   setSettingValue( const std::string& name, const std::string& value );
+        bool                                    setSettingValueAsString( const std::string& name, const std::string& value );
 
         //! Get the configuration settings as string pair < setting name, setting value >
         void                                    getConfigurationAsString( std::vector< std::pair< std::string, std::string > >& settings );

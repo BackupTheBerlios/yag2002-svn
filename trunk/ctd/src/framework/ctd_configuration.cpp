@@ -154,7 +154,7 @@ void Configuration::getConfigurationAsString( std::vector< std::pair< std::strin
     }
 }
 
-bool Configuration::setSettingValue( const std::string& name, const std::string& valuestring )
+bool Configuration::setSettingValueAsString( const std::string& name, const std::string& valuestring )
 {
     std::vector< Settings::SettingBase* >& settingStorages = const_cast< std::vector< Settings::SettingBase* >& >( _p_settings->getAllSettingStorages() );
     std::vector< Settings::SettingBase* >::iterator p_beg = settingStorages.begin(), p_end = settingStorages.end();
