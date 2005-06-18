@@ -48,15 +48,21 @@ std::string extractPath( const std::string& fullpath );
 //! Given a full path this function extracts the file name
 std::string extractFileName( const std::string& fullpath );
 
-//! Given a directory this function retrieves all files inside for given extension
-void getDirectoryListing( std::vector< std::string >& listing, const std::string& dir, const std::string& extension );
+// Win32 specific functions
+#ifdef WIN32
+
+//! Spawn an appication given its executable file name and its parameters in param ( white space separated )
+HANDLE spawnApplication( const std::string& cmd, const std::string& params );
+
+//! Given a directory this function retrieves all files inside for given extension in 'listing'. If appenddetails is true then the file info is also stored in list.
+void getDirectoryListing( std::vector< std::string >& listing, const std::string& dir, const std::string& extension, bool appenddetails = false );
+
+//! Given a directory path check if it actually exists in OS file system
+bool checkDirectory( const std::string& dir );
 
 //! Returns a sorted string list with possible display settings above given colorbits filter value (format: WidthxHeight@ColorBits)
 void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned int colorbitsfilter = 0 );
 
-//! Spawn an appication given its executable file name and its parameters in param ( white space separated )
-#ifdef WIN32
-HANDLE spawnApplication( const std::string& cmd, const std::string& params );
 #endif
 
 //! A generic input handler class with automatic adding and removing to / from viewer's event hanlder list
