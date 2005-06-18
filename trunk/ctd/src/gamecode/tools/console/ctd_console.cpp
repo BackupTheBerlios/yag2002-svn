@@ -112,7 +112,8 @@ _p_inputHandler( NULL ),
 _cmdHistoryIndex( 0 ),
 _shutdownInProgress( false ),
 _shutdownCounter( 0 ),
-_p_log( NULL )
+_p_log( NULL ),
+_cwd( "/" )
 {
     // register entity in order to get updated per simulation step
     EntityManager::get()->registerUpdate( this, true );
@@ -255,6 +256,66 @@ bool EnConsole::closeLog()
     return true;
 }
 
+bool EnConsole::setCWD( const std::string& cwd )
+{
+    std::string newcwd = _cwd;
+
+    if ( !cwd.size() )
+    {
+        newcwd = "/";
+    }
+    else
+    {
+        // cut slashes at end of path
+        while ( ( newcwd.size() > 0 ) && ( newcwd[ newcwd.size() - 1 ] != '/' ) ) newcwd.erase( newcwd.size() - 1 );
+
+        if ( cwd[ 0 ] == '/' )
+        {
+            newcwd = cwd;
+        }
+        else if ( cwd == ".." )
+        {
+            if ( newcwd.size() > 1 )
+            {
+                // cut slashes at end of path
+                while ( ( newcwd.size() > 0 ) && ( newcwd[ newcwd.size() - 1 ] != '/' ) ) newcwd.erase( newcwd.size() - 1 );
+                if ( newcwd.size() > 1 ) newcwd.erase( newcwd.size() - 1 );
+            }
+        }
+        else if ( cwd == "." )
+        {
+            // do nothing
+        }
+        else
+        {
+            // currently we don't allow the usage of multiple ".." in path!
+            if ( cwd[ 0 ] == '.' )
+                return false;
+
+            if ( newcwd.size() > 1 )
+                newcwd += "/" + cwd;
+            else
+                newcwd += cwd;
+
+        }
+    }
+
+    // now check if the new directory exists in file system
+    if ( !checkDirectory( Application::get()->getMediaPath() + newcwd ) )
+        return false;
+ 
+    _cwd = newcwd;
+    return true;
+}
+
+//! Get current working directory (relative to media path)
+const std::string& EnConsole::getCWD()
+{
+    return _cwd;
+}
+
+// some methods for shell functionality 
+//-------------------------------------
 void EnConsole::cmdHistory( bool prev )
 {
     if ( !_cmdHistory.size() )

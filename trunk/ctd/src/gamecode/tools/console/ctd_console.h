@@ -73,6 +73,12 @@ class EnConsole :  public BaseEntity
         //! Closes the currently active log. Returns false if there is no active log previously created with createLog.
         bool                                        closeLog();
 
+        //! Set current working directory. Returns false if the path could not be set.
+        bool                                        setCWD( const std::string& cwd );
+
+        //! Get current working directory
+        const std::string&                          getCWD();
+
     protected:
 
         //! Enable / disable statistics rendering
@@ -124,6 +130,8 @@ class EnConsole :  public BaseEntity
         float                                       _shutdownCounter;
 
         std::ofstream*                              _p_log;
+
+        std::string                                 _cwd;
 
     friend class ConsoleIH;
 };
