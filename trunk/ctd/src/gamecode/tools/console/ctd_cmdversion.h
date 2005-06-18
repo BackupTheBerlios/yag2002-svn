@@ -37,7 +37,8 @@ namespace CTD
 {
 // console command name
 #define CMD_NAME_VERSION    "version"
-#define CMD_USAGE_VERSION   "use: version"
+#define CMD_USAGE_VERSION   "show curren version information.\n"\
+                            "use: version"
 
 class BaseConsoleCommand;
 
