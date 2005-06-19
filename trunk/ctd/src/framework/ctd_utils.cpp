@@ -100,6 +100,15 @@ std::string extractFileName( const std::string& fullpath )
     return "";
 }
 
+std::string cleanPath( const std::string& path )
+{
+    std::string cleanpath = path;
+    for ( std::string::iterator i = cleanpath.begin(), e = cleanpath.end(); i != e; i++ )
+        if ( *i == '\\') *i = '/';
+
+    return cleanpath;
+}
+
 // helper class for enumerateDisplaySettings
 class DispSettings
 {
@@ -130,6 +139,13 @@ class DispSettings
 };
 
 #ifdef WIN32
+
+std::string getCurrentWorkingDirectory()
+{
+    char buf[ 512 ];
+    GetCurrentDirectory( sizeof( buf ), buf );
+    return std::string( buf );
+}
 
 void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned int colorbitsfilter )
 {
