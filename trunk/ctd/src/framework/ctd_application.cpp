@@ -161,13 +161,32 @@ bool Application::initialize( int argc, char **argv )
 
     // set the media path as first step, other modules need it for loading resources etc.
     //-------------------
-    _mediaPath = arguments.getApplicationName();
-    //  clean path
-    for ( string::iterator i = _mediaPath.begin(), e = _mediaPath.end(); i != e; i++ ) if ( *i == '\\') *i = '/';
-    string tmp = _mediaPath.substr( 0, _mediaPath.rfind( "/" ) );
-    tmp = tmp.substr( 0, tmp.rfind( "/" ) );
-    tmp = tmp.substr( 0, tmp.rfind( "/" ) );
-    _mediaPath = tmp;
+    _mediaPath = cleanPath( arguments.getApplicationName() );
+    std::vector< std::string > path;
+    explode( _mediaPath, "/", &path );
+    if ( path.size() > 1 )
+    {
+        std::string dir;
+        for ( size_t cnt = 0; cnt < path.size() - 3; cnt++ )
+            dir += path[ cnt ] + "/";
+
+        dir.erase( dir.size() -1 );
+        _mediaPath = dir;
+    }
+    else
+    {
+        std::string dir = getCurrentWorkingDirectory();
+        dir = cleanPath( dir );
+        dir += "/";
+        path.clear();
+        explode( dir, "/", &path );
+        dir = "";
+        for ( size_t cnt = 0; cnt < path.size() - 2; cnt++ )
+            dir += path[ cnt ] + "/";
+
+        dir.erase( dir.size() -1 );
+        _mediaPath = dir;
+    }
     _mediaPath += CTD_MEDIA_PATH;
     //-------------------
     // set the ful binary path of application
