@@ -48,7 +48,7 @@ _enable( true )
     EntityManager::get()->registerNotification( this, true );   
 
     // register entity attributes
-    _attributeManager.addAttribute( "persistent"    , _isPersistent  );
+    _attributeManager.addAttribute( "persistence"   , _isPersistent  );
     _attributeManager.addAttribute( "enable"        , _enable        );
     _attributeManager.addAttribute( "right"         , _texNames[ 0 ] );
     _attributeManager.addAttribute( "left"          , _texNames[ 1 ] );

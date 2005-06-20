@@ -74,8 +74,7 @@ class EnSkyBox :  public BaseEntity
 
     protected:
 
-        //! This entity is persistent so we have to handle entity's update registration on every level loading and
-        //  destruction ourselves.
+        //! This entity is persistent so it has to trigger its destruction on shutdown ifself.
         void                                        handleNotification( const EntityNotification& notify );
 
         EyeTransform*                               _p_transformEyePoint;
