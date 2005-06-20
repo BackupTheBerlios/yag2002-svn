@@ -32,6 +32,7 @@
  ################################################################*/
 
 #include <ctd_main.h>
+#include <ctd_gameutils.h>
 #include "ctd_playernetworking.h"
 #include "ctd_playerimpl.h"
 #include "ctd_playerimplClient.h"
@@ -67,11 +68,7 @@ _loadedPlayerEntity( NULL )
 
         // TODO: get the character config file over net!
         std::string playerconfig;
-        if ( CTD::GameState::get()->getMode() == CTD::GameState::Server )
-            playerconfig = "player/banana.server";
-        else if ( CTD::GameState::get()->getMode() == CTD::GameState::Client )
-            playerconfig = "player/banana.client";
-        else assert( NULL && "something weird is happening here! no mode except server or client is allowed to use networking." );
+        CTD::gameutils::getPlayerConfig( CTD::GameState::get()->getMode(), true, playerconfig );
 
         CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "loading player configuration file: " << playerconfig << endl;            
         std::stringstream postfix;
