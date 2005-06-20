@@ -254,7 +254,7 @@ bool Application::initialize( int argc, char **argv )
             int posx = int( ( width - _screenWidth ) * 0.5f );
             int posy = int( ( height - _screenHeight ) * 0.5f );
 
-            // auto-correct a app window size which is greater than the screen size
+            // auto-correct the app window size which is greater than the screen size
             if ( width < _screenWidth )
             {
                 log << Log::LogLevel( Log::L_WARNING ) << " window width is greater than screen width, adapted to: " << width << endl;

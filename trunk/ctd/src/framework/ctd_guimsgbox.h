@@ -65,7 +65,7 @@ class MessageBoxDialog
         /**
         * Set parameter autodelete to true if you want that the object is automatically deleted after clicking a button. Otherwise
         *  the dialog is only hidden after a click. The user has then to delete the dialog object and optionally set callback object ( see below ).
-        * The object must not further used after clicking a button!
+        * If autodelete is set then the object must not further be used after clicking a button!
         * If p_parent is NULL then the dialog will be appended into root window.
         */
                                                 MessageBoxDialog( 
