@@ -115,6 +115,10 @@ _shutdownCounter( 0 ),
 _p_log( NULL ),
 _cwd( "/" )
 {
+    static bool alreadycreated = false;
+    assert( !alreadycreated && "the console entity can be created only once for entire application run-time. you are trying to create a second instance!" );
+    alreadycreated = true;
+
     // register entity in order to get updated per simulation step
     EntityManager::get()->registerUpdate( this, true );
     // register entity in order to get notifications
