@@ -211,9 +211,6 @@ class EntityManager : public Singleton< EntityManager >
             PostInitializingEntities            
         }                                           _internalState;
 
-        //! A flag showing the shutdown process
-        bool                                        _shuttingDown;
-
     friend class Singleton< EntityManager >;
     friend class LevelManager;
     friend class Application;
