@@ -99,6 +99,6 @@
 #include <assert.h>
 
 // VRC version
-#define VRC_VERSION     "SilverOrange"
+#define VRC_VERSION     "0.5"
 
 #endif // _CTD_BASE_H_
