@@ -60,7 +60,7 @@ const std::string& CmdShutdown::execute( const std::vector< std::string >& argum
         delay >> fdelay;
     }
     if ( fdelay > 0 )
-        _cmdResult = "shutting down the application in " + arguments[ 0 ] + " minute(s) ...";
+        _cmdResult = "shutting down the application in " + arguments[ 0 ] + " seconds ...";
     else
         _cmdResult = "shutting down the application now ...";
 
