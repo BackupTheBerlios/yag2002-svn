@@ -132,7 +132,7 @@ void PlayerImplClient::initialize()
 
 void PlayerImplClient::postInitialize()
 {
-    log << Log::LogLevel( Log::L_INFO ) << "  setup player implementation Server ..." << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "  setup player implementation Client ..." << endl;
 
     // local client specific setup
     if ( !getPlayerNetworking()->isRemoteClient() )
