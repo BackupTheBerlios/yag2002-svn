@@ -51,12 +51,19 @@ class EnFog :  public BaseEntity
 
         //! As the actual fog object is shared between entities so call this method to set the right 
         //!  attributes for particular entity.
-        void                                        activateFog();
+        void                                        enable( bool en );
 
-        //! Disable fog. This method diables the entire fog ( also for all other fog entities ).
-        static void                                 deactivateFog();
+        //! Set the persistence flag. 
+        //! Note: this flag is checked by framework on destruction of a level.
+        void                                        setPersistent( bool persistence ) { _isPersistent = persistence; }
 
     protected:
+
+        //! This entity can be either persistent or not!
+        const bool                                  isPersistent() const { return _isPersistent; }
+
+        //! This entity is persistent so it has to trigger its destruction on shutdown ifself.
+        void                                        handleNotification( const EntityNotification& notify );
 
         float                                       _density;
 
@@ -70,6 +77,10 @@ class EnFog :  public BaseEntity
     protected:
 
         static osg::Fog*                            _p_fog;
+
+        bool                                        _isPersistent;
+
+        static unsigned int                         _instCount;
 };
 
 //! Entity type definition used for type registry
