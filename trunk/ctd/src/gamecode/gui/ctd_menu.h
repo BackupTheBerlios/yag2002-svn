@@ -125,9 +125,6 @@ class EnMenu :  public BaseEntity
         void                                        onSettingsDialogClose();
         //---
 
-        //! Get the player configuration file depending on given game mode ( server, client, or standalone )
-        std::string                                 getPlayerConfig( unsigned int mode );
-
         //! Begin intro
         void                                        beginIntro();
 

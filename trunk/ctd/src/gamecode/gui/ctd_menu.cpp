@@ -29,6 +29,7 @@
  ################################################################*/
 
 #include <ctd_main.h>
+#include <ctd_gameutils.h>
 #include "ctd_menu.h"
 #include "ctd_dialogsettings.h"
 #include "ctd_dialoglevelselect.h"
@@ -648,7 +649,8 @@ void EnMenu::updateEntity( float deltaTime )
             _queuedLevelFile = ""; // reset the queue
 
             // now load the player
-            string playerCfgFile = getPlayerConfig( GameState::get()->getMode() );
+            string playerCfgFile;
+            gameutils::getPlayerConfig( GameState::get()->getMode(), false, playerCfgFile );
             std::vector< BaseEntity* > entities;
             LevelManager::get()->loadEntities( playerCfgFile );
 
@@ -715,49 +717,6 @@ void EnMenu::updateEntity( float deltaTime )
             assert( NULL && "invalid menu state!" );
 
     }
-}
-
-std::string EnMenu::getPlayerConfig( unsigned int mode )
-{
-    string playercfgdir;
-    string playercfgfile;
-    Configuration::get()->getSettingValue( CTD_GS_PLAYER_CONFIG_DIR, playercfgdir );
-    Configuration::get()->getSettingValue( CTD_GS_PLAYER_CONFIG, playercfgfile );
-    // assemble full path of player cfg file
-    string cfg = Application::get()->getMediaPath() + playercfgdir + "/" + playercfgfile;
-
-    // load player config
-    string profile( cfg );
-    Settings* p_settings = SettingsManager::get()->createProfile( profile, cfg );
-    if ( !p_settings )
-    {
-        log << Log::LogLevel( Log::L_ERROR ) << "Menu: cannot find player settings: " << cfg << endl;
-        MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "Error loading player!", MessageBoxDialog::OK, true );
-        p_msg->show();
-        return "";
-    }
-
-    string key, value;
-    switch ( mode )
-    {
-        case GameState::Standalone:
-            key = "standaloneConfig";
-            break;
-
-        case GameState::Client:
-            key = "clientConfig";
-            break;
-
-        default:
-            assert( NULL && "unknown game mode for player configuration in Menu!" );
-    }
-
-    p_settings->registerSetting( key, value );
-    SettingsManager::get()->loadProfile( profile );
-    p_settings->getValue( key, value );
-    SettingsManager::get()->destroyProfile( profile );
-
-    return value;
 }
 
 void EnMenu::beginIntro()
