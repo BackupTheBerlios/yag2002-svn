@@ -296,6 +296,11 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
 
         // create entity, considering the game mode and entity's creation policy
         BaseEntityFactory* p_entfac = EntityManager::get()->getEntityFactory( entitytype );
+        if ( !p_entfac )
+        {
+            log << Log::LogLevel( Log::L_ERROR ) << "  **** unknown entity type '" << entitytype << "', skipping" << endl;
+            continue;       
+        }
         unsigned int creationpolicy = p_entfac->getCreationPolicy();
         bool         create         = false;
         switch ( GameState::get()->getMode() )
@@ -325,20 +330,20 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
         // could we find entity type
         if ( !p_entity ) 
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "*** could not find entity type ' " << entitytype << " ', skipping entity!" << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "*** could not find entity type '" << entitytype << "', skipping entity!" << endl;
             continue;
         }
         // add to given list if it was desired
         if ( p_entities )
             p_entities->push_back( p_entity );
 
-        log << Log::LogLevel( Log::L_DEBUG ) << "  entity created, type: '" << enttype << " '" << endl;
+        log << Log::LogLevel( Log::L_DEBUG ) << "  entity created, type: '" << enttype << "'" << endl;
         // get instance name if one provided
         p_bufName = ( char* )p_entityElement->Attribute( CTD_LVL_ENTITY_INST_NAME );
         if ( p_bufName ) {
             // set entity's instance name
             p_entity->setInstanceName( instancename );
-            log << Log::LogLevel( Log::L_DEBUG ) << "  instance name: '" << instancename << " '" << endl;
+            log << Log::LogLevel( Log::L_DEBUG ) << "  instance name: '" << instancename << "'" << endl;
         }
 
         entityCounter++;
@@ -438,7 +443,6 @@ void LevelManager::initializeFirstTime()
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** cannot initialize sound device openAL. reason: '" << e.what() << "'" << endl;
         log << Log::LogLevel( Log::L_ERROR ) << "***   have you already installed the openAL drivers?" << endl;
-        return;
     }
 
     log << Log::LogLevel( Log::L_INFO ) << "initializing gui system..." << endl;
@@ -533,9 +537,9 @@ osg::Node* LevelManager::loadMesh( const string& fileName, bool useCache )
 
 void LevelManager::shutdown()
 {
-    // important: first of all we shut down all entities!
+    // clean up entity manager
     EntityManager::get()->shutdown(); 
-    // then we shut down all other libs managed by level loader
+    // shutdown all other libs managed by level loader
     osgAL::SoundManager::instance()->shutdown();
     Physics::get()->shutdown();
     GuiManager::get()->shutdown();
