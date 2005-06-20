@@ -66,21 +66,6 @@ _rotZ( 0 )
 
 BasePlayerImplementation::~BasePlayerImplementation()
 {
-    // release resources
-    if ( _p_playerPhysics )
-    {
-        EntityManager::get()->deleteEntity( _p_playerPhysics );
-    }
-
-    if ( _p_playerAnimation )
-    {
-        EntityManager::get()->deleteEntity( _p_playerAnimation );
-    }
-
-    if ( _p_playerSound )
-    {
-        EntityManager::get()->deleteEntity( _p_playerSound );
-    }
 }
 
 void BasePlayerImplementation::setNextCameraMode()

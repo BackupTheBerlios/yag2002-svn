@@ -36,6 +36,7 @@
 #include "ctd_playerimplstandalone.h"
 #include "ctd_playerimplserver.h"
 #include "ctd_playerimplclient.h"
+#include "ctd_spawnpoint.h"
 
 using namespace osg;
 using namespace std;
@@ -85,10 +86,26 @@ void EnPlayer::handleNotification( const EntityNotification& notify )
 }
 
 void EnPlayer::initialize()
-{
+{    
+    osg::Quat  rotation;
+    osg::Vec3f position;
+
+    // check if the level has spawn points
+    EnSpawnPoint* p_spwanEntity = static_cast< EnSpawnPoint* >( EntityManager::get()->findEntity( ENTITY_NAME_SPAWNPOINT ) );
+    if ( p_spwanEntity )
+    {
+        if ( !EnSpawnPoint::getNextSpawnPoint( position, rotation ) )
+        {
+            log << Log::LogLevel( Log::L_ERROR ) << "EnPlayer: all spawn points are occupied, taking default position and rotation!" << endl;
+        }
+    }
+    else
+    {
+        position = _attributeContainer._pos;
+        rotation = osg::Quat( osg::DegreesToRadians( _attributeContainer._rot ), osg::Vec3f( 0, 0, 1 ) );
+   }
     // set initial rotation and position
-    setPosition( _attributeContainer._pos );
-    osg::Quat rotation = osg::Quat( _attributeContainer._rot, osg::Vec3f( 0, 0, 1 ) );
+    setPosition( position );
     setRotation( rotation );
 
     // build and init the player implementation
