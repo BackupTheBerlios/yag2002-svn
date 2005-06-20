@@ -78,6 +78,7 @@
 				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(CTD_DEP_DIR)\GUI\cegui_mk2-cvs\include&quot;;&quot;$(CTD_DEP_DIR)\Physics\Newton&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(CTD_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(CTD_DEP_DIR)\Sound\osgAL\include&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\src&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="WIN32"
 				RuntimeLibrary="2"
+				EnableEnhancedInstructionSet="2"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="ctd_main.h"
@@ -191,6 +192,12 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\player\ctd_playersound.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\player\ctd_spawnpoint.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\player\ctd_spawnpoint.h">
 				</File>
 				<Filter
 					Name="nw-roles"
