@@ -36,7 +36,7 @@ namespace CTD
 namespace gameutils
 {
 
-bool getPlayerConfig( unsigned int mode, std::string& cfgfile )
+bool getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile )
 {
     std::string playercfgdir;
     std::string playercfgfile;
@@ -60,7 +60,14 @@ bool getPlayerConfig( unsigned int mode, std::string& cfgfile )
             break;
 
         case GameState::Client:
-            key = "clientConfig";
+            if ( remote )
+                key = "remoteClientConfig";
+            else
+                key = "clientConfig";
+            break;
+
+        case GameState::Server:
+                key = "serverConfig";
             break;
 
         default:

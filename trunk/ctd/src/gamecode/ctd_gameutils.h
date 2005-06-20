@@ -38,9 +38,10 @@ namespace CTD
 namespace gameutils
 {
 
-//! Retrieve player configuration file path depending on game settings and given game mode ( Server, Client, Standalone ).
+//! Retrieve player configuration file path depending on game settings and given game mode ( Server, Client, Standalone ) and
+//! in case of Client the remote flag determines local or remote client.
 //! Returns false if something went wrong.
-bool getPlayerConfig( unsigned int mode, std::string& cfgfile );
+bool getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile );
 
 } // namespace gameutils
 } // namespace CTD
