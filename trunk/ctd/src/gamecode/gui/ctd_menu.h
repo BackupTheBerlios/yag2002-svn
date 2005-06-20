@@ -45,6 +45,7 @@ class EnAmbientSound;
 class IntroControl;
 class EnCamera;
 class EnSkyBox;
+class EnFog;
 
 //! The menu system is controlled by this entity
 class EnMenu :  public BaseEntity
@@ -136,6 +137,9 @@ class EnMenu :  public BaseEntity
         //! Ued to turn on / off skybox when entering / leaving menu
         void                                        enableSkybox( bool en );
 
+        //! Ued to turn on / off menu fog when entering / leaving menu
+        void                                        enableFog( bool en );
+
         //! Callback for button click "game settings"        
         bool                                        onClickedGameSettings( const CEGUI::EventArgs& arg );
 
@@ -198,6 +202,8 @@ class EnMenu :  public BaseEntity
         EnCamera*                                   _p_cameraControl;
 
         EnSkyBox*                                   _p_skyBox;
+
+        EnFog*                                      _p_fog;
 
         std::auto_ptr< EnAmbientSound >             _clickSound;
 

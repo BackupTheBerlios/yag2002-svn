@@ -36,6 +36,7 @@
 #include "../sound/ctd_ambientsound.h"
 #include "../visuals/ctd_camera.h"
 #include "../visuals/ctd_skybox.h"
+#include "../visuals/ctd_fog.h"
 
 // used for starting server process
 HANDLE _serverProcHandle = NULL;
@@ -78,7 +79,6 @@ class MenuInputHandler : public GenericInputHandler< EnMenu >
                                                     if ( _p_menu->_menuState == EnMenu::Intro )
                                                     {
                                                         _p_menu->stopIntro();
-                                                        _p_menu->enableSkybox( true );
                                                         _p_menu->enter();
                                                         return false;
                                                     }
@@ -152,7 +152,9 @@ _menuSceneFile( MENU_SCENE ),
 _menuCameraPathFile( MENU_CAMERAPATH ),
 _menuState( None ),
 _levelSelectionState( ForStandalone ),
-_levelLoaded( false )
+_levelLoaded( false ),
+_p_fog( NULL ),
+_p_skyBox( NULL )
 {
     // register entity attributes
     _attributeManager.addAttribute( "menuConfig"                , _menuConfig               );
@@ -384,8 +386,8 @@ void EnMenu::createMenuScene()
     EnSkyBox* p_skyboxEntity = static_cast< EnSkyBox* >( EntityManager::get()->createEntity( ENTITY_NAME_SKYBOX, "_menuSkybox_" ) );
     assert( p_skyboxEntity && "cannot create skybox entity!" );
     _p_skyBox = p_skyboxEntity;
-    p_skyboxEntity->getAttributeManager().setAttributeValue( "persistent", true                 );
-    p_skyboxEntity->getAttributeManager().setAttributeValue( "enable",     false                );
+    p_skyboxEntity->getAttributeManager().setAttributeValue( "persistence", true                );
+    p_skyboxEntity->getAttributeManager().setAttributeValue( "enable",      false               );
     p_skyboxEntity->getAttributeManager().setAttributeValue( "right",      _skyboxImages[ 0 ]   );
     p_skyboxEntity->getAttributeManager().setAttributeValue( "left",       _skyboxImages[ 1 ]   );
     p_skyboxEntity->getAttributeManager().setAttributeValue( "back",       _skyboxImages[ 2 ]   );
@@ -395,6 +397,18 @@ void EnMenu::createMenuScene()
     EntityManager::get()->addToScene( p_skyboxEntity );
     p_skyboxEntity->initialize();
     p_skyboxEntity->postInitialize();
+
+    EnFog* p_fogEntity = static_cast< EnFog* >( EntityManager::get()->createEntity( ENTITY_NAME_FOG, "_menuFog_" ) );
+    assert( p_fogEntity && "cannot create fog entity!" );
+    _p_fog = p_fogEntity;
+    p_fogEntity->getAttributeManager().setAttributeValue( "persistence",    true                            );
+    p_fogEntity->getAttributeManager().setAttributeValue( "density",        0.5f                            );
+    p_fogEntity->getAttributeManager().setAttributeValue( "start",          200.0f                          );
+    p_fogEntity->getAttributeManager().setAttributeValue( "end",            1000.0f                         );
+    p_fogEntity->getAttributeManager().setAttributeValue( "color",          osg::Vec3f( 0.5f, 0.5f, 0.5f )  );
+    EntityManager::get()->addToScene( p_fogEntity );
+    p_fogEntity->initialize();
+    p_fogEntity->postInitialize();
 }
    
 EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume )
@@ -766,6 +780,11 @@ void EnMenu::enableSkybox( bool en )
     _p_skyBox->enable( en );
 }
 
+void EnMenu::enableFog( bool en )
+{
+    _p_fog->enable( en );
+}
+
 void EnMenu::enter()
 {
     if ( _menuState == Visible )
@@ -841,6 +860,7 @@ void EnMenu::switchMenuScene( bool tomenu )
         LevelManager::get()->setStaticMesh( _menuScene.get() );
         _p_cameraControl->setEnable( true );
         enableSkybox( true );
+        enableFog( true );
     }
     else
     {
@@ -848,6 +868,7 @@ void EnMenu::switchMenuScene( bool tomenu )
         LevelManager::get()->setStaticMesh( _levelScene.get() );
         _p_cameraControl->setEnable( false );
         enableSkybox( false );
+        enableFog( false );
     }
 }
 
