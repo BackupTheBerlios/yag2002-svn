@@ -64,6 +64,16 @@ _p_world( Physics::get()->getWorld() )
     _attributeManager.addAttribute( "playThreshold" , _playThreshold        );
 }
 
+EnPhysicsSphere::~EnPhysicsSphere()
+{
+    // remove physics body
+    if ( _p_body )
+    {
+        NewtonBodySetUserData( _p_body, NULL );
+        NewtonDestroyBody( Physics::get()->getWorld(), _p_body );
+    }
+}
+
 void EnPhysicsSphere::initializePhysicsMaterials()
 {
     // create and setup collision matrials
@@ -119,16 +129,6 @@ void EnPhysicsSphere::initializePhysicsMaterials()
     NewtonMaterialSetDefaultSoftness( _p_world, sphereID, stoneID, 0.9f );
     NewtonMaterialSetDefaultFriction( _p_world, sphereID, stoneID, 0.9f, 0.7f );
     NewtonMaterialSetCollisionCallback( _p_world, sphereID, stoneID, &s_sphereCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsSphere >, entityContactEnd ); 
-}
-
-EnPhysicsSphere::~EnPhysicsSphere()
-{
-    // remove physics body
-    if ( _p_body )
-    {
-        NewtonBodySetUserData( _p_body, NULL );
-        NewtonDestroyBody( Physics::get()->getWorld(), _p_body );
-    }
 }
 
 // some physics system callback functions

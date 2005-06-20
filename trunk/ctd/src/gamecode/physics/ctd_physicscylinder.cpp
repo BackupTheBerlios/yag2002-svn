@@ -75,10 +75,6 @@ EnPhysicsCylinder::~EnPhysicsCylinder()
         NewtonBodySetUserData( _p_body, NULL );
         NewtonDestroyBody( Physics::get()->getWorld(), _p_body );
     }
-
-    // remove all sound entities
-    for ( unsigned int cnt = 0; cnt < 4; cnt++ )
-        EntityManager::get()->deleteEntity( _pp_sounds[ cnt ] );
 }
 
 void EnPhysicsCylinder::initializePhysicsMaterials()
