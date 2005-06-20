@@ -51,7 +51,8 @@ class Physics : public Singleton< Physics >
     public:
 
         //! Predefined material ids which are stored in NodeMask
-        enum {
+        enum MaterialID
+        {
                 NO_BUILD     = 0xFF, // this means build no static collision geometry for this node
                 MAT_DEFAULT  = 0x01, // "default", no specific material
                 MAT_WOOD     = 0x02, // "wood"
@@ -61,7 +62,7 @@ class Physics : public Singleton< Physics >
                 MAT_NOCOL    = 0x0F, // "nocol", no collision, use this for passable objects which should be detected though (e.g. for playing a sound)
                 //----------------
                 MAT_eof
-        } MaterialID;
+        };
 
         //! Update physics
         inline void                                 update( float deltaTime );
