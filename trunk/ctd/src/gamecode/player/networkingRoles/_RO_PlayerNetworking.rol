@@ -1,5 +1,5 @@
 /* The chat member object */
-object CTD_MemberNw
+object PlayerNetworking
 {
     
     datablock Function;
@@ -12,56 +12,56 @@ object CTD_MemberNw
     networking
     {
 
-		NData m_pcPlayerName
-		{ 
-			Reliable();
-		}
-		NData m_pcAnimFileName
-		{ 
-			Reliable();
-		}
-		
-        Predict_Float m_fPositionX;
+        NData _p_playerName
+        { 
+            Reliable();
+        }
+        NData _p_configFile
+        { 
+            Reliable();
+        }
+
+        Predict_Float _positionX;
         {
             SetMinError(0.1f);
             SetMinDistance(6.0f);
-            SetMaxError(0.5f);
+            SetMaxError(0.3f);
             SetMaxDistance(10.0f);
             Quadratic();
         }
-        Predict_Float m_fPositionY;
+        Predict_Float _positionY;
         {
             SetMinError(0.1f);
             SetMinDistance(6.0f);
-            SetMaxError(0.5f);
+            SetMaxError(0.3f);
             SetMaxDistance(10.0f);
             Quadratic();
         }
-        Predict_Float m_fPositionZ;
+        Predict_Float _positionZ;
         {
             SetMinError(0.1f);
             SetMinDistance(6.0f);
-            SetMaxError(0.5f);
+            SetMaxError(0.3f);
             SetMaxDistance(10.0f);
             Quadratic();
         }
-	
-        Predict_Float m_fYaw;
+
+        Predict_Float _yaw;
         {
             SetMinError(0.1f);
             SetMaxError(0.2f);
             Linear();
         }
 
-		NData m_uiCmdAnimFlags;
-		{ 
-			Reliable();
-		}
-		
-		Function RPC_AddChatText;
-		{ 
-			Reliable();
-		}
+        NData _cmdAnimFlags;
+        { 
+            Reliable();
+        }
+
+        Function RPC_AddChatText;
+        { 
+            Reliable();
+        }
     }
      
 }
