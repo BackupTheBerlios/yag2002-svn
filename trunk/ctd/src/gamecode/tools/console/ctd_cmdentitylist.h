@@ -37,7 +37,7 @@ namespace CTD
 {
 // console command name
 #define CMD_NAME_ENTITYLIST   "entity.list"
-#define CMD_USAGE_ENTITYLIST  "get all currently existing entities\n"\
+#define CMD_USAGE_ENTITYLIST  "get all currently existing entities and their flags (P persistent, T transformable)\n"\
                               "use: entity.list"
 
 class BaseConsoleCommand;

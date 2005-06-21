@@ -53,17 +53,22 @@ CmdEntityList::~CmdEntityList()
 
 const std::string& CmdEntityList::execute( const std::vector< std::string >& arguments )
 {
-    _cmdResult = "list of currently existing entities:\n";
+    _cmdResult  = "";
 
     string info;
+    std::string flags;
     std::vector< BaseEntity* > entities;
     EntityManager::get()->getAllEntities( entities );
     std::vector< BaseEntity* >::iterator p_beg = entities.begin(), p_end = entities.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
-        info += ( *p_beg )->getInstanceName() + "(" + ( *p_beg )->getTypeName() + ")    ";
+        flags = "";
+        if ( ( *p_beg )->isPersistent() ) flags += "P";
+        if ( ( *p_beg )->isTransformable() ) flags += "T";
+
+        info += ( *p_beg )->getInstanceName() + "(" + ( *p_beg )->getTypeName() + ", " + flags + ")\n";
     }
-    _cmdResult = info + "\n";
+    _cmdResult += info + "\n";
     return _cmdResult;
 }
 
