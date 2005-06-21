@@ -68,7 +68,7 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         void                                        initialize(             
                                                                 const osg::Vec3f&  pos,
                                                                 const std::string& playerName,
-                                                                const std::string& meshFileName
+                                                                const std::string& cfgFile
                                                               );
 
         //! Update distributed object over network, call this in every game loop step
@@ -113,21 +113,25 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
 
     protected:
 
+        // network-shared attributes
         float                                       _positionX;
+
         float                                       _positionY;
+        
         float                                       _positionZ;
 
         float                                       _yaw;
 
         unsigned int                                _cmdAnimFlags;
 
+        char                                        _p_playerName[ 32 ];
+
+        char                                        _p_configFile[ 64 ];
+        //-------
+
         bool                                        _remoteClient;
 
         CTD::BasePlayerImplementation*              _p_playerImpl;
-
-        char                                        _p_playerName[ 32 ];
-
-        char                                        _p_animFileName[ 64 ];
 
         static CTD::Log*                            s_chatLog;
 

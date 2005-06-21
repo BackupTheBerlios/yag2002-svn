@@ -29,6 +29,7 @@
  ################################################################*/
 
 #include <ctd_main.h>
+#include <ctd_gameutils.h>
 #include "ctd_player.h"
 #include "ctd_chatgui.h"
 #include "ctd_playersound.h"
@@ -118,8 +119,11 @@ void PlayerImplClient::initialize()
     // actions to be taken for local client
     if ( !getPlayerNetworking()->isRemoteClient() )
     {
+        // get player's remote client config file so its ghosts load the right config while they get setup on remote machines
+        std::string playerconfig;
+        gameutils::getPlayerConfig( CTD::GameState::get()->getMode(), true, playerconfig );
         // init player's networking 
-        getPlayerNetworking()->initialize( _currentPos, getPlayerEntity()->getPlayerName(), "" ); //! TODO: player init file
+        getPlayerNetworking()->initialize( _currentPos, getPlayerEntity()->getPlayerName(), playerconfig );
 
         // create chat gui
         _p_chatGui = std::auto_ptr< PlayerChatGui >( new PlayerChatGui );
