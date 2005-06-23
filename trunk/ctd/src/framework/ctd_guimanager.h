@@ -72,13 +72,13 @@ class GuiManager : public Singleton< GuiManager >
         void                                    messageBox( const std::string& title, const std::string& message );
 
         //! Get the render area of gui.
-        void                                    getGuiArea( float& width, float& height );
+        void                                    getGuiArea( float& width, float& height ) const;
 
         //! Activate / deactive gui event handling and rendering
         void                                    activate( bool active );
 
         //! Get active / deactive state
-        bool                                    isActive();
+        bool                                    isActive() const;
 
         //! Retrieve the gui renderer. One can used it e.g. to create textures for StaticImage elements.
         CTDGuiRenderer*                         getGuiRenderer();
@@ -103,7 +103,7 @@ class GuiManager : public Singleton< GuiManager >
         CEGUI::DefaultWindow*                   getRootWindow();
 
         //! Show / hide mouse pointer
-        void                                    showMousePointer( bool show );
+        void                                    showMousePointer( bool show ) const;
 
         //! Lock the mouse to given x and y position. The mouse movement handling will be disabled for pointer positioning.
         /*!
@@ -143,7 +143,7 @@ class GuiManager : public Singleton< GuiManager >
         {
             public:
 
-                                                InputHandler( GuiManager* p_guimgr );                                                    
+                explicit                        InputHandler( GuiManager* p_guimgr );                                                    
                                                 
                 virtual                         ~InputHandler() {};
 

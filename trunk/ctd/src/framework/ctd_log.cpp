@@ -57,15 +57,23 @@ Log::~Log()
         if ( !( *pp_sink )->_stdstream ) delete *pp_sink;
 }
 
-void Log::addSink( const std::string& sinkname, const std::string& filename, unsigned int loglevel )
+bool Log::addSink( const std::string& sinkname, const std::string& filename, unsigned int loglevel )
 {
-    assert( loglevel <= L_INFO && loglevel >= L_ERROR );
+    if( loglevel > L_INFO || loglevel < L_ERROR )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "invalid log level for given sink '"  << sinkname <<  "'" << endl;
+        return false;
+    }
 
     // check if there is already a sink with requested sink name
     vector< Sink* >::iterator pp_sink = _sinks.begin(), pp_sinkEnd = _sinks.end();
     for ( ; pp_sink != pp_sinkEnd; pp_sink++ )
     {
-        assert( ( *pp_sink )->_name == sinkname && "sink name already exists!" );            
+        if ( ( *pp_sink )->_name == sinkname )
+        {
+            log << Log::LogLevel( Log::L_ERROR ) << "sink name '" << sinkname << "' already exists!" << endl;
+            return false;
+        }
     }
 
     fstream* p_stream = new fstream;
@@ -73,27 +81,42 @@ void Log::addSink( const std::string& sinkname, const std::string& filename, uns
     if ( !*p_stream )
     {   
         delete p_stream;
+        log << Log::LogLevel( Log::L_ERROR ) << "cannot open log file '" << filename << "' for sink '" << sinkname << "'" << endl;
+        return false;
+
     }
     else
     {
         Sink *p_sink = new Sink( sinkname, p_stream, loglevel );
         _sinks.push_back( p_sink );
     }
+
+    return true;
 }
 
-void Log::addSink( const string& sinkname, ostream& sink, unsigned int loglevel )
+bool Log::addSink( const string& sinkname, ostream& sink, unsigned int loglevel )
 {
-    assert( loglevel <= L_INFO && loglevel >= L_ERROR );
+    if( loglevel > L_INFO || loglevel < L_ERROR )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "invalid log level for given sink '" << sinkname <<  "'" << endl;
+        return false;
+    }
     
     // check if there is already a sink with requested sink name
     vector< Sink* >::iterator pp_sink = _sinks.begin(), pp_sinkEnd = _sinks.end();
     for ( ; pp_sink != pp_sinkEnd; pp_sink++ )
     {
-        assert( ( *pp_sink )->_name != sinkname && "sink name already exists!" );            
+        if ( ( *pp_sink )->_name == sinkname )
+        {
+            log << Log::LogLevel( Log::L_ERROR ) << "sink name '" << sinkname << "' already exists!"  << endl;
+            return false;
+        }
     }
 
     Sink *p_sink = new Sink( sinkname, &sink, loglevel, true );
     _sinks.push_back( p_sink );
+
+    return true;
 }
 
 void Log::removeSink( const string& sinkname )

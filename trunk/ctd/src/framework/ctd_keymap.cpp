@@ -30,7 +30,6 @@
 
 #include <ctd_base.h>
 #include "ctd_keymap.h"
-#include "ctd_log.h"
 
 namespace CTD
 {

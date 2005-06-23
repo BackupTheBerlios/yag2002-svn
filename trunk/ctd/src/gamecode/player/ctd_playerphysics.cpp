@@ -296,7 +296,7 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     steerAngle = min( max( cross._v[ 2 ], -1.0f ), 1.0f );
 	steerAngle = asinf( steerAngle );
 	NewtonBodyGetOmega( p_phys->_p_body, &omega._v[ 0 ] );
-	Vec3f torque( 0, 0, 0.5f * Izz * ( steerAngle * timestepInv - omega._v[ 2 ] ) * timestepInv );
+	Vec3f torque( 0.0f, 0.0f, 0.5f * Izz * ( steerAngle * timestepInv - omega._v[ 2 ] ) * timestepInv );
     NewtonBodySetTorque( p_phys->_p_body, &torque._v[ 0 ] );
 	
     // climb steps by adding a force
@@ -306,7 +306,7 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
         climbforce = p_phys->_climbForce;
     }
     // reset climb contact
-    p_phys->_climbContact.set( 0, 0, 0 );
+    p_phys->_climbContact.set( 0.0f, 0.0f, 0.0f );
 
     force._v[ 2 ] = mass * ( p_phys->_gravity + climbforce ); // add gravity and climbing force
 
@@ -417,9 +417,9 @@ EnPlayerPhysics::~EnPlayerPhysics()
         NewtonDestroyBody( Physics::get()->getWorld(), _p_body );
 }
 
-void EnPlayerPhysics::handleNotification( const EntityNotification& notify )
+void EnPlayerPhysics::handleNotification( const EntityNotification& notification )
 {
-    switch( notify.getId() )
+    switch( notification.getId() )
     {
         case CTD_NOTIFY_BUILDING_PHYSICSWORLD:
 
@@ -445,13 +445,13 @@ void EnPlayerPhysics::handleNotification( const EntityNotification& notify )
 void EnPlayerPhysics::initializePhysicsMaterials()
 {
     // setup materials
-    unsigned int playerID   = Physics::get()->createMaterialID( "player" );
-    unsigned int defaultID  = Physics::get()->getMaterialId( "default" );
-    unsigned int levelID    = Physics::get()->getMaterialId( "level" );
-    unsigned int woodID     = Physics::get()->getMaterialId( "wood" );
-    unsigned int metalID    = Physics::get()->getMaterialId( "metal" );
-    unsigned int grassID    = Physics::get()->getMaterialId( "grass" );
-    unsigned int stoneID    = Physics::get()->getMaterialId( "stone" );
+    int playerID   = Physics::get()->createMaterialID( "player" );
+    int defaultID  = Physics::get()->getMaterialId( "default" );
+    int levelID    = Physics::get()->getMaterialId( "level" );
+    int woodID     = Physics::get()->getMaterialId( "wood" );
+    int metalID    = Physics::get()->getMaterialId( "metal" );
+    int grassID    = Physics::get()->getMaterialId( "grass" );
+    int stoneID    = Physics::get()->getMaterialId( "stone" );
 
     // set non-colliding for player-nocol collisions
     NewtonMaterialSetDefaultCollidable( _p_world, Physics::get()->getMaterialId( "nocol" ), playerID, 0 );

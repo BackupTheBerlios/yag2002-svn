@@ -31,7 +31,6 @@
 
 #include <ctd_base.h>
 #include "ctd_gamestate.h"
-#include "ctd_log.h"
 
 namespace CTD
 {

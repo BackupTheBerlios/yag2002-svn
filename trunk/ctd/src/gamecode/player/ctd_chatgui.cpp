@@ -54,12 +54,18 @@ _state( Idle ),
 _fadeTimer( 0 ),
 _frameAlphaValue( 1.0f ),
 _p_mouseImageWalkMode( NULL ),
-_p_mouseImageDefault( NULL )
+_p_mouseImageDefault( NULL ),
+_p_btnMode( NULL ),
+_p_btnHide( NULL )
 {
 }
 
 PlayerChatGui::~PlayerChatGui()
 {
+    // restore pointer image and release it
+    CEGUI::MouseCursor::getSingleton().setImage( _p_mouseImageDefault );
+    GuiManager::get()->releasePointer();
+
     if ( _p_wnd )
         CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
 }
@@ -80,7 +86,7 @@ void PlayerChatGui::initialize( BasePlayerImplementation* p_playerImpl, const st
         _p_frame->setMinimumSize( CEGUI::Size( 0.1f, 0.08f ) );
         _p_frame->hide();
     }
-    catch ( CEGUI::Exception e )
+    catch ( const CEGUI::Exception& e )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** error loading layout '" << layoutFile << "'" << endl;
         log << "   reason: " << e.getMessage().c_str() << endl;
@@ -143,7 +149,7 @@ void PlayerChatGui::initialize( BasePlayerImplementation* p_playerImpl, const st
         assert( _p_mouseImageWalkMode && " missing image Crosshair in CTDExtras image set!" );
         _p_mouseImageDefault = const_cast< CEGUI::Image* >( CEGUI::System::getSingleton().getDefaultMouseCursor() );
     }
-    catch ( CEGUI::Exception e )
+    catch ( const CEGUI::Exception& e )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** error setting up layout '" << layoutFile << "'" << endl;
         log << "   reason: " << e.getMessage().c_str() << endl;
@@ -256,8 +262,8 @@ bool PlayerChatGui::onCloseFrame( const CEGUI::EventArgs& arg )
 bool PlayerChatGui::onEditboxTextChanged( const CEGUI::EventArgs& arg )
 {
     // check for 'Return' key
-    CEGUI::KeyEventArgs* ke = static_cast< CEGUI::KeyEventArgs* >( &( CEGUI::EventArgs& )arg );
-    if ( ke->codepoint == osgGA::GUIEventAdapter::KEY_Return )
+    CEGUI::KeyEventArgs& ke = static_cast< CEGUI::KeyEventArgs& >( const_cast< CEGUI::EventArgs& >( arg ) );
+    if ( ke.codepoint == osgGA::GUIEventAdapter::KEY_Return )
     {
         // in standalone mode we have no networking
         if ( GameState::get()->getMode() != GameState::Standalone )

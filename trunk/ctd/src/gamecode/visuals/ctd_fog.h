@@ -63,7 +63,7 @@ class EnFog :  public BaseEntity
         const bool                                  isPersistent() const { return _isPersistent; }
 
         //! This entity is persistent so it has to trigger its destruction on shutdown ifself.
-        void                                        handleNotification( const EntityNotification& notify );
+        void                                        handleNotification( const EntityNotification& notification );
 
         float                                       _density;
 

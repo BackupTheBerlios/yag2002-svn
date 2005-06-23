@@ -64,12 +64,14 @@ using namespace CTD;
 CTD_SINGLETON_IMPL( LevelManager );
 
 LevelManager::LevelManager() :
-_topGroup( new osg::Group() ),
-_nodeGroup( new osg::Group() ),
-_entityGroup( new osg::Group() ),
 _firstLoading( true ),
-_levelHasMap( false )
+_levelHasMap( false ),
+_staticMesh( NULL )
 {
+    _topGroup    = new osg::Group();
+    _nodeGroup   = new osg::Group();
+    _entityGroup = new osg::Group();
+
     // set name of top group
     _topGroup->setName( CTD_TOP_GROUP_NAME );
 
@@ -138,7 +140,8 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
         _nodeGroup->setName( CTD_NODE_GROUP_NAME );
         _topGroup->addChild( _nodeGroup.get() );
 
-        assert( Physics::get()->reinitialize() );
+        bool reinitphysics = Physics::get()->reinitialize();
+        assert( reinitphysics && "could not re-init physics" );
 
         _staticMesh = NULL;
     }
@@ -176,7 +179,7 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
     file.open( string( Application::get()->getMediaPath() + levelFile ).c_str(), std::ios::in, std::ios::binary );
     if ( !file )
     {
-        log << Log::LogLevel( Log::L_DEBUG ) << "*** cannot open level file: '" << levelFile << "'" << endl;
+        log << Log::LogLevel( Log::L_DEBUG ) << "cannot open level file: '" << levelFile << "'" << endl;
         return false;
     }
 
@@ -194,12 +197,12 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
     TiXmlDocument doc;
     doc.SetCondenseWhiteSpace( false );
     doc.Parse( p_buffer );
-    delete p_buffer;
+    delete[] p_buffer;
 
     if ( doc.Error() == true ) 
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** CTD (XML parser) error parsing level config file. " << endl;
-        log << Log::LogLevel( Log::L_ERROR ) << doc.ErrorDesc() << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "error parsing level config file. " << endl;
+        log << "  reason: " << doc.ErrorDesc() << endl;
         return false;
     }
 
@@ -220,7 +223,7 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
         p_levelElement = p_node->ToElement();
         if ( !p_levelElement ) 
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "**** could not find level element. " << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "could not find level element" << endl;
             return false;
         }
 
@@ -229,6 +232,11 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
             staticNodeName = p_bufName;
         else 
             return false;  
+    }
+    else
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "empty level file" << endl;
+        return false;
     }
 
     // get map files, load them and add them to main group
@@ -245,7 +253,7 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
         p_bufName    = ( char* )p_mapElement->Attribute( CTD_LVL_ELEM_NAME );
         if ( p_bufName == NULL ) 
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "*** missing map name in MAP entry" << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "missing map name in MAP entry" << endl;
             return false;
         } 
         else 
@@ -263,7 +271,9 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
                 return false;
         }
 
-    } while ( p_node = p_node->NextSiblingElement( CTD_LVL_ELEM_MAP ) );
+        p_node = p_node->NextSiblingElement( CTD_LVL_ELEM_MAP );
+
+    } while ( p_node );
 
 
     // read entity definitions
@@ -272,7 +282,7 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
 
     unsigned int entityCounter = 0;
     p_node = p_levelElement;
-    for ( p_node = p_node->FirstChild( CTD_LVL_ELEM_ENTITY ); p_node; p_node = p_node->NextSiblingElement( CTD_LVL_ELEM_ENTITY ) ) 
+    for ( p_node = p_levelElement->FirstChild( CTD_LVL_ELEM_ENTITY ); p_node; p_node = p_node->NextSiblingElement( CTD_LVL_ELEM_ENTITY ) ) 
     {
         TiXmlElement* p_entityElement = p_node->ToElement();
         string entitytype, instancename;
@@ -281,7 +291,7 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
         string enttype;
         if ( !p_bufName ) 
         {
-            log << Log::LogLevel( Log::L_DEBUG ) << "  **** entity has no type, skipping" << endl;
+            log << Log::LogLevel( Log::L_DEBUG ) << "entity has no type, skipping" << endl;
             continue;       
         }
         else
@@ -298,7 +308,7 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
         BaseEntityFactory* p_entfac = EntityManager::get()->getEntityFactory( entitytype );
         if ( !p_entfac )
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "  **** unknown entity type '" << entitytype << "', skipping" << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "unknown entity type '" << entitytype << "', skipping" << endl;
             continue;       
         }
         unsigned int creationpolicy = p_entfac->getCreationPolicy();
@@ -330,7 +340,7 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
         // could we find entity type
         if ( !p_entity ) 
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "*** could not find entity type '" << entitytype << "', skipping entity!" << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "could not find entity type '" << entitytype << "', skipping entity!" << endl;
             continue;
         }
         // add to given list if it was desired
@@ -367,7 +377,7 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
             AttributeManager& attrMgr = p_entity->getAttributeManager();
             if ( !attrMgr.setAttributeValue( p_paramName, p_paramType, p_paramValue ) )
             {
-                log << Log::LogLevel( Log::L_DEBUG ) << "****  cannot find entity parameter '" << p_paramName << "'" << endl;
+                log << Log::LogLevel( Log::L_DEBUG ) << "cannot find entity parameter '" << p_paramName << "'" << endl;
             }
         }
 
@@ -394,8 +404,9 @@ void LevelManager::finalizeLoading()
     // are we loading for first time?
     if ( _firstLoading )
     {
-        assert( Physics::get()->initialize() );
-     
+        bool initphysics = Physics::get()->initialize();
+        assert( initphysics && "could not init physics" );
+
         if ( _levelHasMap )
             buildPhysicsStaticGeometry();
 
@@ -435,14 +446,15 @@ void LevelManager::initializeFirstTime()
     {
         p_soundManager->init( 16 );
         p_soundManager->getEnvironment()->setDistanceModel( openalpp::InverseDistance );
-        p_soundManager->getEnvironment()->setDopplerFactor( 1 );
-        osgAL::SoundRoot* p_soundRoot = new osgAL::SoundRoot;
-        _topGroup->addChild( p_soundRoot );
+        p_soundManager->getEnvironment()->setDopplerFactor( 1.0f );
+        osg::ref_ptr< osgAL::SoundRoot > soundRoot = new osgAL::SoundRoot;
+        _topGroup->addChild( soundRoot.get() );
     }
-    catch( openalpp::InitError e )
+    catch( const openalpp::InitError& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** cannot initialize sound device openAL. reason: '" << e.what() << "'" << endl;
-        log << Log::LogLevel( Log::L_ERROR ) << "***   have you already installed the openAL drivers?" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "cannot initialize sound device openAL. reason: '" << e.what() << "'" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << " reason: " << e.what() << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << " have you already installed the openAL drivers?" << endl;
     }
 
     log << Log::LogLevel( Log::L_INFO ) << "initializing gui system..." << endl;
@@ -480,7 +492,9 @@ void LevelManager::buildPhysicsStaticGeometry()
 
     startTick  = timer.tick();
     // build static geoms for physics collision nodes
-    assert( Physics::get()->buildStaticGeometry( _nodeGroup.get() ) );
+    bool buildphysics = Physics::get()->buildStaticGeometry( _nodeGroup.get() );
+    assert( buildphysics && "could not build physics" );
+
     curTick    = timer.tick();
     time4Init  = timer.delta_s( startTick, curTick );
     log << Log::LogLevel( Log::L_INFO ) << "needed time for building pyhsics geometries: " << time4Init << " seconds" << endl;

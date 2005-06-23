@@ -47,9 +47,10 @@ const int CTDGuiRenderer::VERTEX_PER_TRIANGLE       = 3;
 const int CTDGuiRenderer::VERTEXBUFFER_CAPACITY     = OGLRENDERER_VBUFF_CAPACITY;
 
 CTDGuiRenderer::CTDGuiRenderer( uint max_quads ) :
-_queueing(true),
-_currTexture(0),
-_bufferPos(0)
+_queueing( true ),
+_currTexture( 0 ),
+_bufferPos( 0 ),
+_maxTextureSize( 0 )
 {
     GLint vp[4];   
 

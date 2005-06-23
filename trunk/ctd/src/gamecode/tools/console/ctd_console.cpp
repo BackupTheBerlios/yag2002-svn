@@ -67,7 +67,7 @@ class ConsoleIH : public GenericInputHandler< EnConsole >
                                                     }
                                                     else if ( _toggleEnable && ea.getKey() == _retCode )
                                                     {
-                                                        _p_userObject->applyCmd( _p_userObject->_p_inputWindow->getText().c_str() );
+                                                        _p_userObject->issueCmd( _p_userObject->_p_inputWindow->getText().c_str() );
                                                     }
                                                     else if ( ea.getKey() == _autoCompleteCode )
                                                     {
@@ -112,6 +112,8 @@ _p_inputHandler( NULL ),
 _cmdHistoryIndex( 0 ),
 _shutdownInProgress( false ),
 _shutdownCounter( 0 ),
+_idleInProgress( false ),
+_idleCounter( 0 ),
 _p_log( NULL ),
 _cwd( "/" )
 {
@@ -136,10 +138,10 @@ EnConsole::~EnConsole()
     ConsoleCommandRegistry::get()->destroy();
 }
 
-void EnConsole::handleNotification( const EntityNotification& notify )
+void EnConsole::handleNotification( const EntityNotification& notification )
 {
     // handle some notifications
-    switch( notify.getId() )
+    switch( notification.getId() )
     {
         case CTD_NOTIFY_MENU_ENTER:
             break;
@@ -183,7 +185,7 @@ void EnConsole::initialize()
         _p_inputWindow->setAlpha( 0.7f );
         _p_wnd->addChildWindow( _p_inputWindow );
     }
-    catch ( CEGUI::Exception e )
+    catch ( const CEGUI::Exception& e )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** Console: cannot setup dialog layout." << endl;
         log << "      reason: " << e.getMessage().c_str() << endl;
@@ -222,6 +224,12 @@ void EnConsole::triggerShutdown( float delay )
 {
     _shutdownInProgress = true;
     _shutdownCounter = delay;
+}
+
+void EnConsole::triggerIdle( unsigned int steps )
+{
+    _idleCounter = steps;
+    _idleInProgress = true;
 }
 
 bool EnConsole::createLog( const std::string& filename, bool append )
@@ -406,10 +414,16 @@ void EnConsole::autoCompleteCmd( const std::string& cmd )
     }
 }
 
-void EnConsole::queueCmd( std::string cmd, bool hashcmd )
+void EnConsole::enqueueCmd( std::string cmd )
 {
     // enqueue the command, it will be executed on next update
-    _cmdQueue.push_back( make_pair( cmd, hashcmd ) );
+    _cmdQueue.push( make_pair( cmd, false ) );
+}
+
+void EnConsole::issueCmd( std::string cmd )
+{
+    // enqueue the command, it will be executed on next update
+    _issuedCmdQueue.push( make_pair( cmd, true ) );
 }
 
 void EnConsole::applyCmd( const std::string& cmd, bool hashcmd )
@@ -553,12 +567,41 @@ void EnConsole::parseArguments( const std::string& cmdline, std::vector< std::st
 
 void EnConsole::updateEntity( float deltaTime )
 {
-    // execute all queued commands
-    std::vector< std::pair< std::string, bool > >::iterator p_beg = _cmdQueue.begin(), p_end = _cmdQueue.end();
-    for ( ; p_beg != p_end; p_beg++ )
-        applyCmd( p_beg->first, p_beg->second );
-
-    _cmdQueue.clear();
+    // hanlde issued idle command
+    if ( !_idleInProgress ) 
+    {        
+        // execute all issued commands from console
+        {
+            while ( !_issuedCmdQueue.empty() )
+            {
+                std::pair< std::string, bool >& cmd = _issuedCmdQueue.front();
+                applyCmd( cmd.first, cmd.second );
+                _issuedCmdQueue.pop();
+                // if idle command is issued so we have to abort further command handling until the idle command is completed
+                if ( _idleInProgress )
+                    return;
+            }
+        }
+        // execute all queued commands
+        {
+            while ( !_cmdQueue.empty() )
+            {
+                std::pair< std::string, bool >& cmd = _cmdQueue.front();
+                applyCmd( cmd.first, cmd.second );
+                _cmdQueue.pop();
+                // if idle command is in queue so we have to abort further command handling until the idle command is completed
+                if ( _idleInProgress )
+                    return;
+            }
+        }
+    }
+    else
+    {
+        if ( _idleCounter == 0 )
+            _idleInProgress = false;
+        else
+            _idleCounter--;
+    }
 
     if ( _shutdownInProgress )
     {

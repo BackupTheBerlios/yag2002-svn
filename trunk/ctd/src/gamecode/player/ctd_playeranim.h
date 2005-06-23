@@ -61,16 +61,6 @@ class EnPlayerAnimation  : public BaseEntity
 
         virtual                                     ~EnPlayerAnimation();
 
-        //! This entity does not need a transform node, which would be created by level manager on loading
-        //!   We create an own one which is given to player after initialization ( see setPlayer ).
-        bool                                        isTransformable() { return false; }
-
-        /**
-        * Update entity
-        * \param deltaTime                          Time passed since last update
-        */
-        void                                        updateEntity( float deltaTime );
-
         /**
         * Set player association before using this entity.
         * \param p_player                           Player instance
@@ -99,7 +89,17 @@ class EnPlayerAnimation  : public BaseEntity
         //! Turn animation
         void                                        animTurn();
 
+        //! This entity does not need a transform node, which would be created by level manager on loading
+        //!   We create an own one which is given to player after initialization ( see setPlayer ).
+        const bool                                  isTransformable() const { return false; }
+
     protected:
+
+        /**
+        * Update entity
+        * \param deltaTime                          Time passed since last update
+        */
+        void                                        updateEntity( float deltaTime );
 
         //! Read config file and setup animation
         /**
@@ -149,7 +149,7 @@ class EnPlayerAnimation  : public BaseEntity
         int                                         _IdAnimRun;
         int                                         _IdAnimJump;
         int                                         _IdAnimLand;
-        int                                         _IdAnimTrun;
+        int                                         _IdAnimTurn;
 };
 
 //! Entity type definition used for type registry

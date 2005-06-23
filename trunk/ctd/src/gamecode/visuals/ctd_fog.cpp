@@ -73,10 +73,10 @@ EnFog::~EnFog()
     _instCount--;
 }
 
-void EnFog::handleNotification( const EntityNotification& notify )
+void EnFog::handleNotification( const EntityNotification& notification )
 {
     // handle notifications
-    switch( notify.getId() )
+    switch( notification.getId() )
     {
         // we have to trigger the deletion ourselves! ( this entity can be peristent )
         case CTD_NOTIFY_SHUTDOWN:

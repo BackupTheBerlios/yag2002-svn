@@ -61,14 +61,14 @@ class EnMenu :  public BaseEntity
         //! This entity needs updating
         void                                        updateEntity( float deltaTime );
 
-    protected:
-
         //! This entity does not need a transform node, which would be created by level manager on loading
         const bool                                  isTransformable() const { return false; }
 
         //! Make this entity persistent, thus on level changing this entity will not be deleted by entity manager
         //  and update and notification registries will be kept.
         const bool                                  isPersistent() const { return true; }
+
+    protected:
 
         // Interface methods for intro and settings dialog
         //-----
@@ -89,7 +89,7 @@ class EnMenu :  public BaseEntity
         //-----
 
         //! Override this method of BaseEntity to get notifications (from menu system)
-        void                                        handleNotification( const EntityNotification& notify );
+        void                                        handleNotification( const EntityNotification& notification );
 
         //! Load a new level, optionally a background image can be shown during loading
         void                                        loadLevel( std::string levelfile, CEGUI::Image* p_img = NULL );

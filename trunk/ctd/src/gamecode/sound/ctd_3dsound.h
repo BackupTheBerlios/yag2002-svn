@@ -47,7 +47,7 @@ class En3DSound : public BaseEntity
         virtual                                     ~En3DSound();
 
         //! This entity does not need a transform node, which would be created by level manager on loading
-        bool                                        isTransformable() { return false; }
+        const bool                                  isTransformable() const { return false; }
 
         //! Initialize 
         void                                        initialize();

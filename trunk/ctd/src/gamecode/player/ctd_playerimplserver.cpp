@@ -50,7 +50,7 @@ PlayerImplServer::~PlayerImplServer()
         delete _p_playerNetworking;
 }
 
-void PlayerImplServer::handleNotification( const EntityNotification& notify )
+void PlayerImplServer::handleNotification( const EntityNotification& notification )
 {
 }
 

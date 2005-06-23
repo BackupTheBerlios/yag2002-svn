@@ -80,13 +80,13 @@ EnPhysicsCylinder::~EnPhysicsCylinder()
 void EnPhysicsCylinder::initializePhysicsMaterials()
 {
     // create and setup collision matrials
-    unsigned int cylinderID = Physics::get()->createMaterialID( "cylinder" );
-    unsigned int defaultID  = Physics::get()->getMaterialId( "default" );
-    unsigned int levelID    = Physics::get()->getMaterialId( "level" );
-    unsigned int woodID     = Physics::get()->getMaterialId( "wood" );
-    unsigned int metalID    = Physics::get()->getMaterialId( "metal" );
-    unsigned int grassID    = Physics::get()->getMaterialId( "grass" );
-    unsigned int stoneID    = Physics::get()->getMaterialId( "stone" );
+    int cylinderID = Physics::get()->createMaterialID( "cylinder" );
+    int defaultID  = Physics::get()->getMaterialId( "default" );
+    int levelID    = Physics::get()->getMaterialId( "level" );
+    int woodID     = Physics::get()->getMaterialId( "wood" );
+    int metalID    = Physics::get()->getMaterialId( "metal" );
+    int grassID    = Physics::get()->getMaterialId( "grass" );
+    int stoneID    = Physics::get()->getMaterialId( "stone" );
 
     // set non-colliding for cylinder-nocol collisions
     NewtonMaterialSetDefaultCollidable( _p_world, Physics::get()->getMaterialId( "nocol" ), cylinderID, 0 );

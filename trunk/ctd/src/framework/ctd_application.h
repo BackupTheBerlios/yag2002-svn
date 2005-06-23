@@ -62,10 +62,10 @@ class Application : public Singleton< Application >
         virtual void                                shutdown();
 
         //! Retrieve the media path root where the multimedia content resides
-        inline const std::string&                   getMediaPath();
+        inline const std::string&                   getMediaPath() const;
 
         //! Retrieve the full path of application binary
-        inline const std::string&                   getFullBinPath();
+        inline const std::string&                   getFullBinPath() const;
 
         //! Get osgProducer's viewer instance for this application
         inline osgProducer::Viewer*                 getViewer();
@@ -77,7 +77,7 @@ class Application : public Singleton< Application >
         inline void                                 setSceneRootNode( osg::Group* p_root );
 
         //! Get screen size in width and height
-        inline void                                 getScreenSize( unsigned int& x, unsigned int& y );
+        inline void                                 getScreenSize( unsigned int& x, unsigned int& y ) const;
 
     protected:
 
@@ -116,8 +116,6 @@ class Application : public Singleton< Application >
 
         std::string                                 _fulBinaryPath;
 
-        float                                       _mouseSensivity;
-
     friend class Singleton< Application >;
 };
 
@@ -126,12 +124,12 @@ inline osgProducer::Viewer* Application::getViewer()
     return _p_viewer;
 }
 
-inline const std::string& Application::getMediaPath()
+inline const std::string& Application::getMediaPath() const
 {
     return _mediaPath;
 }
 
-inline const std::string& Application::getFullBinPath()
+inline const std::string& Application::getFullBinPath() const
 {
     return _fulBinaryPath;
 }
@@ -146,7 +144,7 @@ inline osg::Group* Application::getSceneRootNode()
     return _p_rootSceneNode;
 }
         
-inline void Application::getScreenSize( unsigned int& x, unsigned int& y )
+inline void Application::getScreenSize( unsigned int& x, unsigned int& y ) const
 {
     x = _screenWidth;
     y = _screenHeight;

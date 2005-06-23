@@ -187,10 +187,10 @@ EnWater::~EnWater()
         _water.release();
 }
 
-void EnWater::handleNotification( const EntityNotification& notify )
+void EnWater::handleNotification( const EntityNotification& notification )
 {
     // handle notifications
-    switch( notify.getId() )
+    switch( notification.getId() )
     {
         // disable water rendering when in menu
         case CTD_NOTIFY_MENU_ENTER:

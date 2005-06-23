@@ -38,9 +38,6 @@
 namespace CTD
 {
 
-class Application;
-class BaseEntityFactory;
-
 //! Entity manager
 /**
 * This manager provides dynamic creation and deletion of game entities, searching for entities by type and instance name,
@@ -57,7 +54,7 @@ class EntityManager : public Singleton< EntityManager >
         bool                                        registerUpdate( BaseEntity* p_entity, bool reg = true );
 
         //! Returns true if the entity is registered for getting updates.
-        bool                                        isRegisteredUpdate( BaseEntity* p_entity );
+        bool                                        isRegisteredUpdate( const BaseEntity* p_entity );
 
         //! Register or deregister an entity for getting notifications.
         /*! Returns false if the given entity is already registered (or it was not previousely registered in case of deregistering).
@@ -65,7 +62,7 @@ class EntityManager : public Singleton< EntityManager >
         bool                                        registerNotification( BaseEntity* p_entity, bool reg = true );
 
         //! Returns true if the entity is registered for getting notifications.
-        bool                                        isRegisteredNotification( BaseEntity* p_entity );
+        bool                                        isRegisteredNotification( const BaseEntity* p_entity );
 
         //! Register / deregister an entity factory. If reg is true then the entity is registered, otherwise it is deregistered.
         /*! Every type must be unique.
@@ -119,14 +116,14 @@ class EntityManager : public Singleton< EntityManager >
         /*! This mechanism allows to notify all entities about actions such as entering or leaving menu.
         * The notification will be sent out at begin of next game loop update.
         */
-        void                                        sendNotification( const EntityNotification& notify );
+        void                                        sendNotification( const EntityNotification& notification );
 
         //! Send a notification to the given entity.
         /*! This notification is sent out only to the given entity. This method immediately sends out the notification to given entity regardless 
         *   of its registration for getting notifications. This mechanism is used by tools such as level editor, command console, etc. for notifying an
         *   entity about its attribute modifications from outside.
         */
-        void                                        sendNotification( const EntityNotification& notify, BaseEntity* p_entity );
+        void                                        sendNotification( const EntityNotification& notification, BaseEntity* p_entity );
 
     protected:
 
@@ -141,13 +138,13 @@ class EntityManager : public Singleton< EntityManager >
         void                                        setupEntities( std::vector< BaseEntity* >& entities );
 
         //! Update entity manager, call this in every game loop step
-        void                                        update( float deltaTime  );
+        void                                        update( float deltaTime );
 
     private:
 
 
         //! Update all registered active entities
-        void                                        updateEntities( float deltaTime  );
+        void                                        updateEntities( float deltaTime );
 
         //! Remove entity's registration for updating. 
         void                                        deregisterUpdate( BaseEntity* p_entity );
@@ -230,13 +227,13 @@ class BaseEntityFactory
         virtual BaseEntity*                         createEntity() = 0;
        
         //! Get the entity type. Entity types must be unique and are described by a string.
-        inline const std::string&                   getType();
+        inline const std::string&                   getType() const;
 
         //! Get creation policy. It can be a bitwise-or of BaseEntityFactory::Standalone, BaseEntityFactory::Server, and BaseEntityFactory::Client.
-        inline unsigned int                         getCreationPolicy();
+        inline unsigned int                         getCreationPolicy() const;
 
         //! Comparision operator for entity factories
-        inline bool                                 operator == ( BaseEntityFactory& factory );
+        inline bool                                 operator == ( const BaseEntityFactory& factory ) const;
 
         //! Entity's creation policy. This is used by level loader in order to decide whether to create an entity described by a level file
         //!  depending on the game mode ( server, client, or standalone ).
@@ -249,7 +246,7 @@ class BaseEntityFactory
 
     protected:
 
-        inline void                                 setEntityType( BaseEntity* p_entity );
+        inline void                                 setEntityType( BaseEntity* p_entity ) const;
 
         const std::string                           _typeTypeName;
 
@@ -275,22 +272,22 @@ BaseEntity* createEntity() \
 
 // inlines
 //--------
-inline const std::string& BaseEntityFactory::getType()
+inline const std::string& BaseEntityFactory::getType() const
 {
     return _typeTypeName;
 }
 
-inline bool BaseEntityFactory::operator == ( BaseEntityFactory& factory )
+inline bool BaseEntityFactory::operator == ( const BaseEntityFactory& factory ) const
 {
     return ( _typeTypeName == const_cast< std::string& >( factory.getType() ) );
 }
 
-inline unsigned int BaseEntityFactory::getCreationPolicy()
+inline unsigned int BaseEntityFactory::getCreationPolicy() const
 {
     return _creationPolicy;
 }
 
-inline void BaseEntityFactory::setEntityType( BaseEntity* p_entity ) 
+inline void BaseEntityFactory::setEntityType( BaseEntity* p_entity ) const
 { 
     p_entity->_typeName = _typeTypeName;
 }

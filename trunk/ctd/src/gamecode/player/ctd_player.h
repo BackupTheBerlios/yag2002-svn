@@ -74,15 +74,6 @@ class EnPlayer : public BaseEntity
         */
         void                                        postInitialize();
 
-        /**
-        * Update entity
-        * \param deltaTime                          Time passed since last update
-        */
-        void                                        updateEntity( float deltaTime );
-
-        //! Override this method of BaseEntity to get notifications (from menu system)
-        void                                        handleNotification( const EntityNotification& notify );
-
         //! Use this method for adding a node to player's transformation node
         inline void                                 appendTransformationNode( osg::Node* p_node );
 
@@ -139,15 +130,24 @@ class EnPlayer : public BaseEntity
         };
 
         //! Return player's attribute container
-        inline const PlayerAttributes&              getPlayerAttributes();
+        inline const PlayerAttributes&              getPlayerAttributes() const;
 
         //! Get player name
-        inline const std::string&                   getPlayerName();
+        inline const std::string&                   getPlayerName() const;
 
         //! Set player name
         inline void                                 setPlayerName( const std::string& name );
 
     protected:
+
+        /**
+        * Update entity
+        * \param deltaTime                          Time passed since last update
+        */
+        void                                        updateEntity( float deltaTime );
+
+        //! Override this method of BaseEntity to get notifications (from menu system)
+        void                                        handleNotification( const EntityNotification& notification );
 
         //! Player name
         std::string                                 _playerName;
@@ -175,7 +175,7 @@ class PlayerEntityFactory : public BaseEntityFactory
         Macro_CreateEntity( EnPlayer );
 };
 
-inline const EnPlayer::PlayerAttributes& EnPlayer::getPlayerAttributes()
+inline const EnPlayer::PlayerAttributes& EnPlayer::getPlayerAttributes() const
 { 
     return _attributeContainer; 
 }
@@ -190,7 +190,7 @@ inline void EnPlayer::removeTransformationNode( osg::Node* p_node )
     removeFromTransformationNode( p_node );
 }
 
-inline const std::string& EnPlayer::getPlayerName()
+inline const std::string& EnPlayer::getPlayerName() const
 {
     return _playerName;
 }

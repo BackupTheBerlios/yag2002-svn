@@ -250,7 +250,8 @@ void AttributeManager::removeAllAttributes()
 
 AttributeManager& AttributeManager::operator = ( AttributeManager& attr )
 {
-    attr.removeAllAttributes();
+    if ( &attr == this )
+        return *this;
 
     // copy attribute values
     std::vector< EntityAttributeBase* >::iterator p_beg = attr.getAttributes().begin(), p_end = attr.getAttributes().end();

@@ -80,21 +80,22 @@ static allocBytesSum = 0;
 void* physicsAlloc( int sizeInBytes )
 {
     allocBytesSum += sizeInBytes;
-	return malloc( sizeInBytes );
+    return new char[ sizeof( char ) * sizeInBytes ];
 }
 
 // memory de-allocation for Newton
 void physicsFree( void* ptr, int sizeInBytes )
 {
     freedBytesSum += sizeInBytes;
-	free( ptr );
+	delete[] ptr;
 }
 
 // implementation of physics core
 //-------------------------------
 Physics::Physics() :
-_p_debugGeode(NULL),
-_gravity(-9.8f)
+_p_debugGeode( NULL ),
+_p_world( NULL ),
+_gravity( -9.8f )
 {
 }
 
@@ -325,6 +326,7 @@ void Physics::setupMaterials()
 int Physics::createMaterialID( const string& materialType )
 {
     std::map< string, int >::iterator id = _materials.find( materialType );
+    assert( _p_world && "physics world has not been created, first initialize the physics system" );
     assert( id == _materials.end() && "material already exists!" );
     
     int matID = NewtonMaterialCreateGroupID( _p_world );

@@ -51,8 +51,8 @@ namespace CTD
 {
 
 // look limits
-#define LIMIT_PITCH_ANGLE               120.0f
-#define LIMIT_PITCH_OFFSET              -20.0f;
+#define LIMIT_PITCH_ANGLE               ( ( 2.0f * PI ) / 3.0f )
+#define LIMIT_PITCH_OFFSET              ( - PI / 9.0f );
 
 //! Input handler class for player, it controls player character and camera
 template< class PlayerImplT >

@@ -75,7 +75,7 @@ class EnSkyBox :  public BaseEntity
     protected:
 
         //! This entity is persistent so it has to trigger its destruction on shutdown ifself.
-        void                                        handleNotification( const EntityNotification& notify );
+        void                                        handleNotification( const EntityNotification& notification );
 
         EyeTransform*                               _p_transformEyePoint;
            

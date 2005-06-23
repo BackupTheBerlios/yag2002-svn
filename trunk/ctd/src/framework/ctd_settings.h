@@ -88,10 +88,10 @@ class Settings
 
             public:
                 
-                                                SettingBase() {};
+                virtual                         ~SettingBase() {};
 
                 //! Get setting's name
-                const std::string&              getTokenName()
+                const std::string&              getTokenName() const
                                                 {
                                                     return _token;
                                                 }
@@ -138,8 +138,6 @@ class Settings
 
         };
 
-    public:
-
         //! Register one single setting
         template< typename TypeT >
         bool                                    registerSetting( const std::string& token, const TypeT& value );
@@ -153,7 +151,7 @@ class Settings
         bool                                    setValue( const std::string& token, const TypeT& value );
 
         //! Get all storage objects for settings
-        inline const std::vector< Settings::SettingBase* >& getAllSettingStorages();
+        inline const std::vector< Settings::SettingBase* >& getAllSettingStorages() const;
 
     protected:
 

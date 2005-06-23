@@ -58,6 +58,9 @@ class EnPlayerSound  : public BaseEntity
 
         virtual                                     ~EnPlayerSound();
 
+        //! This entity does not need a transform node, which would be created by level manager on loading
+        const bool                                  isTransformable() const { return false; }
+
         /**
         * Set player association, player must call this in post-initialize phase
         * \param p_player                           Player instance
@@ -68,9 +71,6 @@ class EnPlayerSound  : public BaseEntity
         * Post-Initializing function
         */
         void                                        postInitialize();
-
-        //! This entity does not need a transform node, which would be created by level manager on loading
-        bool                                        isTransformable() { return false; }
 
         //! Play walk on ground sound
         void                                        playWalkGround();

@@ -62,7 +62,7 @@ void EnPlatform::initialize()
     osg::Node* p_mesh = LevelManager::get()->loadMesh( _meshFile );
     if ( !p_mesh ) 
     {
-        cout << "*** error loading mesh file" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading mesh file" << endl;
         return;
     }
     // now we add the new mesh into our transformable scene group

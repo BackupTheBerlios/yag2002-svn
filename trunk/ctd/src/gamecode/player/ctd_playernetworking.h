@@ -75,7 +75,7 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         void                                        update();
 
         //! Returns true if the networking is for local client
-        bool                                        isRemoteClient() { return _remoteClient; }
+        bool                                        isRemoteClient() const { return _remoteClient; }
 
         //! Update position in network, use this for client
         void                                        updatePosition( float x, float y, float z );

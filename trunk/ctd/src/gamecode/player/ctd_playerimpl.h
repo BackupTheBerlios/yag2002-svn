@@ -67,7 +67,7 @@ class BasePlayerImplementation
 {
     public:
 
-                                                    BasePlayerImplementation( EnPlayer* player );
+        explicit                                    BasePlayerImplementation( EnPlayer* player );
 
         virtual                                     ~BasePlayerImplementation();
 
@@ -82,7 +82,7 @@ class BasePlayerImplementation
         virtual void                                update( float deltaTime ) = 0;
 
         //! Implementation's notification callback
-        virtual void                                handleNotification( const EntityNotification& notify ) {}
+        virtual void                                handleNotification( const EntityNotification& notification ) {}
 
         //! Set player's position.
         inline void                                 setPlayerPosition( const osg::Vec3f& pos );
@@ -91,13 +91,13 @@ class BasePlayerImplementation
         inline void                                 setPlayerRotation( const osg::Quat& rot );
 
         //! Get player's position.
-        inline const osg::Vec3f&                    getPlayerPosition();
+        inline const osg::Vec3f&                    getPlayerPosition() const;
 
         //! Get player's rotation.
-        inline const osg::Quat&                     getPlayerRotation();
+        inline const osg::Quat&                     getPlayerRotation() const;
 
         //! Get player's move direction
-        inline const osg::Vec3f&                    getPlayerMoveDirection();
+        inline const osg::Vec3f&                    getPlayerMoveDirection() const;
 
         //! Add the given message to chat box
         void                                        addChatMessage( const std::string& msg, const std::string& author );
@@ -204,17 +204,17 @@ inline void BasePlayerImplementation::setPlayerRotation( const osg::Quat& rot )
     _currentRot = rot;
 }
 
-inline const osg::Vec3f& BasePlayerImplementation::getPlayerPosition() 
+inline const osg::Vec3f& BasePlayerImplementation::getPlayerPosition() const
 {
     return _currentPos;
 }
 
-inline const osg::Quat& BasePlayerImplementation::getPlayerRotation()
+inline const osg::Quat& BasePlayerImplementation::getPlayerRotation() const
 { 
     return _currentRot; 
 }
 
-inline const osg::Vec3f& BasePlayerImplementation::getPlayerMoveDirection() 
+inline const osg::Vec3f& BasePlayerImplementation::getPlayerMoveDirection() const
 { 
     return _moveDir; 
 }

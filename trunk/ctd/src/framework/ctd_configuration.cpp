@@ -184,7 +184,7 @@ bool Configuration::setSettingValueAsString( const std::string& name, const std:
         else if ( settings_typeinfo == typeid( unsigned int ) ) 
         {
             tokenvalue << valuestring;
-            unsigned int value = -1;
+            unsigned int value = ( unsigned int )-1;
             tokenvalue >> value;
             _p_settings->setValue( token, value );
             break;
@@ -228,6 +228,7 @@ void Configuration::shutdown()
 {
     // store the latest changes in profile
     SettingsManager::get()->storeProfile( CTD_GAMESETTING_PROFILENAME );
+    SettingsManager::get()->destroyProfile( CTD_GAMESETTING_PROFILENAME );
 
     // destroy singleton
     destroy();

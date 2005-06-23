@@ -79,10 +79,10 @@ EnPlayer::~EnPlayer()
         delete _p_playerImpl;
 }
 
-void EnPlayer::handleNotification( const EntityNotification& notify )
+void EnPlayer::handleNotification( const EntityNotification& notification )
 {
     if ( _p_playerImpl )
-        _p_playerImpl->handleNotification( notify );
+        _p_playerImpl->handleNotification( notification );
 }
 
 void EnPlayer::initialize()
@@ -102,8 +102,8 @@ void EnPlayer::initialize()
     else
     {
         position = _attributeContainer._pos;
-        rotation = osg::Quat( osg::DegreesToRadians( _attributeContainer._rot ), osg::Vec3f( 0, 0, 1 ) );
-   }
+        rotation = osg::Quat( osg::DegreesToRadians( _attributeContainer._rot ), osg::Vec3f( 0.0f, 0.0f, 1.0f ) );
+    }
     // set initial rotation and position
     setPosition( position );
     setRotation( rotation );

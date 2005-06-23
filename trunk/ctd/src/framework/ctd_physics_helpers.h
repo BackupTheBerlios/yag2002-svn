@@ -91,9 +91,9 @@ class PhysicsVisitor : public osg::NodeVisitor
 
     protected:
 
-        void                            buildTrianlges( osg::PrimitiveSet* p_set, osg::Array* p_verts, osg::Matrixf& mat, osg::IndexArray* p_indices = NULL );
+        void                            buildTrianlges( const osg::PrimitiveSet* p_set, osg::Array* p_verts, const osg::Matrixf& mat, const osg::IndexArray* p_indices = NULL );
 
-        void                            buildTrianlgeStrip( osg::PrimitiveSet* p_set, osg::Array* p_verts, osg::Matrixf& mat, osg::IndexArray* p_indices = NULL );
+        void                            buildTrianlgeStrip( const osg::PrimitiveSet* p_set, osg::Array* p_verts, const osg::Matrixf& mat, const osg::IndexArray* p_indices = NULL );
 
         static NewtonCollision*         _p_collision;
 

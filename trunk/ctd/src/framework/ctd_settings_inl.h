@@ -73,7 +73,7 @@ inline bool Settings::setValue( const std::string &token, const TypeT& value )
     return true;
 }
         
-inline const std::vector< Settings::SettingBase* >& Settings::getAllSettingStorages()
+inline const std::vector< Settings::SettingBase* >& Settings::getAllSettingStorages() const
 {
     return _settings;
 }

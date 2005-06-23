@@ -47,6 +47,8 @@ CTD_IMPL_ENTITYFACTORY_AUTO( PlayerAnimationEntityFactory );
 EnPlayerAnimation::EnPlayerAnimation() :
 _p_player( NULL ),
 _scale( 1.0f ),
+_anim( eIdle ),
+_IdAnimTurn( -1 ),
 _IdAnimIdle( -1 ),
 _IdAnimWalk( -1 ),
 _IdAnimRun( -1 ),
@@ -270,8 +272,8 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
         }
         else if( strKey == "animation_turn" )
         {
-            _IdAnimTrun = p_calCoreModel->loadCoreAnimation( destFileName );
-            if ( _IdAnimTrun < 0 )
+            _IdAnimTurn = p_calCoreModel->loadCoreAnimation( destFileName );
+            if ( _IdAnimTurn < 0 )
                 log << Log::LogLevel( Log::L_ERROR ) << "***  line"  << line << ", problem loading animation: " << destFileName << endl; 
         }
         else if( strKey == "animation_jump" )
@@ -323,7 +325,7 @@ void EnPlayerAnimation::animIdle()
 
     _model->loop( _IdAnimIdle, 1.0f, 0.5f );
     _model->stop( _IdAnimWalk, 0.4f );
-    _model->stop( _IdAnimTrun, 0.4f );
+    _model->stop( _IdAnimTurn, 0.4f );
     _anim = eIdle;
 }
 
@@ -334,7 +336,7 @@ void EnPlayerAnimation::animWalk()
 
     _model->loop( _IdAnimWalk, 1.0f, 0.5f );
     _model->stop( _IdAnimIdle, 0.5f );
-    _model->stop( _IdAnimTrun, 0.0f );
+    _model->stop( _IdAnimTurn, 0.0f );
     _anim = eWalk;
 }
 
@@ -352,7 +354,7 @@ void EnPlayerAnimation::animTurn()
     if ( _anim == eTurn )
         return;
 
-    _model->loop( _IdAnimTrun, 1.0f, 0.0f );
+    _model->loop( _IdAnimTurn, 1.0f, 0.0f );
     _anim = eTurn;
 }
 } // namespace CTD

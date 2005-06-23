@@ -48,7 +48,7 @@ class CTDGuiRenderer : public CEGUI::Renderer
 {
     public:
 
-                                                CTDGuiRenderer( unsigned int max_quads );
+        explicit                                CTDGuiRenderer( unsigned int max_quads );
 
                                                 CTDGuiRenderer( unsigned int max_quads, int width, int height );
 
@@ -181,8 +181,6 @@ class CTDGuiRenderer : public CEGUI::Renderer
         CEGUI::uint                             _currTexture;       //!< Currently bound texture.
 
         int                                     _bufferPos;         //!< index into buffer where next vertex should be put.
-        
-        bool                                    _sorted;            //!< true when data in quad list is sorted.
 
         std::list< CTDGuiTexture* >             _texturelist;       //!< List used to track textures.
         

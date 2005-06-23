@@ -114,13 +114,14 @@ class DispSettings
 {
     public:
                                 DispSettings() {};
+
                                 ~DispSettings() {};
 
         unsigned int            width;
         unsigned int            height;
         unsigned int            colorbits;
 
-        bool                    operator < ( DispSettings& ds )
+        bool                    operator < ( DispSettings& ds ) const
                                 {
                                     // we compare the areas of two screen resolutions here
                                     if ( ( ds.height * ds.width ) < ( height * width ) )
@@ -129,7 +130,7 @@ class DispSettings
                                         return false;
                                 }
 
-        bool                    operator == ( DispSettings& ds )
+        bool                    operator == ( DispSettings& ds ) const
                                 {
                                     if ( ds.height == height && ds.width == width && ds.colorbits == colorbits )
                                         return true;
@@ -181,7 +182,7 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
 
 }
 
-std::string convertFileTime( FILETIME& ft )
+std::string convertFileTime( const FILETIME& ft )
 {
     SYSTEMTIME systemTime;
     SYSTEMTIME localTime;

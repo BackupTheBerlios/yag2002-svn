@@ -104,7 +104,7 @@ class MessageBoxDialog
         void                                    setClickCallback( MessageBoxDialog::ClickCallback* p_clb );
 
         //! Return the message text
-        const std::string&                      getText();
+        const std::string&                      getText() const;
 
         //! Set the message text
         void                                    setText( const std::string& text );
@@ -123,8 +123,6 @@ class MessageBoxDialog
         bool                                    onClickedNo( const CEGUI::EventArgs& arg );
 
         void                                    processClick( unsigned int );
-
-    protected:
 
         CEGUI::FrameWindow*                     _p_wnd;
 

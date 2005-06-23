@@ -104,9 +104,9 @@ void PhysicsVisitor::apply( Geode& node )
             IndexArray* p_indices  = p_geom->getVertexIndices();
             unsigned int numPrims = p_geom->getNumPrimitiveSets();
             {
-                for ( unsigned int cnt = 0; cnt < numPrims; cnt++ )
+                for ( unsigned int primcnt = 0; primcnt < numPrims; primcnt++ )
                 {
-                    PrimitiveSet* p_set = p_geom->getPrimitiveSet( cnt );
+                    PrimitiveSet* p_set = p_geom->getPrimitiveSet( primcnt );
                     switch( p_set->getMode() )
                     {
                         case PrimitiveSet::POINTS:
@@ -137,7 +137,7 @@ void PhysicsVisitor::apply( Geode& node )
     }
 }
 
-void PhysicsVisitor::buildTrianlges( PrimitiveSet* p_set, Array* p_verts, Matrixf& mat, IndexArray* p_indices )
+void PhysicsVisitor::buildTrianlges( const PrimitiveSet* p_set, Array* p_verts, const Matrixf& mat, const IndexArray* p_indices )
 {
     if( p_verts->getType() != Array::Vec3ArrayType ) 
     {
@@ -168,7 +168,7 @@ void PhysicsVisitor::buildTrianlges( PrimitiveSet* p_set, Array* p_verts, Matrix
     _numVertices += 3 * numIndices;
 }
 
-void PhysicsVisitor::buildTrianlgeStrip( PrimitiveSet* p_set, Array* p_verts, Matrixf& mat, IndexArray* p_indices )
+void PhysicsVisitor::buildTrianlgeStrip( const PrimitiveSet* p_set, Array* p_verts, const Matrixf& mat, const IndexArray* p_indices )
 {
     if( p_verts->getType() != Array::Vec3ArrayType ) 
     {

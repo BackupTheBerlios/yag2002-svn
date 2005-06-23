@@ -50,9 +50,9 @@ _pastTime( 0 )
 }
 
 // catch the physics notifications
-void EnPhysicsBase::handleNotification( const EntityNotification& notify )
+void EnPhysicsBase::handleNotification( const EntityNotification& notification )
 {
-    switch( notify.getId() )
+    switch( notification.getId() )
     {
         case CTD_NOTIFY_BUILDING_PHYSICSWORLD:
 

@@ -184,7 +184,7 @@ bool DialogGameSettings::initialize( const string& layoutfile )
             _p_resolution->addItem( p_item );
         }
     }
-    catch ( CEGUI::Exception e )
+    catch ( const CEGUI::Exception& e )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** DialogGameSettings: cannot setup dialog layout." << endl;
         log << "      reason: " << e.getMessage().c_str() << endl;
@@ -486,8 +486,8 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
                                         if ( btnId == MessageBoxDialog::BTN_YES )
                                         {
                                             // store the changes
-                                            CEGUI::EventArgs arg;
-                                            _p_dialogSettings->onClickedOk( arg ); // get gui control values
+                                            CEGUI::EventArgs earg;
+                                            _p_dialogSettings->onClickedOk( earg ); // get gui control values
                                         }
                                         else
                                         {

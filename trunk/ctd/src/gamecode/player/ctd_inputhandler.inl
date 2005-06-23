@@ -173,7 +173,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             if ( key == _keyCodeMoveLeft )
                 _left = false;
 
-            if ( getPlayerImpl()->_cameraMode == EnPlayer::Ego )
+            if ( getPlayerImpl()->_cameraMode == EnPlayer::CameraMode::Ego )
                 getPlayerImpl()->_p_playerPhysics->stopMovement();
         }
     }
@@ -200,7 +200,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     {
         switch ( getPlayerImpl()->_cameraMode )
         {
-            case EnPlayer::Spheric:
+            case EnPlayer::CameraMode::Spheric:
             {
                 float& rotZ = getPlayerImpl()->_rotZ;
                 rotZ += getPlayerImpl()->_p_playerPhysics->getAngularForce();
@@ -216,10 +216,10 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             }
             break;
 
-            case EnPlayer::Ego:
+            case EnPlayer::CameraMode::Ego:
             {
                 osg::Vec3f side;
-                side = getPlayerImpl()->_moveDir ^ osg::Vec3f( 0, 0, 1.0f );
+                side = getPlayerImpl()->_moveDir ^ osg::Vec3f( 0.0f, 0.0f, 1.0f );
                 if ( _moveForward || _moveBackward )
                     getPlayerImpl()->_p_playerPhysics->addForce( side._v[ 0 ], side._v[ 1 ] );
                 else
@@ -238,7 +238,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     {
         switch ( getPlayerImpl()->_cameraMode )
         {
-            case EnPlayer::Spheric:
+            case EnPlayer::CameraMode::Spheric:
             {
                 float& rotZ = getPlayerImpl()->_rotZ;
                 rotZ -= getPlayerImpl()->_p_playerPhysics->getAngularForce();
@@ -254,10 +254,10 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             }
             break;
             
-            case EnPlayer::Ego:
+            case EnPlayer::CameraMode::Ego:
             {
                 osg::Vec3f side;
-                side = getPlayerImpl()->_moveDir ^ osg::Vec3f( 0, 0, -1.0f );
+                side = getPlayerImpl()->_moveDir ^ osg::Vec3f( 0.0f, 0.0f, -1.0f );
                 if ( _moveForward || _moveBackward )
                     getPlayerImpl()->_p_playerPhysics->addForce( side._v[ 0 ], side._v[ 1 ] );
                 else
@@ -287,7 +287,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                     s_states = Stopped;
                     getPlayerImpl()->_p_playerPhysics->stopMovement();
                 } 
-                else if ( getPlayerImpl()->_cameraMode == EnPlayer::Spheric )
+                else if ( getPlayerImpl()->_cameraMode == EnPlayer::CameraMode::Spheric )
                 {
                     if ( movefb )
                     {
@@ -297,7 +297,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 } 
                 else
                 {
-                    if ( movelr & movefb )
+                    if ( movelr && movefb )
                     {
                         s_states = Stopped;
                         getPlayerImpl()->_p_playerPhysics->stopMovement();
@@ -315,7 +315,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                if ( getPlayerImpl()->getPlayerSound() )
                     getPlayerImpl()->getPlayerSound()->stopPlayingAll();
 
-                if ( ( _moveForward || _moveBackward ) && !( getPlayerImpl()->_p_playerPhysics->isJumping() ) )
+                if ( ( _moveForward || _moveBackward ) && !getPlayerImpl()->_p_playerPhysics->isJumping() )
                     s_states = Idle;
             }
             break;
@@ -327,7 +327,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     }
 
     // handle mouse wheel changes for camera offsetting in spheric mode
-    if ( getPlayerImpl()->_cameraMode == EnPlayer::Spheric )
+    if ( getPlayerImpl()->_cameraMode == EnPlayer::CameraMode::Spheric )
     {
         if ( eventType == osgGA::GUIEventAdapter::SCROLLUP )
         {
@@ -350,12 +350,10 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         float mcoordY = ea.getYnormalized();
 
         // in ego mode the mouse controls the player rotation
-        if ( getPlayerImpl()->_cameraMode == EnPlayer::Ego )
+        if ( getPlayerImpl()->_cameraMode == EnPlayer::CameraMode::Ego )
         {
-            static float lastX = 0;
             float& rotZ = getPlayerImpl()->_rotZ;
             rotZ = mcoordX * osg::PI * 2.0f; 
-            lastX = mcoordX;
 
             //! Note: non-static value changes in rotZ are poison for networking interpolators
             //if ( rotZ > osg::PI * 2.0f )

@@ -40,7 +40,7 @@ CTD_IMPL_ENTITYFACTORY_AUTO( SpotLightEntityFactory );
 
 EnSpotLight::EnSpotLight() :
 _maxDistance( 10.0f ),
-_direction( osg::Vec3f( 0, 0, -1.0f ) ),
+_direction( osg::Vec3f( 0.0f, 0.0f, -1.0f ) ),
 _spotCutOff( 50.0 ),
 _spotExponent( 32.0f )
 {
@@ -90,7 +90,7 @@ void EnSpotLight::initialize()
     // the id will be set by light manager
     p_light->setLightNum( _lightId );
 
-    p_light->setPosition( osg::Vec4( 0, 0, 0, 1.0f ) );
+    p_light->setPosition( osg::Vec4( 0.0f, 0.0f, 0.0f, 1.0f ) );
     p_light->setDirection( _direction );
     p_light->setSpotCutoff( _spotCutOff );
     p_light->setSpotExponent( _spotExponent );

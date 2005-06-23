@@ -73,6 +73,7 @@ class EntityNotification
 };
 //! Some standard notification ids
 #define     CTD_NOTIFY_LOADING_LEVEL                0xF0000010  // sent when we load a level
+#define     CTD_NOTIFY_UNLOAD_LEVEL                 0xF0000015  // sent when we unload a level
 #define     CTD_NOTIFY_DELETING_ENTITIES            0xF0000020  // sent at begin of entity deletions on level loading
 #define     CTD_NOTIFY_BUILDING_PHYSICSWORLD        0xF0000021  // sent at begin of building physics world on level loading (see entity manager)
 #define     CTD_NOTIFY_DELETING_PHYSICSWORLD        0xF0000022  // sent at begin of destruction of physics world on level loading (see entity manager)
@@ -190,10 +191,10 @@ class BaseEntity
 
         /**
         * Handle notifications. In order to get notifications the entity must register via EntityManager's registerNotification method.
-        * \param notify                             The notification struct. It may be useful to cast it to appropriate type for 
+        * \param notification                       The notification struct. It may be useful to cast it to appropriate type for 
         *                                           game-codespecific structs. 
         */
-        virtual void                                handleNotification( const EntityNotification& notify ) {}
+        virtual void                                handleNotification( const EntityNotification& notification ) {}
 
         /**
         * Set transformation node. An application developer does not need this method in normal case.

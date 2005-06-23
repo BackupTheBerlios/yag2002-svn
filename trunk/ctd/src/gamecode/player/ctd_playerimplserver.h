@@ -48,7 +48,7 @@ class PlayerImplServer : public BasePlayerImplementation
 {
     public:
 
-                                                    PlayerImplServer( EnPlayer* player );
+        explicit                                    PlayerImplServer( EnPlayer* player );
 
         virtual                                     ~PlayerImplServer();
 
@@ -63,7 +63,7 @@ class PlayerImplServer : public BasePlayerImplementation
         void                                        update( float deltaTime );
 
         //! Implementation's notification callback
-        void                                        handleNotification( const EntityNotification& notify );
+        void                                        handleNotification( const EntityNotification& notification );
 
     protected:
 

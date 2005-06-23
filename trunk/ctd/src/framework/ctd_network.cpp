@@ -99,8 +99,6 @@ bool NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
 
     _nodeInfo  = nodeInfo;
     _p_session = new ReplicaNet;
-    if ( !_p_session ) 
-        return false;
 
     log << Log::LogLevel( Log::L_INFO ) << "nw server: starting network session: " << nodeInfo._nodeName << endl;
 
@@ -143,11 +141,6 @@ bool NetworkDevice::setupClient( const string& serverIp, int channel, const Node
     assert( _p_session == NULL && "there is already a running session!" );
     _nodeInfo  = nodeInfo;
     _p_session = new ReplicaNet;
-    if ( !_p_session ) 
-    {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** nw client: cannot create network session instance" << endl;
-        return false;
-    }
 
     _p_session->SetManualPoll();
     //_p_session->SetGameChannel( channel );
@@ -283,13 +276,14 @@ bool NetworkDevice::startClient()
     //-----------------------------//
 
     unsigned int tryCounter = 0;
+    log.enableSeverityLevelPrinting( false );
 	while ( !_p_session->IsStable() )
 	{
         _p_session->Poll();    // during this time we have to poll the session instance as we disabled the automatic poll!
 
         CurrentThread::Sleep( 200 );
         tryCounter++;
-        cout << ".";
+        log << Log::LogLevel( Log::L_DEBUG ) << ".";
 
         // try up to 10 seconds
         if ( tryCounter > 50 ) 
@@ -303,7 +297,8 @@ bool NetworkDevice::startClient()
             return false;
         }
     }    
-    cout << endl;
+    log << Log::LogLevel( Log::L_DEBUG ) << endl;
+    log.enableSeverityLevelPrinting( true );
 
     string sessionurl = _p_session->SessionExportURL();
     log << Log::LogLevel( Log::L_INFO ) << "nw client: successfully joined to session: " << sessionurl << endl;

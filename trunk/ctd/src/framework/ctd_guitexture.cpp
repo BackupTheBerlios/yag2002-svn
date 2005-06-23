@@ -42,7 +42,9 @@ namespace CTD
 {
 
 CTDGuiTexture::CTDGuiTexture( Renderer* p_owner ) :
-CEGUI::Texture( p_owner )
+CEGUI::Texture( p_owner ),
+_width( 0 ),
+_height( 0 )
 {
     // generate a OGL texture that we will use.
     glGenTextures( 1, &_ogltexture );
@@ -254,7 +256,7 @@ CTDGuiTexture::tImageTGA* CTDGuiTexture::LoadTGA( const unsigned char* buffer, s
             pImageData->data = new unsigned char[stride * height];
 
             // Load in all the pixel data pixel by pixel
-            for(int i = 0; i < width*height; i++)
+            for(i = 0; i < width*height; i++)
             {
                 // Read in the current pixel
                 memcpy(&pixels, buffer, sizeof(unsigned short));
@@ -278,7 +280,11 @@ CTDGuiTexture::tImageTGA* CTDGuiTexture::LoadTGA( const unsigned char* buffer, s
         }   
         // Else return a NULL for a bad or unsupported pixel format
         else
+        {
+            delete [] pImageData->data;
+            free( pImageData );
             return NULL;
+        }
     }
     // Else, it must be Run-Length Encoded (RLE)
     else

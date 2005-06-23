@@ -58,10 +58,10 @@ PlayerImplStandalone::~PlayerImplStandalone()
     _p_inputHandler->destroyHandler();
 }
 
-void PlayerImplStandalone::handleNotification( const EntityNotification& notify )
+void PlayerImplStandalone::handleNotification( const EntityNotification& notification )
 {
     // handle some notifications
-    switch( notify.getId() )
+    switch( notification.getId() )
     {
         case CTD_NOTIFY_MENU_ENTER:
 

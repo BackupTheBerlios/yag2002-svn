@@ -54,17 +54,17 @@ class EnConsole :  public BaseEntity
         //! Update entity
         void                                        updateEntity( float deltaTime );
 
-        //! Apply given command, it will be immediately executed. If hashcmd is true then the command will be stored in an internal hash.
-        void                                        applyCmd( const std::string& cmd, bool hashcmd = true );
-
-        //! Queue command for execution in next update ( is used when commands need other commands for execution, e.g. 'exec' )
-        void                                        queueCmd( std::string cmd, bool hashcmd = true );
+        //! Enqueue command for execution in next update ( is used when commands need other commands for execution, e.g. 'exec' )
+        void                                        enqueueCmd( std::string cmd );
 
         //! Try to find a cmd match given the string
         void                                        autoCompleteCmd( const std::string& cmd );
 
         //! Triggers the application shutdown after 'delay' elapsed.
         void                                        triggerShutdown( float delay );
+
+        //! Trigger idle state for 'steps' updates, while in idle state no queued commands are executed
+        void                                        triggerIdle( unsigned int steps );
 
         //! Creates a log file and directs all console outputs also to that file. Returns fals if the log file could not be created.
         //! If append is false then an existing lod file will be recreated.
@@ -79,10 +79,22 @@ class EnConsole :  public BaseEntity
         //! Get current working directory
         const std::string&                          getCWD();
 
+        //! Override this method and return true to get a persisten entity
+        const bool                                  isPersistent() const { return true; }
+
+        //! This entity needs no transformation
+        const bool                                  isTransformable() const { return false; }
+
     protected:
 
         //! Enable / disable statistics rendering
         void                                        enable( bool en );
+
+        //! Enqueue given command received from console
+        void                                        issueCmd( std::string cmd );
+
+        //! Apply command, it hashcmd is true then the command will be stored in command history
+        void                                        applyCmd( const std::string& cmd, bool hashcmd = true );
 
         //! Dispatch command, return its result as string
         const std::string&                          dispatchCmdLine( const std::string& cmdline );
@@ -97,13 +109,7 @@ class EnConsole :  public BaseEntity
         void                                        cmdHistory( bool prev );
 
         //! Override notification callback
-        void                                        handleNotification( const EntityNotification& notify );
-
-        //! Override this method and return true to get a persisten entity
-        const bool                                  isPersistent() const { return true; }
-
-        //! This entity needs no transformation
-        const bool                                  isTransformable() const { return false; }
+        void                                        handleNotification( const EntityNotification& notification );
 
         //! Callback for chat frame window close button
         bool                                        onCloseFrame( const CEGUI::EventArgs& arg );
@@ -123,11 +129,17 @@ class EnConsole :  public BaseEntity
 
         unsigned int                                _cmdHistoryIndex;
 
-        std::vector< std::pair< std::string, bool > > _cmdQueue;
+        std::queue< std::pair< std::string, bool > > _cmdQueue;
+
+        std::queue< std::pair< std::string, bool > > _issuedCmdQueue;
 
         bool                                        _shutdownInProgress;
 
         float                                       _shutdownCounter;
+
+        bool                                        _idleInProgress;
+
+        unsigned int                                _idleCounter;
 
         std::ofstream*                              _p_log;
 

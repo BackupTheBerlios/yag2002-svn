@@ -29,6 +29,7 @@
  ################################################################*/
 
 #include <ctd_base.h>
+#include "ctd_log.h"
 #include "ctd_utils.h"
 #include "ctd_guimsgbox.h"
 
@@ -39,7 +40,8 @@ MessageBoxDialog::MessageBoxDialog( const std::string& title, const std::string&
 _p_wnd( NULL ),
 _p_clb( NULL ),
 _p_parent( NULL ),
-_autodel( autodelete )
+_autodel( autodelete ),
+_p_msgtext( NULL )
 {
     if ( !p_parent )
     {
@@ -84,7 +86,7 @@ _autodel( autodelete )
         case MessageBoxDialog::YES_NO:
         case MessageBoxDialog::OK_CANCEL:
 
-            boxwidth  = std::max( 2.0 * minbuttonwidth + 0.1f, textwidth + 0.05 );
+            boxwidth  = std::max( 2.0f * minbuttonwidth + 0.1f, textwidth + 0.05f );
             boxheight = minbuttonheight + textheight + 0.1f; // + 0.1f for the upper frame
             break;
 
@@ -99,8 +101,17 @@ _autodel( autodelete )
     }
     //--------
 
+    // we need a unique windows name for every messagebox, as 
+    static int s_pf = 0;
+    std::stringstream postfix;
+    postfix << s_pf;
+    s_pf++;
+    
+    try
+    {
+
     // create dialog frame
-    _p_wnd = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( ( CEGUI::utf8* )"TaharezLook/FrameWindow", "_msg_box_" ) );
+    _p_wnd = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( ( CEGUI::utf8* )"TaharezLook/FrameWindow", ( "_msg_box_" + postfix.str() ).c_str() ) );
     _p_wnd->setText( title );
     _p_wnd->setAlwaysOnTop( true );
     _p_wnd->setCloseButtonEnabled( false );
@@ -109,7 +120,7 @@ _autodel( autodelete )
     _p_wnd->setSizingEnabled( false );
 
     // create text area
-    _p_msgtext = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( ( CEGUI::utf8* )"TaharezLook/StaticText", "_msg_box_text_" ) );
+    _p_msgtext = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( ( CEGUI::utf8* )"TaharezLook/StaticText", ( "_msg_box_text_" + postfix.str() ).c_str() ) );
     _p_msgtext->setText( text );
     _p_msgtext->setPosition( CEGUI::Point( 0.05f, 0.05f ) );
     _p_msgtext->setSize( CEGUI::Size( 0.9f, 0.9f ) );
@@ -125,7 +136,7 @@ _autodel( autodelete )
         {
             // create 'Yes' button
             CEGUI::PushButton* p_btnyes = 
-                static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", "_msg_box_btn_yes_" ) );
+                static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_yes_" + postfix.str() ).c_str() ) );
             p_btnyes->setSize( CEGUI::Size( 0.45f, 0.15f ) );
             p_btnyes->setPosition( CEGUI::Point( 0.025f, 0.825f ) );
             p_btnyes->setText( "Yes" );
@@ -135,7 +146,7 @@ _autodel( autodelete )
 
             // create 'No' button
             CEGUI::PushButton* p_btnno = 
-                static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", "_msg_box_btn_no_" ) );
+                static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_no_" + postfix.str() ).c_str() ) );
             p_btnno->setSize( CEGUI::Size( 0.45f, 0.15f ) );
             p_btnno->setPosition( CEGUI::Point( 0.525f, 0.825f ) );
             p_btnno->setText( "No" );
@@ -149,7 +160,7 @@ _autodel( autodelete )
         {
             // create 'Ok' button
             CEGUI::PushButton* p_btnok = 
-                static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", "_msg_box_btn_ok_" ) );
+                static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_ok_" + postfix.str() ).c_str() ) );
             p_btnok->setSize( CEGUI::Size( 0.45f, 0.15f ) );
             p_btnok->setPosition( CEGUI::Point( 0.025f, 0.825f ) );
             p_btnok->setText( "Ok" );
@@ -159,7 +170,7 @@ _autodel( autodelete )
 
             // create 'Cancel' button
             CEGUI::PushButton* p_btncancel = 
-                static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", "_msg_box_btn_cancel_" ) );
+                static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_cancel_" + postfix.str() ).c_str() ) );
             p_btncancel->setSize( CEGUI::Size( 0.45f, 0.15f ) );
             p_btncancel->setPosition( CEGUI::Point( 0.525f, 0.825f ) );
             p_btncancel->setText( "Cancel" );
@@ -173,7 +184,7 @@ _autodel( autodelete )
         {
             // create 'Ok' button
             CEGUI::PushButton* p_btnok = 
-                static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", "_msg_box_btn_ok_" ) );
+                static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_ok_" + postfix.str() ).c_str() ) );
             p_btnok->setSize( CEGUI::Size( 0.5f, 0.15f ) );
             p_btnok->setPosition( CEGUI::Point( 0.25f, 0.75f ) );
             p_btnok->setText( "Ok" );
@@ -185,6 +196,12 @@ _autodel( autodelete )
 
         default:
             assert( NULL && "invalid message dialog type!" );
+    }
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "error creating messagebox" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -265,7 +282,7 @@ bool MessageBoxDialog::onClickedNo( const CEGUI::EventArgs& arg )
     return true;
 }
 
-const std::string& MessageBoxDialog::getText()
+const std::string& MessageBoxDialog::getText() const
 {
     // convert cegui's string to std string
     static std::string text;

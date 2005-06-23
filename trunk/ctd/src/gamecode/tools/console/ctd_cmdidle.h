@@ -19,57 +19,47 @@
  ****************************************************************/
 
 /*###############################################################
- # console command for unloading current level
+ # console command for pushing idle steps into command processing queue
  #
- #   date of creation:  06/15/2005
+ #   date of creation:  06/23/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdunloadlevel.h"
-#include <gui/ctd_menu.h>
+#ifndef _CTD_CMDIDLE_H_
+#define _CTD_CMDIDLE_H_
 
-using namespace std;
+#include <ctd_main.h>
 
 namespace CTD
 {
+// console command name
+#define CMD_NAME_IDLE    "idle"
+#define CMD_USAGE_IDLE   "idle the command execution for given amount of steps\n"\
+                          "use: idle < count of steps >"
 
-//! Implement and register the command
-CTD_IMPL_CONSOLE_CMD( CmdUnloadLevel );
+class EnConsole;
+class BaseConsoleCommand;
 
-
-CmdUnloadLevel::CmdUnloadLevel() :
- BaseConsoleCommand( CMD_NAME_UNLOADLEVEL )
+//! Class for command 'idle'
+class CmdIdle : public BaseConsoleCommand
 {
-    setUsage( CMD_USAGE_UNLOADLEVEL );
-}
+    public:
+                                                    CmdIdle();
 
-CmdUnloadLevel::~CmdUnloadLevel()
-{
-}
+        virtual                                     ~CmdIdle();
 
-const std::string& CmdUnloadLevel::execute( const std::vector< std::string >& arguments )
-{  
-    _cmdResult = "unloading level ...\n";
+        const std::string&                          execute( const std::vector< std::string >& arguments );
 
-    // if the menu entity exists so let it do the job, otherwiese we unload the level outselves
-    EnMenu* p_menu = static_cast< EnMenu* >( EntityManager::get()->findEntity( ENTITY_NAME_MENU ) );
-    if ( p_menu )
-    {
-        EntityNotification ennotify( CTD_NOTIFY_UNLOAD_LEVEL );
-        EntityManager::get()->sendNotification( ennotify, p_menu );
-    }
-    else
-    {
-        LevelManager::get()->unloadLevel( true, true );
-    }
+    protected:
 
-    _cmdResult += "unloading completed";
-    return _cmdResult;
-}
+        EnConsole*                                  _p_console;
+};
+
+
 
 } // namespace CTD
+
+#endif // _CTD_CMDIDLE_H_

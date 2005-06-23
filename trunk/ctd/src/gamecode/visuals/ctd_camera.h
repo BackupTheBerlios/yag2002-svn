@@ -54,12 +54,6 @@ class EnCamera :  public BaseEntity
         //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
 
-        //! Update entity
-        void                                        updateEntity( float deltaTime );
-
-        //! This entity can be either persistent or not!
-        const bool                                  isPersistent() const { return _isPersistent; }
-
         //! Set the persistence flag. 
         //! Note: this flag is checked by framework on destruction of a level.
         void                                        setPersistent( bool persistence ) { _isPersistent = persistence; }
@@ -86,7 +80,7 @@ class EnCamera :  public BaseEntity
         //! Add an offset to camera position
         inline void                                 setCameraOffsetPosition( const osg::Vec3f& posOffset );
 
-        //! Set camera's pitch and yaw in degrees, used for looking around.
+        //! Set camera's pitch and yaw, used for looking around.
         /**
         * Note: the method setCameraOffsetRotation overrides the results of this method and
         *       vice vera!
@@ -94,16 +88,16 @@ class EnCamera :  public BaseEntity
         inline void                                 setLocalPitchYaw( float pitch, float yaw );
 
         //! Get the current pitch and yaw
-        inline void                                 getLocalPitchYaw( float& pitch, float& yaw );
+        inline void                                 getLocalPitchYaw( float& pitch, float& yaw ) const;
 
-        //! Set camera's pitch in degrees, used for looking around.
+        //! Set camera's pitch, used for looking around.
         /**
         * Note: the method setCameraOffsetRotation overrides the results of this method and
         *       vice vera!
         */
         inline void                                 setLocalPitch( float pitch );
 
-        //! Set camera's yaw in degrees, used for looking around.
+        //! Set camera's yaw, used for looking around.
         /**
         * Note: the method setCameraOffsetRotation overrides the results of this method and
         *       vice vera!
@@ -113,11 +107,17 @@ class EnCamera :  public BaseEntity
         //! Enable / disable this camera
         void                                        setEnable( bool enable );
 
+        //! This entity can be either persistent or not!
+        const bool                                  isPersistent() const { return _isPersistent; }
+
     protected:
+
+        //! Update entity
+        void                                        updateEntity( float deltaTime );
 
         //! This entity is persistent so we have to handle entity's update registration on every level loading and
         //  destruction ourselves.
-        void                                        handleNotification( const EntityNotification& notify );
+        void                                        handleNotification( const EntityNotification& notification );
 
         //! Overriden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraPosition!
         void                                        setPosition( osg::Vec3f& pos );
@@ -144,8 +144,6 @@ class EnCamera :  public BaseEntity
 
         //! Background color ( clear color )
         osg::Vec3f                                  _backgroudColor;
-
-    protected:
 
         bool                                        _isPersistent;
 
@@ -233,16 +231,16 @@ inline void EnCamera::setLocalPitchYaw( float pitch, float yaw )
     _pitch = pitch;
     _yaw   = yaw;
     osg::Quat rot( 
-                    osg::DegreesToRadians( pitch ), osg::Vec3f( 1, 0, 0 ),
-                    osg::DegreesToRadians( 0.0f  ), osg::Vec3f( 0, 1, 0 ),
-                    osg::DegreesToRadians( yaw   ), osg::Vec3f( 0, 0, 1 )
+                    pitch, osg::Vec3f( 1.0f, 0.0f, 0.0f ),
+                    0.0f,  osg::Vec3f( 0.0f, 1.0f, 0.0f ),
+                    yaw,   osg::Vec3f( 0.0f, 0.0f, 1.0f )
                  );
 
     _offsetMatrixRotation = osg::Matrixf( rot );
     _needUpdate = true;
 }
 
-inline void EnCamera::getLocalPitchYaw( float& pitch, float& yaw )
+inline void EnCamera::getLocalPitchYaw( float& pitch, float& yaw ) const
 {
     pitch = _pitch;
     yaw   = _yaw;
@@ -252,9 +250,9 @@ inline void EnCamera::setLocalPitch( float pitch )
 {
     _pitch = pitch;
     osg::Quat rot( 
-                    osg::DegreesToRadians( pitch ), osg::Vec3f( 1, 0, 0 ),
-                    osg::DegreesToRadians( 0.0f  ), osg::Vec3f( 0, 1, 0 ),
-                    osg::DegreesToRadians( 0.0f  ), osg::Vec3f( 0, 0, 1 )
+                    pitch, osg::Vec3f( 1.0f, 0.0f, 0.0f ),
+                    0.0f,  osg::Vec3f( 0.0f, 1.0f, 0.0f ),
+                    0.0f,  osg::Vec3f( 0.0f, 0.0f, 1.0f )
                  );
 
     _offsetMatrixRotation = osg::Matrixf( rot );
@@ -265,9 +263,9 @@ inline void EnCamera::setLocalYaw( float yaw )
 {
     _yaw   = yaw;
     osg::Quat rot( 
-                    osg::DegreesToRadians( 0.0f  ), osg::Vec3f( 1, 0, 0 ),
-                    osg::DegreesToRadians( 0.0f  ), osg::Vec3f( 0, 1, 0 ),
-                    osg::DegreesToRadians( yaw   ), osg::Vec3f( 0, 0, 1 )
+                    0.0f, osg::Vec3f( 1.0f, 0.0f, 0.0f ),
+                    0.0f, osg::Vec3f( 0.0f, 1.0f, 0.0f ),
+                    yaw,  osg::Vec3f( 0.0f, 0.0f, 1.0f )
                  );
 
     _offsetMatrixRotation = osg::Matrixf( rot );

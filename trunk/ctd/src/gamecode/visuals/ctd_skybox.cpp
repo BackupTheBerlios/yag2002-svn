@@ -62,10 +62,10 @@ EnSkyBox::~EnSkyBox()
 {
 }
 
-void EnSkyBox::handleNotification( const EntityNotification& notify )
+void EnSkyBox::handleNotification( const EntityNotification& notification )
 {
     // handle notifications
-    switch( notify.getId() )
+    switch( notification.getId() )
     {
         // we have to trigger the deletion ourselves! ( this entity can be peristent )
         case CTD_NOTIFY_SHUTDOWN:

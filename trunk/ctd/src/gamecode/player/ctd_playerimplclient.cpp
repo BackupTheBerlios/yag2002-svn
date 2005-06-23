@@ -56,10 +56,10 @@ PlayerImplClient::~PlayerImplClient()
         delete _p_playerNetworking;
 }
 
-void PlayerImplClient::handleNotification( const EntityNotification& notify )
+void PlayerImplClient::handleNotification( const EntityNotification& notification )
 {
     // handle some notifications
-    switch( notify.getId() )
+    switch( notification.getId() )
     {
         case CTD_NOTIFY_MENU_ENTER:
 
@@ -270,7 +270,7 @@ void PlayerImplClient::update( float deltaTime )
         // update remote client's rotation and position
         getPlayerNetworking()->getPosition( _currentPos._v[ 0 ], _currentPos._v[ 1 ], _currentPos._v[ 2 ] );
         getPlayerNetworking()->getRotation( _rotZ );
-        _currentRot.makeRotate( _rotZ, osg::Vec3f( 0, 0, 1 ) );
+        _currentRot.makeRotate( _rotZ, osg::Vec3f( 0.0f, 0.0f, 1.0f ) );
         getPlayerEntity()->setPosition( _currentPos );
         getPlayerEntity()->setRotation( _currentRot );
     }

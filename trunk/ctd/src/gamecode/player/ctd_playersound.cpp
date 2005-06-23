@@ -121,9 +121,10 @@ osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
             return NULL;
 
     } 
-    catch ( openalpp::Error error )
+    catch ( const openalpp::Error& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading sound file '" << filename << "' in '" << getInstanceName() << "'" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "error loading sound file '" << filename << "' in '" << getInstanceName() << "'" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "  reason: " << e.what() << endl;
         return NULL;
     }
      
@@ -140,7 +141,7 @@ osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
     // Let the soundstate use the sample we just created
     p_soundState->setSample( p_sample );
     // Set its pitch to 1 (normal speed)
-    p_soundState->setPitch( 1 );
+    p_soundState->setPitch( 1.0f );
     p_soundState->setPlay( false );
     p_soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
     // Allocate a hardware soundsource to this soundstate (lower priority of 5)

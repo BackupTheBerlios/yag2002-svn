@@ -62,10 +62,10 @@ EnFPSDisplay::~EnFPSDisplay()
     CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
 }
 
-void EnFPSDisplay::handleNotification( const EntityNotification& notify )
+void EnFPSDisplay::handleNotification( const EntityNotification& notification )
 {
     // handle some notifications
-    switch( notify.getId() )
+    switch( notification.getId() )
     {
         case CTD_NOTIFY_MENU_ENTER:
             break;

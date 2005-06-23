@@ -77,9 +77,10 @@ void EnAmbientSound::initialize()
         }
 
     } 
-    catch ( openalpp::Error error )
+    catch ( const openalpp::Error& e )
     {
-        cout << "*** error loading sound file" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading sound file" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "  reason: " << e.what() << endl;
         return;
     }
 
@@ -96,7 +97,7 @@ void EnAmbientSound::initialize()
     _soundState->setSample( p_sample );
     _soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
     // Set its pitch to 1 (normal speed)
-    _soundState->setPitch( 1 );
+    _soundState->setPitch( 1.0f );
     // Make it play
     _soundState->setPlay( _autoPlay );
     // The sound should loop over and over again
@@ -106,7 +107,7 @@ void EnAmbientSound::initialize()
     _soundState->allocateSource( 10, false );
 
     _soundState->setReferenceDistance( 50.0f );
-    _soundState->setRolloffFactor( 5 );
+    _soundState->setRolloffFactor( 5.0f );
 
     Vec3f pos;
     osgAL::SoundManager::instance()->getListener()->getPosition( pos._v[ 0 ], pos._v[ 1 ], pos._v[ 2 ] );

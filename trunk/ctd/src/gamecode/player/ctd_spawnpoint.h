@@ -57,17 +57,17 @@ class EnSpawnPoint :  public BaseEntity
         //! Get next possible spawn point, if all are occupied then return false.
         static bool                                 getNextSpawnPoint( osg::Vec3f& pos, osg::Quat& rot );
 
-        const osg::Vec3f&                           getPosition() { return _position; }
+        const osg::Vec3f&                           getSpawnPosition() const { return _position; }
 
-        const osg::Quat&                            getRotation() { return _quat; }
-
-    protected:
+        const osg::Quat&                            getSpawnRotation() const { return _quat; }
 
         //! This entity needs not transformation
         const bool                                  isTransformable() const { return false; }
 
+    protected:
+
         //! Handle level changing etc.
-        void                                        handleNotification( const EntityNotification& notify );
+        void                                        handleNotification( const EntityNotification& notification );
 
         osg::Vec3f                                  _position;
 

@@ -84,9 +84,10 @@ void En3DSound::initialize()
             return;
 
     } 
-    catch ( openalpp::Error error )
+    catch ( const openalpp::Error& e )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** error loading sound file in '" << getInstanceName() << "'" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "  reason: " << e.what() << endl;
         EntityManager::get()->registerUpdate( this, false );   // deregister entity
         return;
     }
@@ -145,7 +146,7 @@ void En3DSound::updateEntity( float deltaTime )
         static float a = 0;
         a = ( a < 2.0f * PI ) ? a + deltaTime : a - 2.0f * PI + deltaTime;
         osg::Quat quat;
-        quat.makeRotate( a,  Vec3f( 0, 0, 1 ) );
+        quat.makeRotate( a,  Vec3f( 0.0f, 0.0f, 1.0f ) );
         setRotation( quat );
     }
 }

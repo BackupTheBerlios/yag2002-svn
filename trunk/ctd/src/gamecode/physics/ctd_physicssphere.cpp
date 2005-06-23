@@ -77,13 +77,13 @@ EnPhysicsSphere::~EnPhysicsSphere()
 void EnPhysicsSphere::initializePhysicsMaterials()
 {
     // create and setup collision matrials
-    unsigned int sphereID   = Physics::get()->createMaterialID( "sphere" );
-    unsigned int defaultID  = Physics::get()->getMaterialId( "default" );
-    unsigned int levelID    = Physics::get()->getMaterialId( "level" );
-    unsigned int woodID     = Physics::get()->getMaterialId( "wood" );
-    unsigned int metalID    = Physics::get()->getMaterialId( "metal" );
-    unsigned int grassID    = Physics::get()->getMaterialId( "grass" );
-    unsigned int stoneID    = Physics::get()->getMaterialId( "stone" );
+    int sphereID   = Physics::get()->createMaterialID( "sphere" );
+    int defaultID  = Physics::get()->getMaterialId( "default" );
+    int levelID    = Physics::get()->getMaterialId( "level" );
+    int woodID     = Physics::get()->getMaterialId( "wood" );
+    int metalID    = Physics::get()->getMaterialId( "metal" );
+    int grassID    = Physics::get()->getMaterialId( "grass" );
+    int stoneID    = Physics::get()->getMaterialId( "stone" );
 
     // set non-colliding for cylinder-nocol collisions
     NewtonMaterialSetDefaultCollidable( _p_world, Physics::get()->getMaterialId( "nocol" ), sphereID, 0 );
@@ -169,7 +169,7 @@ void EnPhysicsSphere::initialize()
     osg::Node* p_mesh = LevelManager::get()->loadMesh( _meshFile );
     if ( !p_mesh ) 
     {
-        cout << "*** error loading mesh file" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading mesh file" << endl;
         return;
     }
     // now we add the new mesh into our transformable scene group

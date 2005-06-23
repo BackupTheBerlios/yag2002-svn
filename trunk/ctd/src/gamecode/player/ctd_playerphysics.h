@@ -60,11 +60,6 @@ class EnPlayerPhysics : public BaseEntity
         virtual                                     ~EnPlayerPhysics();
 
         /**
-        * This entity needs no transformation node.
-        */
-        bool                                        isTransformable() { return false; }
-
-        /**
         * Set player's implementation , player entity must call this in post-initialize phase.
         * \param p_player                           Player instance
         */
@@ -81,10 +76,9 @@ class EnPlayerPhysics : public BaseEntity
         void                                        postInitialize();
 
         /**
-        * Update entity
-        * \param deltaTime                          Time passed since last update
+        * This entity needs no transformation node.
         */
-        void                                        updateEntity( float deltaTime );
+        const bool                                  isTransformable() const { return false; }
 
         /**
         * Set force in x and y direction.
@@ -104,7 +98,7 @@ class EnPlayerPhysics : public BaseEntity
         /**
         * Get angular force, it's used by EnPlayer to update rotation about up axis
         */
-        float                                       getAngularForce();
+        float                                       getAngularForce() const;
 
         /**
         * Call this method to force the body to jump
@@ -114,12 +108,12 @@ class EnPlayerPhysics : public BaseEntity
         /**
         * Returns true when the player is in jumping state.
         */
-        bool                                        isJumping() { return _isJumping; }
+        bool                                        isJumping() const { return _isJumping; }
 
         /**
         * Indicates whether we are on ground or in air
         */
-        bool                                        onGround() { return !_isAirBorne; }
+        bool                                        onGround() const { return !_isAirBorne; }
 
         //! Internal callbacks
         //-------------------------------------------------------------------------------------------------//
@@ -145,13 +139,19 @@ class EnPlayerPhysics : public BaseEntity
         BasePlayerImplementation*                   getPlayer() { return _p_playerImpl; }
 
         //! Returns true if we are moving
-        bool                                        isMoving() { return !_isStopped; }
+        bool                                        isMoving() const { return !_isStopped; }
         //-------------------------------------------------------------------------------------------------//
 
     protected:
 
+        /**
+        * Update entity
+        * \param deltaTime                          Time passed since last update
+        */
+        void                                        updateEntity( float deltaTime );
+
         // handle physics building when notified
-        void                                        handleNotification( const EntityNotification& notify );
+        void                                        handleNotification( const EntityNotification& notification );
 
         // init physics materials
         void                                        initializePhysicsMaterials();
@@ -254,7 +254,7 @@ inline void EnPlayerPhysics::stopMovement()
     _force._v[ 1 ] = 0;
 }
 
-inline float EnPlayerPhysics::getAngularForce()
+inline float EnPlayerPhysics::getAngularForce() const
 {
     return _angularForce;
 }

@@ -64,7 +64,7 @@ void EnGeomEmitter::postInitialize()
         p_entity = EntityManager::get()->findInstance( tokens[ cnt ] );
         if ( !p_entity )
         {
-            cout << "***EnGeomEmitter: entity type not found : '" << tokens[ cnt ] << "'" << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "***EnGeomEmitter: entity type not found : '" << tokens[ cnt ] << "'" << endl;
             continue;
         }
 

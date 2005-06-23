@@ -46,7 +46,8 @@ namespace CTD
 class CTDGuiTexture	: public CEGUI::Texture
 {
     public:
-        	                                    CTDGuiTexture( CEGUI::Renderer* p_owner );
+
+        explicit                                CTDGuiTexture( CEGUI::Renderer* p_owner );
 
 	    virtual	                                ~CTDGuiTexture();
 

@@ -91,7 +91,7 @@ const std::string& CmdExec::execute( const std::vector< std::string >& arguments
     while ( !file.eof() )
     {
         getline( file, line, '\n' );
-        if ( ( line.length() > 0 ) && ( line != "\n" ) && ( line[ 0 ] != '#' ) )
+        if ( ( line.length() > 0 ) && ( line != "\n" ) && ( line != "" ) && ( line[ 0 ] != '#' ) )
         {
             line.erase( line.length() - 1 ); // remove line break from string
             commandlines.push_back( line );
@@ -117,7 +117,7 @@ const std::string& CmdExec::execute( const std::vector< std::string >& arguments
     for ( ; p_beg != p_end; p_beg++ )
     {
         _cmdResult += "executing command line: " + *p_beg + "\n";
-        _p_console->queueCmd( *p_beg, false ); // disable hashing for cmd comming from file!
+        _p_console->enqueueCmd( *p_beg );
     }
 
     // release lock

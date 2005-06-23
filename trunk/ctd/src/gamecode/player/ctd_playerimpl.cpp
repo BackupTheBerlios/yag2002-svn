@@ -80,7 +80,7 @@ void BasePlayerImplementation::setCameraPitchYaw( float pitch, float yaw )
 {
     if ( _cameraMode == Spheric )
     {
-        float angleY = yaw * 360.0f;
+        float angleY = yaw * ( 2.0f * PI );
         float angleX = ( pitch * LIMIT_PITCH_ANGLE ) + LIMIT_PITCH_OFFSET;
         _p_camera->setLocalPitchYaw( angleX, angleY );
     }
@@ -101,9 +101,9 @@ void BasePlayerImplementation::setCameraMode( unsigned int mode )
             _p_camera->setCameraOffsetPosition( _playerAttributes._camPosOffsetSpheric );
             osg::Quat rot;
             rot.makeRotate( 
-                osg::DegreesToRadians( _playerAttributes._camRotOffsetSpheric.x()  ), osg::Vec3f( 0, 1, 0 ), // roll
-                osg::DegreesToRadians( _playerAttributes._camRotOffsetSpheric.y()  ), osg::Vec3f( 1, 0, 0 ), // pitch
-                osg::DegreesToRadians( _playerAttributes._camRotOffsetSpheric.z()  ), osg::Vec3f( 0, 0, 1 )  // yaw
+                osg::DegreesToRadians( _playerAttributes._camRotOffsetSpheric.x()  ), osg::Vec3f( 0.0f, 1.0f, 0.0f ), // roll
+                osg::DegreesToRadians( _playerAttributes._camRotOffsetSpheric.y()  ), osg::Vec3f( 1.0f, 0.0f, 0.0f ), // pitch
+                osg::DegreesToRadians( _playerAttributes._camRotOffsetSpheric.z()  ), osg::Vec3f( 0.0f, 0.0f, 1.0f )  // yaw
                 );
             _p_camera->setCameraOffsetRotation( rot );
             _p_playerAnimation->enableRendering( true );
@@ -115,9 +115,9 @@ void BasePlayerImplementation::setCameraMode( unsigned int mode )
             _p_camera->setCameraOffsetPosition( _playerAttributes._camPosOffsetEgo );
             osg::Quat rot;
             rot.makeRotate( 
-                osg::DegreesToRadians( _playerAttributes._camRotOffsetEgo.x()  ), osg::Vec3f( 0, 1, 0 ), // roll
-                osg::DegreesToRadians( _playerAttributes._camRotOffsetEgo.y()  ), osg::Vec3f( 1, 0, 0 ), // pitch
-                osg::DegreesToRadians( _playerAttributes._camRotOffsetEgo.z()  ), osg::Vec3f( 0, 0, 1 )  // yaw
+                osg::DegreesToRadians( _playerAttributes._camRotOffsetEgo.x()  ), osg::Vec3f( 0.0f, 1.0f, 0.0f ), // roll
+                osg::DegreesToRadians( _playerAttributes._camRotOffsetEgo.y()  ), osg::Vec3f( 1.0f, 0.0f, 0.0f ), // pitch
+                osg::DegreesToRadians( _playerAttributes._camRotOffsetEgo.z()  ), osg::Vec3f( 0.0f, 0.0f, 1.0f )  // yaw
                 );
             _p_camera->setCameraOffsetRotation( rot );
             _p_playerAnimation->enableRendering( false );

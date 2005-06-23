@@ -125,8 +125,8 @@ class EyeTransform : public osg::Transform
                                                 osgUtil::CullVisitor* cv = dynamic_cast< osgUtil::CullVisitor* >( nv );
                                                 if ( cv )
                                                 {
-                                                    osg::Vec3 eyePointLocal = cv->getEyeLocal();
-                                                    matrix.preMult( osg::Matrix::translate( eyePointLocal.x(), eyePointLocal.y(), eyePointLocal.z() ) );
+                                                    const osg::Vec3& eyePointLocal = cv->getEyeLocal();
+                                                    matrix.preMult( osg::Matrix::translate( eyePointLocal ) );
                                                 }
                                                 return true;
                                             }
@@ -137,7 +137,7 @@ class EyeTransform : public osg::Transform
                                                 osgUtil::CullVisitor* cv = dynamic_cast< osgUtil::CullVisitor* >( nv );
                                                 if ( cv )
                                                 {
-                                                    osg::Vec3 eyePointLocal = cv->getEyeLocal();
+                                                    const osg::Vec3& eyePointLocal = cv->getEyeLocal();
                                                     matrix.postMult( osg::Matrix::translate( -eyePointLocal.x(), -eyePointLocal.y(), -eyePointLocal.z() ) );
                                                 }
                                                 return true;
@@ -148,8 +148,8 @@ class EyeTransform : public osg::Transform
 class TransformationVisitor : public osg::NodeVisitor
 {
     public:
-                                            TransformationVisitor( osg::NodeVisitor::TraversalMode tm = osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ) :
-                                                osg::NodeVisitor( tm )
+                                            TransformationVisitor( osg::NodeVisitor::TraversalMode tmode = osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ) :
+                                                osg::NodeVisitor( tmode )
                                             {
                                                 // we take all nodes
                                                 setTraversalMask( 0xffffffff );
@@ -162,7 +162,7 @@ class TransformationVisitor : public osg::NodeVisitor
                                                 _matrix *= computeLocalToWorld( getNodePath() );
                                             }
 
-        const osg::Matrixf&                 getMatrix()
+        const osg::Matrixf&                 getMatrix() const
                                             {
                                                 return _matrix;
                                             }
@@ -177,9 +177,9 @@ class TexMatCallback : public osg::NodeCallback
 {
     public:
 
-                                            TexMatCallback( osg::TexMat& tm ) : 
-                                             _texMat( tm ),
-                                             _R( osg::Matrix::rotate( osg::DegreesToRadians( 90.0f ), 1.0f, 0.0f, 0.0f ) )
+        explicit                            TexMatCallback( osg::TexMat& tex ) : 
+                                             _texMat( tex ),
+                                             _R( osg::Matrixf::rotate( osg::DegreesToRadians( 90.0f ), 1.0f, 0.0f, 0.0f ) )
                                             {
                                             }
 
@@ -188,10 +188,10 @@ class TexMatCallback : public osg::NodeCallback
                                                 osgUtil::CullVisitor* cv = dynamic_cast< osgUtil::CullVisitor* >( nv );
                                                 if ( cv )
                                                 {
-                                                    const osg::Matrix& MV = cv->getModelViewMatrix();
+                                                    const osg::Matrixf& MV = cv->getModelViewMatrix();
                                                     osg::Quat q;
                                                     MV.get( q );
-                                                    const osg::Matrix C = osg::Matrix::rotate( q.inverse() );
+                                                    const osg::Matrix C = osg::Matrixf::rotate( q.inverse() );
 
                                                     _texMat.setMatrix( C * _R );
                                                 }
@@ -200,7 +200,7 @@ class TexMatCallback : public osg::NodeCallback
 
         osg::TexMat&                        _texMat;
 
-        osg::Matrix                         _R;
+        osg::Matrixf                        _R;
 };
 
 } // namespace CTD

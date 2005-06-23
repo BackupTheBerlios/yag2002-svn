@@ -74,7 +74,7 @@ class EnPhysicsBase : public BaseEntity
     protected:
 
         //! Catch physics notifications
-        void                                        handleNotification( const EntityNotification& notify );
+        void                                        handleNotification( const EntityNotification& notification );
 
         //! This method is called on derived classed when a build physics world notification is received
         /**

@@ -254,7 +254,7 @@ bool EntityManager::registerUpdate( CTD::BaseEntity* p_entity, bool reg )
     return true;
 }
 
-bool EntityManager::isRegisteredUpdate( BaseEntity* p_entity )
+bool EntityManager::isRegisteredUpdate( const BaseEntity* p_entity )
 {
     // check whether the entity is registered for updates
     vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
@@ -296,7 +296,7 @@ bool EntityManager::registerNotification( BaseEntity* p_entity, bool reg )
     return true;
 }
 
-bool EntityManager::isRegisteredNotification( BaseEntity* p_entity )
+bool EntityManager::isRegisteredNotification( const BaseEntity* p_entity )
 {
     // check whether the entity is registered for notifications
     vector< BaseEntity* >::iterator pp_entity = _entityNotification.begin(), pp_entityEnd = _entityNotification.end();
@@ -308,14 +308,14 @@ bool EntityManager::isRegisteredNotification( BaseEntity* p_entity )
     return false;
 }
 
-void EntityManager::sendNotification( const EntityNotification& notify )
+void EntityManager::sendNotification( const EntityNotification& notification )
 {
-    _queueNotifications.push_back( notify );
+    _queueNotifications.push_back( notification );
 }
 
-void EntityManager::sendNotification( const EntityNotification& notify, BaseEntity* p_entity )
+void EntityManager::sendNotification( const EntityNotification& notification, BaseEntity* p_entity )
 {
-    p_entity->handleNotification( notify );
+    p_entity->handleNotification( notification );
 }
 
 void EntityManager::flushNotificationQueue()
@@ -351,7 +351,7 @@ void EntityManager::deregisterUpdate( BaseEntity* p_entity )
 void EntityManager::addToScene( BaseEntity* p_entity, osg::Group *p_scenegr )
 {
     assert( p_entity && p_entity->_p_transformNode.valid() && "adding to scene requires a transformation node in entity!" );
-    osg::Group *p_grp = p_scenegr ? p_scenegr : ( osg::Group* )Application::get()->getViewer()->getTopMostSceneData();
+    osg::Group *p_grp = p_scenegr ? p_scenegr : static_cast< osg::Group* >( Application::get()->getViewer()->getTopMostSceneData() );
     p_grp->addChild( p_entity->_p_transformNode.get() );
 }
 

@@ -19,9 +19,9 @@
  ****************************************************************/
 
 /*###############################################################
- # console command for unloading current level
+ # console command for pushing idle steps into command processing queue
  #
- #   date of creation:  06/15/2005
+ #   date of creation:  06/23/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
@@ -30,45 +30,50 @@
 
 #include <ctd_main.h>
 #include "ctd_basecmd.h"
-#include "ctd_cmdunloadlevel.h"
-#include <gui/ctd_menu.h>
-
-using namespace std;
+#include "ctd_cmdidle.h"
+#include "ctd_console.h"
 
 namespace CTD
 {
 
 //! Implement and register the command
-CTD_IMPL_CONSOLE_CMD( CmdUnloadLevel );
+CTD_IMPL_CONSOLE_CMD( CmdIdle );
 
 
-CmdUnloadLevel::CmdUnloadLevel() :
- BaseConsoleCommand( CMD_NAME_UNLOADLEVEL )
+CmdIdle::CmdIdle() :
+ BaseConsoleCommand( CMD_NAME_IDLE ),
+ _p_console( NULL )
 {
-    setUsage( CMD_USAGE_UNLOADLEVEL );
+    setUsage( CMD_USAGE_IDLE );
 }
 
-CmdUnloadLevel::~CmdUnloadLevel()
+CmdIdle::~CmdIdle()
 {
 }
 
-const std::string& CmdUnloadLevel::execute( const std::vector< std::string >& arguments )
+const std::string& CmdIdle::execute( const std::vector< std::string >& arguments )
 {  
-    _cmdResult = "unloading level ...\n";
-
-    // if the menu entity exists so let it do the job, otherwiese we unload the level outselves
-    EnMenu* p_menu = static_cast< EnMenu* >( EntityManager::get()->findEntity( ENTITY_NAME_MENU ) );
-    if ( p_menu )
+    if ( arguments.size() != 1 )
     {
-        EntityNotification ennotify( CTD_NOTIFY_UNLOAD_LEVEL );
-        EntityManager::get()->sendNotification( ennotify, p_menu );
-    }
-    else
-    {
-        LevelManager::get()->unloadLevel( true, true );
+        _cmdResult = getUsage();
+        return _cmdResult;
     }
 
-    _cmdResult += "unloading completed";
+    // get the console entity 
+    if ( !_p_console )
+    {
+        _p_console = static_cast< EnConsole* >( EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
+        assert( _p_console && "CmdIdle::execute: console entity could not be found!" );
+    }
+
+    unsigned int idlecnt = 0;
+    std::stringstream str;
+    str << arguments[ 0 ];
+    str >> idlecnt;
+    _p_console->triggerIdle( idlecnt );
+    str.flush();
+    str << idlecnt;
+    _cmdResult = "idling for '" + str.str() + "' steps ...";
     return _cmdResult;
 }
 

@@ -60,10 +60,10 @@ EnSpawnPoint::~EnSpawnPoint()
 {
 }
 
-void EnSpawnPoint::handleNotification( const EntityNotification& notify )
+void EnSpawnPoint::handleNotification( const EntityNotification& notification )
 {
     // handle notifications
-    switch( notify.getId() )
+    switch( notification.getId() )
     {
         // clear spawn points list on every level loading
         case CTD_NOTIFY_DELETING_ENTITIES:
@@ -81,9 +81,9 @@ void EnSpawnPoint::handleNotification( const EntityNotification& notify )
 void EnSpawnPoint::initialize()
 {
     _quat = osg::Quat( 
-                        osg::DegreesToRadians( _rotation.x() ), osg::Vec3f( 1, 0, 0 ),
-                        osg::DegreesToRadians( _rotation.y() ), osg::Vec3f( 0, 1, 0 ),
-                        osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0, 0, 1 )
+                        osg::DegreesToRadians( _rotation.x() ), osg::Vec3f( 1.0f, 0.0f, 0.0f ),
+                        osg::DegreesToRadians( _rotation.y() ), osg::Vec3f( 0.0f, 1.0f, 0.0f ),
+                        osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0.0f, 0.0f, 1.0f )
                       );
 }
 
@@ -121,7 +121,7 @@ bool EnSpawnPoint::getNextSpawnPoint( osg::Vec3f& pos, osg::Quat& rot )
         std::vector< EnPlayer* >::iterator pp_beg = players.begin(), pp_end = players.end();
         for ( ; pp_beg != pp_end; pp_beg++ )
         {
-            if ( ( p_spawn->getPosition() - ( *pp_beg )->getPosition() ).length2() < ( SPAWN_MIN_FREE_RADIUS * SPAWN_MIN_FREE_RADIUS ) )
+            if ( ( p_spawn->getSpawnPosition() - ( *pp_beg )->getPosition() ).length2() < ( SPAWN_MIN_FREE_RADIUS * SPAWN_MIN_FREE_RADIUS ) )
                 break;
         }
         // if one of players occupy the spawn point then we are done
@@ -140,8 +140,8 @@ bool EnSpawnPoint::getNextSpawnPoint( osg::Vec3f& pos, osg::Quat& rot )
         return false;
 
     // copy position and rotation
-    pos = p_spawnentity->getPosition();
-    rot = p_spawnentity->getRotation();
+    pos = p_spawnentity->getSpawnPosition();
+    rot = p_spawnentity->getSpawnRotation();
 
     log << Log::LogLevel( Log::L_DEBUG ) << "player takes SpawnPoint '" 
         << p_spawnentity->getInstanceName() 

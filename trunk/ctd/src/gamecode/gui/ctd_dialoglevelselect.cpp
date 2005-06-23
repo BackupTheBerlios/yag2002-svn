@@ -91,7 +91,7 @@ bool DialogLevelSelect::initialize( const string& layoutfile )
 
         _p_image = static_cast< CEGUI::StaticImage* >( _p_levelSelectDialog->getChild( LDLG_PREFIX "img_pic" ) );
     }
-    catch ( CEGUI::Exception e )
+    catch ( const CEGUI::Exception& e )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** DialogLevelSelect: cannot setup dialog layout." << endl;
         log << "      reason: " << e.getMessage().c_str() << endl;
@@ -138,8 +138,9 @@ void DialogLevelSelect::changeSearchDirectory( const string& dir )
                 // add new preview to map
                 _levelFiles.insert( make_pair( materialName, p_image ) );
             }
-            catch ( CEGUI::Exception e )
+            catch ( const CEGUI::Exception& e )
             {
+                e; // suppress warning for unused e
                 CEGUI::Image* p_null = NULL;
                 // empty image identifies missing preview pic
                 _levelFiles.insert( make_pair( materialName, p_null ) );
@@ -161,9 +162,9 @@ void DialogLevelSelect::setupControls()
     // set selection background color
     CEGUI::ColourRect col( 
                             CEGUI::colour( 255.0f / 255.0f, 214.0f / 255.0f, 9.0f / 255.0f, 0.8f ),
-                            CEGUI::colour( 12.0f  / 255.0f, 59.0f  / 255.0f, 0            , 0.8f ),
+                            CEGUI::colour( 12.0f  / 255.0f, 59.0f  / 255.0f, 0.0f         , 0.8f ),
                             CEGUI::colour( 255.0f / 255.0f, 214.0f / 255.0f, 9.0f / 255.0f, 0.8f ),
-                            CEGUI::colour( 12.0f  / 255.0f, 59.0f  / 255.0f, 0            , 0.8f )
+                            CEGUI::colour( 12.0f  / 255.0f, 59.0f  / 255.0f, 0.0f         , 0.8f )
                           );    
     // fill up the list
     _p_listbox->resetList();

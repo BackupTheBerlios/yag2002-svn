@@ -76,8 +76,8 @@ const std::string& CmdEntityAttributeSet::execute( const std::vector< std::strin
     {
         // now send out a notification to the entity this way letting it know that we changed an attribute value
         //  the entity can decide itself if an appropriate action is necessary in this case
-        EntityNotification notify( CTD_NOTIFY_ENTITY_ATTRIBUTE_CHANGED );
-        EntityManager::get()->sendNotification( notify, p_entity );
+        EntityNotification notification( CTD_NOTIFY_ENTITY_ATTRIBUTE_CHANGED );
+        EntityManager::get()->sendNotification( notification, p_entity );
     }
 
     return _cmdResult;

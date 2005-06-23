@@ -173,6 +173,9 @@ inline const float& Physics::getWorldGravity()
 
 inline void Physics::update( float deltaTime )
 { 
+    if ( !_p_world )
+        return;
+
     // Newton should be fed with fix timesteps
     static float time_elapsed = 0;
     time_elapsed += deltaTime;

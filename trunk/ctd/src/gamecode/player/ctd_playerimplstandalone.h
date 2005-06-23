@@ -50,7 +50,7 @@ class PlayerImplStandalone : public BasePlayerImplementation
 {
     public:
 
-                                                    PlayerImplStandalone( EnPlayer* player );
+        explicit                                    PlayerImplStandalone( EnPlayer* player );
 
         virtual                                     ~PlayerImplStandalone();
 
@@ -65,7 +65,7 @@ class PlayerImplStandalone : public BasePlayerImplementation
         void                                        update( float deltaTime );
 
         //! Implementation's notification callback
-        void                                        handleNotification( const EntityNotification& notify );
+        void                                        handleNotification( const EntityNotification& notification );
 
     protected:
 

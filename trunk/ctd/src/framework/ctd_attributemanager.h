@@ -230,7 +230,7 @@ class AttributeManager
 
         /**
         * Assignement operator.
-        * It copies all attributes to a given attribute manager after removing its exisiting ones ( hence the parameter ist not 'const' ).
+        * It copies all attributes from a given attribute manager.
         */
         AttributeManager&                   operator = ( AttributeManager& attr );
 

@@ -256,9 +256,10 @@ CEGUI::Font* GuiManager::createFont( const std::string& fontname )
         germanGlyphs += ( CEGUI::utf8 )220; // Ue
         p_font->defineFontGlyphs( glyphs + germanGlyphs );
     }
-    catch ( CEGUI::Exception e )
+    catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << " GuiManager: cannot create font: '" << fontname << "'" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "GuiManager: cannot create font: '" << fontname << "'" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << " reason: " << e.getMessage().c_str() << "'" << endl;
         return NULL;
     }
 
@@ -298,7 +299,7 @@ void GuiManager::changeDisplayResolution( float width, float height )
     CEGUI::MouseCursor::getSingleton().setConstraintArea( &rect );
 }
 
-void GuiManager::showMousePointer( bool show )
+void GuiManager::showMousePointer( bool show ) const
 {    
     if ( show )
         MouseCursor::getSingleton().show();
@@ -348,9 +349,10 @@ CEGUI::Window* GuiManager::loadLayout( const string& filename, CEGUI::Window* p_
             p_parent->addChildWindow( p_layout );
 
     }
-    catch ( CEGUI::Exception e )
+    catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << " GuiManager: cannot load layout: '" << filename << "'" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "GuiManager: cannot load layout: '" << filename << "'" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << " reason: " << e.getMessage().c_str() << "'" << endl;
         return NULL;
     }
 
@@ -359,7 +361,7 @@ CEGUI::Window* GuiManager::loadLayout( const string& filename, CEGUI::Window* p_
     return p_layout;
 }
 
-void GuiManager::getGuiArea( float& width, float& height )
+void GuiManager::getGuiArea( float& width, float& height ) const
 {
     width  = _p_renderer->getWidth();
     height = _p_renderer->getHeight();
@@ -370,7 +372,7 @@ void GuiManager::activate( bool active )
     _active = active;
 }
 
-bool GuiManager::isActive()
+bool GuiManager::isActive() const
 {
     return _active;
 }
@@ -456,6 +458,9 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
             case osgGA::GUIEventAdapter::KEY_Page_Down:
                 CEGUI::System::getSingleton().injectKeyDown(CEGUI::Key::PageDown);
                 break;
+
+            default:
+                ;
         }
 
         unsigned int transkey = KeyMap::get()->translateKey( key );

@@ -59,6 +59,7 @@ CTD_SINGLETON_IMPL( Application );
 
 Application::Application():
 _p_networkDevice( NULL ),
+_p_guiManager( NULL ),
 _p_entityManager( EntityManager::get() ),
 _p_gameState( GameState::get() ),
 _p_physics( Physics::get() ),
@@ -196,7 +197,6 @@ bool Application::initialize( int argc, char **argv )
     //-------------------
     Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  _screenWidth    );
     Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, _screenHeight   );
-    Configuration::get()->getSettingValue( CTD_GS_MOUSESENS,    _mouseSensivity );
 
     //-------------------
 
@@ -352,8 +352,8 @@ bool Application::initialize( int argc, char **argv )
 
         // if we directly start a client with cmd line option then we must send a leave-menu notification to entities
         //  as many entities do special steps when leaving the menu
-        EntityNotification notify( CTD_NOTIFY_MENU_LEAVE );
-        EntityManager::get()->sendNotification( notify );
+        EntityNotification notification( CTD_NOTIFY_MENU_LEAVE );
+        EntityManager::get()->sendNotification( notification );
     }
     else // check for any level file name, so we try to start in Standalone mode
     {
@@ -370,8 +370,8 @@ bool Application::initialize( int argc, char **argv )
 
         // if we directly start a client with cmd line option then we must send a leave-menu notification to entities
         //  as many entities do special steps when leaving the menu
-        EntityNotification notify( CTD_NOTIFY_MENU_LEAVE );
-        EntityManager::get()->sendNotification( notify );
+        EntityNotification notification( CTD_NOTIFY_MENU_LEAVE );
+        EntityManager::get()->sendNotification( notification );
     }
 
     // enable physics debug rendering

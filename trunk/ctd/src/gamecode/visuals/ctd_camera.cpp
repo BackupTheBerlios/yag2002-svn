@@ -132,10 +132,10 @@ EnCamera::~EnCamera()
     _p_cameraHandler->destroyHandler();
 }
 
-void EnCamera::handleNotification( const EntityNotification& notify )
+void EnCamera::handleNotification( const EntityNotification& notification )
 {
     // handle notifications
-    switch( notify.getId() )
+    switch( notification.getId() )
     {
         // for every subsequent level loading we must register outself again for getting updating
         case CTD_NOTIFY_NEW_LEVEL_INITIALIZED:
@@ -166,9 +166,9 @@ void EnCamera::initialize()
 
     _curPosition = _position;
     _curRotation = osg::Quat( 
-                                osg::DegreesToRadians( _rotation.x() ), osg::Vec3f( 0, 1, 0 ), // roll
-                                osg::DegreesToRadians( _rotation.y() ), osg::Vec3f( 1, 0, 0 ), // pitch
-                                osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0, 0, 1 )  // yaw
+                                osg::DegreesToRadians( _rotation.x() ), osg::Vec3f( 0.0f, 1.0f, 0.0f ), // roll
+                                osg::DegreesToRadians( _rotation.y() ), osg::Vec3f( 1.0f, 0.0f, 0.0f ), // pitch
+                                osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0.0f, 0.0f, 1.0f )  // yaw
                             );
 
     setCameraTranslation( _curPosition, _curRotation );

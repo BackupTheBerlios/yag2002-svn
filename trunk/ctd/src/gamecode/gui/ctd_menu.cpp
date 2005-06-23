@@ -199,13 +199,18 @@ EnMenu::~EnMenu()
     _p_inputHandler->destroyHandler();
 }
 
-void EnMenu::handleNotification( const EntityNotification& notify )
+void EnMenu::handleNotification( const EntityNotification& notification )
 {
     // handle notifications
-    switch( notify.getId() )
+    switch( notification.getId() )
     {
         // for every subsequent level loading we must register outself again for getting updating
         case CTD_NOTIFY_NEW_LEVEL_INITIALIZED:
+            break;
+
+        // other entities can also request for unloading a level too ( e.g. the console ), handle this here
+        case CTD_NOTIFY_UNLOAD_LEVEL:
+            leaveLevel();
             break;
 
         // we have to trigger the deletion ourselves! ( we disabled auto-deletion for this entity )
@@ -302,7 +307,7 @@ void EnMenu::initialize()
         _p_loadingOverly->setSize( CEGUI::Size( 0.5f, 0.2f ) );
         _p_loadingOverly->setPosition( CEGUI::Point( 0.25f, 0.75f ) );
     }
-    catch ( CEGUI::Exception e )
+    catch ( const CEGUI::Exception& e )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** Menu: cannot find layout: " << _menuConfig << endl;
         log << "      reason: " << e.getMessage().c_str() << endl;
@@ -518,7 +523,6 @@ bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
 }
 
 //! TODO: show a dialog with all found servers and let the user choose one
-//   currently only the local net is checked and the first found server is used
 bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
 {
     if ( _clickSound.get() )

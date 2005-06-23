@@ -73,13 +73,13 @@ class NodeInfo
         * Get level name, this is relevant for clients
         * \return                                       Level name
         */
-        const std::string&                              getLevelName() { return _levelName; }
+        const std::string&                              getLevelName() const { return _levelName; }
 
         /**
         * Get Node name, for server it is the connecting client name, for client it is the server name
         * \return                               Node name
         */
-        const std::string&                              getNodeName() { return _nodeName; }
+        const std::string&                              getNodeName() const { return _nodeName; }
 
     protected:
 
@@ -137,7 +137,7 @@ class NetworkDevice : public Singleton< NetworkDevice >
         /**
         * Get networking mode: NONE, CLIENT, SERVER
         */
-        NetworkingMode                              getMode() { return _mode; }
+        NetworkingMode                              getMode() const { return _mode; }
 
         /**
         * Get server's / client's node info, call this after a a session is established.
