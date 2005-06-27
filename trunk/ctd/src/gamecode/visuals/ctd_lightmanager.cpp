@@ -70,12 +70,12 @@ void LightManager::addLight( BaseLight* p_light )
 
 void LightManager::flush()
 {
-    unsigned int numlights = std::min( ( int )_lights.size(), CTD_MAX_GL_LIGHTS - 1 );
+    unsigned int numlights = min( ( int )_lights.size(), CTD_MAX_GL_LIGHTS - 1 );
     
     osg::StateSet*  p_stateset = Application::get()->getViewer()->getGlobalStateSet();
     // first turn off all lights
-    for ( unsigned int cnt = 0; cnt < CTD_MAX_GL_LIGHTS - 1; cnt++ )
-        p_stateset->setMode( GL_LIGHT0 + cnt, osg::StateAttribute::OFF );
+    for ( unsigned int l = 0; l < CTD_MAX_GL_LIGHTS - 1; l++ )
+        p_stateset->setMode( GL_LIGHT0 + l, osg::StateAttribute::OFF );
 
     // now turn on lights which are not culled
     std::vector< BaseLight* >::iterator p_beg = _lights.begin();
@@ -103,7 +103,10 @@ void LightManager::flush()
 void LightCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 {
     // add the light into light manager if it is not culled
-    osgUtil::CullVisitor* p_cv = static_cast< osgUtil::CullVisitor* >( nv );
+    osgUtil::CullVisitor* p_cv = dynamic_cast< osgUtil::CullVisitor* >( nv );
+    if ( !p_cv )
+        return;
+
     if ( !p_cv->isCulled( _lightEntity->_bSphere ) )
         LightManager::get()->addLight( _lightEntity );    
 }

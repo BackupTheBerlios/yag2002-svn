@@ -89,19 +89,19 @@ bool DialogGameSettings::initialize( const string& layoutfile )
     try
     {
         // setup dialog
-        _p_settingsDialog->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedCancel, this ) );
+        _p_settingsDialog->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedCancel, this ) );
 
         // setup ok button
         CEGUI::PushButton* p_btnok = static_cast< CEGUI::PushButton* >( _p_settingsDialog->getChild( SDLG_PREFIX "btn_ok" ) );
-        p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedOk, this ) );
+        p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedOk, this ) );
 
         // setup ok button
         CEGUI::PushButton* p_btnplayercfg = static_cast< CEGUI::PushButton* >( _p_settingsDialog->getChild( SDLG_PREFIX "btn_playercfg" ) );
-        p_btnplayercfg->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedPlayerConfig, this ) );
+        p_btnplayercfg->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedPlayerConfig, this ) );
 
         // setup cancel button
         CEGUI::PushButton* p_btncancel = static_cast< CEGUI::PushButton* >( _p_settingsDialog->getChild( SDLG_PREFIX "btn_cancel" ) );
-        p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedCancel, this ) );
+        p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedCancel, this ) );
 
         // get player name text box
         _p_playerName = static_cast< CEGUI::Editbox* >( _p_settingsDialog->getChild( SDLG_PREFIX "text_playername" ) );
@@ -109,7 +109,7 @@ bool DialogGameSettings::initialize( const string& layoutfile )
         // get tab control contents
         //-------------------------
         CEGUI::TabControl* p_tabctrl = static_cast< CEGUI::TabControl* >( _p_settingsDialog->getChild( SDLG_PREFIX "tab_ctrl" ) );
-        p_tabctrl->subscribeEvent( CEGUI::TabControl::EventSelectionChanged, CEGUI::Event::Subscriber( DialogGameSettings::onTabChanged, this ) );
+        p_tabctrl->subscribeEvent( CEGUI::TabControl::EventSelectionChanged, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onTabChanged, this ) );
 
         // get contents of pane Network
         //#############################
@@ -125,25 +125,25 @@ bool DialogGameSettings::initialize( const string& layoutfile )
         // key bindings
         //-------------
         _p_keyMoveForward  = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_forward" ) );
-        _p_keyMoveForward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedForward, this ) );
+        _p_keyMoveForward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedForward, this ) );
 
         _p_keyMoveBackward = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_backward" ) );
-        _p_keyMoveBackward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedBackward, this ) );
+        _p_keyMoveBackward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedBackward, this ) );
 
         _p_keyMoveLeft     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_left" ) );
-        _p_keyMoveLeft->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedLeft, this ) );
+        _p_keyMoveLeft->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedLeft, this ) );
 
         _p_keyMoveRight    = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_right" ) );
-        _p_keyMoveRight->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedRight, this ) );
+        _p_keyMoveRight->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedRight, this ) );
 
         _p_keyJump         = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_jump" ) );
-        _p_keyJump->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedJump, this ) );
+        _p_keyJump->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedJump, this ) );
 
         _p_keyCameraMode   = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_camera" ) );
-        _p_keyCameraMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedCameraMode, this ) );
+        _p_keyCameraMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedCameraMode, this ) );
 
         _p_keyChatMode     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_chatmode" ) );
-        _p_keyChatMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogGameSettings::onClickedChatMode, this ) );
+        _p_keyChatMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedChatMode, this ) );
         //-------------
 
         // get contents of pane Keyboard
@@ -151,15 +151,15 @@ bool DialogGameSettings::initialize( const string& layoutfile )
         CEGUI::TabPane*    p_paneKeyboard = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_keyboard" ) );
 
         _p_keyKeybEnglish = static_cast< CEGUI::Checkbox* >( p_paneKeyboard->getChild( SDLG_PREFIX "cb_english" ) );
-        _p_keyKeybEnglish->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( DialogGameSettings::onKeyboardEnglishChanged, this ) );
+        _p_keyKeybEnglish->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onKeyboardEnglishChanged, this ) );
 
         _p_keyKeybGerman  = static_cast< CEGUI::Checkbox* >( p_paneKeyboard->getChild( SDLG_PREFIX "cb_german" ) );
-        _p_keyKeybGerman->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( DialogGameSettings::onKeyboardGermanChanged, this ) );
+        _p_keyKeybGerman->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onKeyboardGermanChanged, this ) );
 
         //-------------
         // set callback for mouse sensivity scrollbar
         _p_mouseSensivity = static_cast< CEGUI::Scrollbar* >( p_paneControl->getChild( SDLG_PREFIX "sb_mousesensivity" ) );
-        _p_mouseSensivity->subscribeEvent( CEGUI::Scrollbar::EventMoved, CEGUI::Event::Subscriber( DialogGameSettings::onMouseSensitivityChanged, this ) );
+        _p_mouseSensivity->subscribeEvent( CEGUI::Scrollbar::EventMoved, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onMouseSensitivityChanged, this ) );
 
         // setup invert mouse callback
         _p_mouseInvert = static_cast< CEGUI::Checkbox* >( p_paneControl->getChild( SDLG_PREFIX "cbx_mouseinvert" ) );
@@ -171,7 +171,7 @@ bool DialogGameSettings::initialize( const string& layoutfile )
 
         // get fullscreen and windowed checkboxes
         _p_fullscreen = static_cast< CEGUI::RadioButton* >( p_paneDisplay->getChild( SDLG_PREFIX "rb_fullscreen" ) );
-        _p_fullscreen->subscribeEvent( CEGUI::RadioButton::EventSelectStateChanged, CEGUI::Event::Subscriber( DialogGameSettings::onFullscreenChanged, this ) );
+        _p_fullscreen->subscribeEvent( CEGUI::RadioButton::EventSelectStateChanged, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onFullscreenChanged, this ) );
         _p_wndscreen = static_cast< CEGUI::RadioButton* >( p_paneDisplay->getChild( SDLG_PREFIX "rb_windowed" ) );
         // get resolution combobox
         _p_resolution = static_cast< CEGUI::Combobox* >( p_paneDisplay->getChild( SDLG_PREFIX "cbox_resolution" ) );

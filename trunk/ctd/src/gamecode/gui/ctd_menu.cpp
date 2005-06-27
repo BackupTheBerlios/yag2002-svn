@@ -181,19 +181,27 @@ _p_skyBox( NULL )
 
 EnMenu::~EnMenu()
 {
-    if ( _p_menuWindow )
-        CEGUI::WindowManager::getSingleton().destroyWindow( _p_menuWindow );
+    try
+    {
+        if ( _p_menuWindow )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_menuWindow );
 
-    if ( _p_loadingWindow )
-        CEGUI::WindowManager::getSingleton().destroyWindow( _p_loadingWindow );
+        if ( _p_loadingWindow )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_loadingWindow );
 
-    if ( _p_loadingOverly )
-        CEGUI::WindowManager::getSingleton().destroyWindow( _p_loadingOverly );
+        if ( _p_loadingOverly )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_loadingOverly );
 
-    if ( _p_loadingLevelPic )
-        CEGUI::WindowManager::getSingleton().destroyWindow( _p_loadingLevelPic );
+        if ( _p_loadingLevelPic )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_loadingLevelPic );
 
-    CEGUI::ImagesetManager::getSingleton().destroyImageset( OVERLAY_IMAGESET );
+        CEGUI::ImagesetManager::getSingleton().destroyImageset( OVERLAY_IMAGESET );
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "EnMenu: problem cleaning up entity." << endl;
+        log << "      reason: " << e.getMessage().c_str() << endl;
+    }
 
     // destroy the input handler
     _p_inputHandler->destroyHandler();
@@ -246,32 +254,32 @@ void EnMenu::initialize()
 
         // set button callbacks
         _p_btnStartJoin = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_startjoin" ) );
-        _p_btnStartJoin->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedJoin, this ) );
-        _p_btnStartJoin->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
+        _p_btnStartJoin->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::EnMenu::onClickedJoin, this ) );
+        _p_btnStartJoin->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &CTD::EnMenu::onButtonHover, this ) );
 
         _p_btnStartServer = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_startserver" ) );
-        _p_btnStartServer->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedServer, this ) );
-        _p_btnStartServer->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
+        _p_btnStartServer->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::EnMenu::onClickedServer, this ) );
+        _p_btnStartServer->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &CTD::EnMenu::onButtonHover, this ) );
 
         _p_btnStartWT = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_startwt" ) );
-        _p_btnStartWT->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedWT, this ) );
-        _p_btnStartWT->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
+        _p_btnStartWT->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::EnMenu::onClickedWT, this ) );
+        _p_btnStartWT->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &CTD::EnMenu::onButtonHover, this ) );
 
         CEGUI::PushButton* p_btnGS = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_game_settings" ) );
-        p_btnGS->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedGameSettings, this ) );
-        p_btnGS->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
+        p_btnGS->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::EnMenu::onClickedGameSettings, this ) );
+        p_btnGS->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &CTD::EnMenu::onButtonHover, this ) );
 
         CEGUI::PushButton* p_btnQuit = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_quit" ) );
-        p_btnQuit->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedQuit, this ) );
-        p_btnQuit->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
+        p_btnQuit->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::EnMenu::onClickedQuit, this ) );
+        p_btnQuit->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &CTD::EnMenu::onButtonHover, this ) );
 
         _p_btnReturn = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_return" ) );
-        _p_btnReturn->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedReturnToLevel, this ) );
-        _p_btnReturn->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
+        _p_btnReturn->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::EnMenu::onClickedReturnToLevel, this ) );
+        _p_btnReturn->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &CTD::EnMenu::onButtonHover, this ) );
 
         _p_btnLeave = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_leave" ) );
-        _p_btnLeave->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( EnMenu::onClickedLeave, this ) );
-        _p_btnLeave->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( EnMenu::onButtonHover, this ) );
+        _p_btnLeave->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::EnMenu::onClickedLeave, this ) );
+        _p_btnLeave->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &CTD::EnMenu::onButtonHover, this ) );
 
         // setup loading window
         _p_loadingWindow = static_cast< CEGUI::Window* >( CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", ( MENU_PREFIX "wnd_loading" ) ) );
@@ -640,15 +648,21 @@ void EnMenu::updateEntity( float deltaTime )
             _p_loadingWindow->show();
             // show up the loading window           
             GuiManager::get()->showMousePointer( false ); // let the mouse disappear 
+            _menuState = PrepareLoadingLevel;
+        }
+        break;
+
+        case PrepareLoadingLevel:
+        {
+            // unload level, don't keep physics and entities
+            // note: the menu entity is persistent anyway, it handles the level switch itself!
+            LevelManager::get()->unloadLevel( true, true );
             _menuState = LoadingLevel;
         }
         break;
 
         case LoadingLevel:
         {
-            // load a new level, don't keep physics and entities
-            // note: the menu entity is persistent anyway, it handles the level switch itself!
-            LevelManager::get()->unloadLevel( true, true );
             LevelManager::get()->loadLevel( _queuedLevelFile );
             _queuedLevelFile = ""; // reset the queue
 

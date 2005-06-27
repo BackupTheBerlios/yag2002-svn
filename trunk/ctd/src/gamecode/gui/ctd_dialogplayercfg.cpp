@@ -142,18 +142,18 @@ bool DialogPlayerConfig::initialize( const string& layoutfile )
     {
         // setup ok button
         CEGUI::PushButton* p_btnok = static_cast< CEGUI::PushButton* >( _p_playerConfigDialog->getChild( ADLG_PREFIX "btn_ok" ) );
-        p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogPlayerConfig::onClickedOk, this ) );
+        p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogPlayerConfig::onClickedOk, this ) );
 
         // setup cancel button
         CEGUI::PushButton* p_btncancel = static_cast< CEGUI::PushButton* >( _p_playerConfigDialog->getChild( ADLG_PREFIX "btn_cancel" ) );
-        p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogPlayerConfig::onClickedCancel, this ) );
+        p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogPlayerConfig::onClickedCancel, this ) );
 
         // setup editbox for player name
         _p_playerName = static_cast< CEGUI::Editbox* >( _p_playerConfigDialog->getChild( ADLG_PREFIX "eb_playername" ) );
 
         // get list box
         _p_listbox = static_cast< CEGUI::Listbox* >( _p_playerConfigDialog->getChild( ADLG_PREFIX "lst_players" ) );
-        _p_listbox->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( DialogPlayerConfig::onListItemSelChanged, this ) );
+        _p_listbox->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &CTD::DialogPlayerConfig::onListItemSelChanged, this ) );
 
         _p_image = static_cast< CEGUI::StaticImage* >( _p_playerConfigDialog->getChild( ADLG_PREFIX "img_player" ) );
     }
@@ -198,16 +198,17 @@ void DialogPlayerConfig::setupControls()
                           );    
     // fill up the list
     _p_listbox->resetList();
-    std::map< std::string, CEGUI::Image* >::iterator p_beg = _players.begin(), p_end = _players.end();
-    for ( ; p_beg != p_end; p_beg++ )
     {
-        CEGUI::ListboxTextItem * p_item = new CEGUI::ListboxTextItem( p_beg->first.c_str() );
-        p_item->setSelectionColours( col );
-        p_item->setSelectionBrushImage( "TaharezLook", "ListboxSelectionBrush" );
-        p_item->setUserData( ( void* )( &p_beg->first ) );  // set texture name as item data
-        _p_listbox->insertItem( p_item, NULL );
+        std::map< std::string, CEGUI::Image* >::iterator p_beg = _players.begin(), p_end = _players.end();
+        for ( ; p_beg != p_end; p_beg++ )
+        {
+            CEGUI::ListboxTextItem * p_item = new CEGUI::ListboxTextItem( p_beg->first.c_str() );
+            p_item->setSelectionColours( col );
+            p_item->setSelectionBrushImage( "TaharezLook", "ListboxSelectionBrush" );
+            p_item->setUserData( ( void* )( &p_beg->first ) );  // set texture name as item data
+            _p_listbox->insertItem( p_item, NULL );
+        }
     }
-
     // get settings
     {
         string playername;
@@ -242,7 +243,7 @@ void DialogPlayerConfig::setupControls()
     }
 }
 
-void DialogPlayerConfig::setPreviewPic( CEGUI::ListboxItem* p_item )
+void DialogPlayerConfig::setPreviewPic( const CEGUI::ListboxItem* p_item )
 {
     string* p_texname = static_cast< string* >( p_item->getUserData() );
     CEGUI::Image*  p_image = _players[ *p_texname ];

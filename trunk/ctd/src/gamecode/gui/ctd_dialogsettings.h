@@ -70,7 +70,8 @@ class BtnInputHandler : public GenericInputHandler< CEGUI::PushButton >
 class DialogGameSettings
 {
     public:
-                                                    DialogGameSettings( EnMenu* p_menuEntity );
+
+        explicit                                    DialogGameSettings( EnMenu* p_menuEntity );
 
         virtual                                     ~DialogGameSettings();
 

@@ -64,9 +64,9 @@ void EnMesh::initialize()
     addToTransformationNode( _mesh.get() );
     setPosition( _position );
     osg::Quat   rot( 
-                     _rotation.x(), osg::Vec3f( 1, 0, 0 ),
-                     _rotation.y(), osg::Vec3f( 0, 1, 0 ),
-                     _rotation.z(), osg::Vec3f( 0, 0, 1 )
+                     _rotation.x(), osg::Vec3f( 1.0f, 0.0f, 0.0f ),
+                     _rotation.y(), osg::Vec3f( 0.0f, 1.0f, 0.0f ),
+                     _rotation.z(), osg::Vec3f( 0.0f, 0.0f, 1.0f )
                     );
     setRotation( rot );
 }

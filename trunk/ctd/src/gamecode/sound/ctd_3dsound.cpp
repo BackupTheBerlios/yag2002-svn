@@ -95,15 +95,14 @@ void En3DSound::initialize()
     // create a named sound state.
     // note: we have to make the state name unique as otherwise new need unique sound states for every entity instance
     stringstream uniquename;
-    static uniqueId = 0;
+    static unsigned int uniqueId = 0;
     uniquename << getInstanceName();
     uniquename << uniqueId;
     uniqueId++;
-    string s = uniquename.str();
     _soundState = new osgAL::SoundState( uniquename.str() );
     // Let the soundstate use the sample we just created
     _soundState->setSample( p_sample );
-    _soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
+    _soundState->setGain( max( min( _volume, 1.0f ), 0.0f ) );
     // Set its pitch to 1 (normal speed)
     _soundState->setPitch( 1 );
     // Make it play

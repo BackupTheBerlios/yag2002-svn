@@ -64,7 +64,7 @@ class DialogPlayerConfig
         void                                        setupControls();
 
         //! Set the preview image for given list item ( is used when the user changes the player selection in list )
-        void                                        setPreviewPic( CEGUI::ListboxItem* p_item );
+        void                                        setPreviewPic( const CEGUI::ListboxItem* p_item );
 
         //! Dialog callback for Ok button        
         bool                                        onClickedOk( const CEGUI::EventArgs& arg );

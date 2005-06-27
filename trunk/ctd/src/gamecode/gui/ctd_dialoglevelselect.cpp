@@ -54,14 +54,22 @@ _p_menuEntity( p_menuEntity )
 DialogLevelSelect::~DialogLevelSelect()
 {
     // free up the imagesets
-    std::map< std::string, CEGUI::Image* >::iterator p_beg = _levelFiles.begin(), p_end = _levelFiles.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    try
     {
-        CEGUI::ImagesetManager::getSingleton().destroyImageset( p_beg->first );
-    }
+        std::map< std::string, CEGUI::Image* >::iterator p_beg = _levelFiles.begin(), p_end = _levelFiles.end();
+        for ( ; p_beg != p_end; p_beg++ )
+        {
+            CEGUI::ImagesetManager::getSingleton().destroyImageset( p_beg->first );
+        }
 
-    if ( _p_levelSelectDialog )
-        CEGUI::WindowManager::getSingleton().destroyWindow( _p_levelSelectDialog );
+        if ( _p_levelSelectDialog )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_levelSelectDialog );
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "DialogLevelSelect: problem cleaning up entity." << endl;
+        log << "      reason: " << e.getMessage().c_str() << endl;
+    }
 }
 
 bool DialogLevelSelect::initialize( const string& layoutfile )
@@ -79,15 +87,15 @@ bool DialogLevelSelect::initialize( const string& layoutfile )
     {
         // setup start button
         CEGUI::PushButton* p_btnstart = static_cast< CEGUI::PushButton* >( _p_levelSelectDialog->getChild( LDLG_PREFIX "btn_start" ) );
-        p_btnstart->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogLevelSelect::onClickedStart, this ) );
+        p_btnstart->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogLevelSelect::onClickedStart, this ) );
 
         // setup return button
         CEGUI::PushButton* p_btnreturn = static_cast< CEGUI::PushButton* >( _p_levelSelectDialog->getChild( LDLG_PREFIX "btn_return" ) );
-        p_btnreturn->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( DialogLevelSelect::onClickedReturn, this ) );
+        p_btnreturn->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogLevelSelect::onClickedReturn, this ) );
 
         // get list box
         _p_listbox = static_cast< CEGUI::Listbox* >( _p_levelSelectDialog->getChild( LDLG_PREFIX "lst_levels" ) );
-        _p_listbox->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( DialogLevelSelect::onListItemSelChanged, this ) );
+        _p_listbox->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &CTD::DialogLevelSelect::onListItemSelChanged, this ) );
 
         _p_image = static_cast< CEGUI::StaticImage* >( _p_levelSelectDialog->getChild( LDLG_PREFIX "img_pic" ) );
     }

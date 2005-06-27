@@ -127,7 +127,7 @@ class LightCallback : public osg::NodeCallback
 
     public:
 
-                                                    LightCallback( BaseLight* p_lightentity ) : 
+        explicit                                    LightCallback( BaseLight* p_lightentity ) : 
                                                     _lightEntity( p_lightentity )  
                                                     {}
 

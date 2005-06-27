@@ -121,56 +121,56 @@ osg::Node* EnSkyBox::makeBox()
     osg::Vec3 coords0[] = //front
     {
         osg::Vec3(-x, y, -z),
-            osg::Vec3( x, y, -z),
-            osg::Vec3( x, y, +z),
-            osg::Vec3(-x, y, +z),
+        osg::Vec3( x, y, -z),
+        osg::Vec3( x, y, +z),
+        osg::Vec3(-x, y, +z),
     };
 
     osg::Vec3 coords1[] = //right
     {
         osg::Vec3(x,  y, -z),
-            osg::Vec3(x, -y, -z),
-            osg::Vec3(x, -y,  z),
-            osg::Vec3(x,  y,  z)
+        osg::Vec3(x, -y, -z),
+        osg::Vec3(x, -y,  z),
+        osg::Vec3(x,  y,  z)
     };
 
     osg::Vec3 coords2[] = //back
     {
         osg::Vec3( x, -y, -z),
-            osg::Vec3(-x, -y, -z),
-            osg::Vec3(-x, -y,  z),
-            osg::Vec3( x, -y,  z)
+        osg::Vec3(-x, -y, -z),
+        osg::Vec3(-x, -y,  z),
+        osg::Vec3( x, -y,  z)
     };
 
     osg::Vec3 coords3[] = //left
     {
         osg::Vec3(-x, -y, -z),
-            osg::Vec3(-x,  y, -z),
-            osg::Vec3(-x,  y,  z),
-            osg::Vec3(-x, -y,  z)
+        osg::Vec3(-x,  y, -z),
+        osg::Vec3(-x,  y,  z),
+        osg::Vec3(-x, -y,  z)
     };
 
     osg::Vec3 coords4[] = //top
     {
         osg::Vec3(-x,  y, z),
-            osg::Vec3( x,  y, z),
-            osg::Vec3( x, -y, z),
-            osg::Vec3(-x, -y, z)
+        osg::Vec3( x,  y, z),
+        osg::Vec3( x, -y, z),
+        osg::Vec3(-x, -y, z)
     };
     osg::Vec3 coords5[] = //bottom
     {
         osg::Vec3(-x,  y, -z),
-            osg::Vec3(-x, -y, -z),
-            osg::Vec3( x, -y, -z),
-            osg::Vec3( x,  y, -z)
+        osg::Vec3(-x, -y, -z),
+        osg::Vec3( x, -y, -z),
+        osg::Vec3( x,  y, -z)
     };
 
     osg::Vec2 tCoords[] =
     {
-        osg::Vec2(0,0),
-            osg::Vec2(1,0),
-            osg::Vec2(1,1),
-            osg::Vec2(0,1)
+        osg::Vec2(0.0f,0.0f),
+        osg::Vec2(1.0f,0.0f),
+        osg::Vec2(1.0f,1.0f),
+        osg::Vec2(0.0f,1.0f)
     };
     osg::Geometry *polyGeom[6];
 

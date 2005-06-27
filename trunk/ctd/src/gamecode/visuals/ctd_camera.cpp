@@ -44,7 +44,7 @@ class CameraFrameHandler : public GenericInputHandler< EnCamera >
 {
     public:
 
-                                        CameraFrameHandler( EnCamera* p_camEntity ) : 
+        explicit                        CameraFrameHandler( EnCamera* p_camEntity ) : 
                                           GenericInputHandler< EnCamera >( p_camEntity ),
                                           _enable( true )
                                         {}
@@ -89,10 +89,10 @@ bool CameraFrameHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             mat = _p_userObject->_offsetMatrixPosition * mat;
 
             //  inverse the matrix
-            osg::Matrixf inv = mat.inverse( mat );
+            osg::Matrixf inv = Matrixf::inverse( mat );
 
             // adjust Z-UP
-            static Producer::Matrix adjustZ_Up ( Producer::Matrix::rotate( -M_PI / 2.0, 1, 0, 0 ) );
+            static Producer::Matrix adjustZ_Up ( Producer::Matrix::rotate( -M_PI / 2.0f, 1.0f, 0.0f, 0.0f ) );
               // set view matrix
             Application::get()->getViewer()->setViewByMatrix( Producer::Matrix( inv.ptr() ) * adjustZ_Up  );
 
@@ -161,7 +161,7 @@ void EnCamera::initialize()
     // setup camera
     Producer::Camera* p_cam = Application::get()->getViewer()->getCamera( 0 );
     p_cam->setLensPerspective( _fov, _fov * ( float( height ) / float( width ) ), _nearClip, _farClip );
-    p_cam->setClearColor( _backgroudColor.x(), _backgroudColor.y(), _backgroudColor.z(), 1.0 );
+    p_cam->setClearColor( _backgroudColor.x(), _backgroudColor.y(), _backgroudColor.z(), 1.0f );
     p_cam->setOffset( double( 0 ), double( 0 ) );
 
     _curPosition = _position;

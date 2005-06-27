@@ -131,7 +131,7 @@ osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
     // create a named sound state.
     // note: we have to make the state name unique as otherwise new need unique sound states for every entity instance
     stringstream uniquename;
-    static uniqueId = 0;
+    static unsigned int uniqueId = 0;
     uniquename << getInstanceName();
     uniquename << uniqueId;
     uniqueId++;
@@ -143,7 +143,7 @@ osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
     // Set its pitch to 1 (normal speed)
     p_soundState->setPitch( 1.0f );
     p_soundState->setPlay( false );
-    p_soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
+    p_soundState->setGain( max( min( _volume, 1.0f ), 0.0f ) );
     // Allocate a hardware soundsource to this soundstate (lower priority of 5)
     p_soundState->allocateSource( 5, false );
 

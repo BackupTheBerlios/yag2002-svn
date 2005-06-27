@@ -58,9 +58,6 @@ class EnMenu :  public BaseEntity
         //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
 
-        //! This entity needs updating
-        void                                        updateEntity( float deltaTime );
-
         //! This entity does not need a transform node, which would be created by level manager on loading
         const bool                                  isTransformable() const { return false; }
 
@@ -69,6 +66,9 @@ class EnMenu :  public BaseEntity
         const bool                                  isPersistent() const { return true; }
 
     protected:
+
+        //! This entity needs updating
+        void                                        updateEntity( float deltaTime );
 
         // Interface methods for intro and settings dialog
         //-----
@@ -177,6 +177,7 @@ class EnMenu :  public BaseEntity
             BeginIntro,
             Intro,
             BeginLoadingLevel,
+            PrepareLoadingLevel,
             LoadingLevel,
             UnloadLevel,
             Visible,

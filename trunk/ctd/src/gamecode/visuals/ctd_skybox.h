@@ -58,21 +58,10 @@ class EnSkyBox :  public BaseEntity
         //! Enable / disable skybox rendering
         void                                        enable( bool en );
 
-        typedef enum   {
-            SKYBOX_FRONT = 0,
-            SKYBOX_RIGHT,
-            SKYBOX_BACK,      
-            SKYBOX_LEFT,
-            SKYBOX_TOP,
-            SKYBOX_BOTTOM
-        }                                           _side;
-
     protected:
 
         //! Entity parameter for texnames (6)
         std::string                                 _texNames[ 6 ];
-
-    protected:
 
         //! This entity is persistent so it has to trigger its destruction on shutdown ifself.
         void                                        handleNotification( const EntityNotification& notification );

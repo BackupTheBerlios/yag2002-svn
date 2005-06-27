@@ -32,6 +32,12 @@
 #include "ctd_main.h"
 #include <ctd_application.h>
 
+// use the ms exception logger
+#ifdef WIN32
+    class  MSJExceptionHandler;
+    extern MSJExceptionHandler exceptionHandler;
+#endif 
+
 int main( int argc, char **argv )
 {
     CTD::Application *p_app = CTD::Application::get();

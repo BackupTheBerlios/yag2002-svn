@@ -57,10 +57,10 @@ class EnFog :  public BaseEntity
         //! Note: this flag is checked by framework on destruction of a level.
         void                                        setPersistent( bool persistence ) { _isPersistent = persistence; }
 
-    protected:
-
         //! This entity can be either persistent or not!
         const bool                                  isPersistent() const { return _isPersistent; }
+
+    protected:
 
         //! This entity is persistent so it has to trigger its destruction on shutdown ifself.
         void                                        handleNotification( const EntityNotification& notification );
@@ -73,8 +73,6 @@ class EnFog :  public BaseEntity
 
         //! Fog color
         osg::Vec3f                                  _fogColor;
-
-    protected:
 
         static osg::Fog*                            _p_fog;
 

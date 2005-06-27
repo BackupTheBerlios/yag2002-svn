@@ -96,17 +96,17 @@ void PlayerChatGui::initialize( BasePlayerImplementation* p_playerImpl, const st
     try
     {
         CEGUI::FrameWindow* p_frameWnd = static_cast< CEGUI::FrameWindow* >( _p_frame );
-        p_frameWnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( PlayerChatGui::onCloseFrame, this ) );
+		p_frameWnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::PlayerChatGui::onCloseFrame, this ) );
 
         _p_editbox = static_cast< CEGUI::Editbox* >( _p_frame->getChild( CHATLAYOUT_PREFIX "eb_editbox" ) );
-        _p_editbox->subscribeEvent( CEGUI::MultiLineEditbox::EventCharacterKey, CEGUI::Event::Subscriber( PlayerChatGui::onEditboxTextChanged, this ) );
+        _p_editbox->subscribeEvent( CEGUI::MultiLineEditbox::EventCharacterKey, CEGUI::Event::Subscriber( &CTD::PlayerChatGui::onEditboxTextChanged, this ) );
 
         _p_messagebox = static_cast< CEGUI::MultiLineEditbox* >( _p_frame->getChild( CHATLAYOUT_PREFIX "eb_messagebox" ) );
         _p_messagebox->setReadOnly( true );
 
         // setup chat box hide button with ctd specific image set
         _p_btnHide = static_cast< CEGUI::PushButton* >( _p_wnd->getChild( CHATLAYOUT_PREFIX "btn_hidebox" ) );
-        _p_btnHide->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( PlayerChatGui::onClickedHide, this ) );
+        _p_btnHide->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::PlayerChatGui::onClickedHide, this ) );
         _p_btnHide->setStandardImageryEnabled( false );
 
         CEGUI::Imageset* p_imageSet = NULL;

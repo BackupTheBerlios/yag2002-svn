@@ -176,6 +176,9 @@ _fresnel( 1.1f )
     _attributeManager.addAttribute( "back"                  , _cubeMapTextures[ 3 ]  );
     _attributeManager.addAttribute( "up"                    , _cubeMapTextures[ 4 ]  );
     _attributeManager.addAttribute( "down"                  , _cubeMapTextures[ 5 ]  );
+
+    // init wave parameters
+    calcConstants( 0.03f );
 }
 
 EnWater::~EnWater()
@@ -313,7 +316,7 @@ osg::Geometry* EnWater::makeMesh()
         _p_geom->addPrimitiveSet( new DrawElementsUInt( PrimitiveSet::TRIANGLE_STRIP, _subDevisionsX * 2, p_indices ) );
     }
 
-    _p_geom->setNormalBinding( Geometry::AttributeBinding::BIND_PER_VERTEX );
+    _p_geom->setNormalBinding( Geometry::BIND_PER_VERTEX );
     _p_geom->setUseDisplayList( false );     
     _p_geom->dirtyBound();
 
@@ -397,35 +400,39 @@ void EnWater::updateEntity( float deltaTime )
     Vec3Array*  p_normArray = _normArray.get();
 
     // calculate vertex positions
-    for( int y = 1; y < _subDevisionsY - 1; ++y )
     {
-        Vec3f* p_curPos   = &( ( *p_posArray1 )[ y * _subDevisionsX ] );
-        Vec3f* p_prevPos  = &( ( *p_posArray2 )[ y * _subDevisionsX ] );
-        for( int x = 1; x < _subDevisionsX - 1; ++x )
+        for( int y = 1; y < _subDevisionsY - 1; ++y )
         {
-           float newZ =
-                _k1 * p_curPos[ x ]._v[ 2 ]  + 
-                _k2 * p_prevPos[ x ]._v[ 2 ] + 
-                _k3 * 
-                ( 
+            Vec3f* p_curPos   = &( ( *p_posArray1 )[ y * _subDevisionsX ] );
+            Vec3f* p_prevPos  = &( ( *p_posArray2 )[ y * _subDevisionsX ] );
+            for( int x = 1; x < _subDevisionsX - 1; ++x )
+            {
+                float newZ =
+                    _k1 * p_curPos[ x ]._v[ 2 ]  + 
+                    _k2 * p_prevPos[ x ]._v[ 2 ] + 
+                    _k3 * 
+                    ( 
                     p_curPos[ x + 1 ]._v[ 2 ] + p_curPos[ x - 1 ]._v[ 2 ] + 
                     p_curPos[ x + _subDevisionsX ]._v[ 2 ] + p_curPos[ x - _subDevisionsX ]._v[ 2 ]
-                );
+                    );
 
-           p_prevPos[ x ]._v[ 2 ] = newZ;
+                    p_prevPos[ x ]._v[ 2 ] = newZ;
+            }
         }
     }
 
     // calculate vertex normals
-    for( int y = 1; y < _subDevisionsY - 1; ++y )
     {
-        Vec3f* p_norm     = &( ( *p_normArray )[ y * _subDevisionsX ] );
-        Vec3f* p_nextPos  = &( ( *p_posArray2 )[ y * _subDevisionsX ] );
-        for( int x = 1; x < _subDevisionsX - 1; ++x )
+        for( int y = 1; y < _subDevisionsY - 1; ++y )
         {
-            p_norm[ x ]._v[ 0 ] = p_nextPos[ x - 1 ]._v[ 2 ] - p_nextPos[ x + 1 ]._v[ 2 ];
-            p_norm[ x ]._v[ 1 ] = p_nextPos[ x - _subDevisionsX ]._v[ 2 ] - p_nextPos[ x + _subDevisionsX ]._v[ 2 ];
-            p_norm[ x ].normalize();
+            Vec3f* p_norm     = &( ( *p_normArray )[ y * _subDevisionsX ] );
+            Vec3f* p_nextPos  = &( ( *p_posArray2 )[ y * _subDevisionsX ] );
+            for( int x = 1; x < _subDevisionsX - 1; ++x )
+            {
+                p_norm[ x ]._v[ 0 ] = p_nextPos[ x - 1 ]._v[ 2 ] - p_nextPos[ x + 1 ]._v[ 2 ];
+                p_norm[ x ]._v[ 1 ] = p_nextPos[ x - _subDevisionsX ]._v[ 2 ] - p_nextPos[ x + _subDevisionsX ]._v[ 2 ];
+                p_norm[ x ].normalize();
+            }
         }
     }
 

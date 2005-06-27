@@ -54,11 +54,19 @@ _introState( None )
 
 IntroControl::~IntroControl()
 {
-    if ( _p_wndIntro )
-        CEGUI::WindowManager::getSingleton().destroyWindow( _p_wndIntro );
+    try
+    {
+        if ( _p_wndIntro )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_wndIntro );
 
-    if ( _p_imageSet )
-        CEGUI::ImagesetManager::getSingleton().destroyImageset( _p_imageSet );
+        if ( _p_imageSet )
+            CEGUI::ImagesetManager::getSingleton().destroyImageset( _p_imageSet );
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "IntroControl: problem cleaning up entity." << endl;
+        log << "      reason: " << e.getMessage().c_str() << endl;
+    }
 }
 
 bool IntroControl::initialize( const string& intoImage )
@@ -86,7 +94,7 @@ bool IntroControl::initialize( const string& intoImage )
         _p_introImage->setBackgroundEnabled( false );
         _p_introImage->setFrameEnabled( false );
     }
-    catch ( CEGUI::Exception e )
+    catch ( const CEGUI::Exception& e )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** Intro: cannot setup layout!" << endl;
         log << "      reason: " << e.getMessage().c_str() << endl;
