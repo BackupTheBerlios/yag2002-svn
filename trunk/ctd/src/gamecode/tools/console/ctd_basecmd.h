@@ -49,13 +49,13 @@ class BaseConsoleCommand
         virtual                                     ~BaseConsoleCommand();
 
         //! Get the command name
-        inline const std::string&                   getCmdName();
+        inline const std::string&                   getCmdName() const;
 
         //! Execute the command
         virtual const std::string&                  execute( const std::vector< std::string >& arguments ) = 0;
 
         //! Get command help and usage text.
-        inline const std::string&                   getUsage();
+        inline const std::string&                   getUsage() const;
 
     protected:
 
@@ -70,17 +70,17 @@ class BaseConsoleCommand
     friend class ConsoleCommandRegistry;
 };
 
-inline const std::string& BaseConsoleCommand::getCmdName()
+inline const std::string& BaseConsoleCommand::getCmdName() const
 {
     return _cmdName;
 }
 
-inline void BaseConsoleCommand::setUsage( const std::string& usage )
+inline void BaseConsoleCommand::setUsage( const std::string& usage ) 
 {
     _usage = usage;
 }
 
-inline const std::string& BaseConsoleCommand::getUsage()
+inline const std::string& BaseConsoleCommand::getUsage() const
 {
     return _usage;
 }

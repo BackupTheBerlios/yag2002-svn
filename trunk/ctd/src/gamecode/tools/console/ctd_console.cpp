@@ -170,7 +170,7 @@ void EnConsole::initialize()
         _p_wnd->setAlwaysOnTop( true );
         _p_wnd->setText( "Console" );
         _p_wnd->setMinimumSize( CEGUI::Size( 0.2f, 0.2f ) );
-        _p_wnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( EnConsole::onCloseFrame, this ) );
+        _p_wnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::EnConsole::onCloseFrame, this ) );
 
         _p_outputWindow = static_cast< CEGUI::MultiLineEditbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/MultiLineEditbox", CON_WND "output" ) );
         _p_outputWindow->setReadOnly( true );

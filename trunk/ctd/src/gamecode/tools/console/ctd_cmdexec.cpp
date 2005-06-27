@@ -59,7 +59,7 @@ const std::string& CmdExec::execute( const std::vector< std::string >& arguments
     _cmdResult = "";
 
     // we have to avoid a reentrance which can occur when the exec command is used in a batch file!
-    static s_lock = false;
+    static bool s_lock = false;
     if ( s_lock )
     {
         _cmdResult = "command '" + std::string( CMD_NAME_EXEC ) + "' cannot be used in batch files! skipping";
