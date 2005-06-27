@@ -21,7 +21,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(CTD_DEP_DIR)\GUI\cegui_mk2-cvs\include&quot;;&quot;$(CTD_DEP_DIR)\Physics\Newton&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(CTD_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(CTD_DEP_DIR)\Sound\osgAL\include&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\src&quot;;../../../../src/framework;../../../../src/gamecode"
-				PreprocessorDefinitions="_DEBUG;WIN32"
+				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -42,7 +42,7 @@
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(CTD_DEP_DIR)\all_Libs&quot;;../../../../lib/framework"
 				GenerateDebugInformation="TRUE"
 				HeapCommitSize="0"
-				StackCommitSize="10000"/>
+				StackCommitSize="0"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -69,12 +69,13 @@
 			OutputDirectory="../../../vc7.1/lib/vrc/release"
 			IntermediateDirectory="../../../vc7.1/obj/vrc/release"
 			ConfigurationType="1"
-			CharacterSet="2">
+			CharacterSet="2"
+			WholeProgramOptimization="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
-				EnableFiberSafeOptimizations="TRUE"
-				OptimizeForProcessor="3"
-				OptimizeForWindowsApplication="TRUE"
+				EnableFiberSafeOptimizations="FALSE"
+				OptimizeForProcessor="0"
+				OptimizeForWindowsApplication="FALSE"
 				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(CTD_DEP_DIR)\GUI\cegui_mk2-cvs\include&quot;;&quot;$(CTD_DEP_DIR)\Physics\Newton&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(CTD_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(CTD_DEP_DIR)\Sound\osgAL\include&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\src&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
@@ -94,7 +95,9 @@
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/$(ProjectName)_release.pdb"
-				OptimizeReferences="2"/>
+				SubSystem="1"
+				OptimizeReferences="2"
+				TargetMachine="0"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -560,6 +563,12 @@
 				</Filter>
 			</Filter>
 		</Filter>
+		<File
+			RelativePath="..\..\..\..\src\gamecode\ctd_exceptionlogger.cpp">
+		</File>
+		<File
+			RelativePath="..\..\..\..\src\gamecode\ctd_exceptionlogger.h">
+		</File>
 		<File
 			RelativePath="..\..\..\..\src\gamecode\ctd_gameutils.cpp">
 		</File>
