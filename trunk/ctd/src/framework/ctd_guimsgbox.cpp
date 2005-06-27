@@ -86,13 +86,13 @@ _p_msgtext( NULL )
         case MessageBoxDialog::YES_NO:
         case MessageBoxDialog::OK_CANCEL:
 
-            boxwidth  = std::max( 2.0f * minbuttonwidth + 0.1f, textwidth + 0.05f );
+            boxwidth  = max( 2.0f * minbuttonwidth + 0.1f, textwidth + 0.05f );
             boxheight = minbuttonheight + textheight + 0.1f; // + 0.1f for the upper frame
             break;
 
         case MessageBoxDialog::OK:
 
-            boxwidth  = std::max( minbuttonwidth + 0.1f, textwidth + 0.05f );
+            boxwidth  = max( minbuttonwidth + 0.1f, textwidth + 0.05f );
             boxheight = minbuttonheight + textheight + 0.1f; // + 0.1f for the upper frame
             break;
 
@@ -142,7 +142,7 @@ _p_msgtext( NULL )
             p_btnyes->setText( "Yes" );
             _p_wnd->addChildWindow( p_btnyes );
             // set callback
-            p_btnyes->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( MessageBoxDialog::onClickedYes, this ) );
+            p_btnyes->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedYes, this ) );
 
             // create 'No' button
             CEGUI::PushButton* p_btnno = 
@@ -152,7 +152,7 @@ _p_msgtext( NULL )
             p_btnno->setText( "No" );
             _p_wnd->addChildWindow( p_btnno );
             // set callback
-            p_btnno->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( MessageBoxDialog::onClickedNo, this ) );
+            p_btnno->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedNo, this ) );
         }
         break;
 
@@ -166,7 +166,7 @@ _p_msgtext( NULL )
             p_btnok->setText( "Ok" );
             _p_wnd->addChildWindow( p_btnok );
             // set callback
-            p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( MessageBoxDialog::onClickedOk, this ) );
+            p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedOk, this ) );
 
             // create 'Cancel' button
             CEGUI::PushButton* p_btncancel = 
@@ -176,7 +176,7 @@ _p_msgtext( NULL )
             p_btncancel->setText( "Cancel" );
             _p_wnd->addChildWindow( p_btncancel );
             // set callback
-            p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( MessageBoxDialog::onClickedCancel, this ) );
+			p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedCancel, this ) );
         }
         break;
 
@@ -190,7 +190,7 @@ _p_msgtext( NULL )
             p_btnok->setText( "Ok" );
             _p_wnd->addChildWindow( p_btnok );
             // set callback
-            p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( MessageBoxDialog::onClickedOk, this ) );
+			p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedOk, this ) );
         }
         break;
 

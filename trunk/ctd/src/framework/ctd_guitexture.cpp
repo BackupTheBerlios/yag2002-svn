@@ -184,7 +184,7 @@ CTDGuiTexture::tImageTGA* CTDGuiTexture::LoadTGA( const unsigned char* buffer, s
     // We do, however, read in an extra bit for each color.
 
     // Allocate the structure that will hold our eventual image data (must free it!)
-    pImageData = (tImageTGA*)malloc(sizeof(tImageTGA));
+    pImageData = new tImageTGA;
 
     // Read in the length in bytes from the header to the pixel data
     memcpy(&length, buffer, sizeof(GLbyte));
@@ -282,7 +282,7 @@ CTDGuiTexture::tImageTGA* CTDGuiTexture::LoadTGA( const unsigned char* buffer, s
         else
         {
             delete [] pImageData->data;
-            free( pImageData );
+            delete pImageData;
             return NULL;
         }
     }

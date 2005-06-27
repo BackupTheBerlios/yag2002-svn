@@ -33,16 +33,17 @@
 #ifndef _CTD_BASE_H_
 #define _CTD_BASE_H_
 
-// CEGUI headers
-#include <CEGUI.h>
-
 // ms windows stuff
 #ifdef WIN32
 #  ifndef WIN32_LEAN_AND_MEAN
 #    define WIN32_LEAN_AND_MEAN
 #  endif
+#  include <stdlib.h>
 #  include <windows.h>
 #endif
+
+// CEGUI headers
+#include <CEGUI.h>
 
 // osg headers
 #include <osg/AlphaFunc>
@@ -89,7 +90,7 @@
 // Physics library header
 #include <Newton.h>
 
-// stl headers
+// STL headers
 #include <string>
 #include <vector>
 #include <iostream>

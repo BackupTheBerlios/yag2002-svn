@@ -74,8 +74,8 @@ void levelCollisionCallback (
                             );
 
 
-static freedBytesSum = 0;
-static allocBytesSum = 0;
+static unsigned int freedBytesSum = 0;
+static unsigned int allocBytesSum = 0;
 // memory allocation for Newton
 void* physicsAlloc( int sizeInBytes )
 {

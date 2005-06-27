@@ -43,6 +43,7 @@
 namespace CTD
 {
 
+class Application;
 class Settings;
 
 //! Settings manager ( look at the end of file for an usage example )
@@ -71,10 +72,12 @@ class SettingsManager : public Singleton< SettingsManager >
 
         virtual                                 ~SettingsManager();
 
+        void                                    shutdown();
 
         std::map< std::string, Settings* >      _profiles;
 
     friend class Singleton< SettingsManager >;
+    friend class Application;
 };
 
 //! Class for managing game settings

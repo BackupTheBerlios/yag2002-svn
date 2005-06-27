@@ -84,6 +84,8 @@ void Application::shutdown()
     LevelManager::get()->shutdown();
     Configuration::get()->shutdown();
     GameState::get()->shutdown();
+    SettingsManager::get()->shutdown();
+
     delete _p_viewer;
     destroy();
 }

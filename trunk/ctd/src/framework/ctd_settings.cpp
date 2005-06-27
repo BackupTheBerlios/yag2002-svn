@@ -47,15 +47,20 @@ SettingsManager::SettingsManager()
 SettingsManager::~SettingsManager()
 {
     // delete all profiles
-    map< string, Settings* >::iterator pp_profile = NULL, pp_profileEnd = _profiles.end();
+    map< string, Settings* >::iterator pp_profile = _profiles.begin(), pp_profileEnd = _profiles.end();
     while ( pp_profile != pp_profileEnd )
         delete pp_profile->second;
 }
 
+void SettingsManager::shutdown()
+{
+    // destroy singleton
+    destroy();
+}
+
 Settings* SettingsManager::createProfile( const string& profilename, const string& filename )
 {
-    map< string, Settings* >::iterator pp_profile = NULL, pp_profileEnd = _profiles.end();
-    pp_profile = _profiles.find( profilename );
+    map< string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile != pp_profileEnd )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** requested profile '" << profilename << "' already exists!" << endl;
@@ -70,8 +75,7 @@ Settings* SettingsManager::createProfile( const string& profilename, const strin
 
 void SettingsManager::destroyProfile( const std::string& profilename )
 {
-    map< string, Settings* >::iterator pp_profile = NULL, pp_profileEnd = _profiles.end();
-    pp_profile = _profiles.find( profilename );
+    map< string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile == pp_profileEnd )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** profile '" << profilename << "' does not exist!" << endl;
@@ -84,8 +88,7 @@ void SettingsManager::destroyProfile( const std::string& profilename )
 
 bool SettingsManager::loadProfile( const string& profilename )
 {
-    map< string, Settings* >::iterator pp_profile = NULL, pp_profileEnd = _profiles.end();
-    pp_profile = _profiles.find( profilename );
+    map< string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile == pp_profileEnd )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** profile '" << profilename << "' does not exist!" << endl;
@@ -97,8 +100,7 @@ bool SettingsManager::loadProfile( const string& profilename )
 
 bool SettingsManager::storeProfile( const string& profilename )
 {
-    map< string, Settings* >::iterator pp_profile = NULL, pp_profileEnd = _profiles.end();
-    pp_profile = _profiles.find( profilename );
+    map< string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile == pp_profileEnd )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** profile '" << profilename << "' does not exist!" << endl;
@@ -110,8 +112,7 @@ bool SettingsManager::storeProfile( const string& profilename )
 
 Settings* SettingsManager::getProfile( const std::string& profilename )
 {
-    map< string, Settings* >::iterator pp_profile = NULL, pp_profileEnd = _profiles.end();
-    pp_profile = _profiles.find( profilename );
+    map< string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile != pp_profileEnd )
         return pp_profile->second;
     

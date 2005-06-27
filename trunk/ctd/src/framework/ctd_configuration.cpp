@@ -229,7 +229,6 @@ void Configuration::shutdown()
     // store the latest changes in profile
     SettingsManager::get()->storeProfile( CTD_GAMESETTING_PROFILENAME );
     SettingsManager::get()->destroyProfile( CTD_GAMESETTING_PROFILENAME );
-
     // destroy singleton
     destroy();
 }

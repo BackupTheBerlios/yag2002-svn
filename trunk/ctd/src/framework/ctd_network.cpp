@@ -65,7 +65,7 @@ void NetworkDevice::disconnect()
     }
     _clientSessionStable = false;
     _serverSessionStable = false;
-    _mode = NetworkingMode::NONE;
+    _mode = NetworkDevice::NONE;
     _nodeInfo._levelName = "";
     _nodeInfo._nodeName  = "";
 }
@@ -84,7 +84,7 @@ void NetworkDevice::shutdown()
     RNReplicaNet::XPURL::ShutdownNetwork();
 	RNReplicaNet::PlatformHeap::ForceFree();
 
-    _mode = NetworkingMode::NONE;
+    _mode = NetworkDevice::NONE;
 
     // destroy singleton
     destroy();
@@ -128,7 +128,7 @@ bool NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
         }
 	}
     _serverSessionStable  = true;
-    _mode = NetworkingMode::SERVER;
+    _mode = NetworkDevice::SERVER;
 
     string url = _p_session->SessionExportURL();
     log << Log::LogLevel( Log::L_INFO ) << "nw server: session established: " << url << endl;
@@ -211,7 +211,7 @@ bool NetworkDevice::setupClient( const string& serverIp, int channel, const Node
 
     PreconnectDataClient preconnectData;
     preconnectData._typeId = ( unsigned char )CTD_NW_PRECON_DATA_CLIENT;
-    _p_session->DataSend( kReplicaNetUnknownUniqueID, &preconnectData, sizeof( PreconnectDataClient ), ReplicaNet::PacketType::kPacket_Reliable );
+    _p_session->DataSend( kReplicaNetUnknownUniqueID, &preconnectData, sizeof( PreconnectDataClient ), ReplicaNet::kPacket_Reliable );
 
     int          sessionId;
     void*        p_buffer[ 512 ];
@@ -248,7 +248,7 @@ bool NetworkDevice::setupClient( const string& serverIp, int channel, const Node
         }
     }
     _clientSessionStable = true;
-    _mode = NetworkingMode::CLIENT;
+    _mode = NetworkDevice::CLIENT;
 
     return true;
 }
@@ -334,7 +334,7 @@ void NetworkDevice::updateServer( float deltaTime )
             sendData._typeId = ( unsigned char )CTD_NW_PRECON_DATA_SERVER;
             strcpy( sendData._p_levelName, _nodeInfo._levelName.c_str() );
             strcpy( sendData._p_serverName, _nodeInfo._nodeName.c_str() );        
-            _p_session->DataSend( sessionId, ( void* )&sendData, sizeof( PreconnectDataServer ), ReplicaNet::PacketType::kPacket_Reliable );        
+            _p_session->DataSend( sessionId, ( void* )&sendData, sizeof( PreconnectDataServer ), ReplicaNet::kPacket_Reliable );        
         }
     }
 }

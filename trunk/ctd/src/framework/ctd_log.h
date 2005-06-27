@@ -63,10 +63,10 @@ class Log : public std::basic_ostream< char >
         virtual                                     ~Log();
 
         //! Add a file sink
-        bool                                        addSink( const std::string& sinkname, const std::string& filename, unsigned int loglevel = Level::L_DEBUG );
+		bool                                        addSink( const std::string& sinkname, const std::string& filename, unsigned int loglevel = Log::L_DEBUG );
 
         //! Add standard sink such as cout
-        bool                                        addSink( const std::string& sinkname, std::ostream& sink = std::cout, unsigned int loglevel = Level::L_DEBUG );
+		bool                                        addSink( const std::string& sinkname, std::ostream& sink = std::cout, unsigned int loglevel = Log::L_DEBUG );
 
         //! Remove a sink given its name
         void                                        removeSink( const std::string& sinkname );
