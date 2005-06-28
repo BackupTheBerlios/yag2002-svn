@@ -219,6 +219,7 @@ void GuiManager::doInitialize()
     p_font = createFont( string( "gui/fonts/" CTD_GUI_FONT8 ".font" ) );
     p_font = createFont( string( "gui/fonts/" CTD_GUI_FONT10 ".font" ) );
     CEGUI::System::getSingleton().setDefaultFont( p_font ); // set the default font
+    p_font = createFont( string( "gui/fonts/" CTD_GUI_CONSOLE ".font" ) );
 
     // load scheme
     SchemeManager::getSingleton().loadScheme( string( "gui/schemes/" CTD_GUI_SCHEME ".scheme" ) );

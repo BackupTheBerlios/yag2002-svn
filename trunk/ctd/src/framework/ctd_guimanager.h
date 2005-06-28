@@ -47,6 +47,7 @@ class GuiViewerRealizeCallback;
 // some definitions
 #define CTD_GUI_FONT8           "CTD-8"
 #define CTD_GUI_FONT10          "CTD-10"
+#define CTD_GUI_CONSOLE         "CTD-Console"
 #define CTD_GUI_SCHEME          "TaharezLookWidgets"
 
 // Graphical User Interface
