@@ -48,7 +48,11 @@
 namespace CTD
 {
 
+//! Entity name
 #define ENTITY_NAME_PLAYER    "Player"
+
+//! Notification for player deletion ( all entity specific notification begin with 0xA )
+#define CTD_NOTIFY_PLAYER_DESTRUCTION   0xA0000010
 
 class BasePlayerImplementation;
 
@@ -85,6 +89,9 @@ class EnPlayer : public BaseEntity
 
         //! Get player's implementation. This method is used by player's networking component when new clients connect to networking session.
         inline BasePlayerImplementation*            getPlayerImplementation();
+
+        //! Register an entity for getting player deletion notification
+        void                                        registerNotifyDeletion( BaseEntity* p_entity );
 
         //! All possible camera modes the player can have.
         enum CameraMode
@@ -160,6 +167,9 @@ class EnPlayer : public BaseEntity
 
         //! Player implementation
         BasePlayerImplementation*                   _p_playerImpl;
+
+        //! List of registered entities for getting deletion notification
+        std::vector< BaseEntity* >                  _deletionNotifications;
 };
 
 //! Entity type definition used for type registry
@@ -198,6 +208,8 @@ inline const std::string& EnPlayer::getPlayerName() const
 inline void EnPlayer::setPlayerName( const std::string& name )
 {
     _playerName = name;
+    // update the instance name
+    setInstanceName( name );
 }
 
 inline void EnPlayer::setPlayerImplementation( BasePlayerImplementation* p_impl )

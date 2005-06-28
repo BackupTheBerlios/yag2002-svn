@@ -75,14 +75,53 @@ EnPlayer::~EnPlayer()
 {
     CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "destroying player entity"  << getInstanceName() << ", time: " << CTD::getTimeStamp() << endl;
 
+    // send out notification to registered entities
+    std::vector< BaseEntity* >::iterator p_beg = _deletionNotifications.begin(), p_end = _deletionNotifications.end();
+    EntityNotification ennotify( CTD_NOTIFY_PLAYER_DESTRUCTION );
+    for ( ; p_beg != p_end; p_beg++ )
+        EntityManager::get()->sendNotification( ennotify, *p_beg );
+    
     if ( _p_playerImpl )
         delete _p_playerImpl;
 }
 
 void EnPlayer::handleNotification( const EntityNotification& notification )
 {
+    switch( notification.getId() )
+    {
+        case CTD_NOTIFY_SHUTDOWN:
+        {
+            // send out deletion notification to registered entities
+            std::vector< BaseEntity* >::iterator p_beg = _deletionNotifications.begin(), p_end = _deletionNotifications.end();
+            EntityNotification ennotify( CTD_NOTIFY_PLAYER_DESTRUCTION );
+            for ( ; p_beg != p_end; p_beg++ )
+                EntityManager::get()->sendNotification( ennotify, *p_beg );
+
+            _deletionNotifications.clear();
+        }
+        break;
+
+        default:
+            ;
+    }
+
     if ( _p_playerImpl )
         _p_playerImpl->handleNotification( notification );
+}
+
+void EnPlayer::registerNotifyDeletion( BaseEntity* p_entity )
+{
+    // check if the entity is already registered
+    std::vector< BaseEntity* >::iterator p_beg = _deletionNotifications.begin(), p_end = _deletionNotifications.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        if ( *p_beg == p_entity )
+            break;
+
+    // if entity is already registered then ignore the request
+    if ( _deletionNotifications.size() && ( p_beg != p_end ) )
+        return;
+
+    _deletionNotifications.push_back( p_entity );
 }
 
 void EnPlayer::initialize()
