@@ -167,8 +167,9 @@ void EnConsole::initialize()
         _p_wnd->setSize( CEGUI::Size( 0.75f, 0.4f ) );
         _p_wnd->setPosition( CEGUI::Point( 0.125f, 0.2f ) );
         _p_wnd->setAlpha( 0.7f );
+        _p_wnd->setFont( CTD_GUI_CONSOLE );
         _p_wnd->setAlwaysOnTop( true );
-        _p_wnd->setText( "Console" );
+        _p_wnd->setText( "command console" );
         _p_wnd->setMinimumSize( CEGUI::Size( 0.2f, 0.2f ) );
         _p_wnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::EnConsole::onCloseFrame, this ) );
 
@@ -176,6 +177,7 @@ void EnConsole::initialize()
         _p_outputWindow->setReadOnly( true );
         _p_outputWindow->setSize( CEGUI::Size( 0.96f, 0.7f ) );
         _p_outputWindow->setPosition( CEGUI::Point( 0.02f, 0.1f ) );
+        _p_outputWindow->setFont( CTD_GUI_CONSOLE );
         _p_outputWindow->setAlpha( 0.7f );
         _p_wnd->addChildWindow( _p_outputWindow );
 
@@ -183,6 +185,7 @@ void EnConsole::initialize()
         _p_inputWindow->setSize( CEGUI::Size( 0.96f, 0.1f ) );
         _p_inputWindow->setPosition( CEGUI::Point( 0.02f, 0.8f ) );
         _p_inputWindow->setAlpha( 0.7f );
+        _p_inputWindow->setFont( CTD_GUI_CONSOLE );
         _p_wnd->addChildWindow( _p_inputWindow );
     }
     catch ( const CEGUI::Exception& e )

@@ -53,63 +53,16 @@ CmdGetConfig::~CmdGetConfig()
 
 const std::string& CmdGetConfig::execute( const std::vector< std::string >& arguments )
 {
-
-    Settings* p_settings = const_cast< Settings* >( Configuration::get()->getAllSettings() );
-    std::vector< Settings::SettingBase* >& settingStorages = const_cast< std::vector< Settings::SettingBase* >& >( p_settings->getAllSettingStorages() );
-
     _cmdResult =  "setting file: " + string( CTD_GAMESETTING_FILENAME ) + "\n";
     _cmdResult += "-----------------\n";
 
-    std::vector< Settings::SettingBase* >::iterator p_beg = settingStorages.begin(), p_end = settingStorages.end();
+    std::vector< std::pair< std::string, std::string > > settings;
+    Configuration::get()->getConfigurationAsString( settings );
+    std::vector< std::pair< std::string, std::string > >::iterator p_beg = settings.begin(), p_end = settings.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
-        string token = ( *p_beg )->getTokenName();
-        _cmdResult += token;
-        _cmdResult += " [ ";
-        
-        // get the setting value
-        stringstream tokenvalue;
-        const type_info& settings_typeinfo = ( *p_beg )->getTypeInfo();
-        if ( settings_typeinfo == typeid( bool ) ) 
-        {
-            bool value;
-            p_settings->getValue( token, value );
-            tokenvalue << ( value ? "true" : "false" );
-        } 
-        else if ( settings_typeinfo == typeid( int ) ) 
-        {
-            int value;
-            p_settings->getValue( token, value );
-            tokenvalue << value;
-        }
-        else if ( settings_typeinfo == typeid( unsigned int ) ) 
-        {
-            unsigned int value;
-            p_settings->getValue( token, value );
-            tokenvalue << value;
-        }
-        else if ( settings_typeinfo == typeid( string ) ) 
-        {
-            string value;
-            p_settings->getValue( token, value );
-            tokenvalue << value;
-        }
-        else if ( settings_typeinfo == typeid( float ) ) 
-        {
-            float value;
-            p_settings->getValue( token, value );
-            tokenvalue << value;
-        }
-        else if ( settings_typeinfo == typeid( osg::Vec3f ) ) 
-        {
-            osg::Vec3f value;
-            p_settings->getValue( token, value );
-            tokenvalue << value.x() << " " << value.y() << " " << value.z();
-        }
 
-        _cmdResult += tokenvalue.str();
-        _cmdResult += " ]";
-        _cmdResult += "\n";
+        _cmdResult += p_beg->first + " [" + p_beg->second + "]\n";
     }
 
     return _cmdResult;

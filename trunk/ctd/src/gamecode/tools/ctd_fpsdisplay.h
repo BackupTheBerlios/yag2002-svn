@@ -21,7 +21,7 @@
 /*###############################################################
  # entity for displaying fps
  #
- #   date of creation:  23/05/2005
+ #   date of creation:  05/23/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net

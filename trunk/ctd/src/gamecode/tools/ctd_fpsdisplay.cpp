@@ -21,7 +21,7 @@
 /*###############################################################
  # entity for displaying fps
  #
- #   date of creation:  23/05/2005
+ #   date of creation:  05/23/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
@@ -92,19 +92,27 @@ void EnFPSDisplay::handleNotification( const EntityNotification& notification )
 
 void EnFPSDisplay::initialize()
 {
-    _p_wnd = CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", STAT_WND "mainWnd" );
-    _p_wnd->setSize( CEGUI::Size( 0.1f, 0.05f ) );
-    _p_wnd->setPosition( CEGUI::Point( _position.x(), _position.y() ) );
-    _p_wnd->setAlpha( 0.7f );
-    _p_wnd->setAlwaysOnTop( true );
+    try
+    {
+        _p_wnd = CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", STAT_WND "mainWnd" );
+        _p_wnd->setSize( CEGUI::Size( 0.1f, 0.05f ) );
+        _p_wnd->setPosition( CEGUI::Point( _position.x(), _position.y() ) );
+        _p_wnd->setAlpha( 0.7f );
+        _p_wnd->setAlwaysOnTop( true );
 
-    _p_outputText = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", STAT_WND "output" ) );
-    _p_outputText->setSize( CEGUI::Size( 1.0f, 1.0f ) );
-    _p_outputText->setPosition( CEGUI::Point( 0.0f, 0.0f ) );
-    _p_outputText->setHorizontalFormatting( CEGUI::StaticText::HorzCentred );
-    _p_wnd->addChildWindow( _p_outputText );
+        _p_outputText = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", STAT_WND "output" ) );
+        _p_outputText->setSize( CEGUI::Size( 1.0f, 1.0f ) );
+        _p_outputText->setPosition( CEGUI::Point( 0.0f, 0.0f ) );
+        _p_outputText->setHorizontalFormatting( CEGUI::StaticText::HorzCentred );
+        _p_wnd->addChildWindow( _p_outputText );
 
-    GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
+        GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
+    }
 }
 
 void EnFPSDisplay::updateEntity( float deltaTime )
