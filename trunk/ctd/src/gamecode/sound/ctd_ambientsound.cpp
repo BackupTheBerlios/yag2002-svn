@@ -131,4 +131,18 @@ void EnAmbientSound::stopPlaying()
         _soundState->setPlay( false );
 }
 
+        //! Set sound volume (0..1)
+void EnAmbientSound::setVolume( float volume )
+{
+    _volume = max( min( volume, 1.0f ), 0.0f );
+    if ( _soundState.get() )
+        _soundState->setGain( _volume );
+}
+
+float EnAmbientSound::getVolume()
+{
+    return _volume;
+}
+
+
 } // namespace CTD

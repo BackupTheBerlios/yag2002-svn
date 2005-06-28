@@ -58,6 +58,12 @@ class EnAmbientSound : public BaseEntity
         //! Stop playing sound
         void                                        stopPlaying();
 
+        //! Set sound volume (0..1)
+        void                                        setVolume( float volume );
+
+        //! Get sound volume (0..1)
+        float                                       getVolume();
+
     protected:
 
         //! Resource directory for searching for sound files
