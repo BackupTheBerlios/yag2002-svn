@@ -50,9 +50,16 @@ namespace CTD
 // prefix for menu layout resources
 #define MENU_PREFIX             "menu_"
 #define OVERLAY_IMAGESET        MENU_PREFIX "loadingoverlay"
+
+// some default resources
 #define DEFAULT_LEVEL_LOADER    "gui/scene/loader"
 #define MENU_SCENE              "gui/scene/menuscene.osg"
 #define MENU_CAMERAPATH         "gui/scene/campath.osg"
+
+// menu background sound related parameters
+#define BCKRGD_SND_FADEIN_PERIOD        2.0f
+#define BCKRGD_SND_FADEOUT_PERIOD       0.4f
+#define BCKRGD_SND_PLAY_VOLUME          0.5f
 
 //! Input handler class for menu, it handles ESC key press and toggles the menu gui
 class MenuInputHandler : public GenericInputHandler< EnMenu >
@@ -149,13 +156,20 @@ _loadingOverlayTexture( "gui/loading.tga" ),
 _buttonClickSound( "gui/sound/click.wav" ),
 _buttonHoverSound( "gui/sound/hover.wav" ),
 _introductionSound( "gui/sound/intro.wav" ),
+_backgroundSound( "gui/sound/background.wav" ),
 _menuSceneFile( MENU_SCENE ),
 _menuCameraPathFile( MENU_CAMERAPATH ),
 _menuState( None ),
+_menuSoundState( SoundStopped ),
+_soundFadingCnt( 0.0f ),
 _levelSelectionState( ForStandalone ),
 _levelLoaded( false ),
 _p_fog( NULL ),
-_p_skyBox( NULL )
+_p_skyBox( NULL ),
+_p_clickSound( NULL ),
+_p_hoverSound( NULL ),
+_p_introSound( NULL ),
+_p_backgrdSound( NULL )
 {
     // register entity attributes
     _attributeManager.addAttribute( "menuConfig"                , _menuConfig               );
@@ -166,6 +180,7 @@ _p_skyBox( NULL )
     _attributeManager.addAttribute( "buttonClickSound"          , _buttonClickSound         );
     _attributeManager.addAttribute( "buttonHoverSound"          , _buttonHoverSound         );
     _attributeManager.addAttribute( "introductionSound"         , _introductionSound        );
+    _attributeManager.addAttribute( "backgroundSound"           , _backgroundSound          );
 
     _attributeManager.addAttribute( "menuScene"                 , _menuSceneFile            );
     _attributeManager.addAttribute( "cameraPath"                , _menuCameraPathFile       );
@@ -203,6 +218,14 @@ EnMenu::~EnMenu()
         log << "      reason: " << e.getMessage().c_str() << endl;
     }
 
+    // destroy self-created entities
+    // note: these entities are created via EntityManager with "no add to pool" option,
+    //       thus we must not use EntityManager's detroyEntity method to destroy them, we have to delete them manually instead!
+    delete _p_hoverSound;
+    delete _p_clickSound;
+    delete _p_introSound;
+    delete _p_backgrdSound;
+
     // destroy the input handler
     _p_inputHandler->destroyHandler();
 }
@@ -235,13 +258,16 @@ void EnMenu::initialize()
 {
     // setup sounds
     if ( _buttonClickSound.length() )
-        _clickSound.reset( setupSound( _buttonClickSound, 0.1f ) );
+        _p_clickSound = setupSound( _buttonClickSound, 0.1f );
 
     if ( _buttonHoverSound.length() )
-        _hoverSound.reset( setupSound( _buttonHoverSound, 0.1f ) );
+        _p_hoverSound = setupSound( _buttonHoverSound, 0.1f );
 
     if ( _introductionSound.length() )
-        _introSound.reset( setupSound( _introductionSound, 1.0f ) );
+        _p_introSound = setupSound( _introductionSound, 1.0f );
+
+    if ( _backgroundSound.length() )
+        _p_backgrdSound = setupSound( _backgroundSound, 0.6f );
 
     // create a scene with camera path animation and world geometry
     createMenuScene();
@@ -327,22 +353,22 @@ void EnMenu::initialize()
     if ( !_settingsDialog->initialize( _settingsDialogConfig ) )
         return;
     // set the click sound object
-    _settingsDialog->setClickSound( _clickSound.get() );
+    _settingsDialog->setClickSound( _p_clickSound );
 
     // setup dialog for selecting a level
     _levelSelectDialog = auto_ptr< DialogLevelSelect >( new DialogLevelSelect( this ) );
     if ( !_levelSelectDialog->initialize( _levelSelectDialogConfig ) )
         return;
     // set the click sound object
-    _levelSelectDialog->setClickSound( _clickSound.get() );
+    _levelSelectDialog->setClickSound( _p_clickSound );
 
     // setup intro layout
     _intro = auto_ptr< IntroControl >( new IntroControl );
     if ( !_intro->initialize( _introTexture ) )
         return;
     // set the click and intro sound objects
-    _intro->setClickSound( _clickSound.get() );
-    _intro->setIntroSound( _introSound.get() );
+    _intro->setClickSound( _p_clickSound );
+    _intro->setIntroSound( _p_introSound );
 
     // create input handler
     _p_inputHandler = new MenuInputHandler( this );
@@ -454,16 +480,16 @@ EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume )
 
 bool EnMenu::onButtonHover( const CEGUI::EventArgs& arg )
 {
-    if ( _hoverSound.get() )
-        _hoverSound->startPlaying();
+    if ( _p_hoverSound )
+        _p_hoverSound->startPlaying();
     
     return true;
 }
 
 bool EnMenu::onClickedGameSettings( const CEGUI::EventArgs& arg )
 {
-    if ( _clickSound.get() )
-        _clickSound->startPlaying();
+    if ( _p_clickSound )
+        _p_clickSound->startPlaying();
 
     _settingsDialog->show( true );
     _p_menuWindow->disable();
@@ -473,8 +499,8 @@ bool EnMenu::onClickedGameSettings( const CEGUI::EventArgs& arg )
 
 bool EnMenu::onClickedQuit( const CEGUI::EventArgs& arg )
 {
-    if ( _clickSound.get() )
-        _clickSound->startPlaying();
+    if ( _p_clickSound )
+        _p_clickSound->startPlaying();
 
     Application::get()->stop();
 
@@ -483,8 +509,8 @@ bool EnMenu::onClickedQuit( const CEGUI::EventArgs& arg )
 
 bool EnMenu::onClickedReturnToLevel( const CEGUI::EventArgs& arg )
 {
-    if ( _clickSound.get() )
-        _clickSound->startPlaying();
+    if ( _p_clickSound )
+        _p_clickSound->startPlaying();
 
     leave();
 
@@ -493,8 +519,8 @@ bool EnMenu::onClickedReturnToLevel( const CEGUI::EventArgs& arg )
 
 bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
 {
-    if ( _clickSound.get() )
-        _clickSound->startPlaying();
+    if ( _p_clickSound )
+        _p_clickSound->startPlaying();
 
     // ask user before leaving
     {
@@ -533,8 +559,8 @@ bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
 //! TODO: show a dialog with all found servers and let the user choose one
 bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
 {
-    if ( _clickSound.get() )
-        _clickSound->startPlaying();
+    if ( _p_clickSound )
+        _p_clickSound->startPlaying();
 
     string url;
     Configuration::get()->getSettingValue( CTD_GS_SERVER_IP, url );
@@ -566,8 +592,8 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
                                         _p_menu->_p_menuWindow->enable();
 
                                         // play click sound
-                                        if ( _p_menu->_clickSound.get() )
-                                            _p_menu->_clickSound->startPlaying();
+                                        if ( _p_menu->_p_clickSound )
+                                            _p_menu->_p_clickSound->startPlaying();
 
                                     }
 
@@ -590,8 +616,8 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
 
 bool EnMenu::onClickedServer( const CEGUI::EventArgs& arg )
 {
-    if ( _clickSound.get() )
-        _clickSound->startPlaying();
+    if ( _p_clickSound )
+        _p_clickSound->startPlaying();
 
     _levelSelectDialog->changeSearchDirectory( CTD_LEVEL_SERVER_DIR );
     _p_menuWindow->disable();
@@ -605,8 +631,8 @@ bool EnMenu::onClickedServer( const CEGUI::EventArgs& arg )
 
 bool EnMenu::onClickedWT( const CEGUI::EventArgs& arg )
 {
-    if ( _clickSound.get() )
-        _clickSound->startPlaying();
+    if ( _p_clickSound )
+        _p_clickSound->startPlaying();
 
     GameState::get()->setMode( GameState::Standalone );
     _levelSelectDialog->changeSearchDirectory( CTD_LEVEL_SALONE_DIR );
@@ -623,6 +649,7 @@ bool EnMenu::onClickedWT( const CEGUI::EventArgs& arg )
 
 void EnMenu::updateEntity( float deltaTime )
 {
+    // main control state machine
     switch ( _menuState )
     {
         case None:
@@ -735,6 +762,54 @@ void EnMenu::updateEntity( float deltaTime )
             assert( NULL && "invalid menu state!" );
 
     }
+
+    // control the menu background sound on entering and leaving menu
+    switch ( _menuSoundState )
+    {
+        case SoundStopped:
+            break;
+
+        case SoundFadeIn:
+        {   
+            _p_backgrdSound->startPlaying();
+            _menuSoundState = SoundFadingIn;
+        }
+        break;
+
+        case SoundFadingIn:
+        {
+            _soundFadingCnt += deltaTime;
+            if ( _soundFadingCnt > BCKRGD_SND_FADEIN_PERIOD )
+            {
+                _soundFadingCnt = 0.0f;
+                _menuSoundState = SoundStopped;
+                break;
+            }
+
+            float volume = min( BCKRGD_SND_PLAY_VOLUME * ( _soundFadingCnt / BCKRGD_SND_FADEIN_PERIOD ), 1.0f );
+            _p_backgrdSound->setVolume( volume );
+        }
+        break;
+
+        case SoundFadeOut:
+        {
+            _soundFadingCnt += deltaTime;
+            if ( _soundFadingCnt > BCKRGD_SND_FADEIN_PERIOD )
+            {
+                _p_backgrdSound->stopPlaying();
+                _soundFadingCnt = 0.0f;
+                _menuSoundState = SoundStopped;
+                break;
+            }
+
+            float volume = max( BCKRGD_SND_PLAY_VOLUME * ( 1.0f - _soundFadingCnt / BCKRGD_SND_FADEOUT_PERIOD ), 0.0f );
+            _p_backgrdSound->setVolume( volume );
+        }
+        break;
+
+        default:
+            assert( NULL && "unknown menu sound state!" );
+    }
 }
 
 void EnMenu::beginIntro()
@@ -800,6 +875,9 @@ void EnMenu::enter()
     // activate the menu scene
     switchMenuScene( true );
 
+    // trigger fading in the menu sound
+    _menuSoundState = SoundFadeIn;
+
     // set menu state
     _menuState = Visible;
 }
@@ -823,6 +901,9 @@ void EnMenu::leave()
 
     // deactivate the menu scene
     switchMenuScene( false );
+
+    // trigger fading out the menu sound
+    _menuSoundState = SoundFadeOut;
 
     // set menu state
     _menuState = Hidden;

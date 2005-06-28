@@ -112,6 +112,8 @@ class EnMenu :  public BaseEntity
 
         std::string                                 _introductionSound;
 
+        std::string                                 _backgroundSound;
+
         std::string                                 _skyboxImages[ 6 ];
 
         std::string                                 _menuSceneFile;
@@ -184,6 +186,15 @@ class EnMenu :  public BaseEntity
             Hidden
         }                                           _menuState;
 
+        //! Menu sound states
+        enum
+        {
+            SoundStopped,
+            SoundFadeIn,
+            SoundFadingIn,
+            SoundFadeOut
+        }                                           _menuSoundState;
+
         //! Internal state used for loading a level for server or standalone mode
         enum
         {
@@ -203,11 +214,13 @@ class EnMenu :  public BaseEntity
 
         EnFog*                                      _p_fog;
 
-        std::auto_ptr< EnAmbientSound >             _clickSound;
+        EnAmbientSound*                             _p_clickSound;
 
-        std::auto_ptr< EnAmbientSound >             _hoverSound;
+        EnAmbientSound*                             _p_hoverSound;
 
-        std::auto_ptr< EnAmbientSound >             _introSound;
+        EnAmbientSound*                             _p_introSound;
+
+        EnAmbientSound*                             _p_backgrdSound;
 
         std::auto_ptr< DialogGameSettings >         _settingsDialog;
 
@@ -238,6 +251,8 @@ class EnMenu :  public BaseEntity
         std::string                                 _queuedLevelFile;
 
         MenuInputHandler*                           _p_inputHandler;
+
+        float                                       _soundFadingCnt;
 
         //! Shows that a level is already loaded
         bool                                        _levelLoaded;
