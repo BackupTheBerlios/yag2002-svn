@@ -164,6 +164,7 @@ _menuSoundState( SoundStopped ),
 _soundFadingCnt( 0.0f ),
 _levelSelectionState( ForStandalone ),
 _levelLoaded( false ),
+_p_clientLevelFiles( NULL ),
 _p_fog( NULL ),
 _p_skyBox( NULL ),
 _p_clickSound( NULL ),
@@ -207,10 +208,10 @@ EnMenu::~EnMenu()
         if ( _p_loadingOverly )
             CEGUI::WindowManager::getSingleton().destroyWindow( _p_loadingOverly );
 
-        if ( _p_loadingLevelPic )
-            CEGUI::WindowManager::getSingleton().destroyWindow( _p_loadingLevelPic );
-
         CEGUI::ImagesetManager::getSingleton().destroyImageset( OVERLAY_IMAGESET );
+
+        if ( _p_clientLevelFiles )
+            delete _p_clientLevelFiles;
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -570,8 +571,6 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
     unsigned int channel;
     Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
 
-    _p_menuWindow->disable();
-
     // try to join
     if ( !NetworkDevice::get()->setupClient( url, channel, nodeinfo ) )
     {
@@ -607,7 +606,18 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
     // set the game mode to Client before loading the level
     GameState::get()->setMode( GameState::Client );
     // now prepare loading level
-    _queuedLevelFile = CTD_LEVEL_CLIENT_DIR + NetworkDevice::get()->getNodeInfo()->getLevelName();
+    string levelfilename = NetworkDevice::get()->getNodeInfo()->getLevelName();
+    _queuedLevelFile = CTD_LEVEL_CLIENT_DIR + levelfilename;
+
+    // get preview pic for level
+    if ( _p_clientLevelFiles )
+        delete _p_clientLevelFiles;
+    _p_clientLevelFiles = new gameutils::LevelFiles( CTD_LEVEL_CLIENT_DIR );
+    CEGUI::Image* p_img = _p_clientLevelFiles->getImage( levelfilename );
+
+    _p_loadingLevelPic->setImage( p_img );
+    _p_loadingWindow->show();
+    _p_menuWindow->hide();
 
     _menuState = BeginLoadingLevel;
 
@@ -725,6 +735,11 @@ void EnMenu::updateEntity( float deltaTime )
                     p_msg->show();
                 }
             }
+
+            // free up the client level file object which was previously used for getting the loading pic
+            if ( _p_clientLevelFiles )
+                delete _p_clientLevelFiles;
+            _p_clientLevelFiles = NULL;
         }
         break;
 

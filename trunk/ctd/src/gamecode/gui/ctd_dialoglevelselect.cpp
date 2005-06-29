@@ -29,6 +29,7 @@
  ################################################################*/
 
 #include <ctd_main.h>
+#include <ctd_gameutils.h>
 #include "ctd_dialoglevelselect.h"
 #include "ctd_menu.h"
 #include "../sound/ctd_ambientsound.h"
@@ -47,20 +48,18 @@ _p_levelSelectDialog( NULL ),
 _p_listbox( NULL ),
 _p_image( NULL ),
 _p_lastListSelection( NULL ),
-_p_menuEntity( p_menuEntity )
+_p_menuEntity( p_menuEntity ),
+_p_levelFiles( NULL )
 {
 }
 
 DialogLevelSelect::~DialogLevelSelect()
 {
-    // free up the imagesets
+    // free up allocated gui elements
     try
     {
-        std::map< std::string, CEGUI::Image* >::iterator p_beg = _levelFiles.begin(), p_end = _levelFiles.end();
-        for ( ; p_beg != p_end; p_beg++ )
-        {
-            CEGUI::ImagesetManager::getSingleton().destroyImageset( p_beg->first );
-        }
+        if ( _p_levelFiles )
+            delete _p_levelFiles;
 
         if ( _p_levelSelectDialog )
             CEGUI::WindowManager::getSingleton().destroyWindow( _p_levelSelectDialog );
@@ -110,51 +109,10 @@ bool DialogLevelSelect::initialize( const string& layoutfile )
 
 void DialogLevelSelect::changeSearchDirectory( const string& dir )
 {
-    // get level file names
-    string searchdir = Application::get()->getMediaPath() + dir;
-    std::vector< string > files;
-    getDirectoryListing( files, searchdir, "lvl" );
+    if ( _p_levelFiles )
+        delete _p_levelFiles;
 
-    // free up existing preview images
-    std::map< std::string, CEGUI::Image* >::iterator p_beg = _levelFiles.begin(), p_end = _levelFiles.end();
-    for ( ; p_beg != p_end; p_beg++ )
-    {
-        CEGUI::ImagesetManager::getSingleton().destroyImageset( p_beg->first );
-    }
-    _levelFiles.clear();
-
-    // setup the preview pics for StaticImage field
-    if ( files.size() > 0 )
-    {
-        for ( size_t cnt = 0; cnt < files.size(); cnt++ )
-        {
-            std::string textureName  = dir + files[ cnt ] + ".tga";
-            std::string materialName = files[ cnt ];
-            try
-            {
-                // create a new imageset
-                CEGUI::Texture*  p_texture = GuiManager::get()->getGuiRenderer()->createTexture( textureName, "MenuResources" );
-                CEGUI::Imageset* p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( materialName, p_texture );
-             
-                if ( !p_imageSet->isImageDefined( textureName ) )
-                {
-                    p_imageSet->defineImage( materialName, CEGUI::Point( 0.0f, 0.0f ), CEGUI::Size( p_texture->getWidth(), p_texture->getHeight() ), CEGUI::Point( 0.0f,0.0f ) );
-                }
-
-                CEGUI::Image* p_image = &const_cast< CEGUI::Image& >( p_imageSet->getImage( materialName ) );
-                
-                // add new preview to map
-                _levelFiles.insert( make_pair( materialName, p_image ) );
-            }
-            catch ( const CEGUI::Exception& e )
-            {
-                e; // suppress warning for unused e
-                CEGUI::Image* p_null = NULL;
-                // empty image identifies missing preview pic
-                _levelFiles.insert( make_pair( materialName, p_null ) );
-            }
-        }
-    }
+    _p_levelFiles = new gameutils::LevelFiles( dir );
 }
 
 void DialogLevelSelect::setClickSound( EnAmbientSound* p_sound )
@@ -164,6 +122,8 @@ void DialogLevelSelect::setClickSound( EnAmbientSound* p_sound )
 
 void DialogLevelSelect::setupControls()
 {
+    assert( _p_levelFiles && "level files not created" );
+
     // setup level list
     //-----------------
     _p_listbox->setSortingEnabled( true );
@@ -176,7 +136,7 @@ void DialogLevelSelect::setupControls()
                           );    
     // fill up the list
     _p_listbox->resetList();
-    std::map< std::string, CEGUI::Image* >::iterator p_beg = _levelFiles.begin(), p_end = _levelFiles.end();
+    std::map< std::string, CEGUI::Image* >::iterator p_beg = _p_levelFiles->getAllFiles().begin(), p_end = _p_levelFiles->getAllFiles().end();
     for ( ; p_beg != p_end; p_beg++ )
     {
         CEGUI::ListboxTextItem * p_item = new CEGUI::ListboxTextItem( p_beg->first.c_str() );
@@ -186,7 +146,7 @@ void DialogLevelSelect::setupControls()
         _p_listbox->insertItem( p_item, NULL );
     }
 
-    if ( _levelFiles.size() > 0 )
+    if ( _p_levelFiles->count() > 0 )
     {
         _p_listbox->getListboxItemFromIndex( 0 )->setSelected( true );
         // set preview image
@@ -198,8 +158,10 @@ void DialogLevelSelect::setupControls()
 
 void DialogLevelSelect::setPreviewPic( CEGUI::ListboxItem* p_item )
 {
+    assert( _p_levelFiles && "level files not created" );
+
     string* p_texname = static_cast< string* >( p_item->getUserData() );
-    CEGUI::Image*  p_image = _levelFiles[ *p_texname ];
+    CEGUI::Image*  p_image = _p_levelFiles->getImage( *p_texname );
     if ( !p_image )
     {
         _p_image->setImage( NULL );
@@ -222,7 +184,8 @@ bool DialogLevelSelect::onClickedStart( const CEGUI::EventArgs& arg )
     _p_levelSelectDialog->hide();
 
     // let the menu system know that we load a new level
-    _p_menuEntity->onLevelSelected( _currentSelection, _levelFiles[ _currentSelection ] );
+    assert( _p_levelFiles && "level files not created" );
+    _p_menuEntity->onLevelSelected( _currentSelection, _p_levelFiles->getImage( _currentSelection ) );
 
     _currentSelection = "";
 

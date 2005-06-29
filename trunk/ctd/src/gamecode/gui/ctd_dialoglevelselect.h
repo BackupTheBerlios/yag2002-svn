@@ -40,6 +40,11 @@ class DialogGameSettings;
 class EnAmbientSound;
 class EnMenu;
 
+namespace gameutils
+{
+    class LevelFiles;
+}
+
 class DialogLevelSelect
 {
     public:
@@ -91,7 +96,7 @@ class DialogLevelSelect
         CEGUI::ListboxItem*                         _p_lastListSelection;
 
         //! Lookup for available level file names and their preview pics
-        std::map< std::string, CEGUI::Image* >      _levelFiles;
+        gameutils::LevelFiles*                      _p_levelFiles;
 
         //! Current selected file in list
         std::string                                 _currentSelection;

@@ -47,6 +47,11 @@ class EnCamera;
 class EnSkyBox;
 class EnFog;
 
+namespace gameutils
+{
+    class LevelFiles;
+}
+
 //! The menu system is controlled by this entity
 class EnMenu :  public BaseEntity
 {
@@ -247,6 +252,8 @@ class EnMenu :  public BaseEntity
         CEGUI::Image*                               _p_loadingOverlayImage;
 
         CEGUI::StaticImage*                         _p_loadingLevelPic;
+
+        gameutils::LevelFiles*                      _p_clientLevelFiles;
 
         std::string                                 _queuedLevelFile;
 
