@@ -43,6 +43,30 @@ namespace gameutils
 //! Returns false if something went wrong.
 bool getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile );
 
+//! Helper class for getting a lookup table with level files and their preview images
+class LevelFiles
+{
+    public:
+
+        //! Given a directory all preview images are gathered in a lookup table
+                                                LevelFiles( const std::string& dir );
+
+        virtual                                 ~LevelFiles();
+
+        //! Given a file name return its preview image. NULL if the file or preview pic does not exist.
+        CEGUI::Image*                           getImage( const std::string& file );
+
+        //! Get look up table
+        std::map< std::string, CEGUI::Image* >& getAllFiles() { return _files; }
+
+        //! Get count of level files
+        unsigned int                            count() { return _files.size(); }
+
+    protected:
+
+        std::map< std::string, CEGUI::Image* >  _files;
+};
+
 } // namespace gameutils
 } // namespace CTD
 

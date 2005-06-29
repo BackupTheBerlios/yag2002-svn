@@ -81,5 +81,80 @@ bool getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile )
     return true;
 }
 
+// level file class
+LevelFiles::LevelFiles( const std::string& dir )
+{
+    // get level file names
+    std::string searchdir = Application::get()->getMediaPath() + dir;
+    std::vector< std::string > files;
+    getDirectoryListing( files, searchdir, "lvl" );
+
+    static unsigned int s_postfix = 0;
+    std::stringstream   postfix;
+    postfix << s_postfix;
+    s_postfix++;
+    // setup the preview pics for StaticImage field
+    if ( files.size() > 0 )
+    {
+        for ( size_t cnt = 0; cnt < files.size(); cnt++ )
+        {
+            std::string textureFile  = dir + files[ cnt ] + ".tga";
+            std::string materialName = files[ cnt ];
+            try
+            {
+                // create a new imageset
+                CEGUI::Texture*  p_texture = GuiManager::get()->getGuiRenderer()->createTexture( textureFile, std::string( "_levelPics_" ) + postfix.str() );
+                CEGUI::Imageset* p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( materialName + postfix.str(), p_texture );
+             
+                if ( !p_imageSet->isImageDefined( textureFile ) )
+                {
+                    p_imageSet->defineImage( materialName + postfix.str(), CEGUI::Point( 0.0f, 0.0f ), CEGUI::Size( p_texture->getWidth(), p_texture->getHeight() ), CEGUI::Point( 0.0f,0.0f ) );
+                }
+
+                CEGUI::Image* p_image = &const_cast< CEGUI::Image& >( p_imageSet->getImage( materialName + postfix.str() ) );
+                
+                // add new preview to map
+                _files.insert( make_pair( materialName, p_image ) );
+            }
+            catch ( const CEGUI::Exception& e )
+            {
+                e; // suppress warning for unused e
+                CEGUI::Image* p_null = NULL;
+                // empty image identifies missing preview pic
+                _files.insert( make_pair( materialName, p_null ) );
+            }
+        }
+    }
+}
+
+LevelFiles::~LevelFiles()
+{
+    // free up the imagesets
+    try
+    {
+        std::map< std::string, CEGUI::Image* >::iterator p_beg = _files.begin(), p_end = _files.end();
+        for ( ; p_beg != p_end; p_beg++ )
+        {
+            CEGUI::ImagesetManager::getSingleton().destroyImageset( p_beg->first );
+        }
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "DialogLevelSelect: problem cleaning up entity." << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
+    }
+}
+
+CEGUI::Image* LevelFiles::getImage( const std::string& file )
+{
+    std::map< std::string, CEGUI::Image* >::iterator found;
+    found = _files.find( file );
+    if ( found == _files.end() )
+        return NULL;
+
+    return found->second;
+}
+//----------
+
 } // namespace gameutils
 } // namespace CTD
