@@ -73,7 +73,7 @@ _p_playerImpl( NULL )
 
 EnPlayer::~EnPlayer()
 {
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "destroying player entity"  << getInstanceName() << ", time: " << CTD::getTimeStamp() << endl;
+    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "destroying player entity '"  << getInstanceName() << "', time: " << CTD::getTimeStamp() << endl;
 
     // send out notification to registered entities
     std::vector< BaseEntity* >::iterator p_beg = _deletionNotifications.begin(), p_end = _deletionNotifications.end();
@@ -125,7 +125,50 @@ void EnPlayer::registerNotifyDeletion( BaseEntity* p_entity )
 }
 
 void EnPlayer::initialize()
-{    
+{
+    // build and init the player implementation
+    switch ( _gameMode )
+    {
+        case GameState::Standalone:
+        {
+            spawn();
+            _p_playerImpl = new PlayerImplStandalone( this );
+            _p_playerImpl->initialize();
+        }
+        break;
+
+        case GameState::Client:
+        {
+            // the client can be local or remote. if it is remote then the player entity has been created
+            //  via player networking component; for remote clients _p_playerImpl ist aready created when we are a this point
+            if ( !_p_playerImpl )
+            {
+                _p_playerImpl = new PlayerImplClient( this );
+                _p_playerImpl->initialize();
+            }
+        }
+        break;
+
+        case GameState::Server:
+            spawn();
+            _p_playerImpl = new PlayerImplServer( this );
+            _p_playerImpl->initialize();
+            break;
+
+        default:
+            assert( NULL && "unsupported game mode" );
+    }
+}
+
+void EnPlayer::postInitialize()
+{
+    _p_playerImpl->postInitialize();
+    // register entity in order to get updated per simulation step.
+    EntityManager::get()->registerUpdate( this, true );
+}
+
+void EnPlayer::spawn()
+{
     osg::Quat  rotation;
     osg::Vec3f position;
 
@@ -146,43 +189,6 @@ void EnPlayer::initialize()
     // set initial rotation and position
     setPosition( position );
     setRotation( rotation );
-
-    // build and init the player implementation
-    switch ( _gameMode )
-    {
-        case GameState::Standalone:
-        {
-            _p_playerImpl = new PlayerImplStandalone( this );
-            _p_playerImpl->initialize();
-        }
-        break;
-
-        case GameState::Client:
-        {
-            // the client can be local or remote. if it is remote then the player entity has been created
-            //  via player networking component; for remote clients _p_playerImpl ist aready created when we are ath this point
-            if ( !_p_playerImpl )
-            {
-                _p_playerImpl = new PlayerImplClient( this );
-                _p_playerImpl->initialize();
-            }
-        }
-        break;
-
-        case GameState::Server:
-            _p_playerImpl = new PlayerImplServer( this );
-            break;
-
-        default:
-            assert( NULL && "unsupported game mode" );
-    }
-}
-
-void EnPlayer::postInitialize()
-{
-    _p_playerImpl->postInitialize();
-    // register entity in order to get updated per simulation step.
-    EntityManager::get()->registerUpdate( this, true );
 }
 
 void EnPlayer::updateEntity( float deltaTime )

@@ -80,14 +80,12 @@ void BasePlayerImplementation::setCameraPitchYaw( float pitch, float yaw )
 {
     if ( _cameraMode == Spheric )
     {
-        float angleY = yaw * ( 2.0f * PI );
-        float angleX = ( pitch * LIMIT_PITCH_ANGLE ) + LIMIT_PITCH_OFFSET;
-        _p_camera->setLocalPitchYaw( angleX, angleY );
+        _p_camera->setLocalPitchYaw( pitch * LIMIT_PITCH_ANGLE - LIMIT_PITCH_OFFSET, yaw * ( 2.0f * PI ) );
     }
     // in ego mode we turn the character instead of yawing the camera!
     else
     {
-        float angleX = pitch * LIMIT_PITCH_ANGLE;
+        float angleX = pitch * LIMIT_PITCH_ANGLE; // limit pitch angle
         _p_camera->setLocalPitch( angleX );
     }
 }

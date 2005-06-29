@@ -185,6 +185,8 @@ void PlayerImplStandalone::getConfiguration()
 
     Configuration::get()->getSettingValue( CTD_GS_KEY_CHATMODE, keyname );
     _p_inputHandler->_keyCodeChatMode = KeyMap::get()->getCode( keyname );
+
+    Configuration::get()->getSettingValue( CTD_GS_INVERTMOUSE, _p_inputHandler->_invertedMouse );
 }
 
 void PlayerImplStandalone::update( float deltaTime )

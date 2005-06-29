@@ -105,14 +105,14 @@ void PlayerImplClient::initialize()
     _currentPos = getPlayerEntity()->getPosition();
     _currentRot = getPlayerEntity()->getRotation();
 
-    // get configuration settings
-    //! TODO: check if this is the right place for loading the config, what about remote clients? do they need the config at all?
+    // get configuration settings for player control keys
     getConfiguration();
 
     // if the player networking component is created already then this implementation is created
     //  for a remote client on local machine, otherwise it's a local client.
     if ( !getPlayerNetworking() )
     {
+        // for local client we create the networking component
         _p_playerNetworking = new PlayerNetworking( this );
         _p_playerNetworking->Publish();
     }
@@ -182,9 +182,12 @@ void PlayerImplClient::postInitialize()
                 _p_playerAnimation->enableRendering( false );
         }
 
+        // setup camera mode
+        setCameraMode( _cameraMode );
+
         log << Log::LogLevel( Log::L_DEBUG ) << "   -  animation entity successfully attached" << endl;
     }
-    else
+    else // setup remote client
     {
         // attach sound entity
         {
@@ -246,6 +249,8 @@ void PlayerImplClient::getConfiguration()
 
         Configuration::get()->getSettingValue( CTD_GS_KEY_CHATMODE, keyname );
         _p_inputHandler->_keyCodeChatMode = KeyMap::get()->getCode( keyname );
+
+        Configuration::get()->getSettingValue( CTD_GS_INVERTMOUSE, _p_inputHandler->_invertedMouse );
     }
 }
 

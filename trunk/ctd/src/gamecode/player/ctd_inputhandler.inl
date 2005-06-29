@@ -47,7 +47,8 @@ _keyCodeMoveLeft( osgGA::GUIEventAdapter::KEY_Left ),
 _keyCodeMoveRight( osgGA::GUIEventAdapter::KEY_Right ),
 _keyCodeJump( osgGA::GUIEventAdapter::KEY_Space ),
 _keyCodeCameraMode( osgGA::GUIEventAdapter::KEY_F1 ),
-_keyCodeChatMode( osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON )
+_keyCodeChatMode( osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON ),
+_invertedMouse( false )
 {
     // make a local copy of player entity's attributes
     _attributeContainer = p_playerentity->getPlayerAttributes();
@@ -205,7 +206,6 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 float& rotZ = getPlayerImpl()->_rotZ;
                 rotZ += getPlayerImpl()->_p_playerPhysics->getAngularForce();
 
-                //! Note: non-static value changes in rotZ are poison for networking interpolators
                 if ( rotZ > osg::PI * 2.0f )
                     rotZ -= osg::PI * 2.0f;
 
@@ -242,10 +242,6 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             {
                 float& rotZ = getPlayerImpl()->_rotZ;
                 rotZ -= getPlayerImpl()->_p_playerPhysics->getAngularForce();
-
-                //! Note: non-static value changes in rotZ are poison for networking interpolators
-                //if ( rotZ < 0 )
-                //    rotZ += osg::PI * 2.0f;
 
                 getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
                 getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
@@ -349,17 +345,15 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         float mcoordX = ea.getXnormalized();
         float mcoordY = ea.getYnormalized();
 
+        // consider the mouse invert flag
+        if ( _invertedMouse )
+            mcoordY = -mcoordY;
+
         // in ego mode the mouse controls the player rotation
         if ( getPlayerImpl()->_cameraMode == EnPlayer::Ego )
         {
             float& rotZ = getPlayerImpl()->_rotZ;
             rotZ = mcoordX * osg::PI * 2.0f; 
-
-            //! Note: non-static value changes in rotZ are poison for networking interpolators
-            //if ( rotZ > osg::PI * 2.0f )
-            //    rotZ -= osg::PI * 2.0f;
-            //else if ( rotZ < 0 )
-            //    rotZ += osg::PI * 2.0f;
 
             getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
             getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
@@ -375,9 +369,9 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         }
 
         // reset pointer
-        //osgProducer::Viewer* p_viewer = Application::get()->getViewer();
+        osgProducer::Viewer* p_viewer = Application::get()->getViewer();
         //p_viewer->getKeyboardMouse()->positionPointer( 0, 0 );
     }
 
-    return false; // let other handlers get all inputs handled here
+    return false; // let other handlers get all inputs handled here too
 }

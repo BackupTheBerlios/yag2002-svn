@@ -64,11 +64,6 @@ class PlayerImplServer : public BasePlayerImplementation
 
         //! Implementation's notification callback
         void                                        handleNotification( const EntityNotification& notification );
-
-    protected:
-
-        //! Get the configuration settings
-        void                                        getConfiguration();
 };
 
 } // namespace CTD

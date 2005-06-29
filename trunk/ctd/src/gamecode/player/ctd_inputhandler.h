@@ -50,9 +50,9 @@
 namespace CTD
 {
 
-// look limits
-#define LIMIT_PITCH_ANGLE               ( ( 2.0f * PI ) / 3.0f )
-#define LIMIT_PITCH_OFFSET              ( - PI / 9.0f );
+// look's pitch limit in ego view mode
+#define LIMIT_PITCH_ANGLE               ( PI / 3.0f )
+#define LIMIT_PITCH_OFFSET              ( PI / 3.0f )
 
 //! Input handler class for player, it controls player character and camera
 template< class PlayerImplT >
@@ -120,6 +120,8 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
         unsigned int                        _keyCodeJump;
         unsigned int                        _keyCodeCameraMode;
         unsigned int                        _keyCodeChatMode;
+
+        bool                                _invertedMouse;
 };
 
 #include "ctd_inputhandler.inl"

@@ -66,14 +66,7 @@ void PlayerImplServer::postInitialize()
 
     //! TODO: check if we need physics on server
 
-    // get configuration settings
-    getConfiguration();
-
     log << Log::LogLevel( Log::L_INFO ) << "  player implementation successfully initialized" << endl;
-}
-
-void PlayerImplServer::getConfiguration()
-{
 }
 
 void PlayerImplServer::update( float deltaTime )

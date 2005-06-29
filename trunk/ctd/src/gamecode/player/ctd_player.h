@@ -49,7 +49,7 @@ namespace CTD
 {
 
 //! Entity name
-#define ENTITY_NAME_PLAYER    "Player"
+#define ENTITY_NAME_PLAYER              "Player"
 
 //! Notification for player deletion ( all entity specific notification begin with 0xA )
 #define CTD_NOTIFY_PLAYER_DESTRUCTION   0xA0000010
@@ -147,14 +147,14 @@ class EnPlayer : public BaseEntity
 
     protected:
 
-        /**
-        * Update entity
-        * \param deltaTime                          Time passed since last update
-        */
+        //! Update entity
         void                                        updateEntity( float deltaTime );
 
         //! Override this method of BaseEntity to get notifications (from menu system)
         void                                        handleNotification( const EntityNotification& notification );
+
+        //! Spawn player considering spawn points in level
+        void                                        spawn();
 
         //! Player name
         std::string                                 _playerName;
