@@ -99,7 +99,7 @@ void EnPlayerInfoDisplay::initialize()
     try
     {        
         _p_wnd = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", PLAYERINFO_WND "mainFrame" ) );
-        _p_wnd->setSize( CEGUI::Size( 0.35f, 0.12f ) );
+        _p_wnd->setSize( CEGUI::Size( 0.35f, 0.15f ) );
         _p_wnd->setText( "player info" );
         _p_wnd->setPosition( CEGUI::Point( _position.x(), _position.y() ) );
         _p_wnd->setAlpha( 0.7f );
