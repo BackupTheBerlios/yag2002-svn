@@ -47,13 +47,13 @@ using namespace CTD;
 using namespace osg; 
 
 // log file names
-#define LOG_FILE_NAME            "vrc.log"
-#define LOG_FILE_NAME_SERVER     "vrc-server.log"
+#define LOG_FILE_NAME           "vrc.log"
+#define LOG_FILE_NAME_SERVER    "vrc-server.log"
 
 // media path relative to inst dir
-#define CTD_MEDIA_PATH      "/media/"
+#define CTD_MEDIA_PATH          "/media/"
 // default level
-#define CTD_DEFAULT_LEVEL   "gui/loader"
+#define CTD_DEFAULT_LEVEL       "gui/loader"
 
 CTD_SINGLETON_IMPL( Application );
 

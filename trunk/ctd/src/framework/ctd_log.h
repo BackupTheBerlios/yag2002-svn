@@ -106,8 +106,10 @@ class Log : public std::basic_ostream< char >
         bool                                        _printSeverityLevel;
 
         //! Log sink 
-        struct Sink
+        class Sink
         {
+            public:
+
                                                         Sink( const std::string& name, std::ostream* p_stream, unsigned int loglevel, bool stdstream = false ) :
                                                             _p_stream( p_stream ), 
                                                             _logLevel( loglevel ),
@@ -115,7 +117,7 @@ class Log : public std::basic_ostream< char >
                                                             _stdstream( stdstream )
                                                         {}
                                                         
-            virtual                                     ~Sink() { if ( _p_stream ) delete _p_stream; }
+            virtual                                     ~Sink() { if ( _p_stream && !_stdstream ) delete _p_stream; }
 
             std::string                                 _name;
 

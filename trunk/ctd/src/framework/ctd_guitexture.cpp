@@ -86,13 +86,13 @@ void CTDGuiTexture::loadFromFile( const String& filename, const String& resource
         glTexImage2D(GL_TEXTURE_2D, 0, textureType, _width, _height, 0, textureType, GL_UNSIGNED_BYTE, img->data);
 
         // Free texture data, we don't need it anymore
-        if (img->data)                          
+        if ( img->data )                          
         {
             delete[] img->data;
         }
 
         // Free the image structure
-        free(img);
+        delete img;
     }
     else
     {

@@ -54,7 +54,7 @@ Log::~Log()
     // delete all allocated streams, except the std streams
     vector< Sink* >::iterator pp_sink = _sinks.begin(), pp_sinkEnd = _sinks.end();
     for ( ; pp_sink != pp_sinkEnd; pp_sink++ )
-        if ( !( *pp_sink )->_stdstream ) delete *pp_sink;
+        delete *pp_sink;
 }
 
 bool Log::addSink( const std::string& sinkname, const std::string& filename, unsigned int loglevel )

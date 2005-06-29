@@ -62,6 +62,9 @@ BaseEntity::~BaseEntity()
     // remove update registration
     if ( EntityManager::get()->isRegisteredUpdate( this ) )
         EntityManager::get()->registerUpdate( this, false );
+
+    // remove all attributes
+    _attributeManager.removeAllAttributes();
 }
 
 BaseEntity* BaseEntity::clone( const string& instanceName, osg::Group* p_scenegroup )
