@@ -479,13 +479,19 @@ void EnWater::calcConstants( float stepWidth )
     _k3 = 2.0f * f1 * f2;
 
     // check the stability critera
-#ifdef _DEBUG
+//#ifdef _DEBUG
     float minSpeed = ( distance / ( 2.0f * stepWidth ) ) * sqrtf( _viscosity * stepWidth + 2 );
     if ( _speed > minSpeed )
-        assert( NULL && "entity Water: insufficient speed" );
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "EnWater: insufficient speed! wave equation may get instable." << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << " minimum: " << minSpeed << ", currently : " << _speed << endl;
+    }
 
     float minTimestep = ( distance * distance ) * ( ( _viscosity + sqrtf( _viscosity * _viscosity + 32.0f * ( _speed / distance ) ) ) / ( 8.0f * _speed * _speed ) );
     if ( stepWidth > minTimestep )
-        assert( NULL && "entity Water: insufficent time interval" );
-#endif
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "EnWater: insufficient time step! wave equation may get instable." << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << " minimum: " << minTimestep << ", currently : " << stepWidth << endl;
+    }
+//#endif
 }
