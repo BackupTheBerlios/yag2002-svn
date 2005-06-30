@@ -86,13 +86,13 @@ _p_msgtext( NULL )
         case MessageBoxDialog::YES_NO:
         case MessageBoxDialog::OK_CANCEL:
 
-            boxwidth  = max( 2.0f * minbuttonwidth + 0.1f, textwidth + 0.05f );
+            boxwidth  = std::max( 2.0f * minbuttonwidth + 0.1f, textwidth + 0.05f );
             boxheight = minbuttonheight + textheight + 0.1f; // + 0.1f for the upper frame
             break;
 
         case MessageBoxDialog::OK:
 
-            boxwidth  = max( minbuttonwidth + 0.1f, textwidth + 0.05f );
+            boxwidth  = std::max( minbuttonwidth + 0.1f, textwidth + 0.05f );
             boxheight = minbuttonheight + textheight + 0.1f; // + 0.1f for the upper frame
             break;
 

@@ -447,7 +447,7 @@ void LevelManager::initializeFirstTime()
         p_soundManager->init( 16 );
         p_soundManager->getEnvironment()->setDistanceModel( openalpp::InverseDistance );
         p_soundManager->getEnvironment()->setDopplerFactor( 1.0f );
-        osg::ref_ptr< osgAL::SoundRoot > soundRoot = new osgAL::SoundRoot;
+        openalpp::ref_ptr< osgAL::SoundRoot > soundRoot = new osgAL::SoundRoot;
         _topGroup->addChild( soundRoot.get() );
     }
     catch( const openalpp::InitError& e )
