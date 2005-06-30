@@ -217,7 +217,9 @@ class EnMenu :  public BaseEntity
 
         EnSkyBox*                                   _p_skyBox;
 
-        EnFog*                                      _p_fog;
+        EnFog*                                      _p_menuFog;
+
+        EnFog*                                      _p_sceneFog;
 
         EnAmbientSound*                             _p_clickSound;
 

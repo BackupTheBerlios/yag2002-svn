@@ -165,7 +165,8 @@ _soundFadingCnt( 0.0f ),
 _levelSelectionState( ForStandalone ),
 _levelLoaded( false ),
 _p_clientLevelFiles( NULL ),
-_p_fog( NULL ),
+_p_menuFog( NULL ),
+_p_sceneFog( NULL ),
 _p_skyBox( NULL ),
 _p_clickSound( NULL ),
 _p_hoverSound( NULL ),
@@ -441,7 +442,7 @@ void EnMenu::createMenuScene()
 
     EnFog* p_fogEntity = static_cast< EnFog* >( EntityManager::get()->createEntity( ENTITY_NAME_FOG, "_menuFog_" ) );
     assert( p_fogEntity && "cannot create fog entity!" );
-    _p_fog = p_fogEntity;
+    _p_menuFog = p_fogEntity;
     p_fogEntity->getAttributeManager().setAttributeValue( "persistence",    true                            );
     p_fogEntity->getAttributeManager().setAttributeValue( "density",        0.5f                            );
     p_fogEntity->getAttributeManager().setAttributeValue( "start",          200.0f                          );
@@ -695,6 +696,7 @@ void EnMenu::updateEntity( float deltaTime )
             // note: the menu entity is persistent anyway, it handles the level switch itself!
             LevelManager::get()->unloadLevel( true, true );
             _menuState = LoadingLevel;
+            _p_sceneFog = NULL;
         }
         break;
 
@@ -724,8 +726,6 @@ void EnMenu::updateEntity( float deltaTime )
             // leave the menu system
             leave();
 
-            GuiManager::get()->showMousePointer( true ); // let the mouse appear again
-
             // now start client networking when we joined to a session
             if ( GameState::get()->getMode() == GameState::Client )
             {
@@ -740,6 +740,27 @@ void EnMenu::updateEntity( float deltaTime )
             if ( _p_clientLevelFiles )
                 delete _p_clientLevelFiles;
             _p_clientLevelFiles = NULL;
+
+            // check if the new level has a fog entity, the fog must be handled extra on menu switching
+            {
+                std::vector< BaseEntity* > sceneentities;
+                EntityManager::get()->getAllEntities( sceneentities );
+                std::vector< BaseEntity* >::iterator p_beg = sceneentities.begin(), p_end = sceneentities.end();
+                for ( ; p_beg != p_end; p_beg++ )
+                {
+                    if ( ( *p_beg )->getTypeName() == ENTITY_NAME_FOG )
+                    {
+                        if ( *p_beg != _p_menuFog )
+                            break;
+                    }
+                }
+                if ( p_beg != p_end )
+                    _p_sceneFog = static_cast< EnFog* >( *p_beg );
+
+                // turn on scene fog if one exists
+                if ( _p_sceneFog )
+                    enableFog( false );
+            }
         }
         break;
 
@@ -849,7 +870,20 @@ void EnMenu::enableSkybox( bool en )
 
 void EnMenu::enableFog( bool en )
 {
-    _p_fog->enable( en );
+    if ( en )
+    {
+        if ( _p_sceneFog )
+            _p_sceneFog->enable( !en );
+
+        _p_menuFog->enable( en );
+    }
+    else
+    {
+        _p_menuFog->enable( en );
+
+        if ( _p_sceneFog )
+            _p_sceneFog->enable( !en );
+    }
 }
 
 void EnMenu::enter()
@@ -934,6 +968,7 @@ void EnMenu::switchMenuScene( bool tomenu )
         _p_cameraControl->setEnable( true );
         enableSkybox( true );
         enableFog( true );
+        GuiManager::get()->showMousePointer( true );
     }
     else
     {
