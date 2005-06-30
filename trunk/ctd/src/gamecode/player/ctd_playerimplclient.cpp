@@ -178,10 +178,16 @@ void PlayerImplClient::postInitialize()
             _p_playerAnimation = dynamic_cast< EnPlayerAnimation* >( EntityManager::get()->findEntity( ENTITY_NAME_PLANIM, _playerAttributes._animationEntity ) );
             assert( _p_playerAnimation && "given instance name does not belong to a EnPlayerAnimation entity type, or entity is missing!" );
             _p_playerAnimation->setPlayer( this );
-            if ( _cameraMode == Ego ) // in ego mode we won't render our character
-                _p_playerAnimation->enableRendering( false );
         }
 
+        if ( _cameraMode == Ego ) // in ego mode we won't render our character
+        {
+            _p_playerAnimation->enableRendering( false );
+        }
+        else // if in spheric mode disable the mouse pointer
+        {
+            GuiManager::get()->showMousePointer( false );
+        }
         // setup camera mode
         setCameraMode( _cameraMode );
 

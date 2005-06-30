@@ -132,7 +132,13 @@ void PlayerImplStandalone::postInitialize()
     assert( _p_playerAnimation && "given instance name does not belong to a EnPlayerAnimation entity type!" );
     _p_playerAnimation->setPlayer( this );
     if ( _cameraMode == Ego ) // in ego mode we won't render our character
+    {
         _p_playerAnimation->enableRendering( false );
+    }
+    else // if in spheric mode disable the mouse pointer
+    {
+        GuiManager::get()->showMousePointer( false );
+    }
 
     log << Log::LogLevel( Log::L_DEBUG ) << "   -  animation entity successfully attached" << endl;
 

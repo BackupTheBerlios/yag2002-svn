@@ -135,6 +135,9 @@ class BasePlayerImplementation
         //! Set a loading post-fix, this is used for loading players when remote clients connect.
         inline void                                 setLoadingPostfix( const std::string& postFix );
 
+        //! Get the current camera mode ( Ego or Spheric )
+        inline bool                                 getCameraMode() const;
+
     protected:
 
         //! Set camera mode to Spheric or Ego
@@ -267,6 +270,11 @@ inline EnPlayer* BasePlayerImplementation::getPlayerEntity()
 inline void BasePlayerImplementation::setLoadingPostfix( const std::string& postFix )
 {
     _loadingPostFix = postFix;
+}
+        
+inline bool BasePlayerImplementation::getCameraMode() const
+{
+    return _cameraMode;
 }
 
 } // namespace CTD

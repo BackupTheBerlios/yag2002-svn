@@ -98,6 +98,15 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 // let the chat control know that we are in edit mode now
                 getPlayerImpl()->_p_chatGui->setEditMode( s_toggleChatMode );
 
+                // show / hide pointer depending on chat mode and camera view mode
+                if ( s_toggleChatMode )
+                        GuiManager::get()->showMousePointer( true );
+                else
+                    if ( getPlayerImpl()->_cameraMode == EnPlayer::Ego )
+                        GuiManager::get()->showMousePointer( true );
+                    else
+                        GuiManager::get()->showMousePointer( false );
+
                 // stop player and sound
                 getPlayerImpl()->getPlayerAnimation()->animIdle();
                 getPlayerImpl()->getPlayerSound()->stopPlayingAll();

@@ -231,6 +231,16 @@ void PlayerChatGui::show( bool visible )
 
         // reset the mode in order to let things get updated
         setEditMode( _modeEdit );
+
+        // restore pointer depending on chat mode and camera view mode
+        if ( _modeEdit )
+                GuiManager::get()->showMousePointer( true );
+        else
+            if ( _p_playerImpl->getCameraMode() == EnPlayer::Ego )
+                GuiManager::get()->showMousePointer( true );
+            else
+                GuiManager::get()->showMousePointer( false );
+
     }
     else
     {

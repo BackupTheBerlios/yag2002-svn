@@ -105,6 +105,7 @@ void BasePlayerImplementation::setCameraMode( unsigned int mode )
                 );
             _p_camera->setCameraOffsetRotation( rot );
             _p_playerAnimation->enableRendering( true );
+            GuiManager::get()->showMousePointer( false );
         } 
         break;
 
@@ -119,6 +120,7 @@ void BasePlayerImplementation::setCameraMode( unsigned int mode )
                 );
             _p_camera->setCameraOffsetRotation( rot );
             _p_playerAnimation->enableRendering( false );
+            GuiManager::get()->showMousePointer( true );
         }
         break;
 
