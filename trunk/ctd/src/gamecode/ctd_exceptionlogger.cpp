@@ -222,7 +222,7 @@ BOOL MSJExceptionHandler::getLogicalAddress( PVOID p_addr, PTSTR p_module, DWORD
     {
         DWORD sectionStart = pSection->VirtualAddress;
         DWORD sectionEnd = sectionStart
-            + max(pSection->SizeOfRawData, pSection->Misc.VirtualSize);
+            + std::max(pSection->SizeOfRawData, pSection->Misc.VirtualSize);
 
         // Is the address in this section???
         if ( (rva >= sectionStart) && (rva <= sectionEnd) )
