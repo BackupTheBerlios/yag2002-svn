@@ -71,7 +71,7 @@ bool CameraFrameHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
     if ( ea.getEventType() == osgGA::GUIEventAdapter::FRAME )
     {
         // update camera matrix if needed
-        if ( _p_userObject->_needUpdate )
+        if ( getUserObject()->_needUpdate )
         {
             // setup the view matrix basing on position and transformation        
             osg::Matrixf trans;
@@ -97,7 +97,7 @@ bool CameraFrameHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             Application::get()->getViewer()->setViewByMatrix( Producer::Matrix( inv.ptr() ) * adjustZ_Up  );
 
             // reset update flag
-            _p_userObject->_needUpdate = false;
+            getUserObject()->_needUpdate = false;
          }
     }
     return false;
