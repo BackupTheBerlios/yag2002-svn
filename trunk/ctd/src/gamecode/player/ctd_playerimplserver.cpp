@@ -46,8 +46,6 @@ BasePlayerImplementation( player )
 
 PlayerImplServer::~PlayerImplServer()
 {
-    if ( _p_playerNetworking )
-        delete _p_playerNetworking;
 }
 
 void PlayerImplServer::handleNotification( const EntityNotification& notification )
@@ -56,12 +54,13 @@ void PlayerImplServer::handleNotification( const EntityNotification& notificatio
 
 void PlayerImplServer::initialize()
 {
-    _currentPos = getPlayerEntity()->getPosition();
-    _currentRot = getPlayerEntity()->getRotation();
 }
 
 void PlayerImplServer::postInitialize()
 {
+    _currentPos = getPlayerEntity()->getPosition();
+    _currentRot = getPlayerEntity()->getRotation();
+
     log << Log::LogLevel( Log::L_INFO ) << "  setup player implementation Server ..." << endl;
 
     //! TODO: check if we need physics on server
@@ -71,9 +70,12 @@ void PlayerImplServer::postInitialize()
 
 void PlayerImplServer::update( float deltaTime )
 {
-    // update player's actual position and rotation once per frame
-    getPlayerEntity()->setPosition( _currentPos ); 
-    getPlayerEntity()->setRotation( _currentRot ); 
+    // update player's actual position and rotation
+    getPlayerNetworking()->getPosition( _currentPos._v[ 0 ], _currentPos._v[ 1 ], _currentPos._v[ 2 ] );
+    getPlayerNetworking()->getRotation( _rotZ );
+    _currentRot.makeRotate( _rotZ, osg::Vec3f( 0.0f, 0.0f, 1.0f ) );
+    getPlayerEntity()->setPosition( _currentPos );
+    getPlayerEntity()->setRotation( _currentRot );
 }
 
 } // namespace CTD

@@ -37,6 +37,7 @@
 #include "ctd_playerimpl.h"
 #include "ctd_playerimplClient.h"
 #include "ctd_playerimplServer.h"
+#include "ctd_playerphysics.h"
 #include "ctd_player.h"
 
 using namespace std;
@@ -104,72 +105,104 @@ void PlayerNetworking::PostObjectCreate()
     // complete setting up ghost ( remote client ) or server-side player
     if ( isRemoteClient() ) 
     {
-        std::string playerconfig = _p_configFile;
-        CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "player '" <<  _p_playerName << "' connected" << endl;
+        // create the player and its related entities
+        createPlayer();
 
-        CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "loading player configuration file: " << playerconfig << endl;            
-        std::stringstream postfix;
-        static unsigned int postcnt = 0;
-        postfix << "_" << postcnt;
-        postcnt++;
-        // we force creation of all entity types on server
-        if ( !CTD::LevelManager::get()->loadEntities( playerconfig, &_loadedEntities, postfix.str() ) )
+        // setup new connected client
+        if ( CTD::GameState::get()->getMode() == CTD::GameState::Server )
         {
-            CTD::log << CTD::Log::LogLevel( CTD::Log::L_ERROR ) << "cannot find player configuration file: " << playerconfig << endl;            
-            return;
-        }
+            // send intialization data
+            static tInitializationData init;
+            osg::Vec3f pos = _loadedPlayerEntity->getPlayerImplementation()->getPlayerPosition();
+            _positionX = pos.x();
+            _positionY = pos.y();
+            _positionZ = pos.z();
+            osg::Quat  rot = _loadedPlayerEntity->getPlayerImplementation()->getPlayerRotation();
+            double angle;
+            rot.getRotate( angle, osg::Vec3f( 0.0f, 0.0f, 1.0f ) );
+            _yaw = angle;
+            init._posX = _positionX;
+            init._posY = _positionY;
+            init._posZ = _positionZ;
+            init._rotZ = _yaw;
 
-        // search for player entity
-        std::vector< CTD::BaseEntity* >::iterator p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
-        {
-            for ( ; p_beg != p_end; p_beg++ )
-            {
-                if ( ( *p_beg )->getTypeName() == ENTITY_NAME_PLAYER )
-                    break;
-            }
-            if ( p_beg == p_end )
-            {
-                CTD::log << CTD::Log::LogLevel( CTD::Log::L_ERROR ) << "cannot find player entity in file: " << playerconfig << endl;            
-                return;
-            }
-            _loadedPlayerEntity = static_cast< CTD::EnPlayer* >( *p_beg );
-            // for a remote client we must setup the player implementation before initializing
-            _p_playerImpl = new CTD::PlayerImplClient( _loadedPlayerEntity );
-            _p_playerImpl->setPlayerNetworking( this );
-            _p_playerImpl->initialize();
-            _loadedPlayerEntity->setPlayerImplementation( _p_playerImpl );
-            // set loading prefix
-            _p_playerImpl->setLoadingPostfix( postfix.str() );
+            ALL_REPLICAS_FUNCTION_CALL( RPC_Initialize( init ) );
         }
-
-        // begin initialization of player and its components
-        CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "initializing new player instance ... " << endl;
-        {
-            p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
-            for ( ; p_beg != p_end; p_beg++ )
-            {
-                ( *p_beg )->initialize();
-            }
-        }
-
-        // now begin post-initialization of player and its components
-        CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "post-initializing new player ..." << endl;
-        {
-            std::vector< CTD::BaseEntity* >::iterator p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
-            for ( ; p_beg != p_end; p_beg++ )
-            {
-                ( *p_beg )->postInitialize();
-            }
-        }
-        _loadedPlayerEntity->setPlayerName( _p_playerName );
     }
-    else
+    else // actions for local clients
     {
         string enteringtext( string( "< " ) + _p_playerName + string ( " says hello >" ) );
         putChatText( enteringtext );
     }
 
     CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << " player created: " << _p_playerName << endl;
+}
+
+void PlayerNetworking::createPlayer()
+{
+    std::string playerconfig = _p_configFile;
+    CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "player '" <<  _p_playerName << "' connected" << endl;
+
+    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "loading player configuration file: " << playerconfig << endl;            
+    std::stringstream postfix;
+    static unsigned int postcnt = 0;
+    postfix << "_" << postcnt;
+    postcnt++;
+    // load player related entities
+    if ( !CTD::LevelManager::get()->loadEntities( playerconfig, &_loadedEntities, postfix.str() ) )
+    {
+        CTD::log << CTD::Log::LogLevel( CTD::Log::L_ERROR ) << "cannot find player configuration file: " << playerconfig << endl;            
+        return;
+    }
+
+    // search for player entity and set it up
+    std::vector< CTD::BaseEntity* >::iterator p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
+    {
+        for ( ; p_beg != p_end; p_beg++ )
+        {
+            if ( ( *p_beg )->getTypeName() == ENTITY_NAME_PLAYER )
+                break;
+        }
+        if ( p_beg == p_end )
+        {
+            CTD::log << CTD::Log::LogLevel( CTD::Log::L_ERROR ) << "cannot find player entity in file: " << playerconfig << endl;            
+            return;
+        }
+        _loadedPlayerEntity = static_cast< CTD::EnPlayer* >( *p_beg );
+
+        // for a remote client we must setup the player implementation before initializing
+        if ( CTD::GameState::get()->getMode() == CTD::GameState::Server )
+            _p_playerImpl = new CTD::PlayerImplServer( _loadedPlayerEntity );
+        else
+            _p_playerImpl = new CTD::PlayerImplClient( _loadedPlayerEntity );
+
+        _p_playerImpl->setPlayerNetworking( this );
+        _p_playerImpl->initialize();
+        _loadedPlayerEntity->setPlayerImplementation( _p_playerImpl );
+        // set loading prefix
+        _p_playerImpl->setLoadingPostfix( postfix.str() );
+    }
+
+    // begin initialization of player and its components
+    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "initializing new player instance ... " << endl;
+    {
+        p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
+        for ( ; p_beg != p_end; p_beg++ )
+        {
+            ( *p_beg )->initialize();
+        }
+    }
+
+    // now begin post-initialization of player and its components
+    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "post-initializing new player ..." << endl;
+    {
+        std::vector< CTD::BaseEntity* >::iterator p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
+        for ( ; p_beg != p_end; p_beg++ )
+        {
+            ( *p_beg )->postInitialize();
+        }
+    }
+    _loadedPlayerEntity->setPlayerName( _p_playerName );
 }
 
 void PlayerNetworking::initialize( const osg::Vec3f& pos, const string& playerName, const string& cfgFile )
@@ -196,6 +229,22 @@ void PlayerNetworking::RPC_AddChatText( tChatMsg chatMsg )
         getChatLog() << chatMsg._text << endl;
     else
         _p_playerImpl->addChatMessage( chatMsg._text, _p_playerName );
+}
+
+void PlayerNetworking::RPC_Initialize( tInitializationData initData )
+{
+    // server directs all messages into a log file!
+    assert( ( CTD::GameState::get()->getMode() == CTD::GameState::Client ) && "this RPC must be called only for clients!" );
+
+    // init player position set by server ( it's the job of server to init the player position and rotation )
+    _p_playerImpl->setPlayerPosition( osg::Vec3f( initData._posX, initData._posY, initData._posZ ) );
+    _p_playerImpl->setPlayerRotation( osg::Quat( initData._rotZ, osg::Vec3f( 0.0f, 0.0f, 1.0f ) ) );
+    
+    // reset physics body transformation
+    osg::Matrixf mat;
+    mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
+    mat.setTrans( _p_playerImpl->getPlayerPosition() ); 
+    _p_playerImpl->getPlayerPhysics()->setTransformation( mat );
 }
 
 void PlayerNetworking::update()

@@ -121,11 +121,11 @@ bool EnSpawnPoint::getNextSpawnPoint( osg::Vec3f& pos, osg::Quat& rot )
         std::vector< EnPlayer* >::iterator pp_beg = players.begin(), pp_end = players.end();
         for ( ; pp_beg != pp_end; pp_beg++ )
         {
-            if ( ( p_spawn->getSpawnPosition() - ( *pp_beg )->getPosition() ).length2() < ( SPAWN_MIN_FREE_RADIUS * SPAWN_MIN_FREE_RADIUS ) )
+            if ( ( p_spawn->getSpawnPosition() - ( *pp_beg )->getPosition() ).length2() > ( SPAWN_MIN_FREE_RADIUS * SPAWN_MIN_FREE_RADIUS ) )
                 break;
         }
-        // if one of players occupy the spawn point then we are done
-        if ( pp_beg == pp_end )
+        // if none of players occupy the spawn point then we are done
+        if ( pp_beg != pp_end )
         {
             p_spawnentity = p_spawn;
             dobreak = true;

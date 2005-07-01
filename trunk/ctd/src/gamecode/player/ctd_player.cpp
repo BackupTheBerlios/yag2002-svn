@@ -150,9 +150,8 @@ void EnPlayer::initialize()
         break;
 
         case GameState::Server:
+            // player entity is created in networking component for server
             spawn();
-            _p_playerImpl = new PlayerImplServer( this );
-            _p_playerImpl->initialize();
             break;
 
         default:
@@ -162,6 +161,12 @@ void EnPlayer::initialize()
 
 void EnPlayer::postInitialize()
 {
+    if ( !_p_playerImpl )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "player implementation does not exist! are you loading the player entity in right game mode?" << endl;
+        return;
+    }
+
     _p_playerImpl->postInitialize();
     // register entity in order to get updated per simulation step.
     EntityManager::get()->registerUpdate( this, true );

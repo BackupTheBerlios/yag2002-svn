@@ -48,6 +48,14 @@
 //    char    _text[ 256 ];
 //} tChatMsg;
 
+//typedef struct _tInitializationData
+//{
+//    float   _posX;
+//    float   _posY;
+//    float   _posZ;
+//    float   _rotZ;
+//} tInitializationData;
+
 namespace CTD
 {
     class EnPlayer;
@@ -98,7 +106,7 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         //! Put new chat text
         void                                        putChatText( const std::string& text );
 
-        // Overrides
+        // RN Overrides
         //-----------------------------------------------------------------------------------//
         //! Object can now be initialized in scene
         void                                        PostObjectCreate();
@@ -108,10 +116,16 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         //! New incomming chat text
         void                                        RPC_AddChatText( tChatMsg chatMsg );
 
+        //! Initialization function called on a new connected client and its ghosts
+        void                                        RPC_Initialize( tInitializationData initData );
+
         //! Return chat's log
         static CTD::Log&                            getChatLog() { return *s_chatLog; }
 
     protected:
+
+        //! Create all player related entities
+        void                                        createPlayer();
 
         // network-shared attributes
         float                                       _positionX;

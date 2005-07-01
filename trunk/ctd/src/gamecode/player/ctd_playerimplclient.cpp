@@ -102,8 +102,10 @@ void PlayerImplClient::handleNotification( const EntityNotification& notificatio
 
 void PlayerImplClient::initialize()
 {
+    // setup position, rotation and move direction
     _currentPos = getPlayerEntity()->getPosition();
     _currentRot = getPlayerEntity()->getRotation();
+    _moveDir    = _currentRot * _moveDir;
 
     // get configuration settings for player control keys
     getConfiguration();
@@ -128,9 +130,6 @@ void PlayerImplClient::initialize()
         // create chat gui
         _p_chatGui = std::auto_ptr< PlayerChatGui >( new PlayerChatGui );
         _p_chatGui->initialize( this, _playerAttributes._chatGuiConfig );
-        // create a new input handler for this player
-        _p_inputHandler = new PlayerIHCharacterCameraCtrl< PlayerImplClient >( this, _p_player );
-        _p_inputHandler->setMenuEnabled( false );
     }
 }
 
@@ -188,6 +187,11 @@ void PlayerImplClient::postInitialize()
         {
             GuiManager::get()->showMousePointer( false );
         }
+
+        // create a new input handler for this player
+        _p_inputHandler = new PlayerIHCharacterCameraCtrl< PlayerImplClient >( this, _p_player );
+        _p_inputHandler->setMenuEnabled( false );
+
         // setup camera mode
         setCameraMode( _cameraMode );
 
@@ -216,8 +220,9 @@ void PlayerImplClient::postInitialize()
             _p_playerAnimation = dynamic_cast< EnPlayerAnimation* >( EntityManager::get()->findEntity( ENTITY_NAME_PLANIM, _playerAttributes._animationEntity + _loadingPostFix ) );
             assert( _p_playerAnimation && "given instance name does not belong to a EnPlayerAnimation entity type, or entity is missing!" );
             _p_playerAnimation->setPlayer( this );
-            if ( _cameraMode == Ego ) // in ego mode we won't render our character
-                _p_playerAnimation->enableRendering( false );
+            // enable rendering for remote clients
+            _p_playerAnimation->enableRendering( true );
+
             log << Log::LogLevel( Log::L_DEBUG ) << "   -  animation entity successfully attached" << endl;
         }
     }
