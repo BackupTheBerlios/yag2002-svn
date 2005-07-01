@@ -105,6 +105,9 @@ class GenericInputHandler : public osgGA::GUIEventHandler
 
         virtual bool                         handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa ) = 0;
 
+        //! Return the user object
+        T*                                   getUserObject() { return _p_userObject; }
+
     protected:
 
         //! An optional object which can be accessed in 'handle' method.

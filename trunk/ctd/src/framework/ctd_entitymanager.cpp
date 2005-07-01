@@ -98,7 +98,7 @@ void EntityManager::updateEntityLists()
         // remove entity from pool and delete it
         removeFromEntityPool( p_rementity, true );
     }
-   _queueDeletedEntities.clear();
+    _queueDeletedEntities.clear();
 
     // add new to be updated entities into update entity list, or remove those which are deregistered
     vector< std::pair< BaseEntity*, bool > >::iterator pp_entity = _queueUpdateEntities.begin(), pp_entityEnd = _queueUpdateEntities.end();
@@ -260,7 +260,10 @@ bool EntityManager::isRegisteredUpdate( const BaseEntity* p_entity )
     vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
     for( ; pp_entity != pp_entityEnd; pp_entity++ )
     {
-        if ( *pp_entity == p_entity )
+        // here a comparison with dangling pointers can happen when multiple entities request for unregistring updating
+        // and they also request for destruction ( in normal case the request for unregistering updating comes in conjuction with
+        // entity destruction ), but at next update phase _updateEntities list will get cleaned up, no worry.
+        if ( *pp_entity == p_entity ) 
             return true;
     }
     return false;

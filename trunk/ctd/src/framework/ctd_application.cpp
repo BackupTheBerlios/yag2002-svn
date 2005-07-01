@@ -250,13 +250,13 @@ bool Application::initialize( int argc, char **argv )
         Producer::RenderSurface* p_rs = p_cam->getRenderSurface();
 
         unsigned int width = 0, height = 0;
-        if ( GameState::get()->getMode() != GameState::Server )
-        {
+        //if ( GameState::get()->getMode() != GameState::Server )
+        //{
             p_rs->getScreenSize( width, height );
             int posx = int( ( width - _screenWidth ) * 0.5f );
             int posy = int( ( height - _screenHeight ) * 0.5f );
 
-            // auto-correct the app window size which is greater than the screen size
+            // auto-correct the app window size which may be greater than the screen size
             if ( width < _screenWidth )
             {
                 log << Log::LogLevel( Log::L_WARNING ) << " window width is greater than screen width, adapted to: " << width << endl;
@@ -269,12 +269,12 @@ bool Application::initialize( int argc, char **argv )
             }
 
             p_rs->setWindowRectangle( posx, posy, _screenWidth, _screenHeight );
-        }
-        else
-        {
-            // the server should better have a null-device as render surface! does osg have something like a null-device?
-            p_rs->setWindowRectangle( 0, 0, 0, 0 );
-        }
+        //}
+        //else
+        //{
+        //    // the server has a fix window size
+        //    p_rs->setWindowRectangle( 0, 0, 400, 400 );
+        //}
 
         unsigned int colorbits = 24;
         Configuration::get()->getSettingValue( CTD_GS_COLORBITS, colorbits );
@@ -471,7 +471,20 @@ void Application::updateServer( float deltaTime )
     _p_entityManager->update( deltaTime  );
 
     // update physics
-    _p_physics->update( deltaTime );
+    //_p_physics->update( deltaTime );
+
+    // update gui manager
+    _p_guiManager->update( deltaTime );
+
+    // wait for all cullings and drawings to complete.
+    _p_viewer->sync();
+
+    // update the scene by traversing it with the the update visitor which will
+    // call all node update callbacks and animations.
+    _p_viewer->update();
+
+    // fire off the cull and draw traversals of the scene.
+    _p_viewer->frame();
 
     // yield a little processor time for other tasks on system
     OpenThreads::Thread::microSleep( 1000 );

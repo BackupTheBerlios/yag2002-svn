@@ -258,7 +258,7 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
         } 
         else 
         {
-            log << Log::LogLevel( Log::L_INFO ) << " loading static geometry: " << p_bufName << endl;
+            log << Log::LogLevel( Log::L_INFO ) << "loading static geometry: " << p_bufName << endl;
             osg::Node *p_staticnode = loadStaticWorld( p_bufName );
             if ( p_staticnode )
             {
@@ -278,7 +278,7 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
 
     // read entity definitions
     //------------------------
-    log << Log::LogLevel( Log::L_INFO ) << " creating entities ..." << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "creating entities ..." << endl;
 
     unsigned int entityCounter = 0;
     p_node = p_levelElement;
@@ -347,13 +347,13 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
         if ( p_entities )
             p_entities->push_back( p_entity );
 
-        log << Log::LogLevel( Log::L_DEBUG ) << "  entity created, type: '" << enttype << "'" << endl;
+        log << Log::LogLevel( Log::L_DEBUG ) << "entity created, type: '" << enttype << "'" << endl;
         // get instance name if one provided
         p_bufName = ( char* )p_entityElement->Attribute( CTD_LVL_ENTITY_INST_NAME );
         if ( p_bufName ) {
             // set entity's instance name
             p_entity->setInstanceName( instancename );
-            log << Log::LogLevel( Log::L_DEBUG ) << "  instance name: '" << instancename << "'" << endl;
+            log << Log::LogLevel( Log::L_DEBUG ) << "instance name: '" << instancename << "'" << endl;
         }
 
         entityCounter++;
@@ -390,7 +390,7 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
     }
 
     log << Log::LogLevel( Log::L_INFO ) << endl;
-    log << Log::LogLevel( Log::L_INFO ) << " total number of created entities: '" << entityCounter << "'" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "total number of created entities: '" << entityCounter << "'" << endl;
     log << Log::LogLevel( Log::L_INFO ) << "entity loading completed" << endl;
 
     return true;
