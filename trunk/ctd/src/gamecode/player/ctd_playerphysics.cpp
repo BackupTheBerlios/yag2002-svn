@@ -291,7 +291,7 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
 	// calculate the torque vector
     const float* matelems = matrix.ptr();
     Vec3f front( matelems[ 4 ] , matelems[ 5 ], matelems[ 6 ] );
-    // _moveDir must be normalized
+    // moveDir must be normalized
     Vec3f cross( front ^ p_phys->_p_playerImpl->getPlayerMoveDirection() );
     steerAngle = min( max( cross._v[ 2 ], -1.0f ), 1.0f );
 	steerAngle = asinf( steerAngle );
@@ -559,8 +559,9 @@ void EnPlayerPhysics::postInitialize()
     setInstanceName( _p_playerImpl->getPlayerEntity()->getInstanceName() );
 
     Matrixf mat;
+    mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
     mat.setTrans( _p_playerImpl->getPlayerPosition() ); 
-
+    
     // find floor under the initial position and adapt body matrix
     float z = findFloor( _p_world, _p_playerImpl->getPlayerPosition(), 1000.0f );
     mat.ptr()[ 14 ] = z + _dimensions._v[ 2 ] + 0.2f; // add an offset of player height plus 0.2 meters
@@ -581,6 +582,12 @@ void EnPlayerPhysics::jump()
 {
     if ( !_isAirBorne )
         _isJumping = true;
+}
+
+void EnPlayerPhysics::setTransformation( const osg::Matrixf& mat )
+{
+    NewtonBodySetMatrix ( _p_body, mat.ptr() );
+    physicsSetTransform ( _p_body, mat.ptr() );
 }
 
 } // namespace CTD

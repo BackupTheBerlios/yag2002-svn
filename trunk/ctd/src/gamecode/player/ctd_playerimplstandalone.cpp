@@ -99,8 +99,10 @@ void PlayerImplStandalone::handleNotification( const EntityNotification& notific
 
 void PlayerImplStandalone::initialize()
 {    
+    // setup position, rotation and move direction
     _currentPos = getPlayerEntity()->getPosition();
     _currentRot = getPlayerEntity()->getRotation();
+    _moveDir    = _currentRot * _moveDir;
 
     _p_chatGui->initialize( this, _playerAttributes._chatGuiConfig );
     _p_inputHandler->setMenuEnabled( false );

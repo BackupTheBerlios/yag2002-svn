@@ -91,6 +91,11 @@ class EnPlayerPhysics : public BaseEntity
         void                                        addForce( float x, float y );
 
         /**
+        * Set the boy transformation.
+        */
+        void                                        setTransformation( const osg::Matrixf& mat );
+
+        /**
         * Stop movement
         */
         void                                        stopMovement();
