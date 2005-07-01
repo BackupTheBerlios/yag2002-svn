@@ -48,7 +48,8 @@ namespace gameutils
 class DialogLevelSelect
 {
     public:
-                                                    DialogLevelSelect( EnMenu* p_menuEntity );
+
+        explicit                                    DialogLevelSelect( EnMenu* p_menuEntity );
 
         virtual                                     ~DialogLevelSelect();
 

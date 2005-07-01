@@ -651,7 +651,7 @@ void BtnInputHandler::updateBindings( const string newkey )
     }
     p_we->first = newkey;
     //-------------------
-    _p_userObject->setText( newkey );
+    getUserObject()->setText( newkey );
 }
 
 bool BtnInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )

@@ -52,7 +52,6 @@ namespace CTD
 #define OVERLAY_IMAGESET        MENU_PREFIX "loadingoverlay"
 
 // some default resources
-#define DEFAULT_LEVEL_LOADER    "gui/scene/loader"
 #define MENU_SCENE              "gui/scene/menuscene.osg"
 #define MENU_CAMERAPATH         "gui/scene/campath.osg"
 
@@ -66,8 +65,8 @@ class MenuInputHandler : public GenericInputHandler< EnMenu >
 {
     public:
 
-                                            MenuInputHandler( EnMenu* p_menu ) :
-                                             _p_menu( p_menu ),
+        explicit                            MenuInputHandler( EnMenu* p_menu ) :
+                                             GenericInputHandler< EnMenu >( p_menu ),
                                              _menuActive( true ),
                                              _lockEsc( false )
                                             {}
@@ -84,10 +83,10 @@ class MenuInputHandler : public GenericInputHandler< EnMenu >
                                                 // during intro we abort it when mouse clicked
                                                 if ( buttonMask == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON )
                                                 {
-                                                    if ( _p_menu->_menuState == EnMenu::Intro )
+                                                    if ( getUserObject()->_menuState == EnMenu::Intro )
                                                     {
-                                                        _p_menu->stopIntro();
-                                                        _p_menu->enter();
+                                                        getUserObject()->stopIntro();
+                                                        getUserObject()->enter();
                                                         return false;
                                                     }
                                                 }
@@ -99,16 +98,16 @@ class MenuInputHandler : public GenericInputHandler< EnMenu >
                                                         _lockEsc = true;
 
                                                         // are we in intro, if so then abort it
-                                                        if ( _p_menu->_menuState == EnMenu::Intro )
-                                                            _p_menu->stopIntro();
+                                                        if ( getUserObject()->_menuState == EnMenu::Intro )
+                                                            getUserObject()->stopIntro();
 
                                                         if ( _menuActive )
                                                         {
-                                                           _p_menu->enter();
+                                                            getUserObject()->enter();
                                                         }
                                                         else
                                                         {
-                                                            _p_menu->leave();
+                                                            getUserObject()->leave();
                                                         }
                                                     }
                                                 }
@@ -126,8 +125,6 @@ class MenuInputHandler : public GenericInputHandler< EnMenu >
 
     protected:
 
-        EnMenu*                             _p_menu;
-
         bool                                _menuActive;
 
         bool                                _lockEsc;
@@ -137,6 +134,7 @@ class MenuInputHandler : public GenericInputHandler< EnMenu >
 CTD_IMPL_ENTITYFACTORY_AUTO( MenuEntityFactory );
 
 EnMenu::EnMenu() :
+_p_inputHandler( NULL ),
 _p_menuWindow( NULL ),
 _p_btnStartWT( NULL ),
 _p_btnStartJoin( NULL ),
@@ -145,7 +143,6 @@ _p_btnReturn( NULL ),
 _p_btnLeave( NULL ),
 _p_loadingWindow( NULL ),
 _p_loadingLevelPic( NULL ),
-_p_loadingOverlayImage( NULL ),
 _p_loadingOverly( NULL ),
 _p_cameraControl( NULL ),
 _menuConfig( "gui/menu.xml" ),
@@ -324,7 +321,7 @@ void EnMenu::initialize()
         _p_loadingWindow->addChildWindow( _p_loadingOverly );
 
         _p_loadingLevelPic = static_cast< CEGUI::StaticImage* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticImage", ( MENU_PREFIX "img_loadingpic" ) ) );
-        _p_loadingLevelPic->setSize( CEGUI::Size( 1.0, 1.0f ) );
+        _p_loadingLevelPic->setSize( CEGUI::Size( 1.0f, 1.0f ) );
         _p_loadingLevelPic->setImage( NULL ); // this image will be delivered by level selector later
         _p_loadingLevelPic->setBackgroundEnabled( false );
         _p_loadingLevelPic->setFrameEnabled( false );
@@ -338,8 +335,8 @@ void EnMenu::initialize()
         {
             p_imageSet->defineImage( materialName, CEGUI::Point( 0.0f, 0.0f ), CEGUI::Size( p_texture->getWidth(), p_texture->getHeight() ), CEGUI::Point( 0.0f,0.0f ) );
         }
-        CEGUI::Image* _p_loadingOverlayImage = &const_cast< CEGUI::Image& >( p_imageSet->getImage( materialName ) );
-        _p_loadingOverly->setImage( _p_loadingOverlayImage );
+        CEGUI::Image* p_loadingOverlayImage = &const_cast< CEGUI::Image& >( p_imageSet->getImage( materialName ) );
+        _p_loadingOverly->setImage( p_loadingOverlayImage );
         _p_loadingOverly->setSize( CEGUI::Size( 0.5f, 0.2f ) );
         _p_loadingOverly->setPosition( CEGUI::Point( 0.25f, 0.75f ) );
     }
@@ -453,7 +450,7 @@ void EnMenu::createMenuScene()
     p_fogEntity->postInitialize();
 }
    
-EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume )
+EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume ) const
 {
     // manually create an entity of type AmbientSound without adding it to pool as we use the entity locally
     //  and do not need managed destruction or searchable ability for the entity
@@ -531,24 +528,24 @@ bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
         // create a call back for yes/no buttons of messagebox
         class MsgYesNoClick: public MessageBoxDialog::ClickCallback
         {
-        public:
+            public:
 
-                                    MsgYesNoClick( EnMenu* p_menu ) : _p_menu( p_menu ) {}
+                explicit                MsgYesNoClick( EnMenu* p_menu ) : _p_menu( p_menu ) {}
 
-            virtual                 ~MsgYesNoClick() {}
+                virtual                 ~MsgYesNoClick() {}
 
-            void                    onClicked( unsigned int btnId )
-                                    {
-                                        // did the user clicked yes? if so then store settings
-                                        if ( btnId == MessageBoxDialog::BTN_YES )                                                    
-                                            _p_menu->leaveLevel();
-                                        else
-                                            _p_menu->leave();
+                void                    onClicked( unsigned int btnId )
+                                        {
+                                            // did the user clicked yes? if so then store settings
+                                            if ( btnId == MessageBoxDialog::BTN_YES )                                                    
+                                                _p_menu->leaveLevel();
+                                            else
+                                                _p_menu->leave();
 
-                                        _p_menu->_p_menuWindow->enable();
-                                    }
+                                            _p_menu->_p_menuWindow->enable();
+                                        }
 
-            EnMenu*                 _p_menu;
+                EnMenu*                 _p_menu;
         };
         p_msg->setClickCallback( new MsgYesNoClick( this ) );    
         p_msg->show();
@@ -581,23 +578,23 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
         // create a call back for Ok button of messagebox
         class MsgOkClick: public MessageBoxDialog::ClickCallback
         {
-        public:
+            public:
 
-                                    MsgOkClick( EnMenu* p_menu ) : _p_menu( p_menu ) {}
+                explicit                MsgOkClick( EnMenu* p_menu ) : _p_menu( p_menu ) {}
 
-            virtual                 ~MsgOkClick() {}
+                virtual                 ~MsgOkClick() {}
 
-            void                    onClicked( unsigned int btnId )
-                                    {
-                                        _p_menu->_p_menuWindow->enable();
+                void                    onClicked( unsigned int btnId )
+                                        {
+                                            _p_menu->_p_menuWindow->enable();
 
-                                        // play click sound
-                                        if ( _p_menu->_p_clickSound )
-                                            _p_menu->_p_clickSound->startPlaying();
+                                            // play click sound
+                                            if ( _p_menu->_p_clickSound )
+                                                _p_menu->_p_clickSound->startPlaying();
 
-                                    }
+                                        }
 
-            EnMenu*                 _p_menu;
+                EnMenu*                 _p_menu;
         };    
         p_msg->setClickCallback( new MsgOkClick( this ) );    
         p_msg->show();
@@ -695,7 +692,7 @@ void EnMenu::updateEntity( float deltaTime )
             // unload level, don't keep physics and entities
             // note: the menu entity is persistent anyway, it handles the level switch itself!
             LevelManager::get()->unloadLevel( true, true );
-            _menuState = LoadingLevel;
+            _menuState  = LoadingLevel;
             _p_sceneFog = NULL;
         }
         break;
@@ -705,10 +702,9 @@ void EnMenu::updateEntity( float deltaTime )
             LevelManager::get()->loadLevel( _queuedLevelFile );
             _queuedLevelFile = ""; // reset the queue
 
-            // now load the player
+            // now load the player and its other entities
             string playerCfgFile;
             gameutils::getPlayerConfig( GameState::get()->getMode(), false, playerCfgFile );
-            std::vector< BaseEntity* > entities;
             LevelManager::get()->loadEntities( playerCfgFile );
 
             // complete level loading
@@ -723,8 +719,10 @@ void EnMenu::updateEntity( float deltaTime )
             // set flag that we have loaded a level; some menu oprions depend on this flag
             _levelLoaded = true;
 
-            // leave the menu system
-            leave();
+            // free up the client level file object which was previously used for getting the loading pic
+            if ( _p_clientLevelFiles )
+                delete _p_clientLevelFiles;
+            _p_clientLevelFiles = NULL;
 
             // now start client networking when we joined to a session
             if ( GameState::get()->getMode() == GameState::Client )
@@ -733,13 +731,15 @@ void EnMenu::updateEntity( float deltaTime )
                 {
                     MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "Problem starting client!", MessageBoxDialog::OK, true );
                     p_msg->show();
+
+                    _menuState = UnloadLevel;
+
+                    return;
                 }
             }
 
-            // free up the client level file object which was previously used for getting the loading pic
-            if ( _p_clientLevelFiles )
-                delete _p_clientLevelFiles;
-            _p_clientLevelFiles = NULL;
+            // leave the menu system
+            leave();
 
             // check if the new level has a fog entity, the fog must be handled extra on menu switching
             {
@@ -761,6 +761,8 @@ void EnMenu::updateEntity( float deltaTime )
                 if ( _p_sceneFog )
                     enableFog( false );
             }
+
+            _menuState = Hidden;
         }
         break;
 
@@ -768,11 +770,13 @@ void EnMenu::updateEntity( float deltaTime )
         {
             LevelManager::get()->unloadLevel();
             _levelLoaded = false;
+            _p_sceneFog  = NULL;
             switchMenuScene( true );
-            _menuState = Visible;
+            _menuState   = Visible;
         }
         break;
 
+        // currently we do nothing in hidden state, just idle
         case Hidden:
             break;
 

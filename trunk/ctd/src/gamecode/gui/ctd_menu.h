@@ -169,7 +169,7 @@ class EnMenu :  public BaseEntity
         bool                                        onButtonHover( const CEGUI::EventArgs& arg );
 
         //! Creates a sound entity with given filename
-        EnAmbientSound*                             setupSound( const std::string& filename, float volume );
+        EnAmbientSound*                             setupSound( const std::string& filename, float volume ) const;
 
         //! Create a scene for menu
         void                                        createMenuScene();
@@ -250,8 +250,6 @@ class EnMenu :  public BaseEntity
         CEGUI::PushButton*                          _p_btnLeave;
 
         CEGUI::StaticImage*                         _p_loadingOverly;
-
-        CEGUI::Image*                               _p_loadingOverlayImage;
 
         CEGUI::StaticImage*                         _p_loadingLevelPic;
 
