@@ -153,7 +153,7 @@ class ConsoleEntityFactory : public BaseEntityFactory
 {
     public:
                                                     ConsoleEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_CONSOLE, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+          BaseEntityFactory( ENTITY_NAME_CONSOLE, BaseEntityFactory::Standalone | BaseEntityFactory::Client | BaseEntityFactory::Server )
                                                     {}
 
         virtual                                     ~ConsoleEntityFactory() {}

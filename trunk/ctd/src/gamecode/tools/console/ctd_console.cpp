@@ -45,7 +45,7 @@ class ConsoleIH : public GenericInputHandler< EnConsole >
 {
     public:
 
-                                            ConsoleIH( EnConsole* p_console ) : 
+        explicit                            ConsoleIH( EnConsole* p_console ) : 
                                              GenericInputHandler< EnConsole >( p_console ),
                                              _toggleEnable( false )
                                             {
@@ -63,23 +63,23 @@ class ConsoleIH : public GenericInputHandler< EnConsole >
                                                     if ( ea.getKey() == 92 ) // '^'
                                                     {
                                                         _toggleEnable = !_toggleEnable;
-                                                        _p_userObject->enable( _toggleEnable );
+                                                        getUserObject()->enable( _toggleEnable );
                                                     }
                                                     else if ( _toggleEnable && ea.getKey() == _retCode )
                                                     {
-                                                        _p_userObject->issueCmd( _p_userObject->_p_inputWindow->getText().c_str() );
+                                                        getUserObject()->issueCmd( _p_userObject->_p_inputWindow->getText().c_str() );
                                                     }
                                                     else if ( ea.getKey() == _autoCompleteCode )
                                                     {
-                                                        _p_userObject->autoCompleteCmd( _p_userObject->_p_inputWindow->getText().c_str() );
+                                                        getUserObject()->autoCompleteCmd( _p_userObject->_p_inputWindow->getText().c_str() );
                                                     }
                                                     else if ( ea.getKey() == osgGA::GUIEventAdapter::KEY_Up )
                                                     {
-                                                        _p_userObject->cmdHistory( true );
+                                                        getUserObject()->cmdHistory( true );
                                                     }
                                                     else if ( ea.getKey() == osgGA::GUIEventAdapter::KEY_Down )
                                                     {
-                                                        _p_userObject->cmdHistory( false );
+                                                        getUserObject()->cmdHistory( false );
                                                     }
                                                 }
 

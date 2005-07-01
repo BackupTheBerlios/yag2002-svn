@@ -70,13 +70,13 @@ BaseConsoleCommand* ConsoleCommandRegistry::getCmd( const std::string& cmdname )
     return p_cmd;
 }
 
-unsigned int ConsoleCommandRegistry::getAllCmds( std::vector< std::string >& commands )
+unsigned int ConsoleCommandRegistry::getAllCmds( std::vector< BaseConsoleCommand* >& commands )
 {
     unsigned int cnt = 0;
     std::map< std::string, BaseConsoleCommand* >::iterator p_beg = _cmdRegistry.begin(), p_end = _cmdRegistry.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
-        commands.push_back( p_beg->first );
+        commands.push_back( p_beg->second );
         cnt++;
     }
 

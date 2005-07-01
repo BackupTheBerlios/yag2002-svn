@@ -54,28 +54,45 @@ CmdHelp::~CmdHelp()
 
 const std::string& CmdHelp::execute( const std::vector< std::string >& arguments )
 {
+    bool detail = false;
     if ( arguments.size() > 0 )
     {
-        BaseConsoleCommand* p_cmd = ConsoleCommandRegistry::get()->getCmd( arguments[ 0 ] );
-        if ( !p_cmd )
+        if ( arguments[ 0 ] == "-d" )
         {
-            _cmdResult = "* command '" + arguments[ 0 ] + "' does not exist.";
+            detail = true;
+        }
+        else
+        {
+            BaseConsoleCommand* p_cmd = ConsoleCommandRegistry::get()->getCmd( arguments[ 0 ] );
+            if ( !p_cmd )
+            {
+                _cmdResult = "* command or option '" + arguments[ 0 ] + "' does not exist.\n";
+                _cmdResult += "usage: " + getUsage();
+                return _cmdResult;
+            }
+            _cmdResult = p_cmd->getUsage();
             return _cmdResult;
         }
-        _cmdResult = p_cmd->getUsage();
     }
-    else
+
+    _cmdResult = "note: use option -d to get a detailed list.\n";
+    _cmdResult += "available commands: \n";
+    std::vector< BaseConsoleCommand* > cmds;
+    ConsoleCommandRegistry::get()->getAllCmds( cmds );
+    std::vector< BaseConsoleCommand* >::iterator p_beg = cmds.begin(), p_end = cmds.end();
+    for ( ; p_beg != p_end; p_beg++ )
     {
-        _cmdResult = "possible commands: \n";
-        std::vector< std::string > cmds;
-        ConsoleCommandRegistry::get()->getAllCmds( cmds );
-        std::vector< std::string >::iterator p_beg = cmds.begin(), p_end = cmds.end();
-        for ( ; p_beg != p_end; p_beg++ )
+        if ( !detail )
         {
-            _cmdResult += ( *p_beg ) + "  ";
+            _cmdResult += ( *p_beg )->getCmdName() + "  ";
         }
-        _cmdResult += "\n";
+        else
+        {
+            _cmdResult += "[ " + ( *p_beg )->getCmdName() + " ]:   " + ( *p_beg )->getUsage() + "\n";
+            _cmdResult += "-------------\n";
+        }
     }
+    _cmdResult += "\n";
 
     return _cmdResult;
 }

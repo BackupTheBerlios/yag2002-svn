@@ -62,9 +62,11 @@ const std::string& CmdEntityList::execute( const std::vector< std::string >& arg
     std::vector< BaseEntity* >::iterator p_beg = entities.begin(), p_end = entities.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
-        flags = "";
-        if ( ( *p_beg )->isPersistent() ) flags += "P";
-        if ( ( *p_beg )->isTransformable() ) flags += "T";
+        flags = "----";
+        if ( ( *p_beg )->isPersistent() ) flags[ 0 ] = 'P';
+        if ( ( *p_beg )->isTransformable() ) flags[ 1 ] = 'T';
+        if ( EntityManager::get()->isRegisteredUpdate( *p_beg ) ) flags[ 2 ] = 'U';
+        if ( EntityManager::get()->isRegisteredNotification( *p_beg ) ) flags[ 3 ] = 'N';
 
         info += ( *p_beg )->getInstanceName() + "(" + ( *p_beg )->getTypeName() + ", " + flags + ")\n";
     }

@@ -37,7 +37,9 @@ namespace CTD
 {
 // console command name
 #define CMD_NAME_HELP    "help"
-#define CMD_USAGE_HELP   "use: help [ command name ]"
+#define CMD_USAGE_HELP   "print help of given command. if a command name is missing then all available commands are printed.\n"\
+                         "use option -d to get a detailes command list.\n"\
+                         "use: help [-d][ command name ]"
 
 class BaseConsoleCommand;
 
