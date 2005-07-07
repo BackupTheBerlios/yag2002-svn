@@ -65,6 +65,8 @@ _renderingEnabled( true )
 
 EnPlayerAnimation::~EnPlayerAnimation()
 {
+    if ( _animNode.get() )
+        _animNode = NULL; // delete the anim node
 }
 
 void EnPlayerAnimation::initialize()
