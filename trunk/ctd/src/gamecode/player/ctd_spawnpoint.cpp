@@ -46,8 +46,8 @@ std::vector< EnSpawnPoint* > EnSpawnPoint::_allSpawnPoints;
 EnSpawnPoint::EnSpawnPoint()
 {
     // register entity attributes
-    _attributeManager.addAttribute( "position"  , _position  );
-    _attributeManager.addAttribute( "rotation"  , _rotation  );
+    getAttributeManager().addAttribute( "position"  , _position  );
+    getAttributeManager().addAttribute( "rotation"  , _rotation  );
 
     // store this new spawn point for later lookup
     _allSpawnPoints.push_back( this );
@@ -97,16 +97,19 @@ bool EnSpawnPoint::getNextSpawnPoint( osg::Vec3f& pos, osg::Quat& rot )
 
     std::vector< EnPlayer* > players;
     std::vector< BaseEntity* > entities;
-    EntityManager::get()->getAllEntities( entities );
-    std::vector< BaseEntity* >::iterator pp_beg = entities.begin(), pp_end = entities.end();
-    for ( ; pp_beg != pp_end; pp_beg++ )
-    {
-        if ( ( *pp_beg )->getTypeName() == ENTITY_NAME_PLAYER )
-            players.push_back( static_cast< EnPlayer* >( *pp_beg ) );
-    }
-    if ( !players.size() )
-        return false;
 
+    // get all existing player entities
+    {
+        EntityManager::get()->getAllEntities( entities );
+        std::vector< BaseEntity* >::iterator pp_beg = entities.begin(), pp_end = entities.end();
+        for ( ; pp_beg != pp_end; pp_beg++ )
+        {
+            if ( ( *pp_beg )->getTypeName() == ENTITY_NAME_PLAYER )
+                players.push_back( static_cast< EnPlayer* >( *pp_beg ) );
+        }
+        if ( !players.size() )
+            return false;
+    }
     // try to find a non-occupied spawn point by choosing a random spawn point and checking it against all player entities
     //  we try that 10 times
     unsigned int  cnt           = 0;
