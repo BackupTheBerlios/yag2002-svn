@@ -73,19 +73,19 @@ class EntityAttributeBase
         * Get attribute name
         * \return                           Attribute name
         */
-        virtual const std::string&          getName() = 0;
+        virtual const std::string&          getName() const = 0;
 
         /**
         * Get attribute type
         * \retrun                           Attribute type
         */
-        virtual unsigned int                getType() = 0;
+        virtual unsigned int                getType() const = 0;
 
         /**
         * Get type info of this attribute
         * \return                           Type info
         */
-        virtual const type_info&            getTypeInfo() = 0;
+        virtual const type_info&            getTypeInfo() const = 0;
  
 };
 
@@ -110,7 +110,7 @@ class EntityAttribute : public EntityAttributeBase
         * Get attribute value
         * \return                           Attribute reference
         */
-        TypeT                               getValue();
+        TypeT                               getValue() const;
 
         /**
         * Get attribute value
@@ -122,19 +122,19 @@ class EntityAttribute : public EntityAttributeBase
         * Get attribute name
         * \return                           Attribute name
         */
-        const std::string&                  getName();
+        const std::string&                  getName() const;
 
         /**
         * Get attribute type
         * \retrun                           Attribute type
         */
-        unsigned int                        getType();
+        unsigned int                        getType() const;
 
         /**
         * Get type info of this attribute
         * \return                           Type info
         */
-        const type_info&                    getTypeInfo();
+        const type_info&                    getTypeInfo() const;
 
     protected:
 
@@ -198,14 +198,6 @@ class AttributeManager
         template< class TypeT >
         bool                                setAttributeValue( const std::string& name, TypeT value );
 
-       /**
-        * Set attribute value using a string. This method does only a format check, not type check ( e.g. the value of an attribute with type boolean can be only "true" or "false" ).
-        * \param name                       Attribute name
-        * \param valuestring                New Value to be set
-        * \return                           true if the value has been found and the value string had a proper format, otherwise false
-        */
-        bool                                setAttributeValueByString( const std::string& name, const std::string& valuestring );
-
         /**
         * Set attribute value given an existing attribute.
         * \param name                       Attribute name
@@ -224,13 +216,22 @@ class AttributeManager
         bool                                setAttributeValue( const std::string &name, const std::string &type, const std::string &value );
 
         /**
+        * Set attribute value using a string. This method does only a format check, not type check ( e.g. the value of an attribute with type boolean can be only "true" or "false" ).
+        * \param name                       Attribute name
+        * \param valuestring                New Value to be set
+        * \return                           true if the value has been found and the value string had a proper format, otherwise false
+        */
+        bool                                setAttributeValueByString( const std::string& name, const std::string& valuestring );
+
+        /**
         * Remove all attributes.
         */
         void                                removeAllAttributes();
 
         /**
-        * Assignement operator.
-        * It copies all attributes from a given attribute manager.
+        * Assignment operator.
+        * It updates all own attribute values from a given attribute manager.
+        * Note: it is assumed that both managers possess the same attributes in name and value!
         */
         AttributeManager&                   operator = ( AttributeManager& attr );
 

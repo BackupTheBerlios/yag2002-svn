@@ -114,16 +114,16 @@ void CTDGuiTexture::setOGLTextureSize(uint size)
     // if not power of 2
     if ((size & (size - 1)) || !size)
     {
-        int log = 0;
+        int l = 0;
 
         // get integer log of 'size' to base 2
         while (size >>= 1)
         {
-            ++log;
+            ++l;
         }
 
         // use log to calculate value to use as size.
-        size = (2 << log);
+        size = (2 << l);
     }
 
     // allocate temp buffer for texture
@@ -185,6 +185,10 @@ CTDGuiTexture::tImageTGA* CTDGuiTexture::LoadTGA( const unsigned char* buffer, s
 
     // Allocate the structure that will hold our eventual image data (must free it!)
     pImageData = new tImageTGA;
+    pImageData->data     = NULL;
+    pImageData->channels = 0;
+    pImageData->sizeX    = 0;
+    pImageData->sizeY    = 0;
 
     // Read in the length in bytes from the header to the pixel data
     memcpy(&length, buffer, sizeof(GLbyte));
@@ -281,7 +285,6 @@ CTDGuiTexture::tImageTGA* CTDGuiTexture::LoadTGA( const unsigned char* buffer, s
         // Else return a NULL for a bad or unsupported pixel format
         else
         {
-            delete [] pImageData->data;
             delete pImageData;
             return NULL;
         }

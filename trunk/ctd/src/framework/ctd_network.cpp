@@ -246,6 +246,8 @@ bool NetworkDevice::setupClient( const string& serverIp, int channel, const Node
 
             return false;
         }
+
+        tryCounter++;
     }
     _clientSessionStable = true;
     _mode = NetworkDevice::CLIENT;

@@ -106,8 +106,8 @@ Configuration::~Configuration()
 
 void Configuration::getConfigurationAsString( std::vector< std::pair< std::string, std::string > >& settings )
 {
-    std::vector< Settings::SettingBase* >& settingStorages = const_cast< std::vector< Settings::SettingBase* >& >( _p_settings->getAllSettingStorages() );
-    std::vector< Settings::SettingBase* >::iterator p_beg = settingStorages.begin(), p_end = settingStorages.end();
+    const std::vector< Settings::SettingBase* >& settingStorages = _p_settings->getAllSettingStorages();
+    std::vector< Settings::SettingBase* >::const_iterator p_beg = settingStorages.begin(), p_end = settingStorages.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
         // get the setting value
@@ -156,8 +156,8 @@ void Configuration::getConfigurationAsString( std::vector< std::pair< std::strin
 
 bool Configuration::setSettingValueAsString( const std::string& name, const std::string& valuestring )
 {
-    std::vector< Settings::SettingBase* >& settingStorages = const_cast< std::vector< Settings::SettingBase* >& >( _p_settings->getAllSettingStorages() );
-    std::vector< Settings::SettingBase* >::iterator p_beg = settingStorages.begin(), p_end = settingStorages.end();
+    const std::vector< Settings::SettingBase* >& settingStorages = _p_settings->getAllSettingStorages();
+    std::vector< Settings::SettingBase* >::const_iterator p_beg = settingStorages.begin(), p_end = settingStorages.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
         std::string token = ( *p_beg )->getTokenName();

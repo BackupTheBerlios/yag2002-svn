@@ -45,7 +45,7 @@ inline const std::string& BaseEntity::getInstanceName()
 
 inline AttributeManager& BaseEntity::getAttributeManager() 
 { 
-    return _attributeManager; 
+    return *_p_attributeManager; 
 }
 
 inline void BaseEntity::setTransformationNode( osg::PositionAttitudeTransform* p_trans ) 

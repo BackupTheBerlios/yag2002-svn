@@ -260,9 +260,6 @@ bool EntityManager::isRegisteredUpdate( const BaseEntity* p_entity )
     vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
     for( ; pp_entity != pp_entityEnd; pp_entity++ )
     {
-        // here a comparison with dangling pointers can happen when multiple entities request for unregistring updating
-        // and they also request for destruction ( in normal case the request for unregistering updating comes in conjuction with
-        // entity destruction ), but at next update phase _updateEntities list will get cleaned up, no worry.
         if ( *pp_entity == p_entity ) 
             return true;
     }
@@ -379,8 +376,19 @@ void EntityManager::removeFromEntityPool( BaseEntity* p_entity, bool del )
 
     if ( pp_entity != pp_entityEnd )
     {
+        // if the entity must be deleted so we have to remove it also from update and notification list
         if ( del )
+        {
+            // remove notification registration
+            if ( isRegisteredNotification( p_entity ) )
+                registerNotification( p_entity, false );
+
+            // remove update registration
+            if ( isRegisteredUpdate( p_entity ) )
+                deregisterUpdate( p_entity );
+
             delete ( *pp_entity );
+        }
 
         _entityPool.erase( pp_entity );
     } 
@@ -402,7 +410,7 @@ void EntityManager::setupEntities( vector< BaseEntity* >& entities )
 
     vector< BaseEntity* >::iterator pp_beg = entities.begin(), pp_end = entities.end();
     BaseEntity* p_entity = NULL;
-    log << Log::LogLevel( Log::L_INFO ) << " initializing entities ..." << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "initializing entities ..." << endl;
     // setup entities
     {
         // set internal state
@@ -413,6 +421,8 @@ void EntityManager::setupEntities( vector< BaseEntity* >& entities )
         for( ; pp_beg != pp_end; pp_beg++ )
         {
             p_entity = *pp_beg;
+            log << Log::LogLevel( Log::L_DEBUG ) << "# " << p_entity->getInstanceName() + "[ " + p_entity->getTypeName() + " ]" << endl;
+
             if ( p_entity->isPersistent() )
             {
                 if ( !p_entity->isInitialized() )
@@ -432,7 +442,7 @@ void EntityManager::setupEntities( vector< BaseEntity* >& entities )
     }
 
     pp_beg = entities.begin(); pp_end = entities.end();
-    log << Log::LogLevel( Log::L_INFO ) << " post-initializing entities ..." << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "post-initializing entities ..." << endl;
     {
         // set internal state
         _internalState = PostInitializingEntities;
@@ -442,6 +452,8 @@ void EntityManager::setupEntities( vector< BaseEntity* >& entities )
         for( ; pp_beg != pp_end; pp_beg++ )
         {
             p_entity = *pp_beg;
+            log << Log::LogLevel( Log::L_DEBUG ) << "# " << p_entity->getInstanceName() + "[ " + p_entity->getTypeName() + " ]" << endl;
+
             if ( p_entity->isPersistent() )
             {
                 if ( !p_entity->isInitialized() )

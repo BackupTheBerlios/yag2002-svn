@@ -261,6 +261,17 @@ KeyMap::~KeyMap()
 {
 }
 
+void KeyMap::shutdown()
+{
+    _translationTable.clear();
+    _mouseBtnNames.clear();
+    _mouseBtnCodes.clear();
+    _keyNames.clear();
+    _keyCodes.clear();
+
+    destroy();
+}
+
 unsigned int KeyMap::translateKey( unsigned int code )
 {
     // translate key if it is in translate table

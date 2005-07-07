@@ -80,6 +80,9 @@ class KeyMap : public Singleton< KeyMap >
 
         virtual                                 ~KeyMap();
 
+        //! Shutdown singleton
+        void                                    shutdown();
+
         //! Mapping of key names to key codes
         std::map< std::string, unsigned int >   _keyNames;
 

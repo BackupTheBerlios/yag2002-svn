@@ -226,7 +226,7 @@ class BaseEntity
         inline bool                                 isInitialized();
 
         //! Entity attribute manager
-        AttributeManager                            _attributeManager;
+        AttributeManager*                           _p_attributeManager;
 
         //! Transformation node used if it is desired for an entity
         osg::ref_ptr< osg::PositionAttitudeTransform > _p_transformNode;

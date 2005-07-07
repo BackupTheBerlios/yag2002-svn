@@ -203,8 +203,8 @@ void GuiManager::doInitialize()
     // create a renderer
     _p_renderer = new CTDGuiRenderer( 0, _windowWidth, _windowHeight );    
     // create the gui
-    CTDResourceProvider *p_resLoader = new CTDResourceProvider;
-    new CEGUI::System( _p_renderer, p_resLoader );
+    CTDResourceProvider* p_resourceLoader = new CTDResourceProvider;
+    new CEGUI::System( _p_renderer, p_resourceLoader );
 
     string guiScheme;
     Configuration::get()->getSettingValue( CTD_GS_GUISCHEME, guiScheme );
@@ -264,7 +264,7 @@ CEGUI::Font* GuiManager::createFont( const std::string& fontname )
         return NULL;
     }
 
-    // register the font via its size
+    // register the font via its name
     _loadedFonts[ p_font->getName().c_str() ] = p_font;
     return p_font;
 }

@@ -85,6 +85,7 @@ void Application::shutdown()
     Configuration::get()->shutdown();
     GameState::get()->shutdown();
     SettingsManager::get()->shutdown();
+    KeyMap::get()->shutdown();
 
     delete _p_viewer;
     destroy();

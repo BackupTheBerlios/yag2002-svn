@@ -44,7 +44,7 @@ _reference( ref )
 }
 
 template< class TypeT >
-TypeT EntityAttribute< TypeT >::getValue() 
+TypeT EntityAttribute< TypeT >::getValue() const
 { 
     return _reference; 
 }
@@ -56,19 +56,19 @@ void EntityAttribute< TypeT >::setValue( TypeT value )
 }
 
 template< class TypeT >
-const std::string& EntityAttribute< TypeT >::getName()
+const std::string& EntityAttribute< TypeT >::getName() const
 {
     return _name;
 }
 
 template< class TypeT >
-unsigned int EntityAttribute< TypeT >::getType()
+unsigned int EntityAttribute< TypeT >::getType() const
 {
     return _type;
 }
 
 template< class TypeT >
-const type_info& EntityAttribute< TypeT >::getTypeInfo()
+const type_info& EntityAttribute< TypeT >::getTypeInfo() const
 {
     return typeid( TypeT );
 }
@@ -82,7 +82,8 @@ inline std::vector< EntityAttributeBase* >& AttributeManager::getAttributes()
 template< class TypeT >
 inline void AttributeManager::addAttribute( const std::string &name, TypeT &_reference )
 {
-    _attributes.push_back( new EntityAttribute< TypeT >( name, _reference ) );
+    EntityAttribute< TypeT >* p_attr = new EntityAttribute< TypeT >( name, _reference );
+    _attributes.push_back( p_attr );
 }
 
 template< class TypeT >

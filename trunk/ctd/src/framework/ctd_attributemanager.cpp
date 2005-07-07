@@ -118,7 +118,7 @@ bool AttributeManager::setAttributeValue( const string &name, const string &type
     else if ( citype == "VECTOR3" ) 
     {
         osg::Vec3f vecValue;
-        strBuffer >> vecValue._v[0] >> vecValue._v[1] >> vecValue._v[2];
+        strBuffer >> vecValue._v[ 0 ] >> vecValue._v[ 1 ] >> vecValue._v[ 2 ];
         bRet = setAttributeValue( name, vecValue );
     }
     else if ( citype == "STRING" ) 
@@ -192,7 +192,7 @@ bool AttributeManager::setAttributeValueByString( const string& name, const stri
 
 bool AttributeManager::setAttributeValue( const string& name, const EntityAttributeBase& attribute )
 {
-    unsigned int type = const_cast< EntityAttributeBase& >( attribute ).getType();
+    unsigned int type = attribute.getType();
     switch ( type ) 
     {
         case EntityAttributeType::FLOAT:

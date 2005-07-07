@@ -37,6 +37,8 @@
 #include <ctd_entitymanager.h>
 #include <ctd_guimanager.h>
 #include <ctd_gamestate.h>
+
+#define TIXML_USE_STL
 #include <tinyxml.h>
 
 using namespace std;
@@ -175,33 +177,13 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
 {
     log << Log::LogLevel( Log::L_INFO ) << "loading entities ..." << endl;
     
-    ifstream    file;
-    file.open( string( Application::get()->getMediaPath() + levelFile ).c_str(), std::ios::in, std::ios::binary );
-    if ( !file )
-    {
-        log << Log::LogLevel( Log::L_DEBUG ) << "cannot open level file: '" << levelFile << "'" << endl;
-        return false;
-    }
-
-    // read in the file into char buffer for tinyxml
-    file.seekg( 0, ios_base::end );
-    int filesize = ( int )file.tellg();
-    char *p_buffer = new char[ filesize + 1 ];
-    file.seekg( 0, ios_base::beg );
-    file.read( p_buffer, filesize );
-    // append an EOF at the end of buffer, else tiny xml parser causes an assertion
-    p_buffer[ filesize ] = EOF;
-
     // use tiny xml to parser lvl file
     //  parse in the level configuration
     TiXmlDocument doc;
     doc.SetCondenseWhiteSpace( false );
-    doc.Parse( p_buffer );
-    delete[] p_buffer;
-
-    if ( doc.Error() == true ) 
+    if ( !doc.LoadFile( string( Application::get()->getMediaPath() + levelFile ).c_str() ) )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "error parsing level config file. " << endl;
+        log << Log::LogLevel( Log::L_DEBUG ) << "cannot load level file: '" << levelFile << "'" << endl;
         log << "  reason: " << doc.ErrorDesc() << endl;
         return false;
     }
@@ -447,7 +429,7 @@ void LevelManager::initializeFirstTime()
         p_soundManager->init( 16 );
         p_soundManager->getEnvironment()->setDistanceModel( openalpp::InverseDistance );
         p_soundManager->getEnvironment()->setDopplerFactor( 1.0f );
-        openalpp::ref_ptr< osgAL::SoundRoot > soundRoot = new osgAL::SoundRoot;
+        osg::ref_ptr< osgAL::SoundRoot > soundRoot = new osgAL::SoundRoot;
         _topGroup->addChild( soundRoot.get() );
     }
     catch( const openalpp::InitError& e )

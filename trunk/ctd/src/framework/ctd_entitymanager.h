@@ -279,7 +279,7 @@ inline const std::string& BaseEntityFactory::getType() const
 
 inline bool BaseEntityFactory::operator == ( const BaseEntityFactory& factory ) const
 {
-    return ( _typeTypeName == const_cast< std::string& >( factory.getType() ) );
+    return ( _typeTypeName == factory.getType() );
 }
 
 inline unsigned int BaseEntityFactory::getCreationPolicy() const

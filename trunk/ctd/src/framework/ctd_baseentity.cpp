@@ -37,8 +37,10 @@ using namespace std;
 using namespace CTD;
 
 BaseEntity::BaseEntity() :
-_initialized( false )
+_initialized( false ),
+_p_attributeManager( NULL )
 {
+    _p_attributeManager = new AttributeManager;
 }
 
 BaseEntity::~BaseEntity()
@@ -55,16 +57,9 @@ BaseEntity::~BaseEntity()
         }
     }
 
-    // remove notification registration
-    if ( EntityManager::get()->isRegisteredNotification( this ) )
-        EntityManager::get()->registerNotification( this, false );
-
-    // remove update registration
-    if ( EntityManager::get()->isRegisteredUpdate( this ) )
-        EntityManager::get()->registerUpdate( this, false );
-
     // remove all attributes
-    _attributeManager.removeAllAttributes();
+    _p_attributeManager->removeAllAttributes();
+    delete _p_attributeManager;
 }
 
 BaseEntity* BaseEntity::clone( const string& instanceName, osg::Group* p_scenegroup )

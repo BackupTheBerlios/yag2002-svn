@@ -71,7 +71,7 @@ class LevelManager : public Singleton< LevelManager >
         */
         bool                                        loadEntities( const std::string& levelFile, std::vector< BaseEntity* >* p_entities = NULL, const std::string& instPostfix = "" );
 
-        //! After loading usage of loadLevel and loadEntities this method must be called to finalize the loading process
+        //! After usage of loadLevel and loadEntities this method must be called to finalize the loading process
         void                                        finalizeLoading();
 
         //! Unload an already loaded level and free up allocated resources and entities (except persistent entities).
