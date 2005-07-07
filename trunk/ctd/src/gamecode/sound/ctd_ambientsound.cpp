@@ -49,17 +49,20 @@ _p_soundNode( NULL ),
 _soundState( NULL )
 {
     // register entity attributes
-    _attributeManager.addAttribute( "resourceDir" , _soundFileDir   );
-    _attributeManager.addAttribute( "soundFile",    _soundFile      );
-    _attributeManager.addAttribute( "loop",         _loop           );
-    _attributeManager.addAttribute( "autoPlay",     _autoPlay       );
-    _attributeManager.addAttribute( "volume",       _volume         );
+    getAttributeManager().addAttribute( "resourceDir" , _soundFileDir   );
+    getAttributeManager().addAttribute( "soundFile",    _soundFile      );
+    getAttributeManager().addAttribute( "loop",         _loop           );
+    getAttributeManager().addAttribute( "autoPlay",     _autoPlay       );
+    getAttributeManager().addAttribute( "volume",       _volume         );
 }
 
 EnAmbientSound::~EnAmbientSound()
 {
-    if ( _soundState.valid() )
+    if ( _soundState.get() )
+    {
         _soundState->setPlay( false );
+        _soundState = NULL; // delete the sound object
+    }
 }
 
 void EnAmbientSound::initialize()

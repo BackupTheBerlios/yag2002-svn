@@ -54,21 +54,24 @@ _soundState( NULL )
     EntityManager::get()->registerUpdate( this );   // register entity in order to get updated per simulation step
 
     // register entity attributes
-    _attributeManager.addAttribute( "resourcedir" , _soundFileDir   );
-    _attributeManager.addAttribute( "soundfile",    _soundFile      );
-    _attributeManager.addAttribute( "position",     _position       );
-    _attributeManager.addAttribute( "loop",         _loop           );
-    _attributeManager.addAttribute( "autoplay",     _autoPlay       );
-    _attributeManager.addAttribute( "volume",       _volume         );
-    _attributeManager.addAttribute( "rolloff",      _rolloffFac     );
-    _attributeManager.addAttribute( "refdistance",  _referenceDist  );
-    _attributeManager.addAttribute( "showsource",   _showSource     );
+    getAttributeManager().addAttribute( "resourcedir" , _soundFileDir   );
+    getAttributeManager().addAttribute( "soundfile",    _soundFile      );
+    getAttributeManager().addAttribute( "position",     _position       );
+    getAttributeManager().addAttribute( "loop",         _loop           );
+    getAttributeManager().addAttribute( "autoplay",     _autoPlay       );
+    getAttributeManager().addAttribute( "volume",       _volume         );
+    getAttributeManager().addAttribute( "rolloff",      _rolloffFac     );
+    getAttributeManager().addAttribute( "refdistance",  _referenceDist  );
+    getAttributeManager().addAttribute( "showsource",   _showSource     );
 }
 
 En3DSound::~En3DSound()
 {
-    if ( _soundState.valid() )
+    if ( _soundState.get() )
+    {
         _soundState->setPlay( false );
+        _soundState = NULL; // delete the sound object
+    }
 }
 
 void En3DSound::initialize()
