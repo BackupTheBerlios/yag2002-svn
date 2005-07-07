@@ -45,18 +45,18 @@ _spotCutOff( 50.0 ),
 _spotExponent( 32.0f )
 {
     // register entity attributes
-    _attributeManager.addAttribute( "position"             , _position             );
-    _attributeManager.addAttribute( "maxDistance"          , _maxDistance          );
-    _attributeManager.addAttribute( "meshFile"             , _meshFile             );
-    _attributeManager.addAttribute( "ambientColor"         , _ambientColor         );
-    _attributeManager.addAttribute( "diffuseColor"         , _diffuseColor         );
-    _attributeManager.addAttribute( "specularColor"        , _specularColor        );
-    _attributeManager.addAttribute( "constantAttenuation"  , _constAttenuation     );
-    _attributeManager.addAttribute( "linearAttenuation"    , _linearAttenuation    );
-    _attributeManager.addAttribute( "quadraticAttenuation" , _quadraticAttenuation );
-    _attributeManager.addAttribute( "direction"            , _direction            );
-    _attributeManager.addAttribute( "spotCutOff"           , _spotCutOff           );
-    _attributeManager.addAttribute( "spotExponent"         , _spotExponent         );
+    getAttributeManager().addAttribute( "position"             , _position             );
+    getAttributeManager().addAttribute( "maxDistance"          , _maxDistance          );
+    getAttributeManager().addAttribute( "meshFile"             , _meshFile             );
+    getAttributeManager().addAttribute( "ambientColor"         , _ambientColor         );
+    getAttributeManager().addAttribute( "diffuseColor"         , _diffuseColor         );
+    getAttributeManager().addAttribute( "specularColor"        , _specularColor        );
+    getAttributeManager().addAttribute( "constantAttenuation"  , _constAttenuation     );
+    getAttributeManager().addAttribute( "linearAttenuation"    , _linearAttenuation    );
+    getAttributeManager().addAttribute( "quadraticAttenuation" , _quadraticAttenuation );
+    getAttributeManager().addAttribute( "direction"            , _direction            );
+    getAttributeManager().addAttribute( "spotCutOff"           , _spotCutOff           );
+    getAttributeManager().addAttribute( "spotExponent"         , _spotExponent         );
 }
 
 EnSpotLight::~EnSpotLight()

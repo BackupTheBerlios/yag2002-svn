@@ -160,22 +160,22 @@ _refract( 1.01f ),
 _fresnel( 1.1f )
 {
     // register entity attributes
-    _attributeManager.addAttribute( "sizeX"                 , _sizeX                 );
-    _attributeManager.addAttribute( "sizeY"                 , _sizeY                 );
-    _attributeManager.addAttribute( "subdivX"               , _subDevisionsX         );
-    _attributeManager.addAttribute( "subdivY"               , _subDevisionsY         );
-    _attributeManager.addAttribute( "position"              , _position              );
-    _attributeManager.addAttribute( "viscosity"             , _viscosity             );
-    _attributeManager.addAttribute( "waveSpeed"             , _speed                 );
-    _attributeManager.addAttribute( "stimulationAmplitude"  , _amplitude             );
-    _attributeManager.addAttribute( "stimulationRate"       , _stimulationRate       );
+    getAttributeManager().addAttribute( "sizeX"                 , _sizeX                 );
+    getAttributeManager().addAttribute( "sizeY"                 , _sizeY                 );
+    getAttributeManager().addAttribute( "subdivX"               , _subDevisionsX         );
+    getAttributeManager().addAttribute( "subdivY"               , _subDevisionsY         );
+    getAttributeManager().addAttribute( "position"              , _position              );
+    getAttributeManager().addAttribute( "viscosity"             , _viscosity             );
+    getAttributeManager().addAttribute( "waveSpeed"             , _speed                 );
+    getAttributeManager().addAttribute( "stimulationAmplitude"  , _amplitude             );
+    getAttributeManager().addAttribute( "stimulationRate"       , _stimulationRate       );
 
-    _attributeManager.addAttribute( "right"                 , _cubeMapTextures[ 0 ]  );
-    _attributeManager.addAttribute( "left"                  , _cubeMapTextures[ 1 ]  );
-    _attributeManager.addAttribute( "front"                 , _cubeMapTextures[ 2 ]  );
-    _attributeManager.addAttribute( "back"                  , _cubeMapTextures[ 3 ]  );
-    _attributeManager.addAttribute( "up"                    , _cubeMapTextures[ 4 ]  );
-    _attributeManager.addAttribute( "down"                  , _cubeMapTextures[ 5 ]  );
+    getAttributeManager().addAttribute( "right"                 , _cubeMapTextures[ 0 ]  );
+    getAttributeManager().addAttribute( "left"                  , _cubeMapTextures[ 1 ]  );
+    getAttributeManager().addAttribute( "front"                 , _cubeMapTextures[ 2 ]  );
+    getAttributeManager().addAttribute( "back"                  , _cubeMapTextures[ 3 ]  );
+    getAttributeManager().addAttribute( "up"                    , _cubeMapTextures[ 4 ]  );
+    getAttributeManager().addAttribute( "down"                  , _cubeMapTextures[ 5 ]  );
 
     // init wave parameters
     calcConstants( 0.03f );
@@ -314,6 +314,7 @@ osg::Geometry* EnWater::makeMesh()
             p_curindex++;
         }
         _p_geom->addPrimitiveSet( new DrawElementsUInt( PrimitiveSet::TRIANGLE_STRIP, _subDevisionsX * 2, p_indices ) );
+        delete p_indices;
     }
 
     _p_geom->setNormalBinding( Geometry::BIND_PER_VERTEX );
@@ -438,7 +439,7 @@ void EnWater::updateEntity( float deltaTime )
 
     // adapt the liquid equation constants to changing framerate
     static float lastDeltaTime = 0;
-    if ( abs( lastDeltaTime - deltaTime ) > 0.015f ) 
+    if ( abs( lastDeltaTime - deltaTime ) > 0.03f ) 
         calcConstants( deltaTime );
     lastDeltaTime = deltaTime;
 

@@ -48,14 +48,14 @@ _enable( true )
     EntityManager::get()->registerNotification( this, true );   
 
     // register entity attributes
-    _attributeManager.addAttribute( "persistence"   , _isPersistent  );
-    _attributeManager.addAttribute( "enable"        , _enable        );
-    _attributeManager.addAttribute( "right"         , _texNames[ 0 ] );
-    _attributeManager.addAttribute( "left"          , _texNames[ 1 ] );
-    _attributeManager.addAttribute( "front"         , _texNames[ 2 ] );
-    _attributeManager.addAttribute( "back"          , _texNames[ 3 ] );
-    _attributeManager.addAttribute( "up"            , _texNames[ 4 ] );
-    _attributeManager.addAttribute( "down"          , _texNames[ 5 ] );
+    getAttributeManager().addAttribute( "persistence"   , _isPersistent  );
+    getAttributeManager().addAttribute( "enable"        , _enable        );
+    getAttributeManager().addAttribute( "right"         , _texNames[ 0 ] );
+    getAttributeManager().addAttribute( "left"          , _texNames[ 1 ] );
+    getAttributeManager().addAttribute( "front"         , _texNames[ 2 ] );
+    getAttributeManager().addAttribute( "back"          , _texNames[ 3 ] );
+    getAttributeManager().addAttribute( "up"            , _texNames[ 4 ] );
+    getAttributeManager().addAttribute( "down"          , _texNames[ 5 ] );
 }
 
 EnSkyBox::~EnSkyBox()

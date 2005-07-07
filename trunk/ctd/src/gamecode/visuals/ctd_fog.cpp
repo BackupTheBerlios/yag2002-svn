@@ -48,11 +48,11 @@ _fogColor( osg::Vec3f( 0.2f, 0.2f, 0.2f ) ),
 _isPersistent( false )
 {
     // register entity attributes
-    _attributeManager.addAttribute( "persistence", _isPersistent    );
-    _attributeManager.addAttribute( "density"    , _density         );
-    _attributeManager.addAttribute( "start"      , _start           );
-    _attributeManager.addAttribute( "end"        , _end             );
-    _attributeManager.addAttribute( "color"      , _fogColor        );
+    getAttributeManager().addAttribute( "persistence", _isPersistent    );
+    getAttributeManager().addAttribute( "density"    , _density         );
+    getAttributeManager().addAttribute( "start"      , _start           );
+    getAttributeManager().addAttribute( "end"        , _end             );
+    getAttributeManager().addAttribute( "color"      , _fogColor        );
 
     _instCount++;
 

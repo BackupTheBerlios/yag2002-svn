@@ -44,15 +44,15 @@ EnPointLight::EnPointLight() :
 _lightRadius( 100.0f )
 {
     // register entity attributes
-    _attributeManager.addAttribute( "position"             , _position             );
-    _attributeManager.addAttribute( "radius"               , _lightRadius          );
-    _attributeManager.addAttribute( "meshFile"             , _meshFile             );
-    _attributeManager.addAttribute( "ambientColor"         , _ambientColor         );
-    _attributeManager.addAttribute( "diffuseColor"         , _diffuseColor         );
-    _attributeManager.addAttribute( "specularColor"        , _specularColor        );
-    _attributeManager.addAttribute( "constantAttenuation"  , _constAttenuation     );
-    _attributeManager.addAttribute( "linearAttenuation"    , _linearAttenuation    );
-    _attributeManager.addAttribute( "quadraticAttenuation" , _quadraticAttenuation );
+    getAttributeManager().addAttribute( "position"             , _position             );
+    getAttributeManager().addAttribute( "radius"               , _lightRadius          );
+    getAttributeManager().addAttribute( "meshFile"             , _meshFile             );
+    getAttributeManager().addAttribute( "ambientColor"         , _ambientColor         );
+    getAttributeManager().addAttribute( "diffuseColor"         , _diffuseColor         );
+    getAttributeManager().addAttribute( "specularColor"        , _specularColor        );
+    getAttributeManager().addAttribute( "constantAttenuation"  , _constAttenuation     );
+    getAttributeManager().addAttribute( "linearAttenuation"    , _linearAttenuation    );
+    getAttributeManager().addAttribute( "quadraticAttenuation" , _quadraticAttenuation );
 }
 
 EnPointLight::~EnPointLight()

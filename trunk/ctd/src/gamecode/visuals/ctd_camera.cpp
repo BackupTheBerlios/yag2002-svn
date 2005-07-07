@@ -118,12 +118,12 @@ _pitch( 0 ),
 _yaw( 0 )
 {
     // register entity attributes
-    _attributeManager.addAttribute( "position"          , _position         );
-    _attributeManager.addAttribute( "rotation"          , _rotation         );
-    _attributeManager.addAttribute( "fov"               , _fov              );
-    _attributeManager.addAttribute( "nearClip"          , _nearClip         );
-    _attributeManager.addAttribute( "farClip"           , _farClip          );
-    _attributeManager.addAttribute( "backgroundColor"   , _backgroudColor   );
+    getAttributeManager().addAttribute( "position"          , _position         );
+    getAttributeManager().addAttribute( "rotation"          , _rotation         );
+    getAttributeManager().addAttribute( "fov"               , _fov              );
+    getAttributeManager().addAttribute( "nearClip"          , _nearClip         );
+    getAttributeManager().addAttribute( "farClip"           , _farClip          );
+    getAttributeManager().addAttribute( "backgroundColor"   , _backgroudColor   );
 }
 
 EnCamera::~EnCamera()

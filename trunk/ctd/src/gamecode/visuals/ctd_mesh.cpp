@@ -41,10 +41,10 @@ EnMesh::EnMesh() :
 _enable( true )
 {
     // register entity attributes
-    _attributeManager.addAttribute( "meshFile"    , _meshFile    );
-    _attributeManager.addAttribute( "position"    , _position    );
-    _attributeManager.addAttribute( "rotation"    , _rotation    );
-    _attributeManager.addAttribute( "enable"      , _enable      );
+    getAttributeManager().addAttribute( "meshFile"    , _meshFile    );
+    getAttributeManager().addAttribute( "position"    , _position    );
+    getAttributeManager().addAttribute( "rotation"    , _rotation    );
+    getAttributeManager().addAttribute( "enable"      , _enable      );
 }
 
 EnMesh::~EnMesh()
