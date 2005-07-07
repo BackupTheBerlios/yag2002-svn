@@ -52,19 +52,19 @@ _p_body( NULL ),
 _p_world( Physics::get()->getWorld() )
 {
     // register entity attributes
-    _attributeManager.addAttribute( "meshFile"      , _meshFile             );
-    _attributeManager.addAttribute( "position"      , _position             );
-    _attributeManager.addAttribute( "mass"          , _mass                 );
-    _attributeManager.addAttribute( "radius"        , _radius               );
-    _attributeManager.addAttribute( "height"        , _height               );
+    getAttributeManager().addAttribute( "meshFile"      , _meshFile             );
+    getAttributeManager().addAttribute( "position"      , _position             );
+    getAttributeManager().addAttribute( "mass"          , _mass                 );
+    getAttributeManager().addAttribute( "radius"        , _radius               );
+    getAttributeManager().addAttribute( "height"        , _height               );
 
     // 3d sound entities, following order is important!
-    _attributeManager.addAttribute( "enSndWood"     , _soundEntities[ 0 ]   );
-    _attributeManager.addAttribute( "enSndMetal"    , _soundEntities[ 1 ]   );
-    _attributeManager.addAttribute( "enSndStone"    , _soundEntities[ 2 ]   );
-    _attributeManager.addAttribute( "enSndGrass"    , _soundEntities[ 3 ]   );
+    getAttributeManager().addAttribute( "enSndWood"     , _soundEntities[ 0 ]   );
+    getAttributeManager().addAttribute( "enSndMetal"    , _soundEntities[ 1 ]   );
+    getAttributeManager().addAttribute( "enSndStone"    , _soundEntities[ 2 ]   );
+    getAttributeManager().addAttribute( "enSndGrass"    , _soundEntities[ 3 ]   );
 
-    _attributeManager.addAttribute( "playThreshold" , _playThreshold        );
+    getAttributeManager().addAttribute( "playThreshold" , _playThreshold        );
 }
 
 EnPhysicsCylinder::~EnPhysicsCylinder()

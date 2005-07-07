@@ -171,25 +171,25 @@ _p_introSound( NULL ),
 _p_backgrdSound( NULL )
 {
     // register entity attributes
-    _attributeManager.addAttribute( "menuConfig"                , _menuConfig               );
-    _attributeManager.addAttribute( "settingsDialogConfig"      , _settingsDialogConfig     );
-    _attributeManager.addAttribute( "levelSelectDialogConfig"   , _levelSelectDialogConfig  );
-    _attributeManager.addAttribute( "intoTexture"               , _introTexture             );
-    _attributeManager.addAttribute( "loadingOverlayTexture"     , _loadingOverlayTexture    );
-    _attributeManager.addAttribute( "buttonClickSound"          , _buttonClickSound         );
-    _attributeManager.addAttribute( "buttonHoverSound"          , _buttonHoverSound         );
-    _attributeManager.addAttribute( "introductionSound"         , _introductionSound        );
-    _attributeManager.addAttribute( "backgroundSound"           , _backgroundSound          );
+    getAttributeManager().addAttribute( "menuConfig"                , _menuConfig               );
+    getAttributeManager().addAttribute( "settingsDialogConfig"      , _settingsDialogConfig     );
+    getAttributeManager().addAttribute( "levelSelectDialogConfig"   , _levelSelectDialogConfig  );
+    getAttributeManager().addAttribute( "intoTexture"               , _introTexture             );
+    getAttributeManager().addAttribute( "loadingOverlayTexture"     , _loadingOverlayTexture    );
+    getAttributeManager().addAttribute( "buttonClickSound"          , _buttonClickSound         );
+    getAttributeManager().addAttribute( "buttonHoverSound"          , _buttonHoverSound         );
+    getAttributeManager().addAttribute( "introductionSound"         , _introductionSound        );
+    getAttributeManager().addAttribute( "backgroundSound"           , _backgroundSound          );
 
-    _attributeManager.addAttribute( "menuScene"                 , _menuSceneFile            );
-    _attributeManager.addAttribute( "cameraPath"                , _menuCameraPathFile       );
+    getAttributeManager().addAttribute( "menuScene"                 , _menuSceneFile            );
+    getAttributeManager().addAttribute( "cameraPath"                , _menuCameraPathFile       );
 
-    _attributeManager.addAttribute( "skyboxRight"               , _skyboxImages[ 0 ]        );
-    _attributeManager.addAttribute( "skyboxLeft"                , _skyboxImages[ 1 ]        );
-    _attributeManager.addAttribute( "skyboxFront"               , _skyboxImages[ 2 ]        );
-    _attributeManager.addAttribute( "skyboxBack"                , _skyboxImages[ 3 ]        );
-    _attributeManager.addAttribute( "skyboxUp"                  , _skyboxImages[ 4 ]        );
-    _attributeManager.addAttribute( "skyboxDown"                , _skyboxImages[ 5 ]        );
+    getAttributeManager().addAttribute( "skyboxRight"               , _skyboxImages[ 0 ]        );
+    getAttributeManager().addAttribute( "skyboxLeft"                , _skyboxImages[ 1 ]        );
+    getAttributeManager().addAttribute( "skyboxFront"               , _skyboxImages[ 2 ]        );
+    getAttributeManager().addAttribute( "skyboxBack"                , _skyboxImages[ 3 ]        );
+    getAttributeManager().addAttribute( "skyboxUp"                  , _skyboxImages[ 4 ]        );
+    getAttributeManager().addAttribute( "skyboxDown"                , _skyboxImages[ 5 ]        );
 
 }
 
@@ -405,6 +405,7 @@ void EnMenu::createMenuScene()
     _menuScene->addChild( _menuAnimationPath.get() );
 
     // create and setup camera
+    log << Log::LogLevel( Log::L_DEBUG ) << "creating menu camera entity '_menuCam_'" << endl;
     EnCamera* p_camEntity = static_cast< EnCamera* >( EntityManager::get()->createEntity( ENTITY_NAME_CAMERA, "_menuCam_" ) );
     assert( p_camEntity && "cannot create camera entity!" );
     _p_cameraControl = p_camEntity;
@@ -422,6 +423,7 @@ void EnMenu::createMenuScene()
     p_camEntity->postInitialize();
 
     // create and setup skybox
+    log << Log::LogLevel( Log::L_DEBUG ) << "creating menu skybox entity '_menuSkybox_'" << endl;
     EnSkyBox* p_skyboxEntity = static_cast< EnSkyBox* >( EntityManager::get()->createEntity( ENTITY_NAME_SKYBOX, "_menuSkybox_" ) );
     assert( p_skyboxEntity && "cannot create skybox entity!" );
     _p_skyBox = p_skyboxEntity;
@@ -437,6 +439,8 @@ void EnMenu::createMenuScene()
     p_skyboxEntity->initialize();
     p_skyboxEntity->postInitialize();
 
+    // create and setup fog
+    log << Log::LogLevel( Log::L_DEBUG ) << "creating menu fog entity '_menuFog_'" << endl;
     EnFog* p_fogEntity = static_cast< EnFog* >( EntityManager::get()->createEntity( ENTITY_NAME_FOG, "_menuFog_" ) );
     assert( p_fogEntity && "cannot create fog entity!" );
     _p_menuFog = p_fogEntity;
@@ -967,7 +971,7 @@ void EnMenu::switchMenuScene( bool tomenu )
     if ( tomenu )
     {
         // replace the level scene node by menu scene node
-        // store the static world node for later switching to level scene
+        LevelManager::get()->setStaticMesh( NULL ); // remove the current mesh node from scene graph
         LevelManager::get()->setStaticMesh( _menuScene.get() );
         _p_cameraControl->setEnable( true );
         enableSkybox( true );
@@ -977,6 +981,7 @@ void EnMenu::switchMenuScene( bool tomenu )
     else
     {
         // replace the menu scene node by level scene node
+        LevelManager::get()->setStaticMesh( NULL ); // remove the current mesh node from scene graph
         LevelManager::get()->setStaticMesh( _levelScene.get() );
         _p_cameraControl->setEnable( false );
         enableSkybox( false );

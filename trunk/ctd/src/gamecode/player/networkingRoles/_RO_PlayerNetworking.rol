@@ -4,6 +4,7 @@ object PlayerNetworking
     
     datablock Function;
     extern RPC_AddChatText(tChatMsg);
+    extern RPC_Initialize(tInitializationData);
     
     datablock Predict_Float;
     
@@ -48,8 +49,8 @@ object PlayerNetworking
 
         Predict_Float _yaw;
         {
-            SetMinError(0.1f);
-            SetMaxError(0.2f);
+            SetMinError(0.05f);
+            SetMaxError(0.1f);
             Linear();
         }
 
@@ -59,6 +60,10 @@ object PlayerNetworking
         }
 
         Function RPC_AddChatText;
+        { 
+            Reliable();
+        }
+        Function RPC_Initialize;
         { 
             Reliable();
         }

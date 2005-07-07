@@ -53,8 +53,8 @@ _p_wnd( NULL )
     EntityManager::get()->registerNotification( this, true );
 
     // register entity attributes
-    _attributeManager.addAttribute( "position"    , _position    );
-    _attributeManager.addAttribute( "enable"      , _enable      );
+    getAttributeManager().addAttribute( "position"    , _position    );
+    getAttributeManager().addAttribute( "enable"      , _enable      );
 }
 
 EnFPSDisplay::~EnFPSDisplay()

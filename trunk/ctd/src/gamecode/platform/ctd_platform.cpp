@@ -47,10 +47,10 @@ _loop(true)
     EntityManager::get()->registerUpdate( this );   // register entity in order to get updated per simulation step
 
     // register entity attributes
-    _attributeManager.addAttribute( "meshFile", _meshFile );
-    _attributeManager.addAttribute( "position", _position );
-    _attributeManager.addAttribute( "speed",    _speed    );
-    _attributeManager.addAttribute( "loop",     _loop     );
+    getAttributeManager().addAttribute( "meshFile", _meshFile );
+    getAttributeManager().addAttribute( "position", _position );
+    getAttributeManager().addAttribute( "speed",    _speed    );
+    getAttributeManager().addAttribute( "loop",     _loop     );
 }
 
 EnPlatform::~EnPlatform()

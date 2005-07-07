@@ -45,8 +45,8 @@ _time( 0 ),
 _geomCount( 0 )
 {
     // register entity attributes
-    _attributeManager.addAttribute( "geomTypes"  , _geomTypes  );
-    _attributeManager.addAttribute( "position"   , _position   );
+    getAttributeManager().addAttribute( "geomTypes"  , _geomTypes  );
+    getAttributeManager().addAttribute( "position"   , _position   );
 }
 
 EnGeomEmitter::~EnGeomEmitter()
@@ -88,7 +88,7 @@ void EnGeomEmitter::updateEntity( float deltaTime )
         BaseEntity* p_entity = _geomStock[ ran ];
 
         // clone the found geom
-        char buf[ 4 ];
+        char buf[ 8 ];
         p_entity = p_entity->clone( p_entity->getInstanceName() + string( itoa( _geomCount, buf, 10 ) ), ( Group* )Application::get()->getSceneRootNode() );
 
         // set a random position before entity gets initialized
