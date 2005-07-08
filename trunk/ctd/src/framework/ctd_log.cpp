@@ -180,7 +180,8 @@ void Log::setSeverity( unsigned int severity )
 
 //---------------------------
 Log::LogStreamBuf::LogStreamBuf() :
-basic_streambuf< char >()
+basic_streambuf< char >(),
+_p_log ( NULL )
 {
 }
 

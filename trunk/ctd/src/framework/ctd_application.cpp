@@ -113,7 +113,7 @@ bool Application::initialize( int argc, char **argv )
 {
     // set console handler in order to catch Ctrl+C and close events
 #ifdef WIN32
-    SetConsoleCtrlHandler( consoleHandler, true );
+    SetConsoleCtrlHandler( consoleHandler, TRUE );
 #endif
 
     // set game state
@@ -128,14 +128,14 @@ bool Application::initialize( int argc, char **argv )
     // fetch argument for using osgviewer instead of own camera and scene updating
     int   argpos;
     bool  useOsgViewer = false;
-    if ( argpos = arguments.find( "-useosgviewer" ) )
+    if ( ( argpos = arguments.find( "-useosgviewer" ) ) != 0 )
     {
         useOsgViewer = true;
         arguments.remove( argpos );
     }
     // enable physics debug rendering?
     bool  enablePhysicsDebugRendering = false;
-    if ( argpos = arguments.find( "-physicsdebug" ) )
+    if ( ( argpos = arguments.find( "-physicsdebug" ) ) != 0 )
     {
         enablePhysicsDebugRendering = true;
         arguments.remove( argpos );
@@ -143,12 +143,12 @@ bool Application::initialize( int argc, char **argv )
 
     // set proper game mode
     GameState::get()->setMode( GameState::Standalone );
-    if ( argpos = arguments.find( "-server" ) )
+    if ( ( argpos = arguments.find( "-server" ) ) != 0 )
     {
         GameState::get()->setMode( GameState::Server );
         arguments.remove( argpos );
     }
-    else if ( argpos = arguments.find( "-client" ) )
+    else if ( ( argpos = arguments.find( "-client" ) ) != 0 )
     {
         GameState::get()->setMode( GameState::Client );
         arguments.remove( argpos );

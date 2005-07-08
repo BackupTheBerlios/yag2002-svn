@@ -116,9 +116,9 @@ class Settings
 
             public:
 
-                typedef typename TypeT          TokenType;
+                typedef typename TypeT          SettingTokenType;
 
-                                                Setting( const std::string& name, TokenType value )
+                                                Setting( const std::string& name, SettingTokenType value )
                                                 {
                                                     _token = name;
                                                     _value = value;
@@ -128,14 +128,14 @@ class Settings
 
                 const std::type_info&           getTypeInfo()
                                                 {
-                                                    return typeid( TokenType );
+                                                    return typeid( SettingTokenType );
                                                 }
 
             protected:
 
 
                 //! Setting's value
-                TokenType                       _value;
+                SettingTokenType                _value;
 
             friend  class Settings;
 
@@ -164,6 +164,7 @@ class Settings
 
         Settings&                               operator = ( const Settings& );
 
+                                                Settings( const Settings& );
 
         //! Load settings from given file. If filename is empty the preset file name is used.
         bool                                    load( const std::string& filename = "" );

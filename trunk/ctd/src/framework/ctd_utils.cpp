@@ -30,7 +30,6 @@
 
 #include <ctd_base.h>
 #include "ctd_utils.h"
-#include <io.h>
 #include <errno.h>
 
 #ifdef WIN32
@@ -113,7 +112,12 @@ std::string cleanPath( const std::string& path )
 class DispSettings
 {
     public:
-                                DispSettings() {};
+                                DispSettings() :
+                                 width( 0 ),
+                                 height( 0 ),
+                                 colorbits( 0 )
+                                {
+                                }
 
                                 ~DispSettings() {};
 
@@ -121,7 +125,7 @@ class DispSettings
         unsigned int            height;
         unsigned int            colorbits;
 
-        bool                    operator < ( DispSettings& ds ) const
+        bool                    operator < ( const DispSettings& ds ) const
                                 {
                                     // we compare the areas of two screen resolutions here
                                     if ( ( ds.height * ds.width ) < ( height * width ) )
@@ -130,7 +134,7 @@ class DispSettings
                                         return false;
                                 }
 
-        bool                    operator == ( DispSettings& ds ) const
+        bool                    operator == ( const DispSettings& ds ) const
                                 {
                                     if ( ds.height == height && ds.width == width && ds.colorbits == colorbits )
                                         return true;

@@ -78,7 +78,7 @@ class GenericInputHandler : public osgGA::GUIEventHandler
 {
     public:
 
-                                            GenericInputHandler( T* p_obj = NULL ) : _p_userObject( p_obj )
+        explicit                            GenericInputHandler( T* p_obj = NULL ) : _p_userObject( p_obj )
                                             {
                                                 // register us in viewer to get event callbacks
                                                 osg::ref_ptr< GenericInputHandler > ih( this );
@@ -162,7 +162,7 @@ class TransformationVisitor : public osg::NodeVisitor
 
         void                                apply( osg::PositionAttitudeTransform& node )
                                             {                        
-                                                _matrix *= computeLocalToWorld( getNodePath() );
+                                                _matrix *= osg::computeLocalToWorld( getNodePath() );
                                             }
 
         const osg::Matrixf&                 getMatrix() const

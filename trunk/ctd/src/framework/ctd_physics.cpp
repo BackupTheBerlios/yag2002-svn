@@ -95,6 +95,7 @@ void physicsFree( void* ptr, int sizeInBytes )
 Physics::Physics() :
 _p_debugGeode( NULL ),
 _p_world( NULL ),
+_p_body( NULL ),
 _gravity( -9.8f )
 {
 }

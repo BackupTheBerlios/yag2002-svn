@@ -46,13 +46,13 @@ unsigned int PhysicsVisitor::_numVertices;
 
 // debug display related
 //----------------------------//
-void DebugShowGeometryCollision( const NewtonBody* body, int vertexCount, const float* faceVertec, int id )
+void DebugShowGeometryCollision( const NewtonBody* p_body, int vertexCount, const float* p_faceVertec, int id )
 {
 	int i = vertexCount - 1;
-	Vec3f p0( faceVertec[ i * 3 + 0 ], faceVertec[ i * 3 + 1 ], faceVertec[ i * 3 + 2 ] );
+	Vec3f p0( p_faceVertec[ i * 3 + 0 ], p_faceVertec[ i * 3 + 1 ], p_faceVertec[ i * 3 + 2 ] );
 	for ( i = 0; i < vertexCount; i ++ ) 
     {
-		Vec3f p1( faceVertec[ i * 3 + 0 ], faceVertec[ i * 3 + 1 ], faceVertec[ i * 3 + 2 ] );
+		Vec3f p1( p_faceVertec[ i * 3 + 0 ], p_faceVertec[ i * 3 + 1 ], p_faceVertec[ i * 3 + 2 ] );
 		glVertex3f( p0._v[ 0 ], p0._v[ 1 ], p0._v[ 2 ] );
 		glVertex3f( p1._v[ 0 ], p1._v[ 1 ], p1._v[ 2 ] );
 		p0 = p1;

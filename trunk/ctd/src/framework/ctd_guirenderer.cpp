@@ -77,7 +77,7 @@ _bufferPos(0)
 
 CTDGuiRenderer::~CTDGuiRenderer()
 {
-    destroyAllTextures();
+    this->destroyAllTextures();
 }
 
 void CTDGuiRenderer::changeDisplayResolution( float width, float height )
@@ -242,7 +242,7 @@ Texture* CTDGuiRenderer::createTexture()
 
 Texture* CTDGuiRenderer::createTexture( const String& filename, const String& resourceGroup )
 {
-    CTDGuiTexture* p_tex = static_cast< CTDGuiTexture* >( createTexture() );
+    CTDGuiTexture* p_tex = static_cast< CTDGuiTexture* >( this->createTexture() );
     p_tex->loadFromFile( filename, resourceGroup );
 
     return p_tex;
@@ -250,7 +250,7 @@ Texture* CTDGuiRenderer::createTexture( const String& filename, const String& re
 
 Texture* CTDGuiRenderer::createTexture( float size )
 {
-    CTDGuiTexture* p_tex = static_cast< CTDGuiTexture* >( createTexture() );
+    CTDGuiTexture* p_tex = static_cast< CTDGuiTexture* >( this->createTexture() );
     p_tex->setOGLTextureSize( ( uint )size );
 
     return p_tex;
@@ -269,7 +269,7 @@ void CTDGuiRenderer::destroyTexture( Texture* p_texture )
 void CTDGuiRenderer::destroyAllTextures()
 {
     while ( !_texturelist.empty() )
-        destroyTexture(*(_texturelist.begin()));
+        this->destroyTexture(*(_texturelist.begin()));
 }
 
 void CTDGuiRenderer::initPerFrameStates()

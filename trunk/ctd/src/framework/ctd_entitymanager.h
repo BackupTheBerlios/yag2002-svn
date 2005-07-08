@@ -265,10 +265,10 @@ BaseEntity* createEntity() \
 
 //! Helper macro for implementing a new entity type factory with automatic deletion
 //  Use this if you don't intent to remove the entity type factory during the lifetime of the application
-#define CTD_IMPL_ENTITYFACTORY_AUTO( factory )   std::auto_ptr< factory > factory##_impl_auto( new factory );
+#define CTD_IMPL_ENTITYFACTORY_AUTO( factory )   static std::auto_ptr< factory > factory##_impl_auto( new factory );
 
 //! Helper macro for implementing a new entity type factory
-#define CTD_IMPL_ENTITYFACTORY( factory )        factory* factory##_impl = new factory;
+#define CTD_IMPL_ENTITYFACTORY( factory )        static factory* factory##_impl = new factory;
 
 // inlines
 //--------

@@ -109,94 +109,93 @@ _p_msgtext( NULL )
     
     try
     {
+        // create dialog frame
+        _p_wnd = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( ( CEGUI::utf8* )"TaharezLook/FrameWindow", ( "_msg_box_" + postfix.str() ).c_str() ) );
+        _p_wnd->setText( title );
+        _p_wnd->setAlwaysOnTop( true );
+        _p_wnd->setCloseButtonEnabled( false );
+        _p_wnd->setPosition( CEGUI::Point( 0.5f - boxwidth * 0.5f, 0.5f - boxheight * 0.5f ) ); // position into middle of screen
+        _p_wnd->setSize( CEGUI::Size( boxwidth, boxheight ) );
+        _p_wnd->setSizingEnabled( false );
 
-    // create dialog frame
-    _p_wnd = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( ( CEGUI::utf8* )"TaharezLook/FrameWindow", ( "_msg_box_" + postfix.str() ).c_str() ) );
-    _p_wnd->setText( title );
-    _p_wnd->setAlwaysOnTop( true );
-    _p_wnd->setCloseButtonEnabled( false );
-    _p_wnd->setPosition( CEGUI::Point( 0.5f - boxwidth * 0.5f, 0.5f - boxheight * 0.5f ) ); // position into middle of screen
-    _p_wnd->setSize( CEGUI::Size( boxwidth, boxheight ) );
-    _p_wnd->setSizingEnabled( false );
+        // create text area
+        _p_msgtext = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( ( CEGUI::utf8* )"TaharezLook/StaticText", ( "_msg_box_text_" + postfix.str() ).c_str() ) );
+        _p_msgtext->setText( text );
+        _p_msgtext->setPosition( CEGUI::Point( 0.05f, 0.05f ) );
+        _p_msgtext->setSize( CEGUI::Size( 0.9f, 0.9f ) );
+        _p_msgtext->setBackgroundEnabled( false );
+        _p_msgtext->setFormatting( CEGUI::StaticText::HorzCentred, CEGUI::StaticText::VertCentred );
+        _p_msgtext->setFrameEnabled( false );
+        _p_wnd->addChildWindow( _p_msgtext );
 
-    // create text area
-    _p_msgtext = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( ( CEGUI::utf8* )"TaharezLook/StaticText", ( "_msg_box_text_" + postfix.str() ).c_str() ) );
-    _p_msgtext->setText( text );
-    _p_msgtext->setPosition( CEGUI::Point( 0.05f, 0.05f ) );
-    _p_msgtext->setSize( CEGUI::Size( 0.9f, 0.9f ) );
-    _p_msgtext->setBackgroundEnabled( false );
-    _p_msgtext->setFormatting( CEGUI::StaticText::HorzCentred, CEGUI::StaticText::VertCentred );
-    _p_msgtext->setFrameEnabled( false );
-    _p_wnd->addChildWindow( _p_msgtext );
-
-    // create buttons
-    switch ( type )
-    {
-        case MessageBoxDialog::YES_NO:
+        // create buttons
+        switch ( type )
         {
-            // create 'Yes' button
-            CEGUI::PushButton* p_btnyes = 
-                static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_yes_" + postfix.str() ).c_str() ) );
-            p_btnyes->setSize( CEGUI::Size( 0.45f, 0.15f ) );
-            p_btnyes->setPosition( CEGUI::Point( 0.025f, 0.825f ) );
-            p_btnyes->setText( "Yes" );
-            _p_wnd->addChildWindow( p_btnyes );
-            // set callback
-            p_btnyes->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedYes, this ) );
+            case MessageBoxDialog::YES_NO:
+            {
+                // create 'Yes' button
+                CEGUI::PushButton* p_btnyes = 
+                    static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_yes_" + postfix.str() ).c_str() ) );
+                p_btnyes->setSize( CEGUI::Size( 0.45f, 0.15f ) );
+                p_btnyes->setPosition( CEGUI::Point( 0.025f, 0.825f ) );
+                p_btnyes->setText( "Yes" );
+                _p_wnd->addChildWindow( p_btnyes );
+                // set callback
+                p_btnyes->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedYes, this ) );
 
-            // create 'No' button
-            CEGUI::PushButton* p_btnno = 
-                static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_no_" + postfix.str() ).c_str() ) );
-            p_btnno->setSize( CEGUI::Size( 0.45f, 0.15f ) );
-            p_btnno->setPosition( CEGUI::Point( 0.525f, 0.825f ) );
-            p_btnno->setText( "No" );
-            _p_wnd->addChildWindow( p_btnno );
-            // set callback
-            p_btnno->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedNo, this ) );
+                // create 'No' button
+                CEGUI::PushButton* p_btnno = 
+                    static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_no_" + postfix.str() ).c_str() ) );
+                p_btnno->setSize( CEGUI::Size( 0.45f, 0.15f ) );
+                p_btnno->setPosition( CEGUI::Point( 0.525f, 0.825f ) );
+                p_btnno->setText( "No" );
+                _p_wnd->addChildWindow( p_btnno );
+                // set callback
+                p_btnno->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedNo, this ) );
+            }
+            break;
+
+            case MessageBoxDialog::OK_CANCEL:
+            {
+                // create 'Ok' button
+                CEGUI::PushButton* p_btnok = 
+                    static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_ok_" + postfix.str() ).c_str() ) );
+                p_btnok->setSize( CEGUI::Size( 0.45f, 0.15f ) );
+                p_btnok->setPosition( CEGUI::Point( 0.025f, 0.825f ) );
+                p_btnok->setText( "Ok" );
+                _p_wnd->addChildWindow( p_btnok );
+                // set callback
+                p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedOk, this ) );
+
+                // create 'Cancel' button
+                CEGUI::PushButton* p_btncancel = 
+                    static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_cancel_" + postfix.str() ).c_str() ) );
+                p_btncancel->setSize( CEGUI::Size( 0.45f, 0.15f ) );
+                p_btncancel->setPosition( CEGUI::Point( 0.525f, 0.825f ) );
+                p_btncancel->setText( "Cancel" );
+                _p_wnd->addChildWindow( p_btncancel );
+                // set callback
+			    p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedCancel, this ) );
+            }
+            break;
+
+            case MessageBoxDialog::OK:
+            {
+                // create 'Ok' button
+                CEGUI::PushButton* p_btnok = 
+                    static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_ok_" + postfix.str() ).c_str() ) );
+                p_btnok->setSize( CEGUI::Size( 0.5f, 0.15f ) );
+                p_btnok->setPosition( CEGUI::Point( 0.25f, 0.75f ) );
+                p_btnok->setText( "Ok" );
+                _p_wnd->addChildWindow( p_btnok );
+                // set callback
+			    p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedOk, this ) );
+            }
+            break;
+
+            default:
+                assert( NULL && "invalid message dialog type!" );
         }
-        break;
-
-        case MessageBoxDialog::OK_CANCEL:
-        {
-            // create 'Ok' button
-            CEGUI::PushButton* p_btnok = 
-                static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_ok_" + postfix.str() ).c_str() ) );
-            p_btnok->setSize( CEGUI::Size( 0.45f, 0.15f ) );
-            p_btnok->setPosition( CEGUI::Point( 0.025f, 0.825f ) );
-            p_btnok->setText( "Ok" );
-            _p_wnd->addChildWindow( p_btnok );
-            // set callback
-            p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedOk, this ) );
-
-            // create 'Cancel' button
-            CEGUI::PushButton* p_btncancel = 
-                static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_cancel_" + postfix.str() ).c_str() ) );
-            p_btncancel->setSize( CEGUI::Size( 0.45f, 0.15f ) );
-            p_btncancel->setPosition( CEGUI::Point( 0.525f, 0.825f ) );
-            p_btncancel->setText( "Cancel" );
-            _p_wnd->addChildWindow( p_btncancel );
-            // set callback
-			p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedCancel, this ) );
-        }
-        break;
-
-        case MessageBoxDialog::OK:
-        {
-            // create 'Ok' button
-            CEGUI::PushButton* p_btnok = 
-                static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_ok_" + postfix.str() ).c_str() ) );
-            p_btnok->setSize( CEGUI::Size( 0.5f, 0.15f ) );
-            p_btnok->setPosition( CEGUI::Point( 0.25f, 0.75f ) );
-            p_btnok->setText( "Ok" );
-            _p_wnd->addChildWindow( p_btnok );
-            // set callback
-			p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedOk, this ) );
-        }
-        break;
-
-        default:
-            assert( NULL && "invalid message dialog type!" );
-    }
     }
     catch ( const CEGUI::Exception& e )
     {

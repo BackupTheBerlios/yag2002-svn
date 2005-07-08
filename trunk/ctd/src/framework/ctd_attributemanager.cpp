@@ -47,35 +47,35 @@ void AttributeManager::getAttributesAsString( vector< pair< string, string > >& 
         {
             case EntityAttributeType::FLOAT:
             {
-                float value = ( ( EntityAttribute< float >* )p_attribute )->getValue();
+                float value = dynamic_cast< EntityAttribute< float >* >( p_attribute )->getValue();
                 strvalue << value;
             }
             break;
 
             case EntityAttributeType::BOOL:
             {
-                bool value = ( ( EntityAttribute< bool >* )p_attribute )->getValue();
+                bool value = dynamic_cast< EntityAttribute< bool >* >( p_attribute )->getValue();
                 strvalue << ( value ? "true" : "false" );
             }
             break;
 
             case EntityAttributeType::INTEGER:
             {
-                int value = ( ( EntityAttribute< int >* )p_attribute )->getValue();
+                int value = dynamic_cast< EntityAttribute< int >* >( p_attribute )->getValue();
                 strvalue << value;
             }
             break;
 
             case EntityAttributeType::VECTOR3:
             {
-                osg::Vec3f value = ( ( EntityAttribute< osg::Vec3f >* )p_attribute )->getValue();
+                osg::Vec3f value = dynamic_cast< EntityAttribute< osg::Vec3f >* >( p_attribute )->getValue();
                 strvalue << value.x() << " " << value.y() << " " << value.z();
             }
             break;
 
             case EntityAttributeType::STRING:
             {
-                string value = ( ( EntityAttribute< string >* )p_attribute )->getValue();
+                std::string value = dynamic_cast< EntityAttribute< std::string >* >( p_attribute )->getValue();
                 strvalue << value;
             }
             break;
@@ -197,35 +197,35 @@ bool AttributeManager::setAttributeValue( const string& name, const EntityAttrib
     {
         case EntityAttributeType::FLOAT:
         {
-            float value = ( ( EntityAttribute< float >* )&attribute )->getValue();
+            float value = dynamic_cast< const EntityAttribute< float >& >( attribute ).getValue();
             return setAttributeValue( name, value );
         }
         break;
 
         case EntityAttributeType::BOOL:
         {
-            bool value = ( ( EntityAttribute< bool >* )&attribute )->getValue();
+            bool value = dynamic_cast< const EntityAttribute< bool >& >( attribute ).getValue();
             return setAttributeValue( name, value );
         }
         break;
 
         case EntityAttributeType::INTEGER:
         {
-            int value = ( ( EntityAttribute< int >* )&attribute )->getValue();
+            int value = dynamic_cast< const EntityAttribute< int >& >( attribute ).getValue();
             return setAttributeValue( name, value );
         }
         break;
 
         case EntityAttributeType::VECTOR3:
         {
-            osg::Vec3f value = ( ( EntityAttribute< osg::Vec3f >* )&attribute )->getValue();
+            osg::Vec3f value = dynamic_cast< const EntityAttribute< osg::Vec3f >& >( attribute ).getValue();
             return setAttributeValue( name, value );
         }
         break;
 
         case EntityAttributeType::STRING:
         {
-            string value = ( ( EntityAttribute< string >* )&attribute )->getValue();
+            std::string value = dynamic_cast< const EntityAttribute< std::string >& >( attribute ).getValue();
             return setAttributeValue( name, value );
         }
         break;
