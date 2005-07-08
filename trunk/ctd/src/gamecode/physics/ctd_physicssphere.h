@@ -53,9 +53,6 @@ class EnPhysicsSphere : public EnPhysicsBase
         //! Post-initialize 
         void                                        postInitialize();
 
-        //! This entity needs updating
-        void                                        updateEntity( float deltaTime );
-
         //! Physics system call-back for body destruction
         static void                                 physicsBodyDestructor( const NewtonBody* body );
 
@@ -78,6 +75,9 @@ class EnPhysicsSphere : public EnPhysicsBase
         float                                       _radius;
 
     protected:
+
+        //! This entity needs updating
+        void                                        updateEntity( float deltaTime );
 
         //! Init physics materials
         void                                        initializePhysicsMaterials();

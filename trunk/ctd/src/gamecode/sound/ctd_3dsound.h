@@ -52,9 +52,6 @@ class En3DSound : public BaseEntity
         //! Initialize 
         void                                        initialize();
 
-        //! This entity needs updating
-        void                                        updateEntity( float deltaTime );
-
         //! Start playing sound
         void                                        startPlaying();
 
@@ -62,6 +59,9 @@ class En3DSound : public BaseEntity
         void                                        stopPlaying();
 
     protected:
+
+        //! This entity needs updating
+        void                                        updateEntity( float deltaTime );
 
         //! Resource directory for searching for sound files
         std::string                                 _soundFileDir;

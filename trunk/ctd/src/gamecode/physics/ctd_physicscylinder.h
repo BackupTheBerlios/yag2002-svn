@@ -55,9 +55,6 @@ class EnPhysicsCylinder : public EnPhysicsBase
         //! Post-initialize 
         void                                        postInitialize();
 
-        //! This entity needs updating
-        void                                        updateEntity( float deltaTime );
-
         //! Physics system call-back for body destruction
         static void                                 physicsBodyDestructor( const NewtonBody* body );
 
@@ -68,6 +65,9 @@ class EnPhysicsCylinder : public EnPhysicsBase
         static void                                 physicsApplyForceAndTorque( const NewtonBody* body );
 
     protected:
+
+        //! This entity needs updating
+        void                                        updateEntity( float deltaTime );
 
         // Entity attributes
 

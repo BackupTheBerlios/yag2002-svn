@@ -40,7 +40,7 @@
 #include "../visuals/ctd_fog.h"
 
 // used for starting server process
-HANDLE _serverProcHandle = NULL;
+static HANDLE _serverProcHandle = NULL;
 
 using namespace std;
 

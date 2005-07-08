@@ -50,10 +50,10 @@ class EnGeomEmitter : public BaseEntity
         //! Post-Initialize 
         void                                        postInitialize();
 
+    protected:
+
         //! This entity needs updating
         void                                        updateEntity( float deltaTime );
-
-    protected:
 
         //! Supported geometry types -- spcace-sparated -- in emitter container ( PhysicsBox, PhysicsSphere, etc. )       
         std::string                                 _geomTypes;

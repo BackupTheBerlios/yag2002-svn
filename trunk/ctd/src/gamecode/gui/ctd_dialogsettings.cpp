@@ -63,7 +63,10 @@ _p_keyKeybEnglish( NULL ),
 _p_keyKeybGerman( NULL ),
 _p_resolution( NULL ),
 _p_fullscreen( NULL ),
-_p_wndscreen( NULL )
+_p_wndscreen( NULL ),
+_p_serverName( NULL ),
+_p_serverIP( NULL ),
+_p_serverPort( NULL )
 {
 }
 

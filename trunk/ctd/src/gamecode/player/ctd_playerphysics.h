@@ -161,8 +161,8 @@ class EnPlayerPhysics : public BaseEntity
         // init physics materials
         void                                        initializePhysicsMaterials();
 
-        // find floor under player
-        float                                       findFloor( NewtonWorld* world, const osg::Vec3f& p0, float maxDist );
+        // find ground under player
+        float                                       findGround( NewtonWorld* world, const osg::Vec3f& p0, float maxDist );
 
         //! The materials must be created only once for all physics entities of same types on every level loading
         static bool                                 _materialsCreated;

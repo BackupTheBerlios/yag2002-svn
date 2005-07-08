@@ -136,6 +136,9 @@ EnConsole::~EnConsole()
 
     // destroy the cmd registry singleton
     ConsoleCommandRegistry::get()->destroy();
+
+    if ( _p_log )
+        closeLog();
 }
 
 void EnConsole::handleNotification( const EntityNotification& notification )
@@ -536,8 +539,8 @@ void EnConsole::parseArguments( const std::string& cmdline, std::vector< std::st
         }
         else if ( cmdline[ cnt ] == '\"' )
         {
-            string merge = cmdline.substr( marker + 1, cnt - marker - 1 ); // cut the "" from string
-            args.push_back( merge );
+            string mergeit = cmdline.substr( marker + 1, cnt - marker - 1 ); // cut the "" from string
+            args.push_back( mergeit );
             marker = -1;
             // skip white spaces until next argument
             cnt = ( cnt < strsize ) ? cnt + 1 : cnt;

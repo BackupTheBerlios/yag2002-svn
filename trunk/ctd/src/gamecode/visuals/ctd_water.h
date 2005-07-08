@@ -49,16 +49,9 @@ class EnWater :  public BaseEntity
 
         virtual                                     ~EnWater();
 
-        /**
-        * Initializing function, this is called after all engine modules are initialized and a map is loaded.
-        */
+        
+        //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
-
-        /**
-        * Update entity
-        * \param deltaTime                          Time passed since last update
-        */
-        void                                        updateEntity( float deltaTime );
 
     protected:
 
@@ -96,6 +89,10 @@ class EnWater :  public BaseEntity
         std::string                                 _cubeMapTextures[ 6 ];
 
     protected:
+
+
+        //! Update entity
+        void                                        updateEntity( float deltaTime );
 
         // internals
         //--------------------------------------------------------//

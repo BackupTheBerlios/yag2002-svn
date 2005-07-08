@@ -187,7 +187,7 @@ EnWater::~EnWater()
     // leads to a crash.
     // however i don't know why removing from parent node does not work ( it causes a crash, too )
     if ( _water.get() )
-        _water.release();
+        _water = NULL;
 }
 
 void EnWater::handleNotification( const EntityNotification& notification )
@@ -281,20 +281,22 @@ osg::Geometry* EnWater::makeMesh()
     p_tcoordArray->resize( _subDevisionsX * _subDevisionsY );
 
     // create vertex coordinates along x and y axis
-    for( int y = 0; y < _subDevisionsY; ++y )
     {
-        for( int x = 0; x < _subDevisionsX; ++x )
+        for( int y = 0; y < _subDevisionsY; ++y )
         {
-            ( *p_posArray1 )[ y * _subDevisionsX + x ].set
-                (
+            for( int x = 0; x < _subDevisionsX; ++x )
+            {
+                ( *p_posArray1 )[ y * _subDevisionsX + x ].set
+                    (
                     ( float( x ) - float( _subDevisionsX - 1 ) * 0.5f ) * gridx, 
                     ( float( y ) - float( _subDevisionsY - 1 ) * 0.5f ) * gridy,
                     0
-                );
+                    );
 
-            ( *p_posArray2 )[ y * _subDevisionsX + x ] = ( *p_posArray1 )[ y * _subDevisionsX + x ];
-            ( *p_normArray )[ y * _subDevisionsX + x ].set( 0, 0, -1.0f );
-            ( *p_tcoordArray)[ y * _subDevisionsX + x ].set( float( gridx * x ) / _sizeX, float( gridy * y ) / _sizeY );  
+                ( *p_posArray2 )[ y * _subDevisionsX + x ] = ( *p_posArray1 )[ y * _subDevisionsX + x ];
+                ( *p_normArray )[ y * _subDevisionsX + x ].set( 0, 0, -1.0f );
+                ( *p_tcoordArray)[ y * _subDevisionsX + x ].set( float( gridx * x ) / _sizeX, float( gridy * y ) / _sizeY );  
+            }
         }
     }
     _p_geom->setVertexArray( p_posArray1 );
@@ -302,21 +304,22 @@ osg::Geometry* EnWater::makeMesh()
     _p_geom->setTexCoordArray( 2, p_tcoordArray );
 
     // create indices for triangle strips
-    for( int y = 0; y < _subDevisionsY - 1; ++y )
     {
-        unsigned int* p_indices   = new unsigned int[ _subDevisionsX * 2 ];
-        unsigned int* p_curindex  = p_indices;
-        for( int x = 0; x < _subDevisionsX; ++x )
+        for( int y = 0; y < _subDevisionsY - 1; ++y )
         {
-            *p_curindex = ( y + 1 ) * _subDevisionsX + x;
-            p_curindex++;
-            *p_curindex = ( y + 0 ) * _subDevisionsX + x;
-            p_curindex++;
+            unsigned int* p_indices   = new unsigned int[ _subDevisionsX * 2 ];
+            unsigned int* p_curindex  = p_indices;
+            for( int x = 0; x < _subDevisionsX; ++x )
+            {
+                *p_curindex = ( y + 1 ) * _subDevisionsX + x;
+                p_curindex++;
+                *p_curindex = ( y + 0 ) * _subDevisionsX + x;
+                p_curindex++;
+            }
+            _p_geom->addPrimitiveSet( new DrawElementsUInt( PrimitiveSet::TRIANGLE_STRIP, _subDevisionsX * 2, p_indices ) );
+            delete p_indices;
         }
-        _p_geom->addPrimitiveSet( new DrawElementsUInt( PrimitiveSet::TRIANGLE_STRIP, _subDevisionsX * 2, p_indices ) );
-        delete p_indices;
     }
-
     _p_geom->setNormalBinding( Geometry::BIND_PER_VERTEX );
     _p_geom->setUseDisplayList( false );     
     _p_geom->dirtyBound();
@@ -471,9 +474,9 @@ void EnWater::updateEntity( float deltaTime )
 
 void EnWater::calcConstants( float stepWidth )
 {
-    float distance = _sizeX / ( float )_subDevisionsX;
+    float dist = _sizeX / ( float )_subDevisionsX;
     // setup water equation constants
-    float f1 = _speed * _speed * stepWidth * stepWidth / ( distance * distance );
+    float f1 = _speed * _speed * stepWidth * stepWidth / ( dist * dist );
     float f2 = 1.0f / ( _viscosity * stepWidth + 2 );
     _k1 = ( 4.0f - 8.0f * f1 ) * f2;
     _k2 = ( _viscosity * stepWidth - 2 ) * f2;
@@ -481,14 +484,14 @@ void EnWater::calcConstants( float stepWidth )
 
     // check the stability critera
 //#ifdef _DEBUG
-    float minSpeed = ( distance / ( 2.0f * stepWidth ) ) * sqrtf( _viscosity * stepWidth + 2 );
+    float minSpeed = ( dist / ( 2.0f * stepWidth ) ) * sqrtf( _viscosity * stepWidth + 2 );
     if ( _speed > minSpeed )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "EnWater: insufficient speed! wave equation may get instable." << endl;
         log << Log::LogLevel( Log::L_ERROR ) << " minimum: " << minSpeed << ", currently : " << _speed << endl;
     }
 
-    float minTimestep = ( distance * distance ) * ( ( _viscosity + sqrtf( _viscosity * _viscosity + 32.0f * ( _speed / distance ) ) ) / ( 8.0f * _speed * _speed ) );
+    float minTimestep = ( dist * dist ) * ( ( _viscosity + sqrtf( _viscosity * _viscosity + 32.0f * ( _speed / dist ) ) ) / ( 8.0f * _speed * _speed ) );
     if ( stepWidth > minTimestep )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "EnWater: insufficient time step! wave equation may get instable." << endl;

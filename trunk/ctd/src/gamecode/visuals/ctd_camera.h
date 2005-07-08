@@ -119,11 +119,11 @@ class EnCamera :  public BaseEntity
         //  destruction ourselves.
         void                                        handleNotification( const EntityNotification& notification );
 
-        //! Overriden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraPosition!
-        void                                        setPosition( osg::Vec3f& pos );
+        ////! Overriden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraPosition!
+        //void                                        setPosition( osg::Vec3f& pos );
 
-        //! Overriden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraRotation!
-        void                                        setRotation( osg::Quat& quats );
+        ////! Overriden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraRotation!
+        //void                                        setRotation( osg::Quat& quats );
 
         // Entity parameters
 

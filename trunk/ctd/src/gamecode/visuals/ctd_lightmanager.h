@@ -53,7 +53,11 @@ class BaseLight
                                                     _quadraticAttenuation( 0.0001f )          
                                                     {}
 
-        virtual                                     ~BaseLight() {}
+        virtual                                     ~BaseLight() 
+                                                    {
+                                                        if ( _lightSource.get() )
+                                                            _lightSource = NULL;
+                                                    }
 
         osg::ref_ptr< osg::LightSource >            _lightSource;
 

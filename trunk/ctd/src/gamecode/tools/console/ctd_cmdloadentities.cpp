@@ -96,12 +96,12 @@ const std::string& CmdLoadEntities::execute( const std::vector< std::string >& a
     }
     _cmdResult = "loading completed\n";
 
-    stringstream stat;
-    stat << "number of created entities: " << entities.size();
+    stringstream statistics;
+    statistics << "number of created entities: " << entities.size();
 
     if ( !initentities )
     {
-        _cmdResult += stat.str();
+        _cmdResult += statistics.str();
         return _cmdResult;
     }
 
@@ -120,7 +120,7 @@ const std::string& CmdLoadEntities::execute( const std::vector< std::string >& a
         ( *pp_beg )->postInitialize();
 
     _cmdResult += "setup completed";
-    _cmdResult += stat.str();
+    _cmdResult += statistics.str();
 
     return _cmdResult;
 }

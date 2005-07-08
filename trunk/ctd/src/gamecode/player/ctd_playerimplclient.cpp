@@ -197,7 +197,7 @@ void PlayerImplClient::postInitialize()
 
         log << Log::LogLevel( Log::L_DEBUG ) << "   -  animation entity successfully attached" << endl;
     }
-    else // setup remote client
+    else // setup remote client ( note, the remote instance names have a postfix )
     {
         // attach sound entity
         {

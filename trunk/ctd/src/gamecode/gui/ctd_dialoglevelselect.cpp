@@ -229,6 +229,7 @@ bool DialogLevelSelect::onListItemSelChanged( const CEGUI::EventArgs& arg )
 
 void DialogLevelSelect::update( float deltaTime )
 {
+    // nothing to do
 }
 
 void DialogLevelSelect::show( bool visible )

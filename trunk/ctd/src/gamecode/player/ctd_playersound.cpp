@@ -135,7 +135,6 @@ osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
     uniquename << getInstanceName();
     uniquename << uniqueId;
     uniqueId++;
-    string s = uniquename.str();
     osgAL::SoundState* p_soundState = new osgAL::SoundState( uniquename.str() );
 
     // Let the soundstate use the sample we just created
@@ -208,7 +207,7 @@ void EnPlayerSound::stopPlayingAll()
         p_beg->second->setPlay( false );
 }
 
-void EnPlayerSound::stopOtherSounds( osgAL::SoundState* p_state )
+void EnPlayerSound::stopOtherSounds( const osgAL::SoundState* p_state )
 {
     std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_beg = _soundStates.begin(), p_end = _soundStates.end();
     for ( ; p_beg != p_end; p_beg++ )

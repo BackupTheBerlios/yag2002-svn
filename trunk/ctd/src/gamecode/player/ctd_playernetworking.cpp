@@ -32,7 +32,6 @@
  ################################################################*/
 
 #include <ctd_main.h>
-#include <ctd_gameutils.h>
 #include "ctd_playernetworking.h"
 #include "ctd_playerimpl.h"
 #include "ctd_playerimplClient.h"
@@ -45,14 +44,19 @@ using namespace std;
 CTD::Log* PlayerNetworking::s_chatLog = NULL;
 
 PlayerNetworking::PlayerNetworking( CTD::BasePlayerImplementation* p_playerImpl ) :
-_loadedPlayerEntity( NULL )
+_p_playerImpl( p_playerImpl ),
+_loadedPlayerEntity( NULL ),
+_remoteClient( false ),
+_cmdAnimFlags( 0 ),
+_positionX( 0 ),
+_positionY( 0 ),
+_positionZ( 0 ),
+_yaw( 0 )
 {   
-    _p_playerImpl = p_playerImpl;
-
     // setup chat log
     if ( !s_chatLog )
     {
-        s_chatLog = new CTD::Log;
+        s_chatLog = new CTD::Log();
         s_chatLog->addSink( "chatlog", CTD::Application::get()->getMediaPath() + "chat.log", CTD::Log::L_ERROR );
         s_chatLog->enableSeverityLevelPrinting( false );
         *s_chatLog << CTD::Log::LogLevel( CTD::Log::L_INFO );
@@ -60,19 +64,17 @@ _loadedPlayerEntity( NULL )
 
     // this constructor can be called either by player entity or networking system (in client or server mode)
     //  when called by player entity then it means that we are a local client, otherwise we are a remote client
-    _remoteClient = false;
     if ( !p_playerImpl )
     {
         _remoteClient = true;
         _p_playerName[ 0 ] = 0;
-        _p_configFile[ 0 ] = 0;
     }
     else
     {
         strcpy( _p_playerName, _p_playerImpl->getPlayerEntity()->getPlayerName().c_str() );
     }
-
-    _cmdAnimFlags     = 0;
+    _p_configFile[ 0 ] = 0;
+    _cmdAnimFlags      = 0;
 }
 
 PlayerNetworking::~PlayerNetworking()
@@ -196,7 +198,7 @@ void PlayerNetworking::createPlayer()
     // now begin post-initialization of player and its components
     CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "post-initializing new player ..." << endl;
     {
-        std::vector< CTD::BaseEntity* >::iterator p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
+        p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
         for ( ; p_beg != p_end; p_beg++ )
         {
             ( *p_beg )->postInitialize();

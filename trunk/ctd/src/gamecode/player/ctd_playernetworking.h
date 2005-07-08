@@ -68,7 +68,7 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
 
     public:
 
-                                                    PlayerNetworking( CTD::BasePlayerImplementation* p_playerImp = NULL );
+        explicit                                    PlayerNetworking( CTD::BasePlayerImplementation* p_playerImp = NULL );
                                                         
         virtual                                     ~PlayerNetworking();
 

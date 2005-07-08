@@ -214,6 +214,7 @@ inline void EnPlayer::setPlayerName( const std::string& name )
 
 inline void EnPlayer::setPlayerImplementation( BasePlayerImplementation* p_impl )
 {
+    assert( !_p_playerImpl && "player implementation must be set only once" );
     _p_playerImpl = p_impl;
 }
 

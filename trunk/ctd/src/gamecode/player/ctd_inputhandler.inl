@@ -215,8 +215,8 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 float& rotZ = getPlayerImpl()->_rotZ;
                 rotZ += getPlayerImpl()->_p_playerPhysics->getAngularForce();
 
-                if ( rotZ > osg::PI * 2.0f )
-                    rotZ -= osg::PI * 2.0f;
+                if ( rotZ > float( osg::PI ) * 2.0f )
+                    rotZ -= float( osg::PI ) * 2.0f;
 
                 getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
                 getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
@@ -362,7 +362,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         if ( getPlayerImpl()->_cameraMode == EnPlayer::Ego )
         {
             float& rotZ = getPlayerImpl()->_rotZ;
-            rotZ = mcoordX * osg::PI * 2.0f; 
+            rotZ = mcoordX * float( osg::PI ) * 2.0f; 
 
             getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
             getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
@@ -378,7 +378,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         }
 
         // reset pointer
-        osgProducer::Viewer* p_viewer = Application::get()->getViewer();
+        //osgProducer::Viewer* p_viewer = Application::get()->getViewer();
         //p_viewer->getKeyboardMouse()->positionPointer( 0, 0 );
     }
 

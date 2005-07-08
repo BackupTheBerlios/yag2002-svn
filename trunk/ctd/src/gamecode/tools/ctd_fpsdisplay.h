@@ -49,8 +49,11 @@ class EnFPSDisplay :  public BaseEntity
         //! Initialize entity
         void                                        initialize();
 
-        //! Update entity
-        void                                        updateEntity( float deltaTime );
+        //! Override this method and return true to get a persisten entity
+        const bool                                  isPersistent() const { return true; }
+
+        //! This entity needs no transformation
+        const bool                                  isTransformable() const { return false; }
 
         //! Enable / disable statistics rendering
         void                                        enable( bool en );
@@ -62,14 +65,11 @@ class EnFPSDisplay :  public BaseEntity
 
     protected:
 
+        //! Update entity
+        void                                        updateEntity( float deltaTime );
+
         //! Override notification callback
         void                                        handleNotification( const EntityNotification& notification );
-
-        //! Override this method and return true to get a persisten entity
-        const bool                                  isPersistent() const { return true; }
-
-        //! This entity needs no transformation
-        const bool                                  isTransformable() const { return false; }
 
         float                                       _fpsTimer;
 

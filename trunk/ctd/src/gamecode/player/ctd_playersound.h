@@ -90,7 +90,7 @@ class EnPlayerSound  : public BaseEntity
     protected:
 
         //! Helper method; stops all other sounds except given one ( p_state )
-        void                                        stopOtherSounds( osgAL::SoundState* p_state );
+        void                                        stopOtherSounds( const osgAL::SoundState* p_state );
 
         // entity attributes
         //----------------------------------------------------------//

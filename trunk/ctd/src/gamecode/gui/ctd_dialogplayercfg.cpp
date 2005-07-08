@@ -325,6 +325,7 @@ bool DialogPlayerConfig::onListItemSelChanged( const CEGUI::EventArgs& arg )
 
 void DialogPlayerConfig::update( float deltaTime )
 {
+    // nothing to do
 }
 
 }

@@ -50,10 +50,10 @@ bool EnPlayerPhysics::_materialsCreated = false;
 //! Data structure used in raycasting
 struct PlayerRayCastData
 {
-                            PlayerRayCastData( NewtonBody* p_me )
+                            PlayerRayCastData( NewtonBody* p_me ) :
+                             _p_body( p_me ),
+                             _parameter( 1.2f )
                             {
-                                _p_body    = p_me;
-                                _parameter = 1.2f;
                             }
 
     NewtonBody*             _p_body;
@@ -188,8 +188,8 @@ void playerContactEnd( const NewtonMaterial* p_material )
 {
 }
 
-// find floor for character placement
-float EnPlayerPhysics::findFloor( NewtonWorld* world, const Vec3f& p0, float maxDist )
+// find ground for character placement
+float EnPlayerPhysics::findGround( NewtonWorld* world, const Vec3f& p0, float maxDist )
 {
     PlayerRayCastData data( _p_body );
     
@@ -261,7 +261,7 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     float Ixx;
     float Iyy;
     float Izz;
-	float floor;
+	float ground;
 	float accelZ;
 	float deltaHeight;
 	float steerAngle;
@@ -313,11 +313,11 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     // snap to ground
     if ( p_phys->_isAirBorne && !p_phys->_isJumping ) 
     {
-        floor = p_phys->findFloor( p_phys->_p_world, pos, p_phys->_playerHeight + p_phys->_stepHeight );
-		deltaHeight = ( pos._v[ 2 ] - 0.5f * p_phys->_playerHeight ) - floor;
+        ground = p_phys->findGround( p_phys->_p_world, pos, p_phys->_playerHeight + p_phys->_stepHeight );
+		deltaHeight = ( pos._v[ 2 ] - 0.5f * p_phys->_playerHeight ) - ground;
 		if ( ( deltaHeight < p_phys->_stepHeight ) && ( deltaHeight > 0.01f ) ) 
         {
-			// snap to floor ony if the floor is lower than the character feet	
+			// snap to ground ony if the ground is lower than the character feet	
 			accelZ = -( deltaHeight * timestepInv + velocity._v[ 2 ] ) * timestepInv;
 			force._v[ 2 ] += mass * accelZ;
 		}
@@ -365,7 +365,7 @@ float EnPlayerPhysics::physicsRayCastPlacement( const NewtonBody* p_body, const 
     float paramPtr = 1.2f;
     PlayerRayCastData& data = *( static_cast< PlayerRayCastData* >( p_userData ) );
 
-    // any body can be a floor
+    // any body can be a ground
     if ( data._p_body != p_body ) 
     {
         if ( intersectParam < data._parameter ) {
@@ -555,15 +555,12 @@ void EnPlayerPhysics::postInitialize()
     // check if the player has already set its association
     assert( _p_playerImpl && "player implementation has to set its association in initialize phase!" );
 
-    // give this object the same name as player's
-    setInstanceName( _p_playerImpl->getPlayerEntity()->getInstanceName() );
-
     Matrixf mat;
     mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
     mat.setTrans( _p_playerImpl->getPlayerPosition() ); 
     
-    // find floor under the initial position and adapt body matrix
-    float z = findFloor( _p_world, _p_playerImpl->getPlayerPosition(), 1000.0f );
+    // find ground under the initial position and adapt body matrix
+    float z = findGround( _p_world, _p_playerImpl->getPlayerPosition(), 1000.0f );
     mat.ptr()[ 14 ] = z + _dimensions._v[ 2 ] + 0.2f; // add an offset of player height plus 0.2 meters
     // set the matrix for both the rigid body and the entity
     NewtonBodySetMatrix ( _p_body, mat.ptr() );

@@ -51,9 +51,6 @@ class EnConsole :  public BaseEntity
         //! Initialize entity
         void                                        initialize();
 
-        //! Update entity
-        void                                        updateEntity( float deltaTime );
-
         //! Enqueue command for execution in next update ( is used when commands need other commands for execution, e.g. 'exec' )
         void                                        enqueueCmd( std::string cmd );
 
@@ -86,6 +83,9 @@ class EnConsole :  public BaseEntity
         const bool                                  isTransformable() const { return false; }
 
     protected:
+
+        //! Update entity
+        void                                        updateEntity( float deltaTime );
 
         //! Enable / disable statistics rendering
         void                                        enable( bool en );
