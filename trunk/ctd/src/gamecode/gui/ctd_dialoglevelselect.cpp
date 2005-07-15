@@ -43,13 +43,13 @@ namespace CTD
 #define LDLG_PREFIX             "ls_"
 
 DialogLevelSelect::DialogLevelSelect( EnMenu* p_menuEntity ) :
-_p_clickSound( NULL ),
-_p_levelSelectDialog( NULL ),
-_p_listbox( NULL ),
-_p_image( NULL ),
-_p_lastListSelection( NULL ),
 _p_menuEntity( p_menuEntity ),
-_p_levelFiles( NULL )
+_p_levelSelectDialog( NULL ),
+_p_lastListSelection( NULL ),
+_p_clickSound( NULL ),
+_p_levelFiles( NULL ),
+_p_listbox( NULL ),
+_p_image( NULL )
 {
 }
 

@@ -424,7 +424,7 @@ void EnMenu::createMenuScene()
 
     // create and setup skybox
     log << Log::LogLevel( Log::L_DEBUG ) << "creating menu skybox entity '_menuSkybox_'" << endl;
-    EnSkyBox* p_skyboxEntity = static_cast< EnSkyBox* >( EntityManager::get()->createEntity( ENTITY_NAME_SKYBOX, "_menuSkybox_" ) );
+    EnSkyBox* p_skyboxEntity = dynamic_cast< EnSkyBox* >( EntityManager::get()->createEntity( ENTITY_NAME_SKYBOX, "_menuSkybox_" ) );
     assert( p_skyboxEntity && "cannot create skybox entity!" );
     _p_skyBox = p_skyboxEntity;
     p_skyboxEntity->getAttributeManager().setAttributeValue( "persistence", true                );
@@ -441,7 +441,7 @@ void EnMenu::createMenuScene()
 
     // create and setup fog
     log << Log::LogLevel( Log::L_DEBUG ) << "creating menu fog entity '_menuFog_'" << endl;
-    EnFog* p_fogEntity = static_cast< EnFog* >( EntityManager::get()->createEntity( ENTITY_NAME_FOG, "_menuFog_" ) );
+    EnFog* p_fogEntity = dynamic_cast< EnFog* >( EntityManager::get()->createEntity( ENTITY_NAME_FOG, "_menuFog_" ) );
     assert( p_fogEntity && "cannot create fog entity!" );
     _p_menuFog = p_fogEntity;
     p_fogEntity->getAttributeManager().setAttributeValue( "persistence",    true                            );
@@ -458,7 +458,7 @@ EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume ) 
 {
     // manually create an entity of type AmbientSound without adding it to pool as we use the entity locally
     //  and do not need managed destruction or searchable ability for the entity
-    EnAmbientSound* p_ent = static_cast< EnAmbientSound* >( EntityManager::get()->createEntity( ENTITY_NAME_AMBIENTSOUND, filename, false ) );
+    EnAmbientSound* p_ent = dynamic_cast< EnAmbientSound* >( EntityManager::get()->createEntity( ENTITY_NAME_AMBIENTSOUND, filename, false ) );
     if ( !p_ent )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** EnMenu: cannot create sound entity of type '" << ENTITY_NAME_AMBIENTSOUND << "'" << endl;
@@ -527,7 +527,7 @@ bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
 
     // ask user before leaving
     {
-        MessageBoxDialog* p_msg = new MessageBoxDialog( "", "You want to leave the level?", MessageBoxDialog::YES_NO, true );
+        MessageBoxDialog* p_msg = new MessageBoxDialog( "", "You really want to leave the level?", MessageBoxDialog::YES_NO, true );
 
         // create a call back for yes/no buttons of messagebox
         class MsgYesNoClick: public MessageBoxDialog::ClickCallback
@@ -586,7 +586,10 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
 
                 explicit                MsgOkClick( EnMenu* p_menu ) : _p_menu( p_menu ) {}
 
-                virtual                 ~MsgOkClick() {}
+                virtual                 ~MsgOkClick() 
+                {
+                    int i = 0;
+                }
 
                 void                    onClicked( unsigned int btnId )
                                         {
@@ -765,7 +768,6 @@ void EnMenu::updateEntity( float deltaTime )
                 if ( _p_sceneFog )
                     enableFog( false );
             }
-
             _menuState = Hidden;
         }
         break;
@@ -1062,6 +1064,7 @@ void EnMenu::leaveLevel()
         return;
 
     _menuState = UnloadLevel;
+
     _p_btnStartJoin->show();
     _p_btnStartWT->show();
     _p_btnStartServer->show();

@@ -64,7 +64,7 @@ IntroControl::~IntroControl()
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "IntroControl: problem cleaning up entity." << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "IntroControl: problem cleaning up gui resources." << endl;
         log << "      reason: " << e.getMessage().c_str() << endl;
     }
 }
