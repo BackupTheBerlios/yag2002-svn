@@ -95,12 +95,13 @@
 				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgProducer.lib osgUtil.lib osgAL.lib osgcal.lib oalpp.lib cal3d.lib Producer.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib tinyxml.lib framework.lib"
 				OutputFile="../../../../bin/win32/vrc.exe"
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(CTD_DEP_DIR)\all_Libs&quot;;../../../../lib/framework"
-				IgnoreDefaultLibraryNames=""
+				IgnoreAllDefaultLibraries="FALSE"
+				IgnoreDefaultLibraryNames="msvcrt.lib libcmt.lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/$(ProjectName)_release.pdb"
 				SubSystem="1"
-				HeapReserveSize="0"
-				HeapCommitSize="0"
+				HeapReserveSize="100000"
+				HeapCommitSize="80000"
 				StackReserveSize="0"
 				StackCommitSize="0"
 				OptimizeReferences="2"
@@ -628,6 +629,28 @@
 						</File>
 					</Filter>
 				</Filter>
+			</Filter>
+			<Filter
+				Name="extern"
+				Filter="">
+				<File
+					RelativePath="..\..\..\..\src\gamecode\extern\Noise.cpp">
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\extern\Noise.h">
+				</File>
 			</Filter>
 		</Filter>
 		<File
