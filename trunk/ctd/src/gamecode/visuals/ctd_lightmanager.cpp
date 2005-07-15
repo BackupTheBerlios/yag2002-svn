@@ -46,6 +46,7 @@ _initialized( false )
 
 void LightManager::initialize()
 {
+
     // register a pre-draw callback where the light management happens
     if ( !_initialized ) // we register the callback only once
     {

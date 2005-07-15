@@ -82,12 +82,12 @@ void EnSkyBox::handleNotification( const EntityNotification& notification )
 void EnSkyBox::initialize()
 {
     // setup texture side names
-    _textureFilenameMap.insert( make_pair( TextureCubeMap::NEGATIVE_X, _texNames[ 0 ] ) );
-    _textureFilenameMap.insert( make_pair( TextureCubeMap::NEGATIVE_Y, _texNames[ 1 ] ) );
-    _textureFilenameMap.insert( make_pair( TextureCubeMap::NEGATIVE_Z, _texNames[ 2 ] ) );
-    _textureFilenameMap.insert( make_pair( TextureCubeMap::POSITIVE_Z, _texNames[ 3 ] ) );
-    _textureFilenameMap.insert( make_pair( TextureCubeMap::POSITIVE_X, _texNames[ 4 ] ) );
-    _textureFilenameMap.insert( make_pair( TextureCubeMap::POSITIVE_Y, _texNames[ 5 ] ) );
+    _textureFilenameMap.insert( make_pair( TextureCubeMap::POSITIVE_X, _texNames[ 0 ] ) );
+    _textureFilenameMap.insert( make_pair( TextureCubeMap::NEGATIVE_X, _texNames[ 1 ] ) );
+    _textureFilenameMap.insert( make_pair( TextureCubeMap::POSITIVE_Y, _texNames[ 2 ] ) );
+    _textureFilenameMap.insert( make_pair( TextureCubeMap::NEGATIVE_Y, _texNames[ 3 ] ) );
+    _textureFilenameMap.insert( make_pair( TextureCubeMap::POSITIVE_Z, _texNames[ 4 ] ) );
+    _textureFilenameMap.insert( make_pair( TextureCubeMap::NEGATIVE_Z, _texNames[ 5 ] ) );
 
     _p_skyGrp = new osg::Group();
     _p_skyGrp->setName( "_skybox_" );
@@ -190,8 +190,10 @@ osg::Node* EnSkyBox::makeBox()
         polyGeom[side] = new osg::Geometry();
 
         polyGeom[side]->setVertexArray(vArray[side]);
-        polyGeom[side]->setTexCoordArray(0, new osg::Vec2Array(4, tCoords));
-        polyGeom[side]->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0, 4));
+        osg::ref_ptr< osg::Vec2Array > tcoords = new osg::Vec2Array(4, tCoords);
+        polyGeom[side]->setTexCoordArray(0, tcoords.get() );
+        osg::ref_ptr< osg::DrawArrays > drawarray = new osg::DrawArrays( osg::PrimitiveSet::QUADS, 0, 4 );        
+        polyGeom[side]->addPrimitiveSet( drawarray.get() );
 
         osg::StateSet *dstate = new osg::StateSet;
         dstate->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
