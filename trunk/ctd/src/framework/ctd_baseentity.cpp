@@ -45,17 +45,27 @@ _p_attributeManager( NULL )
 
 BaseEntity::~BaseEntity()
 {
-    if ( _p_transformNode.valid() )
+    try
     {
-        if ( _p_transformNode->getParents().size() > 0 )
+        if ( _p_transformNode.valid() )
         {
-            _p_transformNode->getParent( 0 )->removeChild( _p_transformNode.get() );
-            _p_transformNode = NULL;
+            size_t parents = _p_transformNode->getParents().size();
+            if ( parents == 0 )
+            {
+                log << Log::LogLevel( Log::L_WARNING ) << "the transformation node of entity '" << getInstanceName() << "' has no parent!" << endl;
+            }
+            else
+            {
+                for ( size_t p = 0; p < parents; p++ )
+                {
+                    _p_transformNode->getParent( p )->removeChild( _p_transformNode.get() );
+                }
+            }
         }
-        else
-        {
-            log << Log::LogLevel( Log::L_WARNING ) << "the transformation node of entity '" << getInstanceName() << "' has no parent!" << endl;
-        }
+    }
+    catch( ... )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "exception occured in destructor of '" << getInstanceName() << "'" << endl;
     }
 
     // remove all attributes

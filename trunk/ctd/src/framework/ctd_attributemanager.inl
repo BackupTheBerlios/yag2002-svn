@@ -30,7 +30,7 @@
 
 
 template< class TypeT >
-EntityAttribute< TypeT >::EntityAttribute( const std::string& name, TypeT &ref ) :
+EntityAttribute< TypeT >::EntityAttribute( const std::string& name, TypeT& ref ) :
 _name( name ),
 _reference( ref )
 {
@@ -80,7 +80,7 @@ inline std::vector< EntityAttributeBase* >& AttributeManager::getAttributes()
 }
 
 template< class TypeT >
-inline void AttributeManager::addAttribute( const std::string &name, TypeT &_reference )
+inline void AttributeManager::addAttribute( const std::string& name, TypeT& _reference )
 {
     EntityAttribute< TypeT >* p_attr = new EntityAttribute< TypeT >( name, _reference );
     _attributes.push_back( p_attr );
@@ -93,7 +93,7 @@ bool AttributeManager::getAttributeValue( const std::string& name, TypeT& value 
     while ( pp_attr != pp_end ) {
         if ( ( *pp_attr )->getName() == name ) {
             assert( typeid( TypeT ) == ( *pp_attr )->getTypeInfo() && "*** wrong type for requested attribute!" );
-            value = ( static_cast< EntityAttribute< TypeT >* >( *pp_attr ) )->getValue();
+            value = ( dynamic_cast< EntityAttribute< TypeT >* >( *pp_attr ) )->getValue();
             return true;
         }
         pp_attr++;
@@ -114,7 +114,7 @@ bool AttributeManager::setAttributeValue( const std::string& name, TypeT value )
                 pp_attr++;
                 continue;
             }
-            ( static_cast< EntityAttribute< TypeT >* >( *pp_attr ) )->setValue( value );
+            ( dynamic_cast< EntityAttribute< TypeT >* >( *pp_attr ) )->setValue( value );
             return true;
         }
         pp_attr++;

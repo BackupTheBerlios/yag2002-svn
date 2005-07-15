@@ -111,6 +111,11 @@ BOOL WINAPI consoleHandler( DWORD ctrlType )
 
 bool Application::initialize( int argc, char **argv )
 {
+#ifdef CTD_ENABLE_HEAPCHECK
+    // trigger debugger
+//    __asm int 3;
+#endif
+
     // set console handler in order to catch Ctrl+C and close events
 #ifdef WIN32
     SetConsoleCtrlHandler( consoleHandler, TRUE );
@@ -405,6 +410,8 @@ void Application::run()
         _p_networkDevice->unlockObjects();
     }
 
+    // check heap if enabled ( used for detecting heap corruptions )
+    CTD_CHECK_HEAP();
 
     // begin game loop
     while( ( _p_gameState->getState() != GameState::Quitting ) && !_p_viewer->done() )
@@ -425,6 +432,9 @@ void Application::run()
         else if ( GameState::get()->getMode() == GameState::Client )
             updateClient( deltaTime );
         else updateStandalone( deltaTime );
+
+        // check heap if enabled ( used for detecting heap corruptions )
+        CTD_CHECK_HEAP();
     }   
 
     // for the case that we quited via entity request ( such as menu's quit button pressing )

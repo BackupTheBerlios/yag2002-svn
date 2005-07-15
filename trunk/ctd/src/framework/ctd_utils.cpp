@@ -29,6 +29,8 @@
  ################################################################*/
 
 #include <ctd_base.h>
+#include "ctd_application.h"
+#include "ctd_log.h"
 #include "ctd_utils.h"
 #include <errno.h>
 
@@ -106,6 +108,46 @@ std::string cleanPath( const std::string& path )
         if ( *i == '\\') *i = '/';
 
     return cleanpath;
+}
+osg::ref_ptr< osg::TextureCubeMap > readCubeMap( const std::vector< std::string >& texfiles )
+{
+    if ( texfiles.size() < 6 )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "readCubeMap: 6 tex files are needed, but only " << texfiles.size() << " given!" << std::endl;
+        return NULL;
+    }
+
+    osg::TextureCubeMap* p_cubemap = new osg::TextureCubeMap;
+    std::string mediapath = Application::get()->getMediaPath();
+    osg::Image* imagePosX = osgDB::readImageFile( mediapath + texfiles[ 0 ] );
+    osg::Image* imageNegX = osgDB::readImageFile( mediapath + texfiles[ 1 ] );
+    osg::Image* imagePosY = osgDB::readImageFile( mediapath + texfiles[ 2 ] );
+    osg::Image* imageNegY = osgDB::readImageFile( mediapath + texfiles[ 3 ] );
+    osg::Image* imagePosZ = osgDB::readImageFile( mediapath + texfiles[ 4 ] );
+    osg::Image* imageNegZ = osgDB::readImageFile( mediapath + texfiles[ 5 ] );
+
+    if ( imagePosX && imageNegX && imagePosY && imageNegY && imagePosZ && imageNegZ )
+    {
+        p_cubemap->setImage( osg::TextureCubeMap::POSITIVE_X, imagePosX );
+        p_cubemap->setImage( osg::TextureCubeMap::NEGATIVE_X, imageNegX );
+        p_cubemap->setImage( osg::TextureCubeMap::POSITIVE_Y, imagePosY );
+        p_cubemap->setImage( osg::TextureCubeMap::NEGATIVE_Y, imageNegY );
+        p_cubemap->setImage( osg::TextureCubeMap::POSITIVE_Z, imagePosZ );
+        p_cubemap->setImage( osg::TextureCubeMap::NEGATIVE_Z, imageNegZ );
+
+        p_cubemap->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
+        p_cubemap->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
+        p_cubemap->setWrap( osg::Texture::WRAP_R, osg::Texture::CLAMP_TO_EDGE );
+
+        p_cubemap->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR_MIPMAP_LINEAR );
+        p_cubemap->setFilter( osg::Texture::MAG_FILTER, osg::Texture::LINEAR );
+    }
+    else
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "readCubeMap: could not setup all cubemap images" << std::endl;
+    }
+
+    return p_cubemap;
 }
 
 // helper class for enumerateDisplaySettings
@@ -284,6 +326,22 @@ HANDLE spawnApplication( const std::string& cmd, const std::string& params )
     }
     return hProc;
 }
+
+#ifdef CTD_ENABLE_HEAPCHECK
+void checkHeap()
+{
+    // go through all heaps and validate them, trigger a user breakpoint if one of the heaps is corrupt
+    HANDLE heaps[ 20 ];  // a max size of 20 heaps should suffice
+    DWORD numHeaps = GetProcessHeaps( 20, heaps );
+    for ( DWORD i = 0; i < numHeaps; i ++ )
+    {
+        if ( HeapValidate( heaps[ i ], 0, NULL ) == FALSE )
+        {
+            __asm int 3;    // trigger user break point
+        }
+    }
+}
+#endif
 
 #endif
 

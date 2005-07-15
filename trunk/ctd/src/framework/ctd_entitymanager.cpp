@@ -33,6 +33,7 @@
 #include "ctd_application.h"
 #include "ctd_entitymanager.h"
 #include "ctd_log.h"
+#include "ctd_utils.h"
 
 using namespace std;
 using namespace CTD; 
@@ -498,6 +499,9 @@ void EntityManager::updateEntities( float deltaTime  )
     {
         BaseEntity* p_ent = ( *pp_entity );
         p_ent->updateEntity( deltaTime );
+
+        // check heap if enabled ( used for detecting heap corruptions )
+        CTD_CHECK_HEAP();
 
         // this check enables entities to manipulate the update entity list in their update method
         //  such manipulation can occure e.g. when an entity requests a level loading in its update method

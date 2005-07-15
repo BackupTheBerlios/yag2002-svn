@@ -76,18 +76,19 @@ void levelCollisionCallback (
 
 static unsigned int freedBytesSum = 0;
 static unsigned int allocBytesSum = 0;
+
 // memory allocation for Newton
 void* physicsAlloc( int sizeInBytes )
 {
     allocBytesSum += sizeInBytes;
-    return new char[ sizeof( char ) * sizeInBytes ];
+    return new char[ sizeInBytes ];
 }
 
 // memory de-allocation for Newton
 void physicsFree( void* ptr, int sizeInBytes )
 {
     freedBytesSum += sizeInBytes;
-	delete[] ptr;
+    delete[] ptr;
 }
 
 // implementation of physics core
@@ -156,7 +157,7 @@ void Physics::shutdown()
 }
 
 bool Physics::buildStaticGeometry( osg::Group* p_root )
-{    
+{
     NewtonCollision* p_collision = NewtonCreateTreeCollision( _p_world, levelCollisionCallback );    
     NewtonTreeCollisionBeginBuild( p_collision );
     

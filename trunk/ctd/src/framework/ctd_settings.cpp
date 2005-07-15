@@ -164,11 +164,11 @@ bool Settings::load( const std::string& filename )
 
     // load the settings into the file buffer
     _fileBuffer = "";
-    char* p_buf = new char[ filesize * sizeof( char ) + 2 ];
+    char* p_buf = new char[ filesize ];
     p_stream->read( p_buf, filesize );
+    p_buf[ filesize - 1 ] = 0;
     _fileBuffer = p_buf;
-    _fileBuffer[ filesize ]     = 13; // terminate the buffer string
-    _fileBuffer[ filesize + 1 ] = 0;
+    _fileBuffer += "\n"; // terminate the buffer string by a CR
     delete[] p_buf;
 
     p_stream->close();
@@ -274,7 +274,7 @@ bool Settings::store( const string& filename )
 
 bool Settings::read( const string& token, string& value )
 {
-    size_t  curpos = -1;
+    size_t  curpos = ( size_t )-1;
     // search the exact match of the token string
     do {
 

@@ -35,6 +35,14 @@
 
 namespace CTD
 {
+//! Utility function for validating application Heaps, set CTD_ENABLE_HEAPCHECK for enabling
+#ifdef CTD_ENABLE_HEAPCHECK
+    #define CTD_CHECK_HEAP()   checkHeap();
+    // dynamically validate all heaps; trigger a user breakpoint if one of the heaps is corrupt
+    void checkHeap();
+#else
+    #define CTD_CHECK_HEAP()
+#endif
 
 //! Returns a string with current date and time
 std::string getTimeStamp();
@@ -51,25 +59,8 @@ std::string extractFileName( const std::string& fullpath );
 //! Given a path this functions replaces the backslashes by slashes
 std::string cleanPath( const std::string& path );
 
-// Win32 specific functions
-#ifdef WIN32
-
-//! Return the current working directory
-std::string getCurrentWorkingDirectory();
-
-//! Given a directory path check if it actually exists in OS file system
-bool checkDirectory( const std::string& dir );
-
-//! Given a directory this function retrieves all files inside for given extension in 'listing'. If appenddetails is true then the file info is also stored in list.
-void getDirectoryListing( std::vector< std::string >& listing, const std::string& dir, const std::string& extension, bool appenddetails = false );
-
-//! Spawn an appication given its executable file name and its parameters in param ( white space separated )
-HANDLE spawnApplication( const std::string& cmd, const std::string& params );
-
-//! Returns a sorted string list with possible display settings above given colorbits filter value (format: WidthxHeight@ColorBits)
-void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned int colorbitsfilter = 0 );
-
-#endif
+//! Read the six sides of a cube map and return a texture
+osg::ref_ptr< osg::TextureCubeMap > readCubeMap( const std::vector< std::string >& texfiles );
 
 //! A generic input handler class with automatic adding and removing to / from viewer's event hanlder list
 struct NullType {};
@@ -205,6 +196,26 @@ class TexMatCallback : public osg::NodeCallback
 
         osg::Matrixf                        _R;
 };
+
+// Win32 functions
+#ifdef WIN32
+
+//! Return the current working directory
+std::string getCurrentWorkingDirectory();
+
+//! Given a directory path check if it actually exists in OS file system
+bool checkDirectory( const std::string& dir );
+
+//! Given a directory this function retrieves all files inside for given extension in 'listing'. If appenddetails is true then the file info is also stored in list.
+void getDirectoryListing( std::vector< std::string >& listing, const std::string& dir, const std::string& extension, bool appenddetails = false );
+
+//! Spawn an appication given its executable file name and its parameters in param ( white space separated )
+HANDLE spawnApplication( const std::string& cmd, const std::string& params );
+
+//! Returns a sorted string list with possible display settings above given colorbits filter value (format: WidthxHeight@ColorBits)
+void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned int colorbitsfilter = 0 );
+
+#endif
 
 } // namespace CTD
 

@@ -113,7 +113,7 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
 
     if ( clearEntities )
     {
-        // now delete entities (note: no-autodelete entities will remain -- see BaseEntity::getAutoDelete() )
+        // now delete all non-persistent entities
         EntityManager::get()->deleteAllEntities();
         // (re-)create entiy transform node group
         _topGroup->removeChild( _entityGroup.get() );

@@ -33,16 +33,22 @@
 #ifndef _CTD_BASE_H_
 #define _CTD_BASE_H_
 
-// CEGUI headers
-#include <CEGUI.h>
+// VRC version
+#define VRC_VERSION     "0.5"
+
+// STL headers
+#include <string>
+#include <vector>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 // ms windows stuff
 #ifdef WIN32
+#  define NOMINMAX
 #  ifndef WIN32_LEAN_AND_MEAN
 #    define WIN32_LEAN_AND_MEAN
 #  endif
-#  include <stdlib.h>
-#  include <windows.h>
 #endif
 
 // osg headers
@@ -72,34 +78,20 @@
 #include <osg/Vec3>
 #include <osg/Vec2>
 #include <osg/VertexProgram>
-
 #include <osgAL/SoundNode>
 #include <osgAL/SoundRoot>
 #include <osgAL/SoundManager>
 #include <osgAL/SoundState>
-
 #include <osgDB/ReadFile>
-
 #include <osgGA/guiactionadapter>
 #include <osgGA/guieventadapter>
-
 #include <osgProducer/Viewer>
-
 #include <osgUtil/Optimizer>
 
 // Physics library header
 #include <Newton.h>
 
-// STL headers
-#include <string>
-#include <vector>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <memory>
-#include <assert.h>
-
-// VRC version
-#define VRC_VERSION     "0.5"
+// CEGUI headers
+#include <CEGUI.h>
 
 #endif // _CTD_BASE_H_

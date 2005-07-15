@@ -147,6 +147,11 @@ class EntityAttribute : public EntityAttributeBase
         //! Attribute type
         unsigned int                        _type;
 
+    private:
+
+        EntityAttribute&                    operator = ( const EntityAttribute& );
+
+                                            EntityAttribute( const EntityAttribute& );
 };
 
 //! Attribute manager

@@ -50,7 +50,7 @@ class GameState : public Singleton< GameState >
         //! Game mode
         enum GameMode
         {
-            None,
+            None        = 0x10,
             Standalone,
             Server,
             Client
@@ -59,11 +59,11 @@ class GameState : public Singleton< GameState >
         //! Game state
         enum State
         {
-            Initializing,   // set at startup
-            Menu,           // user is in menu
-            Running,        // running game
-            Pausing,        // game pausing
-            Quitting        // quitting application
+            Initializing = 0x20,    // set at startup
+            Menu,                   // user is in menu
+            Running,                // running game
+            Pausing,                // game pausing
+            Quitting                // quitting application
         };
 
         //! Set game mode to Server, Client, or Standalone

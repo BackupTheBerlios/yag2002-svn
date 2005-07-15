@@ -116,10 +116,10 @@ void CTDGuiRenderer::addQuad( const Rect& dest_rect, float z, const Texture* tex
 
 void CTDGuiRenderer::doRender()
 {
-    _currTexture = 0;
-
     initPerFrameStates();
-    glInterleavedArrays(GL_T2F_C4UB_V3F , 0, _buff);
+    glInterleavedArrays( GL_T2F_C4UB_V3F , 0, _buff );
+
+    _currTexture = 0;
 
     // iterate over each quad in the list
     for (QuadList::iterator i = _quadlist.begin(); i != _quadlist.end(); ++i)
@@ -303,7 +303,10 @@ void CTDGuiRenderer::initPerFrameStates()
     glDisable( GL_TEXTURE_2D );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    // enable the server-side tex unti 0
+    // enable the server-side tex unit 0
+    s_glActiveTexture( GL_TEXTURE0 + 1 );
+    glDisable( GL_TEXTURE_2D );
+
     s_glActiveTexture( GL_TEXTURE0 + 0 );
     glEnable( GL_TEXTURE_2D );
     //------------------------

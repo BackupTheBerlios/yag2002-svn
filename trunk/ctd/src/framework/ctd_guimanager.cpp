@@ -32,11 +32,10 @@
 #include "ctd_guimanager.h"
 #include "ctd_application.h"
 #include "ctd_configuration.h"
+#include "ctd_guirenderer.h"
 #include "ctd_keymap.h"
 #include "ctd_log.h"
-#include "ctd_guirenderer.h"
-
-#include <osg/Projection>
+#include <CEGUILogger.h>
 
 using namespace std;
 using namespace CEGUI;
@@ -113,15 +112,17 @@ void CTDResourceProvider::loadRawDataContainer( const CEGUI::String& filename, R
     p_stream->seekg( 0, ios_base::beg );
 
     // load the file
-    unsigned char* p_buf = new unsigned char[ filesize * sizeof( unsigned char ) + 2 ];
+    unsigned char* p_buf = new unsigned char[ filesize + 1 ];
+    p_buf[ filesize ] = 0;
     p_stream->read( ( char* )p_buf, filesize );
-
+ 
     // set output
     output.setData( p_buf );
     output.setSize( filesize );
 
     p_stream->close();
 }
+
 
 CTD_SINGLETON_IMPL( GuiManager );
 
@@ -206,12 +207,17 @@ void GuiManager::doInitialize()
     CTDResourceProvider* p_resourceLoader = new CTDResourceProvider;
     new CEGUI::System( _p_renderer, p_resourceLoader );
 
+    // set logging level
+//#ifdef _DEBUG
+    CEGUI::Logger::getSingleton().setLoggingLevel( CEGUI::Insane );
+//#endif
+
     string guiScheme;
     Configuration::get()->getSettingValue( CTD_GS_GUISCHEME, guiScheme );
 
-    CEGUI::Imageset* p_taharezImages = ImagesetManager::getSingleton().createImageset( "gui/imagesets/TaharezLook.imageset" );
+    CEGUI::Imageset* p_images = ImagesetManager::getSingleton().createImageset( "gui/imagesets/TaharezLook.imageset" );
 
-    _p_mouseImg = const_cast< CEGUI::Image* >( &p_taharezImages->getImage( "MouseArrow" ) );
+    _p_mouseImg = const_cast< CEGUI::Image* >( &p_images->getImage( "MouseArrow" ) );
     CEGUI::System::getSingleton().setDefaultMouseCursor( _p_mouseImg );
 
     // create necessary fonts
@@ -390,8 +396,9 @@ CEGUI::DefaultWindow* GuiManager::getRootWindow()
 }
 
 void GuiManager::update( float deltaTime )
-{
-    _p_root->update( deltaTime );
+{       
+    if ( _active )
+        CEGUI::System::getSingleton().injectTimePulse( deltaTime );    
 }
 
 void GuiManager::doRender()
