@@ -34,141 +34,164 @@
 #include <ctd_main.h>
 #include "ctd_water.h"
 
+#include <osg/Program>
+#include <osg/Shader>
+#include <osg/Uniform>
+#include <osg/Texture3D>
+
+#include "../extern/Noise.h"
+
 using namespace std;
 using namespace CTD; 
-using namespace osg; 
 
 
 //! Implement and register the skybox entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( WaterEntityFactory );
 
 
-const char vpstr[] =
-    "!!ARBvp1.0 # Refraction                                    \n"
-    "                                                           \n"
-    "ATTRIB iPos         = vertex.position;                     \n"
-    "#ATTRIB iCol        = vertex.color.primary;                \n"
-    "ATTRIB iNormal      = vertex.normal;                       \n"
-    "PARAM  esEyePos     = { 0, 0, 0, 1 };                      \n"
-    "PARAM  const0123    = { 0, 1, 2, 3 };                      \n"
-    "PARAM  fresnel      = program.local[0];                    \n"
-    "PARAM  refract      = program.local[1];                    \n"
-    "PARAM  itMV[4]      = { state.matrix.modelview.invtrans }; \n"
-    "PARAM  MVP[4]       = { state.matrix.mvp };                \n"
-    "PARAM  MV[4]        = { state.matrix.modelview };          \n"
-    "PARAM  texmat[4]    = { state.matrix.texture[0] };         \n"
-    "TEMP   esPos;        # position in eye-space               \n"
-    "TEMP   esNormal;     # normal in eye-space                 \n"
-    "TEMP   tmp, IdotN, K;                                      \n"
-    "TEMP   esE;          # eye vector                          \n"
-    "TEMP   esI;          # incident vector (=-E)               \n"
-    "TEMP   esR;          # first refract- then reflect-vector  \n"
-    "OUTPUT oPos         = result.position;                     \n"
-    "OUTPUT oColor       = result.color;                        \n"
-    "OUTPUT oRefractMap  = result.texcoord[0];                  \n"
-    "OUTPUT oReflectMap  = result.texcoord[1];                  \n"
-    "                                                           \n"
-    "# transform vertex to clip space                           \n"
-    "DP4    oPos.x, MVP[0], iPos;                               \n"
-    "DP4    oPos.y, MVP[1], iPos;                               \n"
-    "DP4    oPos.z, MVP[2], iPos;                               \n"
-    "DP4    oPos.w, MVP[3], iPos;                               \n"
-    "                                                           \n"
-    "# Transform the normal to eye space.                       \n"
-    "DP3    esNormal.x, itMV[0], iNormal;                       \n"
-    "DP3    esNormal.y, itMV[1], iNormal;                       \n"
-    "DP3    esNormal.z, itMV[2], iNormal;                       \n"
-    "                                                           \n"
-    "# normalize normal                                         \n"
-    "DP3    esNormal.w, esNormal, esNormal;                     \n"
-    "RSQ    esNormal.w, esNormal.w;                             \n"
-    "MUL    esNormal, esNormal, esNormal.w;                     \n"
-    "                                                           \n"
-    "# transform vertex position to eye space                   \n"
-    "DP4    esPos.x, MV[0], iPos;                               \n"
-    "DP4    esPos.y, MV[1], iPos;                               \n"
-    "DP4    esPos.z, MV[2], iPos;                               \n"
-    "DP4    esPos.w, MV[3], iPos;                               \n"
-    "                                                           \n"
-    "# vertex to eye vector                                     \n"
-    "ADD    esE, -esPos, esEyePos;                              \n"
-    "#MOV   esE, -esPos;                                        \n"
-    "                                                           \n"
-    "# normalize eye vector                                     \n"
-    "DP3    esE.w, esE, esE;                                    \n"
-    "RSQ    esE.w, esE.w;                                       \n"
-    "MUL    esE, esE, esE.w;                                    \n"
-    "                                                           \n"
-    "# calculate some handy values                              \n"
-    "MOV    esI, -esE;                                          \n"
-    "DP3    IdotN, esNormal, esI;                               \n"
-    "                                                           \n"
-    "# calculate refraction vector, Renderman style             \n"
-    "                                                           \n"
-    "# k = 1-index*index*(1-(I dot N)^2)                        \n"
-    "MAD    tmp, -IdotN, IdotN, const0123.y;                    \n"
-    "MUL    tmp, tmp, refract.y;                                \n"
-    "ADD    K.x, const0123.y, -tmp;                             \n"
-    "                                                           \n"
-    "# k<0,  R = [0,0,0]                                        \n"
-    "# k>=0, R = index*I-(index*(I dot N) + sqrt(k))*N          \n"
-    "RSQ    K.y, K.x;                                           \n"
-    "RCP    K.y, K.y;                           # K.y = sqrt(k) \n"
-    "MAD    tmp.x, refract.x, IdotN, K.y;                       \n"
-    "MUL    tmp, esNormal, tmp.x;                               \n"
-    "MAD    esR, refract.x, esI, tmp;                           \n"
-    "                                                           \n"
-    "# transform refracted ray by cubemap transform             \n"
-    "DP3    oRefractMap.x, texmat[0], esR;                      \n"
-    "DP3    oRefractMap.y, texmat[1], esR;                      \n"
-    "DP3    oRefractMap.z, texmat[2], esR;                      \n"
-    "                                                           \n"
-    "# calculate reflection vector                              \n"
-    "# R = 2*N*(N dot E)-E                                      \n"
-    "MUL    tmp, esNormal, const0123.z;                         \n"
-    "DP3    esR.w, esNormal, esE;                               \n"
-    "MAD    esR, esR.w, tmp, -esE;                              \n"
-    "                                                           \n"
-    "# transform reflected ray by cubemap transform             \n"
-    "DP3    oReflectMap.x, texmat[0], esR;                      \n"
-    "DP3    oReflectMap.y, texmat[1], esR;                      \n"
-    "DP3    oReflectMap.z, texmat[2], esR;                      \n"
-    "                                                           \n"
-    "# Fresnel approximation = fresnel*(1-(N dot I))^2          \n"
-    "ADD    tmp.x, const0123.y, -IdotN;                         \n"
-    "MUL    tmp.x, tmp.x, tmp.x;                                \n"
-    "MUL    oColor, tmp.x, fresnel;                             \n"
-    "                                                           \n"
-    "END                                                        \n";
+// the water shader is basing on RenderMonkey's Reflection/Refraction example
+#define LOCATION_CUBEMAP_SAMPLER    5
+#define LOCATION_NOISE_SAMPLER      0
 
+const char glsl_vp[] =
+    "uniform vec4 viewPosition;                                                                 \n"
+    "uniform vec4 scale;                                                                        \n"
+    "                                                                                           \n"
+    "varying vec3 vTexCoord;                                                                    \n"
+    "varying vec3 vNormal;                                                                      \n"
+    "varying vec3 vViewVec;                                                                     \n"
+    "                                                                                           \n"
+    "void main(void)                                                                            \n"
+    "{                                                                                          \n"
+    "   vec4 Position = gl_Vertex.xyzw;                                                         \n"
+    "   vTexCoord     = Position.xyz * scale.xyz;                                               \n"
+    "   vViewVec      = Position.xyz - viewPosition.xyz;                                        \n"
+    "   vNormal       = gl_Normal;                                                              \n"
+    "   gl_Position   = gl_ModelViewProjectionMatrix * Position;                                \n"
+    "}                                                                                          \n"
+;
 
-// Implementation of water entity
+const char glsl_fp[] =
+    "uniform sampler3D   samplerNoise;                                                          \n"
+    "uniform samplerCube samplerSkyBox;                                                         \n"
+    "                                                                                           \n"
+    "uniform float time;                                                                        \n"
+    "uniform float transparency;                                                                \n"
+    "uniform vec4  waterColor;                                                                  \n"
+    "uniform float fadeExp;                                                                     \n"
+    "uniform float fadeBias;                                                                    \n"
+    "uniform float noiseSpeed;                                                                  \n"
+    "uniform vec4  scale;                                                                       \n"
+    "                                                                                           \n"
+    "uniform float waveSpeed;                                                                   \n"
+    "                                                                                           \n"
+    "varying vec3 vTexCoord;                                                                    \n"
+    "varying vec3 vNormal;                                                                      \n"
+    "varying vec3 vViewVec;                                                                     \n"
+    "                                                                                           \n"
+    "                                                                                           \n"
+    "void main(void)                                                                            \n"
+    "{                                                                                          \n"
+    "   vec3 tcoord = vTexCoord;                                                                \n"
+    "   tcoord.x += waveSpeed  * time;                                                          \n"
+    "   tcoord.z += noiseSpeed * time;                                                          \n"
+    "                                                                                           \n"
+    "   vec4 noisy = texture3D(samplerNoise, tcoord);                                           \n"
+    "                                                                                           \n"
+    "   // Signed noise                                                                         \n"
+    "   vec3 bump = 2.0 * noisy.xyz - 1.0;                                                      \n"
+    "   bump.xy *= 0.15;                                                                        \n"
+    "                                                                                           \n"
+    "   // Make sure the normal always points upwards                                           \n"
+    "   bump.z = 0.8 * abs(bump.z) + 0.2;                                                       \n"
+    "                                                                                           \n"
+    "   // Offset the surface normal with the bump                                              \n"
+    "   bump = normalize(vNormal + bump);                                                       \n"
+    "                                                                                           \n"
+    "   // Find the reflection vector                                                           \n"
+    "   vec3 reflVec = reflect(vViewVec, bump);                                                 \n"
+    "   vec4 refl = textureCube(samplerSkyBox, reflVec.yzx);                                    \n"
+    "                                                                                           \n"
+    "   float lrp = 1.0 - dot(-normalize(vViewVec), bump);                                      \n"
+    "                                                                                           \n"
+    "   // Interpolate between the water color and reflection                                   \n"
+    "   vec4 col = mix(waterColor, refl, clamp(fadeBias + pow(lrp, fadeExp),0.0, 1.0));         \n"
+    "   col.w = transparency;                                                                   \n"
+    "   gl_FragColor = col;                                                                     \n"
+    "}                                                                                          \n"
+;
+
+// callback for water's time animation
+class TimeUpdateCallback: public osg::Uniform::Callback
+{
+    public:
+        
+                                            TimeUpdateCallback() {}
+
+        virtual                             ~TimeUpdateCallback() {}
+
+        virtual void                        operator() ( osg::Uniform* p_uniform, osg::NodeVisitor* p_nv )
+                                            {
+                                                p_uniform->set( static_cast< float >( p_nv->getFrameStamp()->getReferenceTime() ) );
+                                            }
+};
+
+// callback for water's view position update
+class ViewPositionUpdateCallback: public osg::Uniform::Callback
+{
+    public:
+        
+                                            ViewPositionUpdateCallback() 
+                                            {
+                                                _p_viewer = Application::get()->getViewer();
+                                            }
+
+        virtual                             ~ViewPositionUpdateCallback() {}
+
+        virtual void                        operator() ( osg::Uniform* p_uniform, osg::NodeVisitor* p_nv )
+                                            {
+                                                const double* p_pos = _p_viewer->getPosition();
+                                                osg::Vec4f viewpos
+                                                    ( 
+                                                    static_cast< float >( p_pos[ 0 ] ), 
+                                                    static_cast< float >( p_pos[ 1 ] ), 
+                                                    static_cast< float >( p_pos[ 2 ] ),
+                                                    1.0f
+                                                    );
+                                                    
+                                                p_uniform->set( viewpos );
+                                            }
+
+    protected:
+
+        osgProducer::Viewer*                _p_viewer;
+
+};
+
+// Implementation of water entity                                                           
 
 EnWater::EnWater() :
-_sizeX( 5000.0f ),
-_sizeY( 5000.0f ),
-_subDevisionsX( 100 ),
-_subDevisionsY( 100 ),
-_viscosity( 0.005f ), 
-_speed( 100.0f ),
-_stimulationRate( 3 ),
-_amplitude( 0.02f ),
-_pastTime( 0 ),
-_primaryPosBuffer( true ),
-_p_geom( NULL ),
-_refract( 1.01f ),
-_fresnel( 1.1f )
+_fadeBias( 0.3f ),
+_noiseSpeed( 0.10f ),
+_waveSpeed( 0.14f ),
+_fadeExp( 6.0f ),
+_sizeX( 1000.0f ),
+_sizeY( 1000.0f ),
+_scale( osg::Vec3f( 1.0f, 1.0f, 1.0f ) ),
+_waterColor( osg::Vec3f( 0.2f, 0.25f, 0.6f ) ),
+_transparency( 0.5f )
 {
     // register entity attributes
+    getAttributeManager().addAttribute( "position"              , _position              );
     getAttributeManager().addAttribute( "sizeX"                 , _sizeX                 );
     getAttributeManager().addAttribute( "sizeY"                 , _sizeY                 );
-    getAttributeManager().addAttribute( "subdivX"               , _subDevisionsX         );
-    getAttributeManager().addAttribute( "subdivY"               , _subDevisionsY         );
-    getAttributeManager().addAttribute( "position"              , _position              );
-    getAttributeManager().addAttribute( "viscosity"             , _viscosity             );
-    getAttributeManager().addAttribute( "waveSpeed"             , _speed                 );
-    getAttributeManager().addAttribute( "stimulationAmplitude"  , _amplitude             );
-    getAttributeManager().addAttribute( "stimulationRate"       , _stimulationRate       );
+    getAttributeManager().addAttribute( "fadeBias"              , _fadeBias              );
+    getAttributeManager().addAttribute( "noiseSpeed"            , _noiseSpeed            );
+    getAttributeManager().addAttribute( "waveSpeed"             , _waveSpeed             );
+    getAttributeManager().addAttribute( "fadeExp"               , _fadeExp               );
+    getAttributeManager().addAttribute( "waterColor"            , _waterColor            );
+    getAttributeManager().addAttribute( "transparency"          , _transparency          );
+    getAttributeManager().addAttribute( "scale"                 , _scale                 );
 
     getAttributeManager().addAttribute( "right"                 , _cubeMapTextures[ 0 ]  );
     getAttributeManager().addAttribute( "left"                  , _cubeMapTextures[ 1 ]  );
@@ -176,18 +199,10 @@ _fresnel( 1.1f )
     getAttributeManager().addAttribute( "back"                  , _cubeMapTextures[ 3 ]  );
     getAttributeManager().addAttribute( "up"                    , _cubeMapTextures[ 4 ]  );
     getAttributeManager().addAttribute( "down"                  , _cubeMapTextures[ 5 ]  );
-
-    // init wave parameters
-    calcConstants( 0.03f );
 }
 
 EnWater::~EnWater()
 {
-    // as we always leave a level while beeing in menu, so we have to release the water node manually. missing this
-    // leads to a crash.
-    // however i don't know why removing from parent node does not work ( it causes a crash, too )
-    if ( _water.get() )
-        _water = NULL;
 }
 
 void EnWater::handleNotification( const EntityNotification& notification )
@@ -207,6 +222,13 @@ void EnWater::handleNotification( const EntityNotification& notification )
             addToTransformationNode( _water.get() );
             break;
 
+        case CTD_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
+            // re-create the water
+            removeFromTransformationNode( _water.get() );
+            _water = setupWater();
+            addToTransformationNode( _water.get() );
+            break;
+
         default:
             ;
     }
@@ -214,288 +236,168 @@ void EnWater::handleNotification( const EntityNotification& notification )
 
 void EnWater::initialize()
 {
+    if ( _transparency > 1.0f )
+        _transparency = 1.0f;
+
     // the water is added to entity's transform node in notification call-back, when entering game ( leaving menu )!
     _water = setupWater();
-    setPosition( _position );
 
-    _stimulationPeriod = 1.0f / _stimulationRate;
-    // calculate the liquid equation constants
-    calcConstants( 0.03f );
-
-    EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
     EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 }
 
-TextureCubeMap* EnWater::readCubeMap()
+// this function is taken from osg example Shaders ( osg version 0.9.9 )
+osg::Image* make3DNoiseImage(int texSize)
 {
-    TextureCubeMap* p_cubemap = new TextureCubeMap;
-    string mediapath = Application::get()->getMediaPath();
-    Image* imagePosX = osgDB::readImageFile( mediapath + _cubeMapTextures[ 0 ] );
-    Image* imageNegX = osgDB::readImageFile( mediapath + _cubeMapTextures[ 1 ] );
-    Image* imagePosY = osgDB::readImageFile( mediapath + _cubeMapTextures[ 2 ] );
-    Image* imageNegY = osgDB::readImageFile( mediapath + _cubeMapTextures[ 3 ] );
-    Image* imagePosZ = osgDB::readImageFile( mediapath + _cubeMapTextures[ 4 ] );
-    Image* imageNegZ = osgDB::readImageFile( mediapath + _cubeMapTextures[ 5 ] );
+    osg::Image* image = new osg::Image;
+    image->setImage( texSize, texSize, texSize,
+                4, GL_RGBA, GL_UNSIGNED_BYTE,
+                new unsigned char[4 * texSize * texSize * texSize],
+                osg::Image::USE_NEW_DELETE
+                );
 
-    if ( imagePosX && imageNegX && imagePosY && imageNegY && imagePosZ && imageNegZ )
+    const int startFrequency = 4;
+    const int numOctaves = 4;
+
+    int f, i, j, k, inc;
+    double ni[3];
+    double inci, incj, inck;
+    int frequency = startFrequency;
+    GLubyte *ptr;
+    double amp = 0.5;
+
+
+    for (f = 0, inc = 0; f < numOctaves; ++f, frequency *= 2, ++inc, amp *= 0.5)
     {
-        p_cubemap->setImage(TextureCubeMap::POSITIVE_X, imagePosX);
-        p_cubemap->setImage(TextureCubeMap::NEGATIVE_X, imageNegX);
-        p_cubemap->setImage(TextureCubeMap::POSITIVE_Y, imagePosY);
-        p_cubemap->setImage(TextureCubeMap::NEGATIVE_Y, imageNegY);
-        p_cubemap->setImage(TextureCubeMap::POSITIVE_Z, imagePosZ);
-        p_cubemap->setImage(TextureCubeMap::NEGATIVE_Z, imageNegZ);
+        SetNoiseFrequency(frequency);
+        ptr = image->data();
+        ni[0] = ni[1] = ni[2] = 0;
 
-        p_cubemap->setWrap(Texture::WRAP_S, Texture::CLAMP_TO_EDGE);
-        p_cubemap->setWrap(Texture::WRAP_T, Texture::CLAMP_TO_EDGE);
-        p_cubemap->setWrap(Texture::WRAP_R, Texture::CLAMP_TO_EDGE);
-
-        p_cubemap->setFilter(Texture::MIN_FILTER, Texture::LINEAR_MIPMAP_LINEAR);
-        p_cubemap->setFilter(Texture::MAG_FILTER, Texture::LINEAR);
-    }
-    else
-    {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** Entity Water: could not setup all cubemap images" << endl;
-    }
-
-    return p_cubemap;
-}
-
-osg::Geometry* EnWater::makeMesh()
-{
-    _p_geom = new Geometry();
-
-    unsigned int gridx = ( unsigned int )( _sizeX / _subDevisionsX );
-    unsigned int gridy = ( unsigned int )( _sizeY / _subDevisionsY );
-
-    _posArray1     = new Vec3Array();
-    _posArray2     = new Vec3Array();
-    _normArray     = new Vec3Array();
-    Vec3Array*  p_posArray1    = _posArray1.get();
-    Vec3Array*  p_posArray2    = _posArray2.get();
-    Vec3Array*  p_normArray    = _normArray.get();
-    Vec2Array*  p_tcoordArray  = new Vec2Array();
-    p_posArray1->resize( _subDevisionsX * _subDevisionsY );
-    p_posArray2->resize( _subDevisionsX * _subDevisionsY );
-    p_normArray->resize( _subDevisionsX * _subDevisionsY );
-    p_tcoordArray->resize( _subDevisionsX * _subDevisionsY );
-
-    // create vertex coordinates along x and y axis
-    {
-        for( int y = 0; y < _subDevisionsY; ++y )
+        inci = 1.0 / (texSize / frequency);
+        for (i = 0; i < texSize; ++i, ni[0] += inci)
         {
-            for( int x = 0; x < _subDevisionsX; ++x )
+            incj = 1.0 / (texSize / frequency);
+            for (j = 0; j < texSize; ++j, ni[1] += incj)
             {
-                ( *p_posArray1 )[ y * _subDevisionsX + x ].set
-                    (
-                    ( float( x ) - float( _subDevisionsX - 1 ) * 0.5f ) * gridx, 
-                    ( float( y ) - float( _subDevisionsY - 1 ) * 0.5f ) * gridy,
-                    0
-                    );
-
-                ( *p_posArray2 )[ y * _subDevisionsX + x ] = ( *p_posArray1 )[ y * _subDevisionsX + x ];
-                ( *p_normArray )[ y * _subDevisionsX + x ].set( 0, 0, -1.0f );
-                ( *p_tcoordArray)[ y * _subDevisionsX + x ].set( float( gridx * x ) / _sizeX, float( gridy * y ) / _sizeY );  
+                inck = 1.0 / (texSize / frequency);
+                for (k = 0; k < texSize; ++k, ni[2] += inck, ptr += 4)
+                {
+                    *(ptr+inc) = (GLubyte) (((noise3(ni) + 1.0) * amp) * 128.0);
+                }
             }
         }
     }
-    _p_geom->setVertexArray( p_posArray1 );
-    _p_geom->setNormalArray( p_normArray );
-    _p_geom->setTexCoordArray( 2, p_tcoordArray );
 
-    // create indices for triangle strips
-    {
-        for( int y = 0; y < _subDevisionsY - 1; ++y )
-        {
-            unsigned int* p_indices   = new unsigned int[ _subDevisionsX * 2 ];
-            unsigned int* p_curindex  = p_indices;
-            for( int x = 0; x < _subDevisionsX; ++x )
-            {
-                *p_curindex = ( y + 1 ) * _subDevisionsX + x;
-                p_curindex++;
-                *p_curindex = ( y + 0 ) * _subDevisionsX + x;
-                p_curindex++;
-            }
-            _p_geom->addPrimitiveSet( new DrawElementsUInt( PrimitiveSet::TRIANGLE_STRIP, _subDevisionsX * 2, p_indices ) );
-            delete p_indices;
-        }
-    }
-    _p_geom->setNormalBinding( Geometry::BIND_PER_VERTEX );
-    _p_geom->setUseDisplayList( false );     
-    _p_geom->dirtyBound();
-
-    return _p_geom;
+    return image;        
 }
 
 osg::Node* EnWater::setupWater()
 {
-    // create water grid    
-    osg::ref_ptr< osg::Drawable > watermesh = makeMesh();
-
-    osg::MatrixTransform* p_waternode = new osg::MatrixTransform;
-    p_waternode->setMatrix( osg::Matrix::translate( _position ) );
-
-    // set up the geode with reflection/refraction
-    //-------------------------------------
-    osg::StateSet* p_stateset = new osg::StateSet();
-
-    osg::TextureCubeMap* reflectmap = readCubeMap();
-    p_stateset->setTextureAttributeAndModes( 0, reflectmap, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
-    p_stateset->setTextureAttributeAndModes( 1, reflectmap, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
-
-    osg::ref_ptr< osg::TexMat > texMat = new osg::TexMat;
-    p_stateset->setTextureAttribute( 0, texMat.get() );
-
-    // setup vertex program
-    static osg::ref_ptr< osg::VertexProgram > s_vp;
-    if ( !s_vp.valid() )
+    osg::Geode* p_geode = new osg::Geode();
+    // create water plane
     {
-        s_vp = new osg::VertexProgram();
-        s_vp->setVertexProgram( vpstr );
-        s_vp->setProgramLocalParameter( 0, osg::Vec4( _fresnel, _fresnel, _fresnel, 1.0f ) );
-        s_vp->setProgramLocalParameter( 1, osg::Vec4( _refract, _refract * _refract, 0.0f, 0.0f ) );
+        osg::Vec3 coords[] =
+        {
+            osg::Vec3( _position.x() - _sizeX * 0.5f, _position.y() + _sizeY * 0.5f, _position.z() ),
+            osg::Vec3( _position.x() - _sizeX * 0.5f, _position.y() - _sizeY * 0.5f, _position.z() ),
+            osg::Vec3( _position.x() + _sizeX * 0.5f, _position.y() - _sizeY * 0.5f, _position.z() ),
+            osg::Vec3( _position.x() + _sizeX * 0.5f, _position.y() + _sizeY * 0.5f, _position.z() )
+        };
+        osg::Geometry* p_polyGeom = new osg::Geometry;
+        p_polyGeom->setVertexArray( new osg::Vec3Array( 4, coords) );
+        osg::DrawArrays* p_drawarray = new osg::DrawArrays( osg::PrimitiveSet::QUADS, 0, 4 );        
+        p_polyGeom->addPrimitiveSet( p_drawarray );
+
+        p_geode->addDrawable( p_polyGeom );
     }
-    p_stateset->setAttributeAndModes( s_vp.get(), osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
 
-    osg::TexEnvCombine* p_te0 = new osg::TexEnvCombine;    
-    p_te0->setCombine_RGB( osg::TexEnvCombine::REPLACE );
-    p_te0->setSource0_RGB( osg::TexEnvCombine::TEXTURE0 );
-    p_te0->setOperand0_RGB( osg::TexEnvCombine::SRC_COLOR );
+    // setup the shaders and uniforms
+    osg::StateSet* p_stateSet = new osg::StateSet;
+    {
+        osg::Program* p_program = new osg::Program;
+        p_program->setName( "_waterShaderGLSL_" );
 
-    osg::TexEnvCombine* p_te1 = new osg::TexEnvCombine;    
+        p_program->addShader( new osg::Shader( osg::Shader::VERTEX, glsl_vp ) );
+        p_program->addShader( new osg::Shader( osg::Shader::FRAGMENT, glsl_fp ) );
+        p_stateSet->setAttributeAndModes( p_program, osg::StateAttribute::ON );
 
-    p_te1->setCombine_RGB( osg::TexEnvCombine::INTERPOLATE );
-    p_te1->setSource0_RGB( osg::TexEnvCombine::TEXTURE1 );
-    p_te1->setOperand0_RGB( osg::TexEnvCombine::SRC_COLOR );
-    p_te1->setSource1_RGB( osg::TexEnvCombine::PREVIOUS );
-    p_te1->setOperand1_RGB( osg::TexEnvCombine::SRC_COLOR );
-    p_te1->setSource2_RGB( osg::TexEnvCombine::PRIMARY_COLOR );
-    p_te1->setOperand2_RGB( osg::TexEnvCombine::SRC_COLOR );
+        osg::Uniform* p_fadeBias    = new osg::Uniform( "fadeBias",     _fadeBias                       );
+        osg::Uniform* p_waveSpeed   = new osg::Uniform( "waveSpeed",    _waveSpeed                      );
+        osg::Uniform* p_fadeExp     = new osg::Uniform( "fadeExp",      _fadeExp                        );
+        osg::Uniform* p_noiseSpeed  = new osg::Uniform( "noiseSpeed",   _noiseSpeed                     );
+        osg::Uniform* p_waterColor  = new osg::Uniform( "waterColor",   osg::Vec4f( _waterColor, 1.0f ) );
+        osg::Uniform* p_scale       = new osg::Uniform( "scale",        osg::Vec4f( _scale, 1.0f )      );
+        osg::Uniform* p_trans       = new osg::Uniform( "transparency", _transparency                   );
 
-    p_stateset->setTextureAttributeAndModes( 0, p_te0, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
-    p_stateset->setTextureAttributeAndModes( 1, p_te1, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
+        p_stateSet->addUniform( p_fadeBias      );
+        p_stateSet->addUniform( p_waveSpeed     );
+        p_stateSet->addUniform( p_fadeExp       );
+        p_stateSet->addUniform( p_scale         );
+        p_stateSet->addUniform( p_noiseSpeed    );
+        p_stateSet->addUniform( p_waterColor    );
+        p_stateSet->addUniform( p_trans         );
 
-    // set up transparency
-    osg::BlendFunc* p_trans = new osg::BlendFunc;
-    p_trans->setFunction( osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA );
-    p_stateset->setAttributeAndModes( p_trans,osg::StateAttribute::ON );
+        osg::Uniform* p_viewPosition = new osg::Uniform( "viewPosition", osg::Vec4f() );
+        p_stateSet->addUniform( p_viewPosition );
+        p_viewPosition->setUpdateCallback( new ViewPositionUpdateCallback() ); // set time view position update callback for the shader
 
-    p_stateset->setAttribute( p_trans );
-    p_stateset->setMode( GL_BLEND, osg::StateAttribute::ON );      
-    p_stateset->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
+        osg::Uniform* p_uniformTime = new osg::Uniform( "time", 0.0f );
+        p_stateSet->addUniform( p_uniformTime   );
+        p_uniformTime->setUpdateCallback( new TimeUpdateCallback() ); // set time update callback for the shader
 
-    osg::Geode* p_geode = new osg::Geode;
-    p_geode->addDrawable( watermesh.get() );
-    p_geode->setStateSet( p_stateset );
+        // create a noise texture
+        osg::Texture3D* p_noiseTexture = new osg::Texture3D;
+        p_noiseTexture->setFilter( osg::Texture3D::MIN_FILTER, osg::Texture3D::LINEAR );
+        p_noiseTexture->setFilter( osg::Texture3D::MAG_FILTER, osg::Texture3D::LINEAR );
+        p_noiseTexture->setWrap( osg::Texture3D::WRAP_S, osg::Texture3D::REPEAT );
+        p_noiseTexture->setWrap( osg::Texture3D::WRAP_T, osg::Texture3D::REPEAT );
+        p_noiseTexture->setWrap( osg::Texture3D::WRAP_R, osg::Texture3D::REPEAT );
+        p_noiseTexture->setImage( make3DNoiseImage( 32 ) );
+
+        p_stateSet->setTextureAttribute( LOCATION_NOISE_SAMPLER, p_noiseTexture );
+        p_stateSet->addUniform( new osg::Uniform( "samplerNoise", LOCATION_NOISE_SAMPLER ) );
+
+        // create skybox texture
+        std::vector< std::string > texfiles;
+        texfiles.push_back( _cubeMapTextures[ 0 ] );
+        texfiles.push_back( _cubeMapTextures[ 1 ] );
+        texfiles.push_back( _cubeMapTextures[ 2 ] );
+        texfiles.push_back( _cubeMapTextures[ 3 ] );
+        texfiles.push_back( _cubeMapTextures[ 4 ] );
+        texfiles.push_back( _cubeMapTextures[ 5 ] );
+        osg::ref_ptr< osg::TextureCubeMap > reflectmap = readCubeMap( texfiles );
+
+        p_stateSet->setTextureAttribute( LOCATION_CUBEMAP_SAMPLER, reflectmap.get() );
+        p_stateSet->addUniform( new osg::Uniform( "samplerSkyBox", LOCATION_CUBEMAP_SAMPLER ) );
+
+        // set lighting to diabled and culling to enabled
+        p_stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
+        p_stateSet->setMode( GL_CULL_FACE, osg::StateAttribute::OFF );
+
+        // diable depth test
+        p_stateSet->setMode( GL_DEPTH, osg::StateAttribute::OFF );
+
+        // set up transparency
+        osg::BlendFunc* p_blending = new osg::BlendFunc;
+        p_blending->setFunction( osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA );
+        p_stateSet->setAttributeAndModes( p_blending,osg::StateAttribute::ON );
+        p_stateSet->setAttribute( p_blending );
+        p_stateSet->setMode( GL_BLEND, osg::StateAttribute::ON );      
+        p_stateSet->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
+
+        // append state set to geode
+        p_geode->setStateSet( p_stateSet );
+    }
 
     osg::Group* p_group = new osg::Group;
-    p_group->addChild( p_waternode );
     p_group->addChild( p_geode );
+
+    //! TODO: skybox' cubemap must be rotated to right place
+
+    // set texture matrix manipulation callback ( 90 degree rotation about X )
+    osg::ref_ptr< osg::TexMat > texMat = new osg::TexMat;
+    p_stateSet->setTextureAttribute( 0, texMat.get() );
     p_group->setCullCallback( new TexMatCallback( *texMat.get() ) );
-    
+
+
     return p_group;
-}
-
-void EnWater::updateEntity( float deltaTime )
-{// reference: ISBN 1-58450-277-0, thanks to eric
-   
-    Vec3Array*  p_posArray1 = _primaryPosBuffer ? _posArray1.get() : _posArray2.get();
-    Vec3Array*  p_posArray2 = _primaryPosBuffer ? _posArray2.get() : _posArray1.get();
-    Vec3Array*  p_normArray = _normArray.get();
-
-    // calculate vertex positions
-    {
-        for( int y = 1; y < _subDevisionsY - 1; ++y )
-        {
-            Vec3f* p_curPos   = &( ( *p_posArray1 )[ y * _subDevisionsX ] );
-            Vec3f* p_prevPos  = &( ( *p_posArray2 )[ y * _subDevisionsX ] );
-            for( int x = 1; x < _subDevisionsX - 1; ++x )
-            {
-                float newZ =
-                    _k1 * p_curPos[ x ]._v[ 2 ]  + 
-                    _k2 * p_prevPos[ x ]._v[ 2 ] + 
-                    _k3 * 
-                    ( 
-                    p_curPos[ x + 1 ]._v[ 2 ] + p_curPos[ x - 1 ]._v[ 2 ] + 
-                    p_curPos[ x + _subDevisionsX ]._v[ 2 ] + p_curPos[ x - _subDevisionsX ]._v[ 2 ]
-                    );
-
-                    p_prevPos[ x ]._v[ 2 ] = newZ;
-            }
-        }
-    }
-
-    // calculate vertex normals
-    {
-        for( int y = 1; y < _subDevisionsY - 1; ++y )
-        {
-            Vec3f* p_norm     = &( ( *p_normArray )[ y * _subDevisionsX ] );
-            Vec3f* p_nextPos  = &( ( *p_posArray2 )[ y * _subDevisionsX ] );
-            for( int x = 1; x < _subDevisionsX - 1; ++x )
-            {
-                p_norm[ x ]._v[ 0 ] = p_nextPos[ x - 1 ]._v[ 2 ] - p_nextPos[ x + 1 ]._v[ 2 ];
-                p_norm[ x ]._v[ 1 ] = p_nextPos[ x - _subDevisionsX ]._v[ 2 ] - p_nextPos[ x + _subDevisionsX ]._v[ 2 ];
-                p_norm[ x ].normalize();
-            }
-        }
-    }
-
-    // adapt the liquid equation constants to changing framerate
-    static float lastDeltaTime = 0;
-    if ( abs( lastDeltaTime - deltaTime ) > 0.03f ) 
-        calcConstants( deltaTime );
-    lastDeltaTime = deltaTime;
-
-    // create random z-position offset
-    static float ltime = 0;
-    ltime += deltaTime;
-    float stimulus = _amplitude * sinf( ltime );
-    if ( ltime > 2.0f * PI )
-        ltime -= 2.0f * PI;
-
-    // create stimulations considering the rate
-    _pastTime += deltaTime;
-    while ( _pastTime > 0 ) 
-    {
-        if ( ( _pastTime - _stimulationPeriod ) < 0 )
-        {
-            break;
-        }
-        _pastTime -= _stimulationPeriod;
-        // create a random coordinate
-        unsigned int randcoord = ( unsigned int )( ( rand() % _subDevisionsY ) * _subDevisionsY + ( rand() % _subDevisionsX ) );
-        ( *p_posArray2 )[ randcoord ]._v[ 2 ] += stimulus;
-    }
-
-    // swap vertex position buffers
-    _p_geom->setVertexArray( _primaryPosBuffer ? p_posArray2 : p_posArray1 );
-    _primaryPosBuffer = !_primaryPosBuffer;
-}
-
-void EnWater::calcConstants( float stepWidth )
-{
-    float dist = _sizeX / ( float )_subDevisionsX;
-    // setup water equation constants
-    float f1 = _speed * _speed * stepWidth * stepWidth / ( dist * dist );
-    float f2 = 1.0f / ( _viscosity * stepWidth + 2 );
-    _k1 = ( 4.0f - 8.0f * f1 ) * f2;
-    _k2 = ( _viscosity * stepWidth - 2 ) * f2;
-    _k3 = 2.0f * f1 * f2;
-
-    // check the stability critera
-//#ifdef _DEBUG
-    float minSpeed = ( dist / ( 2.0f * stepWidth ) ) * sqrtf( _viscosity * stepWidth + 2 );
-    if ( _speed > minSpeed )
-    {
-        log << Log::LogLevel( Log::L_ERROR ) << "EnWater: insufficient speed! wave equation may get instable." << endl;
-        log << Log::LogLevel( Log::L_ERROR ) << " minimum: " << minSpeed << ", currently : " << _speed << endl;
-    }
-
-    float minTimestep = ( dist * dist ) * ( ( _viscosity + sqrtf( _viscosity * _viscosity + 32.0f * ( _speed / dist ) ) ) / ( 8.0f * _speed * _speed ) );
-    if ( stepWidth > minTimestep )
-    {
-        log << Log::LogLevel( Log::L_ERROR ) << "EnWater: insufficient time step! wave equation may get instable." << endl;
-        log << Log::LogLevel( Log::L_ERROR ) << " minimum: " << minTimestep << ", currently : " << stepWidth << endl;
-    }
-//#endif
 }

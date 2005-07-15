@@ -58,41 +58,30 @@ class EnWater :  public BaseEntity
         // Entity attribbutes
         //--------------------------------------------------------//
 
-        //! Size in X direction
-        float                                       _sizeX;
-
-        //! Size in Y direction
-        float                                       _sizeY;
-
-        //! Subdivisions along X direction
-        int                                         _subDevisionsX;
-
-        //! Subdivisions along Y direction
-        int                                         _subDevisionsY;
-
-        //! Walter' origin
         osg::Vec3f                                  _position;
 
-        //! Fluid viscosity
-        float                                       _viscosity;
+        float                                       _sizeX;
 
-        //! Wave distribution speed
-        float                                       _speed;
+        float                                       _sizeY;
 
-        //! Stimulation rate ( per sec )
-        float                                       _stimulationRate;
+        float                                       _fadeBias;
 
-        //! Stimulus amplitude
-        float                                       _amplitude;
+        float                                       _noiseSpeed;
+
+        float                                       _waveSpeed;
+
+        float                                       _fadeExp;
+
+        osg::Vec3f                                  _scale;
+
+        osg::Vec3f                                  _waterColor;
+
+        float                                       _transparency;
 
         //! Reflection cube map textures
         std::string                                 _cubeMapTextures[ 6 ];
 
     protected:
-
-
-        //! Update entity
-        void                                        updateEntity( float deltaTime );
 
         // internals
         //--------------------------------------------------------//
@@ -100,49 +89,11 @@ class EnWater :  public BaseEntity
         //! Notification call-back
         void                                        handleNotification( const EntityNotification& notification );
 
-        //! Given the step width calculate the liquid equation constants
-        void                                        calcConstants( float stepWidth );
-
-        //! Setup water geom, vertex shader and state sets
+        //! Setup water geom, shaders and state sets
         osg::Node*                                  setupWater();
-
-        //! Create the water surface mesh ( grid )
-        osg::Geometry*                              makeMesh();
-
-        //! Read the six sides of reflection / refraction cube map
-        osg::TextureCubeMap*                        readCubeMap();
         
+        //! Water node
         osg::ref_ptr< osg::Node >                   _water;
-
-        bool                                        _primaryPosBuffer;
-
-        // vertex position array ( two buffers for fast switching )
-        osg::ref_ptr< osg::Vec3Array >              _posArray1;
-
-        osg::ref_ptr< osg::Vec3Array >              _posArray2;
-    
-        osg::ref_ptr< osg::Vec3Array >              _normArray;
-
-        // water geometry
-        osg::Geometry*                              _p_geom;
-
-        //! Ratio of indicies of refraction
-        float                                       _refract;
-
-        //! Fresnel multiplier
-        float                                       _fresnel;
-
-
-        // some internal vaiables used for water simulation
-        float                                       _k1;
-
-        float                                       _k2;
-        
-        float                                       _k3;
-
-        float                                       _stimulationPeriod;
-        
-        float                                       _pastTime;
 };
 
 //! Entity type definition used for type registry
