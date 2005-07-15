@@ -216,10 +216,10 @@ void PlayerNetworking::initialize( const osg::Vec3f& pos, const string& playerNa
     strcpy( _p_configFile, cfgFile.c_str() );
 }
 
-void PlayerNetworking::putChatText( const string& text )
+void PlayerNetworking::putChatText( const CEGUI::String& text )
 {
     static tChatMsg s_textBuffer;
-    strcpy( s_textBuffer._text, text.c_str() );
+    text.copy( s_textBuffer._text );
     ALL_REPLICAS_FUNCTION_CALL( RPC_AddChatText( s_textBuffer ) );
 }
 
@@ -230,7 +230,10 @@ void PlayerNetworking::RPC_AddChatText( tChatMsg chatMsg )
     if ( CTD::GameState::get()->getMode() == CTD::GameState::Server ) 
         getChatLog() << chatMsg._text << endl;
     else
-        _p_playerImpl->addChatMessage( chatMsg._text, _p_playerName );
+    {
+        CEGUI::String msg( chatMsg._text );
+        _p_playerImpl->addChatMessage( msg, _p_playerName );
+    }
 }
 
 void PlayerNetworking::RPC_Initialize( tInitializationData initData )

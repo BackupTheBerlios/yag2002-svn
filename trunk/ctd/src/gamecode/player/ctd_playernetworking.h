@@ -104,7 +104,7 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         void                                        getAnimationFlags( unsigned int& cmdFlag );
 
         //! Put new chat text
-        void                                        putChatText( const std::string& text );
+        void                                        putChatText( const CEGUI::String& text );
 
         // RN Overrides
         //-----------------------------------------------------------------------------------//

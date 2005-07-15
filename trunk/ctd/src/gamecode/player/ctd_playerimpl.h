@@ -100,7 +100,7 @@ class BasePlayerImplementation
         inline const osg::Vec3f&                    getPlayerMoveDirection() const;
 
         //! Add the given message to chat box
-        void                                        addChatMessage( const std::string& msg, const std::string& author );
+        void                                        addChatMessage( const CEGUI::String& msg, const CEGUI::String& author );
 
         //! Distribute the given message to all other clients
         void                                        distributeChatMessage( const std::string& msg );
@@ -181,7 +181,7 @@ class BasePlayerImplementation
         PlayerNetworking*                           _p_playerNetworking;
 
         //! Chat gui
-        std::auto_ptr< PlayerChatGui >              _p_chatGui;
+        PlayerChatGui*                              _p_chatGui;
 
         //! Movement direction
         osg::Vec3f                                  _moveDir;

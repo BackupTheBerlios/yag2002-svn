@@ -167,7 +167,7 @@ int playerContactProcess( const NewtonMaterial* p_material, const NewtonContact*
     // determine which body is the player physics's one
 	NewtonBody*    p_body   = s_colStruct->_p_body0;
     BaseEntity*    p_entity = reinterpret_cast< BaseEntity* >( NewtonBodyGetUserData( p_body ) );
-    EnPlayerPhysics* p_phys   = dynamic_cast< EnPlayerPhysics* >( p_entity );
+    EnPlayerPhysics* p_phys = dynamic_cast< EnPlayerPhysics* >( p_entity );
     if ( !p_phys )
     {
         s_colStruct->_p_otherEntity = p_entity;

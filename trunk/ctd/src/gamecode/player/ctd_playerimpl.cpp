@@ -57,7 +57,8 @@ _p_playerNetworking( NULL ),
 _p_camera( NULL ),
 _cameraMode( Spheric ),
 _moveDir( Vec3f( 0, 1, 0 ) ),
-_rotZ( 0 )
+_rotZ( 0 ),
+_p_chatGui( NULL )
 {
     // copy player's attributes
     _playerAttributes = _p_player->getPlayerAttributes();
@@ -131,10 +132,10 @@ void BasePlayerImplementation::setCameraMode( unsigned int mode )
     _cameraMode = ( CameraMode )mode;
 }
 
-void BasePlayerImplementation::addChatMessage( const std::string& msg, const std::string& author )
+void BasePlayerImplementation::addChatMessage( const CEGUI::String& msg, const CEGUI::String& author )
 {
-    // now we have a static method for adding messages. this may change in future ( making PlayerGui a singleton ).
-    PlayerChatGui::addMessage( msg.c_str(), author.c_str() );
+    // this method is used by all clients (local and remote), hence the chat gui must be accessible to all clients
+    PlayerChatGui::get()->addMessage( msg, author );
 }
 
 void BasePlayerImplementation::distributeChatMessage( const std::string& msg )

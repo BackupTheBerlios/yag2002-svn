@@ -54,6 +54,9 @@ PlayerImplClient::~PlayerImplClient()
 {
     if ( _p_playerNetworking )
         delete _p_playerNetworking;
+
+    if ( _p_chatGui )
+        delete _p_chatGui;
 }
 
 void PlayerImplClient::handleNotification( const EntityNotification& notification )
@@ -128,7 +131,8 @@ void PlayerImplClient::initialize()
         getPlayerNetworking()->initialize( _currentPos, getPlayerEntity()->getPlayerName(), playerconfig );
 
         // create chat gui
-        _p_chatGui = std::auto_ptr< PlayerChatGui >( new PlayerChatGui );
+//        _p_chatGui = std::auto_ptr< PlayerChatGui >( new PlayerChatGui );
+        _p_chatGui = new PlayerChatGui;
         _p_chatGui->initialize( this, _playerAttributes._chatGuiConfig );
     }
 }
@@ -274,7 +278,7 @@ void PlayerImplClient::update( float deltaTime )
         getPlayerEntity()->setRotation( _currentRot );
 
         getPlayerNetworking()->updatePosition( _currentPos._v[ 0 ], _currentPos._v[ 1 ], _currentPos._v[ 2 ] );
-        getPlayerNetworking()->updateRotation( _rotZ );
+        getPlayerNetworking()->updateRotation( _rotZ + osg::PI );
 
         // adjust the camera to updated position and rotation. the physics updates the translation of player.
         _p_camera->setCameraTranslation( getPlayerPosition(), getPlayerRotation() );
