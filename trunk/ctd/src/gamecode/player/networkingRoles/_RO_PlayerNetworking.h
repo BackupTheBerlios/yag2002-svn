@@ -7,7 +7,7 @@
 
 typedef struct _tChatMsg 
 {
-    char    _text[ 256 ];
+    unsigned char    _text[ 256 ];
 } tChatMsg;
 
 typedef struct _tInitializationData
