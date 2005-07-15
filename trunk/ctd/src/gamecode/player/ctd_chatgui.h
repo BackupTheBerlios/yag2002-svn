@@ -62,7 +62,15 @@ class PlayerChatGui
 
         //! Add new message into message box, author will be places at begin of message.
         //! Make this method static, so all remote clients can use the same interface to post their messages.
-        static void                                 addMessage( const CEGUI::String& msg, const CEGUI::String& author );
+        void                                        addMessage( const CEGUI::String& msg, const CEGUI::String& author );
+
+        // This class is a singleton as all clients on a machine must be able to use it ( also remote clients ).
+        static PlayerChatGui*                       get()
+                                                    {
+                                                        assert( s_chatGui && "instance does not exist" );
+                                                        return s_chatGui;
+                                                    }
+
 
     protected:
 
@@ -92,15 +100,18 @@ class PlayerChatGui
 
         CEGUI::PushButton*                          _p_btnHide;
 
+
         CEGUI::PushButton*                          _p_btnMode;
 
         CEGUI::Editbox*                             _p_editbox;
 
-        static CEGUI::MultiLineEditbox*             _p_messagebox;
+        CEGUI::MultiLineEditbox*                    _p_messagebox;
 
-        CEGUI::Image*                               _p_mouseImageWalkMode;
+        CEGUI::StaticImage*                         _p_btnMsgArrived;
 
-        CEGUI::Image*                               _p_mouseImageDefault;
+        const CEGUI::Image*                         _p_mouseImageWalkMode;
+
+        const CEGUI::Image*                         _p_mouseImageDefault;
 
         bool                                        _hidden;
 
@@ -111,6 +122,9 @@ class PlayerChatGui
         osg::Vec2f                                  _boxFrameSize;
 
         float                                       _frameAlphaValue;
+
+        // single instace of chat gui
+        static PlayerChatGui*                       s_chatGui;
 };
 
 } // namespace CTD

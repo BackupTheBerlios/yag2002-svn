@@ -38,11 +38,14 @@ using namespace std;
 namespace CTD
 {
 // layout prefix
-#define CHATLAYOUT_PREFIX   "chatbox_"
-#define FADE_TIME           1.0f
+#define CHATLAYOUT_PREFIX       "chatbox_"
+#define FADE_TIME               1.0f
 
-CEGUI::MultiLineEditbox* PlayerChatGui::_p_messagebox = NULL;
- 
+#define CTD_IMAGE_SET           "CTDImageSet"
+#define CTD_IMAGE_SET_FILE      "gui/imagesets/CTDImageSet.imageset"
+
+PlayerChatGui* PlayerChatGui::s_chatGui = NULL;
+
 PlayerChatGui::PlayerChatGui() :
 _p_playerImpl( NULL ),
 _p_wnd( NULL ),
@@ -56,8 +59,12 @@ _frameAlphaValue( 1.0f ),
 _p_mouseImageWalkMode( NULL ),
 _p_mouseImageDefault( NULL ),
 _p_btnMode( NULL ),
-_p_btnHide( NULL )
+_p_btnHide( NULL ),
+_p_messagebox( NULL ),
+_p_btnMsgArrived( NULL )
 {
+    assert( !s_chatGui && "chat gui is a singleton!" );
+    s_chatGui = this;
 }
 
 PlayerChatGui::~PlayerChatGui()
@@ -66,8 +73,21 @@ PlayerChatGui::~PlayerChatGui()
     CEGUI::MouseCursor::getSingleton().setImage( _p_mouseImageDefault );
     GuiManager::get()->releasePointer();
 
-    if ( _p_wnd )
-        CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
+    s_chatGui = NULL;
+
+    try
+    {
+        if ( _p_wnd )
+        {
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
+            CEGUI::ImagesetManager::getSingleton().destroyImageset( CTD_IMAGE_SET );
+        }
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "PlayerChatGui: problem cleaning up gui resources" << endl;
+        log << "      reason: " << e.getMessage().c_str() << endl;
+    }
 }
 
 void PlayerChatGui::initialize( BasePlayerImplementation* p_playerImpl, const string& layoutFile )
@@ -81,10 +101,12 @@ void PlayerChatGui::initialize( BasePlayerImplementation* p_playerImpl, const st
     {
         _p_wnd = static_cast< CEGUI::Window* >( GuiManager::get()->loadLayout( layoutFile, NULL, CHATLAYOUT_PREFIX ) );
         _p_frame = static_cast< CEGUI::Window* >( _p_wnd->getChild( CHATLAYOUT_PREFIX "fr_chatbox" ) );
-        _boxFrameSize = osg::Vec2f( _p_frame->getSize().d_width, _p_frame->getSize().d_height );
-        _frameAlphaValue = _p_frame->getAlpha();
+		_p_frame->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::PlayerChatGui::onCloseFrame, this ) );
         _p_frame->setMinimumSize( CEGUI::Size( 0.1f, 0.08f ) );
         _p_frame->hide();
+
+        _boxFrameSize = osg::Vec2f( _p_frame->getSize().d_width, _p_frame->getSize().d_height );
+        _frameAlphaValue = _p_frame->getAlpha();
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -95,9 +117,6 @@ void PlayerChatGui::initialize( BasePlayerImplementation* p_playerImpl, const st
 
     try
     {
-        CEGUI::FrameWindow* p_frameWnd = static_cast< CEGUI::FrameWindow* >( _p_frame );
-		p_frameWnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::PlayerChatGui::onCloseFrame, this ) );
-
         _p_editbox = static_cast< CEGUI::Editbox* >( _p_frame->getChild( CHATLAYOUT_PREFIX "eb_editbox" ) );
         _p_editbox->subscribeEvent( CEGUI::MultiLineEditbox::EventCharacterKey, CEGUI::Event::Subscriber( &CTD::PlayerChatGui::onEditboxTextChanged, this ) );
 
@@ -110,44 +129,57 @@ void PlayerChatGui::initialize( BasePlayerImplementation* p_playerImpl, const st
         _p_btnHide->setStandardImageryEnabled( false );
 
         CEGUI::Imageset* p_imageSet = NULL;
-        if ( CEGUI::ImagesetManager::getSingleton().isImagesetPresent( "CTDImageSet" ) )
+        if ( CEGUI::ImagesetManager::getSingleton().isImagesetPresent( CTD_IMAGE_SET ) )
         {
-            p_imageSet = CEGUI::ImagesetManager::getSingleton().getImageset( "CTDImageSet" );
+            p_imageSet = CEGUI::ImagesetManager::getSingleton().getImageset( CTD_IMAGE_SET );
         }
         else
         {
-            p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( "gui/imagesets/CTDImageSet.imageset" );
+            p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( CTD_IMAGE_SET_FILE );
         }
 
         // set editbox unhide button images
-        CEGUI::Image* p_image = &const_cast< CEGUI::Image& >( p_imageSet->getImage( "HandNormal" ) );
+        const CEGUI::Image* p_image = &p_imageSet->getImage( "HandNormal" );
         CEGUI::RenderableImage* p_rendImage = new CEGUI::RenderableImage;
         p_rendImage->setImage( p_image );
         _p_btnHide->setPushedImage( p_rendImage );
         _p_btnHide->setNormalImage( p_rendImage );
         delete p_rendImage;
 
-        p_image = &const_cast< CEGUI::Image& >( p_imageSet->getImage( "HandHoover" ) );
+        p_image = &p_imageSet->getImage( "HandHoover" );
         p_rendImage = new CEGUI::RenderableImage;
         p_rendImage->setImage( p_image );
         _p_btnHide->setHoverImage( p_rendImage );
         delete p_rendImage;
+
+        _p_btnMsgArrived = static_cast< CEGUI::StaticImage* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticImage", CHATLAYOUT_PREFIX "btn_post" ) );
+        _p_btnMsgArrived->setPosition( _p_btnHide->getPosition() );
+        _p_btnMsgArrived->setAlpha( 0.9f );
+        _p_btnMsgArrived->setAlwaysOnTop( true );
+        _p_btnMsgArrived->setPosition( CEGUI::Relative, CEGUI::Point( 0.01f, 0.7f ) );
+        _p_btnMsgArrived->setSize( CEGUI::Size( 0.03f, 0.03f ) );
+        _p_btnMsgArrived->setBackgroundEnabled( false );
+        _p_btnMsgArrived->setFrameEnabled( false );
+        _p_wnd->addChildWindow( _p_btnMsgArrived );
+        p_image = &p_imageSet->getImage( "Post" );
+        _p_btnMsgArrived->setImage( p_image );
+        _p_btnMsgArrived->hide();
 
         // setup mode button
         _p_btnMode = static_cast< CEGUI::PushButton* >( _p_wnd->getChild( CHATLAYOUT_PREFIX "btn_mode" ) );
         // we begin walkmode enabled
         _p_btnMode->disable();
         _p_btnMode->setStandardImageryEnabled( false );
-        p_image = &const_cast< CEGUI::Image& >( p_imageSet->getImage( "FootNormal" ) );
+        p_image = &p_imageSet->getImage( "FootNormal" );
         p_rendImage = new CEGUI::RenderableImage;
         p_rendImage->setImage( p_image );
         _p_btnMode->setDisabledImage( p_rendImage );
         delete p_rendImage;
 
         // get the edit / walk pointer images
-        _p_mouseImageWalkMode = &const_cast< CEGUI::Image& >( p_imageSet->getImage( "Crosshair" ) );
+        _p_mouseImageWalkMode = &p_imageSet->getImage( "Crosshair" );
         assert( _p_mouseImageWalkMode && " missing image Crosshair in CTDExtras image set!" );
-        _p_mouseImageDefault = const_cast< CEGUI::Image* >( CEGUI::System::getSingleton().getDefaultMouseCursor() );
+        _p_mouseImageDefault = CEGUI::System::getSingleton().getDefaultMouseCursor();
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -163,7 +195,6 @@ void PlayerChatGui::initialize( BasePlayerImplementation* p_playerImpl, const st
 
 void PlayerChatGui::update( float deltaTime )
 {
-
     switch( _state )
     {
         case Idle:
@@ -261,6 +292,10 @@ void PlayerChatGui::addMessage( const CEGUI::String& msg, const CEGUI::String& a
     PlayerChatGui::_p_messagebox->setText( buffer );
     // set carat position in order to trigger text scrolling after a new line has been added
     PlayerChatGui::_p_messagebox->setCaratIndex( buffer.length() - 1 );
+
+    // if the chat box is hidden then signalize to player that a new message arrived
+    if ( _hidden )
+        _p_btnMsgArrived->show();
 }
 
 bool PlayerChatGui::onCloseFrame( const CEGUI::EventArgs& arg )
@@ -303,6 +338,7 @@ bool PlayerChatGui::onClickedHide( const CEGUI::EventArgs& arg )
     else
     {
         _state = BoxFadeIn;
+        _p_btnMsgArrived->hide();
     }
 
     return true;
