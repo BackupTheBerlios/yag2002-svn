@@ -352,7 +352,7 @@ void EntityManager::deregisterUpdate( BaseEntity* p_entity )
 void EntityManager::addToScene( BaseEntity* p_entity, osg::Group *p_scenegr )
 {
     assert( p_entity && p_entity->_p_transformNode.valid() && "adding to scene requires a transformation node in entity!" );
-    osg::Group *p_grp = p_scenegr ? p_scenegr : static_cast< osg::Group* >( Application::get()->getViewer()->getTopMostSceneData() );
+    osg::Group *p_grp = p_scenegr ? p_scenegr : Application::get()->getSceneRootNode();
     p_grp->addChild( p_entity->_p_transformNode.get() );
 }
 
