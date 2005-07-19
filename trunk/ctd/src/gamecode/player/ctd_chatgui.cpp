@@ -308,7 +308,7 @@ bool PlayerChatGui::onEditboxTextChanged( const CEGUI::EventArgs& arg )
 {
     // check for 'Return' key
     CEGUI::KeyEventArgs& ke = static_cast< CEGUI::KeyEventArgs& >( const_cast< CEGUI::EventArgs& >( arg ) );
-    if ( ke.codepoint == osgGA::GUIEventAdapter::KEY_Return )
+    if ( ke.codepoint == SDLK_RETURN )
     {
         // in standalone mode we have no networking
         if ( GameState::get()->getMode() != GameState::Standalone )

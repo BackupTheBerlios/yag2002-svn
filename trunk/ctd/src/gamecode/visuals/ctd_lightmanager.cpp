@@ -51,12 +51,10 @@ void LightManager::initialize()
     if ( !_initialized ) // we register the callback only once
     {
         _initialized = true;
-        osgProducer::Viewer* p_viewer = Application::get()->getViewer();
-        Producer::Camera* p_cam = p_viewer->getCamera( 0 );
-        p_cam->addPreDrawCallback( this );
+        Application::get()->getViewer()->addPreDrawCallback( this );
 
         // enable the lighting for scene
-        Application::get()->getViewer()->getGlobalStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::ON );
+        Application::get()->getSceneView()->getGlobalStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::ON );
     }
 }
 
@@ -73,7 +71,7 @@ void LightManager::flush()
 {
     unsigned int numlights = min( ( int )_lights.size(), CTD_MAX_GL_LIGHTS - 1 );
     
-    osg::StateSet*  p_stateset = Application::get()->getViewer()->getGlobalStateSet();
+    osg::StateSet*  p_stateset = Application::get()->getSceneView()->getGlobalStateSet();
     // first turn off all lights
     for ( unsigned int l = 0; l < CTD_MAX_GL_LIGHTS - 1; l++ )
         p_stateset->setMode( GL_LIGHT0 + l, osg::StateAttribute::OFF );

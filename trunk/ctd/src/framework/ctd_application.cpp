@@ -64,7 +64,6 @@ _p_entityManager( EntityManager::get() ),
 _p_gameState( GameState::get() ),
 _p_physics( Physics::get() ),
 _p_viewer( NULL ),
-_p_rootSceneNode( NULL ),
 _screenWidth( 600 ),
 _screenHeight( 400 ),
 _fullScreen( false )
@@ -88,6 +87,9 @@ void Application::shutdown()
     KeyMap::get()->shutdown();
 
     delete _p_viewer;
+
+    SDL_Quit();
+
     destroy();
 }
 
@@ -201,11 +203,6 @@ bool Application::initialize( int argc, char **argv )
     // set the ful binary path of application
     _fulBinaryPath = arguments.getApplicationName();
 
-    // load the settings
-    //-------------------
-    Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  _screenWidth    );
-    Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, _screenHeight   );
-
     //-------------------
 
     // setup log system
@@ -231,75 +228,42 @@ bool Application::initialize( int argc, char **argv )
 
     log << Log::LogLevel( Log::L_INFO ) << "time: " << CTD::getTimeStamp() << endl;
     log << Log::LogLevel( Log::L_INFO ) << "initializing viewer" << endl;
-    // construct the viewer
+
+    // setup the viewer
     //----------
-    _p_viewer = new osgProducer::Viewer( arguments );
+    
+    // load the display settings
+    Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  _screenWidth );
+    Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, _screenHeight );
+    Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN, _fullScreen );
+    unsigned int colorBits = 24;
+    Configuration::get()->getSettingValue( CTD_GS_COLORBITS, colorBits );
+    
+    // init SDL
+    SDL_Init( SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE );
+    SDL_EnableUNICODE( 1 ); // enable unicode translation
+    SDL_EnableKeyRepeat( SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL ); // enable key repeating
 
-    unsigned int opt = 0;
-    if ( useOsgViewer )
+    _p_viewer = new osgSDL::Viewer;
+    _rootSceneNode = new osg::Group;
+    _rootSceneNode->setName( "_topSceneGroup_" );
+	osgSDL::Viewport*   p_viewport = new osgSDL::Viewport( _rootSceneNode.get() );
+	osgUtil::SceneView* p_sceneView = p_viewport->getSceneView();
+	_p_viewer->addViewport( p_viewport );
+    _p_viewer->requestContinuousUpdate( true ); // force event generation for FRAMEs, we need this for animations, etc.
+    int flags = SDL_HWSURFACE;
+    if ( _fullScreen )
+        flags |= SDL_FULLSCREEN;
+    if ( GameState::get()->getMode() != GameState::Server )
     {
-        // set up the viewer services
-        //opt |= osgProducer::Viewer::SKY_LIGHT_SOURCE;
-        //opt |= ~osgProducer::Viewer::HEAD_LIGHT_SOURCE;
-        opt |= ~osgProducer::Viewer::STATS_MANIPULATOR;
-        opt |= ~osgProducer::Viewer::TRACKBALL_MANIPULATOR;
-        opt |= ~osgProducer::Viewer::ESCAPE_SETS_DONE;
+	    _p_viewer->setDisplayMode( _screenWidth, _screenHeight, colorBits, flags );
     }
-
-    // now setup the viewer
-    _p_viewer->setUpViewer( opt );
-    //----------
-
-    // setup render surface 
+    else
     {
-        Producer::Camera *p_cam = _p_viewer->getCamera( 0 );
-        Producer::RenderSurface* p_rs = p_cam->getRenderSurface();
-
-        unsigned int width = 0, height = 0;
-        //if ( GameState::get()->getMode() != GameState::Server )
-        //{
-            p_rs->getScreenSize( width, height );
-            int posx = int( ( width - _screenWidth ) * 0.5f );
-            int posy = int( ( height - _screenHeight ) * 0.5f );
-
-            // auto-correct the app window size which may be greater than the screen size
-            if ( width < _screenWidth )
-            {
-                log << Log::LogLevel( Log::L_WARNING ) << " window width is greater than screen width, adapted to: " << width << endl;
-                _screenWidth = width;
-            }
-            if ( height < _screenHeight )
-            {
-                log << Log::LogLevel( Log::L_WARNING ) << " window height is greater than screen height, adapted to: " << height << endl;
-                _screenHeight = height;
-            }
-
-            p_rs->setWindowRectangle( posx, posy, _screenWidth, _screenHeight );
-        //}
-        //else
-        //{
-        //    // the server has a fix window size
-        //    p_rs->setWindowRectangle( 0, 0, 400, 400 );
-        //}
-
-        unsigned int colorbits = 24;
-        Configuration::get()->getSettingValue( CTD_GS_COLORBITS, colorbits );
-        p_rs->addPixelAttribute( Producer::RenderSurface::DepthSize, colorbits );
-        
-        if ( GameState::get()->getMode() == GameState::Server )
-        {
-            p_rs->fullScreen( false );
-        }
-        else
-        {
-            Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN, _fullScreen );
-            p_rs->fullScreen( _fullScreen );
-        }
-
-        p_rs->useCursor( false ); //hide cursor
+	    _p_viewer->setDisplayMode( 400, 400, colorBits, flags );
     }
-    // get details on keyboard and mouse bindings used by the viewer.
-    _p_viewer->getUsage( *arguments.getApplicationUsage() );
+    _p_viewer->setCursorEnabled( false );    
+    //------------
 
     // setup keyboard map
     string keybType;
@@ -414,7 +378,7 @@ void Application::run()
     CTD_CHECK_HEAP();
 
     // begin game loop
-    while( ( _p_gameState->getState() != GameState::Quitting ) && !_p_viewer->done() )
+    while( ( _p_gameState->getState() != GameState::Quitting ) && !_p_viewer->isTerminated() )
     {
         lastTick  = curTick;
         curTick   = timer.tick();
@@ -436,12 +400,6 @@ void Application::run()
         // check heap if enabled ( used for detecting heap corruptions )
         CTD_CHECK_HEAP();
     }   
-
-    // for the case that we quited via entity request ( such as menu's quit button pressing )
-    _p_viewer->setDone( true );
-
-    // wait for all cull and draw threads to complete before exit.
-    _p_viewer->sync();
 }
 
 void Application::updateClient( float deltaTime )
@@ -458,15 +416,8 @@ void Application::updateClient( float deltaTime )
     // update gui manager
     _p_guiManager->update( deltaTime );
 
-    // wait for all cullings and drawings to complete.
-    _p_viewer->sync();
-
-    // update the scene by traversing it with the the update visitor which will
-    // call all node update callbacks and animations.
-    _p_viewer->update();
-
     // fire off the cull and draw traversals of the scene.
-    _p_viewer->frame();
+    _p_viewer->runOnce();
 
     // yield a little processor time for other tasks on system
     if ( !_fullScreen )
@@ -487,15 +438,8 @@ void Application::updateServer( float deltaTime )
     // update gui manager
     _p_guiManager->update( deltaTime );
 
-    // wait for all cullings and drawings to complete.
-    _p_viewer->sync();
-
-    // update the scene by traversing it with the the update visitor which will
-    // call all node update callbacks and animations.
-    _p_viewer->update();
-
-    // fire off the cull and draw traversals of the scene.
-    _p_viewer->frame();
+     // fire off the cull and draw traversals of the scene.
+    _p_viewer->runOnce();
 
     // yield a little processor time for other tasks on system
     OpenThreads::Thread::microSleep( 1000 );
@@ -512,15 +456,8 @@ void Application::updateStandalone( float deltaTime )
     // update gui manager
     _p_guiManager->update( deltaTime );
 
-    // wait for all cullings and drawings to complete.
-    _p_viewer->sync();
-
-    // update the scene by traversing it with the the update visitor which will
-    // call all node update callbacks and animations.
-    _p_viewer->update();
-
     // fire off the cull and draw traversals of the scene.
-    _p_viewer->frame();
+    _p_viewer->runOnce();
 
     // yield a little processor time for other tasks on system
     if ( !_fullScreen )

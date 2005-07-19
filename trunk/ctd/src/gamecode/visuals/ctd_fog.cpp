@@ -64,8 +64,7 @@ EnFog::~EnFog()
 {
     if ( _p_fog && _instCount < 1 )
     {
-        osgProducer::Viewer* p_viewer = Application::get()->getViewer();
-        osg::StateSet* p_stateset = p_viewer->getGlobalStateSet();
+        osg::StateSet* p_stateset = Application::get()->getSceneView()->getGlobalStateSet();
         p_stateset->removeAttribute( _p_fog );
         _p_fog = NULL;
     }
@@ -96,8 +95,7 @@ void EnFog::initialize()
     if ( _p_fog )
         return;
 
-    osgProducer::Viewer* p_viewer = Application::get()->getViewer();
-    osg::StateSet* p_stateset = p_viewer->getGlobalStateSet();
+    osg::StateSet* p_stateset = Application::get()->getSceneView()->getGlobalStateSet();
     _p_fog = new osg::Fog;
     _p_fog->setMode( osg::Fog::LINEAR );
     _p_fog->setDensity( _density );
@@ -113,8 +111,7 @@ void EnFog::enable( bool en )
 {
     if ( en )
     {
-        osgProducer::Viewer* p_viewer = Application::get()->getViewer();
-        osg::StateSet* p_stateset = p_viewer->getGlobalStateSet();
+        osg::StateSet* p_stateset = Application::get()->getSceneView()->getGlobalStateSet();
         _p_fog->setDensity( _density );
         _p_fog->setStart( _start );
         _p_fog->setEnd( _end );
@@ -124,8 +121,7 @@ void EnFog::enable( bool en )
     }
     else
     {
-        osgProducer::Viewer* p_viewer = Application::get()->getViewer();
-        osg::StateSet* p_stateset = p_viewer->getGlobalStateSet();
+        osg::StateSet* p_stateset = Application::get()->getSceneView()->getGlobalStateSet();
         p_stateset->setAttributeAndModes( _p_fog, osg::StateAttribute::OFF );
         p_stateset->setMode( GL_FOG, osg::StateAttribute::OFF );
     }

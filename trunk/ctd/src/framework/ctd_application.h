@@ -68,7 +68,10 @@ class Application : public Singleton< Application >
         inline const std::string&                   getFullBinPath() const;
 
         //! Get osgProducer's viewer instance for this application
-        inline osgProducer::Viewer*                 getViewer();
+        inline osgSDL::Viewer*                      getViewer();
+
+        //! Get the scene view for given view port ( the default is 0 )
+        inline osgUtil::SceneView*                  getSceneView( int num = 0 );
 
         //! Get the top node in scenegraph
         inline osg::Group*                          getSceneRootNode();
@@ -102,7 +105,7 @@ class Application : public Singleton< Application >
 
         GameState*                                  _p_gameState;
 
-        osgProducer::Viewer*                        _p_viewer;
+        osgSDL::Viewer*                             _p_viewer;
 
         unsigned int                                _screenWidth;
 
@@ -110,7 +113,7 @@ class Application : public Singleton< Application >
 
         bool                                        _fullScreen;
 
-        osg::Group*                                 _p_rootSceneNode;
+        osg::ref_ptr< osg::Group >                  _rootSceneNode;
 
         std::string                                 _mediaPath;
 
@@ -119,9 +122,15 @@ class Application : public Singleton< Application >
     friend class Singleton< Application >;
 };
 
-inline osgProducer::Viewer* Application::getViewer()
+inline osgSDL::Viewer* Application::getViewer()
 {
     return _p_viewer;
+}
+
+inline osgUtil::SceneView* Application::getSceneView( int num )
+{
+    assert( _p_viewer && "viewer is not created!" );
+    return _p_viewer->getViewport( num )->getSceneView();
 }
 
 inline const std::string& Application::getMediaPath() const
@@ -136,12 +145,13 @@ inline const std::string& Application::getFullBinPath() const
 
 inline void Application::setSceneRootNode( osg::Group* p_root )
 {
-    _p_rootSceneNode = p_root;
+    _rootSceneNode = p_root;
+    getSceneView()->setSceneData( _rootSceneNode.get() );
 }
 
 inline osg::Group* Application::getSceneRootNode()
 {
-    return _p_rootSceneNode;
+    return _rootSceneNode.get();
 }
         
 inline void Application::getScreenSize( unsigned int& x, unsigned int& y ) const

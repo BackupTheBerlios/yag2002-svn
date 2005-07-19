@@ -58,26 +58,29 @@ class ConsoleIH : public GenericInputHandler< EnConsole >
         //! Handle input events.
         bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
                                             {
-                                                if ( ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN ) 
+                                                const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
+                                                assert( p_eventAdapter && "invalid event adapter received" );
+
+                                                if ( p_eventAdapter->getEventType() == osgGA::GUIEventAdapter::KEYDOWN ) 
                                                 {
-                                                    if ( ea.getKey() == 92 ) // '^'
+                                                    if ( p_eventAdapter->getSDLKey() == SDLK_BACKQUOTE ) // '^'
                                                     {
                                                         _toggleEnable = !_toggleEnable;
                                                         getUserObject()->enable( _toggleEnable );
                                                     }
-                                                    else if ( _toggleEnable && ea.getKey() == _retCode )
+                                                    else if ( _toggleEnable && p_eventAdapter->getSDLKey() == _retCode )
                                                     {
                                                         getUserObject()->issueCmd( _p_userObject->_p_inputWindow->getText().c_str() );
                                                     }
-                                                    else if ( ea.getKey() == _autoCompleteCode )
+                                                    else if ( p_eventAdapter->getSDLKey() == _autoCompleteCode )
                                                     {
                                                         getUserObject()->autoCompleteCmd( _p_userObject->_p_inputWindow->getText().c_str() );
                                                     }
-                                                    else if ( ea.getKey() == osgGA::GUIEventAdapter::KEY_Up )
+                                                    else if ( p_eventAdapter->getSDLKey() == osgGA::GUIEventAdapter::KEY_Up )
                                                     {
                                                         getUserObject()->cmdHistory( true );
                                                     }
-                                                    else if ( ea.getKey() == osgGA::GUIEventAdapter::KEY_Down )
+                                                    else if ( p_eventAdapter->getSDLKey() == osgGA::GUIEventAdapter::KEY_Down )
                                                     {
                                                         getUserObject()->cmdHistory( false );
                                                     }

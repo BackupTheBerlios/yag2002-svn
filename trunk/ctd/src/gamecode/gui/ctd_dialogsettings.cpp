@@ -625,11 +625,6 @@ void DialogGameSettings::senseKeybinding( CEGUI::PushButton* p_btn )
     BtnInputHandler* inputHandler = new BtnInputHandler( p_btn, this );
 }
 
-void DialogGameSettings::enqueueInputHandlerDestruction( BtnInputHandler* p_handler )
-{
-    _inputHandlerDestructionQueue.push_back( p_handler );
-}
-
 void BtnInputHandler::updateBindings( const string newkey )
 {
     // look for overriding key binding
@@ -663,9 +658,11 @@ bool BtnInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAction
     if ( _lockInput )
         return false;
 
-    unsigned int eventType   = ea.getEventType();
-    int          key         = ea.getKey();
+    const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
+    assert( p_eventAdapter && "invalid event adapter received" );
 
+    unsigned int     eventType = p_eventAdapter->getEventType();
+    Uint16           key       = p_eventAdapter->getSDLKey();
     // dispatch key activity
     if ( eventType == osgGA::GUIEventAdapter::KEYDOWN )
     {
@@ -674,8 +671,8 @@ bool BtnInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAction
             string curkey = KeyMap::get()->getKeyName( key );
             updateBindings( curkey ); // update all bindings, handle overriding exsiting binding
             _p_dlg->_p_settingsDialog->enable();
-            _p_dlg->enqueueInputHandlerDestruction( this );
             _lockInput = true;
+            destroyHandler();
         }
         return false;
     }
@@ -691,12 +688,11 @@ bool BtnInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAction
         ) )
 
     {
-
         string curkey( KeyMap::get()->getMouseButtonName( buttonMask ) );
         updateBindings( curkey ); // update all bindings, handle overriding exsiting binding
         _p_dlg->_p_settingsDialog->enable();
-        _p_dlg->enqueueInputHandlerDestruction( this );
         _lockInput = true;
+        destroyHandler();
     }
     return false; // do not consume any key codes!
 }
@@ -717,12 +713,6 @@ void DialogGameSettings::show( bool visible )
     }
     else
     {
-        // flush the destruction queue for input key-sensing's handlers (character control keybingings)
-        std::vector< BtnInputHandler* >::iterator p_beg = _inputHandlerDestructionQueue.begin(), p_end = _inputHandlerDestructionQueue.end();
-        for ( ; p_beg != p_end; p_beg++ )
-            ( *p_beg )->destroyHandler();
-        _inputHandlerDestructionQueue.clear();
-
         _p_settingsDialog->hide();
     }
 }

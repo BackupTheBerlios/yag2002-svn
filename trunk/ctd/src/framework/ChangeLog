@@ -1,4 +1,12 @@
 
+boto ( 07/19/2005 )
+
+- Producer has been replaced by osgSDL.
+
+boto ( 07/01/2005 )
+
+- a console entity with over 30 commands has been implemented supporting automated testing and online diagnosis.
+
 boto ( 04/27/2005 )
 
 - the framework is ready to use, all necessary software packages are integrated, among other things:

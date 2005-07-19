@@ -76,9 +76,12 @@ class MenuInputHandler : public GenericInputHandler< EnMenu >
         //! Handle input events
         bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
                                             {
-                                                unsigned int eventType   = ea.getEventType();
-                                                int          key         = ea.getKey();
-                                                unsigned int buttonMask  = ea.getButtonMask();
+                                                const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
+                                                assert( p_eventAdapter && "invalid event adapter received" );
+
+                                                unsigned int eventType   = p_eventAdapter->getEventType();
+                                                int          key         = p_eventAdapter->getKey();
+                                                unsigned int buttonMask  = p_eventAdapter->getButtonMask();
 
                                                 // during intro we abort it when mouse clicked
                                                 if ( buttonMask == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON )
@@ -93,7 +96,7 @@ class MenuInputHandler : public GenericInputHandler< EnMenu >
 
                                                 if ( eventType == osgGA::GUIEventAdapter::KEYDOWN )
                                                 {
-                                                    if ( !_lockEsc && ( key == osgGA::GUIEventAdapter::KEY_Escape ) )
+                                                    if ( !_lockEsc && ( key == SDLK_ESCAPE ) )
                                                     {
                                                         _lockEsc = true;
 
@@ -113,7 +116,7 @@ class MenuInputHandler : public GenericInputHandler< EnMenu >
                                                 }
                                                 else if ( eventType == osgGA::GUIEventAdapter::KEYUP )
                                                 {
-                                                    if ( key == osgGA::GUIEventAdapter::KEY_Escape )
+                                                    if ( key == SDLK_ESCAPE )
                                                         _lockEsc = false;
                                                 }
 

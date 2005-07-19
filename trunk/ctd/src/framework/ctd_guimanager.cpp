@@ -43,35 +43,35 @@ using namespace CEGUI;
 namespace CTD
 {
 
-//! Viewer's realize callback. Here we initialize CEGUI's renderer.
-class GuiViewerRealizeCallback : public Producer::RenderSurface::Callback
+//! Viewer's init callback. Here we initialize CEGUI's renderer.
+class GuiViewerInitCallback : public osgSDL::Viewer::ViewerInitCallback
 {
     public:
        
-        virtual void                                operator()( const Producer::RenderSurface & )
+        virtual void                                operator()( const osgSDL::Viewport* p_vp )
                                                     {
                                                         GuiManager::get()->doInitialize();
                                                     }
 
     protected:
 
-        virtual                                     ~GuiViewerRealizeCallback() {}
+        virtual                                     ~GuiViewerInitCallback() {}
 
 };
 
 //! Post-render callback, here the complete gui is initialized and drawn
-class GuiRenderCallback : public Producer::Camera::Callback
+class GuiPostDrawCallback : public osgSDL::Viewer::DrawCallback
 {
     public:
 
-       virtual void                                 operator()( const Producer::Camera & ) 
+       virtual void                                 operator()( const osgSDL::Viewport* p_vp ) 
                                                     {
                                                         GuiManager::get()->doRender();
                                                     }
 
     protected:
 
-        virtual                                     ~GuiRenderCallback(){}
+        virtual                                     ~GuiPostDrawCallback(){}
 };
 
 //! Resource loader for gui resource loading
@@ -86,11 +86,8 @@ class CTDResourceProvider : public ResourceProvider
 
 };
 GuiManager::InputHandler::InputHandler( GuiManager* p_guimgr ) : 
-_p_guiMgr( p_guimgr )
+GenericInputHandler< GuiManager >( p_guimgr )
 {
-    // register us in viewer to get mouse and keyboard event callbacks
-    osg::ref_ptr< GuiManager::InputHandler > ih( this );
-    Application::get()->getViewer()->getEventHandlerList().push_back( ih.get() );
 }
 
 void CTDResourceProvider::loadRawDataContainer( const CEGUI::String& filename, RawDataContainer& output, const CEGUI::String& resourceGroup )
@@ -144,18 +141,6 @@ GuiManager::~GuiManager()
 
 void GuiManager::shutdown()
 {    
-    // remove input handler from viewer's handler list
-    osgProducer::Viewer::EventHandlerList& eh = Application::get()->getViewer()->getEventHandlerList();
-    osgProducer::Viewer::EventHandlerList::iterator beg = eh.begin(), end = eh.end();
-    for ( ; beg != end; beg++ )
-    {
-        if ( *beg == _inputHandler.get() )
-        {
-            eh.erase( beg );
-            break;
-        }
-    }
-
     delete CEGUI::System::getSingletonPtr();
     delete _p_renderer;
 
@@ -166,40 +151,23 @@ void GuiManager::shutdown()
 void GuiManager::initialize()
 {
     // register the post render callback where also the CEGUI initialization happens
-    osgProducer::Viewer* p_viewer = Application::get()->getViewer();
-    Producer::Camera* p_cam = p_viewer->getCamera( 0 );
-    _guiRenderCallback = new GuiRenderCallback;
-    p_cam->addPostDrawCallback( _guiRenderCallback.get() );
+    osgSDL::Viewer* p_viewer = Application::get()->getViewer();
+    _guiPostDrawCallback = new GuiPostDrawCallback;
+    p_viewer->addPostDrawCallback( _guiPostDrawCallback.get() );
 
     // register a viewer realize callback, here we initialize CEGUI's renderer (using doInitialize)
-    _guiRealizeCallback = new GuiViewerRealizeCallback;
-    Producer::RenderSurface* p_rs = p_cam->getRenderSurface();
-    p_rs->addRealizeCallback( _guiRealizeCallback.get() );
+    _guiViewerInitCallback = new GuiViewerInitCallback;
+    p_viewer->addViewerInitCallback( _guiViewerInitCallback.get() );
 }
 
 void GuiManager::doInitialize()
 {
-    // first we look if we are in windowed or fullscreen mode
-    bool fullscreen;
-    Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN,    fullscreen );
-    if ( fullscreen )
-    {
-        Producer::Camera*        p_cam = Application::get()->getViewer()->getCamera( 0 );
-        Producer::RenderSurface* p_rs  = p_cam->getRenderSurface();
-        unsigned int x, y;
-        int dummy; 
-        p_rs->getWindowRectangle( dummy, dummy, x, y );
-        _windowWidth = float( x );
-        _windowHeight = float( y );
-    }
-    else
-    {
-        unsigned int width, height;
-        Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  width  );
-        Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, height );
-        _windowWidth = float( width );
-        _windowHeight = float( height );
-    }
+    // get window size
+    unsigned int width, height;
+    Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  width  );
+    Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, height );
+    _windowWidth = float( width );
+    _windowHeight = float( height );
 
     // create a renderer
     _p_renderer = new CTDGuiRenderer( 0, _windowWidth, _windowHeight );    
@@ -409,72 +377,75 @@ void GuiManager::doRender()
 
 bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
-    if ( !_p_guiMgr->_active )
+    if ( !getUserObject()->_active )
         return false;
 
-    unsigned int eventType    = ea.getEventType();
-    int          key          = ea.getKey();
+    const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
+    assert( p_eventAdapter && "invalid event adapter received" );
+
+    unsigned int eventType    = p_eventAdapter->getEventType();
+    int          key          = p_eventAdapter->getSDLKey();
  
     // dispatch key down activity
     if ( eventType == osgGA::GUIEventAdapter::KEYDOWN )
     {
-
         // some keys may be handled via key code and generate those too
         switch ( key )
         {
-            case osgGA::GUIEventAdapter::KEY_BackSpace:
-                CEGUI::System::getSingleton().injectKeyDown(CEGUI::Key::Backspace);
+            case SDLK_BACKSPACE:
+                CEGUI::System::getSingleton().injectKeyDown( CEGUI::Key::Backspace );
                 break;
 
-
-            case osgGA::GUIEventAdapter::KEY_Delete:
-                CEGUI::System::getSingleton().injectKeyDown(CEGUI::Key::Delete);
+            case SDLK_RETURN:
+                CEGUI::System::getSingleton().injectKeyDown( CEGUI::Key::Return );
                 break;
 
-            case osgGA::GUIEventAdapter::KEY_Escape:
-                //CEGUI::System::getSingleton().injectKeyDown(CEGUI::Key::Escape);
+            case SDLK_DELETE:
+                CEGUI::System::getSingleton().injectKeyDown( CEGUI::Key::Delete );
                 break;
 
-            case osgGA::GUIEventAdapter::KEY_Left:
-                CEGUI::System::getSingleton().injectKeyDown(CEGUI::Key::ArrowLeft);
+            case SDLK_ESCAPE:
+                //CEGUI::System::getSingleton().injectKeyDown( CEGUI::Key::Escape );
                 break;
 
-            case osgGA::GUIEventAdapter::KEY_Right:
-                CEGUI::System::getSingleton().injectKeyDown(CEGUI::Key::ArrowRight);
+            case SDLK_LEFT:
+                CEGUI::System::getSingleton().injectKeyDown( CEGUI::Key::ArrowLeft );
                 break;
 
-            case osgGA::GUIEventAdapter::KEY_Up:
-                CEGUI::System::getSingleton().injectKeyDown(CEGUI::Key::ArrowUp);
+            case SDLK_RIGHT:
+                CEGUI::System::getSingleton().injectKeyDown( CEGUI::Key::ArrowRight );
                 break;
 
-            case osgGA::GUIEventAdapter::KEY_Down:
-                CEGUI::System::getSingleton().injectKeyDown(CEGUI::Key::ArrowDown);
+            case SDLK_UP:
+                CEGUI::System::getSingleton().injectKeyDown( CEGUI::Key::ArrowUp );
                 break;
 
-            case osgGA::GUIEventAdapter::KEY_Home:
-                CEGUI::System::getSingleton().injectKeyDown(CEGUI::Key::Home);
+            case SDLK_DOWN:
+                CEGUI::System::getSingleton().injectKeyDown( CEGUI::Key::ArrowDown );
                 break;
 
-            case osgGA::GUIEventAdapter::KEY_End:
-                CEGUI::System::getSingleton().injectKeyDown(CEGUI::Key::End);
+            case SDLK_HOME:
+                CEGUI::System::getSingleton().injectKeyDown( CEGUI::Key::Home );
                 break;
 
-            case osgGA::GUIEventAdapter::KEY_Page_Up:
-                CEGUI::System::getSingleton().injectKeyDown(CEGUI::Key::PageUp);
+            case SDLK_END:
+                CEGUI::System::getSingleton().injectKeyDown( CEGUI::Key::End );
                 break;
 
-            case osgGA::GUIEventAdapter::KEY_Page_Down:
-                CEGUI::System::getSingleton().injectKeyDown(CEGUI::Key::PageDown);
+            case SDLK_PAGEUP:
+                CEGUI::System::getSingleton().injectKeyDown( CEGUI::Key::PageUp );
+                break;
+
+            case SDLK_PAGEDOWN:
+                CEGUI::System::getSingleton().injectKeyDown( CEGUI::Key::PageDown );
                 break;
 
             default:
                 ;
         }
-
-        unsigned int transkey = KeyMap::get()->translateKey( key );
-
-        // always inject Character even if we have done key-down injection
-        CEGUI::System::getSingleton().injectChar( static_cast< CEGUI::utf32 >( transkey ) );    
+        const SDL_Event& event = p_eventAdapter->getSDLEvent();
+        // inject the unicode character
+        CEGUI::System::getSingleton().injectChar( static_cast< CEGUI::utf32 >( event.key.keysym.unicode ) );
     }
 
 
@@ -533,7 +504,7 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
         if ( !mbtn_down )
         {
             CEGUI::System::getSingleton().injectMouseButtonDown( CEGUI::MiddleButton );
-            mbtn_down = true;
+            mbtn_down = false;
             mbtn_up   = true;
         }
     }
@@ -543,20 +514,19 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
         {
             CEGUI::System::getSingleton().injectMouseButtonUp( CEGUI::MiddleButton );
             mbtn_down = false;
-            mbtn_up   = false;
+            mbtn_up   = true;
         }
     }
 
-    if ( !_p_guiMgr->_lockMouse )
+    if ( !getUserObject()->_lockMouse )
     {
-
-        // adjust the pointer position
-        float x = ea.getX();
-        float y = -ea.getY();
-        // we need absolute mouse coords for CEGUI
-        x = ( 0.5f * x + 0.5f ) * _p_guiMgr->_windowWidth;
-        y = ( 0.5f * y + 0.5f ) * _p_guiMgr->_windowHeight;
-        CEGUI::System::getSingleton().injectMousePosition( x, y );
+        if ( ( eventType == osgGA::GUIEventAdapter::MOVE ) || ( eventType == osgGA::GUIEventAdapter::DRAG ) )
+        {
+            // adjust the pointer position
+            float x = ea.getX();
+            float y = ea.getY();
+            CEGUI::System::getSingleton().injectMousePosition( x, y );
+        }
     }
 
     return false;

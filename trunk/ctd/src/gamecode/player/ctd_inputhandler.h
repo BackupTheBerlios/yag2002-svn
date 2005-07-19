@@ -50,9 +50,14 @@
 namespace CTD
 {
 
-// look's pitch limit in ego view mode
-#define LIMIT_PITCH_ANGLE               ( PI / 3.0f )
-#define LIMIT_PITCH_OFFSET              ( PI / 3.0f )
+// Pitch limit
+#define LIMIT_PITCH_ANGLE               ( osg::PI / 3.0f )
+// Mouse movement limit ( in pixels )
+#define LIMIT_MMOVE_DELTA               100.0f
+// Spheric mode related parameters ( mouse wheel functions )
+#define LIMIT_SPHERIC_MAX_DIST          100.0f
+#define LIMIT_SPHERIC_MIN_DIST          2.0f
+#define SPHERIC_DIST_INCREMENT          0.5f
 
 //! Input handler class for player, it controls player character and camera
 template< class PlayerImplT >
@@ -90,6 +95,41 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
 
     protected:
 
+        //! Internal class for handling with mouse position data
+        class MouseData
+        {
+            public:
+                                                MouseData()
+                                                {            
+                                                    // get the current screen size
+                                                    unsigned int width, height;
+                                                    Application::get()->getScreenSize( width, height );
+                                                    _screenSizeX = float( width );
+                                                    _screenSizeY = float( height );
+
+                                                    // calculate the middle of app window
+                                                    _screenMiddleX = static_cast< Uint16 >( _screenSizeX * 0.5f );
+                                                    _screenMiddleY = static_cast< Uint16 >( _screenSizeY * 0.5f );
+                                                    // init mouse coords
+                                                    _yaw = 0.0f;
+                                                    _pitch = 0.0f;
+                                                }
+
+                virtual                         ~MouseData() {}
+
+                //! Accumulated mouse coords ( pitch / yaw )
+                float                           _yaw;
+                float                           _pitch;
+
+                float                           _screenSizeX;
+                float                           _screenSizeY;
+
+                Uint16                          _screenMiddleX;
+                Uint16                          _screenMiddleY;
+        };
+        
+        MouseData                           _mouseData;
+
         // used internally
         // ---------------
         PlayerImplT*                        getPlayerImpl() { return _p_userObject; }
@@ -122,6 +162,7 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
         unsigned int                        _keyCodeChatMode;
 
         bool                                _invertedMouse;
+        float                               _mouseSensitivity;
 };
 
 #include "ctd_inputhandler.inl"

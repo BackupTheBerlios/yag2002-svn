@@ -92,9 +92,10 @@ bool CameraFrameHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             osg::Matrixf inv = Matrixf::inverse( mat );
 
             // adjust Z-UP
-            static Producer::Matrix adjustZ_Up ( Producer::Matrix::rotate( -M_PI / 2.0f, 1.0f, 0.0f, 0.0f ) );
-              // set view matrix
-            Application::get()->getViewer()->setViewByMatrix( Producer::Matrix( inv.ptr() ) * adjustZ_Up  );
+            static osg::Matrixf adjustZ_Up ( osg::Matrixf::rotate( -M_PI / 2.0f, 1.0f, 0.0f, 0.0f ) );
+
+            // set view matrix
+            Application::get()->getSceneView()->setViewMatrix( osg::Matrixf( inv.ptr() ) * adjustZ_Up  );
 
             // reset update flag
             getUserObject()->_needUpdate = false;
@@ -157,12 +158,8 @@ void EnCamera::initialize()
 {
     unsigned int width, height;
     Application::get()->getScreenSize( width, height );
-
-    // setup camera
-    Producer::Camera* p_cam = Application::get()->getViewer()->getCamera( 0 );
-    p_cam->setLensPerspective( _fov, _fov * ( float( height ) / float( width ) ), _nearClip, _farClip );
-    p_cam->setClearColor( _backgroudColor.x(), _backgroudColor.y(), _backgroudColor.z(), 1.0f );
-    p_cam->setOffset( double( 0 ), double( 0 ) );
+    Application::get()->getSceneView()->setProjectionMatrixAsPerspective( _fov, ( float( width ) / float( height ) ), _nearClip, _farClip );
+    Application::get()->getSceneView()->setClearColor( osg::Vec4f( _backgroudColor, 1.0f ) );
 
     _curPosition = _position;
     _curRotation = osg::Quat( 

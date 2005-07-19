@@ -34,6 +34,7 @@
 #include <ctd_base.h>
 #include <ctd_singleton.h>
 #include <ctd_guirenderer.h>
+#include <ctd_utils.h>
 
 namespace CTD
 {
@@ -41,8 +42,8 @@ namespace CTD
 class Application;
 class LevelManager;
 class CTDGuiRenderer;
-class GuiRenderCallback;
-class GuiViewerRealizeCallback;
+class GuiPostDrawCallback;
+class GuiViewerInitCallback;
 
 // some definitions
 #define CTD_GUI_FONT8           "CTD-8"
@@ -140,7 +141,7 @@ class GuiManager : public Singleton< GuiManager >
         CEGUI::Font*                            createFont( const std::string& fontname );
 
         //! Input handler, inputs are forwarded to gui system
-        class InputHandler : public osgGA::GUIEventHandler
+        class InputHandler : public GenericInputHandler< GuiManager >
         {
             public:
 
@@ -151,10 +152,6 @@ class GuiManager : public Singleton< GuiManager >
 
                 //! Handle input events
                 bool                            handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
-
-            protected:
-
-                GuiManager*                     _p_guiMgr;
         };
 
         CTDGuiRenderer*                         _p_renderer;
@@ -167,9 +164,9 @@ class GuiManager : public Singleton< GuiManager >
 
         float                                   _windowHeight;
 
-        osg::ref_ptr< GuiRenderCallback >       _guiRenderCallback;
+        osg::ref_ptr< GuiPostDrawCallback >     _guiPostDrawCallback;
 
-        osg::ref_ptr< GuiViewerRealizeCallback > _guiRealizeCallback;
+        osg::ref_ptr< GuiViewerInitCallback >   _guiViewerInitCallback;
 
         //! Root window of cegui where all other windows are placed
         CEGUI::DefaultWindow*                   _p_root;
@@ -184,8 +181,8 @@ class GuiManager : public Singleton< GuiManager >
         bool                                    _lockMouse;
                                          
     friend class Singleton< GuiManager >;
-    friend class GuiViewerRealizeCallback;
-    friend class GuiRenderCallback;
+    friend class GuiViewerInitCallback;
+    friend class GuiPostDrawCallback;
     friend class LevelManager;
     friend class Application;
 };

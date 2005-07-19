@@ -381,7 +381,6 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
 void LevelManager::finalizeLoading()
 {
     Application::get()->setSceneRootNode( _topGroup.get() );
-    Application::get()->getViewer()->setSceneData( _topGroup.get() );
 
     // are we loading for first time?
     if ( _firstLoading )
@@ -445,11 +444,9 @@ void LevelManager::initializeFirstTime()
 
     // for first time we realize the viewer
     log << Log::LogLevel( Log::L_INFO ) << "starting viewer ..." << endl;
-    // note: after initialization of gui system the viewer must be realized (in order to get gui's renderer
-    //  initialized) before the entities are initialized
-    // use single-threading (entity specific gl commands need it)
-    Application::get()->getViewer()->realize( Producer::CameraGroup::SingleThreaded ); 
-    Application::get()->getViewer()->sync();
+    // start viewer
+    Application::get()->getViewer()->open();
+    Application::get()->getViewer()->init();
 }
 
 void LevelManager::buildPhysicsStaticGeometry()

@@ -48,7 +48,8 @@ _keyCodeMoveRight( osgGA::GUIEventAdapter::KEY_Right ),
 _keyCodeJump( osgGA::GUIEventAdapter::KEY_Space ),
 _keyCodeCameraMode( osgGA::GUIEventAdapter::KEY_F1 ),
 _keyCodeChatMode( osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON ),
-_invertedMouse( false )
+_invertedMouse( false ),
+_mouseSensitivity( 1.0f )
 {
     // make a local copy of player entity's attributes
     _attributeContainer = p_playerentity->getPlayerAttributes();
@@ -66,9 +67,12 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     if ( _menuEnabled )
         return false;
 
-    unsigned int eventType  = ea.getEventType();
-    int          kcode      = ea.getKey();
-    unsigned int mouseBtn   = ea.getButton();    
+    const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
+    assert( p_eventAdapter && "invalid event adapter received" );
+
+    unsigned int eventType  = p_eventAdapter->getEventType();
+    int          kcode      = p_eventAdapter->getSDLKey();
+    unsigned int mouseBtn   = p_eventAdapter->getButton();    
     bool keyDown            = ( eventType == osgGA::GUIEventAdapter::KEYDOWN );
     bool keyUp              = ( eventType == osgGA::GUIEventAdapter::KEYUP   );
     bool mouseButtonPush    = ( eventType == osgGA::GUIEventAdapter::PUSH    );
@@ -331,56 +335,90 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         }
     }
 
+    // get the SDL event in order to extract mouse button and absolute / relative mouse movement coordinates out of it
+    const SDL_Event& sdlevent = p_eventAdapter->getSDLEvent();
+
     // handle mouse wheel changes for camera offsetting in spheric mode
     if ( getPlayerImpl()->_cameraMode == EnPlayer::Spheric )
     {
-        if ( eventType == osgGA::GUIEventAdapter::SCROLLUP )
-        {
-            _attributeContainer._camPosOffsetSpheric._v[ 1 ] += 0.5f;
-            getPlayerImpl()->_p_camera->setCameraOffsetPosition( _attributeContainer._camPosOffsetSpheric );
-        }
-        else if ( eventType == osgGA::GUIEventAdapter::SCROLLDOWN )
+        if ( sdlevent.button.button == SDL_BUTTON_WHEELUP )
         {
             float& dist = _attributeContainer._camPosOffsetSpheric._v[ 1 ];
-            dist = min( 0.0f, dist - 0.5f );
+            dist = min( dist + SPHERIC_DIST_INCREMENT, -LIMIT_SPHERIC_MIN_DIST );
+            getPlayerImpl()->_p_camera->setCameraOffsetPosition( _attributeContainer._camPosOffsetSpheric );
+        }
+        else if ( sdlevent.button.button == SDL_BUTTON_WHEELDOWN )
+        {
+            float& dist = _attributeContainer._camPosOffsetSpheric._v[ 1 ];
+            dist = max( -LIMIT_SPHERIC_MAX_DIST, dist - SPHERIC_DIST_INCREMENT );
             getPlayerImpl()->_p_camera->setCameraOffsetPosition( _attributeContainer._camPosOffsetSpheric );
         }
     }
 
-    // handle mouse pointer movement
-    //! TODO: avoid mouse pointer leaving the window area
+    // adjust pitch and yaw depending on camera mode
     if ( eventType == osgGA::GUIEventAdapter::MOVE )
     {
-        float mcoordX = ea.getXnormalized();
-        float mcoordY = ea.getYnormalized();
+        // skip events which come in when we warp the mouse pointer to middle of app window ( see below )
+        if ( (  sdlevent.motion.x == _mouseData._screenMiddleX ) && ( sdlevent.motion.y == _mouseData._screenMiddleY ) )
+            return false;
 
+        // limit the movement gradient in x and y direction and multiply with mouse sensitivity factor
+        float xrel = float( sdlevent.motion.xrel );
+        if ( xrel > LIMIT_MMOVE_DELTA )
+            xrel = LIMIT_MMOVE_DELTA;
+        else if ( xrel < -LIMIT_MMOVE_DELTA )
+            xrel = -LIMIT_MMOVE_DELTA;
+        xrel *= _mouseSensitivity;
+
+        float yrel = float( sdlevent.motion.yrel );
+        if ( yrel > LIMIT_MMOVE_DELTA )
+            yrel = LIMIT_MMOVE_DELTA;
+        else if ( yrel < -LIMIT_MMOVE_DELTA )
+            yrel = -LIMIT_MMOVE_DELTA;
+        yrel *= _mouseSensitivity;
+
+        // update accumulated mouse coords ( pitch / yaw )
+        _mouseData._yaw += xrel / _mouseData._screenSizeX;
         // consider the mouse invert flag
-        if ( _invertedMouse )
-            mcoordY = -mcoordY;
+        if ( !_invertedMouse )
+            _mouseData._pitch -= yrel / _mouseData._screenSizeY;
+        else
+            _mouseData._pitch += yrel / _mouseData._screenSizeY;
 
         // in ego mode the mouse controls the player rotation
         if ( getPlayerImpl()->_cameraMode == EnPlayer::Ego )
         {
-            float& rotZ = getPlayerImpl()->_rotZ;
-            rotZ = mcoordX * float( osg::PI ) * 2.0f; 
+            // limit pitch
+            if ( _mouseData._pitch > LIMIT_PITCH_ANGLE )
+                _mouseData._pitch = LIMIT_PITCH_ANGLE;
+            else if ( _mouseData._pitch < -LIMIT_PITCH_ANGLE )
+                _mouseData._pitch = -LIMIT_PITCH_ANGLE;
 
+            // calculate yaw and change player direction when in ego mode
+            float& rotZ = getPlayerImpl()->_rotZ;
+            rotZ = _mouseData._yaw * float( osg::PI ) * 2.0f; 
             getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
             getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
             getPlayerImpl()->_p_playerAnimation->animTurn();
 
-            // adjust pitch / yaw depending on mouse movement
-            getPlayerImpl()->setCameraPitchYaw( mcoordY, 0 );
+            // set pitch
+            getPlayerImpl()->setCameraPitchYaw( _mouseData._pitch, 0 );
         }
         else
         {
-            // adjust pitch / yaw depending on mouse movement
-            getPlayerImpl()->setCameraPitchYaw( mcoordY, -mcoordX );
+            // limit pitch
+            if ( _mouseData._pitch > 0 )
+                _mouseData._pitch = 0;
+            else if ( _mouseData._pitch < -LIMIT_PITCH_ANGLE )
+                _mouseData._pitch = -LIMIT_PITCH_ANGLE;
+
+            // set pitch / yaw
+            getPlayerImpl()->setCameraPitchYaw( _mouseData._pitch, -_mouseData._yaw );
         }
 
-        // reset pointer
-        //osgProducer::Viewer* p_viewer = Application::get()->getViewer();
-        //p_viewer->getKeyboardMouse()->positionPointer( 0, 0 );
+        // reset mouse position in order to avoid leaving the app window
+        Application::get()->getViewer()->requestWarpPointer( _mouseData._screenMiddleX, _mouseData._screenMiddleY );
     }
 
-    return false; // let other handlers get all inputs handled here too
+    return false;
 }

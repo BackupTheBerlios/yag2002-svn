@@ -109,6 +109,7 @@ std::string cleanPath( const std::string& path )
 
     return cleanpath;
 }
+
 osg::ref_ptr< osg::TextureCubeMap > readCubeMap( const std::vector< std::string >& texfiles )
 {
     if ( texfiles.size() < 6 )

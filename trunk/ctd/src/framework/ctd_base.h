@@ -51,6 +51,9 @@
 #  endif
 #endif
 
+// SDL header
+#include <SDL.h>
+
 // osg headers
 #include <osg/AlphaFunc>
 #include <osg/BlendFunc>
@@ -87,6 +90,8 @@
 #include <osgGA/guieventadapter>
 #include <osgProducer/Viewer>
 #include <osgUtil/Optimizer>
+
+#include <osgSDL/Viewer>
 
 // Physics library header
 #include <Newton.h>

@@ -32,6 +32,7 @@
 #define _CTD_UTILS_H_
 
 #include <ctd_base.h>
+#include <ctd_application.h>
 
 namespace CTD
 {
@@ -69,40 +70,40 @@ class GenericInputHandler : public osgGA::GUIEventHandler
 {
     public:
 
-        explicit                            GenericInputHandler( T* p_obj = NULL ) : _p_userObject( p_obj )
+        explicit                            GenericInputHandler( T* p_obj = NULL ) : 
+                                             _p_userObject( p_obj ),
+                                             _destroyed( false )
                                             {
                                                 // register us in viewer to get event callbacks
-                                                osg::ref_ptr< GenericInputHandler > ih( this );
-                                                Application::get()->getViewer()->getEventHandlerList().push_back( ih.get() );
+                                                Application::get()->getViewer()->addEventHandler( this );
                                             }
 
-        virtual                             ~GenericInputHandler() {}
+        virtual                             ~GenericInputHandler() 
+                                            {
+                                                if ( !_destroyed )
+                                                    destroyHandler();
+                                            }
 
         //! Remove handler form viewer's handler list and destroy the object. Don't use the object after calling this method.
         void                                destroyHandler()
                                             {
                                                  // remove this handler from viewer's handler list
-                                                 osgProducer::Viewer::EventHandlerList& eh = Application::get()->getViewer()->getEventHandlerList();
-                                                 osgProducer::Viewer::EventHandlerList::iterator beg = eh.begin(), end = eh.end();
-                                                 for ( ; beg != end; beg++ )
-                                                 {
-                                                     if ( *beg == this )
-                                                     {
-                                                         eh.erase( beg );
-                                                         break;
-                                                     }
-                                                 }
-                                             }
+                                                 Application::get()->getViewer()->removeEventHandler( this );
+                                                 _destroyed = true;
+                                            }
 
-        virtual bool                         handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa ) = 0;
+        virtual bool                        handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa ) = 0;
 
         //! Return the user object
-        T*                                   getUserObject() { return _p_userObject; }
+        T*                                  getUserObject() { return _p_userObject; }
 
     protected:
 
         //! An optional object which can be accessed in 'handle' method.
         T*                                  _p_userObject;
+
+        //! This flag is used for calling destroyHandler on destruction if the user has forgotten that.
+        bool                                _destroyed;
 };
 
 //! This is a class for adjusting the transforming to eye coordinated.
@@ -173,23 +174,25 @@ class TexMatCallback : public osg::NodeCallback
 
         explicit                            TexMatCallback( osg::TexMat& tex ) : 
                                              _texMat( tex ),
-                                             _R( osg::Matrixf::rotate( osg::DegreesToRadians( 90.0f ), 1.0f, 0.0f, 0.0f ) )
+                                             _R( 
+                                               osg::Matrix::rotate( osg::DegreesToRadians( 90.0f ), 1.0f, 0.0f, 0.0f ) 
+                                               )
                                             {
                                             }
 
-        virtual void                        operator()( osg::Node* node, osg::NodeVisitor* nv )
+        virtual void                        operator()( osg::Node* p_node, osg::NodeVisitor* p_nv )
                                             {
-                                                osgUtil::CullVisitor* cv = dynamic_cast< osgUtil::CullVisitor* >( nv );
-                                                if ( cv )
+                                                osgUtil::CullVisitor* p_cv = dynamic_cast< osgUtil::CullVisitor* >( p_nv );
+                                                if ( p_cv )
                                                 {
-                                                    const osg::Matrixf& MV = cv->getModelViewMatrix();
+                                                    const osg::Matrixf& MV = p_cv->getModelViewMatrix();
                                                     osg::Quat q;
                                                     MV.get( q );
                                                     const osg::Matrix C = osg::Matrixf::rotate( q.inverse() );
 
                                                     _texMat.setMatrix( C * _R );
                                                 }
-                                                traverse( node, nv );
+                                                traverse( p_node, p_nv );
                                             }
 
         osg::TexMat&                        _texMat;

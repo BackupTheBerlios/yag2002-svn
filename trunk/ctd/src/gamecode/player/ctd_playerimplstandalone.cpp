@@ -230,6 +230,7 @@ void PlayerImplStandalone::getConfiguration()
     _p_inputHandler->_keyCodeChatMode = KeyMap::get()->getCode( keyname );
 
     Configuration::get()->getSettingValue( CTD_GS_INVERTMOUSE, _p_inputHandler->_invertedMouse );
+    Configuration::get()->getSettingValue( CTD_GS_MOUSESENS, _p_inputHandler->_mouseSensitivity );
 }
 
 void PlayerImplStandalone::update( float deltaTime )

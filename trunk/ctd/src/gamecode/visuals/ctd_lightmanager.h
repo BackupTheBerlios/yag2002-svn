@@ -87,11 +87,11 @@ class BaseLight
 
 class LightCallback;
 //! Class for enabling up to CTD_MAX_GL_LIGHTS gl lights per frame considering light source culling
-class LightManager : public Singleton< LightManager >, public Producer::Camera::Callback
+class LightManager : public Singleton< LightManager >, public osgSDL::Viewer::DrawCallback
 {
     public:
 
-       inline void                                  operator()( const Producer::Camera & ) 
+       inline void                                  operator()( const osgSDL::Viewport* p_vp ) 
                                                     {
                                                         // enable lights
                                                         flush();
