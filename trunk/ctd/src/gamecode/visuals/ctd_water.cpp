@@ -50,8 +50,8 @@ CTD_IMPL_ENTITYFACTORY_AUTO( WaterEntityFactory );
 
 
 // the water shader is basing on RenderMonkey's Reflection/Refraction example
-#define LOCATION_CUBEMAP_SAMPLER    5
-#define LOCATION_NOISE_SAMPLER      0
+#define LOCATION_CUBEMAP_SAMPLER    4
+#define LOCATION_NOISE_SAMPLER      3
 
 const char glsl_vp[] =
     "uniform vec4 viewPosition;                                                                 \n"
@@ -143,29 +143,28 @@ class ViewPositionUpdateCallback: public osg::Uniform::Callback
         
                                             ViewPositionUpdateCallback() 
                                             {
-                                                _p_viewer = Application::get()->getViewer();
+                                                _p_sceneView = Application::get()->getSceneView();
                                             }
 
         virtual                             ~ViewPositionUpdateCallback() {}
 
         virtual void                        operator() ( osg::Uniform* p_uniform, osg::NodeVisitor* p_nv )
                                             {
-                                                const double* p_pos = _p_viewer->getPosition();
+                                                osg::Matrixd::value_type* mat = _p_sceneView->getViewMatrix().ptr();  
                                                 osg::Vec4f viewpos
                                                     ( 
-                                                    static_cast< float >( p_pos[ 0 ] ), 
-                                                    static_cast< float >( p_pos[ 1 ] ), 
-                                                    static_cast< float >( p_pos[ 2 ] ),
+                                                    static_cast< float >( mat[ 13 ] ), 
+                                                    static_cast< float >( mat[ 14 ] ), 
+                                                    static_cast< float >( mat[ 15 ] ),
                                                     1.0f
-                                                    );
-                                                    
+                                                    );                                                    
+
                                                 p_uniform->set( viewpos );
                                             }
 
     protected:
 
-        osgProducer::Viewer*                _p_viewer;
-
+        osgUtil::SceneView*                  _p_sceneView;
 };
 
 // Implementation of water entity                                                           
@@ -328,20 +327,20 @@ osg::Node* EnWater::setupWater()
         osg::Uniform* p_scale       = new osg::Uniform( "scale",        osg::Vec4f( _scale, 1.0f )      );
         osg::Uniform* p_trans       = new osg::Uniform( "transparency", _transparency                   );
 
-        p_stateSet->addUniform( p_fadeBias      );
-        p_stateSet->addUniform( p_waveSpeed     );
-        p_stateSet->addUniform( p_fadeExp       );
-        p_stateSet->addUniform( p_scale         );
-        p_stateSet->addUniform( p_noiseSpeed    );
-        p_stateSet->addUniform( p_waterColor    );
-        p_stateSet->addUniform( p_trans         );
+        p_stateSet->addUniform( p_fadeBias   );
+        p_stateSet->addUniform( p_waveSpeed  );
+        p_stateSet->addUniform( p_fadeExp    );
+        p_stateSet->addUniform( p_scale      );
+        p_stateSet->addUniform( p_noiseSpeed );
+        p_stateSet->addUniform( p_waterColor );
+        p_stateSet->addUniform( p_trans      );
 
         osg::Uniform* p_viewPosition = new osg::Uniform( "viewPosition", osg::Vec4f() );
         p_stateSet->addUniform( p_viewPosition );
         p_viewPosition->setUpdateCallback( new ViewPositionUpdateCallback() ); // set time view position update callback for the shader
 
         osg::Uniform* p_uniformTime = new osg::Uniform( "time", 0.0f );
-        p_stateSet->addUniform( p_uniformTime   );
+        p_stateSet->addUniform( p_uniformTime );
         p_uniformTime->setUpdateCallback( new TimeUpdateCallback() ); // set time update callback for the shader
 
         // create a noise texture
@@ -351,7 +350,7 @@ osg::Node* EnWater::setupWater()
         p_noiseTexture->setWrap( osg::Texture3D::WRAP_S, osg::Texture3D::REPEAT );
         p_noiseTexture->setWrap( osg::Texture3D::WRAP_T, osg::Texture3D::REPEAT );
         p_noiseTexture->setWrap( osg::Texture3D::WRAP_R, osg::Texture3D::REPEAT );
-        p_noiseTexture->setImage( make3DNoiseImage( 32 ) );
+        p_noiseTexture->setImage( make3DNoiseImage( 64 ) );
 
         p_stateSet->setTextureAttribute( LOCATION_NOISE_SAMPLER, p_noiseTexture );
         p_stateSet->addUniform( new osg::Uniform( "samplerNoise", LOCATION_NOISE_SAMPLER ) );
@@ -377,27 +376,29 @@ osg::Node* EnWater::setupWater()
         p_stateSet->setMode( GL_DEPTH, osg::StateAttribute::OFF );
 
         // set up transparency
-        osg::BlendFunc* p_blending = new osg::BlendFunc;
-        p_blending->setFunction( osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA );
-        p_stateSet->setAttributeAndModes( p_blending,osg::StateAttribute::ON );
-        p_stateSet->setAttribute( p_blending );
-        p_stateSet->setMode( GL_BLEND, osg::StateAttribute::ON );      
-        p_stateSet->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
+        osg::TexEnvCombine* p_te0 = new osg::TexEnvCombine;    
+        p_te0->setCombine_RGB( osg::TexEnvCombine::REPLACE );
+        p_te0->setSource0_RGB( osg::TexEnvCombine::TEXTURE0 );
+        p_te0->setOperand0_RGB( osg::TexEnvCombine::SRC_COLOR );
+
+        osg::TexEnvCombine *p_te1 = new osg::TexEnvCombine;    
+        p_te1->setCombine_RGB( osg::TexEnvCombine::INTERPOLATE );
+        p_te1->setSource0_RGB( osg::TexEnvCombine::TEXTURE1 );
+        p_te1->setOperand0_RGB( osg::TexEnvCombine::SRC_COLOR );
+        p_te1->setSource1_RGB( osg::TexEnvCombine::PREVIOUS );
+        p_te1->setOperand1_RGB( osg::TexEnvCombine::SRC_COLOR );
+        p_te1->setSource2_RGB( osg::TexEnvCombine::PRIMARY_COLOR );
+        p_te1->setOperand2_RGB( osg::TexEnvCombine::SRC_COLOR );
+
+        p_stateSet->setTextureAttributeAndModes( 0, p_te0, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
+        p_stateSet->setTextureAttributeAndModes( 1, p_te1, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
 
         // append state set to geode
         p_geode->setStateSet( p_stateSet );
     }
 
     osg::Group* p_group = new osg::Group;
+
     p_group->addChild( p_geode );
-
-    //! TODO: skybox' cubemap must be rotated to right place
-
-    // set texture matrix manipulation callback ( 90 degree rotation about X )
-    osg::ref_ptr< osg::TexMat > texMat = new osg::TexMat;
-    p_stateSet->setTextureAttribute( 0, texMat.get() );
-    p_group->setCullCallback( new TexMatCallback( *texMat.get() ) );
-
-
     return p_group;
 }

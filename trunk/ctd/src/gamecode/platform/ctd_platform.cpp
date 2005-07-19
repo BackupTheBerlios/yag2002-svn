@@ -33,7 +33,6 @@
 
 using namespace std;
 using namespace CTD; 
-using namespace Producer; 
 
 
 //! Implement and register the platform entity factory
