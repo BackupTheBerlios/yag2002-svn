@@ -138,6 +138,16 @@ class BasePlayerImplementation
         //! Get the current camera mode ( Ego or Spheric )
         inline bool                                 getCameraMode() const;
 
+        //! Get player's attributes, note that these attributes may be changed by implementation instances.
+        inline EnPlayer::PlayerAttributes&          getPlayerAttributes();
+
+        //! Camera mode
+        enum CameraMode
+        {
+            Ego,
+            Spheric
+        }                                           _cameraMode;
+
     protected:
 
         //! Set camera mode to Spheric or Ego
@@ -158,13 +168,6 @@ class BasePlayerImplementation
         //! Association to player entity
         EnPlayer*                                   _p_player;
 
-        //! Camera mode
-        enum CameraMode
-        {
-            Ego,
-            Spheric
-        }                                           _cameraMode;
-
         //! Physics component
         EnPlayerPhysics*                            _p_playerPhysics;
 
@@ -181,7 +184,7 @@ class BasePlayerImplementation
         PlayerNetworking*                           _p_playerNetworking;
 
         //! Chat gui
-        PlayerChatGui*                              _p_chatGui;
+        std::auto_ptr< PlayerChatGui >              _p_chatGui;
 
         //! Movement direction
         osg::Vec3f                                  _moveDir;
@@ -275,6 +278,11 @@ inline void BasePlayerImplementation::setLoadingPostfix( const std::string& post
 inline bool BasePlayerImplementation::getCameraMode() const
 {
     return _cameraMode;
+}
+
+inline EnPlayer::PlayerAttributes& BasePlayerImplementation::getPlayerAttributes()
+{
+    return _playerAttributes;
 }
 
 } // namespace CTD

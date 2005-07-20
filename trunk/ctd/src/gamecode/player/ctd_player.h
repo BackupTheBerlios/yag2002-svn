@@ -137,7 +137,7 @@ class EnPlayer : public BaseEntity
         };
 
         //! Return player's attribute container
-        inline const PlayerAttributes&              getPlayerAttributes() const;
+        inline const PlayerAttributes &             getPlayerAttributes() const;
 
         //! Get player name
         inline const std::string&                   getPlayerName() const;

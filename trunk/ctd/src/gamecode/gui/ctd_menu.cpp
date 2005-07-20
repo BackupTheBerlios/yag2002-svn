@@ -421,7 +421,6 @@ void EnMenu::createMenuScene()
     p_camEntity->getAttributeManager().setAttributeValue( "fov",             fov     );
     osg::Quat rotoffset( -M_PIF / 2.0f, osg::Vec3f( 1, 0, 0 ) );
     p_camEntity->setCameraOffsetRotation( rotoffset );    
-    EntityManager::get()->addToScene( p_camEntity );    
     p_camEntity->initialize();
     p_camEntity->postInitialize();
 

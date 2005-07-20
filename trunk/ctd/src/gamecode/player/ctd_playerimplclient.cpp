@@ -54,9 +54,6 @@ PlayerImplClient::~PlayerImplClient()
 {
     if ( _p_playerNetworking )
         delete _p_playerNetworking;
-
-    if ( _p_chatGui )
-        delete _p_chatGui;
 }
 
 void PlayerImplClient::handleNotification( const EntityNotification& notification )
@@ -131,8 +128,7 @@ void PlayerImplClient::initialize()
         getPlayerNetworking()->initialize( _currentPos, getPlayerEntity()->getPlayerName(), playerconfig );
 
         // create chat gui
-//        _p_chatGui = std::auto_ptr< PlayerChatGui >( new PlayerChatGui );
-        _p_chatGui = new PlayerChatGui;
+        _p_chatGui = std::auto_ptr< PlayerChatGui >( new PlayerChatGui );
         _p_chatGui->initialize( this, _playerAttributes._chatGuiConfig );
     }
 }

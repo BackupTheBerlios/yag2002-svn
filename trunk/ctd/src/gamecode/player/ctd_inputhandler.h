@@ -100,7 +100,15 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
         {
             public:
                                                 MouseData()
-                                                {            
+                                                {
+                                                    reset();
+                                                }
+
+                virtual                         ~MouseData() {}
+
+                //! Reset the mouse data state
+                void                            reset()
+                                                {
                                                     // get the current screen size
                                                     unsigned int width, height;
                                                     Application::get()->getScreenSize( width, height );
@@ -110,16 +118,31 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
                                                     // calculate the middle of app window
                                                     _screenMiddleX = static_cast< Uint16 >( _screenSizeX * 0.5f );
                                                     _screenMiddleY = static_cast< Uint16 >( _screenSizeY * 0.5f );
-                                                    // init mouse coords
-                                                    _yaw = 0.0f;
-                                                    _pitch = 0.0f;
+                                                    // init pitch and yaw
+                                                    _yaw         = 0.0f;
+                                                    _pitch       = 0.0f;
+                                                    _pyQueue.push( std::make_pair( _pitch, _yaw ) );
                                                 }
 
-                virtual                         ~MouseData() {}
+                //! Stores the current pitch / yaw values, used for camera mode switching
+                void                            pushPitchYaw()
+                                                {
+                                                    _pyQueue.push( std::make_pair( _pitch, _yaw ) );
+                                                }
+
+                //! Restores pitch / yaw values, used for camera mode switching
+                void                            popPitchYaw()
+                                                {
+                                                    _pitch = _pyQueue.front().first;
+                                                    _yaw   = _pyQueue.front().second;
+                                                    _pyQueue.pop();
+                                                }
 
                 //! Accumulated mouse coords ( pitch / yaw )
                 float                           _yaw;
                 float                           _pitch;
+                //! Queue for storing / restoring < pitch, yaw > values on switching
+                std::queue< std::pair< float, float > > _pyQueue;
 
                 float                           _screenSizeX;
                 float                           _screenSizeY;
@@ -136,9 +159,11 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
 
         EnPlayer*                           getPlayerEntity() { return _p_playerEntity; }
 
+        void                                updatePlayerPitchYaw( float& pitch, float& yaw );
+
         EnPlayer*                           _p_playerEntity;
 
-        EnPlayer::PlayerAttributes          _attributeContainer;
+        EnPlayer::PlayerAttributes&         _attributeContainer;
 
         // some internal variables
         bool                                _enabled;

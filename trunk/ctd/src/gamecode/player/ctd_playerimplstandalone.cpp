@@ -53,9 +53,6 @@ PlayerImplStandalone::~PlayerImplStandalone()
 {
     // destroy input handler
     _p_inputHandler->destroyHandler();
-
-    if ( _p_chatGui )
-        delete _p_chatGui;
 }
 
 void PlayerImplStandalone::handleNotification( const EntityNotification& notification )
@@ -184,8 +181,7 @@ void PlayerImplStandalone::postInitialize()
 
     log << Log::LogLevel( Log::L_INFO ) << "  player implementation successfully initialized" << endl;
 
-//    _p_chatGui = std::auto_ptr< PlayerChatGui >( new PlayerChatGui );
-    _p_chatGui = new PlayerChatGui;
+    _p_chatGui = std::auto_ptr< PlayerChatGui >( new PlayerChatGui );
     _p_chatGui->initialize( this, _playerAttributes._chatGuiConfig );
 
     // create only the input handler when animation and physics are attached

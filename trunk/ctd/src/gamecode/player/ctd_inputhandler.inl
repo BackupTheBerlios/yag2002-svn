@@ -32,6 +32,7 @@
 template< class PlayerImplT >
 PlayerIHCharacterCameraCtrl< PlayerImplT >::PlayerIHCharacterCameraCtrl( PlayerImplT* p_player, EnPlayer* p_playerentity ) : 
 GenericInputHandler< PlayerImplT >( p_player ),
+_attributeContainer( p_player->getPlayerAttributes() ),
 _p_playerEntity( p_playerentity ),
 _enabled( true ),
 _menuEnabled( true ),
@@ -51,8 +52,6 @@ _keyCodeChatMode( osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON ),
 _invertedMouse( false ),
 _mouseSensitivity( 1.0f )
 {
-    // make a local copy of player entity's attributes
-    _attributeContainer = p_playerentity->getPlayerAttributes();
 }
 
 template< class PlayerImplT >
@@ -136,10 +135,16 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         // change camera mode
         if ( key == _keyCodeCameraMode )
         {
-            if ( !_camSwitch )
+            if ( !_camSwitch ) // spheric mode
             {
                 getPlayerImpl()->setNextCameraMode();
                 _camSwitch = true;
+
+                // store current pitch / yaw and restore the old values
+                _mouseData.pushPitchYaw();
+                _mouseData.popPitchYaw();
+                // after cam mode switching and restoring the pitch / yaw we have also to update the player pitch / yaw
+                updatePlayerPitchYaw( _mouseData._pitch, _mouseData._yaw );
             }
         }
 
@@ -218,9 +223,6 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             {
                 float& rotZ = getPlayerImpl()->_rotZ;
                 rotZ += getPlayerImpl()->_p_playerPhysics->getAngularForce();
-
-                if ( rotZ > float( osg::PI ) * 2.0f )
-                    rotZ -= float( osg::PI ) * 2.0f;
 
                 getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
                 getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
@@ -385,40 +387,47 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         else
             _mouseData._pitch += yrel / _mouseData._screenSizeY;
 
-        // in ego mode the mouse controls the player rotation
-        if ( getPlayerImpl()->_cameraMode == EnPlayer::Ego )
-        {
-            // limit pitch
-            if ( _mouseData._pitch > LIMIT_PITCH_ANGLE )
-                _mouseData._pitch = LIMIT_PITCH_ANGLE;
-            else if ( _mouseData._pitch < -LIMIT_PITCH_ANGLE )
-                _mouseData._pitch = -LIMIT_PITCH_ANGLE;
-
-            // calculate yaw and change player direction when in ego mode
-            float& rotZ = getPlayerImpl()->_rotZ;
-            rotZ = _mouseData._yaw * float( osg::PI ) * 2.0f; 
-            getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
-            getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
-            getPlayerImpl()->_p_playerAnimation->animTurn();
-
-            // set pitch
-            getPlayerImpl()->setCameraPitchYaw( _mouseData._pitch, 0 );
-        }
-        else
-        {
-            // limit pitch
-            if ( _mouseData._pitch > 0 )
-                _mouseData._pitch = 0;
-            else if ( _mouseData._pitch < -LIMIT_PITCH_ANGLE )
-                _mouseData._pitch = -LIMIT_PITCH_ANGLE;
-
-            // set pitch / yaw
-            getPlayerImpl()->setCameraPitchYaw( _mouseData._pitch, -_mouseData._yaw );
-        }
+        // update the player pitch / yaw
+        updatePlayerPitchYaw( _mouseData._pitch, _mouseData._yaw );
 
         // reset mouse position in order to avoid leaving the app window
         Application::get()->getViewer()->requestWarpPointer( _mouseData._screenMiddleX, _mouseData._screenMiddleY );
     }
 
     return false;
+}
+
+template< class PlayerImplT >
+void PlayerIHCharacterCameraCtrl< PlayerImplT >::updatePlayerPitchYaw( float& pitch, float& yaw )
+{
+    // in ego mode the mouse controls the player rotation
+    if ( getPlayerImpl()->_cameraMode == EnPlayer::Ego )
+    {
+        // limit pitch
+        if ( pitch > LIMIT_PITCH_ANGLE )
+            pitch = LIMIT_PITCH_ANGLE;
+        else if ( pitch < -LIMIT_PITCH_ANGLE )
+            pitch = -LIMIT_PITCH_ANGLE;
+
+        // calculate yaw and change player direction when in ego mode
+        float& rotZ = getPlayerImpl()->_rotZ;
+        rotZ = yaw; 
+        getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
+        getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
+        getPlayerImpl()->_p_playerAnimation->animTurn();
+
+        // set pitch
+        getPlayerImpl()->setCameraPitchYaw( pitch, 0 );
+    }
+    else
+    {
+        // limit pitch
+        if ( pitch > 0 )
+            pitch = 0;
+        else if ( pitch < -LIMIT_PITCH_ANGLE )
+            pitch = -LIMIT_PITCH_ANGLE;
+
+        // set pitch / yaw
+        getPlayerImpl()->setCameraPitchYaw( pitch, -yaw );
+    }
 }
