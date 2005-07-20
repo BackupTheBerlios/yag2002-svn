@@ -51,8 +51,11 @@ class EnCamera :  public BaseEntity
 
         virtual                                     ~EnCamera();
 
-        //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
+        //! Initializing function
         void                                        initialize();
+
+        //! This entity does not need a transformation node.
+        const bool                                  isTransformable() const { return false; }
 
         //! Set the persistence flag. 
         //! Note: this flag is checked by framework on destruction of a level.
@@ -64,8 +67,14 @@ class EnCamera :  public BaseEntity
         //! Set camera position
         inline void                                 setCameraPosition( const osg::Vec3f& pos );
 
+        //! Get camera position
+        inline const osg::Vec3f&                    getCameraPosition();
+
         //! Set camera rotation
         inline void                                 setCameraRotation( const osg::Quat& rot );
+
+        //! Get camera rotation
+        inline const osg::Quat&                     getCameraRotation();
 
         //! Rotate camera
         inline void                                 rotateCamera( const osg::Quat& rot );
@@ -89,6 +98,9 @@ class EnCamera :  public BaseEntity
 
         //! Get the current pitch and yaw
         inline void                                 getLocalPitchYaw( float& pitch, float& yaw ) const;
+
+        //! Get local rotation ( pitch / yaw as quaternion that is )
+        inline const osg::Quat                      getLocalRotation();
 
         //! Set camera's pitch, used for looking around.
         /**
@@ -119,11 +131,11 @@ class EnCamera :  public BaseEntity
         //  destruction ourselves.
         void                                        handleNotification( const EntityNotification& notification );
 
-        ////! Overriden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraPosition!
-        //void                                        setPosition( osg::Vec3f& pos );
+        //! Overriden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraPosition!
+        void                                        setPosition( osg::Vec3f& pos );
 
-        ////! Overriden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraRotation!
-        //void                                        setRotation( osg::Quat& quats );
+        //! Overriden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraRotation!
+        void                                        setRotation( osg::Quat& quats );
 
         // Entity parameters
 
@@ -202,10 +214,20 @@ inline void EnCamera::setCameraPosition( const osg::Vec3f& pos )
     _needUpdate = true;
 }
 
+inline const osg::Vec3f& EnCamera::getCameraPosition()
+{
+    return _curPosition;
+}
+
 inline void EnCamera::setCameraRotation( const osg::Quat& rot )
 {
     _curRotation = rot;
     _needUpdate = true;
+}
+
+inline const osg::Quat& EnCamera::getCameraRotation()
+{
+    return _curRotation;
 }
 
 inline void EnCamera::rotateCamera( const osg::Quat& rot )
@@ -238,6 +260,17 @@ inline void EnCamera::setLocalPitchYaw( float pitch, float yaw )
 
     _offsetMatrixRotation = osg::Matrixf( rot );
     _needUpdate = true;
+}
+
+inline const osg::Quat EnCamera::getLocalRotation()
+{
+    osg::Quat rot( 
+                    _pitch, osg::Vec3f( 1.0f, 0.0f, 0.0f ),
+                    0.0f,   osg::Vec3f( 0.0f, 1.0f, 0.0f ),
+                    _yaw,   osg::Vec3f( 0.0f, 0.0f, 1.0f )
+                  );
+
+    return rot;
 }
 
 inline void EnCamera::getLocalPitchYaw( float& pitch, float& yaw ) const
