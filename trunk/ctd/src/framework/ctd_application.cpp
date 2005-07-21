@@ -46,6 +46,10 @@ using namespace std;
 using namespace CTD; 
 using namespace osg; 
 
+// app icon and tile
+#define CTD_APP_TITLE           "VRC"
+#define CTD_APP_ICON            "icon.bmp"
+
 // log file names
 #define LOG_FILE_NAME           "vrc.log"
 #define LOG_FILE_NAME_SERVER    "vrc-server.log"
@@ -238,10 +242,20 @@ bool Application::initialize( int argc, char **argv )
     Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN, _fullScreen );
     unsigned int colorBits = 24;
     Configuration::get()->getSettingValue( CTD_GS_COLORBITS, colorBits );
-    
+
     // init SDL
     SDL_Init( SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE );
-    SDL_EnableUNICODE( 1 ); // enable unicode translation
+    // set the icon and caption title
+    SDL_WM_SetCaption( CTD_APP_TITLE, NULL );
+    SDL_Surface* p_bmpsurface = SDL_LoadBMP( CTD_APP_ICON );
+    if ( p_bmpsurface )
+    {
+        Uint32 col = SDL_MapRGB( p_bmpsurface->format, 255, 255, 255 );
+        SDL_SetColorKey( p_bmpsurface, SDL_SRCCOLORKEY, col );
+        SDL_WM_SetIcon( p_bmpsurface, NULL );
+    }
+    // enable unicode translation
+    SDL_EnableUNICODE( 1 ); 
     SDL_EnableKeyRepeat( SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL ); // enable key repeating
 
     _p_viewer = new osgSDL::Viewer;
@@ -249,6 +263,7 @@ bool Application::initialize( int argc, char **argv )
     _rootSceneNode->setName( "_topSceneGroup_" );
 	osgSDL::Viewport*   p_viewport = new osgSDL::Viewport( _rootSceneNode.get() );
 	osgUtil::SceneView* p_sceneView = p_viewport->getSceneView();
+    p_sceneView->setDefaults( osgUtil::SceneView::COMPILE_GLOBJECTS_AT_INIT );
 	_p_viewer->addViewport( p_viewport );
     _p_viewer->requestContinuousUpdate( true ); // force event generation for FRAMEs, we need this for animations, etc.
     int flags = SDL_HWSURFACE;
