@@ -693,6 +693,12 @@
 		<File
 			RelativePath="..\..\..\..\src\gamecode\ctd_main.h">
 		</File>
+		<File
+			RelativePath=".\resource.h">
+		</File>
+		<File
+			RelativePath=".\VRC.rc">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
