@@ -50,15 +50,14 @@ CTD_IMPL_ENTITYFACTORY_AUTO( WaterEntityFactory );
 
 
 // the water shader is basing on RenderMonkey's Reflection/Refraction example
-#define LOCATION_CUBEMAP_SAMPLER    4
-#define LOCATION_NOISE_SAMPLER      3
+#define LOCATION_CUBEMAP_SAMPLER    0
+#define LOCATION_NOISE_SAMPLER      1
 
 const char glsl_vp[] =
     "uniform vec4 viewPosition;                                                                 \n"
     "uniform vec4 scale;                                                                        \n"
     "                                                                                           \n"
     "varying vec3 vTexCoord;                                                                    \n"
-    "varying vec3 vNormal;                                                                      \n"
     "varying vec3 vViewVec;                                                                     \n"
     "                                                                                           \n"
     "void main(void)                                                                            \n"
@@ -66,7 +65,6 @@ const char glsl_vp[] =
     "   vec4 Position = gl_Vertex.xyzw;                                                         \n"
     "   vTexCoord     = Position.xyz * scale.xyz;                                               \n"
     "   vViewVec      = Position.xyz - viewPosition.xyz;                                        \n"
-    "   vNormal       = gl_Normal;                                                              \n"
     "   gl_Position   = gl_ModelViewProjectionMatrix * Position;                                \n"
     "}                                                                                          \n"
 ;
@@ -106,7 +104,7 @@ const char glsl_fp[] =
     "   bump.z = 0.8 * abs(bump.z) + 0.2;                                                       \n"
     "                                                                                           \n"
     "   // Offset the surface normal with the bump                                              \n"
-    "   bump = normalize(vNormal + bump);                                                       \n"
+    "   bump = normalize(vec3(0,0,1) + bump);                                                   \n"
     "                                                                                           \n"
     "   // Find the reflection vector                                                           \n"
     "   vec3 reflVec = reflect(vViewVec, bump);                                                 \n"
@@ -151,15 +149,22 @@ class ViewPositionUpdateCallback: public osg::Uniform::Callback
         virtual void                        operator() ( osg::Uniform* p_uniform, osg::NodeVisitor* p_nv )
                                             {
                                                 osg::Matrixd::value_type* mat = _p_sceneView->getViewMatrix().ptr();  
-                                                osg::Vec4f viewpos
+                                                osg::Vec3f viewpos
                                                     ( 
+                                                    static_cast< float >( mat[ 12 ] ), 
                                                     static_cast< float >( mat[ 13 ] ), 
-                                                    static_cast< float >( mat[ 14 ] ), 
-                                                    static_cast< float >( mat[ 15 ] ),
-                                                    1.0f
-                                                    );                                                    
+                                                    static_cast< float >( mat[ 14 ] )
+                                                    );
 
-                                                p_uniform->set( viewpos );
+                                                osg::Quat rot( 
+                                                                osg::Quat( osg::DegreesToRadians( 90.0f ), osg::Vec3f( 1.0f, 0.0f, 0.0f ) ) *
+                                                                osg::Quat( osg::DegreesToRadians( 90.0f ), osg::Vec3f( 0.0f, 0.0f, 1.0f ) )
+                                                             );
+
+                                                viewpos = rot * viewpos;
+                                                osg::Vec4f pos( viewpos, 1.0f );
+
+                                                p_uniform->set( pos );
                                             }
 
     protected:
@@ -248,11 +253,12 @@ void EnWater::initialize()
 osg::Image* make3DNoiseImage(int texSize)
 {
     osg::Image* image = new osg::Image;
-    image->setImage( texSize, texSize, texSize,
-                4, GL_RGBA, GL_UNSIGNED_BYTE,
-                new unsigned char[4 * texSize * texSize * texSize],
-                osg::Image::USE_NEW_DELETE
-                );
+    image->setImage( 
+                     texSize, texSize, texSize,
+                     4, GL_RGBA, GL_UNSIGNED_BYTE,
+                     new unsigned char[4 * texSize * texSize * texSize],
+                     osg::Image::USE_NEW_DELETE
+                   );
 
     const int startFrequency = 4;
     const int numOctaves = 4;
