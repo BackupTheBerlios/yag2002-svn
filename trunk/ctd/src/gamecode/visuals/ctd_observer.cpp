@@ -117,23 +117,15 @@ bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
             _moveRight = false;
     }
 
-    bool  noPosUpdateFB = false;
-    bool  noPosUpdateRL = false;
-
     if ( _moveForward )
         pos._v[ 1 ] += speed * dt;
     else if ( _moveBackward )
         pos._v[ 1 ] -= speed * dt;
-    else
-        noPosUpdateFB = true;
 
     if ( _moveLeft )
         pos._v[ 0 ] -= speed * dt;
     else if ( _moveRight )
         pos._v[ 0 ] += speed * dt;
-    else
-        noPosUpdateRL = true;
-
 
     static float pitch = 0.0f;
     static float yaw   = 0.0f;
@@ -146,8 +138,8 @@ bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
         // skip events which come in when we warp the mouse pointer to middle of app window ( see below )
         if ( (  sdlevent.motion.x == _screenMiddleX ) && ( sdlevent.motion.y == _screenMiddleY ) )
             return false;
-        float xrel = float( sdlevent.motion.xrel ) * speed * 0.001f;
-        float yrel = float( sdlevent.motion.yrel ) * speed * 0.001f;
+        float xrel = float( sdlevent.motion.xrel ) * dt;
+        float yrel = float( sdlevent.motion.yrel ) * dt;
 
         yaw   += xrel;
         pitch += yrel;
@@ -158,7 +150,7 @@ bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
     }
 
     // update camera position
-    if ( !noPosUpdateRL || !noPosUpdateFB )
+    if ( _moveForward || _moveBackward || _moveLeft || _moveRight )
     {
         pos = p_camera->getLocalRotation() * pos;
         p_camera->setCameraPosition( pos + p_camera->getCameraPosition() );
@@ -179,6 +171,7 @@ _speed( 10.0f )
     // register entity attributes
     getAttributeManager().addAttribute( "position", _position );
     getAttributeManager().addAttribute( "rotation", _rotation );
+    getAttributeManager().addAttribute( "speed",    _speed );
 }
 
 EnObserver::~EnObserver()
