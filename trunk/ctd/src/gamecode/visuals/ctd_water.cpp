@@ -21,8 +21,8 @@
 /*###############################################################
  # entity water
  #
- # the rendering code is basing on osg examples osgreflect and 
- #   osgvertexprogram 
+ # the water shader is basing on RenderMonkey's Reflection/Refraction 
+ #  example
  #
  #   date of creation:  03/26/2005
  #
@@ -42,17 +42,16 @@
 #include "../extern/Noise.h"
 
 using namespace std;
-using namespace CTD; 
 
+namespace CTD
+{
 
-//! Implement and register the skybox entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( WaterEntityFactory );
-
-
-// the water shader is basing on RenderMonkey's Reflection/Refraction example
 #define LOCATION_CUBEMAP_SAMPLER    0
 #define LOCATION_NOISE_SAMPLER      1
 
+
+// helper classes and shader code
+//---------------------------------------------------
 const char glsl_vp[] =
     "uniform vec4 viewPosition;                                                                 \n"
     "uniform vec4 scale;                                                                        \n"
@@ -73,26 +72,24 @@ const char glsl_fp[] =
     "uniform sampler3D   samplerNoise;                                                          \n"
     "uniform samplerCube samplerSkyBox;                                                         \n"
     "                                                                                           \n"
-    "uniform float time;                                                                        \n"
     "uniform float transparency;                                                                \n"
     "uniform vec4  waterColor;                                                                  \n"
     "uniform float fadeExp;                                                                     \n"
     "uniform float fadeBias;                                                                    \n"
-    "uniform float noiseSpeed;                                                                  \n"
+    "uniform float deltaNoise;                                                                  \n"
+    "uniform float deltaWave;                                                                   \n"
     "uniform vec4  scale;                                                                       \n"
     "                                                                                           \n"
-    "uniform float waveSpeed;                                                                   \n"
     "                                                                                           \n"
     "varying vec3 vTexCoord;                                                                    \n"
-    "varying vec3 vNormal;                                                                      \n"
     "varying vec3 vViewVec;                                                                     \n"
     "                                                                                           \n"
     "                                                                                           \n"
     "void main(void)                                                                            \n"
     "{                                                                                          \n"
     "   vec3 tcoord = vTexCoord;                                                                \n"
-    "   tcoord.x += waveSpeed  * time;                                                          \n"
-    "   tcoord.z += noiseSpeed * time;                                                          \n"
+    "   tcoord.x += deltaWave;                                                                  \n"
+    "   tcoord.z += deltaNoise;                                                                 \n"
     "                                                                                           \n"
     "   vec4 noisy = texture3D(samplerNoise, tcoord);                                           \n"
     "                                                                                           \n"
@@ -119,19 +116,48 @@ const char glsl_fp[] =
     "}                                                                                          \n"
 ;
 
-// callback for water's time animation
-class TimeUpdateCallback: public osg::Uniform::Callback
+// callback for water's wave uniform deltaWave
+class DeltaWaveUpdateCallback: public osg::Uniform::Callback
 {
     public:
         
-                                            TimeUpdateCallback() {}
+        explicit                            DeltaWaveUpdateCallback( const EnWater* p_ent ) :
+                                             _p_waterEntity( p_ent )
+                                            {}
 
-        virtual                             ~TimeUpdateCallback() {}
+        virtual                             ~DeltaWaveUpdateCallback() {}
 
         virtual void                        operator() ( osg::Uniform* p_uniform, osg::NodeVisitor* p_nv )
                                             {
-                                                p_uniform->set( static_cast< float >( p_nv->getFrameStamp()->getReferenceTime() ) );
+                                                float time = static_cast< float >( p_nv->getFrameStamp()->getReferenceTime() );
+                                                p_uniform->set( _p_waterEntity->_waveSpeed * time );
                                             }
+
+    protected:
+
+        const EnWater*                      _p_waterEntity;
+};
+
+// callback for water's noise uniform deltaNoise
+class DeltaNoiseUpdateCallback: public osg::Uniform::Callback
+{
+    public:
+        
+         explicit                           DeltaNoiseUpdateCallback( const EnWater* p_ent ) :
+                                             _p_waterEntity( p_ent )
+                                            {}
+
+        virtual                             ~DeltaNoiseUpdateCallback() {}
+
+        virtual void                        operator() ( osg::Uniform* p_uniform, osg::NodeVisitor* p_nv )
+                                            {
+                                                float time = static_cast< float >( p_nv->getFrameStamp()->getReferenceTime() );
+                                                p_uniform->set( _p_waterEntity->_noiseSpeed * time );
+                                            }
+
+    protected:
+
+        const EnWater*                      _p_waterEntity;
 };
 
 // callback for water's view position update
@@ -172,8 +198,13 @@ class ViewPositionUpdateCallback: public osg::Uniform::Callback
         osgUtil::SceneView*                  _p_sceneView;
 };
 
-// Implementation of water entity                                                           
 
+// Entity water
+//---------------------------------------------------
+//! Implement and register the skybox entity factory
+CTD_IMPL_ENTITYFACTORY_AUTO( WaterEntityFactory );
+
+// Implementation of water entity
 EnWater::EnWater() :
 _fadeBias( 0.3f ),
 _noiseSpeed( 0.10f ),
@@ -298,6 +329,8 @@ osg::Image* make3DNoiseImage(int texSize)
 osg::Node* EnWater::setupWater()
 {
     osg::Geode* p_geode = new osg::Geode();
+    p_geode->setCullingActive( false );
+
     // create water plane
     {
         osg::Vec3 coords[] =
@@ -345,9 +378,13 @@ osg::Node* EnWater::setupWater()
         p_stateSet->addUniform( p_viewPosition );
         p_viewPosition->setUpdateCallback( new ViewPositionUpdateCallback() ); // set time view position update callback for the shader
 
-        osg::Uniform* p_uniformTime = new osg::Uniform( "time", 0.0f );
-        p_stateSet->addUniform( p_uniformTime );
-        p_uniformTime->setUpdateCallback( new TimeUpdateCallback() ); // set time update callback for the shader
+        osg::Uniform* p_uniformDeltaWave = new osg::Uniform( "deltaWave", 0.0f );
+        p_stateSet->addUniform( p_uniformDeltaWave );
+        p_uniformDeltaWave->setUpdateCallback( new DeltaWaveUpdateCallback( this ) ); // set time update callback for the shader
+
+        osg::Uniform* p_uniformDeltaNoise = new osg::Uniform( "deltaNoise", 0.0f );
+        p_stateSet->addUniform( p_uniformDeltaNoise );
+        p_uniformDeltaNoise->setUpdateCallback( new DeltaNoiseUpdateCallback( this ) ); // set time update callback for the shader
 
         // create a noise texture
         osg::Texture3D* p_noiseTexture = new osg::Texture3D;
@@ -382,6 +419,9 @@ osg::Node* EnWater::setupWater()
         p_stateSet->setMode( GL_DEPTH, osg::StateAttribute::OFF );
 
         // set up transparency
+        p_stateSet->setMode( GL_BLEND, osg::StateAttribute::ON );      
+        p_stateSet->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
+
         osg::TexEnvCombine* p_te0 = new osg::TexEnvCombine;    
         p_te0->setCombine_RGB( osg::TexEnvCombine::REPLACE );
         p_te0->setSource0_RGB( osg::TexEnvCombine::TEXTURE0 );
@@ -396,9 +436,9 @@ osg::Node* EnWater::setupWater()
         p_te1->setSource2_RGB( osg::TexEnvCombine::PRIMARY_COLOR );
         p_te1->setOperand2_RGB( osg::TexEnvCombine::SRC_COLOR );
 
-        p_stateSet->setTextureAttributeAndModes( 0, p_te0, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
-        p_stateSet->setTextureAttributeAndModes( 1, p_te1, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
-
+        p_stateSet->setTextureAttributeAndModes( LOCATION_NOISE_SAMPLER, p_te0, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
+        p_stateSet->setTextureAttributeAndModes( LOCATION_CUBEMAP_SAMPLER, p_te1, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
+    
         // append state set to geode
         p_geode->setStateSet( p_stateSet );
     }
@@ -407,4 +447,6 @@ osg::Node* EnWater::setupWater()
 
     p_group->addChild( p_geode );
     return p_group;
+}
+
 }

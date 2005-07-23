@@ -21,13 +21,17 @@
 /*###############################################################
  # entity water
  #
- # the rendering code is basing on osg examples osgreflect and 
- #  osgvertexprogram 
+ # the water shader is basing on RenderMonkey's Reflection/Refraction 
+ #  example
  #
  #   date of creation:  03/26/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
+ #
+ #  changes:
+ #
+ #  07/15/2005          replaced the wave equation on cpu by gpu shaders
  #
  ################################################################*/
 
@@ -40,6 +44,9 @@ namespace CTD
 {
 
 #define ENTITY_NAME_WATER    "Water"
+
+class DeltaWaveUpdateCallback;
+class DeltaNoiseUpdateCallback;
 
 //! This entity simulates water using a vertex program
 class EnWater :  public BaseEntity
@@ -94,6 +101,9 @@ class EnWater :  public BaseEntity
         
         //! Water node
         osg::ref_ptr< osg::Node >                   _water;
+
+    friend class DeltaWaveUpdateCallback;
+    friend class DeltaNoiseUpdateCallback;
 };
 
 //! Entity type definition used for type registry
