@@ -115,25 +115,25 @@ class EyeTransform : public osg::Transform
     public:
 
         /** Get the transformation matrix which moves from local coords to world coords.*/
-        virtual bool                        computeLocalToWorldMatrix( osg::Matrix& matrix, osg::NodeVisitor* nv ) const 
+        virtual bool                        computeLocalToWorldMatrix( osg::Matrix& matrix, osg::NodeVisitor* p_nv ) const 
                                             {
-                                                osgUtil::CullVisitor* cv = dynamic_cast< osgUtil::CullVisitor* >( nv );
-                                                if ( cv )
+                                                osgUtil::CullVisitor* p_cv = dynamic_cast< osgUtil::CullVisitor* >( p_nv );
+                                                if ( p_cv )
                                                 {
-                                                    const osg::Vec3& eyePointLocal = cv->getEyeLocal();
+                                                    const osg::Vec3& eyePointLocal = p_cv->getEyeLocal();
                                                     matrix.preMult( osg::Matrix::translate( eyePointLocal ) );
                                                 }
                                                 return true;
                                             }
 
         /** Get the transformation matrix which moves from world coords to local coords.*/
-        virtual bool                        computeWorldToLocalMatrix( osg::Matrix& matrix, osg::NodeVisitor* nv ) const
+        virtual bool                        computeWorldToLocalMatrix( osg::Matrix& matrix, osg::NodeVisitor* p_nv ) const
                                             {    
-                                                osgUtil::CullVisitor* cv = dynamic_cast< osgUtil::CullVisitor* >( nv );
-                                                if ( cv )
+                                                osgUtil::CullVisitor* p_cv = dynamic_cast< osgUtil::CullVisitor* >( p_nv );
+                                                if ( p_cv )
                                                 {
-                                                    const osg::Vec3& eyePointLocal = cv->getEyeLocal();
-                                                    matrix.postMult( osg::Matrix::translate( -eyePointLocal.x(), -eyePointLocal.y(), -eyePointLocal.z() ) );
+                                                    const osg::Vec3& eyePointLocal = p_cv->getEyeLocal();
+                                                    matrix.postMult( osg::Matrix::translate( -eyePointLocal ) );
                                                 }
                                                 return true;
                                             }
