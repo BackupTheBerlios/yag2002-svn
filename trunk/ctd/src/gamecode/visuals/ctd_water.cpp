@@ -95,7 +95,7 @@ const char glsl_fp[] =
     "                                                                                           \n"
     "   // Signed noise                                                                         \n"
     "   vec3 bump = 2.0 * noisy.xyz - 1.0;                                                      \n"
-    "   bump.xy *= 0.15;                                                                        \n"
+    "   bump.xy *= 0.10;                                                                        \n"
     "                                                                                           \n"
     "   // Make sure the normal always points upwards                                           \n"
     "   bump.z = 0.8 * abs(bump.z) + 0.2;                                                       \n"
@@ -178,18 +178,26 @@ class ViewPositionUpdateCallback: public osg::Uniform::Callback
                                                 osg::Vec3f viewpos
                                                     ( 
                                                     static_cast< float >( mat[ 12 ] ), 
-                                                    static_cast< float >( mat[ 13 ] ), 
-                                                    static_cast< float >( mat[ 14 ] )
+                                                    static_cast< float >( mat[ 14 ] ), 
+                                                    static_cast< float >( mat[ 13 ] )
                                                     );
 
-                                                osg::Quat rot( 
-                                                                osg::Quat( osg::DegreesToRadians( 90.0f ), osg::Vec3f( 1.0f, 0.0f, 0.0f ) ) *
-                                                                osg::Quat( osg::DegreesToRadians( 90.0f ), osg::Vec3f( 0.0f, 0.0f, 1.0f ) )
-                                                             );
+                                                //! TODO
 
-                                                viewpos = rot * viewpos;
+                                                //osg::Vec3f viewpos;
+                                                //osg::Vec3f center;
+                                                //osg::Vec3f up;
+                                                //_p_sceneView->getViewMatrixAsLookAt( viewpos, center, up );
+
+                                                //osg::Quat rot( 
+                                                //                osg::Quat( osg::DegreesToRadians( 90.0f ), osg::Vec3f( 0.0f, 0.0f, 1.0f ) ) *
+                                                //                osg::Quat( osg::DegreesToRadians( 90.0f ), osg::Vec3f( 1.0f, 0.0f, 0.0f ) )
+                                                //              );
+
+                                                //viewpos = center - viewpos;
+                                                //viewpos = rot * viewpos;
+
                                                 osg::Vec4f pos( viewpos, 1.0f );
-
                                                 p_uniform->set( pos );
                                             }
 
@@ -341,7 +349,7 @@ osg::Node* EnWater::setupWater()
             osg::Vec3( _position.x() + _sizeX * 0.5f, _position.y() + _sizeY * 0.5f, _position.z() )
         };
         osg::Geometry* p_polyGeom = new osg::Geometry;
-        p_polyGeom->setVertexArray( new osg::Vec3Array( 4, coords) );
+        p_polyGeom->setVertexArray( new osg::Vec3Array( 4, coords ) );
         osg::DrawArrays* p_drawarray = new osg::DrawArrays( osg::PrimitiveSet::QUADS, 0, 4 );        
         p_polyGeom->addPrimitiveSet( p_drawarray );
 
