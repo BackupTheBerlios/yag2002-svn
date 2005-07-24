@@ -75,19 +75,16 @@ class EnObserver :  public BaseEntity
         //  destruction ourselves.
         void                                        handleNotification( const EntityNotification& notification );
 
+        //! Enable / disable info window rendering
+        void                                        enableInfoWindow( bool en );
+
         // Entity parameters
 
         //! Initial position
         osg::Vec3f                                  _position;
 
-        //! Current position
-        osg::Vec3f                                  _curPosition;
-
         //! Initial rotation in degree
         osg::Vec3f                                  _rotation;
-
-        //! Current rotation
-        osg::Quat                                   _curRotation;
 
         //! Movement speed
         float                                       _speed;
@@ -106,6 +103,20 @@ class EnObserver :  public BaseEntity
 
         //! Input handler
         osg::ref_ptr< ObserverIH >                  _inputHandler;
+
+        // GUI window
+        CEGUI::FrameWindow*                         _p_wnd;
+
+        CEGUI::StaticText*                          _p_outputText;
+
+        //! Flag showing if the info window is enabled
+        bool                                        _infoWindowEnable;
+
+        float                                       _fpsTimer;
+
+        unsigned int                                _fpsCounter;
+
+        unsigned int                                _fps;
 
     friend class ObserverIH;
 };
