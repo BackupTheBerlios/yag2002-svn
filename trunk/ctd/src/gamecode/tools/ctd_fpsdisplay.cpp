@@ -59,7 +59,15 @@ _p_wnd( NULL )
 
 EnFPSDisplay::~EnFPSDisplay()
 {        
-    CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
+    try
+    {
+        CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "EnFPSDisplay: problem cleaning up entity." << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
+    }
 }
 
 void EnFPSDisplay::handleNotification( const EntityNotification& notification )
