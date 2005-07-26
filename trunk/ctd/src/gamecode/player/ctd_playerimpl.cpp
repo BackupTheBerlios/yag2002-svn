@@ -134,7 +134,9 @@ void BasePlayerImplementation::setCameraMode( unsigned int mode )
 void BasePlayerImplementation::addChatMessage( const CEGUI::String& msg, const CEGUI::String& author )
 {
     // this method is used by all clients (local and remote), hence the chat gui must be accessible to all clients
-    PlayerChatGui::get()->addMessage( msg, author );
+    PlayerChatGui* p_gui = PlayerChatGui::get();
+    if ( p_gui ) // on exiting a level the gui may be destroyed at this point, catch this case here
+        PlayerChatGui::get()->addMessage( msg, author );
 }
 
 void BasePlayerImplementation::distributeChatMessage( const std::string& msg )

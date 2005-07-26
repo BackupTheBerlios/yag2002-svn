@@ -97,6 +97,15 @@ void PlayerImplStandalone::handleNotification( const EntityNotification& notific
         }
         break;
 
+        case CTD_NOTIFY_UNLOAD_LEVEL:
+        {
+            // deleting the gui object must happen at last as goodby messages must be sent out
+            PlayerChatGui* p_chatGui = PlayerChatGui::get();
+            if ( p_chatGui )
+                delete p_chatGui;
+        }
+        break;
+
         default:
             ;
     }
@@ -181,7 +190,7 @@ void PlayerImplStandalone::postInitialize()
 
     log << Log::LogLevel( Log::L_INFO ) << "  player implementation successfully initialized" << endl;
 
-    _p_chatGui = std::auto_ptr< PlayerChatGui >( new PlayerChatGui );
+    _p_chatGui = new PlayerChatGui;
     _p_chatGui->initialize( this, _playerAttributes._chatGuiConfig );
 
     // create only the input handler when animation and physics are attached

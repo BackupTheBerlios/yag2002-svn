@@ -67,7 +67,6 @@ class PlayerChatGui
         // This class is a singleton as all clients on a machine must be able to use it ( also remote clients ).
         static PlayerChatGui*                       get()
                                                     {
-                                                        assert( s_chatGui && "instance does not exist" );
                                                         return s_chatGui;
                                                     }
 

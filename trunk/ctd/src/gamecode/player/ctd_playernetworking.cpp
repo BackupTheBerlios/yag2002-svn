@@ -53,15 +53,6 @@ _positionY( 0 ),
 _positionZ( 0 ),
 _yaw( 0 )
 {   
-    // setup chat log
-    if ( !s_chatLog )
-    {
-        s_chatLog = new CTD::Log();
-        s_chatLog->addSink( "chatlog", CTD::Application::get()->getMediaPath() + "chat.log", CTD::Log::L_ERROR );
-        s_chatLog->enableSeverityLevelPrinting( false );
-        *s_chatLog << CTD::Log::LogLevel( CTD::Log::L_INFO );
-    }
-
     // this constructor can be called either by player entity or networking system (in client or server mode)
     //  when called by player entity then it means that we are a local client, otherwise we are a remote client
     if ( !p_playerImpl )
@@ -75,6 +66,23 @@ _yaw( 0 )
     }
     _p_configFile[ 0 ] = 0;
     _cmdAnimFlags      = 0;
+
+    // setup chat log
+    if ( !s_chatLog )
+    {
+        std::string filename;
+        if ( CTD::GameState::get()->getMode() == CTD::GameState::Server )
+            filename = "server-chat.log";
+        else
+            filename = "client-chat.log";
+
+        s_chatLog = new CTD::Log();
+        s_chatLog->addSink( "chatlog", CTD::Application::get()->getMediaPath() + filename, CTD::Log::L_ERROR );
+        s_chatLog->enableSeverityLevelPrinting( false );
+        *s_chatLog << CTD::Log::LogLevel( CTD::Log::L_INFO );
+        *s_chatLog << "log file created on " << CTD::getTimeStamp() << std::endl;
+        *s_chatLog << "-----------" << std::endl;
+    }
 }
 
 PlayerNetworking::~PlayerNetworking()
@@ -84,6 +92,13 @@ PlayerNetworking::~PlayerNetworking()
     // remove ghost from simulation ( server and client )
     if ( isRemoteClient() ) 
     {    
+        // print a goodby message before destroying the player entity
+        if ( CTD::GameState::get()->getMode() != CTD::GameState::Server )
+        {
+            string exitingtext( string( "< " ) + _p_playerName + string ( " says goodbye >" ) );
+            _p_playerImpl->addChatMessage( exitingtext, "" );
+        }
+
         // PlayerNetworking has created the player implementation, so set its networking and other components to NULL in order to abvoid deleting it also by player's implementation
         _p_playerImpl->setPlayerNetworking( NULL );
         _p_playerImpl->setPlayerSound( NULL );
@@ -95,11 +110,8 @@ PlayerNetworking::~PlayerNetworking()
         for ( ; p_beg != p_end; p_beg++ )
             CTD::EntityManager::get()->deleteEntity( *p_beg );
     }
-    else
-    {
-        string enteringtext( string( "< " ) + _p_playerName + string ( " says goodbye >" ) );
-        putChatText( enteringtext );
-    }
+
+    *s_chatLog << CTD::getTimeStamp() << ": [" << _p_playerName << "] left the chat room " << std::endl;
 }
 
 void PlayerNetworking::PostObjectCreate()
@@ -130,13 +142,14 @@ void PlayerNetworking::PostObjectCreate()
 
             ALL_REPLICAS_FUNCTION_CALL( RPC_Initialize( init ) );
         }
-    }
-    else // actions for local clients
-    {
-        string enteringtext( string( "< " ) + _p_playerName + string ( " says hello >" ) );
-        putChatText( enteringtext );
+        else
+        {
+            string enteringtext( string( "< " ) + _p_playerName + string ( " says hello >" ) );
+            _p_playerImpl->addChatMessage( enteringtext, "" );   
+        }
     }
 
+    *s_chatLog << CTD::getTimeStamp() << ": [" << _p_playerName << "] entered the chat room " << std::endl;
     CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << " player created: " << _p_playerName << endl;
 }
 

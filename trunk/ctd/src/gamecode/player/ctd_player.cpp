@@ -37,6 +37,7 @@
 #include "ctd_playerimplserver.h"
 #include "ctd_playerimplclient.h"
 #include "ctd_spawnpoint.h"
+#include "ctd_chatgui.h"
 
 using namespace osg;
 using namespace std;

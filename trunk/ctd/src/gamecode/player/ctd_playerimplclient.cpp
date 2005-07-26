@@ -95,6 +95,15 @@ void PlayerImplClient::handleNotification( const EntityNotification& notificatio
         }
         break;
 
+        case CTD_NOTIFY_UNLOAD_LEVEL:
+        {
+            // deleting the gui object must happen at last as goodby messages must be sent out
+            PlayerChatGui* p_chatGui = PlayerChatGui::get();
+            if ( p_chatGui )
+                delete p_chatGui;
+        }
+        break;
+
         default:
             ;
     }
@@ -128,7 +137,7 @@ void PlayerImplClient::initialize()
         getPlayerNetworking()->initialize( _currentPos, getPlayerEntity()->getPlayerName(), playerconfig );
 
         // create chat gui
-        _p_chatGui = std::auto_ptr< PlayerChatGui >( new PlayerChatGui );
+        _p_chatGui = new PlayerChatGui;
         _p_chatGui->initialize( this, _playerAttributes._chatGuiConfig );
     }
 }

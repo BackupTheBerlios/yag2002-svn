@@ -136,7 +136,7 @@ class BasePlayerImplementation
         inline void                                 setLoadingPostfix( const std::string& postFix );
 
         //! Get the current camera mode ( Ego or Spheric )
-        inline bool                                 getCameraMode() const;
+        inline unsigned int                         getCameraMode() const;
 
         //! Get player's attributes, note that these attributes may be changed by implementation instances.
         inline EnPlayer::PlayerAttributes&          getPlayerAttributes();
@@ -184,7 +184,7 @@ class BasePlayerImplementation
         PlayerNetworking*                           _p_playerNetworking;
 
         //! Chat gui
-        std::auto_ptr< PlayerChatGui >              _p_chatGui;
+        PlayerChatGui*                             _p_chatGui;
 
         //! Movement direction
         osg::Vec3f                                  _moveDir;
@@ -275,7 +275,7 @@ inline void BasePlayerImplementation::setLoadingPostfix( const std::string& post
     _loadingPostFix = postFix;
 }
         
-inline bool BasePlayerImplementation::getCameraMode() const
+inline unsigned int BasePlayerImplementation::getCameraMode() const
 {
     return _cameraMode;
 }
