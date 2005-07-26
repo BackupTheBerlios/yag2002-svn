@@ -46,6 +46,7 @@ class ObserverIH : public GenericInputHandler< EnObserver >
         explicit                            ObserverIH( EnObserver* p_ent ) : 
                                              GenericInputHandler< EnObserver >( p_ent )
                                             {
+                                                _lockMovement    = false;
                                                 _moveRight       = false;
                                                 _moveLeft        = false;
                                                 _moveForward     = false;
@@ -66,9 +67,22 @@ class ObserverIH : public GenericInputHandler< EnObserver >
 
         bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
 
+        void                                lockMovement( bool en )
+                                            {
+                                                _lockMovement = en;
+                                            }
+
+        void                                enableInfoWindow( bool en )
+                                            {
+                                                _infoEnabled = en;
+                                                getUserObject()->enableInfoWindow( en );
+                                            }
+
     protected:
 
         // some internal variables
+        bool                                _lockMovement;
+
         bool                                _moveRight;
         bool                                _moveLeft;
         bool                                _moveForward;
@@ -95,6 +109,17 @@ bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
     // terminate application on Escape
     if ( key == SDLK_ESCAPE )
         Application::get()->stop();
+
+    // toggle info dialog rendering
+    if ( ( key == SDLK_F1 ) && ( eventType == osgGA::GUIEventAdapter::KEYDOWN ) )
+    {
+        _infoEnabled = !_infoEnabled;
+        getUserObject()->enableInfoWindow( _infoEnabled );
+    }
+
+    // don't check for movement keys when locked
+    if ( _lockMovement )
+        return false;
 
     EnCamera*   p_camera = getUserObject()->_p_cameraEntity;
     float&      speed    = getUserObject()->_speed;
@@ -139,13 +164,6 @@ bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
 
     const SDL_Event& sdlevent = p_eventAdapter->getSDLEvent();
     
-    // toggle info dialog rendering
-    if ( ( key == SDLK_F1 ) && ( eventType == osgGA::GUIEventAdapter::KEYDOWN ) )
-    {
-        _infoEnabled = !_infoEnabled;
-        getUserObject()->enableInfoWindow( _infoEnabled );
-    }
-
     // enable the camera rotation on dragging right mouse button
     if ( sdlevent.button.button == SDL_BUTTON_RIGHT )
     {
@@ -189,8 +207,11 @@ EnObserver::EnObserver() :
 _isPersistent( false ),
 _needUpdate ( false ),
 _p_cameraEntity( NULL ),
+_maxSpeed( 10.0f ),
 _speed( 10.0f ),
 _p_outputText( NULL ),
+_p_speedBar( NULL ),
+_p_lockCheckbox( NULL ),
 _p_wnd( NULL ),
 _fpsTimer( 0.0f ),
 _fpsCounter( 0 ),
@@ -199,7 +220,7 @@ _fps( 0 )
     // register entity attributes
     getAttributeManager().addAttribute( "position", _position );
     getAttributeManager().addAttribute( "rotation", _rotation );
-    getAttributeManager().addAttribute( "speed",    _speed );
+    getAttributeManager().addAttribute( "maxSpeed", _maxSpeed );
 }
 
 EnObserver::~EnObserver()
@@ -240,15 +261,40 @@ void EnObserver::initialize()
     try
     {        
         _p_wnd = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", OBSERVER_WND "mainFrame" ) );
-        _p_wnd->setSize( CEGUI::Size( 0.35f, 0.15f ) );
-        _p_wnd->setText( "player info" );
+        _p_wnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::EnObserver::onClickedClose, this ) );
+        _p_wnd->setSize( CEGUI::Size( 0.35f, 0.25f ) );
+        _p_wnd->setText( "tools" );
         _p_wnd->setPosition( CEGUI::Point( _position.x(), _position.y() ) );
         _p_wnd->setAlpha( 0.7f );
         _p_wnd->setAlwaysOnTop( true );
+        _p_wnd->setSizingEnabled( false );
+
+        _p_lockCheckbox = static_cast< CEGUI::Checkbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Checkbox", OBSERVER_WND "lock" ) );
+        _p_lockCheckbox->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &CTD::EnObserver::onLockChanged, this ) );
+        _p_lockCheckbox->setSize( CEGUI::Size( 0.9f, 0.22f ) );
+        _p_lockCheckbox->setPosition( CEGUI::Point( 0.05f, 0.1f ) );
+        _p_lockCheckbox->setSelected( false );
+        _p_lockCheckbox->setText( "lock movement" );
+        _p_wnd->addChildWindow( _p_lockCheckbox );
+
+        CEGUI::StaticText* p_stext = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", OBSERVER_WND "st01" ) );
+        p_stext->setSize( CEGUI::Size( 0.15f, 0.08f ) );
+        p_stext->setPosition( CEGUI::Point( 0.05f, 0.3f ) );
+        p_stext->setText( "speed" );
+        p_stext->setFrameEnabled( false );
+        p_stext->setBackgroundEnabled( false );
+        _p_wnd->addChildWindow( p_stext );
+        
+        _p_speedBar = static_cast< CEGUI::Scrollbar* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/HorizontalScrollbar", OBSERVER_WND "speed" ) );
+        _p_speedBar->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &CTD::EnObserver::onSpeedChanged, this ) );
+        _p_speedBar->setSize( CEGUI::Size( 0.75f, 0.075f ) );
+        _p_speedBar->setPosition( CEGUI::Point( 0.2f, 0.3f ) );
+        _p_speedBar->setScrollPosition( 1.0f );
+        _p_wnd->addChildWindow( _p_speedBar );
 
         _p_outputText = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", OBSERVER_WND "output" ) );
-        _p_outputText->setSize( CEGUI::Size( 1.0f, 1.0f ) );
-        _p_outputText->setPosition( CEGUI::Point( 0.0f, 0.0f ) );
+        _p_outputText->setSize( CEGUI::Size( 0.9f, 0.4f ) );
+        _p_outputText->setPosition( CEGUI::Point( 0.05f, 0.45f ) );
         _p_outputText->setFont( CTD_GUI_CONSOLE );
         _p_wnd->addChildWindow( _p_outputText );
 
@@ -293,6 +339,26 @@ void EnObserver::postInitialize()
 
     // the default is info window is disabled ( press F1 to activate it )
     enableInfoWindow( false );
+}
+
+bool EnObserver::onClickedClose( const CEGUI::EventArgs& arg )
+{
+    // hide the info window via input handler, so it has the change to update its internal state
+    _inputHandler->enableInfoWindow( false );
+    return true;
+}
+
+bool EnObserver::onSpeedChanged( const CEGUI::EventArgs& arg )
+{
+    _speed = _p_speedBar->getScrollPosition();
+    _speed *= _maxSpeed;
+    return true;
+}
+
+bool EnObserver::onLockChanged( const CEGUI::EventArgs& arg )
+{
+    _inputHandler->lockMovement( _p_lockCheckbox->isSelected() );
+    return true;
 }
 
 void EnObserver::updateEntity( float deltaTime )

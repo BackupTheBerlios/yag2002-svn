@@ -78,6 +78,15 @@ class EnObserver :  public BaseEntity
         //! Enable / disable info window rendering
         void                                        enableInfoWindow( bool en );
 
+        //! Gui callback for speed scrollbar        
+        bool                                        onSpeedChanged( const CEGUI::EventArgs& arg );
+
+        //! Gui callback for movement locking checkbox
+        bool                                        onLockChanged( const CEGUI::EventArgs& arg );
+
+        //! Gui callback for closing info window
+        bool                                        onClickedClose( const CEGUI::EventArgs& arg );
+
         // Entity parameters
 
         //! Initial position
@@ -86,8 +95,8 @@ class EnObserver :  public BaseEntity
         //! Initial rotation in degree
         osg::Vec3f                                  _rotation;
 
-        //! Movement speed
-        float                                       _speed;
+        //! Maximal movement speed
+        float                                       _maxSpeed;
 
         //! Time passed since last update
         float                                       _deltaTime;
@@ -104,10 +113,17 @@ class EnObserver :  public BaseEntity
         //! Input handler
         osg::ref_ptr< ObserverIH >                  _inputHandler;
 
-        // GUI window
+        //! GUI window
         CEGUI::FrameWindow*                         _p_wnd;
 
         CEGUI::StaticText*                          _p_outputText;
+
+        CEGUI::Scrollbar*                           _p_speedBar;
+
+        CEGUI::Checkbox*                            _p_lockCheckbox;
+
+        //! Current movement speed
+        float                                       _speed;
 
         //! Flag showing if the info window is enabled
         bool                                        _infoWindowEnable;
