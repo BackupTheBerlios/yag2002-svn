@@ -175,7 +175,8 @@ class TexMatCallback : public osg::NodeCallback
         explicit                            TexMatCallback( osg::TexMat& tex ) : 
                                              _texMat( tex ),
                                              _R( 
-                                               osg::Matrix::rotate( osg::DegreesToRadians( 90.0f ), 1.0f, 0.0f, 0.0f ) 
+                                                osg::Matrix::rotate( osg::DegreesToRadians( 90.0f ), 0.0f, 0.0f, 1.0f ) *
+                                                osg::Matrix::rotate( osg::DegreesToRadians( 90.0f ), 1.0f, 0.0f, 0.0f ) 
                                                )
                                             {
                                             }

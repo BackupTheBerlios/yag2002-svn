@@ -86,9 +86,8 @@
 #include <osgAL/SoundManager>
 #include <osgAL/SoundState>
 #include <osgDB/ReadFile>
-#include <osgGA/guiactionadapter>
-#include <osgGA/guieventadapter>
-#include <osgProducer/Viewer>
+#include <osgGA/GUIActionAdapter>
+#include <osgGA/GUIEventAdapter>
 #include <osgUtil/Optimizer>
 
 #include <osgSDL/Viewer>

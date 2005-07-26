@@ -96,6 +96,11 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
     if ( _firstLoading )
         return false;
 
+    // send out unload level notification
+    EntityNotification ennotify( CTD_NOTIFY_UNLOAD_LEVEL );
+    EntityManager::get()->sendNotification( ennotify );
+    EntityManager::get()->flushNotificationQueue();
+
     // first send out notification so the entities can do appropriate actions before level unloading happens
     if ( clearEntities )
     {
@@ -147,13 +152,16 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
 
         _staticMesh = NULL;
     }
-
+    
     return true;
 }
 
 osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile )
 {
     log << Log::LogLevel( Log::L_INFO ) << "start loading level: " << levelFile << endl;
+
+    // clear the entity list used for loading process
+    _setupQueue.clear();
 
     // send loading notification
     {

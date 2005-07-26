@@ -269,14 +269,11 @@ bool Application::initialize( int argc, char **argv )
     int flags = SDL_HWSURFACE;
     if ( _fullScreen )
         flags |= SDL_FULLSCREEN;
-    if ( GameState::get()->getMode() != GameState::Server )
+    if ( GameState::get()->getMode() == GameState::Server )
     {
-	    _p_viewer->setDisplayMode( _screenWidth, _screenHeight, colorBits, flags );
+        SDL_WM_SetCaption( CTD_APP_TITLE "-server", NULL );
     }
-    else
-    {
-	    _p_viewer->setDisplayMode( 400, 400, colorBits, flags );
-    }
+  	_p_viewer->setDisplayMode( _screenWidth, _screenHeight, colorBits, flags );
     _p_viewer->setCursorEnabled( false );    
     //------------
 
