@@ -419,7 +419,7 @@ void EnMenu::createMenuScene()
     float fov = 60.0f;
     p_camEntity->getAttributeManager().setAttributeValue( "backgroundColor", bgcolor );
     p_camEntity->getAttributeManager().setAttributeValue( "fov",             fov     );
-    osg::Quat rotoffset( -M_PIF / 2.0f, osg::Vec3f( 1, 0, 0 ) );
+    osg::Quat rotoffset( -osg::PI / 2.0f, osg::Vec3f( 1, 0, 0 ) );
     p_camEntity->setCameraOffsetRotation( rotoffset );    
     p_camEntity->initialize();
     p_camEntity->postInitialize();
