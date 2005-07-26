@@ -52,7 +52,7 @@ namespace CTD
 
 // helper classes and shader code
 //---------------------------------------------------
-const char glsl_vp[] =
+static const char glsl_vp[] =
     "uniform vec4 viewPosition;                                                                 \n"
     "uniform vec4 scale;                                                                        \n"
     "                                                                                           \n"
@@ -68,7 +68,7 @@ const char glsl_vp[] =
     "}                                                                                          \n"
 ;
 
-const char glsl_fp[] =
+static const char glsl_fp[] =
     "uniform sampler3D   samplerNoise;                                                          \n"
     "uniform samplerCube samplerSkyBox;                                                         \n"
     "                                                                                           \n"
