@@ -60,27 +60,28 @@ class ConsoleIH : public GenericInputHandler< EnConsole >
                                             {
                                                 const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
                                                 assert( p_eventAdapter && "invalid event adapter received" );
+                                                SDLKey key = p_eventAdapter->getSDLKey();
 
                                                 if ( p_eventAdapter->getEventType() == osgGA::GUIEventAdapter::KEYDOWN ) 
                                                 {
-                                                    if ( p_eventAdapter->getSDLKey() == SDLK_BACKQUOTE ) // '^'
+                                                    if ( key == SDLK_BACKQUOTE ) // '^'
                                                     {
                                                         _toggleEnable = !_toggleEnable;
                                                         getUserObject()->enable( _toggleEnable );
                                                     }
-                                                    else if ( _toggleEnable && p_eventAdapter->getSDLKey() == _retCode )
+                                                    else if ( _toggleEnable && key == _retCode )
                                                     {
                                                         getUserObject()->issueCmd( _p_userObject->_p_inputWindow->getText().c_str() );
                                                     }
-                                                    else if ( p_eventAdapter->getSDLKey() == _autoCompleteCode )
+                                                    else if ( key == _autoCompleteCode )
                                                     {
                                                         getUserObject()->autoCompleteCmd( _p_userObject->_p_inputWindow->getText().c_str() );
                                                     }
-                                                    else if ( p_eventAdapter->getSDLKey() == osgGA::GUIEventAdapter::KEY_Up )
+                                                    else if ( key == SDLK_UP )
                                                     {
                                                         getUserObject()->cmdHistory( true );
                                                     }
-                                                    else if ( p_eventAdapter->getSDLKey() == osgGA::GUIEventAdapter::KEY_Down )
+                                                    else if ( key == SDLK_UP )
                                                     {
                                                         getUserObject()->cmdHistory( false );
                                                     }
