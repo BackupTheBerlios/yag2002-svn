@@ -20,7 +20,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(CTD_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(CTD_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(CTD_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(CTD_DEP_DIR)\Physics\Newton&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(CTD_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(CTD_DEP_DIR)\Sound\osgAL\include&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\src&quot;;../../../../src/framework;../../../../src/gamecode"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(CTD_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(CTD_DEP_DIR)\OpenThreads\include&quot;;&quot;$(CTD_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(CTD_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(CTD_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(CTD_DEP_DIR)\Physics\Newton&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(CTD_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(CTD_DEP_DIR)\Sound\osgAL\include&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\src&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="_DEBUG;WIN32;_CONSOLE"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="3"
@@ -37,7 +37,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsWin32d.lib osgd.lib osgDBd.lib osgGAd.lib osgProducerd.lib osgUtild.lib osgALd.lib osgcald.lib oalppd.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib tinyxmld.lib frameworkd.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsWin32d.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgALd.lib osgcald.lib oalppd.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib tinyxmld.lib frameworkd.lib"
 				OutputFile="../../../../bin/win32/vrc_debug.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(CTD_DEP_DIR)\all_Libs&quot;;../../../../lib/framework"
@@ -81,7 +81,7 @@
 				EnableFiberSafeOptimizations="FALSE"
 				OptimizeForProcessor="0"
 				OptimizeForWindowsApplication="FALSE"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(CTD_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(CTD_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(CTD_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(CTD_DEP_DIR)\Physics\Newton&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(CTD_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(CTD_DEP_DIR)\Sound\osgAL\include&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\src&quot;;../../../../src/framework;../../../../src/gamecode"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(CTD_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(CTD_DEP_DIR)\OpenThreads\include&quot;;&quot;$(CTD_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(CTD_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(CTD_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(CTD_DEP_DIR)\Physics\Newton&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(CTD_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(CTD_DEP_DIR)\Sound\osgAL\include&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\src&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
@@ -95,7 +95,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgProducer.lib osgUtil.lib osgAL.lib osgcal.lib oalpp.lib cal3d.lib osgSDL.lib SDL.lib SDLmain.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib tinyxml.lib framework.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgUtil.lib osgAL.lib osgcal.lib oalpp.lib cal3d.lib osgSDL.lib SDL.lib SDLmain.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib tinyxml.lib framework.lib"
 				OutputFile="../../../../bin/win32/vrc.exe"
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(CTD_DEP_DIR)\all_Libs&quot;;../../../../lib/framework"
 				IgnoreAllDefaultLibraries="FALSE"
@@ -333,6 +333,9 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_camera.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_candle.h">
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_fog.cpp">
