@@ -59,6 +59,35 @@ EnPointLight::~EnPointLight()
 {
 }
 
+void EnPointLight::handleNotification( const EntityNotification& notification )
+{
+    // handle notifications
+    switch( notification.getId() )
+    {
+        // update the light settings when attributes are changed (e.g. by a level editor)
+        case CTD_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
+        {
+            osg::Light* p_light = _lightSource->getLight();
+            if ( p_light )
+            {
+                p_light->setAmbient( osg::Vec4( _ambientColor, 1.0f ) );
+                p_light->setDiffuse( osg::Vec4( _diffuseColor, 1.0f ) );
+                p_light->setSpecular( osg::Vec4( _specularColor, 1.0f ) );
+                p_light->setConstantAttenuation( _constAttenuation );
+                p_light->setLinearAttenuation( _linearAttenuation );
+                p_light->setQuadraticAttenuation( _quadraticAttenuation );
+
+                setPosition( _position );
+                _bSphere.set( osg::Vec3f( 0, 0, 0 ), _lightRadius );
+            }
+        }
+        break;
+
+        default:
+            ;
+    }
+}
+
 void EnPointLight::initialize()
 {
     // light manager's initialize method is resistent against multiple calls ( we can have several light entities )

@@ -56,6 +56,8 @@ class EnPointLight :  public BaseEntity, public BaseLight
 
     protected:
 
+        void                                        handleNotification( const EntityNotification& notification );
+
         //! Max radius for culling ( deactivating ) light source during rendering
         float                                       _lightRadius;
 };
