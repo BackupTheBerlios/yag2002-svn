@@ -92,7 +92,7 @@ bool CameraFrameHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             osg::Matrixf inv = Matrixf::inverse( mat );
 
             // adjust Z-UP
-            static osg::Matrixf adjustZ_Up ( osg::Matrixf::rotate( -M_PI / 2.0f, 1.0f, 0.0f, 0.0f ) );
+            static osg::Matrixf adjustZ_Up ( osg::Matrixf::rotate( -osg::PI / 2.0f, 1.0f, 0.0f, 0.0f ) );
 
             // set view matrix
             Application::get()->getSceneView()->setViewMatrix( osg::Matrixf( inv.ptr() ) * adjustZ_Up  );
