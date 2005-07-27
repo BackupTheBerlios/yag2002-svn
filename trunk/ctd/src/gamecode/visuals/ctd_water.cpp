@@ -209,7 +209,7 @@ class ViewPositionUpdateCallback: public osg::Uniform::Callback
 
 // Entity water
 //---------------------------------------------------
-//! Implement and register the skybox entity factory
+//! Implement and register the water entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( WaterEntityFactory );
 
 // Implementation of water entity
