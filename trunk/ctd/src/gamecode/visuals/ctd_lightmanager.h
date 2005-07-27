@@ -39,6 +39,8 @@ namespace CTD
 //! Maximal lights enabled during one frame
 #define CTD_MAX_GL_LIGHTS       8
 
+class LightManager;
+
 //! Base class for all light types
 class BaseLight
 {
@@ -58,6 +60,19 @@ class BaseLight
                                                         if ( _lightSource.get() )
                                                             _lightSource = NULL;
                                                     }
+
+        const osg::BoundingSphere&                  getBoundingSphere()
+                                                    {
+                                                        return _bSphere;
+                                                    }
+
+
+        osg::Light*                                 getLight()
+                                                    {
+                                                        return _lightSource->getLight();
+                                                    }
+
+    protected:
 
         osg::ref_ptr< osg::LightSource >            _lightSource;
 
@@ -83,6 +98,8 @@ class BaseLight
         float                                       _linearAttenuation;
 
         float                                       _quadraticAttenuation;
+
+    friend class LightManager;
 };
 
 class LightCallback;

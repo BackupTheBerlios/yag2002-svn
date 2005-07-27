@@ -106,7 +106,7 @@ void LightCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
     if ( !p_cv )
         return;
 
-    if ( !p_cv->isCulled( _lightEntity->_bSphere ) )
+    if ( !p_cv->isCulled( _lightEntity->getBoundingSphere() ) )
         LightManager::get()->addLight( _lightEntity );    
 }
 
