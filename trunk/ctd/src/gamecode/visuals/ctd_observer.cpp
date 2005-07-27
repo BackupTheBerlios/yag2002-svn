@@ -54,13 +54,15 @@ class ObserverIH : public GenericInputHandler< EnObserver >
                                                 _rotationEnabled = false;
                                                 _infoEnabled     = false;
 
+                                                _pitch = 0.0f;
+                                                _yaw   = 0.0f;
+
                                                 // get the current screen size
                                                 unsigned int width, height;
                                                 Application::get()->getScreenSize( width, height );
                                                 // calculate the middle of app window
                                                 _screenMiddleX = static_cast< Uint16 >( width * 0.5f );
                                                 _screenMiddleY = static_cast< Uint16 >( height * 0.5f );
-
                                             }
 
         virtual                             ~ObserverIH() {}
@@ -78,6 +80,18 @@ class ObserverIH : public GenericInputHandler< EnObserver >
                                                 getUserObject()->enableInfoWindow( en );
                                             }
 
+        void                                setCameraPosition( const osg::Vec3f& pos)
+                                            {
+                                                getUserObject()->_p_cameraEntity->setCameraPosition( pos );
+                                            }
+
+        void                                setCameraPitchYaw( float pitch, float yaw )
+                                            {
+                                                _pitch = -pitch;
+                                                _yaw   = -yaw;
+                                                getUserObject()->_p_cameraEntity->setLocalPitchYaw( pitch, yaw );
+                                            }
+
     protected:
 
         // some internal variables
@@ -87,6 +101,9 @@ class ObserverIH : public GenericInputHandler< EnObserver >
         bool                                _moveLeft;
         bool                                _moveForward;
         bool                                _moveBackward;
+
+        float                               _pitch;
+        float                               _yaw;
 
         bool                                _rotationEnabled;
         bool                                _infoEnabled;
@@ -159,9 +176,6 @@ bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
     else if ( _moveRight )
         pos._v[ 0 ] += speed * dt;
 
-    static float pitch = 0.0f;
-    static float yaw   = 0.0f;
-
     const SDL_Event& sdlevent = p_eventAdapter->getSDLEvent();
     
     // enable the camera rotation on dragging right mouse button
@@ -182,9 +196,9 @@ bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
         float xrel = float( sdlevent.motion.xrel ) * dt;
         float yrel = float( sdlevent.motion.yrel ) * dt;
 
-        yaw   += xrel;
-        pitch += yrel;
-        p_camera->setLocalPitchYaw( -pitch, -yaw );
+        _yaw   += xrel;
+        _pitch += yrel;
+        p_camera->setLocalPitchYaw( -_pitch, -_yaw );
 
         // reset mouse position in order to avoid leaving the app window
         Application::get()->getViewer()->requestWarpPointer( _screenMiddleX, _screenMiddleY );
@@ -324,18 +338,14 @@ void EnObserver::postInitialize()
     _p_cameraEntity = dynamic_cast< EnCamera* >( EntityManager::get()->createEntity( ENTITY_NAME_CAMERA, "_observerCamera_" ) );
     assert( _p_cameraEntity && "error creating observer camera" );
 
-    osg::Quat rot = osg::Quat( 
-                                osg::DegreesToRadians( _rotation.x() ), osg::Vec3f( 0.0f, 1.0f, 0.0f ), // roll
-                                osg::DegreesToRadians( _rotation.y() ), osg::Vec3f( 1.0f, 0.0f, 0.0f ), // pitch
-                                osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0.0f, 0.0f, 1.0f )  // yaw
-                             );
-
     _p_cameraEntity->initialize();
     _p_cameraEntity->postInitialize();
     _p_cameraEntity->setEnable( true );
-    _p_cameraEntity->setCameraTranslation( _position, rot );
-
     _inputHandler = new ObserverIH( this );
+
+    // set initial pitch yaw in input handler
+    _inputHandler->setCameraPosition( _position );
+    _inputHandler->setCameraPitchYaw( osg::DegreesToRadians( _rotation.y() ), osg::DegreesToRadians( _rotation.z() ) );
 
     // the default is info window is disabled ( press F1 to activate it )
     enableInfoWindow( false );
