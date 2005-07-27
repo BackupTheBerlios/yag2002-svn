@@ -54,15 +54,15 @@ _soundState( NULL )
     EntityManager::get()->registerUpdate( this );   // register entity in order to get updated per simulation step
 
     // register entity attributes
-    getAttributeManager().addAttribute( "resourcedir" , _soundFileDir   );
-    getAttributeManager().addAttribute( "soundfile",    _soundFile      );
+    getAttributeManager().addAttribute( "resourceDir" , _soundFileDir   );
+    getAttributeManager().addAttribute( "soundFile",    _soundFile      );
     getAttributeManager().addAttribute( "position",     _position       );
     getAttributeManager().addAttribute( "loop",         _loop           );
-    getAttributeManager().addAttribute( "autoplay",     _autoPlay       );
+    getAttributeManager().addAttribute( "autoPlay",     _autoPlay       );
     getAttributeManager().addAttribute( "volume",       _volume         );
-    getAttributeManager().addAttribute( "rolloff",      _rolloffFac     );
-    getAttributeManager().addAttribute( "refdistance",  _referenceDist  );
-    getAttributeManager().addAttribute( "showsource",   _showSource     );
+    getAttributeManager().addAttribute( "rollOff",      _rolloffFac     );
+    getAttributeManager().addAttribute( "refDistance",  _referenceDist  );
+    getAttributeManager().addAttribute( "showSource",   _showSource     );
 }
 
 En3DSound::~En3DSound()
