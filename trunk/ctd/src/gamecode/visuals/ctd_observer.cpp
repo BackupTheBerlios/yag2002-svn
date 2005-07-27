@@ -111,7 +111,7 @@ bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
         Application::get()->stop();
 
     // toggle info dialog rendering
-    if ( ( key == SDLK_F1 ) && ( eventType == osgGA::GUIEventAdapter::KEYDOWN ) )
+    if ( ( key == SDLK_SPACE ) && ( eventType == osgGA::GUIEventAdapter::KEYDOWN ) )
     {
         _infoEnabled = !_infoEnabled;
         getUserObject()->enableInfoWindow( _infoEnabled );
@@ -264,7 +264,7 @@ void EnObserver::initialize()
         _p_wnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::EnObserver::onClickedClose, this ) );
         _p_wnd->setSize( CEGUI::Size( 0.35f, 0.25f ) );
         _p_wnd->setText( "tools" );
-        _p_wnd->setPosition( CEGUI::Point( _position.x(), _position.y() ) );
+        _p_wnd->setPosition( CEGUI::Point( 0, 0 ) );
         _p_wnd->setAlpha( 0.7f );
         _p_wnd->setAlwaysOnTop( true );
         _p_wnd->setSizingEnabled( false );
