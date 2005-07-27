@@ -49,13 +49,13 @@ _volume( 0.8f ),
 _referenceDist( 10.0f )
 { 
     // register attributes
-    getAttributeManager().addAttribute( "resourcedir"         , _soundFileDir  );
-    getAttributeManager().addAttribute( "refdistance"         , _referenceDist );
+    getAttributeManager().addAttribute( "resourceDir"         , _soundFileDir  );
+    getAttributeManager().addAttribute( "refDistance"         , _referenceDist );
     getAttributeManager().addAttribute( "volume"              , _volume        );
-    getAttributeManager().addAttribute( "soundwalkground"     , _walkGround    );
-    getAttributeManager().addAttribute( "soundwalkwood"       , _walkWood      );
-    getAttributeManager().addAttribute( "soundwalkmetal"      , _walkMetal     );
-    getAttributeManager().addAttribute( "soundwalkgrass"      , _walkGrass     );
+    getAttributeManager().addAttribute( "soundWalkgGound"     , _walkGround    );
+    getAttributeManager().addAttribute( "soundWalkWood"       , _walkWood      );
+    getAttributeManager().addAttribute( "soundWalkMetal"      , _walkMetal     );
+    getAttributeManager().addAttribute( "soundWalkGrass"      , _walkGrass     );
 }
 
 EnPlayerSound::~EnPlayerSound()
