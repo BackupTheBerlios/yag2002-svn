@@ -52,7 +52,7 @@ _referenceDist( 10.0f )
     getAttributeManager().addAttribute( "resourceDir"         , _soundFileDir  );
     getAttributeManager().addAttribute( "refDistance"         , _referenceDist );
     getAttributeManager().addAttribute( "volume"              , _volume        );
-    getAttributeManager().addAttribute( "soundWalkgGound"     , _walkGround    );
+    getAttributeManager().addAttribute( "soundWalkGround"     , _walkGround    );
     getAttributeManager().addAttribute( "soundWalkWood"       , _walkWood      );
     getAttributeManager().addAttribute( "soundWalkMetal"      , _walkMetal     );
     getAttributeManager().addAttribute( "soundWalkGrass"      , _walkGrass     );
