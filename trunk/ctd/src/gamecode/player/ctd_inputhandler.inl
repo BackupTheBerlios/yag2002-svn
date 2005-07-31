@@ -343,17 +343,20 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     // handle mouse wheel changes for camera offsetting in spheric mode
     if ( getPlayerImpl()->_cameraMode == EnPlayer::Spheric )
     {
-        if ( sdlevent.button.button == SDL_BUTTON_WHEELUP )
+        if ( sdlevent.button.type == SDL_MOUSEBUTTONDOWN )
         {
-            float& dist = _attributeContainer._camPosOffsetSpheric._v[ 1 ];
-            dist = min( dist + SPHERIC_DIST_INCREMENT, -LIMIT_SPHERIC_MIN_DIST );
-            getPlayerImpl()->_p_camera->setCameraOffsetPosition( _attributeContainer._camPosOffsetSpheric );
-        }
-        else if ( sdlevent.button.button == SDL_BUTTON_WHEELDOWN )
-        {
-            float& dist = _attributeContainer._camPosOffsetSpheric._v[ 1 ];
-            dist = max( -LIMIT_SPHERIC_MAX_DIST, dist - SPHERIC_DIST_INCREMENT );
-            getPlayerImpl()->_p_camera->setCameraOffsetPosition( _attributeContainer._camPosOffsetSpheric );
+            if ( sdlevent.button.button == SDL_BUTTON_WHEELUP )
+            {
+                float& dist = _attributeContainer._camPosOffsetSpheric._v[ 1 ];
+                dist = min( dist + SPHERIC_DIST_INCREMENT, -LIMIT_SPHERIC_MIN_DIST );
+                getPlayerImpl()->_p_camera->setCameraOffsetPosition( _attributeContainer._camPosOffsetSpheric );
+            }
+            else if ( sdlevent.button.button == SDL_BUTTON_WHEELDOWN )
+            {
+                float& dist = _attributeContainer._camPosOffsetSpheric._v[ 1 ];
+                dist = max( -LIMIT_SPHERIC_MAX_DIST, dist - SPHERIC_DIST_INCREMENT );
+                getPlayerImpl()->_p_camera->setCameraOffsetPosition( _attributeContainer._camPosOffsetSpheric );
+            }
         }
     }
 
