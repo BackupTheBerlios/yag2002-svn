@@ -81,7 +81,7 @@ class ConsoleIH : public GenericInputHandler< EnConsole >
                                                     {
                                                         getUserObject()->cmdHistory( true );
                                                     }
-                                                    else if ( key == SDLK_UP )
+                                                    else if ( key == SDLK_DOWN )
                                                     {
                                                         getUserObject()->cmdHistory( false );
                                                     }
