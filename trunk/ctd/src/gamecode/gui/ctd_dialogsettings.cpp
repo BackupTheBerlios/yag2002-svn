@@ -162,7 +162,7 @@ bool DialogGameSettings::initialize( const string& layoutfile )
         //-------------
         // set callback for mouse sensivity scrollbar
         _p_mouseSensivity = static_cast< CEGUI::Scrollbar* >( p_paneControl->getChild( SDLG_PREFIX "sb_mousesensivity" ) );
-        _p_mouseSensivity->subscribeEvent( CEGUI::Scrollbar::EventMoved, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onMouseSensitivityChanged, this ) );
+        _p_mouseSensivity->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onMouseSensitivityChanged, this ) );
 
         // setup invert mouse callback
         _p_mouseInvert = static_cast< CEGUI::Checkbox* >( p_paneControl->getChild( SDLG_PREFIX "cbx_mouseinvert" ) );
