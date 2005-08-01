@@ -20,6 +20,7 @@
 
 /*###############################################################
  # level manager is responsible for loading level configuration 
+ #  and setting up the subsystems and entities
  #
  #   date of creation:  02/17/2005
  #

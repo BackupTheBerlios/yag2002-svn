@@ -23,7 +23,7 @@
  #
  #  this code is basing on CEGUI's opengl renderer implementation
  #
- #   date of creation:  04/03/2005
+ #   date of creation:  04/04/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net

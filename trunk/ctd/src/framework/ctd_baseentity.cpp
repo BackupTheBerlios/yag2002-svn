@@ -21,7 +21,7 @@
 /*###############################################################
  # base class for all entities
  #
- #   date of creation:  12/01/2003
+ #   date of creation:  02/17/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net

@@ -20,6 +20,7 @@
 
 /*###############################################################
  # level manager is responsible for loading level configuration 
+ #  and setting up the subsystems and entities
  #
  #   date of creation:  02/17/2005
  #
@@ -39,7 +40,7 @@ namespace CTD
 class Application;
 class BaseEntity;
 
-//! Level manager used only by class Application
+//! Level manager
 /*!
 * In order to load a level proceed as follows:
 * --------------------------------------------
@@ -50,7 +51,7 @@ class BaseEntity;
 * // load the level given its file name relative to media folder
 * LevelManager::get()->loadLevel( levelfile );
 *
-* // now load the player
+* // now optionally load other entity configuration files ( e.g for the player )
 * std::vector< BaseEntity* > entities;
 * LevelManager::get()->loadEntities( playercfgfile, entities );
 *
@@ -66,7 +67,7 @@ class LevelManager : public Singleton< LevelManager >
 
         //! Load entities defined in specified file and put all created entities into given vector.
         /*!
-        * Be aware that this method does not initialize the entities. instPostfix is appended to entities instance names in the case that the same file is loaded 
+        * Be aware that this method does not initialize the entities. instPostfix is appended to entities instance names for the case that the same file is loaded 
         * several times, so the instance names can differ using a postfix on every loading. If not NULL the new loaded entities are stored in p_entities.
         */
         bool                                        loadEntities( const std::string& levelFile, std::vector< BaseEntity* >* p_entities = NULL, const std::string& instPostfix = "" );
@@ -77,7 +78,7 @@ class LevelManager : public Singleton< LevelManager >
         //! Unload an already loaded level and free up allocated resources and entities (except persistent entities).
         bool                                        unloadLevel( bool clearPhysics = true, bool clearEntities = true );
 
-        //! Load mesh. Return NULL if somethings goes wrong.
+        //! Load mesh. Return NULL if something goes wrong.
         osg::Node*                                  loadMesh( const std::string& fileName, bool useCache = true );
 
         //! Get node of loaded static world geometry.
