@@ -319,7 +319,37 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
     return true;
 }
 
-//! TODO: more animation control must be implemented
+unsigned char EnPlayerAnimation::getAnimationFlags()
+{
+    return static_cast< unsigned char >( _anim );
+}
+
+void EnPlayerAnimation::setAnimation( unsigned char flags )
+{
+    switch( flags )
+    {
+        case eIdle:
+            
+            animIdle();
+            break;
+
+        case eWalk:
+            
+            animWalk();
+            break;
+
+        case eJump:
+            
+            animJump();
+            break;
+
+        case eTurn:
+            
+            animTurn();
+            break;
+    }    
+}
+
 void EnPlayerAnimation::animIdle()
 {
     if ( _anim == eIdle )
@@ -359,4 +389,5 @@ void EnPlayerAnimation::animTurn()
     _model->loop( _IdAnimTurn, 1.0f, 0.0f );
     _anim = eTurn;
 }
+
 } // namespace CTD

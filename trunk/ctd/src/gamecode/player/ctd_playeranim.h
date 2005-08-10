@@ -89,9 +89,24 @@ class EnPlayerAnimation  : public BaseEntity
         //! Turn animation
         void                                        animTurn();
 
+        //! Get current animation as flags ( used for networking )
+        unsigned char                               getAnimationFlags();
+
+        //! Set current animation as flags ( used for networking )
+        void                                        setAnimation( unsigned char flags );
+
         //! This entity does not need a transform node, which would be created by level manager on loading
         //!   We create an own one which is given to player after initialization ( see setPlayer ).
         const bool                                  isTransformable() const { return false; }
+
+        //! Animation flags
+        enum AnimationFlag
+        {
+            eIdle = 0x0,
+            eWalk,
+            eJump,
+            eTurn
+        }                                           _anim;
 
     protected:
 
@@ -125,14 +140,6 @@ class EnPlayerAnimation  : public BaseEntity
         osg::ref_ptr< osg::PositionAttitudeTransform > _animNode;
 
         bool                                        _renderingEnabled;
-
-        enum 
-        {
-            eIdle,
-            eWalk,
-            eJump,
-            eTurn
-        }                                           _anim;
 
         //! offset position
         osg::Vec3f                                  _position;

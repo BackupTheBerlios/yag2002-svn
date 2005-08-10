@@ -214,7 +214,7 @@ void PlayerImplClient::postInitialize()
             // find and attach sound component, tollerate missing sound for now
             _p_playerSound = dynamic_cast< EnPlayerSound* >( EntityManager::get()->findEntity( ENTITY_NAME_PLSOUND, _playerAttributes._soundEntity + _loadingPostFix ) );
             if ( !_p_playerSound )
-                log << Log::LogLevel( Log::L_ERROR ) << "  *** could not find sound entity '" << _playerAttributes._soundEntity << "' of type PlayerSound. player sound deactivated" << endl;
+                log << Log::LogLevel( Log::L_ERROR ) << "  *** could not find sound entity '" << _playerAttributes._soundEntity + _loadingPostFix << "' of type PlayerSound. player sound deactivated" << endl;
             else
             {
                 _p_playerSound->setPlayer( this );
@@ -231,6 +231,7 @@ void PlayerImplClient::postInitialize()
             _p_playerAnimation->setPlayer( this );
             // enable rendering for remote clients
             _p_playerAnimation->enableRendering( true );
+            _p_playerAnimation->setAnimation( EnPlayerAnimation::eIdle );
 
             log << Log::LogLevel( Log::L_DEBUG ) << "   -  animation entity successfully attached" << endl;
         }
@@ -285,6 +286,7 @@ void PlayerImplClient::update( float deltaTime )
 
         getPlayerNetworking()->updatePosition( _currentPos._v[ 0 ], _currentPos._v[ 1 ], _currentPos._v[ 2 ] );
         getPlayerNetworking()->updateRotation( _rotZ + osg::PI );
+        getPlayerNetworking()->updateAnimationFlags( getPlayerAnimation()->getAnimationFlags() );
 
         // adjust the camera to updated position and rotation. the physics updates the translation of player.
         _p_camera->setCameraTranslation( getPlayerPosition(), getPlayerRotation() );
@@ -294,11 +296,30 @@ void PlayerImplClient::update( float deltaTime )
     else
     {
         // update remote client's rotation and position
+        osg::Vec3f lastpos = _currentPos;
+        float      lastrot = _rotZ;
         getPlayerNetworking()->getPosition( _currentPos._v[ 0 ], _currentPos._v[ 1 ], _currentPos._v[ 2 ] );
         getPlayerNetworking()->getRotation( _rotZ );
-        _currentRot.makeRotate( _rotZ, osg::Vec3f( 0.0f, 0.0f, 1.0f ) );
+        _currentRot.makeRotate( -_rotZ + osg::PI, osg::Vec3f( 0.0f, 0.0f, 1.0f ) );
         getPlayerEntity()->setPosition( _currentPos );
         getPlayerEntity()->setRotation( _currentRot );
+
+        // set animation depending on position and rotation changes
+        if ( ( _currentPos.z() - lastpos.z() ) > 0.1f )
+        {
+            getPlayerAnimation()->setAnimation( EnPlayerAnimation::eIdle );
+            getPlayerAnimation()->setAnimation( EnPlayerAnimation::eJump );
+        }
+        else if ( ( lastpos - _currentPos ).length2() > 0.001f )
+        {
+            getPlayerAnimation()->setAnimation( EnPlayerAnimation::eWalk );
+        } else
+        {
+            getPlayerAnimation()->setAnimation( EnPlayerAnimation::eIdle );
+        }
+        
+        if ( fabs( lastrot - _rotZ ) > 0.01f )
+            getPlayerAnimation()->setAnimation( EnPlayerAnimation::eTurn );
     }
 }
 
