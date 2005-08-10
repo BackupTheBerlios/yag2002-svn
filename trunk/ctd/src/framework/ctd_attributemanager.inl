@@ -110,7 +110,7 @@ bool AttributeManager::setAttributeValue( const std::string& name, TypeT value )
         if ( ( *pp_attr )->getName() == name ) {
             if ( typeid( TypeT ) != ( *pp_attr )->getTypeInfo() )
             {
-                log << Log::LogLevel( Log::L_ERROR ) << "*** wrong type for requested attribute '" << name << "', skipping!" << endl;
+                log << Log::LogLevel( Log::L_ERROR ) << "*** wrong type for requested attribute '" << name << "', skipping!" << std::endl;
                 pp_attr++;
                 continue;
             }
