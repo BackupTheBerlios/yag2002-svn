@@ -335,6 +335,9 @@
 					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_camera.h">
 				</File>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_candle.cpp">
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_candle.h">
 				</File>
 				<File
@@ -428,6 +431,12 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\tools\ctd_fpsdisplay.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\tools\ctd_inspector.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\tools\ctd_inspector.h">
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\tools\ctd_playerinfodisplay.cpp">
@@ -701,5 +710,8 @@
 		</File>
 	</Files>
 	<Globals>
+		<Global
+			Name="RESOURCE_FILE"
+			Value="VRC.rc"/>
 	</Globals>
 </VisualStudioProject>
