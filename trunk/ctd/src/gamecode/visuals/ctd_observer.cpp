@@ -193,11 +193,19 @@ bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
         // skip events which come in when we warp the mouse pointer to middle of app window ( see below )
         if ( (  sdlevent.motion.x == _screenMiddleX ) && ( sdlevent.motion.y == _screenMiddleY ) )
             return false;
+
+        static float lastxrel = 0;
+        static float lastyrel = 0;
         float xrel = float( sdlevent.motion.xrel ) * dt;
         float yrel = float( sdlevent.motion.yrel ) * dt;
 
-        _yaw   += xrel;
-        _pitch += yrel;
+        // smooth the view change avoiding hart camera rotations
+        _yaw   += ( xrel + lastxrel ) * 0.1f;
+        _pitch += ( yrel + lastyrel ) * 0.1f;
+        lastxrel = xrel;
+        lastyrel = yrel;
+
+        // set new camera orientation
         p_camera->setLocalPitchYaw( -_pitch, -_yaw );
 
         // reset mouse position in order to avoid leaving the app window
