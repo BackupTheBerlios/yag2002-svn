@@ -184,6 +184,9 @@ class InspectorIH : public GenericInputHandler< EnInspector >
         // pick an drawable in level using ray-casting and return its nodepath. x, y is the normalized pointer position [-1...+1]
         typedef std::pair< osg::Drawable*, const osg::NodePath* >  PickResults;
         PickResults                         pick( float x, float y );
+        
+        // update the bbox lines given a drawable, pass NULL in order to disable bbox drawing
+        void                                updateBBox( osg::Drawable* p_drawable );
 
         // some internal variables
         bool                                _lockMovement;
@@ -296,10 +299,22 @@ InspectorIH::PickResults InspectorIH::pick( float x, float y )
         }
     }
 
-    // if we found and intersection then update the bbox for visualization
-    if ( p_seldrawable )
+    // update the intesection line visualization
+    osg::Vec3Array* p_ivertices = static_cast< osg::Vec3Array* >( _p_linesIntersect->getVertexArray() );
+    ( *p_ivertices )[ 0 ] = start;
+    ( *p_ivertices )[ 1 ] = end;
+    _p_linesIntersect->setVertexArray( p_ivertices );
+
+    // return the node path of picked drawable
+    return p_pickedHit ? std::make_pair( p_seldrawable, &p_pickedHit->getNodePath() ) : std::make_pair( static_cast< osg::Drawable* >( NULL ), static_cast< osg::NodePath* >( NULL ) );
+}
+
+void InspectorIH::updateBBox( osg::Drawable* p_drawable )
+{
+    // update the bbox for visualization
+    if ( p_drawable )
     {
-        const osg::BoundingBox& bb = p_seldrawable->getBound();
+        const osg::BoundingBox& bb = p_drawable->getBound();
 
         // update the bbox lines
         osg::Vec3Array* p_vertices = static_cast< osg::Vec3Array* >( _p_linesGeom->getVertexArray() );
@@ -327,15 +342,6 @@ InspectorIH::PickResults InspectorIH::pick( float x, float y )
         ( *p_vertices )[ 7 ] = osg::Vec3();
         _p_linesGeom->setVertexArray( p_vertices );
     }
-
-    // update the intesection line visualization
-    osg::Vec3Array* p_ivertices = static_cast< osg::Vec3Array* >( _p_linesIntersect->getVertexArray() );
-    ( *p_ivertices )[ 0 ] = start;
-    ( *p_ivertices )[ 1 ] = end;
-    _p_linesIntersect->setVertexArray( p_ivertices );
-
-    // return the node path of picked drawable
-    return p_pickedHit ? std::make_pair( p_seldrawable, &p_pickedHit->getNodePath() ) : std::make_pair( static_cast< osg::Drawable* >( NULL ), static_cast< osg::NodePath* >( NULL ) );
 }
 
 bool InspectorIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
@@ -400,6 +406,9 @@ bool InspectorIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
                     CEGUI::String text( str.str() );
                     getUserObject()->setPickerOutputText( text );
                 }
+
+                // update the bbox
+                updateBBox( p_drawable );
             }
             else
             {
