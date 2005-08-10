@@ -155,7 +155,7 @@ class EnCamera :  public BaseEntity
         float                                       _farClip;
 
         //! Background color ( clear color )
-        osg::Vec3f                                  _backgroudColor;
+        osg::Vec3f                                  _backgroundColor;
 
         bool                                        _isPersistent;
 

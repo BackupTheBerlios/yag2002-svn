@@ -112,7 +112,7 @@ _isPersistent( false ),
 _fov( 60.00 ),
 _nearClip( 0.01f ),
 _farClip( 1000.0f ),
-_backgroudColor( Vec3f( 0.2f, 0.2f, 0.2f ) ),
+_backgroundColor( Vec3f( 0.2f, 0.2f, 0.2f ) ),
 _needUpdate ( false ),
 _p_cameraHandler( NULL ),
 _pitch( 0 ),
@@ -124,7 +124,7 @@ _yaw( 0 )
     getAttributeManager().addAttribute( "fov"               , _fov              );
     getAttributeManager().addAttribute( "nearClip"          , _nearClip         );
     getAttributeManager().addAttribute( "farClip"           , _farClip          );
-    getAttributeManager().addAttribute( "backgroundColor"   , _backgroudColor   );
+    getAttributeManager().addAttribute( "backgroundColor"   , _backgroundColor  );
 }
 
 EnCamera::~EnCamera()
@@ -159,7 +159,7 @@ void EnCamera::initialize()
     unsigned int width, height;
     Application::get()->getScreenSize( width, height );
     Application::get()->getSceneView()->setProjectionMatrixAsPerspective( _fov, ( float( width ) / float( height ) ), _nearClip, _farClip );
-    Application::get()->getSceneView()->setClearColor( osg::Vec4f( _backgroudColor, 1.0f ) );
+    Application::get()->getSceneView()->setClearColor( osg::Vec4f( _backgroundColor, 1.0f ) );
 
     _curPosition = _position;
     _curRotation = osg::Quat( 
