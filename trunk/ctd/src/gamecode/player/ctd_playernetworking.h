@@ -98,10 +98,10 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         void                                        getRotation( float& yaw );
 
         //! Update animation flags
-        void                                        updateAnimationFlags( unsigned int cmdFlag );
+        void                                        updateAnimationFlags( unsigned char cmdFlag );
 
         //! Get animation flags
-        void                                        getAnimationFlags( unsigned int& cmdFlag );
+        unsigned char                               getAnimationFlags();
 
         //! Put new chat text
         void                                        putChatText( const CEGUI::String& text );
@@ -136,7 +136,7 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
 
         float                                       _yaw;
 
-        unsigned int                                _cmdAnimFlags;
+        unsigned char                               _cmdAnimFlags;
 
         char                                        _p_playerName[ 32 ];
 

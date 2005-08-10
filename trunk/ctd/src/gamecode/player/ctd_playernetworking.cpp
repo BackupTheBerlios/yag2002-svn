@@ -269,14 +269,14 @@ void PlayerNetworking::update()
 {
 }
 
-void PlayerNetworking::updateAnimationFlags( unsigned int cmdFlag )
+void PlayerNetworking::updateAnimationFlags( unsigned char cmdFlag )
 {
     _cmdAnimFlags = cmdFlag;
 }
 
-void PlayerNetworking::getAnimationFlags( unsigned int& cmdFlag )
+unsigned char PlayerNetworking::getAnimationFlags()
 {
-    cmdFlag = _cmdAnimFlags;
+    return _cmdAnimFlags;
 }
 
 void PlayerNetworking::updatePosition( float x, float y, float z )
