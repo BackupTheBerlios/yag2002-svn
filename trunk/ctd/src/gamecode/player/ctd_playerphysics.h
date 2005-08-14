@@ -214,8 +214,8 @@ class EnPlayerPhysics : public BaseEntity
         //! Indicates whether we are on ground or in air
         bool                                        _isAirBorne;
 
-        //! Climb contact
-        osg::Vec3f                                  _climbContact;
+        //! Climb height
+        float                                       _climbHeight;
 
         float                                       _climbForce;
 
@@ -250,11 +250,6 @@ inline void EnPlayerPhysics::addForce( float x, float y )
 
 inline void EnPlayerPhysics::stopMovement()
 {
-    // factor 1.5 is determined by fine-tuning
-    osg::Vec3f stopforce( -_force * ( 1.5f / _linearForce ) ); 
-    stopforce._v[ 2 ] = 0;
-    osg::Vec3f pos( _matrix.getTrans() );
-    NewtonAddBodyImpulse( _p_body, &stopforce._v[ 0 ], &pos._v[ 0 ] );
     _force._v[ 0 ] = 0;
     _force._v[ 1 ] = 0;
 }

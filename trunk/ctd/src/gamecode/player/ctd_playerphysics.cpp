@@ -236,14 +236,15 @@ int EnPlayerPhysics::collideWithLevel( const NewtonMaterial* p_material, const N
 
     Vec3f pos = _p_playerImpl->getPlayerPosition();
 	// consider the player height
-    if ( ( point._v[ 2 ] - ( pos._v[ 2 ] - _playerHeight * 0.5f ) ) < _stepHeight ) 
+    float diff = point._v[ 2 ] - ( pos._v[ 2 ] - _playerHeight * 0.5f );
+    if ( diff > 0.1f )
     {
         Vec3f localpoint = pos - point;
         Matrixf::transform3x3( _matrix, localpoint );
 		// save the elevation of the highest step to take
-		if ( localpoint._v[ 2 ] > _climbContact._v[ 2 ] ) 
+		if ( localpoint._v[ 2 ] > _climbHeight ) 
 			if ( fabsf( normal._v[ 2 ] ) < 0.8f )
-				_climbContact = localpoint;
+				_climbHeight = diff;
 	}
 
     return 1;
@@ -298,17 +299,33 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
 	NewtonBodyGetOmega( p_phys->_p_body, &omega._v[ 0 ] );
 	Vec3f torque( 0.0f, 0.0f, 0.5f * Izz * ( steerAngle * timestepInv - omega._v[ 2 ] ) * timestepInv );
     NewtonBodySetTorque( p_phys->_p_body, &torque._v[ 0 ] );
-	
-    // climb steps by adding a force
-    float climbforce = 0;
-    if ( p_phys->_climbContact._v[ 2 ] > 0 )
-    {
-        climbforce = p_phys->_climbForce;
-    }
-    // reset climb contact
-    p_phys->_climbContact.set( 0.0f, 0.0f, 0.0f );
 
-    force._v[ 2 ] = mass * ( p_phys->_gravity + climbforce ); // add gravity and climbing force
+    // climb stair steps
+    if ( ( p_phys->_climbHeight > 0.1f ) && ( p_phys->_climbHeight < p_phys->_stepHeight ) )
+    {
+        float* p_mat = matrix.ptr();
+
+        // adjust the position in movement direction
+        osg::Vec3f move = force;
+        move._v[ 2 ] = 0.0f;
+        move.normalize();
+        move *= 0.1f;
+        p_mat[ 12 ] += move._v[ 0 ];
+        p_mat[ 13 ] += move._v[ 1 ];
+
+        // adjust the height
+        p_mat[ 14 ] += p_phys->_climbHeight + 0.1f;
+
+        // set new body position
+        NewtonBodySetMatrix( p_body, p_mat );
+
+        p_phys->_isAirBorne = true;
+
+        // reset climb contact
+        p_phys->_climbHeight = 0.0;
+    }
+
+    force._v[ 2 ] = mass * p_phys->_gravity; // add gravity to force
 
     // snap to ground
     if ( p_phys->_isAirBorne && !p_phys->_isJumping ) 
@@ -350,14 +367,11 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     }
     p_phys->_jumpTimer = p_phys->_jumpTimer ? p_phys->_jumpTimer - 1 : 0;
 
-    //!FIXME: rotate the force direction to align with the camera, currently it does not work
-    //heading = matrix * p_phys->getPlayer()->getPlayerMoveDirection();
-    //heading *= ( 1.0f / sqrtf( ( heading * heading ) + 1.0e-6f ) );
-    //force += ( heading * ( mass /** 30.0f*/ - 2.0f * ( velocity * heading ) ) ); 
-
-    NewtonBodySetForce( p_body, &force._v[ 0 ] );
-
+    // set the stopped flag
     p_phys->_isStopped = ( ( force._v[ 0 ] == 0 ) && ( force._v[ 1 ] == 0 ) );	
+
+    // set body force
+    NewtonBodySetForce( p_body, &force._v[ 0 ] );
 }
 
 float EnPlayerPhysics::physicsRayCastPlacement( const NewtonBody* p_body, const float* p_normal, int collisionID, void* p_userData, float intersectParam )
@@ -396,6 +410,7 @@ _stepHeight( 0.5f ),
 _linearForce( 0.1f ),
 _angularForce( 0.05f ),
 _linearDamping( 0.2f ),
+_climbHeight( 0.0f ),
 _gravity( Physics::get()->getWorldGravity() )
 { 
     EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications about physics building
@@ -501,7 +516,7 @@ void EnPlayerPhysics::setPlayer( BasePlayerImplementation* p_player )
 void EnPlayerPhysics::initialize()
 {
     // set the step and player height
-    _playerHeight = _dimensions._v[ 2 ] * 2.0f;
+    _playerHeight = _dimensions._v[ 2 ];
 
     // create the collision 
     //NewtonCollision* p_col = NewtonCreateSphere( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
