@@ -99,15 +99,15 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
         class MouseData
         {
             public:
-                                                MouseData()
+                                                MouseData( float pitch = 0.0f, float yaw = 0.0f )
                                                 {
-                                                    reset();
+                                                    reset( pitch, yaw );
                                                 }
 
                 virtual                         ~MouseData() {}
 
                 //! Reset the mouse data state
-                void                            reset()
+                void                            reset( float pitch = 0.0f, float yaw = 0.0f )
                                                 {
                                                     // get the current screen size
                                                     unsigned int width, height;
@@ -119,8 +119,8 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
                                                     _screenMiddleX = static_cast< Uint16 >( _screenSizeX * 0.5f );
                                                     _screenMiddleY = static_cast< Uint16 >( _screenSizeY * 0.5f );
                                                     // init pitch and yaw
-                                                    _yaw         = 0.0f;
-                                                    _pitch       = 0.0f;
+                                                    _yaw         = yaw;
+                                                    _pitch       = pitch;
                                                     _pyQueue.push( std::make_pair( _pitch, _yaw ) );
                                                 }
 
@@ -151,7 +151,7 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
                 Uint16                          _screenMiddleY;
         };
         
-        MouseData                           _mouseData;
+        MouseData*                          _p_mouseData;
 
         // used internally
         // ---------------

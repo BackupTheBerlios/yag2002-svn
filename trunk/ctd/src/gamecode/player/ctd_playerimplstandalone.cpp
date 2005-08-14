@@ -116,7 +116,11 @@ void PlayerImplStandalone::initialize()
     // setup position, rotation and move direction
     _currentPos = getPlayerEntity()->getPosition();
     _currentRot = getPlayerEntity()->getRotation();
-    _moveDir    = _currentRot * _moveDir;
+    _moveDir    = _currentRot * osg::Vec3f( 0, 1, 0 );
+    osg::Quat::value_type rot;
+    osg::Vec3f            vec;
+    getPlayerEntity()->getRotation().getRotate( rot, vec );
+    _rotZ = rot;
 }
 
 void PlayerImplStandalone::postInitialize()

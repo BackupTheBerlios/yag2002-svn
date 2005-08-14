@@ -55,7 +55,7 @@ _p_playerPhysics( NULL ),
 _p_playerAnimation( NULL ),
 _p_playerNetworking( NULL ),
 _p_camera( NULL ),
-_cameraMode( Spheric ),
+_cameraMode( Ego ),
 _moveDir( Vec3f( 0, 1, 0 ) ),
 _rotZ( 0 ),
 _p_chatGui( NULL )

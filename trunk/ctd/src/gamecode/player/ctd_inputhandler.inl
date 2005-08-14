@@ -52,11 +52,15 @@ _keyCodeChatMode( osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON ),
 _invertedMouse( false ),
 _mouseSensitivity( 1.0f )
 {
+    // initialize the mouse data considering initial yaw
+    _p_mouseData = new PlayerIHCharacterCameraCtrl< PlayerImplT >::MouseData( 0.0f, getPlayerImpl()->_rotZ );
+    getPlayerImpl()->setCameraPitchYaw( 0, getPlayerImpl()->_rotZ );
 }
 
 template< class PlayerImplT >
 PlayerIHCharacterCameraCtrl< PlayerImplT >::~PlayerIHCharacterCameraCtrl() 
 {
+    delete _p_mouseData;
 }
 
 template< class PlayerImplT >
@@ -141,10 +145,10 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 _camSwitch = true;
 
                 // store current pitch / yaw and restore the old values
-                _mouseData.pushPitchYaw();
-                _mouseData.popPitchYaw();
+                _p_mouseData->pushPitchYaw();
+                _p_mouseData->popPitchYaw();
                 // after cam mode switching and restoring the pitch / yaw we have also to update the player pitch / yaw
-                updatePlayerPitchYaw( _mouseData._pitch, _mouseData._yaw );
+                updatePlayerPitchYaw( _p_mouseData->_pitch, _p_mouseData->_yaw );
             }
         }
 
@@ -199,22 +203,6 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     //--------
 
     // execute dispatched commands
-    if ( _moveForward )
-    {
-        getPlayerImpl()->_p_playerPhysics->setForce( getPlayerImpl()->_moveDir._v[ 0 ], getPlayerImpl()->_moveDir._v[ 1 ] );
-
-        if ( !getPlayerImpl()->_p_playerPhysics->isJumping() )
-            getPlayerImpl()->_p_playerAnimation->animWalk();
-    } 
-    
-    if ( _moveBackward )
-    {
-        getPlayerImpl()->_p_playerPhysics->setForce( -getPlayerImpl()->_moveDir._v[ 0 ], -getPlayerImpl()->_moveDir._v[ 1 ] );
-
-        if ( !getPlayerImpl()->_p_playerPhysics->isJumping() )
-            getPlayerImpl()->_p_playerAnimation->animWalk();
-    }
-
     if ( _right )
     {
         switch ( getPlayerImpl()->_cameraMode )
@@ -281,6 +269,22 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             default:
                 assert( NULL && "unknown camera state!" );
         }
+    }
+
+    if ( _moveForward )
+    {
+        getPlayerImpl()->_p_playerPhysics->setForce( getPlayerImpl()->_moveDir._v[ 0 ], getPlayerImpl()->_moveDir._v[ 1 ] );
+
+        if ( !getPlayerImpl()->_p_playerPhysics->isJumping() )
+            getPlayerImpl()->_p_playerAnimation->animWalk();
+    } 
+    
+    if ( _moveBackward )
+    {
+        getPlayerImpl()->_p_playerPhysics->setForce( -getPlayerImpl()->_moveDir._v[ 0 ], -getPlayerImpl()->_moveDir._v[ 1 ] );
+
+        if ( !getPlayerImpl()->_p_playerPhysics->isJumping() )
+            getPlayerImpl()->_p_playerAnimation->animWalk();
     }
 
     // handle stopping movement
@@ -364,7 +368,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     if ( eventType == osgGA::GUIEventAdapter::MOVE )
     {
         // skip events which come in when we warp the mouse pointer to middle of app window ( see below )
-        if ( (  sdlevent.motion.x == _mouseData._screenMiddleX ) && ( sdlevent.motion.y == _mouseData._screenMiddleY ) )
+        if ( (  sdlevent.motion.x == _p_mouseData->_screenMiddleX ) && ( sdlevent.motion.y == _p_mouseData->_screenMiddleY ) )
             return false;
 
         // limit the movement gradient in x and y direction and multiply with mouse sensitivity factor
@@ -383,18 +387,18 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         yrel *= _mouseSensitivity;
 
         // update accumulated mouse coords ( pitch / yaw )
-        _mouseData._yaw += xrel / _mouseData._screenSizeX;
+        _p_mouseData->_yaw += xrel / _p_mouseData->_screenSizeX;
         // consider the mouse invert flag
         if ( !_invertedMouse )
-            _mouseData._pitch -= yrel / _mouseData._screenSizeY;
+            _p_mouseData->_pitch -= yrel / _p_mouseData->_screenSizeY;
         else
-            _mouseData._pitch += yrel / _mouseData._screenSizeY;
+            _p_mouseData->_pitch += yrel / _p_mouseData->_screenSizeY;
 
         // update the player pitch / yaw
-        updatePlayerPitchYaw( _mouseData._pitch, _mouseData._yaw );
+        updatePlayerPitchYaw( _p_mouseData->_pitch, _p_mouseData->_yaw );
 
         // reset mouse position in order to avoid leaving the app window
-        Application::get()->getViewer()->requestWarpPointer( _mouseData._screenMiddleX, _mouseData._screenMiddleY );
+        Application::get()->getViewer()->requestWarpPointer( _p_mouseData->_screenMiddleX, _p_mouseData->_screenMiddleY );
     }
 
     return false;
