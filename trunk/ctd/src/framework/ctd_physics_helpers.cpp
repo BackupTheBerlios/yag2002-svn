@@ -66,9 +66,13 @@ void DebugShowBodyCollision( const NewtonBody* p_body )
 
 void PhysicsDebugDrawable::drawImplementation( osg::State& state ) const
 {
+    glPushClientAttrib( GL_CLIENT_ALL_ATTRIB_BITS );
+    glPushAttrib( GL_ALL_ATTRIB_BITS );
+
 	glColor3f( 1.0f, 1.0f, 1.0f );
 	glDisable( GL_LIGHTING );
 	glDisable( GL_TEXTURE_2D );
+
     Matrixf mat;
     mat.identity();
     glPushMatrix();
@@ -77,6 +81,9 @@ void PhysicsDebugDrawable::drawImplementation( osg::State& state ) const
     NewtonWorldForEachBodyDo( Physics::get()->getWorld(), DebugShowBodyCollision );
 	glEnd();
     glPopMatrix();
+
+    glPopClientAttrib();
+    glPopAttrib();
 }
 //----------------------------//
 
