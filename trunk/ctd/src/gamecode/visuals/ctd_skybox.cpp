@@ -44,9 +44,6 @@ EnSkyBox::EnSkyBox() :
 _isPersistent( false ),
 _enable( true )
 {
-    // register entity in order to get notifications   
-    EntityManager::get()->registerNotification( this, true );   
-
     // register entity attributes
     getAttributeManager().addAttribute( "persistence"   , _isPersistent  );
     getAttributeManager().addAttribute( "enable"        , _enable        );
@@ -81,6 +78,9 @@ void EnSkyBox::handleNotification( const EntityNotification& notification )
 
 void EnSkyBox::initialize()
 {
+    // register entity in order to get notifications   
+    EntityManager::get()->registerNotification( this, true );   
+
     // setup texture side names
     _textureFilenameMap.insert( make_pair( TextureCubeMap::POSITIVE_X, _texNames[ 0 ] ) );
     _textureFilenameMap.insert( make_pair( TextureCubeMap::NEGATIVE_X, _texNames[ 1 ] ) );

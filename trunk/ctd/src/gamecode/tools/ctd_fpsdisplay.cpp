@@ -47,11 +47,6 @@ _fps( 0 ),
 _p_outputText( NULL ),
 _p_wnd( NULL )
 {
-    // register entity in order to get updated per simulation step
-    EntityManager::get()->registerUpdate( this, true );
-    // register entity in order to get notifications
-    EntityManager::get()->registerNotification( this, true );
-
     // register entity attributes
     getAttributeManager().addAttribute( "position"    , _position    );
     getAttributeManager().addAttribute( "enable"      , _enable      );
@@ -121,6 +116,11 @@ void EnFPSDisplay::initialize()
         log << Log::LogLevel( Log::L_ERROR ) << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
         log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
+
+    // register entity in order to get updated per simulation step
+    EntityManager::get()->registerUpdate( this, true );
+    // register entity in order to get notifications
+    EntityManager::get()->registerNotification( this, true );
 }
 
 void EnFPSDisplay::updateEntity( float deltaTime )

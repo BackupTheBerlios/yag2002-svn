@@ -51,9 +51,6 @@ EnSpawnPoint::EnSpawnPoint()
 
     // store this new spawn point for later lookup
     _allSpawnPoints.push_back( this );
-
-    // register entity in order to get notifications
-    EntityManager::get()->registerNotification( this, true );   
 }
 
 EnSpawnPoint::~EnSpawnPoint()
@@ -85,6 +82,9 @@ void EnSpawnPoint::initialize()
                         osg::DegreesToRadians( _rotation.y() ), osg::Vec3f( 0.0f, 1.0f, 0.0f ),
                         osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0.0f, 0.0f, 1.0f )
                       );
+
+    // register entity in order to get notifications
+    EntityManager::get()->registerNotification( this, true );   
 }
 
 bool EnSpawnPoint::getNextSpawnPoint( osg::Vec3f& pos, osg::Quat& rot )

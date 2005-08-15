@@ -62,9 +62,11 @@ class ConsoleIH : public GenericInputHandler< EnConsole >
                                                 assert( p_eventAdapter && "invalid event adapter received" );
                                                 SDLKey key = p_eventAdapter->getSDLKey();
 
+                                                Uint16 unicode = p_eventAdapter->getSDLEvent().key.keysym.unicode;
+
                                                 if ( p_eventAdapter->getEventType() == osgGA::GUIEventAdapter::KEYDOWN ) 
                                                 {
-                                                    if ( key == SDLK_BACKQUOTE ) // '^'
+                                                    if ( key == SDLK_F10 )
                                                     {
                                                         _toggleEnable = !_toggleEnable;
                                                         getUserObject()->enable( _toggleEnable );
@@ -121,14 +123,6 @@ _idleCounter( 0 ),
 _p_log( NULL ),
 _cwd( "/" )
 {
-    static bool alreadycreated = false;
-    assert( !alreadycreated && "the console entity can be created only once for entire application run-time. you are trying to create a second instance!" );
-    alreadycreated = true;
-
-    // register entity in order to get updated per simulation step
-    EntityManager::get()->registerUpdate( this, true );
-    // register entity in order to get notifications
-    EntityManager::get()->registerNotification( this, true );
 }
 
 EnConsole::~EnConsole()
@@ -168,6 +162,14 @@ void EnConsole::handleNotification( const EntityNotification& notification )
 
 void EnConsole::initialize()
 {
+    static bool alreadycreated = false;
+    if ( alreadycreated )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "the console entity can be created only once for entire application run-time."
+                                             << "you are trying to create a second instance!" << std::endl;
+    }
+    alreadycreated = true;
+
     try
     {
         _p_wnd = CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", CON_WND "mainWnd" );
@@ -200,6 +202,11 @@ void EnConsole::initialize()
         log << Log::LogLevel( Log::L_ERROR ) << "*** Console: cannot setup dialog layout." << endl;
         log << "      reason: " << e.getMessage().c_str() << endl;
     }
+
+    // register entity in order to get updated per simulation step
+    EntityManager::get()->registerUpdate( this, true );
+    // register entity in order to get notifications
+    EntityManager::get()->registerNotification( this, true );
 
     _p_inputHandler = new ConsoleIH( this );
 }

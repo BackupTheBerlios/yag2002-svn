@@ -312,7 +312,7 @@ bool PlayerChatGui::onEditboxTextChanged( const CEGUI::EventArgs& arg )
     {
         // in standalone mode we have no networking
         if ( GameState::get()->getMode() != GameState::Standalone )
-            _p_playerImpl->distributeChatMessage( _p_editbox->getText().c_str() ); // send the msg over net
+            _p_playerImpl->distributeChatMessage( _p_editbox->getText() ); // send the msg over net
 
         // add the msg to local chat box
         addMessage( _p_editbox->getText(), _playername );

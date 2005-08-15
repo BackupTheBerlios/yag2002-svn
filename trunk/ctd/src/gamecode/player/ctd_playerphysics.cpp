@@ -306,10 +306,10 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
         float* p_mat = matrix.ptr();
 
         // adjust the position in movement direction
-        osg::Vec3f move = force;
+        osg::Vec3f move = p_phys->_p_playerImpl->getPlayerMoveDirection();
         move._v[ 2 ] = 0.0f;
         move.normalize();
-        move *= 0.1f;
+        move *= 0.2f;
         p_mat[ 12 ] += move._v[ 0 ];
         p_mat[ 13 ] += move._v[ 1 ];
 
@@ -413,7 +413,8 @@ _linearDamping( 0.2f ),
 _climbHeight( 0.0f ),
 _gravity( Physics::get()->getWorldGravity() )
 { 
-    EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications about physics building
+    // register entity in order to get notifications about physics building
+    EntityManager::get()->registerNotification( this, true );   
 
     // add entity attributes
     getAttributeManager().addAttribute( "dimensions"    , _dimensions    );

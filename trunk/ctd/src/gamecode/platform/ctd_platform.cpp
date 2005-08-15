@@ -43,8 +43,6 @@ EnPlatform::EnPlatform():
 _speed(0.5f),
 _loop(true)
 {
-    EntityManager::get()->registerUpdate( this );   // register entity in order to get updated per simulation step
-
     // register entity attributes
     getAttributeManager().addAttribute( "meshFile", _meshFile );
     getAttributeManager().addAttribute( "position", _position );
@@ -67,6 +65,9 @@ void EnPlatform::initialize()
     // now we add the new mesh into our transformable scene group
     addToTransformationNode( p_mesh );
     setPosition( _position );
+
+    // register entity in order to get updated per simulation step
+    EntityManager::get()->registerUpdate( this );   
 }
 
 void EnPlatform::updateEntity( float deltaTime )

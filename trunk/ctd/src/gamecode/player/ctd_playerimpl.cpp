@@ -139,7 +139,7 @@ void BasePlayerImplementation::addChatMessage( const CEGUI::String& msg, const C
         PlayerChatGui::get()->addMessage( msg, author );
 }
 
-void BasePlayerImplementation::distributeChatMessage( const std::string& msg )
+void BasePlayerImplementation::distributeChatMessage( const CEGUI::String& msg )
 {
     _p_playerNetworking->putChatText( msg );
 }

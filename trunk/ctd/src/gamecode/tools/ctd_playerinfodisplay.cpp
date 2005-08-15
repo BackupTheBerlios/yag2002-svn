@@ -46,9 +46,6 @@ _enable( true ),
 _p_outputText( NULL ),
 _p_wnd( NULL )
 {
-    // register entity in order to get notifications
-    EntityManager::get()->registerNotification( this, true );
-
     // register entity attributes
     getAttributeManager().addAttribute( "position"    , _position    );
     getAttributeManager().addAttribute( "enable"      , _enable      );
@@ -121,6 +118,8 @@ void EnPlayerInfoDisplay::initialize()
 
     // register entity in order to get updated per simulation step
     EntityManager::get()->registerUpdate( this, true );
+    // register entity in order to get notifications
+    EntityManager::get()->registerNotification( this, true );
 
     getPlayerEntity();
 }

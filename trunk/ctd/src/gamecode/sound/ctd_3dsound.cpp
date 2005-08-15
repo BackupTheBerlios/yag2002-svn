@@ -51,8 +51,6 @@ _showSource( false ),
 _p_soundNode( NULL ),
 _soundState( NULL )
 {
-    EntityManager::get()->registerUpdate( this );   // register entity in order to get updated per simulation step
-
     // register entity attributes
     getAttributeManager().addAttribute( "resourceDir" , _soundFileDir   );
     getAttributeManager().addAttribute( "soundFile",    _soundFile      );
@@ -91,10 +89,12 @@ void En3DSound::initialize()
     {
         log << Log::LogLevel( Log::L_ERROR ) << "*** error loading sound file in '" << getInstanceName() << "'" << endl;
         log << Log::LogLevel( Log::L_ERROR ) << "  reason: " << e.what() << endl;
-        EntityManager::get()->registerUpdate( this, false );   // deregister entity
         return;
     }
  
+    // register entity in order to get updated per simulation step
+    EntityManager::get()->registerUpdate( this );   
+
     // create a named sound state.
     // note: we have to make the state name unique as otherwise new need unique sound states for every entity instance
     stringstream uniquename;

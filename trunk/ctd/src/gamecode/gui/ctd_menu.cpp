@@ -223,13 +223,21 @@ EnMenu::~EnMenu()
     // destroy self-created entities
     // note: these entities are created via EntityManager with "no add to pool" option,
     //       thus we must not use EntityManager's detroyEntity method to destroy them, we have to delete them manually instead!
-    delete _p_hoverSound;
-    delete _p_clickSound;
-    delete _p_introSound;
-    delete _p_backgrdSound;
+    if ( _p_hoverSound )
+        delete _p_hoverSound;
+
+    if ( _p_clickSound )
+        delete _p_clickSound;
+
+    if ( _p_introSound )
+        delete _p_introSound;
+
+    if ( _p_backgrdSound )
+        delete _p_backgrdSound;
 
     // destroy the input handler
-    _p_inputHandler->destroyHandler();
+    if ( _p_inputHandler )
+        _p_inputHandler->destroyHandler();
 }
 
 void EnMenu::handleNotification( const EntityNotification& notification )
@@ -381,8 +389,8 @@ void EnMenu::initialize()
     // this entity needs updates initially for getting the intro running
     EntityManager::get()->registerUpdate( this, true );
 
-    // we register outself to get notifications. interesting one is the shutdown notification
-    //  as we have to trigger the destruction outself -- because of setAutoDelete( false )
+    // we register ourself to get notifications. interesting one is the shutdown notification
+    //  as we have to trigger the destruction ourself as this entity is persistent.
     EntityManager::get()->registerNotification( this, true );
 }
 

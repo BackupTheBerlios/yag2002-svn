@@ -103,7 +103,7 @@ class BasePlayerImplementation
         void                                        addChatMessage( const CEGUI::String& msg, const CEGUI::String& author );
 
         //! Distribute the given message to all other clients
-        void                                        distributeChatMessage( const std::string& msg );
+        void                                        distributeChatMessage( const CEGUI::String& msg );
 
         //! Return player's animation component.
         inline EnPlayerAnimation*                   getPlayerAnimation();

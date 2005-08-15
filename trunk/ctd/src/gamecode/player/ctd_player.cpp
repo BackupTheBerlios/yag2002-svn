@@ -54,8 +54,6 @@ _p_playerImpl( NULL )
 {
     CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "creating player entity"  << getInstanceName() << ", time: " << CTD::getTimeStamp() << endl;
 
-    EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
-
     // assign some defaults
     _attributeContainer._chatGuiConfig = "gui/chat.xml";
     _attributeContainer._rot = 0;
@@ -158,6 +156,8 @@ void EnPlayer::initialize()
         default:
             assert( NULL && "unsupported game mode" );
     }
+
+    EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 }
 
 void EnPlayer::postInitialize()

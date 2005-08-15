@@ -130,7 +130,8 @@ _yaw( 0 )
 EnCamera::~EnCamera()
 {
     // destroy the input handler, this will deregister and delete our handler from viewer's handler list
-    _p_cameraHandler->destroyHandler();
+    if ( _p_cameraHandler )
+        _p_cameraHandler->destroyHandler();
 }
 
 void EnCamera::handleNotification( const EntityNotification& notification )

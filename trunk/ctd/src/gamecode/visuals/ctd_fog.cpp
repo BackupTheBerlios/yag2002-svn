@@ -55,9 +55,6 @@ _isPersistent( false )
     getAttributeManager().addAttribute( "color"      , _fogColor        );
 
     _instCount++;
-
-    // register entity in order to get shutdown notification
-    EntityManager::get()->registerNotification( this, true );   
 }
 
 EnFog::~EnFog()
@@ -94,6 +91,9 @@ void EnFog::initialize()
     // the fog is global and must be shared between all fog entities
     if ( _p_fog )
         return;
+
+    // register entity in order to get shutdown notification
+    EntityManager::get()->registerNotification( this, true );   
 
     osg::StateSet* p_stateset = Application::get()->getSceneView()->getGlobalStateSet();
     _p_fog = new osg::Fog;
