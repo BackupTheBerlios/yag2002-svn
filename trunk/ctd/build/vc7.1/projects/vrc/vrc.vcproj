@@ -505,6 +505,12 @@
 							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdentityattrset.h">
 						</File>
 						<File
+							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdentitydump.cpp">
+						</File>
+						<File
+							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdentitydump.h">
+						</File>
+						<File
 							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdentitylist.cpp">
 						</File>
 						<File
@@ -647,6 +653,12 @@
 						</File>
 						<File
 							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdversion.h">
+						</File>
+						<File
+							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdwriteosgfile.cpp">
+						</File>
+						<File
+							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdwriteosgfile.h">
 						</File>
 					</Filter>
 				</Filter>
