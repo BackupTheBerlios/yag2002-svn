@@ -88,8 +88,9 @@ const std::string& CmdHelp::execute( const std::vector< std::string >& arguments
         }
         else
         {
-            _cmdResult += "[ " + ( *p_beg )->getCmdName() + " ]:   " + ( *p_beg )->getUsage() + "\n";
-            _cmdResult += "-------------\n";
+            _cmdResult += "[ " + ( *p_beg )->getCmdName() + " ]\n";
+            _cmdResult += ( *p_beg )->getUsage() + "\n";
+            _cmdResult += "\n";
         }
     }
     _cmdResult += "\n";
