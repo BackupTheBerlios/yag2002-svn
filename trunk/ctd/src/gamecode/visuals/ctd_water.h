@@ -47,6 +47,7 @@ namespace CTD
 
 class DeltaWaveUpdateCallback;
 class DeltaNoiseUpdateCallback;
+class EnCamera;
 
 //! This entity simulates water using glsl shaders
 class EnWater :  public BaseEntity

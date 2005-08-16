@@ -38,6 +38,7 @@
 #include <osg/Shader>
 #include <osg/Uniform>
 #include <osg/Texture3D>
+#include <osgUtil/UpdateVisitor>
 
 #include "../extern/Noise.h"
 
@@ -58,12 +59,14 @@ static const char glsl_vp[] =
     "                                                                                           \n"
     "varying vec3 vTexCoord;                                                                    \n"
     "varying vec3 vViewVec;                                                                     \n"
+    "varying vec3 vNormal;                                                                      \n"
     "                                                                                           \n"
     "void main(void)                                                                            \n"
     "{                                                                                          \n"
     "   vec4 Position = gl_Vertex.xyzw;                                                         \n"
     "   vTexCoord     = Position.xyz * scale.xyz;                                               \n"
     "   vViewVec      = Position.xyz - viewPosition.xyz;                                        \n"
+    "   vNormal       = gl_Normal;                                                              \n"
     "   gl_Position   = gl_ModelViewProjectionMatrix * Position;                                \n"
     "}                                                                                          \n"
 ;
@@ -83,7 +86,7 @@ static const char glsl_fp[] =
     "                                                                                           \n"
     "varying vec3 vTexCoord;                                                                    \n"
     "varying vec3 vViewVec;                                                                     \n"
-    "                                                                                           \n"
+    "varying vec3 vNormal;                                                                      \n"
     "                                                                                           \n"
     "void main(void)                                                                            \n"
     "{                                                                                          \n"
@@ -95,13 +98,13 @@ static const char glsl_fp[] =
     "                                                                                           \n"
     "   // Signed noise                                                                         \n"
     "   vec3 bump = 2.0 * noisy.xyz - 1.0;                                                      \n"
-    "   bump.xy *= 0.10;                                                                        \n"
+    "   bump.xy *= 0.15;                                                                        \n"
     "                                                                                           \n"
     "   // Make sure the normal always points upwards                                           \n"
     "   bump.z = 0.8 * abs(bump.z) + 0.2;                                                       \n"
     "                                                                                           \n"
     "   // Offset the surface normal with the bump                                              \n"
-    "   bump = normalize(vec3(0,0,1) + bump);                                                   \n"
+    "   bump = normalize(vNormal + bump);                                                       \n"
     "                                                                                           \n"
     "   // Find the reflection vector                                                           \n"
     "   vec3 reflVec = reflect(vViewVec, bump);                                                 \n"
@@ -174,29 +177,11 @@ class ViewPositionUpdateCallback: public osg::Uniform::Callback
 
         virtual void                        operator() ( osg::Uniform* p_uniform, osg::NodeVisitor* p_nv )
                                             {
-                                                osg::Matrixd::value_type* mat = _p_sceneView->getViewMatrix().ptr();  
-                                                osg::Vec3f viewpos
-                                                    ( 
-                                                    static_cast< float >( mat[ 12 ] ), 
-                                                    static_cast< float >( mat[ 14 ] ), 
-                                                    static_cast< float >( mat[ 13 ] )
-                                                    );
-
-                                                //! TODO
-
-                                                //osg::Vec3f viewpos;
-                                                //osg::Vec3f center;
-                                                //osg::Vec3f up;
-                                                //_p_sceneView->getViewMatrixAsLookAt( viewpos, center, up );
-
-                                                //osg::Quat rot( 
-                                                //                osg::Quat( osg::DegreesToRadians( 90.0f ), osg::Vec3f( 0.0f, 0.0f, 1.0f ) ) *
-                                                //                osg::Quat( osg::DegreesToRadians( 90.0f ), osg::Vec3f( 1.0f, 0.0f, 0.0f ) )
-                                                //              );
-
-                                                //viewpos = center - viewpos;
-                                                //viewpos = rot * viewpos;
-
+                                                // get current camera position and feed it into shader
+                                                osg::Vec3f viewpos;
+                                                osg::Vec3f center;
+                                                osg::Vec3f up;
+                                                _p_sceneView->getViewMatrixAsLookAt( viewpos, center, up );
                                                 osg::Vec4f pos( viewpos, 1.0f );
                                                 p_uniform->set( pos );
                                             }
@@ -335,21 +320,32 @@ osg::Image* make3DNoiseImage(int texSize)
 }
 
 osg::Node* EnWater::setupWater()
-{
+{    
     osg::Geode* p_geode = new osg::Geode();
     p_geode->setCullingActive( false );
 
     // create water plane
     {
-        osg::Vec3 coords[] =
+        osg::Vec3f coords[] =
         {
             osg::Vec3( _position.x() - _sizeX * 0.5f, _position.y() + _sizeY * 0.5f, _position.z() ),
             osg::Vec3( _position.x() - _sizeX * 0.5f, _position.y() - _sizeY * 0.5f, _position.z() ),
             osg::Vec3( _position.x() + _sizeX * 0.5f, _position.y() - _sizeY * 0.5f, _position.z() ),
             osg::Vec3( _position.x() + _sizeX * 0.5f, _position.y() + _sizeY * 0.5f, _position.z() )
         };
+
+        osg::Vec3f normals[] =
+        {
+            osg::Vec3( 0.0f, 0.0f, 1.0f ),
+            osg::Vec3( 0.0f, 0.0f, 1.0f ),
+            osg::Vec3( 0.0f, 0.0f, 1.0f ),
+            osg::Vec3( 0.0f, 0.0f, 1.0f )
+        };
+
         osg::Geometry* p_polyGeom = new osg::Geometry;
         p_polyGeom->setVertexArray( new osg::Vec3Array( 4, coords ) );
+        p_polyGeom->setNormalArray( new osg::Vec3Array( 4, normals ) );
+
         osg::DrawArrays* p_drawarray = new osg::DrawArrays( osg::PrimitiveSet::QUADS, 0, 4 );        
         p_polyGeom->addPrimitiveSet( p_drawarray );
 
@@ -452,8 +448,9 @@ osg::Node* EnWater::setupWater()
     }
 
     osg::Group* p_group = new osg::Group;
-
+    p_group->setCullingActive( false );
     p_group->addChild( p_geode );
+
     return p_group;
 }
 
