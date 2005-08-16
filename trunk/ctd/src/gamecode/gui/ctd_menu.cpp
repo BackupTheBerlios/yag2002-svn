@@ -730,9 +730,6 @@ void EnMenu::updateEntity( float deltaTime )
             // store level scene's static mesh for later switching
             _levelScene = LevelManager::get()->getStaticMesh();
 
-            // hide the loading window
-            _p_loadingWindow->hide();
-
             // set flag that we have loaded a level; some menu oprions depend on this flag
             _levelLoaded = true;
 
@@ -976,6 +973,9 @@ void EnMenu::leave()
 
     // set menu state
     _menuState = Hidden;
+
+    // hide the loading window
+    _p_loadingWindow->hide();
 }
 
 void EnMenu::switchMenuScene( bool tomenu )
