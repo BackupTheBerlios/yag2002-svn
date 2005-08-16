@@ -42,11 +42,17 @@ CTD_IMPL_ENTITYFACTORY_AUTO( GeomEmitteEntityFactory );
 
 EnGeomEmitter::EnGeomEmitter():
 _time( 0 ),
-_geomCount( 0 )
+_geomCount( 0 ),
+_dimensions( osg::Vec3f( 5.0f, 5.0f, 5.0f ) ),
+_period( 10.0f ),
+_life( 15.0f )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "geomTypes"  , _geomTypes  );
     getAttributeManager().addAttribute( "position"   , _position   );
+    getAttributeManager().addAttribute( "dimensions" , _dimensions );
+    getAttributeManager().addAttribute( "periode"    , _period     );
+    getAttributeManager().addAttribute( "life"       , _life       );
 }
 
 EnGeomEmitter::~EnGeomEmitter()
@@ -79,7 +85,7 @@ void EnGeomEmitter::updateEntity( float deltaTime )
     _time += deltaTime;
 
     // create new geom every 2 seconds
-    if ( _time > 2.5f )
+    if ( _time > _period )
     {
         _time = 0;
 
@@ -92,14 +98,14 @@ void EnGeomEmitter::updateEntity( float deltaTime )
         p_entity = p_entity->clone( p_entity->getInstanceName() + string( itoa( _geomCount, buf, 10 ) ), ( Group* )Application::get()->getSceneRootNode() );
 
         // set a random position before entity gets initialized
-        Vec3f randPos( ( float )( ( rand() % 100 ) - 100 ), ( float )( ( rand() % 80 ) - 80 ), ( float )( rand() % 30 ) );
+        Vec3f randPos( ( float )( ( rand() % ( int ) _dimensions.x() ) - _dimensions.x() ), ( float )( ( rand() % ( int )_dimensions.y() ) - _dimensions.y() ), ( float )( ( rand() % ( int )_dimensions.z() ) - _dimensions.z() ) );
         p_entity->getAttributeManager().setAttributeValue( "position", _position + randPos );
 
         // setup entities
         p_entity->initialize();
         p_entity->postInitialize();
 
-        float live = ( float )( 15 + rand() % 20 );
+        float live = ( ( _life * 0.5f ) + ( float ) ( rand() % ( int )_life ) );
         _geoms.push_back( make_pair( p_entity, live ) );
     }
 

@@ -58,7 +58,17 @@ class EnGeomEmitter : public BaseEntity
         //! Supported geometry types -- spcace-sparated -- in emitter container ( PhysicsBox, PhysicsSphere, etc. )       
         std::string                                 _geomTypes;
 
+        //! Position of emitter
         osg::Vec3f                                  _position;
+
+        //! Dimensions of emitter describing a cube, in this cube the pyhsics bodies are created
+        osg::Vec3f                                  _dimensions;
+
+        //! Time which has to elapsed before creating a new physics body
+        float                                       _period;
+
+        //! Avarage life time of bodies
+        float                                       _life;
 
         //! List of instantiated entities which are cloned during emitting
         std::vector< BaseEntity* >                  _geomStock;
