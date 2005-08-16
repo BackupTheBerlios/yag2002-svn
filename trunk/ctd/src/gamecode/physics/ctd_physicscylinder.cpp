@@ -49,7 +49,7 @@ _mass( 1.0f ),
 _radius( 0.5f ),
 _height( 1.0f ),
 _p_body( NULL ),
-_p_world( Physics::get()->getWorld() )
+_p_world( NULL )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "meshFile"      , _meshFile             );
@@ -79,6 +79,8 @@ EnPhysicsCylinder::~EnPhysicsCylinder()
 
 void EnPhysicsCylinder::initializePhysicsMaterials()
 {
+    _p_world = Physics::get()->getWorld();
+
     // create and setup collision matrials
     int cylinderID = Physics::get()->createMaterialID( "cylinder" );
     int defaultID  = Physics::get()->getMaterialId( "default" );

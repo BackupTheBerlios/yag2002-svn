@@ -48,7 +48,7 @@ EnPhysicsBox::EnPhysicsBox():
 _mass( 1.0f ),
 _dimensions( Vec3f( 1.0f, 1.0f, 1.0f ) ),
 _p_body( NULL ),
-_p_world( Physics::get()->getWorld() )
+_p_world( NULL )
 {
     // register entity attributes
     // note: this must be done in constructor!
@@ -73,11 +73,13 @@ EnPhysicsBox::~EnPhysicsBox()
     {
         NewtonBodySetUserData( _p_body, NULL );
         NewtonDestroyBody( Physics::get()->getWorld(), _p_body );
-    }     
+    }
 }
 
 void EnPhysicsBox::initializePhysicsMaterials()
 {
+    _p_world = Physics::get()->getWorld();
+
     // create and setup collision matrials
     int boxID      = Physics::get()->createMaterialID( "box" );
     int defaultID  = Physics::get()->getMaterialId( "default" );

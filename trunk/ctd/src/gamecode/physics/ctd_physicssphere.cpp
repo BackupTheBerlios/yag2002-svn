@@ -47,7 +47,7 @@ EnPhysicsSphere::EnPhysicsSphere():
 _mass( 1.0f ),
 _radius( 2 ),
 _p_body( NULL ),
-_p_world( Physics::get()->getWorld() )
+_p_world( NULL )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "meshFile"      , _meshFile             );
@@ -76,6 +76,8 @@ EnPhysicsSphere::~EnPhysicsSphere()
 
 void EnPhysicsSphere::initializePhysicsMaterials()
 {
+    _p_world = Physics::get()->getWorld();
+
     // create and setup collision matrials
     int sphereID   = Physics::get()->createMaterialID( "sphere" );
     int defaultID  = Physics::get()->getMaterialId( "default" );
