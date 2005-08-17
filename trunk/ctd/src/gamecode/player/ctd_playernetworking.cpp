@@ -232,6 +232,7 @@ void PlayerNetworking::initialize( const osg::Vec3f& pos, const string& playerNa
 void PlayerNetworking::putChatText( const CEGUI::String& text )
 {
     static tChatMsg s_textBuffer;
+    memset( s_textBuffer._text, 0, sizeof( tChatMsg ) ); // zero out the text buffer
     text.copy( s_textBuffer._text );
     ALL_REPLICAS_FUNCTION_CALL( RPC_AddChatText( s_textBuffer ) );
 }
