@@ -34,6 +34,8 @@
 #include "../visuals/ctd_camera.h"
 #include <osgUtil/IntersectVisitor>
 
+using namespace std;
+
 namespace CTD
 {
 // prefix for gui elements
@@ -50,6 +52,7 @@ class InspectorIH : public GenericInputHandler< EnInspector >
         explicit                            InspectorIH( EnInspector* p_ent ) : 
                                              GenericInputHandler< EnInspector >( p_ent )
                                             {
+                                                _p_pickResults   = new PickResults;
                                                 _lockMovement    = false;
                                                 _moveRight       = false;
                                                 _moveLeft        = false;
@@ -93,7 +96,7 @@ class InspectorIH : public GenericInputHandler< EnInspector >
                                                     // pass the created vertex array to the points geometry object.
                                                     _p_linesGeom->setVertexArray( vertices );
 
-                                                    // set the colors as before, plus using the aobve
+                                                    // set the colors as before
                                                     osg::Vec4Array* colors = new osg::Vec4Array;
                                                     colors->push_back( osg::Vec4( 1.0f, 1.0f, 1.0f, 1.0f ) );
                                                     _p_linesGeom->setColorArray( colors );
@@ -138,7 +141,7 @@ class InspectorIH : public GenericInputHandler< EnInspector >
                                                         // pass the created vertex array to the points geometry object.
                                                         _p_linesIntersect->setVertexArray( ivertices );
 
-                                                        // set the colors as before, plus using the aobve
+                                                        // set the colors
                                                         osg::Vec4Array* icolors = new osg::Vec4Array;
                                                         icolors->push_back( osg::Vec4( 1.0f, 1.0f, 0.0f, 1.0f ) );
                                                         icolors->push_back( osg::Vec4( 0.0f, 0.0f, 0.0f, 1.0f ) );
@@ -152,7 +155,11 @@ class InspectorIH : public GenericInputHandler< EnInspector >
                                                 }
                                             }
 
-        virtual                             ~InspectorIH() {}
+        virtual                             ~InspectorIH() 
+                                            {
+                                                delete _p_pickResults;
+                                                _p_pickResults = NULL;
+                                            }
 
         bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
 
@@ -181,12 +188,45 @@ class InspectorIH : public GenericInputHandler< EnInspector >
 
     protected:
 
-        // pick an drawable in level using ray-casting and return its nodepath. x, y is the normalized pointer position [-1...+1]
-        typedef std::pair< osg::Drawable*, const osg::NodePath* >  PickResults;
-        PickResults                         pick( float x, float y );
+        // helper class for picking results
+        class PickResults
+        {
+            public:
+                                            PickResults() :
+                                             _p_drawable( NULL ),
+                                             _p_hit( NULL )
+                                             {}
+
+                                           ~PickResults()
+                                           {
+                                               if ( _p_hit )
+                                                   delete _p_hit;
+                                           }
+
+            void                           setResults( osgUtil::Hit* p_hit, osg::Drawable* p_drawable )
+                                           {
+                                                if ( _p_hit )
+                                                    delete _p_hit;
+
+                                                _p_hit      = new osgUtil::Hit( *p_hit );
+                                                _p_drawable = p_drawable;
+                                            }
+
+            osg::Drawable*                  _p_drawable;
+            osgUtil::Hit*                   _p_hit; 
+        };
         
-        // update the bbox lines given a drawable, pass NULL in order to disable bbox drawing
-        void                                updateBBox( osg::Drawable* p_drawable );
+        // pick an drawable in level using ray-casting and return its nodepath. x, y is the normalized pointer position [-1...+1]
+        // return true when something picked and store the results in _p_pickResults. 
+        // use getPickResults to retrieve the results of picking when pick returns true.
+        bool                                pick( float x, float y );
+        
+        PickResults*                        getPickResults() { return _p_pickResults; }
+
+        PickResults*                        _p_pickResults;
+        
+        // update the bbox lines given a drawable, pass NULL in order to disable bbox drawing, returns the original bbox dimensions
+        osg::Vec3f                         updateBBox( osg::Drawable* p_drawable, const osg::Matrix& accumat, bool hastransformnode );
 
         // some internal variables
         bool                                _lockMovement;
@@ -217,7 +257,7 @@ class InspectorIH : public GenericInputHandler< EnInspector >
         osg::Geometry*                      _p_linesIntersect;
 };
 
-InspectorIH::PickResults InspectorIH::pick( float x, float y )
+bool InspectorIH::pick( float x, float y )
 {
     // calculate start and end point of ray
     osgUtil::SceneView* p_sv = Application::get()->getSceneView();
@@ -248,7 +288,7 @@ InspectorIH::PickResults InspectorIH::pick( float x, float y )
     iv.addLineSegment( _p_lineSegment.get() );
     // do the intesection test
     iv.apply( *p_grp );
-    
+
     // evaluate the results of intersection test
     osgUtil::IntersectVisitor::HitList&  hlist = iv.getHitList( _p_lineSegment.get() );
     osgUtil::IntersectVisitor::HitList::iterator p_beg = hlist.begin(), p_end = hlist.end();
@@ -270,7 +310,10 @@ InspectorIH::PickResults InspectorIH::pick( float x, float y )
                     break;
             }
             if ( p_dbeg == p_dend )
-                pickeddrawables.push_back( std::make_pair( p_beg->_drawable.get(), &*p_beg ) );          
+                pickeddrawables.push_back( std::make_pair( p_beg->_drawable.get(), &*p_beg ) );
+
+            osg::Geode* p_geode = p_beg->getGeode();
+            int i = 0;
         }
     }
 
@@ -283,7 +326,7 @@ InspectorIH::PickResults InspectorIH::pick( float x, float y )
     // select an drawable from a list of all ray-intersected drawables considering multi-clicks
     //  this allows to select also occluded drawabled by multi-clicking
     osg::Drawable* p_seldrawable = NULL;
-    size_t         numdrawables = pickeddrawables.size();
+    size_t         numdrawables  = pickeddrawables.size();
     if ( numdrawables > 0 )
     {
         // if the mouse pointer moved too far from last position then we take the first drawable
@@ -299,34 +342,63 @@ InspectorIH::PickResults InspectorIH::pick( float x, float y )
         }
     }
 
-    // update the intesection line visualization
+    // update the intesection line for visualization
     osg::Vec3Array* p_ivertices = static_cast< osg::Vec3Array* >( _p_linesIntersect->getVertexArray() );
     ( *p_ivertices )[ 0 ] = start;
     ( *p_ivertices )[ 1 ] = end;
     _p_linesIntersect->setVertexArray( p_ivertices );
 
-    // return the node path of picked drawable
-    return p_pickedHit ? std::make_pair( p_seldrawable, &p_pickedHit->getNodePath() ) : std::make_pair( static_cast< osg::Drawable* >( NULL ), static_cast< osg::NodePath* >( NULL ) );
+    if ( p_pickedHit )
+    {
+        _p_pickResults->setResults( new osgUtil::Hit( *p_pickedHit ), p_seldrawable );
+    }
+
+    return p_pickedHit ? true : false;
 }
 
-void InspectorIH::updateBBox( osg::Drawable* p_drawable )
+osg::Vec3f InspectorIH::updateBBox( osg::Drawable* p_drawable, const osg::Matrix& accumat, bool hastransformnode )
 {
+    osg::Vec3f dims;
+
     // update the bbox for visualization
     if ( p_drawable )
     {
-        const osg::BoundingBox& bb = p_drawable->getBound();
+        const osg::BoundingBox bb = p_drawable->getBound();
 
         // update the bbox lines
         osg::Vec3Array* p_vertices = static_cast< osg::Vec3Array* >( _p_linesGeom->getVertexArray() );
-        ( *p_vertices )[ 0 ] = bb.corner( 0 );
-        ( *p_vertices )[ 1 ] = bb.corner( 1 );
-        ( *p_vertices )[ 2 ] = bb.corner( 2 );
-        ( *p_vertices )[ 3 ] = bb.corner( 3 );
-        ( *p_vertices )[ 4 ] = bb.corner( 4 );
-        ( *p_vertices )[ 5 ] = bb.corner( 5 );
-        ( *p_vertices )[ 6 ] = bb.corner( 6 );
-        ( *p_vertices )[ 7 ] = bb.corner( 7 );
+        ( *p_vertices )[ 0 ] = bb.corner( 0 ) * accumat;
+        ( *p_vertices )[ 1 ] = bb.corner( 1 ) * accumat;
+        ( *p_vertices )[ 2 ] = bb.corner( 2 ) * accumat;
+        ( *p_vertices )[ 3 ] = bb.corner( 3 ) * accumat;
+        ( *p_vertices )[ 4 ] = bb.corner( 4 ) * accumat;
+        ( *p_vertices )[ 5 ] = bb.corner( 5 ) * accumat;
+        ( *p_vertices )[ 6 ] = bb.corner( 6 ) * accumat;
+        ( *p_vertices )[ 7 ] = bb.corner( 7 ) * accumat;
         _p_linesGeom->setVertexArray( p_vertices );
+
+        osg::Vec3f max = bb.corner( 7 );
+        osg::Vec3f min = bb.corner( 0 );
+
+        // get the original dimensions
+        dims = max - min;
+
+        // set the bbox color
+        // if the geode has no transform nodes in the node path then we draw it white
+        if ( hastransformnode )
+        {
+            osg::Vec4Array* colors = new osg::Vec4Array;
+            colors->push_back( osg::Vec4( 1.0f, 1.0f, 1.0f, 1.0f ) );
+            _p_linesGeom->setColorArray( colors );
+            _p_linesGeom->setColorBinding( osg::Geometry::BIND_OVERALL );
+        }
+        else // ... otherwise yellow
+        {
+            osg::Vec4Array* colors = new osg::Vec4Array;
+            colors->push_back( osg::Vec4( 1.0f, 1.0f, 0.0f, 1.0f ) );
+            _p_linesGeom->setColorArray( colors );
+            _p_linesGeom->setColorBinding( osg::Geometry::BIND_OVERALL );
+        }
     }
     else
     {
@@ -342,6 +414,8 @@ void InspectorIH::updateBBox( osg::Drawable* p_drawable )
         ( *p_vertices )[ 7 ] = osg::Vec3();
         _p_linesGeom->setVertexArray( p_vertices );
     }
+
+    return dims;
 }
 
 bool InspectorIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
@@ -376,9 +450,7 @@ bool InspectorIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
             _pickingEnabled = false;
     }
 
-
     // pick an object
-    //! TODO: implement evaluation of results of picking
     if ( _pickingEnabled )
     {
         if ( sdlevent.button.button == SDL_BUTTON_LEFT && eventType == osgGA::GUIEventAdapter::PUSH )
@@ -386,41 +458,63 @@ bool InspectorIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
             float x = sdlevent.motion.x, y = sdlevent.motion.y;
             x = 2.0f * ( x * _iscreenWidth ) - 1.0f; 
             y = 2.0f * ( y * _iscreenHeight ) - 1.0f;
-            InspectorIH::PickResults res = pick( x, -y );
 
-            const osg::NodePath* p_nodepath = res.second;
-            osg::Drawable*       p_drawable = res.first;
-            if ( p_drawable )
+            // picked something?
+            if ( pick( x, -y ) )
             {
-                osg::Node* p_node = p_drawable->getParent( 0 );
-                while( p_node && ( p_node->getName() == "" ) )
-                    p_node = p_node->getParent( 0 );
 
-                if ( p_node )
+                InspectorIH::PickResults* res = getPickResults();
+
+                osgUtil::Hit*   p_hit      = res->_p_hit;
+                osg::Drawable*  p_drawable = res->_p_drawable;
+
+                // evaluate the node path of picked drawable and extract drawable's node name and location ( in world space )
+                osg::NodePath& nodepath = p_hit->getNodePath();
+                std::string nodename;
+                if ( nodepath.size() )
                 {
-                    std::ostringstream str;
-                    str << "name      " << p_node->getName() << std::endl;
-                    const osg::Vec3& pos = p_node->getBound().center();
-                    str << "position  " << pos.x() << " " << pos.y() << " " << pos.z() << std::endl;
+                    osg::MatrixTransform* p_mtNode = NULL;
+                    osg::NodePath::iterator p_nbeg = nodepath.end(), p_nend = nodepath.begin();
+                    p_nbeg--;
+                    for ( ; p_nbeg != p_nend; --p_nbeg )
+                    {
+                        osg::MatrixTransform* p_mt  = dynamic_cast< osg::MatrixTransform* >( *p_nbeg );
+                        osg::Group*           p_grp = dynamic_cast< osg::Group* >( *p_nbeg );
  
+                        if ( !nodename.length() )
+                        {
+                            if ( p_mt )
+                            {
+                                nodename = p_mt->getName();
+                                if ( !p_mtNode ) // we need only the first embedding transform node
+                                    p_mtNode = p_mt;
+                            }
+                            else if ( p_grp )
+                            {
+                                nodename = p_grp->getName();
+                            }
+                        }
+                        else 
+                            break;
+                    }
+
+                    // update the bbox and get its dimensions
+                    const osg::Matrix* p_mat = p_hit->getMatrix();
+                    osg::Vec3f pos = p_mat->getTrans();
+                    osg::Vec3f dims( updateBBox( p_drawable, *p_mat, p_mtNode ? true : false ) );
+
+                    // get primitive count of selected drawable
+                    const osg::Geometry*    p_geom = p_drawable->asGeometry();
+                    unsigned int            prims  = p_geom->getNumPrimitiveSets();
+
+                    // format and set the output text
+                    std::ostringstream str;
+                    str << "name       " << nodename << std::endl;
+                    str << "position   " << pos.x() << " " << pos.y() << " " << pos.z() << std::endl;
+                    str << "primitives " << prims << std::endl;
+                    str << "dimensions " << dims.x() << " " << dims.y() << " " << dims.z() << std::endl;
                     CEGUI::String text( str.str() );
                     getUserObject()->setPickerOutputText( text );
-                }
-
-                // update the bbox
-                updateBBox( p_drawable );
-            }
-            else
-            {
-                //! TODO: here we could evalute the path node
-                if ( p_nodepath )
-                {
-                    size_t numnodes = p_nodepath->size();
-                    if ( numnodes > 0 )
-                    {
-                        CEGUI::String text( ( *p_nodepath )[ 0 ]->getName() );
-                        getUserObject()->setPickerOutputText( text );
-                    }
                 }
             }
         }
@@ -618,7 +712,7 @@ void EnInspector::initialize()
         {
             _p_wndPicker = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", INSPECTOR_WND "pickerFrame" ) );
             _p_wndPicker->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::EnInspector::onClickedClosePicker, this ) );
-            _p_wndPicker->setSize( CEGUI::Size( 0.35f, 0.15f ) );
+            _p_wndPicker->setSize( CEGUI::Size( 0.35f, 0.21f ) );
             _p_wndPicker->setText( "picker" );
             _p_wndPicker->setPosition( CEGUI::Point( 0.65f, 0.0f ) );
             _p_wndPicker->setAlpha( 0.7f );
@@ -640,7 +734,6 @@ void EnInspector::initialize()
         log << Log::LogLevel( Log::L_ERROR ) << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
         log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
-
 
     EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
     EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
