@@ -364,6 +364,7 @@ void getDirectoryListing( std::vector< std::string >& listing, const std::string
 #endif
 #ifdef LINUX
 
+	// stat()
 #endif	
 }
 
