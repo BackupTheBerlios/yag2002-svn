@@ -40,6 +40,12 @@ using namespace std;
 namespace CTD
 {
 
+// internal material names
+#define SND_GROUND      "grd"
+#define SND_WOOD        "wod"
+#define SND_METALL      "met"
+#define SND_GRASS       "grs"
+
 //! Implement and register the player animation entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( PlayerSoundEntityFactory );
 
@@ -82,28 +88,28 @@ void EnPlayerSound::postInitialize()
     if ( p_soundState )
     {
         p_soundState->setLooping( true );
-       _soundStates.insert( make_pair( string( "walkgrd" ), p_soundState ) );
+       _soundStates.insert( make_pair( string( SND_GROUND ), p_soundState ) );
     }
 
     p_soundState = createSound( _walkWood );
     if ( p_soundState )
     {
         p_soundState->setLooping( true );
-        _soundStates.insert( make_pair( string( "walkwd" ), p_soundState ) );
+        _soundStates.insert( make_pair( string( SND_WOOD ), p_soundState ) );
     }
 
     p_soundState = createSound( _walkMetal );
     if ( p_soundState )
     {
         p_soundState->setLooping( true );
-        _soundStates.insert( make_pair( "walkmet", p_soundState ) );
+        _soundStates.insert( make_pair( SND_METALL, p_soundState ) );
     }
 
     p_soundState = createSound( _walkGrass );
     if ( p_soundState )
     {
         p_soundState->setLooping( true );
-        _soundStates.insert( make_pair( "walkgrass", p_soundState ) );
+        _soundStates.insert( make_pair( SND_GRASS, p_soundState ) );
     }
 
     // add the sound group into player node
@@ -166,7 +172,7 @@ osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
 
 void EnPlayerSound::playWalkGround()
 {
-    std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_state = _soundStates.find( "walkgrd" );
+    std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_state = _soundStates.find( SND_GROUND );
     assert( p_state != _soundStates.end() );
     stopOtherSounds( p_state->second.get() );
     if ( !p_state->second->isPlaying() )
@@ -175,7 +181,7 @@ void EnPlayerSound::playWalkGround()
 
 void EnPlayerSound::playWalkWood()
 {
-    std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_state = _soundStates.find( "walkwd" );
+    std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_state = _soundStates.find( SND_WOOD );
     assert( p_state != _soundStates.end() );
     stopOtherSounds( p_state->second.get() );
     if ( !p_state->second->isPlaying() )
@@ -184,7 +190,7 @@ void EnPlayerSound::playWalkWood()
 
 void EnPlayerSound::playWalkMetal()
 {
-    std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_state = _soundStates.find( "walkmet" );
+    std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_state = _soundStates.find( SND_METALL );
     assert( p_state != _soundStates.end() );
     stopOtherSounds( p_state->second.get() );
     if ( !p_state->second->isPlaying() )
@@ -193,7 +199,7 @@ void EnPlayerSound::playWalkMetal()
 
 void EnPlayerSound::playWalkGrass()
 {
-    std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_state = _soundStates.find( "walkgrass" );
+    std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_state = _soundStates.find( SND_GRASS );
     assert( p_state != _soundStates.end() );
     stopOtherSounds( p_state->second.get() );
     if ( !p_state->second->isPlaying() )
