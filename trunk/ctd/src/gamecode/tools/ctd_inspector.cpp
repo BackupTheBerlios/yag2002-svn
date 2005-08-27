@@ -19,10 +19,10 @@
  ****************************************************************/
 
 /*###############################################################
- # entity observer
- #  this entity can be used for freely flying through a level
+ # entity Inspector including tools for inspecting and fine-tuning
+ #  a level
  #
- #   date of creation:  07/20/2005
+ #   date of creation:  08/01/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
@@ -44,7 +44,7 @@ namespace CTD
 // maximal length of picking ray
 #define MAX_PICKING_DISTANCE 1000.0f
 
-//! Input handler for observer
+//! Input handler for inspector
 class InspectorIH : public GenericInputHandler< EnInspector >
 {
     public:
@@ -744,12 +744,12 @@ void EnInspector::postInitialize()
     _p_cameraEntity = dynamic_cast< EnCamera* >( EntityManager::get()->findEntity( ENTITY_NAME_CAMERA ) );
     if ( _p_cameraEntity )
     {
-        log << Log::LogLevel( Log::L_WARNING ) << "observer entity cannot be set up as there is already a camera instance in level!" << std::endl;
+        log << Log::LogLevel( Log::L_WARNING ) << "inspector entity's camera disabled as there is already a camera instance in level!" << std::endl;
         return;
     }
 
-    // create a camera instance for observer
-    _p_cameraEntity = dynamic_cast< EnCamera* >( EntityManager::get()->createEntity( ENTITY_NAME_CAMERA, "_observerCamera_" ) );
+    // create a camera instance
+    _p_cameraEntity = dynamic_cast< EnCamera* >( EntityManager::get()->createEntity( ENTITY_NAME_CAMERA, "_inpectorCamera_" ) );
     assert( _p_cameraEntity && "error creating observer camera" );
 
     // set any camera attributes before initializing it
@@ -772,7 +772,9 @@ void EnInspector::postInitialize()
 bool EnInspector::onClickedCloseMain( const CEGUI::EventArgs& arg )
 {
     // hide the info window via input handler, so it has the change to update its internal state
-    _inputHandler->enableInfoWindow( false );
+    if ( _inputHandler.valid() )
+        _inputHandler->enableInfoWindow( false );
+
     return true;
 }
 
