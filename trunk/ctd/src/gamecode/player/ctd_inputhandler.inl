@@ -203,6 +203,23 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     //--------
 
     // execute dispatched commands
+
+    if ( _moveForward )
+    {
+        getPlayerImpl()->_p_playerPhysics->setForce( getPlayerImpl()->_moveDir._v[ 0 ], getPlayerImpl()->_moveDir._v[ 1 ] );
+
+        if ( !getPlayerImpl()->_p_playerPhysics->isJumping() )
+            getPlayerImpl()->_p_playerAnimation->animWalk();
+    } 
+    
+    if ( _moveBackward )
+    {
+        getPlayerImpl()->_p_playerPhysics->setForce( -getPlayerImpl()->_moveDir._v[ 0 ], -getPlayerImpl()->_moveDir._v[ 1 ] );
+
+        if ( !getPlayerImpl()->_p_playerPhysics->isJumping() )
+            getPlayerImpl()->_p_playerAnimation->animWalk();
+    }
+
     if ( _right )
     {
         switch ( getPlayerImpl()->_cameraMode )
@@ -269,22 +286,6 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             default:
                 assert( NULL && "unknown camera state!" );
         }
-    }
-
-    if ( _moveForward )
-    {
-        getPlayerImpl()->_p_playerPhysics->setForce( getPlayerImpl()->_moveDir._v[ 0 ], getPlayerImpl()->_moveDir._v[ 1 ] );
-
-        if ( !getPlayerImpl()->_p_playerPhysics->isJumping() )
-            getPlayerImpl()->_p_playerAnimation->animWalk();
-    } 
-    
-    if ( _moveBackward )
-    {
-        getPlayerImpl()->_p_playerPhysics->setForce( -getPlayerImpl()->_moveDir._v[ 0 ], -getPlayerImpl()->_moveDir._v[ 1 ] );
-
-        if ( !getPlayerImpl()->_p_playerPhysics->isJumping() )
-            getPlayerImpl()->_p_playerAnimation->animWalk();
     }
 
     // handle stopping movement
