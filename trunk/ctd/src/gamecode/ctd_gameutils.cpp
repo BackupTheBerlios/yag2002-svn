@@ -116,9 +116,8 @@ LevelFiles::LevelFiles( const std::string& dir )
                 // add new preview to map
                 _files.insert( make_pair( materialName, p_image ) );
             }
-            catch ( const CEGUI::Exception& e )
+            catch ( const CEGUI::Exception& )
             {
-                e; // suppress warning for unused e
                 CEGUI::Image* p_null = NULL;
                 // empty image identifies missing preview pic
                 _files.insert( make_pair( materialName, p_null ) );

@@ -199,12 +199,12 @@ CTD_IMPL_ENTITYFACTORY_AUTO( WaterEntityFactory );
 
 // Implementation of water entity
 EnWater::EnWater() :
+_sizeX( 1000.0f ),
+_sizeY( 1000.0f ),
 _fadeBias( 0.3f ),
 _noiseSpeed( 0.10f ),
 _waveSpeed( 0.14f ),
 _fadeExp( 6.0f ),
-_sizeX( 1000.0f ),
-_sizeY( 1000.0f ),
 _scale( osg::Vec3f( 1.0f, 1.0f, 1.0f ) ),
 _waterColor( osg::Vec3f( 0.2f, 0.25f, 0.6f ) ),
 _transparency( 0.5f )

@@ -41,11 +41,11 @@ CTD_IMPL_ENTITYFACTORY_AUTO( FPSDisplayEntityFactory );
 
 EnFPSDisplay::EnFPSDisplay() :
 _position( osg::Vec3f( 0.001f, 0.001f, 0 ) ),
-_enable( true ),
 _fpsTimer( 0 ),
 _fps( 0 ),
-_p_outputText( NULL ),
-_p_wnd( NULL )
+_enable( true ),
+_p_wnd( NULL ),
+_p_outputText( NULL )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "position"    , _position    );

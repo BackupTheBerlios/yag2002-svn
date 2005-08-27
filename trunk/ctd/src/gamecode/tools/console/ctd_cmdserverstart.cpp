@@ -69,7 +69,7 @@ const std::string& CmdServerStart::execute( const std::vector< std::string >& ar
 
     // use utility function to start the server
     string args = arg1 + "  " + arg2 + "  " + arg3;
-    HANDLE serverProcHandle = spawnApplication( cmd, args );
+    SPAWN_PROC_ID serverProcHandle = spawnApplication( cmd, args );
 
     if ( serverProcHandle )
         _cmdResult = "trying to start server with level file '" + levelfile + "'.";

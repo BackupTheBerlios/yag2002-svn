@@ -31,9 +31,6 @@
 #include <ctd_main.h>
 #include "ctd_3dsound.h"
 
-using namespace std;
-using namespace osg; 
-
 namespace CTD
 {
 
@@ -45,11 +42,10 @@ En3DSound::En3DSound() :
 _loop( true ),
 _autoPlay( true ),
 _volume( 0.8f ),
-_rolloffFac( 4.0f ),
 _referenceDist( 70.0f ),
+_rolloffFac( 4.0f ),
 _showSource( false ),
-_p_soundNode( NULL ),
-_soundState( NULL )
+_p_soundNode( NULL )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "resourceDir" , _soundFileDir   );
@@ -87,8 +83,8 @@ void En3DSound::initialize()
     } 
     catch ( const openalpp::Error& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading sound file in '" << getInstanceName() << "'" << endl;
-        log << Log::LogLevel( Log::L_ERROR ) << "  reason: " << e.what() << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading sound file in '" << getInstanceName() << "'" << std::endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
         return;
     }
  
@@ -97,7 +93,7 @@ void En3DSound::initialize()
 
     // create a named sound state.
     // note: we have to make the state name unique as otherwise new need unique sound states for every entity instance
-    stringstream uniquename;
+    std::stringstream uniquename;
     static unsigned int uniqueId = 0;
     uniquename << getInstanceName();
     uniquename << uniqueId;
@@ -105,7 +101,7 @@ void En3DSound::initialize()
     _soundState = new osgAL::SoundState( uniquename.str() );
     // Let the soundstate use the sample we just created
     _soundState->setSample( p_sample );
-    _soundState->setGain( max( min( _volume, 1.0f ), 0.0f ) );
+    _soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
     // Set its pitch to 1 (normal speed)
     _soundState->setPitch( 1 );
     // Make it play
@@ -135,7 +131,7 @@ void En3DSound::initialize()
         }
         else
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "*** error loading mesh file for sound source 'sound/soundsrc.osg'" << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "*** error loading mesh file for sound source 'sound/soundsrc.osg'" << std::endl;
         }
 
     }
@@ -146,9 +142,9 @@ void En3DSound::updateEntity( float deltaTime )
     if ( _showSource )
     {
         static float a = 0;
-        a = ( a < 2.0f * PI ) ? a + deltaTime : a - 2.0f * PI + deltaTime;
+        a = ( a < 2.0f * osg::PI ) ? a + deltaTime : a - 2.0f * osg::PI + deltaTime;
         osg::Quat quat;
-        quat.makeRotate( a,  Vec3f( 0.0f, 0.0f, 1.0f ) );
+        quat.makeRotate( a,  osg::Vec3f( 0.0f, 0.0f, 1.0f ) );
         setRotation( quat );
     }
 }

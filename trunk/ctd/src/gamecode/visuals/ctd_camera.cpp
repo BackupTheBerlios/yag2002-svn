@@ -108,15 +108,15 @@ bool CameraFrameHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
 CTD_IMPL_ENTITYFACTORY_AUTO( CameraEntityFactory );
 
 EnCamera::EnCamera() :
-_isPersistent( false ),
 _fov( 60.00 ),
 _nearClip( 0.01f ),
 _farClip( 1000.0f ),
 _backgroundColor( Vec3f( 0.2f, 0.2f, 0.2f ) ),
-_needUpdate ( false ),
-_p_cameraHandler( NULL ),
+_isPersistent( false ),
 _pitch( 0 ),
-_yaw( 0 )
+_yaw( 0 ),
+_needUpdate ( false ),
+_p_cameraHandler( NULL )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "position"          , _position         );

@@ -43,8 +43,9 @@ CTD_IMPL_ENTITYFACTORY_AUTO( PlayerInfoDisplayEntityFactory );
 EnPlayerInfoDisplay::EnPlayerInfoDisplay() :
 _position( osg::Vec3f( 0.001f, 0.1f, 0 ) ),
 _enable( true ),
-_p_outputText( NULL ),
-_p_wnd( NULL )
+_p_playerEntity( NULL ),
+_p_wnd( NULL ),
+_p_outputText( NULL )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "position"    , _position    );
@@ -181,7 +182,7 @@ bool EnPlayerInfoDisplay::getPlayerEntity()
         }
     }
     
-    // register in player for gettings its destruction notified
+    // register in player for getting it destruction notified
     // note: player tollerates multiple registration of same entity
     _p_playerEntity->registerNotifyDeletion( this );
 

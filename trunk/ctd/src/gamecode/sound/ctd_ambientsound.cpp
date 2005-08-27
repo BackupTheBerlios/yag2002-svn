@@ -31,9 +31,6 @@
 #include <ctd_main.h>
 #include "ctd_ambientsound.h"
 
-using namespace std;
-using namespace osg; 
-
 namespace CTD
 {
 
@@ -45,8 +42,7 @@ EnAmbientSound::EnAmbientSound() :
 _loop( true ),
 _autoPlay( true ),
 _volume( 0.8f ),
-_p_soundNode( NULL ),
-_soundState( NULL )
+_p_soundNode( NULL )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "resourceDir" , _soundFileDir   );
@@ -75,21 +71,21 @@ void EnAmbientSound::initialize()
         p_sample = osgAL::SoundManager::instance()->getSample( _soundFile );
         if ( !p_sample )
         {
-            log << Log::LogLevel( Log::L_WARNING ) << "*** cannot create sampler for '" << _soundFileDir + _soundFile << "'" << endl;
+            log << Log::LogLevel( Log::L_WARNING ) << "*** cannot create sampler for '" << _soundFileDir + _soundFile << "'" << std::endl;
             return;
         }
 
     } 
     catch ( const openalpp::Error& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading sound file" << endl;
-        log << Log::LogLevel( Log::L_ERROR ) << "  reason: " << e.what() << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading sound file" << std::endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
         return;
     }
 
     // create a named sound state.
     // note: we have to make the state name unique as otherwise new sound states with already defined names make problems
-    stringstream uniquename;
+    std::stringstream uniquename;
     static unsigned int uniqueId = 0;
     uniquename << getInstanceName();
     uniquename << uniqueId;
@@ -97,7 +93,7 @@ void EnAmbientSound::initialize()
     _soundState = new osgAL::SoundState( uniquename.str() );
     // Let the soundstate use the sample we just created
     _soundState->setSample( p_sample );
-    _soundState->setGain( max( min( _volume, 1.0f ), 0.0f ) );
+    _soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
     // Set its pitch to 1 (normal speed)
     _soundState->setPitch( 1.0f );
     // Make it play
@@ -111,7 +107,7 @@ void EnAmbientSound::initialize()
     _soundState->setReferenceDistance( 50.0f );
     _soundState->setRolloffFactor( 5.0f );
 
-    Vec3f pos;
+    osg::Vec3f pos;
     osgAL::SoundManager::instance()->getListener()->getPosition( pos._v[ 0 ], pos._v[ 1 ], pos._v[ 2 ] );
     _soundState->setPosition( pos );
 
@@ -137,7 +133,7 @@ void EnAmbientSound::stopPlaying()
         //! Set sound volume (0..1)
 void EnAmbientSound::setVolume( float volume )
 {
-    _volume = max( min( volume, 1.0f ), 0.0f );
+    _volume = std::max( std::min( volume, 1.0f ), 0.0f );
     if ( _soundState.get() )
         _soundState->setGain( _volume );
 }
@@ -146,6 +142,5 @@ float EnAmbientSound::getVolume()
 {
     return _volume;
 }
-
 
 } // namespace CTD

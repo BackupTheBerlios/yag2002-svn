@@ -226,15 +226,17 @@ bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
 CTD_IMPL_ENTITYFACTORY_AUTO( ObserverEntityFactory );
 
 EnObserver::EnObserver() :
+_maxSpeed( 10.0f ),
+_deltaTime( 0.03f ),
 _isPersistent( false ),
 _needUpdate ( false ),
 _p_cameraEntity( NULL ),
-_maxSpeed( 10.0f ),
-_speed( 10.0f ),
+_p_wnd( NULL ),
 _p_outputText( NULL ),
 _p_speedBar( NULL ),
 _p_lockCheckbox( NULL ),
-_p_wnd( NULL ),
+_speed( 10.0f ),
+_infoWindowEnable( true ),
 _fpsTimer( 0.0f ),
 _fpsCounter( 0 ),
 _fps( 0 )

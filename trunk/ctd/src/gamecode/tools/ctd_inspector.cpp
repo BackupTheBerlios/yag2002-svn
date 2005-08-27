@@ -34,8 +34,6 @@
 #include "../visuals/ctd_camera.h"
 #include <osgUtil/IntersectVisitor>
 
-using namespace std;
-
 namespace CTD
 {
 // prefix for gui elements
@@ -311,9 +309,6 @@ bool InspectorIH::pick( float x, float y )
             }
             if ( p_dbeg == p_dend )
                 pickeddrawables.push_back( std::make_pair( p_beg->_drawable.get(), &*p_beg ) );
-
-            osg::Geode* p_geode = p_beg->getGeode();
-            int i = 0;
         }
     }
 
@@ -610,15 +605,19 @@ bool InspectorIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
 CTD_IMPL_ENTITYFACTORY_AUTO( InspectorEntityFactory );
 
 EnInspector::EnInspector() :
+_maxSpeed( 10.0f ),
+_deltaTime( 0.03f ),
 _isPersistent( false ),
 _needUpdate ( false ),
 _p_cameraEntity( NULL ),
-_maxSpeed( 10.0f ),
-_speed( 10.0f ),
+_p_wndMain( NULL ),
 _p_outputTextMain( NULL ),
 _p_speedBarMain( NULL ),
 _p_lockCheckboxMain( NULL ),
-_p_wndMain( NULL ),
+_p_wndPicker( NULL ),
+_p_outputTextPicker( NULL ),
+_speed( 10.0f ),
+_infoWindowEnable( false ),
 _fpsTimer( 0.0f ),
 _fpsCounter( 0 ),
 _fps( 0 )

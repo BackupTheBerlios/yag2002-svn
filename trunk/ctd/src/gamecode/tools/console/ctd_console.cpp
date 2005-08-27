@@ -49,8 +49,8 @@ class ConsoleIH : public GenericInputHandler< EnConsole >
                                              GenericInputHandler< EnConsole >( p_console ),
                                              _toggleEnable( false )
                                             {
-                                                _retCode = KeyMap::get()->getKeyCode( "Return" );
-                                                _autoCompleteCode = KeyMap::get()->getKeyCode( "Tab" );
+                                                _retCode = static_cast< int >( KeyMap::get()->getKeyCode( "Return" ) );
+                                                _autoCompleteCode = static_cast< int >( KeyMap::get()->getKeyCode( "Tab" ) );
                                             }
                                 
         virtual                             ~ConsoleIH() {}
@@ -61,8 +61,6 @@ class ConsoleIH : public GenericInputHandler< EnConsole >
                                                 const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
                                                 assert( p_eventAdapter && "invalid event adapter received" );
                                                 SDLKey key = p_eventAdapter->getSDLKey();
-
-                                                Uint16 unicode = p_eventAdapter->getSDLEvent().key.keysym.unicode;
 
                                                 if ( p_eventAdapter->getEventType() == osgGA::GUIEventAdapter::KEYDOWN ) 
                                                 {
@@ -99,9 +97,9 @@ class ConsoleIH : public GenericInputHandler< EnConsole >
 
     protected:
 
-        unsigned int                        _retCode;
+        int                                 _retCode;
         
-        unsigned int                        _autoCompleteCode;
+        int                                 _autoCompleteCode;
 
         bool                                _toggleEnable;
 };
@@ -110,10 +108,10 @@ class ConsoleIH : public GenericInputHandler< EnConsole >
 CTD_IMPL_ENTITYFACTORY_AUTO( ConsoleEntityFactory );
 
 EnConsole::EnConsole() :
-_enable( false ),
 _p_wnd( NULL ),
 _p_inputWindow( NULL ),
 _p_outputWindow( NULL ),
+_enable( false ),
 _p_inputHandler( NULL ),
 _cmdHistoryIndex( 0 ),
 _shutdownInProgress( false ),
@@ -255,7 +253,7 @@ bool EnConsole::createLog( const std::string& filename, bool append )
         return false;
 
     _p_log = new std::ofstream;
-    std::ios_base::open_mode mode = std::ios_base::out | std::ios_base::binary;
+    std::ios_base::openmode mode = std::ios_base::out | std::ios_base::binary;
     if ( append )
         mode |= std::ios_base::app;
 

@@ -39,10 +39,10 @@ namespace CTD
 CTD_IMPL_ENTITYFACTORY_AUTO( SpotLightEntityFactory );
 
 EnSpotLight::EnSpotLight() :
-_maxDistance( 10.0f ),
 _direction( osg::Vec3f( 0.0f, 0.0f, -1.0f ) ),
 _spotCutOff( 50.0 ),
-_spotExponent( 32.0f )
+_spotExponent( 32.0f ),
+_maxDistance( 10.0f )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "position"             , _position             );
