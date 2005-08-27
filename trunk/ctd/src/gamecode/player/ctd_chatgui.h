@@ -99,7 +99,6 @@ class PlayerChatGui
 
         CEGUI::PushButton*                          _p_btnHide;
 
-
         CEGUI::PushButton*                          _p_btnMode;
 
         CEGUI::Editbox*                             _p_editbox;

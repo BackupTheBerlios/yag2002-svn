@@ -47,21 +47,21 @@ namespace CTD
 PlayerChatGui* PlayerChatGui::s_chatGui = NULL;
 
 PlayerChatGui::PlayerChatGui() :
+_state( Idle ),
 _p_playerImpl( NULL ),
 _p_wnd( NULL ),
 _p_frame( NULL ),
+_p_btnHide( NULL ),
+_p_btnMode( NULL ),
 _p_editbox( NULL ),
-_modeEdit( false ),
-_hidden( true ),
-_state( Idle ),
-_fadeTimer( 0 ),
-_frameAlphaValue( 1.0f ),
+_p_messagebox( NULL ),
+_p_btnMsgArrived( NULL ),
 _p_mouseImageWalkMode( NULL ),
 _p_mouseImageDefault( NULL ),
-_p_btnMode( NULL ),
-_p_btnHide( NULL ),
-_p_messagebox( NULL ),
-_p_btnMsgArrived( NULL )
+_hidden( true ),
+_modeEdit( false ),
+_fadeTimer( 0 ),
+_frameAlphaValue( 1.0f )
 {
     assert( !s_chatGui && "chat gui is a singleton!" );
     s_chatGui = this;

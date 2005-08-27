@@ -128,8 +128,6 @@ class EnPlayerSound  : public BaseEntity
         osg::ref_ptr< osg::Group >                  _p_soundGroup;
 
         BasePlayerImplementation*                   _p_playerImpl;
-
-    friend class EnPlayerSound;
 };
 
 //! Entity type definition used for type registry
