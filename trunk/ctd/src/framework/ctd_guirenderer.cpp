@@ -46,7 +46,7 @@ const int CTDGuiRenderer::VERTEX_PER_QUAD           = 6;
 const int CTDGuiRenderer::VERTEX_PER_TRIANGLE       = 3;
 const int CTDGuiRenderer::VERTEXBUFFER_CAPACITY     = OGLRENDERER_VBUFF_CAPACITY;
 
-CTDGuiRenderer::CTDGuiRenderer( uint max_quads ) :
+CTDGuiRenderer::CTDGuiRenderer( CEGUI::uint max_quads ) :
 _queueing( true ),
 _currTexture( 0 ),
 _bufferPos( 0 ),
@@ -63,7 +63,7 @@ _maxTextureSize( 0 )
     _display_area.d_bottom  = (float)vp[3];
 }
 
-CTDGuiRenderer::CTDGuiRenderer( uint max_quads, int width, int height ) :
+CTDGuiRenderer::CTDGuiRenderer( CEGUI::uint max_quads, int width, int height ) :
 _queueing(true),
 _currTexture(0),
 _bufferPos(0)
@@ -251,7 +251,7 @@ Texture* CTDGuiRenderer::createTexture( const String& filename, const String& re
 Texture* CTDGuiRenderer::createTexture( float size )
 {
     CTDGuiTexture* p_tex = static_cast< CTDGuiTexture* >( this->createTexture() );
-    p_tex->setOGLTextureSize( ( uint )size );
+    p_tex->setOGLTextureSize( ( CEGUI::uint )size );
 
     return p_tex;
 }
@@ -278,7 +278,7 @@ void CTDGuiRenderer::initPerFrameStates()
     glPushClientAttrib( GL_CLIENT_ALL_ATTRIB_BITS );
     glPushAttrib( GL_ALL_ATTRIB_BITS );
 
-    glViewport( 0, 0, _display_area.d_right, _display_area.d_bottom );
+    glViewport( 0, 0, int( _display_area.d_right ), int( _display_area.d_bottom ) );
 
     glPolygonMode( GL_FRONT, GL_FILL );
     glMatrixMode( GL_PROJECTION );
@@ -461,13 +461,13 @@ void CTDGuiRenderer::renderQuadDirect(const Rect& dest_rect, float z, const Text
     exitPerFrameStates();
 }
 
-long CTDGuiRenderer::colourToOGL(const colour& col) const
+long CTDGuiRenderer::colourToOGL(const CEGUI::colour& col) const
 {
-    ulong cval;
-    cval =  (static_cast<ulong>(255 * col.getAlpha())) << 24;
-    cval |= (static_cast<ulong>(255 * col.getBlue())) << 16;
-    cval |= (static_cast<ulong>(255 * col.getGreen())) << 8;
-    cval |= (static_cast<ulong>(255 * col.getRed()));
+    CEGUI::ulong cval;
+    cval =  (static_cast<CEGUI::ulong>(255 * col.getAlpha())) << 24;
+    cval |= (static_cast<CEGUI::ulong>(255 * col.getBlue())) << 16;
+    cval |= (static_cast<CEGUI::ulong>(255 * col.getGreen())) << 8;
+    cval |= (static_cast<CEGUI::ulong>(255 * col.getRed()));
 
     return cval;
 }

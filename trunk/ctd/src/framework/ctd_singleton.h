@@ -59,8 +59,6 @@ class Singleton
  
         //! Avoid assignment operator
         Singleton&                          operator = ( const Singleton& );
-
-    friend class TypeT;
 };
 
 #include "ctd_singleton.inl"

@@ -61,7 +61,7 @@
 #include <osg/ClipNode>
 #include <osg/CoordinateSystemNode>
 #include <osg/Depth>
-#include <osg/fog>
+#include <osg/Fog>
 #include <osg/Material>
 #include <osg/Math>
 #include <osg/Matrix>

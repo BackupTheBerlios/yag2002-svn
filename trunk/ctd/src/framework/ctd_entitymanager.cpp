@@ -43,8 +43,8 @@ CTD_SINGLETON_IMPL( EntityManager );
 
 
 EntityManager::EntityManager() :
-_internalState( None ),
-_updateEntityListChanged( false )
+_updateEntityListChanged( false ),
+_internalState( None )
 {
 }
 

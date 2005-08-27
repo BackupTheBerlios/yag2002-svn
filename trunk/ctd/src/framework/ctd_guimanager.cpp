@@ -170,7 +170,7 @@ void GuiManager::doInitialize()
     _windowHeight = float( height );
 
     // create a renderer
-    _p_renderer = new CTDGuiRenderer( 0, _windowWidth, _windowHeight );    
+    _p_renderer = new CTDGuiRenderer( 0, int( _windowWidth ), int( _windowHeight ) );    
     // create the gui
     CTDResourceProvider* p_resourceLoader = new CTDResourceProvider;
     new CEGUI::System( _p_renderer, p_resourceLoader );

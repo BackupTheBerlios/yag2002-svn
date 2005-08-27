@@ -67,9 +67,9 @@ using namespace CTD;
 CTD_SINGLETON_IMPL( LevelManager );
 
 LevelManager::LevelManager() :
+_staticMesh( NULL ),
 _firstLoading( true ),
-_levelHasMap( false ),
-_staticMesh( NULL )
+_levelHasMap( false )
 {
     _topGroup    = new osg::Group();
     _nodeGroup   = new osg::Group();

@@ -38,10 +38,10 @@ namespace CTD
 
 MessageBoxDialog::MessageBoxDialog( const std::string& title, const std::string& text, unsigned int type, bool autodelete, CEGUI::Window* p_parent ) :
 _p_wnd( NULL ),
-_p_clb( NULL ),
 _p_parent( NULL ),
-_autodel( autodelete ),
-_p_msgtext( NULL )
+_p_clb( NULL ),
+_p_msgtext( NULL ),
+_autodel( autodelete )
 {
     if ( !p_parent )
     {

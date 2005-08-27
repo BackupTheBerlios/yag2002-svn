@@ -111,9 +111,9 @@ class Log : public std::basic_ostream< char >
             public:
 
                                                         Sink( const std::string& name, std::ostream* p_stream, unsigned int loglevel, bool stdstream = false ) :
+                                                            _name( name ),
                                                             _p_stream( p_stream ), 
                                                             _logLevel( loglevel ),
-                                                            _name( name ),
                                                             _stdstream( stdstream )
                                                         {}
                                                         

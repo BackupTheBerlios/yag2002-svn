@@ -68,7 +68,7 @@ unsigned int EntityAttribute< TypeT >::getType() const
 }
 
 template< class TypeT >
-const type_info& EntityAttribute< TypeT >::getTypeInfo() const
+const std::type_info& EntityAttribute< TypeT >::getTypeInfo() const
 {
     return typeid( TypeT );
 }

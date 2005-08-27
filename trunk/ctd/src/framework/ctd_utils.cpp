@@ -43,9 +43,21 @@ namespace CTD
 
 std::string getTimeStamp()
 {
+#ifdef WIN32	
+
     __time64_t ltime;
     _time64( &ltime );
     return std::string( _ctime64( &ltime ) );
+	
+#endif
+#ifdef LINUX
+ 
+	// TODO: implemenation
+	return std::string( "not implemented yet" );
+	
+#endif
+
+    return std::string( "platform not supported" );
 }
 
 std::string::size_type explode( const std::string& str, const std::string& separators, std::vector< std::string >* p_result )
@@ -186,22 +198,36 @@ class DispSettings
                                 }
 };
 
-#ifdef WIN32
-
 std::string getCurrentWorkingDirectory()
 {
+#ifdef WIN32
+
     char buf[ 512 ];
     GetCurrentDirectory( sizeof( buf ), buf );
     return std::string( buf );
+
+#endif
+#ifdef LINUX
+	
+    char buf[ 512 ];
+    char* p_res = getcwd( buf, sizeof( buf ) );
+    assert( p_res && "error getting current working directory" );
+
+#endif
+
+   return std::string( buf );
 }
+
 
 void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned int colorbitsfilter )
 {
+    std::list< DispSettings > sortedsettings;
+
+#ifdef WIN32
+
     DWORD   modenum = 0;
     DEVMODE devmode;
     devmode.dmSize = sizeof( DEVMODE );
-
-    std::list< DispSettings > sortedsettings;
 
     while ( EnumDisplaySettings( NULL, modenum, &devmode ) )
     {
@@ -215,6 +241,44 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
             sortedsettings.push_back( ds );
         }
     }
+
+#endif 
+#ifdef LINUX
+
+    SDL_Rect** pp_modes;
+    // get available fullscreen/hardware modes
+    pp_modes = SDL_ListModes( NULL, SDL_FULLSCREEN|SDL_HWSURFACE );
+
+    // check is there are any modes available
+    if( pp_modes == ( SDL_Rect ** )0 )
+    {
+       log << Log::LogLevel( Log::L_ERROR ) << "no video modes available!\n" << std::endl;
+       return;
+    }
+
+    // check if our resolution is restricted
+    if( pp_modes == ( SDL_Rect ** )-1 )
+    {
+        // all resolutions available, what to do here?
+    }
+    else
+    {  
+        for( int i = 0; pp_modes[ i ]; i++ )
+        {
+
+            DispSettings ds;
+            ds.width     = pp_modes[ i ]->w;
+            ds.height    = pp_modes[ i ]->h;
+            ds.colorbits = SDL_GetVideoInfo()->vfmt->BitsPerPixel;
+            if ( ds.colorbits >= colorbitsfilter )
+            {
+                sortedsettings.push_back( ds );
+            }
+        }
+    }
+
+#endif
+
     // sort the list and fill the settings string list
     sortedsettings.sort();
     sortedsettings.unique();
@@ -226,9 +290,9 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
         resstring << p_beg->width << "x" << p_beg->height << "@" << p_beg->colorbits;
         settings.push_back( resstring.str() );
     }
-
 }
 
+#ifdef WIN32
 std::string convertFileTime( const FILETIME& ft )
 {
     SYSTEMTIME systemTime;
@@ -245,13 +309,16 @@ std::string convertFileTime( const FILETIME& ft )
     sprintf( buf, "%0.2d:%0.2d:%0.4d  %0.2d:%0.2d", localTime.wMonth, localTime.wDay, localTime.wYear, localTime.wHour, localTime.wMinute );
     return std::string( buf );
 }
+#endif
 
 void getDirectoryListing( std::vector< std::string >& listing, const std::string& dir, const std::string& extension, bool appenddetails )
 {
+#ifdef WIN32
+
 	WIN32_FIND_DATA findData;
 	HANDLE          fileHandle;
 	int             flag = 1;
-    std::string     search ( ( extension == "" ) ? "*" : "*." );
+	std::string     search ( ( extension == "" ) ? "*" : "*." );
 	std::string     directory( dir );
 	
     if ( directory == "" ) 
@@ -293,10 +360,17 @@ void getDirectoryListing( std::vector< std::string >& listing, const std::string
         else
             listing.push_back( p_beg->first );
     }
+	
+#endif
+#ifdef LINUX
+
+#endif	
 }
 
 bool checkDirectory( const std::string& dir )
 {
+#ifdef WIN32
+	
 	WIN32_FIND_DATA findData;
 	HANDLE          fileHandle;
     std::string     cdir = dir;
@@ -309,10 +383,23 @@ bool checkDirectory( const std::string& dir )
     }
 	FindClose( fileHandle );
     return true;
+	
+#endif
+#ifdef LINUX
+
+	// TODO: implementation
+    return false;
+
+#endif
+
+    // platform not supported
+    return false;
 }
 
-HANDLE spawnApplication( const std::string& cmd, const std::string& params )
+SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string& params )
 {
+#ifdef WIN32	
+
     HANDLE hProc = NULL;
     SHELLEXECUTEINFO shellInfo;
     ::ZeroMemory( &shellInfo, sizeof( shellInfo ) );
@@ -326,8 +413,20 @@ HANDLE spawnApplication( const std::string& cmd, const std::string& params )
         hProc = shellInfo.hProcess;
     }
     return hProc;
+	
+#endif
+#ifdef LINUX
+	
+    // TODO: implementation
+    return -1;
+	
+#endif
+
+    // platform not supported
+    return ( SPAWN_PROC_ID )0;
 }
 
+#ifdef WIN32
 #ifdef CTD_ENABLE_HEAPCHECK
 void checkHeap()
 {
@@ -343,7 +442,6 @@ void checkHeap()
     }
 }
 #endif
-
 #endif
 
 } // namespace CTD

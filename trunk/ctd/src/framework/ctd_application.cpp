@@ -59,14 +59,18 @@ using namespace osg;
 // default level
 #define CTD_DEFAULT_LEVEL       "gui/loader"
 
+
+// #define CTD_CHECK_HEAP()	
+
 CTD_SINGLETON_IMPL( Application );
+
 
 Application::Application():
 _p_networkDevice( NULL ),
-_p_guiManager( NULL ),
 _p_entityManager( EntityManager::get() ),
-_p_gameState( GameState::get() ),
+_p_guiManager( NULL ),
 _p_physics( Physics::get() ),
+_p_gameState( GameState::get() ),
 _p_viewer( NULL ),
 _screenWidth( 600 ),
 _screenHeight( 400 ),

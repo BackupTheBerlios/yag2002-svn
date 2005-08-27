@@ -36,14 +36,6 @@
 
 namespace CTD
 {
-//! Utility function for validating application Heaps, set CTD_ENABLE_HEAPCHECK for enabling
-#ifdef CTD_ENABLE_HEAPCHECK
-    #define CTD_CHECK_HEAP()   checkHeap();
-    // dynamically validate all heaps; trigger a user breakpoint if one of the heaps is corrupt
-    void checkHeap();
-#else
-    #define CTD_CHECK_HEAP()
-#endif
 
 //! Returns a string with current date and time
 std::string getTimeStamp();
@@ -201,8 +193,8 @@ class TexMatCallback : public osg::NodeCallback
         osg::Matrixf                        _R;
 };
 
-// Win32 functions
-#ifdef WIN32
+// functions with platform dependent implementations
+//--------------------------------------------------
 
 //! Return the current working directory
 std::string getCurrentWorkingDirectory();
@@ -213,12 +205,36 @@ bool checkDirectory( const std::string& dir );
 //! Given a directory this function retrieves all files inside for given extension in 'listing'. If appenddetails is true then the file info is also stored in list.
 void getDirectoryListing( std::vector< std::string >& listing, const std::string& dir, const std::string& extension, bool appenddetails = false );
 
+#ifdef WIN32
+    #define SPAWN_PROC_ID   HANDLE
+#endif
+#ifdef LINUX 
+    #define SPAWN_PROC_ID   int
+#endif	
 //! Spawn an appication given its executable file name and its parameters in param ( white space separated )
-HANDLE spawnApplication( const std::string& cmd, const std::string& params );
+SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string& params );
 
 //! Returns a sorted string list with possible display settings above given colorbits filter value (format: WidthxHeight@ColorBits)
 void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned int colorbitsfilter = 0 );
 
+
+#ifdef WIN32
+
+//! Utility function for validating application Heaps, set CTD_ENABLE_HEAPCHECK for enabling
+  #if defined( CTD_ENABLE_HEAPCHECK )
+    #define CTD_CHECK_HEAP()   checkHeap();
+    // dynamically validate all heaps; trigger a user breakpoint if one of the heaps is corrupt
+    void checkHeap();
+  #else
+    #define CTD_CHECK_HEAP()
+  #endif
+  
+#endif
+#ifdef LINUX 
+
+    // heap check is not implemented on Linux
+    #define CTD_CHECK_HEAP()   
+	
 #endif
 
 } // namespace CTD

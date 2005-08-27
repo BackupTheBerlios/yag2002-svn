@@ -42,9 +42,9 @@ Log log;
 
 //! Implementation of logging system
 Log::Log() :
+basic_ostream< char >( &_stream ),
 _severity( L_DEBUG ),
-_printSeverityLevel( true ),
-basic_ostream< char >( &_stream )
+_printSeverityLevel( true )
 {
     _stream.setLog( this );
 }

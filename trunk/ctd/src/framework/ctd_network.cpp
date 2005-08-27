@@ -157,7 +157,7 @@ bool NetworkDevice::setupClient( const string& serverIp, int channel, const Node
     {
         log << Log::LogLevel( Log::L_INFO ) << "nw client: trying to find sessions ..." << endl;
         _p_session->SessionFind();
-        Sleep( 500 );
+	OpenThreads::Thread::microSleep( 500 );
         Url = _p_session->SessionEnumerateFound();
         if ( Url.length() > 0 ) {
             log << Log::LogLevel( Log::L_INFO ) << "nw client: session found, url: '" + Url + "'" << endl;

@@ -45,7 +45,7 @@
 #define _CTD_NETWORK_H_
 
 #include <RNReplicaNet/Inc/ReplicaNet.h>
-#include <RNPlatform/Inc/Threadclass.h>
+#include <RNPlatform/Inc/ThreadClass.h>
 #include <RNPlatform/Inc/PlatformHeap.h>
 #include <RNXPURL/Inc/XPURL.h>
 

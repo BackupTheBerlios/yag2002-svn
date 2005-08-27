@@ -74,8 +74,8 @@ void CTDGuiTexture::loadFromFile( const String& filename, const String& resource
     tImageTGA*  img = LoadTGA(texFile.getDataPtr(), texFile.getSize());
     if (img != 0)
     {
-        _width = static_cast<ushort>(img->sizeX);
-        _height = static_cast<ushort>(img->sizeY);
+        _width = static_cast<CEGUI::ushort>(img->sizeX);
+        _height = static_cast<CEGUI::ushort>(img->sizeY);
 
         // flip the image...
         flipImageTGA(img);
@@ -100,16 +100,16 @@ void CTDGuiTexture::loadFromFile( const String& filename, const String& resource
     }
 }
 
-void CTDGuiTexture::loadFromMemory(const void* buffPtr, uint buffWidth, uint buffHeight)
+void CTDGuiTexture::loadFromMemory(const void* buffPtr, CEGUI::uint buffWidth, CEGUI::uint buffHeight)
 {
 	glBindTexture(GL_TEXTURE_2D, _ogltexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, buffWidth, buffHeight, 0, GL_RGBA ,GL_UNSIGNED_BYTE, buffPtr);
 
-    _width  = static_cast<ushort>(buffWidth);
-    _height = static_cast<ushort>(buffHeight);
+    _width  = static_cast<CEGUI::ushort>(buffWidth);
+    _height = static_cast<CEGUI::ushort>(buffHeight);
 }
 
-void CTDGuiTexture::setOGLTextureSize(uint size)
+void CTDGuiTexture::setOGLTextureSize(CEGUI::uint size)
 {
     // if not power of 2
     if ((size & (size - 1)) || !size)
@@ -136,7 +136,7 @@ void CTDGuiTexture::setOGLTextureSize(uint size)
     // delete buffer
     delete[] buff;
 
-    _height = _width = static_cast<ushort>(size);
+    _height = _width = static_cast<CEGUI::ushort>(size);
 }
 
 void CTDGuiTexture::flipImageTGA(CTDGuiTexture::tImageTGA* img)

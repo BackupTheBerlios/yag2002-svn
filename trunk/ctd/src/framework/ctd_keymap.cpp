@@ -327,7 +327,7 @@ const std::string& KeyMap::getMouseButtonName( unsigned int code )
 unsigned int KeyMap::getCode( const std::string& name )
 {
     unsigned int code = 0;
-    if ( code = getMouseButtonCode( name ) )
+    if ( ( code = getMouseButtonCode( name ) ) != 0 )
         return code;
     
     return getKeyCode( name );

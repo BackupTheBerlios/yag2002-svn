@@ -116,7 +116,7 @@ class Settings
 
             public:
 
-                typedef typename TypeT          SettingTokenType;
+                typedef TypeT                   SettingTokenType;
 
                                                 Setting( const std::string& name, SettingTokenType value )
                                                 {

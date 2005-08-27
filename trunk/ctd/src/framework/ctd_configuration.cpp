@@ -48,17 +48,19 @@ CTD_SINGLETON_IMPL( Configuration );
 // implementation of GuiManager
 Configuration::Configuration() :
 _p_settings( SettingsManager::get()->createProfile( CTD_GAMESETTING_PROFILENAME, Application::get()->getMediaPath() + CTD_GAMESETTING_FILENAME ) ),
-_keyboardType( CTD_GS_KEYBOARD_ENGLISH ),
 _screenWidth( 600 ),
 _screenHeight( 400 ),
 _colorBits( 24 ),
 _fullScreen( true ),
-_mouseSensitivity( 1.0f ),
+_keyboardType( CTD_GS_KEYBOARD_ENGLISH ),
 _guiScheme( CTD_GUI_DEFUALT_SCHEME ),
 _playerName( "NoName" ),
-_playerConfigDir( "player" ),
 _playerConfig( "player.cfg" ),
+_playerConfigDir( "player" ),
+_mouseSensitivity( 1.0f ),
 _mouseInverted( false ),
+_serverIP( "127.0.0.1" ),
+_serverPort( 32001 ),
 _moveForward( "W" ),
 _moveBackward( "S" ),
 _moveLeft( "A" ),
@@ -113,7 +115,7 @@ void Configuration::getConfigurationAsString( std::vector< std::pair< std::strin
         // get the setting value
         std::string token = ( *p_beg )->getTokenName();
         std::stringstream tokenvalue;
-        const type_info& settings_typeinfo = ( *p_beg )->getTypeInfo();
+        const std::type_info& settings_typeinfo = ( *p_beg )->getTypeInfo();
         if ( settings_typeinfo == typeid( bool ) ) 
         {
             bool value;
@@ -166,7 +168,7 @@ bool Configuration::setSettingValueAsString( const std::string& name, const std:
 
         // set the setting value
         std::stringstream tokenvalue;
-        const type_info& settings_typeinfo = ( *p_beg )->getTypeInfo();
+        const std::type_info& settings_typeinfo = ( *p_beg )->getTypeInfo();
         if ( settings_typeinfo == typeid( bool ) ) 
         {
             bool value = ( valuestring == "true" ) ? true : false;

@@ -88,15 +88,15 @@ void* physicsAlloc( int sizeInBytes )
 void physicsFree( void* ptr, int sizeInBytes )
 {
     freedBytesSum += sizeInBytes;
-    delete[] ptr;
+    delete[] static_cast< char* >( ptr );
 }
 
 // implementation of physics core
 //-------------------------------
 Physics::Physics() :
-_p_debugGeode( NULL ),
 _p_world( NULL ),
 _p_body( NULL ),
+_p_debugGeode( NULL ),
 _gravity( -9.8f )
 {
 }

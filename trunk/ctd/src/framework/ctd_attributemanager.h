@@ -85,7 +85,7 @@ class EntityAttributeBase
         * Get type info of this attribute
         * \return                           Type info
         */
-        virtual const type_info&            getTypeInfo() const = 0;
+        virtual const std::type_info&       getTypeInfo() const = 0;
  
 };
 
@@ -134,7 +134,7 @@ class EntityAttribute : public EntityAttributeBase
         * Get type info of this attribute
         * \return                           Type info
         */
-        const type_info&                    getTypeInfo() const;
+        const std::type_info&               getTypeInfo() const;
 
     protected:
 

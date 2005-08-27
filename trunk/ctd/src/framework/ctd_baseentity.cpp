@@ -37,8 +37,8 @@ using namespace std;
 using namespace CTD;
 
 BaseEntity::BaseEntity() :
-_initialized( false ),
-_p_attributeManager( NULL )
+_p_attributeManager( NULL ),
+_initialized( false )
 {
     _p_attributeManager = new AttributeManager;
 }
