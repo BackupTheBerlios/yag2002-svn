@@ -31,8 +31,8 @@
 
 template< class TypeT >
 EntityAttribute< TypeT >::EntityAttribute( const std::string& name, TypeT& ref ) :
-_name( name ),
-_reference( ref )
+_reference( ref ),
+_name( name )
 {
     // set the proper attibute type
     if (      typeid( ref ) == typeid( int ) )              _type = EntityAttributeType::INTEGER;
@@ -40,7 +40,7 @@ _reference( ref )
     else if ( typeid( ref ) == typeid( bool ) )             _type = EntityAttributeType::BOOL;
     else if ( typeid( ref ) == typeid( osg::Vec3f ) )       _type = EntityAttributeType::VECTOR3;
     else if ( typeid( ref ) == typeid( std::string ) )      _type = EntityAttributeType::STRING;
-    else EntityAttributeType::UNKNOWN;
+    else _type = EntityAttributeType::UNKNOWN;
 }
 
 template< class TypeT >
