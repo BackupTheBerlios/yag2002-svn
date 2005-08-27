@@ -42,6 +42,9 @@ using namespace std;
 namespace CTD
 {
 
+// used to avoid playing too short sound 
+#define SND_PLAY_RELAX_TIME     0.5f
+
 //! Implement and register the player physics entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( PlayerPhysicsEntityFactory );
 
@@ -106,7 +109,6 @@ int playerContactBegin( const NewtonMaterial* p_material, const NewtonBody* p_bo
 
 // physics system callback functions
 //---------------------------------------
-
 // player contact process callback function called when the player collides with level
 int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonContact* p_contact )
 {
@@ -114,24 +116,27 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
     Physics::levelContactProcess( p_material, p_contact );
 
     // determine which body is the player physics's one
-	NewtonBody*    p_body = s_colStruct->_p_body1;
-    EnPlayerPhysics* p_phys = 0;
-    void*          p_userData = NewtonBodyGetUserData( p_body );
+    NewtonBody*      p_body     = s_colStruct->_p_body1;
+    EnPlayerPhysics* p_phys     = NULL;
+    void*            p_userData = NewtonBodyGetUserData( p_body );
     if ( p_userData ) // level geoms have no data associated
     {
         p_phys = static_cast< EnPlayerPhysics* >( p_userData );
-	} 
+    } 
     else // this else is only for being on safe side. in normal case all level bodies come in as body0!
     {
         p_phys = static_cast< EnPlayerPhysics* >( NewtonBodyGetUserData( s_colStruct->_p_body0 ) );
-       // assert( NULL && "body0 should be static geom!" ); this case comes when i move the character out of world bbox
+       // assert( NULL && "body0 should be static geom!" ); this case comes when we move the character out of world bbox
     }
     s_colStruct->_p_otherEntity = NULL;
     s_colStruct->_p_physics     = p_phys;
 
     // play appropriate sound only if we are moving
-    if ( p_phys->isMoving() && p_phys->getPlayer()->getPlayerSound() )
+    if ( p_phys->isMoving() && p_phys->getPlayer()->getPlayerSound() && ( p_phys->getSoundTimer() <= 0.0f ) )
     {
+        // reset sound timer
+        p_phys->setSoundTimer( SND_PLAY_RELAX_TIME );
+
         unsigned int attribute = ( unsigned int )( NewtonMaterialGetContactFaceAttribute( p_material ) );
         unsigned int materialType = attribute & 0xFF;
         switch ( materialType )
@@ -154,7 +159,8 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
                 break;
 
             default:
-                ;
+                p_phys->setSoundTimer( 0.0f );
+                
         }
     }
 
@@ -165,7 +171,7 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
 int playerContactProcess( const NewtonMaterial* p_material, const NewtonContact* p_contact )
 {
     // determine which body is the player physics's one
-	NewtonBody*    p_body   = s_colStruct->_p_body0;
+    NewtonBody*    p_body   = s_colStruct->_p_body0;
     BaseEntity*    p_entity = reinterpret_cast< BaseEntity* >( NewtonBodyGetUserData( p_body ) );
     EnPlayerPhysics* p_phys = dynamic_cast< EnPlayerPhysics* >( p_entity );
     if ( !p_phys )
@@ -183,7 +189,7 @@ int playerContactProcess( const NewtonMaterial* p_material, const NewtonContact*
     return p_phys->collideWithOtherEntities( p_material, p_contact );
 }
 
-// this function is called affter all collision contacts are proccesed
+// this function is called affter all collision contacts are processed
 void playerContactEnd( const NewtonMaterial* p_material )
 {
 }
@@ -225,55 +231,56 @@ void EnPlayerPhysics::physicsSetTransform( const NewtonBody* p_body, const float
 
 int EnPlayerPhysics::collideWithLevel( const NewtonMaterial* p_material, const NewtonContact* p_contact )
 {
-	Vec3f point;
-	Vec3f normal;
-	Vec3f velocity;
+    Vec3f point;
+    Vec3f normal;
+    Vec3f velocity;
 
-	_isAirBorne = false;
+    // when we collide with something then set air-borne flag to false
+    _isAirBorne = false;
 
-	// Get the collision and normal
+    // get the collision and normal
     NewtonMaterialGetContactPositionAndNormal( p_material, &point._v[ 0 ], &normal._v[ 0 ] );
-
     Vec3f pos = _p_playerImpl->getPlayerPosition();
-	// consider the player height
+    // consider the player height
     float diff = point._v[ 2 ] - ( pos._v[ 2 ] - _playerHeight * 0.5f );
-    if ( diff > 0.1f )
+    if ( ( diff > 0.1f ) && ( diff < _stepHeight ) )
     {
-        Vec3f localpoint = pos - point;
-        Matrixf::transform3x3( _matrix, localpoint );
-		// save the elevation of the highest step to take
-		if ( localpoint._v[ 2 ] > _climbHeight ) 
-			if ( fabsf( normal._v[ 2 ] ) < 0.8f )
-				_climbHeight = diff;
-	}
+        // save the elevation of the highest step to take
+        if ( diff > _climbHeight ) 
+            _climbHeight = diff;
+    }
 
     return 1;
 }
 
 int EnPlayerPhysics::collideWithOtherEntities( const NewtonMaterial* p_material, const NewtonContact* p_contact )
 { 
-    //! TODO
+    //! TODO: let players collide with each other
+    //! currently we allow players pass through each other
     return 1;
 }
 
 void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
 {
+    //! TODO: change the way moving the player is calculated: use desired speed and direction to control the movement
+    // pseudo code:
+    //desiredVeloc = desiredSpeed * desiredDirection
+    //deltaV = desiredVeloc - currentVeloc
+    //force = mass * deltaV / timestepForAcceleration
+
     float mass;
     float Ixx;
     float Iyy;
     float Izz;
-	float ground;
-	float accelZ;
-	float deltaHeight;
-	float steerAngle;
-	float timestep;
-	float timestepInv;
-	Vec3f omega;
-	Vec3f alpha;
-	Vec3f heading;
-	Vec3f velocity;
+    float steerAngle;
+    float timestep;
+    float timestepInv;
+    Vec3f omega;
+    Vec3f alpha;
+    Vec3f heading;
+    Vec3f velocity;
     Vec3f pos;
-	Matrixf matrix;
+    Matrixf matrix;
 
     NewtonBodyGetMassMatrix( p_body, &mass, &Ixx, &Iyy, &Izz );
     EnPlayerPhysics* p_phys = static_cast< EnPlayerPhysics* >( NewtonBodyGetUserData( p_body ) );
@@ -282,64 +289,42 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     force._v[ 1 ] *= p_phys->_linearForce;
 
     // get the current world timestep
-	timestep = NewtonGetTimeStep( p_phys->_p_world );
-	timestepInv = 1.0f / timestep;
+    timestep = NewtonGetTimeStep( p_phys->_p_world );
+    timestepInv = 1.0f / timestep;
 
-	NewtonBodyGetVelocity( p_phys->_p_body, &velocity._v[ 0 ] );
+    NewtonBodyGetVelocity( p_phys->_p_body, &velocity._v[ 0 ] );
     NewtonBodyGetMatrix( p_phys->_p_body, matrix.ptr() );
     pos = matrix.getTrans();
 
-	// calculate the torque vector
+    // calculate the torque vector
     const float* matelems = matrix.ptr();
     Vec3f front( matelems[ 4 ] , matelems[ 5 ], matelems[ 6 ] );
     // moveDir must be normalized
     Vec3f cross( front ^ p_phys->_p_playerImpl->getPlayerMoveDirection() );
     steerAngle = min( max( cross._v[ 2 ], -1.0f ), 1.0f );
-	steerAngle = asinf( steerAngle );
-	NewtonBodyGetOmega( p_phys->_p_body, &omega._v[ 0 ] );
-	Vec3f torque( 0.0f, 0.0f, 0.5f * Izz * ( steerAngle * timestepInv - omega._v[ 2 ] ) * timestepInv );
+    steerAngle = asinf( steerAngle );
+    NewtonBodyGetOmega( p_phys->_p_body, &omega._v[ 0 ] );
+    Vec3f torque( 0.0f, 0.0f, 0.5f * Izz * ( steerAngle * timestepInv - omega._v[ 2 ] ) * timestepInv );
     NewtonBodySetTorque( p_phys->_p_body, &torque._v[ 0 ] );
 
-    // climb stair steps
-    if ( ( p_phys->_climbHeight > 0.1f ) && ( p_phys->_climbHeight < p_phys->_stepHeight ) )
+    // climb steps
+    float zdiff = p_phys->_climbHeight;
+    if ( zdiff > 0.0f )
     {
-        float* p_mat = matrix.ptr();
+        // add a small impulse in up direction in order to get a smooth stair climbing
+        osg::Vec3f vel;
+        vel._v[ 2 ] = ( zdiff + 0.1f ) * mass * timestep * 5.0f;        
+        NewtonAddBodyImpulse( p_phys->_p_body, &vel._v [ 0 ], &pos._v[ 0 ] );
 
-        // adjust the position in movement direction
-        osg::Vec3f move = p_phys->_p_playerImpl->getPlayerMoveDirection();
-        move._v[ 2 ] = 0.0f;
-        move.normalize();
-        move *= 0.2f;
-        p_mat[ 12 ] += move._v[ 0 ];
-        p_mat[ 13 ] += move._v[ 1 ];
-
-        // adjust the height
-        p_mat[ 14 ] += p_phys->_climbHeight + 0.1f;
-
-        // set new body position
-        NewtonBodySetMatrix( p_body, p_mat );
-
-        p_phys->_isAirBorne = true;
-
+        p_phys->_isAirBorne = false;
         // reset climb contact
-        p_phys->_climbHeight = 0.0;
+        p_phys->_climbHeight = 0.0f;
     }
 
-    force._v[ 2 ] = mass * p_phys->_gravity; // add gravity to force
-
-    // snap to ground
-    if ( p_phys->_isAirBorne && !p_phys->_isJumping ) 
-    {
-        ground = p_phys->findGround( p_phys->_p_world, pos, p_phys->_playerHeight + p_phys->_stepHeight );
-		deltaHeight = ( pos._v[ 2 ] - 0.5f * p_phys->_playerHeight ) - ground;
-		if ( ( deltaHeight < p_phys->_stepHeight ) && ( deltaHeight > 0.01f ) ) 
-        {
-			// snap to ground ony if the ground is lower than the character feet	
-			accelZ = -( deltaHeight * timestepInv + velocity._v[ 2 ] ) * timestepInv;
-			force._v[ 2 ] += mass * accelZ;
-		}
-	}
-    else if ( p_phys->_isJumping )
+    // add gravity to force, when on ground then reduce the applied gravity
+    force._v[ 2 ] = mass * ( p_phys->_isAirBorne ? p_phys->_gravity : p_phys->_gravity * 0.1f ); 
+ 
+    if ( p_phys->_isJumping )
     {
         switch ( p_phys->_jumpState )
         {
@@ -368,7 +353,7 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     p_phys->_jumpTimer = p_phys->_jumpTimer ? p_phys->_jumpTimer - 1 : 0;
 
     // set the stopped flag
-    p_phys->_isStopped = ( ( force._v[ 0 ] == 0 ) && ( force._v[ 1 ] == 0 ) );	
+    p_phys->_isStopped = ( ( force._v[ 0 ] == 0 ) && ( force._v[ 1 ] == 0 ) );  
 
     // set body force
     NewtonBodySetForce( p_body, &force._v[ 0 ] );
@@ -396,7 +381,7 @@ float EnPlayerPhysics::physicsRayCastPlacement( const NewtonBody* p_body, const 
 //---------------------------------
 EnPlayerPhysics::EnPlayerPhysics() :
 _p_playerImpl( NULL ),
-_p_world( Physics::get()->getWorld() ),
+_p_world( NULL ),
 _p_body( NULL ),
 _isAirBorne( false ),
 _playerHeight( 1.8f ),
@@ -411,7 +396,8 @@ _linearForce( 0.1f ),
 _angularForce( 0.05f ),
 _linearDamping( 0.2f ),
 _climbHeight( 0.0f ),
-_gravity( Physics::get()->getWorldGravity() )
+_gravity( Physics::get()->getWorldGravity() ),
+_soundTimer( 0.0f )
 { 
     // register entity in order to get notifications about physics building
     EntityManager::get()->registerNotification( this, true );   
@@ -460,6 +446,8 @@ void EnPlayerPhysics::handleNotification( const EntityNotification& notification
 
 void EnPlayerPhysics::initializePhysicsMaterials()
 {
+    _p_world = Physics::get()->getWorld();
+
     // setup materials
     int playerID   = Physics::get()->createMaterialID( "player" );
     int defaultID  = Physics::get()->getMaterialId( "default" );
@@ -474,7 +462,7 @@ void EnPlayerPhysics::initializePhysicsMaterials()
 
     // set the material properties for player on default
     NewtonMaterialSetDefaultElasticity( _p_world, playerID, defaultID, 0.3f );
-    NewtonMaterialSetDefaultSoftness( _p_world, playerID, defaultID, 0.8f );
+    NewtonMaterialSetDefaultSoftness( _p_world, playerID, defaultID, 0.5f );
     NewtonMaterialSetDefaultFriction( _p_world, playerID, defaultID, 0.8f, 0.7f );
     NewtonMaterialSetCollisionCallback( _p_world, playerID, defaultID, &player_levelCollStruct, playerContactBegin, playerContactProcessLevel, playerContactEnd ); 
 
@@ -504,7 +492,7 @@ void EnPlayerPhysics::initializePhysicsMaterials()
 
     // set the material properties for player on stone
     NewtonMaterialSetDefaultElasticity( _p_world, playerID, stoneID, 0.45f );
-    NewtonMaterialSetDefaultSoftness( _p_world, playerID, stoneID, 0.9f );
+    NewtonMaterialSetDefaultSoftness( _p_world, playerID, stoneID, 0.1f );
     NewtonMaterialSetDefaultFriction( _p_world, playerID, stoneID, 0.9f, 0.7f );
     NewtonMaterialSetCollisionCallback( _p_world, playerID, stoneID, &player_stoneCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
 }
@@ -520,8 +508,8 @@ void EnPlayerPhysics::initialize()
     _playerHeight = _dimensions._v[ 2 ];
 
     // create the collision 
-    //NewtonCollision* p_col = NewtonCreateSphere( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
-    NewtonCollision* p_col = NewtonCreateBox( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
+    NewtonCollision* p_col = NewtonCreateSphere( _p_world, _dimensions._v[ 0 ] * 0.5f, _dimensions._v[ 1 ] * 0.5f, _dimensions._v[ 2 ] * 0.5f, NULL );
+    //NewtonCollision* p_col = NewtonCreateBox( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
     NewtonCollision* p_collision = NewtonCreateConvexHullModifier( _p_world, p_col );
     NewtonReleaseCollision( Physics::get()->getWorld(), p_col );
 
@@ -538,10 +526,10 @@ void EnPlayerPhysics::initialize()
     
     NewtonBodySetLinearDamping( _p_body, _linearDamping );
 
-	float damp[3];
-	damp[0] = 0.0f;
-	damp[1] = 0.0f;
-	damp[2] = 0.0f;
+    float damp[3];
+    damp[0] = 0.0f;
+    damp[1] = 0.0f;
+    damp[2] = 0.0f;
     NewtonBodySetAngularDamping( _p_body, damp );
 
     // disable auto freeze management for the player
@@ -589,6 +577,9 @@ void EnPlayerPhysics::postInitialize()
 void EnPlayerPhysics::updateEntity( float deltaTime )
 {
     _isAirBorne = true;
+
+    if ( _soundTimer > 0.0f )
+        _soundTimer -= deltaTime;
 }
 
 void EnPlayerPhysics::jump()

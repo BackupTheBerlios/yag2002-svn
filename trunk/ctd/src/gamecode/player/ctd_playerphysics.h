@@ -120,7 +120,7 @@ class EnPlayerPhysics : public BaseEntity
         */
         bool                                        onGround() const { return !_isAirBorne; }
 
-        //! Internal callbacks
+        //! Internal callbacks and methods for static functions
         //-------------------------------------------------------------------------------------------------//
         //! Physics system call-back for body destruction
         static void                                 physicsBodyDestructor( const NewtonBody* p_body );
@@ -145,6 +145,13 @@ class EnPlayerPhysics : public BaseEntity
 
         //! Returns true if we are moving
         bool                                        isMoving() const { return !_isStopped; }
+
+        //! Returns the sound timer used for playing various sounds
+        float                                       getSoundTimer() const { return _soundTimer; }
+
+        //! Set sound timer
+        void                                        setSoundTimer( float value ) { _soundTimer = value; }
+
         //-------------------------------------------------------------------------------------------------//
 
     protected:
@@ -213,6 +220,9 @@ class EnPlayerPhysics : public BaseEntity
 
         //! Indicates whether we are on ground or in air
         bool                                        _isAirBorne;
+
+        //! Sound timer
+        float                                       _soundTimer;
 
         //! Climb height
         float                                       _climbHeight;
