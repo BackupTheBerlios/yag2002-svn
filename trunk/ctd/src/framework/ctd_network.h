@@ -21,7 +21,7 @@
 /*###############################################################
  # networking core
  #
- # this core uses RakNet and provides networking services
+ # this core uses ReplicaNet and provides networking services
  #
  #
  #   date of creation:  04/08/2004
@@ -33,11 +33,11 @@
  #
  #  date       nick name  comment
  #----------------------------------------------------------
- #  04/08/2004 boto       creation of networking core
+ #  04/08/2004 boto       creation of networking core basing on RakNet
  #
  #  09/24/2004 boto       redesigned
  #
- #  02/20/2005 boto       adapted to new environment (osg)
+ #  02/20/2005 boto       adapted to new environment (osg, ReplicaNet)
  #
  ################################################################*/
 
