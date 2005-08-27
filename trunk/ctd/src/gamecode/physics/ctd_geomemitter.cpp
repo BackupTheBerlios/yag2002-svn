@@ -32,20 +32,18 @@
 #include <ctd_main.h>
 #include "ctd_geomemitter.h"
 
-using namespace std;
-using namespace CTD; 
-using namespace osg; 
-
-
+namespace CTD
+{
+	
 //! Implement and register the entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( GeomEmitteEntityFactory );
 
 EnGeomEmitter::EnGeomEmitter():
-_time( 0 ),
-_geomCount( 0 ),
 _dimensions( osg::Vec3f( 5.0f, 5.0f, 5.0f ) ),
 _period( 10.0f ),
-_life( 15.0f )
+_life( 15.0f ),
+_time( 0 ),
+_geomCount( 0 )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "geomTypes"  , _geomTypes  );
@@ -62,7 +60,7 @@ EnGeomEmitter::~EnGeomEmitter()
 void EnGeomEmitter::postInitialize()
 {
     setPosition( _position );
-    vector< string > tokens;
+    std::vector< std::string > tokens;
     BaseEntity*      p_entity = NULL;
     explode( _geomTypes, " ", &tokens );
     for ( size_t cnt = 0; cnt < tokens.size(); cnt++ )
@@ -70,7 +68,7 @@ void EnGeomEmitter::postInitialize()
         p_entity = EntityManager::get()->findInstance( tokens[ cnt ] );
         if ( !p_entity )
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "***EnGeomEmitter: entity type not found : '" << tokens[ cnt ] << "'" << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "***EnGeomEmitter: entity type not found : '" << tokens[ cnt ] << "'" << std::endl;
             continue;
         }
 
@@ -94,11 +92,12 @@ void EnGeomEmitter::updateEntity( float deltaTime )
         BaseEntity* p_entity = _geomStock[ ran ];
 
         // clone the found geom
-        char buf[ 8 ];
-        p_entity = p_entity->clone( p_entity->getInstanceName() + string( itoa( _geomCount, buf, 10 ) ), ( Group* )Application::get()->getSceneRootNode() );
+        std::stringstream geomcnt;
+		geomcnt << _geomCount;
+        p_entity = p_entity->clone( p_entity->getInstanceName() + geomcnt.str(), Application::get()->getSceneRootNode() );
 
         // set a random position before entity gets initialized
-        Vec3f randPos( ( float )( ( rand() % ( int ) _dimensions.x() ) - _dimensions.x() ), ( float )( ( rand() % ( int )_dimensions.y() ) - _dimensions.y() ), ( float )( ( rand() % ( int )_dimensions.z() ) - _dimensions.z() ) );
+        osg::Vec3f randPos( ( float )( ( rand() % ( int ) _dimensions.x() ) - _dimensions.x() ), ( float )( ( rand() % ( int )_dimensions.y() ) - _dimensions.y() ), ( float )( ( rand() % ( int )_dimensions.z() ) - _dimensions.z() ) );
         p_entity->getAttributeManager().setAttributeValue( "position", _position + randPos );
 
         // setup entities
@@ -106,11 +105,11 @@ void EnGeomEmitter::updateEntity( float deltaTime )
         p_entity->postInitialize();
 
         float live = ( ( _life * 0.5f ) + ( float ) ( rand() % ( int )_life ) );
-        _geoms.push_back( make_pair( p_entity, live ) );
+        _geoms.push_back( std::make_pair( p_entity, live ) );
     }
 
     // update geoms
-    vector< std::pair< BaseEntity*, float > >::iterator geom = _geoms.begin(), geomEnd = _geoms.end();
+    std::vector< std::pair< BaseEntity*, float > >::iterator geom = _geoms.begin(), geomEnd = _geoms.end();
     for ( ; geom != geomEnd; geom++ )
     {
         if ( ( geom->second -= deltaTime ) < 0 )
@@ -122,3 +121,5 @@ void EnGeomEmitter::updateEntity( float deltaTime )
         }
     }
 }
+
+} // namespace CTD
