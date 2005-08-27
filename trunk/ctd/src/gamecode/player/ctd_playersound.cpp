@@ -34,9 +34,6 @@
 #include "ctd_playersound.h"
 #include "ctd_playerimpl.h"
 
-using namespace osg;
-using namespace std;
-
 namespace CTD
 {
 
@@ -50,9 +47,9 @@ namespace CTD
 CTD_IMPL_ENTITYFACTORY_AUTO( PlayerSoundEntityFactory );
 
 EnPlayerSound::EnPlayerSound() :
-_p_playerImpl( NULL ),
 _volume( 0.8f ),
-_referenceDist( 10.0f )
+_referenceDist( 10.0f ),
+_p_playerImpl( NULL )
 { 
     // register attributes
     getAttributeManager().addAttribute( "resourceDir"         , _soundFileDir  );
@@ -88,35 +85,35 @@ void EnPlayerSound::postInitialize()
     if ( p_soundState )
     {
         p_soundState->setLooping( true );
-       _soundStates.insert( make_pair( string( SND_GROUND ), p_soundState ) );
+       _soundStates.insert( std::make_pair( std::string( SND_GROUND ), p_soundState ) );
     }
 
     p_soundState = createSound( _walkWood );
     if ( p_soundState )
     {
         p_soundState->setLooping( true );
-        _soundStates.insert( make_pair( string( SND_WOOD ), p_soundState ) );
+        _soundStates.insert( std::make_pair( std::string( SND_WOOD ), p_soundState ) );
     }
 
     p_soundState = createSound( _walkMetal );
     if ( p_soundState )
     {
         p_soundState->setLooping( true );
-        _soundStates.insert( make_pair( SND_METALL, p_soundState ) );
+        _soundStates.insert( std::make_pair( std::string( SND_METALL ), p_soundState ) );
     }
 
     p_soundState = createSound( _walkGrass );
     if ( p_soundState )
     {
         p_soundState->setLooping( true );
-        _soundStates.insert( make_pair( SND_GRASS, p_soundState ) );
+        _soundStates.insert( std::make_pair( std::string( SND_GRASS ), p_soundState ) );
     }
 
     // add the sound group into player node
     _p_playerImpl->getPlayerEntity()->appendTransformationNode( _p_soundGroup.get() );
 }
 
-osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
+osgAL::SoundState* EnPlayerSound::createSound( const std::string& filename )
 {
     openalpp::Sample* p_sample    = NULL;
     osgAL::SoundNode* p_soundNode = NULL;
@@ -129,14 +126,14 @@ osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
     } 
     catch ( const openalpp::Error& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "error loading sound file '" << filename << "' in '" << getInstanceName() << "'" << endl;
-        log << Log::LogLevel( Log::L_ERROR ) << "  reason: " << e.what() << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "error loading sound file '" << filename << "' in '" << getInstanceName() << "'" << std::endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
         return NULL;
     }
      
     // create a named sound state.
     // note: we have to make the state name unique as otherwise new need unique sound states for every entity instance
-    stringstream uniquename;
+    std::stringstream uniquename;
     static unsigned int uniqueId = 0;
     uniquename << getInstanceName();
     uniquename << uniqueId;
@@ -148,7 +145,7 @@ osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
     // Set its pitch to 1 (normal speed)
     p_soundState->setPitch( 1.0f );
     p_soundState->setPlay( false );
-    p_soundState->setGain( max( min( _volume, 1.0f ), 0.0f ) );
+    p_soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
     // Allocate a hardware soundsource to this soundstate (lower priority of 5)
     p_soundState->allocateSource( 5, false );
 
@@ -158,7 +155,7 @@ osgAL::SoundState* EnPlayerSound::createSound( const string& filename )
     // set stopping method
     p_soundState->setStopMethod( openalpp::Stopped );
 
-    p_soundState->setPosition( Vec3f( 0, 0, 0 ) ); // relative to player
+    p_soundState->setPosition( osg::Vec3f( 0, 0, 0 ) ); // relative to player
 
     // Create a sound node and attach the soundstate to it.
     p_soundNode = new osgAL::SoundNode;

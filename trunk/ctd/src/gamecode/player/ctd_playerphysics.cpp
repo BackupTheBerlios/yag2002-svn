@@ -380,24 +380,28 @@ float EnPlayerPhysics::physicsRayCastPlacement( const NewtonBody* p_body, const 
 // implementation of player physics
 //---------------------------------
 EnPlayerPhysics::EnPlayerPhysics() :
-_p_playerImpl( NULL ),
-_p_world( NULL ),
-_p_body( NULL ),
-_isAirBorne( false ),
-_playerHeight( 1.8f ),
-_jumpTimer( 0 ),
-_isJumping( false ),
-_jumpState( BeginJumping ),
-_jumpForce( 5.0f ),
-_climbForce( 30.0f ),
 _dimensions( Vec3f( 0.5f, 0.5f, 1.8f ) ),
 _stepHeight( 0.5f ),
 _linearForce( 0.1f ),
 _angularForce( 0.05f ),
-_linearDamping( 0.2f ),
-_climbHeight( 0.0f ),
+_mass( 50.0f ),
 _gravity( Physics::get()->getWorldGravity() ),
-_soundTimer( 0.0f )
+_linearDamping( 0.2f ),
+
+_p_playerImpl( NULL ),
+_p_world( NULL ),
+_p_body( NULL ),
+_upVectorJoint( NULL ),
+_playerHeight( 1.8f ),
+_isStopped( true ),
+_isAirBorne( false ),
+_soundTimer( 0.0f ),
+_climbHeight( 0.0f ),
+_climbForce( 30.0f ),
+_jumpTimer( 0 ),
+_isJumping( false ),
+_jumpState( BeginJumping ),
+_jumpForce( 5.0f )
 { 
     // register entity in order to get notifications about physics building
     EntityManager::get()->registerNotification( this, true );   

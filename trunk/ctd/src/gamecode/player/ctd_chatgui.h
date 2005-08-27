@@ -70,7 +70,6 @@ class PlayerChatGui
                                                         return s_chatGui;
                                                     }
 
-
     protected:
 
         //! Callback for chat frame window close button

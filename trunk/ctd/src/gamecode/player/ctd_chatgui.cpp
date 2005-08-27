@@ -267,7 +267,7 @@ void PlayerChatGui::show( bool visible )
         if ( _modeEdit )
                 GuiManager::get()->showMousePointer( true );
         else
-            if ( _p_playerImpl->getCameraMode() == EnPlayer::Ego )
+            if ( _p_playerImpl->getCameraMode() == BasePlayerImplementation::Ego )
                 GuiManager::get()->showMousePointer( true );
             else
                 GuiManager::get()->showMousePointer( false );

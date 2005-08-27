@@ -49,16 +49,16 @@ namespace CTD
 {
 
 BasePlayerImplementation::BasePlayerImplementation( EnPlayer* player ) :
+_cameraMode( Ego ),
 _p_player( player ),
-_p_playerSound( NULL ),
 _p_playerPhysics( NULL ),
 _p_playerAnimation( NULL ),
-_p_playerNetworking( NULL ),
+_p_playerSound( NULL ),
 _p_camera( NULL ),
-_cameraMode( Ego ),
-_moveDir( Vec3f( 0, 1, 0 ) ),
-_rotZ( 0 ),
-_p_chatGui( NULL )
+_p_playerNetworking( NULL ),
+_p_chatGui( NULL ),
+_moveDir( Vec3f( 0, 1.0f, 0 ) ),
+_rotZ( 0 )
 {
     // copy player's attributes
     _playerAttributes = _p_player->getPlayerAttributes();

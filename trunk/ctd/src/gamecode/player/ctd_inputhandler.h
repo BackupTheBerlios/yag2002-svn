@@ -151,8 +151,6 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
                 Uint16                          _screenMiddleY;
         };
         
-        MouseData*                          _p_mouseData;
-
         // used internally
         // ---------------
         PlayerImplT*                        getPlayerImpl() { return _p_userObject; }
@@ -160,6 +158,8 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
         EnPlayer*                           getPlayerEntity() { return _p_playerEntity; }
 
         void                                updatePlayerPitchYaw( float& pitch, float& yaw );
+
+        MouseData*                          _p_mouseData;
 
         EnPlayer*                           _p_playerEntity;
 

@@ -93,7 +93,7 @@ void EnGeomEmitter::updateEntity( float deltaTime )
 
         // clone the found geom
         std::stringstream geomcnt;
-		geomcnt << _geomCount;
+        geomcnt << _geomCount;
         p_entity = p_entity->clone( p_entity->getInstanceName() + geomcnt.str(), Application::get()->getSceneRootNode() );
 
         // set a random position before entity gets initialized

@@ -34,10 +34,6 @@
 #include "ctd_playeranim.h"
 #include "ctd_playerimpl.h"
 
-using namespace osg;
-using namespace std;
-
-
 namespace CTD
 {
 
@@ -45,16 +41,16 @@ namespace CTD
 CTD_IMPL_ENTITYFACTORY_AUTO( PlayerAnimationEntityFactory );
 
 EnPlayerAnimation::EnPlayerAnimation() :
-_p_player( NULL ),
-_scale( 1.0f ),
 _anim( eIdle ),
-_IdAnimTurn( -1 ),
+_p_player( NULL ),
+_renderingEnabled( true ),
+_scale( 1.0f ),
 _IdAnimIdle( -1 ),
 _IdAnimWalk( -1 ),
 _IdAnimRun( -1 ),
 _IdAnimJump( -1 ),
 _IdAnimLand( -1 ),
-_renderingEnabled( true )
+_IdAnimTurn( -1 )
 { 
     // register attributes
     getAttributeManager().addAttribute( "animconfig"   , _animCfgFile );
@@ -71,18 +67,18 @@ EnPlayerAnimation::~EnPlayerAnimation()
 
 void EnPlayerAnimation::initialize()
 {
-    log << Log::LogLevel( Log::L_INFO ) << "  initializing player animation instance '" << getInstanceName() << "' ..." << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "  initializing player animation instance '" << getInstanceName() << "' ..." << std::endl;
 
     if ( !_animCfgFile.length() )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** missing animation config file parameter" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** missing animation config file parameter" << std::endl;
         return;
     }
     
     // setup and create a new model
-    string file     = Application::get()->getMediaPath() + _animCfgFile;
-    string rootDir  = extractPath( file );
-    string configfilename = extractFileName( file );
+    std::string file     = Application::get()->getMediaPath() + _animCfgFile;
+    std::string rootDir  = extractPath( file );
+    std::string configfilename = extractFileName( file );
     // all textures and cal3d files must be in root dir!
     if ( !setupAnimation( rootDir, configfilename ) )
         return;
@@ -95,17 +91,17 @@ void EnPlayerAnimation::initialize()
     _coreModel->get()->scale( _scale );
 
     // create a transform node in order to set position and rotation offsets
-    _animNode = new PositionAttitudeTransform;
+    _animNode = new osg::PositionAttitudeTransform;
     _animNode->setPosition( _position );
-    Quat quat( 
-        _rotation.x() * PI / 180.0f, Vec3f( 1, 0, 0 ),
-        _rotation.y() * PI / 180.0f, Vec3f( 0, 1, 0 ),
-        _rotation.z() * PI / 180.0f, Vec3f( 0, 0, 1 )
+    osg::Quat quat( 
+        _rotation.x() * osg::PI / 180.0f, osg::Vec3f( 1, 0, 0 ),
+        _rotation.y() * osg::PI / 180.0f, osg::Vec3f( 0, 1, 0 ),
+        _rotation.z() * osg::PI / 180.0f, osg::Vec3f( 0, 0, 1 )
         );
     _animNode->setAttitude( quat );
     _animNode->addChild( _model.get() );
 
-    log << Log::LogLevel( Log::L_INFO ) << "  initializing player animation instance completed" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "  initializing player animation instance completed" << std::endl;
 
     // register entity in order to get updated per simulation step
     EntityManager::get()->registerUpdate( this, true );
@@ -137,21 +133,21 @@ void EnPlayerAnimation::setPlayer( BasePlayerImplementation* p_player )
     _p_player->getPlayerEntity()->appendTransformationNode( _animNode.get() );
 }
 
-bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& configfilename )
+bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::string& configfilename )
 { // this code is basing on cal3d's miniviewer
 
-    string destFileName, cfgFileName;
+    std::string destFileName, cfgFileName;
     cfgFileName = rootDir;
     cfgFileName += "/";
     cfgFileName += configfilename;
 
-    ifstream file;
+    std::ifstream file;
 
     // open the model configuration file
     file.open( cfgFileName.c_str(), std::ios::in | std::ios::binary );
     if( !file )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "***  failed to open model configuration file: " << file << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "***  failed to open model configuration file: " << file << std::endl;
         return false;
     }
 
@@ -160,7 +156,7 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
     CalLoader::setLoadingMode( LOADER_INVERT_V_COORD | LOADER_ROTATE_X_AXIS );
 
     // create a core model instance
-    string modelname = "character_" + configfilename;
+    std::string modelname = "character_" + configfilename;
     _coreModel = new osgCal::CoreModel( modelname );
     CalCoreModel* p_calCoreModel = _coreModel->get();
 
@@ -169,7 +165,7 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
     for( line = 1; ; line++ )
     {
         // read the next model configuration line
-        string textBuffer;
+        std::string textBuffer;
         getline( file, textBuffer );
 
         // stop if we reached the end of file
@@ -178,16 +174,16 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
         // check if an error happend while reading from the file
         if( !file )
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "***  error reading config file: " << configfilename << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "***  error reading config file: " << configfilename << std::endl;
             return false;
         }
 
         // find the first non-whitespace character
-        string::size_type pos;
+        std::string::size_type pos;
         pos = textBuffer.find_first_not_of( " \t" );
 
         // check for empty lines
-        if( ( pos == string::npos) || ( textBuffer[ pos ] == '\n' ) || ( textBuffer[ pos ] == '\r' ) || ( textBuffer[ pos ] == 0 ) ) continue;
+        if( ( pos == std::string::npos) || ( textBuffer[ pos ] == '\n' ) || ( textBuffer[ pos ] == '\r' ) || ( textBuffer[ pos ] == 0 ) ) continue;
 
         // check for comment lines
         if( textBuffer[ pos ] == '#' ) 
@@ -196,16 +192,16 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
         }
 
         // get the key
-        string strKey;
+        std::string strKey;
         strKey = textBuffer.substr( pos, textBuffer.find_first_of( " =\t\n\r", pos ) - pos );
         pos += strKey.size();
 
         // get the '=' character
         pos = textBuffer.find_first_not_of( " \t", pos );
-        if( (pos == string::npos ) || ( textBuffer[ pos ] != '=' ) )
+        if( (pos == std::string::npos ) || ( textBuffer[ pos ] != '=' ) )
         {
             log << Log::LogLevel( Log::L_ERROR ) << "***  invalid syntax in config file: '" << configfilename;
-            log << Log::LogLevel( Log::L_ERROR ) << "' at line" << line << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "' at line" << line << std::endl;
             return false;
         }
 
@@ -213,7 +209,7 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
         pos = textBuffer.find_first_not_of( " \t", pos + 1 );
 
         // get the data
-        string strData;
+        std::string strData;
         strData = textBuffer.substr( pos, textBuffer.find_first_of( "\n\r", pos ) - pos );
         destFileName = rootDir + "/" + strData;
 
@@ -221,12 +217,12 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
         if( strKey == "skeleton" )
         {
             if ( !p_calCoreModel->loadCoreSkeleton( destFileName ) )
-                log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading skeleton: " << destFileName << endl;                      
+                log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading skeleton: " << destFileName << std::endl;                      
         }
         else if( strKey == "mesh" )
         {
             if ( p_calCoreModel->loadCoreMesh( destFileName ) < 0 )
-                log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading mesh: " << destFileName << endl;                      
+                log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading mesh: " << destFileName << std::endl;                      
         }
         else if( strKey == "material" )
         {
@@ -234,7 +230,7 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
             if( materialId < 0 ) 
             {                
                 log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading material: " << destFileName;                      
-                log << Log::LogLevel( Log::L_ERROR ) << "   reason: " << CalError::getLastErrorDescription() << endl;
+                log << Log::LogLevel( Log::L_ERROR ) << "   reason: " << CalError::getLastErrorDescription() << std::endl;
             } 
             else 
             {
@@ -243,7 +239,7 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
 
                 CalCoreMaterial* p_material = p_calCoreModel->getCoreMaterial( materialId );
                 // the texture file path is relative to the CRF data directory
-                for( vector<CalCoreMaterial::Map>::iterator beg = p_material->getVectorMap().begin(), 
+                for( std::vector< CalCoreMaterial::Map >::iterator beg = p_material->getVectorMap().begin(), 
                     end = p_material->getVectorMap().end(); beg != end; beg++ )
                 {
                     beg->strFilename = beg->strFilename;
@@ -258,52 +254,52 @@ bool EnPlayerAnimation::setupAnimation( const string& rootDir, const string& con
         {
             _IdAnimIdle = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimIdle < 0 )
-                log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << endl; 
+                log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << std::endl; 
         }
         else if( strKey == "animation_walk" )
         {
             _IdAnimWalk = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimWalk < 0 )
-                log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << endl; 
+                log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << std::endl; 
         }
         else if( strKey == "animation_run" )
         {
             _IdAnimRun = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimRun < 0 )
-                log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << endl; 
+                log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << std::endl; 
         }
         else if( strKey == "animation_turn" )
         {
             _IdAnimTurn = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimTurn < 0 )
-                log << Log::LogLevel( Log::L_ERROR ) << "***  line"  << line << ", problem loading animation: " << destFileName << endl; 
+                log << Log::LogLevel( Log::L_ERROR ) << "***  line"  << line << ", problem loading animation: " << destFileName << std::endl; 
         }
         else if( strKey == "animation_jump" )
         {
             _IdAnimJump = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimJump < 0 )
-                log << Log::LogLevel( Log::L_ERROR ) << "***  line"  << line << ", problem loading animation: " << destFileName << endl; 
+                log << Log::LogLevel( Log::L_ERROR ) << "***  line"  << line << ", problem loading animation: " << destFileName << std::endl; 
         }        else if( strKey == "animation_landing" )
         {
             _IdAnimLand = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimLand < 0 )
-                log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << endl; 
+                log << Log::LogLevel( Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << std::endl; 
         }
         else if( strKey == "animation" )
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "***  token 'animation' is not valid, line: " << line << endl;
-            log << Log::LogLevel( Log::L_ERROR ) << "***  use one of following animation tokens instead: " << endl;;
-            log << Log::LogLevel( Log::L_ERROR ) << "***    animation_idle" << endl;;
-            log << Log::LogLevel( Log::L_ERROR ) << "***    animation_walk" << endl;;
-            log << Log::LogLevel( Log::L_ERROR ) << "***    animation_run" << endl;;
-            log << Log::LogLevel( Log::L_ERROR ) << "***    animation_jump" << endl;;
-            log << Log::LogLevel( Log::L_ERROR ) << "***    animation_land" << endl;;
+            log << Log::LogLevel( Log::L_ERROR ) << "***  token 'animation' is not valid, line: " << line << std::endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "***  use one of following animation tokens instead: " << std::endl;;
+            log << Log::LogLevel( Log::L_ERROR ) << "***    animation_idle" << std::endl;;
+            log << Log::LogLevel( Log::L_ERROR ) << "***    animation_walk" << std::endl;;
+            log << Log::LogLevel( Log::L_ERROR ) << "***    animation_run" << std::endl;;
+            log << Log::LogLevel( Log::L_ERROR ) << "***    animation_jump" << std::endl;;
+            log << Log::LogLevel( Log::L_ERROR ) << "***    animation_land" << std::endl;;
         }
         else
         {
             // everything else triggers an error message
             log << Log::LogLevel( Log::L_ERROR ) << "***  invalid syntax in config file: '" << configfilename;
-            log << Log::LogLevel( Log::L_ERROR ) << "' at line: " << line << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "' at line: " << line << std::endl;
             return false;
         }
     }

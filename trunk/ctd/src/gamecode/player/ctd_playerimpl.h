@@ -184,7 +184,7 @@ class BasePlayerImplementation
         PlayerNetworking*                           _p_playerNetworking;
 
         //! Chat gui
-        PlayerChatGui*                             _p_chatGui;
+        PlayerChatGui*                              _p_chatGui;
 
         //! Movement direction
         osg::Vec3f                                  _moveDir;

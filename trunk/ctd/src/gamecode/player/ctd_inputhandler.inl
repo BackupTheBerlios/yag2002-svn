@@ -32,8 +32,9 @@
 template< class PlayerImplT >
 PlayerIHCharacterCameraCtrl< PlayerImplT >::PlayerIHCharacterCameraCtrl( PlayerImplT* p_player, EnPlayer* p_playerentity ) : 
 GenericInputHandler< PlayerImplT >( p_player ),
-_attributeContainer( p_player->getPlayerAttributes() ),
+_p_mouseData( NULL ),
 _p_playerEntity( p_playerentity ),
+_attributeContainer( p_player->getPlayerAttributes() ),
 _enabled( true ),
 _menuEnabled( true ),
 _right( false ),
@@ -109,7 +110,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 if ( s_toggleChatMode )
                         GuiManager::get()->showMousePointer( true );
                 else
-                    if ( getPlayerImpl()->_cameraMode == EnPlayer::Ego )
+                    if ( getPlayerImpl()->_cameraMode == BasePlayerImplementation::Ego )
                         GuiManager::get()->showMousePointer( true );
                     else
                         GuiManager::get()->showMousePointer( false );
@@ -196,7 +197,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             if ( key == _keyCodeMoveLeft )
                 _left = false;
 
-            if ( getPlayerImpl()->_cameraMode == EnPlayer::Ego )
+            if ( getPlayerImpl()->_cameraMode == BasePlayerImplementation::Ego )
                 getPlayerImpl()->_p_playerPhysics->stopMovement();
         }
     }
@@ -224,7 +225,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     {
         switch ( getPlayerImpl()->_cameraMode )
         {
-            case EnPlayer::Spheric:
+            case BasePlayerImplementation::Spheric:
             {
                 float& rotZ = getPlayerImpl()->_rotZ;
                 rotZ += getPlayerImpl()->_p_playerPhysics->getAngularForce();
@@ -236,7 +237,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             }
             break;
 
-            case EnPlayer::Ego:
+            case BasePlayerImplementation::Ego:
             {
                 osg::Vec3f side;
                 side = getPlayerImpl()->_moveDir ^ osg::Vec3f( 0.0f, 0.0f, 1.0f );
@@ -258,7 +259,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     {
         switch ( getPlayerImpl()->_cameraMode )
         {
-            case EnPlayer::Spheric:
+            case BasePlayerImplementation::Spheric:
             {
                 float& rotZ = getPlayerImpl()->_rotZ;
                 rotZ -= getPlayerImpl()->_p_playerPhysics->getAngularForce();
@@ -270,7 +271,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             }
             break;
             
-            case EnPlayer::Ego:
+            case BasePlayerImplementation::Ego:
             {
                 osg::Vec3f side;
                 side = getPlayerImpl()->_moveDir ^ osg::Vec3f( 0.0f, 0.0f, -1.0f );
@@ -303,7 +304,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                     s_states = Stopped;
                     getPlayerImpl()->_p_playerPhysics->stopMovement();
                 } 
-                else if ( getPlayerImpl()->_cameraMode == EnPlayer::Spheric )
+                else if ( getPlayerImpl()->_cameraMode == BasePlayerImplementation::Spheric )
                 {
                     if ( movefb )
                     {
@@ -346,7 +347,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     const SDL_Event& sdlevent = p_eventAdapter->getSDLEvent();
 
     // handle mouse wheel changes for camera offsetting in spheric mode
-    if ( getPlayerImpl()->_cameraMode == EnPlayer::Spheric )
+    if ( getPlayerImpl()->_cameraMode == BasePlayerImplementation::Spheric )
     {
         if ( sdlevent.button.type == SDL_MOUSEBUTTONDOWN )
         {
@@ -409,7 +410,7 @@ template< class PlayerImplT >
 void PlayerIHCharacterCameraCtrl< PlayerImplT >::updatePlayerPitchYaw( float& pitch, float& yaw )
 {
     // in ego mode the mouse controls the player rotation
-    if ( getPlayerImpl()->_cameraMode == EnPlayer::Ego )
+    if ( getPlayerImpl()->_cameraMode == BasePlayerImplementation::Ego )
     {
         // limit pitch
         if ( pitch > LIMIT_PITCH_ANGLE )

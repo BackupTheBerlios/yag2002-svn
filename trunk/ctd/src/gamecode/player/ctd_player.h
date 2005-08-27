@@ -93,13 +93,6 @@ class EnPlayer : public BaseEntity
         //! Register an entity for getting player deletion notification
         void                                        registerNotifyDeletion( BaseEntity* p_entity );
 
-        //! All possible camera modes the player can have.
-        enum CameraMode
-        {
-            Ego,
-            Spheric
-        };
-
         //! Entity attribute container
         class PlayerAttributes
         {

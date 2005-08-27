@@ -34,8 +34,8 @@
 #include <ctd_main.h>
 #include "ctd_playernetworking.h"
 #include "ctd_playerimpl.h"
-#include "ctd_playerimplClient.h"
-#include "ctd_playerimplServer.h"
+#include "ctd_playerimplclient.h"
+#include "ctd_playerimplserver.h"
 #include "ctd_playerphysics.h"
 #include "ctd_player.h"
 
@@ -44,14 +44,14 @@ using namespace std;
 CTD::Log* PlayerNetworking::s_chatLog = NULL;
 
 PlayerNetworking::PlayerNetworking( CTD::BasePlayerImplementation* p_playerImpl ) :
-_p_playerImpl( p_playerImpl ),
-_loadedPlayerEntity( NULL ),
-_remoteClient( false ),
-_cmdAnimFlags( 0 ),
 _positionX( 0 ),
 _positionY( 0 ),
 _positionZ( 0 ),
-_yaw( 0 )
+_yaw( 0 ),
+_cmdAnimFlags( 0 ),
+_remoteClient( false ),
+_p_playerImpl( p_playerImpl ),
+_loadedPlayerEntity( NULL )
 {   
     // this constructor can be called either by player entity or networking system (in client or server mode)
     //  when called by player entity then it means that we are a local client, otherwise we are a remote client
@@ -133,7 +133,8 @@ void PlayerNetworking::PostObjectCreate()
             _positionZ = pos.z();
             osg::Quat  rot = _loadedPlayerEntity->getPlayerImplementation()->getPlayerRotation();
             double angle;
-            rot.getRotate( angle, osg::Vec3f( 0.0f, 0.0f, 1.0f ) );
+            osg::Vec3d vec( 0.0, 0.0, 1.0 );
+            rot.getRotate( angle, vec );
             _yaw = angle;
             init._posX = _positionX;
             init._posY = _positionY;
