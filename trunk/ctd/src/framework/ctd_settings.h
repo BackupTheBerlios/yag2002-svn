@@ -230,7 +230,7 @@ class Settings
 };
 
 
-#include "ctd_settings_inl.h"
+#include "ctd_settings.inl"
 
 } // namespace CTD
 
