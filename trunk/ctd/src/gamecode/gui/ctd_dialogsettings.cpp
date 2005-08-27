@@ -44,29 +44,30 @@ namespace CTD
 #define PLAYER_CONFIG_GUI_LAYOUT    "gui/playerconfig.xml"
 
 DialogGameSettings::DialogGameSettings( EnMenu* p_menuEntity ) :
-_p_menuEntity( p_menuEntity ),
 _busy( false ),
 _p_clickSound( NULL ),
 _p_settingsDialog( NULL ),
 _p_playerName( NULL ),
+_p_serverName( NULL ),
+_p_serverIP( NULL ),
+_p_serverPort( NULL ),
 _p_mouseSensivity( NULL ),
+_mouseSensitivity( 1.0f ),
 _p_keyMoveForward( NULL ),
 _p_keyMoveBackward( NULL ),
 _p_keyMoveLeft( NULL ),
 _p_keyMoveRight( NULL ),
-_p_keyJump( NULL ),
 _p_keyCameraMode( NULL ),
-_mouseSensitivity( 1.0f ),
-_mouseInverted( false ),
+_p_keyJump( NULL ),
+_p_mouseInvert( NULL ),
 _p_keyChatMode( NULL ),
+_mouseInverted( false ),
 _p_keyKeybEnglish( NULL ),
 _p_keyKeybGerman( NULL ),
 _p_resolution( NULL ),
 _p_fullscreen( NULL ),
 _p_wndscreen( NULL ),
-_p_serverName( NULL ),
-_p_serverIP( NULL ),
-_p_serverPort( NULL )
+_p_menuEntity( p_menuEntity )
 {
 }
 
@@ -622,7 +623,7 @@ void DialogGameSettings::senseKeybinding( CEGUI::PushButton* p_btn )
 {    
     // disable dialog so only the key sensing will be active
     _p_settingsDialog->disable();
-    BtnInputHandler* inputHandler = new BtnInputHandler( p_btn, this );
+    new BtnInputHandler( p_btn, this );
 }
 
 void BtnInputHandler::updateBindings( const string newkey )

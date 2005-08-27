@@ -40,7 +40,7 @@
 #include "../visuals/ctd_fog.h"
 
 // used for starting server process
-static HANDLE _serverProcHandle = NULL;
+static SPAWN_PROC_ID _serverProcHandle = static_cast< SPAWN_PROC_ID >( 0 );
 
 using namespace std;
 
@@ -137,17 +137,6 @@ class MenuInputHandler : public GenericInputHandler< EnMenu >
 CTD_IMPL_ENTITYFACTORY_AUTO( MenuEntityFactory );
 
 EnMenu::EnMenu() :
-_p_inputHandler( NULL ),
-_p_menuWindow( NULL ),
-_p_btnStartWT( NULL ),
-_p_btnStartJoin( NULL ),
-_p_btnStartServer( NULL ),
-_p_btnReturn( NULL ),
-_p_btnLeave( NULL ),
-_p_loadingWindow( NULL ),
-_p_loadingLevelPic( NULL ),
-_p_loadingOverly( NULL ),
-_p_cameraControl( NULL ),
 _menuConfig( "gui/menu.xml" ),
 _settingsDialogConfig( "gui/settings.xml" ),
 _levelSelectDialogConfig( "gui/levelselect.xml" ),
@@ -159,19 +148,31 @@ _introductionSound( "gui/sound/intro.wav" ),
 _backgroundSound( "gui/sound/background.wav" ),
 _menuSceneFile( MENU_SCENE ),
 _menuCameraPathFile( MENU_CAMERAPATH ),
+
 _menuState( None ),
 _menuSoundState( SoundStopped ),
-_soundFadingCnt( 0.0f ),
 _levelSelectionState( ForStandalone ),
-_levelLoaded( false ),
-_p_clientLevelFiles( NULL ),
+_p_cameraControl( NULL ),
+_p_skyBox( NULL ),
 _p_menuFog( NULL ),
 _p_sceneFog( NULL ),
-_p_skyBox( NULL ),
 _p_clickSound( NULL ),
 _p_hoverSound( NULL ),
 _p_introSound( NULL ),
-_p_backgrdSound( NULL )
+_p_backgrdSound( NULL ),
+_p_menuWindow( NULL ),
+_p_loadingWindow( NULL ),
+_p_btnStartJoin( NULL ),
+_p_btnStartServer( NULL ),
+_p_btnStartWT( NULL ),
+_p_btnReturn( NULL ),
+_p_btnLeave( NULL ),
+_p_loadingOverly( NULL ),
+_p_loadingLevelPic( NULL ),
+_p_clientLevelFiles( NULL ),
+_p_inputHandler( NULL ),
+_soundFadingCnt( 0.0f ),
+_levelLoaded( false )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "menuConfig"                , _menuConfig               );
@@ -596,10 +597,7 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
 
                 explicit                MsgOkClick( EnMenu* p_menu ) : _p_menu( p_menu ) {}
 
-                virtual                 ~MsgOkClick() 
-                {
-                    int i = 0;
-                }
+                virtual                 ~MsgOkClick() {}
 
                 void                    onClicked( unsigned int btnId )
                                         {

@@ -43,12 +43,13 @@ namespace CTD
 #define INTRO_FADEIN_TIME       3.0f
 
 IntroControl::IntroControl() :
+_introState( None ),
 _p_clickSound( NULL ),
+_p_introSound( NULL ),
 _p_wndIntro( NULL ),
 _p_introImage( NULL ),
 _p_imageSet( NULL ),
-_introTimer( 0 ),
-_introState( None )
+_introTimer( 0 )
 {
 }
 

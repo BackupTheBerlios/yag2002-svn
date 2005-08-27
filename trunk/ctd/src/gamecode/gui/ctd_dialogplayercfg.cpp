@@ -105,9 +105,8 @@ _p_settingsDialog( p_menuEntity )
                 // add new preview to map
                 _players.insert( make_pair( playertype, p_image ) );
             }
-            catch ( const CEGUI::Exception& e )
+            catch ( const CEGUI::Exception& )
             {
-                e; // suppress warning for unused e
                 CEGUI::Image* p_null = NULL;
                 // empty image identifies missing preview pic
                 _players.insert( make_pair( playertype, p_null ) );

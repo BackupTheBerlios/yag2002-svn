@@ -195,13 +195,13 @@ class DialogGameSettings
 
         CEGUI::Combobox*                            _p_resolution;
 
-        CEGUI::RadioButton*                        _p_fullscreen;
+        CEGUI::RadioButton*                         _p_fullscreen;
 
-        CEGUI::RadioButton*                        _p_wndscreen;
+        CEGUI::RadioButton*                         _p_wndscreen;
 
-        EnMenu*                                    _p_menuEntity;
+        EnMenu*                                     _p_menuEntity;
 
-        std::auto_ptr< DialogPlayerConfig >        _playerConfigDialog;
+        std::auto_ptr< DialogPlayerConfig >         _playerConfigDialog;
 
         //! Lookup for current key bindings, it is used for detecting an overriding key binding
         std::vector< std::pair< std::string, CEGUI::PushButton* > > _keyBindingLookup;
