@@ -82,7 +82,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     bool mouseButtonPush    = ( eventType == osgGA::GUIEventAdapter::PUSH    );
     bool mouseButtonRelease = ( eventType == osgGA::GUIEventAdapter::RELEASE );
     
-    unsigned int key;
+    unsigned int key = 0;
 
     if ( keyDown || keyUp )
         key = kcode;
