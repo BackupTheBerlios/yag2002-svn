@@ -9,11 +9,11 @@ defaultConfig=1
 // compiler 
 workingDirectory=
 arguments=
-intermediateFilesDirectory=Debug
-outputFilesDirectory=Debug
+intermediateFilesDirectory=.|obj|framework|debug
+outputFilesDirectory=.|obj|framework|debug
 compilerPreprocessor=LINUX
 extraCompilerOptions=
-compilerIncludeDirectory=..|..|src|framework;|usr|local|include;|usr|local|include|CEGUI;|usr|include|SDL
+compilerIncludeDirectory=..|..|src|framework;|usr|local|include;|usr|local|include|tinyxml;|usr|local|include|CEGUI;|usr|include|SDL
 noWarning=0
 defaultWarning=0
 allWarning=1
@@ -28,7 +28,7 @@ optimizeLevel=0
 
 // linker
 libraryPath=
-outputFilename=Debug|libframework.so
+outputFilename=lib|libframework-debug.so
 libraries=
 extraLinkerOptions=
 ignoreStartupFile=0
@@ -47,11 +47,11 @@ extraResourceOptions=
 // compiler 
 workingDirectory=
 arguments=
-intermediateFilesDirectory=Release
-outputFilesDirectory=Release
+intermediateFilesDirectory=.|obj|framework|release
+outputFilesDirectory=.|obj|framework|release
 compilerPreprocessor=LINUX
 extraCompilerOptions=
-compilerIncludeDirectory=..|..|src|framework;|usr|local|include;|usr|local|include|CEGUI;|usr|include|SDL
+compilerIncludeDirectory=..|..|src|framework;|usr|local|include;|usr|local|include|tinyxml;|usr|local|include|CEGUI;|usr|include|SDL
 noWarning=0
 defaultWarning=0
 allWarning=1
@@ -66,7 +66,7 @@ optimizeLevel=2
 
 // linker
 libraryPath=
-outputFilename=Release|libframework.so
+outputFilename=lib|libframework.so
 libraries=
 extraLinkerOptions=
 ignoreStartupFile=0
@@ -96,12 +96,11 @@ extraResourceOptions=
 12=..|..|src|framework|ctd_keymap.cpp
 13=..|..|src|framework|ctd_levelmanager.cpp
 14=..|..|src|framework|ctd_log.cpp
-15=..|..|src|framework|ctd_main.cpp
-16=..|..|src|framework|ctd_network.cpp
-17=..|..|src|framework|ctd_physics.cpp
-18=..|..|src|framework|ctd_physics_helpers.cpp
-19=..|..|src|framework|ctd_settings.cpp
-20=..|..|src|framework|ctd_utils.cpp
+15=..|..|src|framework|ctd_network.cpp
+16=..|..|src|framework|ctd_physics.cpp
+17=..|..|src|framework|ctd_physics_helpers.cpp
+18=..|..|src|framework|ctd_settings.cpp
+19=..|..|src|framework|ctd_utils.cpp
 [Header]
 1=..|..|src|framework|ctd_application.h
 2=..|..|src|framework|ctd_attributemanager.h
@@ -123,13 +122,17 @@ extraResourceOptions=
 18=..|..|src|framework|ctd_physics.h
 19=..|..|src|framework|ctd_physics_helpers.h
 20=..|..|src|framework|ctd_settings.h
-21=..|..|src|framework|ctd_settings_inl.h
-22=..|..|src|framework|ctd_singleton.h
-23=..|..|src|framework|ctd_utils.h
+21=..|..|src|framework|ctd_singleton.h
+22=..|..|src|framework|ctd_utils.h
+23=..|..|src|framework|ctd_attributemanager.inl
+24=..|..|src|framework|ctd_baseentity.inl
+25=..|..|src|framework|ctd_settings.inl
+26=..|..|src|framework|ctd_singleton.inl
 [Resource]
 [Other]
 [History]
-..|..|src|framework|ctd_utils.cpp,12072
-..|..|src|framework|ctd_utils.h,11113
-..|..|src|framework|ctd_application.cpp,14275
-..|..|src|framework|ctd_network.h,6384
+..|..|src|framework|ctd_network.h,1222
+..|..|src|framework|ctd_attributemanager.cpp,644
+..|..|src|framework|ctd_settings_inl.h,720
+..|..|src|framework|ctd_network.cpp,853
+..|..|src|framework|ctd_utils.cpp,11654
