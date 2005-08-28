@@ -25,7 +25,7 @@
  # this code is basing on Matt Pietrek's article in 
  # Microsoft Systems Journal, April 1997 ( MSJEXHND.CPP / .H )
  #
- #   date of creation:  06/23/2003
+ #   date of creation:  06/23/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net

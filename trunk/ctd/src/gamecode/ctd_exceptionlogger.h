@@ -25,7 +25,7 @@
  # this code is basing on Matt Pietrek's article in 
  # Microsoft Systems Journal, April 1997 ( MSJEXHND.CPP / .H )
  #
- #   date of creation:  06/23/2003
+ #   date of creation:  06/23/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
@@ -60,7 +60,6 @@ class MSJExceptionHandler
         // where report info is extracted and generated 
         static void                             generateExceptionReport( PEXCEPTION_POINTERS p_exceptionInfo );
      
-        // Helper functions
         static LPTSTR                           getExceptionString( DWORD code );
 
         static BOOL                             getLogicalAddress( PVOID p_addr, PTSTR p_module, DWORD len, DWORD& section, DWORD& offset );
@@ -69,7 +68,6 @@ class MSJExceptionHandler
 
         static int __cdecl                      _tprintf( const TCHAR * format, ... );
      
-        // Variables used by the class
         static TCHAR                            _p_logFileName[ MAX_PATH ];
 
         static LPTOP_LEVEL_EXCEPTION_FILTER     _p_previousFilter;
