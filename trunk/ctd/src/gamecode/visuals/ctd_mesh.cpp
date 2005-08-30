@@ -64,11 +64,28 @@ void EnMesh::initialize()
     addToTransformationNode( _mesh.get() );
     setPosition( _position );
     osg::Quat   rot( 
-                     _rotation.x(), osg::Vec3f( 1.0f, 0.0f, 0.0f ),
-                     _rotation.y(), osg::Vec3f( 0.0f, 1.0f, 0.0f ),
-                     _rotation.z(), osg::Vec3f( 0.0f, 0.0f, 1.0f )
+                     osg::DegreesToRadians( _rotation.x() ), osg::Vec3f( 1.0f, 0.0f, 0.0f ),
+                     osg::DegreesToRadians( _rotation.y() ), osg::Vec3f( 0.0f, 1.0f, 0.0f ),
+                     osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0.0f, 0.0f, 1.0f )
                     );
     setRotation( rot );
+}
+
+void EnMesh::enable( bool en )
+{
+    if ( _enable == en )
+        return;
+
+    if ( en )
+    {
+        addToTransformationNode( _mesh.get() );
+    }
+    else
+    {
+        removeFromTransformationNode( _mesh.get() );
+    }
+
+    _enable = en;
 }
 
 } // namespace CTD
