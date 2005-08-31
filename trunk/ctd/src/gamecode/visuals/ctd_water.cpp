@@ -59,14 +59,12 @@ static const char glsl_vp[] =
     "                                                                                           \n"
     "varying vec3 vTexCoord;                                                                    \n"
     "varying vec3 vViewVec;                                                                     \n"
-    "varying vec3 vNormal;                                                                      \n"
     "                                                                                           \n"
     "void main(void)                                                                            \n"
     "{                                                                                          \n"
     "   vec4 Position = gl_Vertex.xyzw;                                                         \n"
     "   vTexCoord     = Position.xyz * scale.xyz;                                               \n"
     "   vViewVec      = Position.xyz - viewPosition.xyz;                                        \n"
-    "   vNormal       = gl_Normal;                                                              \n"
     "   gl_Position   = gl_ModelViewProjectionMatrix * Position;                                \n"
     "}                                                                                          \n"
 ;
@@ -83,36 +81,24 @@ static const char glsl_fp[] =
     "uniform float deltaWave;                                                                   \n"
     "uniform vec4  scale;                                                                       \n"
     "                                                                                           \n"
-    "                                                                                           \n"
     "varying vec3 vTexCoord;                                                                    \n"
     "varying vec3 vViewVec;                                                                     \n"
-    "varying vec3 vNormal;                                                                      \n"
     "                                                                                           \n"
     "void main(void)                                                                            \n"
     "{                                                                                          \n"
     "   vec3 tcoord = vTexCoord;                                                                \n"
-    "   tcoord.x += deltaWave;                                                                  \n"
-    "   tcoord.z += deltaNoise;                                                                 \n"
+    "   tcoord.x += deltaNoise;                                                                 \n"
+    "   tcoord.y += deltaNoise;                                                                 \n"
+    "   tcoord.z += deltaWave;                                                                  \n"
     "                                                                                           \n"
     "   vec4 noisy = texture3D(samplerNoise, tcoord);                                           \n"
-    "                                                                                           \n"
-    "   // Signed noise                                                                         \n"
-    "   vec3 bump = 2.0 * noisy.xyz - 1.0;                                                      \n"
-    "   bump.xy *= 0.15;                                                                        \n"
-    "                                                                                           \n"
-    "   // Make sure the normal always points upwards                                           \n"
-    "   bump.z = 0.8 * abs(bump.z) + 0.2;                                                       \n"
-    "                                                                                           \n"
-    "   // Offset the surface normal with the bump                                              \n"
-    "   bump = normalize(vNormal + bump);                                                       \n"
-    "                                                                                           \n"
-    "   // Find the reflection vector                                                           \n"
+    "   vec3 bump = vec3(0, 0, 2.0 * noisy.z + 1.0);                                            \n"
+    "   // find the reflection vector                                                           \n"
     "   vec3 reflVec = reflect(vViewVec, bump);                                                 \n"
     "   vec4 refl = textureCube(samplerSkyBox, reflVec.yzx);                                    \n"
     "                                                                                           \n"
+    "   // interpolate between the water color and reflection                                   \n"
     "   float lrp = 1.0 - dot(-normalize(vViewVec), bump);                                      \n"
-    "                                                                                           \n"
-    "   // Interpolate between the water color and reflection                                   \n"
     "   vec4 col = mix(waterColor, refl, clamp(fadeBias + pow(lrp, fadeExp),0.0, 1.0));         \n"
     "   col.w = transparency;                                                                   \n"
     "   gl_FragColor = col;                                                                     \n"
@@ -199,12 +185,12 @@ CTD_IMPL_ENTITYFACTORY_AUTO( WaterEntityFactory );
 
 // Implementation of water entity
 EnWater::EnWater() :
-_sizeX( 1000.0f ),
-_sizeY( 1000.0f ),
 _fadeBias( 0.3f ),
 _noiseSpeed( 0.10f ),
 _waveSpeed( 0.14f ),
 _fadeExp( 6.0f ),
+_sizeX( 1000.0f ),
+_sizeY( 1000.0f ),
 _scale( osg::Vec3f( 1.0f, 1.0f, 1.0f ) ),
 _waterColor( osg::Vec3f( 0.2f, 0.25f, 0.6f ) ),
 _transparency( 0.5f )
@@ -397,7 +383,7 @@ osg::Node* EnWater::setupWater()
         p_noiseTexture->setWrap( osg::Texture3D::WRAP_S, osg::Texture3D::REPEAT );
         p_noiseTexture->setWrap( osg::Texture3D::WRAP_T, osg::Texture3D::REPEAT );
         p_noiseTexture->setWrap( osg::Texture3D::WRAP_R, osg::Texture3D::REPEAT );
-        p_noiseTexture->setImage( make3DNoiseImage( 64 ) );
+        p_noiseTexture->setImage( make3DNoiseImage( 32 ) );
 
         p_stateSet->setTextureAttribute( LOCATION_NOISE_SAMPLER, p_noiseTexture );
         p_stateSet->addUniform( new osg::Uniform( "samplerNoise", LOCATION_NOISE_SAMPLER ) );
@@ -419,30 +405,15 @@ osg::Node* EnWater::setupWater()
         p_stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
         p_stateSet->setMode( GL_CULL_FACE, osg::StateAttribute::OFF );
 
-        // diable depth test
+        // disable depth test
         p_stateSet->setMode( GL_DEPTH, osg::StateAttribute::OFF );
 
         // set up transparency
         p_stateSet->setMode( GL_BLEND, osg::StateAttribute::ON );      
         p_stateSet->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
+        // make sure that the water is rendered at first than all other transparent primitives
+        p_stateSet->setBinNumber( 0 ); 
 
-        osg::TexEnvCombine* p_te0 = new osg::TexEnvCombine;    
-        p_te0->setCombine_RGB( osg::TexEnvCombine::REPLACE );
-        p_te0->setSource0_RGB( osg::TexEnvCombine::TEXTURE0 );
-        p_te0->setOperand0_RGB( osg::TexEnvCombine::SRC_COLOR );
-
-        osg::TexEnvCombine *p_te1 = new osg::TexEnvCombine;    
-        p_te1->setCombine_RGB( osg::TexEnvCombine::INTERPOLATE );
-        p_te1->setSource0_RGB( osg::TexEnvCombine::TEXTURE1 );
-        p_te1->setOperand0_RGB( osg::TexEnvCombine::SRC_COLOR );
-        p_te1->setSource1_RGB( osg::TexEnvCombine::PREVIOUS );
-        p_te1->setOperand1_RGB( osg::TexEnvCombine::SRC_COLOR );
-        p_te1->setSource2_RGB( osg::TexEnvCombine::PRIMARY_COLOR );
-        p_te1->setOperand2_RGB( osg::TexEnvCombine::SRC_COLOR );
-
-        p_stateSet->setTextureAttributeAndModes( LOCATION_NOISE_SAMPLER, p_te0, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
-        p_stateSet->setTextureAttributeAndModes( LOCATION_CUBEMAP_SAMPLER, p_te1, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
-    
         // append state set to geode
         p_geode->setStateSet( p_stateSet );
     }
