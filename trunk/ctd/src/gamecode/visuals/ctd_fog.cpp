@@ -45,7 +45,8 @@ _density( 0.3f ),
 _start( 300.0f ),
 _end( 1000.0f ),
 _fogColor( osg::Vec3f( 0.2f, 0.2f, 0.2f ) ),
-_isPersistent( false )
+_isPersistent( false ),
+_enable( true )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "persistence", _isPersistent    );
@@ -53,6 +54,7 @@ _isPersistent( false )
     getAttributeManager().addAttribute( "start"      , _start           );
     getAttributeManager().addAttribute( "end"        , _end             );
     getAttributeManager().addAttribute( "color"      , _fogColor        );
+    getAttributeManager().addAttribute( "enable"     , _enable          );
 
     _instCount++;
 }
@@ -79,6 +81,19 @@ void EnFog::handleNotification( const EntityNotification& notification )
 
             if ( _isPersistent )
                 EntityManager::get()->deleteEntity( this );
+            break;
+
+        case CTD_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
+            
+            if ( _enable )
+            {
+                enable( false );
+                enable ( true );
+            }
+            else
+            {
+                enable( false );
+            }
             break;
 
         default:
@@ -109,6 +124,9 @@ void EnFog::initialize()
 
 void EnFog::enable( bool en )
 {
+    if ( _enable == en )
+        return;
+
     if ( en )
     {
         osg::StateSet* p_stateset = Application::get()->getSceneView()->getGlobalStateSet();
@@ -125,6 +143,8 @@ void EnFog::enable( bool en )
         p_stateset->setAttributeAndModes( _p_fog, osg::StateAttribute::OFF );
         p_stateset->setMode( GL_FOG, osg::StateAttribute::OFF );
     }
+
+    _enable = en;
 }
 
 } // namespace CTD

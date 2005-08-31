@@ -78,6 +78,8 @@ class EnFog :  public BaseEntity
 
         bool                                        _isPersistent;
 
+        bool                                        _enable;
+
         static unsigned int                         _instCount;
 };
 
