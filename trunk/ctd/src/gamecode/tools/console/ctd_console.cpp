@@ -348,20 +348,22 @@ void EnConsole::cmdHistory( bool prev )
     if ( !_cmdHistory.size() )
         return;
 
+    CEGUI::String text( _cmdHistory[ _cmdHistoryIndex ] );
+    _p_inputWindow->setText( text );
+    _p_inputWindow->setCaratIndex( text.length() );
+
+    // update cmd index
     if ( prev )
         _cmdHistoryIndex--;
     else
         _cmdHistoryIndex++;
 
-    // clamp
+    // clamp index
     if ( int( _cmdHistoryIndex ) < 0 )
         _cmdHistoryIndex = 0;
     else if ( _cmdHistoryIndex > ( _cmdHistory.size() - 1 ) )
         _cmdHistoryIndex = _cmdHistory.size() - 1;
 
-    CEGUI::String text( _cmdHistory[ _cmdHistoryIndex ] );
-    _p_inputWindow->setText( text );
-    _p_inputWindow->setCaratIndex( text.length() );
 }
 
 void EnConsole::autoCompleteCmd( const std::string& cmd )
