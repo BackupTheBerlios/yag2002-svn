@@ -631,12 +631,6 @@
 							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdshutdown.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdstartserver.cpp">
-						</File>
-						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdstartserver.h">
-						</File>
-						<File
 							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdtime.cpp">
 						</File>
 						<File
