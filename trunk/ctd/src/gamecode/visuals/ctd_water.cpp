@@ -57,8 +57,9 @@ static const char glsl_vp[] =
     "uniform vec4 viewPosition;                                                                 \n"
     "uniform vec4 scale;                                                                        \n"
     "                                                                                           \n"
-    "varying vec3 vTexCoord;                                                                    \n"
-    "varying vec3 vViewVec;                                                                     \n"
+    "varying vec3  vTexCoord;                                                                   \n"
+    "varying vec3  vViewVec;                                                                    \n"
+    "varying float fog;                                                                         \n"
     "                                                                                           \n"
     "void main(void)                                                                            \n"
     "{                                                                                          \n"
@@ -66,6 +67,13 @@ static const char glsl_vp[] =
     "   vTexCoord     = Position.xyz * scale.xyz;                                               \n"
     "   vViewVec      = Position.xyz - viewPosition.xyz;                                        \n"
     "   gl_Position   = gl_ModelViewProjectionMatrix * Position;                                \n"
+
+    "   // depth value for fog computation                                                      \n"
+    "   gl_FogFragCoord = length(vViewVec);                                                     \n"
+    "   // linear fog computation                                                               \n"
+    "   float fogScale = 1.0 / (gl_Fog.end - gl_Fog.start);                                     \n"
+    "   fog = (gl_Fog.end - gl_FogFragCoord) * fogScale;                                        \n"
+    "   fog = clamp(fog, 0.0, 1.0);                                                             \n"
     "}                                                                                          \n"
 ;
 
@@ -81,8 +89,9 @@ static const char glsl_fp[] =
     "uniform float deltaWave;                                                                   \n"
     "uniform vec4  scale;                                                                       \n"
     "                                                                                           \n"
-    "varying vec3 vTexCoord;                                                                    \n"
-    "varying vec3 vViewVec;                                                                     \n"
+    "varying vec3  vTexCoord;                                                                   \n"
+    "varying vec3  vViewVec;                                                                    \n"
+    "varying float fog;                                                                         \n"
     "                                                                                           \n"
     "void main(void)                                                                            \n"
     "{                                                                                          \n"
@@ -100,10 +109,42 @@ static const char glsl_fp[] =
     "   // interpolate between the water color and reflection                                   \n"
     "   float lrp = 1.0 - dot(-normalize(vViewVec), bump);                                      \n"
     "   vec4 col = mix(waterColor, refl, clamp(fadeBias + pow(lrp, fadeExp),0.0, 1.0));         \n"
+    "                                                                                           \n"
+    "   // linear fog \n"
+    "   //float fog = (gl_Fog.end - gl_FogFragCoord) * gl_Fog.scale; \n"   
+    "   col.xyz = mix(gl_Fog.color.xyz, col.xyz, fog);  \n"
     "   col.w = transparency;                                                                   \n"
     "   gl_FragColor = col;                                                                     \n"
     "}                                                                                          \n"
 ;
+/*
+struct gl_FogParameters
+{
+ vec4 color;
+ float density;
+ float start;
+ float end;
+ float scale;
+};
+gl_FogParameters gl_Fog;
+
+From the Orange Book:
+
+Linear Fog
+fog = (gl_Fog.end - gl_FogFragCoord)) * gl_Fog.scale;
+
+gl_Fog.scale is a precomputed 1.0 / (gl_Fog.end - gl_Fog.start).
+
+Exponential Fog
+const float LOG2E = 1.442695; // = 1 / log(2)
+fog = exp2(-gl_Fog.density * gl_FogFragCoord * LOG2E);
+
+Exponential Fog (Squared)
+fog = exp2(-gl_Fog.density * gl_Fog.density * gl_FogFragCoord * gl_FogFragCoord * LOG2E);
+
+The LOG2E constant is used to turn the exp base(2) into exp base(e). Also, if you're going to use GL_EXP2 fog, it recommends precomputing (-gl_Fog.density * gl_Fog.density * LOG2E) and passing it in as a uniform.
+
+*/
 
 // callback for water's wave uniform deltaWave
 class DeltaWaveUpdateCallback: public osg::Uniform::Callback
@@ -185,17 +226,18 @@ CTD_IMPL_ENTITYFACTORY_AUTO( WaterEntityFactory );
 
 // Implementation of water entity
 EnWater::EnWater() :
+_sizeX( 1000.0f ),
+_sizeY( 1000.0f ),
 _fadeBias( 0.3f ),
 _noiseSpeed( 0.10f ),
 _waveSpeed( 0.14f ),
 _fadeExp( 6.0f ),
-_sizeX( 1000.0f ),
-_sizeY( 1000.0f ),
 _scale( osg::Vec3f( 1.0f, 1.0f, 1.0f ) ),
 _waterColor( osg::Vec3f( 0.2f, 0.25f, 0.6f ) ),
 _transparency( 0.5f )
 {
     // register entity attributes
+    getAttributeManager().addAttribute( "meshFile"              , _meshFile              );
     getAttributeManager().addAttribute( "position"              , _position              );
     getAttributeManager().addAttribute( "sizeX"                 , _sizeX                 );
     getAttributeManager().addAttribute( "sizeY"                 , _sizeY                 );
@@ -307,11 +349,26 @@ osg::Image* make3DNoiseImage(int texSize)
 
 osg::Node* EnWater::setupWater()
 {    
-    osg::Geode* p_geode = new osg::Geode();
-    p_geode->setCullingActive( false );
+    osg::Node* p_node = NULL;
 
-    // create water plane
+    // check if a water mesh is given, if so load it and place it into level
+    if ( _meshFile.length() )
     {
+        p_node = LevelManager::get()->loadMesh( _meshFile );
+        if ( !p_node )
+        {
+            log << Log::LogLevel( Log::L_WARNING ) << "could not load water mesh file: " << _meshFile << ", in '" << getInstanceName() << "'" << std::endl;
+            log << Log::LogLevel( Log::L_WARNING ) << " creating a simple plane for water mesh." << std::endl;
+        }
+
+        setPosition( _position );
+    }
+
+    // create a simple quadratic water plane if no mesh given
+    if ( !p_node )
+    {
+        osg::Geode* p_geode = new osg::Geode;
+
         osg::Vec3f coords[] =
         {
             osg::Vec3( _position.x() - _sizeX * 0.5f, _position.y() + _sizeY * 0.5f, _position.z() ),
@@ -336,6 +393,7 @@ osg::Node* EnWater::setupWater()
         p_polyGeom->addPrimitiveSet( p_drawarray );
 
         p_geode->addDrawable( p_polyGeom );
+        p_node = p_geode;
     }
 
     // setup the shaders and uniforms
@@ -415,12 +473,12 @@ osg::Node* EnWater::setupWater()
         p_stateSet->setBinNumber( 0 ); 
 
         // append state set to geode
-        p_geode->setStateSet( p_stateSet );
+        p_node->setStateSet( p_stateSet );
     }
 
     osg::Group* p_group = new osg::Group;
     p_group->setCullingActive( false );
-    p_group->addChild( p_geode );
+    p_group->addChild( p_node );
 
     return p_group;
 }

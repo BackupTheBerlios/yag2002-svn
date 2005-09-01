@@ -66,6 +66,8 @@ class EnWater :  public BaseEntity
         // Entity attribbutes
         //--------------------------------------------------------//
 
+        std::string                                 _meshFile;
+
         osg::Vec3f                                  _position;
 
         float                                       _sizeX;
