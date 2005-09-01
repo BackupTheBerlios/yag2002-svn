@@ -128,7 +128,7 @@ bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
         Application::get()->stop();
 
     // toggle info dialog rendering
-    if ( ( key == SDLK_SPACE ) && ( eventType == osgGA::GUIEventAdapter::KEYDOWN ) )
+    if ( ( key == SDLK_F9 ) && ( eventType == osgGA::GUIEventAdapter::KEYDOWN ) )
     {
         _infoEnabled = !_infoEnabled;
         getUserObject()->enableInfoWindow( _infoEnabled );
