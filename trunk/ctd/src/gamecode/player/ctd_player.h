@@ -93,6 +93,9 @@ class EnPlayer : public BaseEntity
         //! Register an entity for getting player deletion notification
         void                                        registerNotifyDeletion( BaseEntity* p_entity );
 
+        //! Get last update time
+        inline float                                getDeltaTime() const;
+
         //! Entity attribute container
         class PlayerAttributes
         {
@@ -163,6 +166,9 @@ class EnPlayer : public BaseEntity
 
         //! List of registered entities for getting deletion notification
         std::vector< BaseEntity* >                  _deletionNotifications;
+
+        //! Stored deltaTime needed by some player components
+        float                                       _deltaTime;
 };
 
 //! Entity type definition used for type registry
@@ -214,6 +220,11 @@ inline void EnPlayer::setPlayerImplementation( BasePlayerImplementation* p_impl 
 inline BasePlayerImplementation* EnPlayer::getPlayerImplementation()
 {
     return _p_playerImpl;
+}
+
+inline float EnPlayer::getDeltaTime() const
+{
+    return _deltaTime;
 }
 
 } // namespace CTD

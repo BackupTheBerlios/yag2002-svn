@@ -82,7 +82,8 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     bool mouseButtonPush    = ( eventType == osgGA::GUIEventAdapter::PUSH    );
     bool mouseButtonRelease = ( eventType == osgGA::GUIEventAdapter::RELEASE );
     
-    unsigned int key = 0;
+    float deltaTime         = getPlayerEntity()->getDeltaTime();
+    unsigned int key        = 0;
 
     if ( keyDown || keyUp )
         key = kcode;
@@ -207,16 +208,14 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
 
     if ( _moveForward )
     {
-        getPlayerImpl()->_p_playerPhysics->setForce( getPlayerImpl()->_moveDir._v[ 0 ], getPlayerImpl()->_moveDir._v[ 1 ] );
-
+        getPlayerImpl()->_p_playerPhysics->setDirection( getPlayerImpl()->_moveDir._v[ 0 ], getPlayerImpl()->_moveDir._v[ 1 ] );
         if ( !getPlayerImpl()->_p_playerPhysics->isJumping() )
             getPlayerImpl()->_p_playerAnimation->animWalk();
     } 
     
     if ( _moveBackward )
     {
-        getPlayerImpl()->_p_playerPhysics->setForce( -getPlayerImpl()->_moveDir._v[ 0 ], -getPlayerImpl()->_moveDir._v[ 1 ] );
-
+        getPlayerImpl()->_p_playerPhysics->setDirection( -getPlayerImpl()->_moveDir._v[ 0 ], -getPlayerImpl()->_moveDir._v[ 1 ] );
         if ( !getPlayerImpl()->_p_playerPhysics->isJumping() )
             getPlayerImpl()->_p_playerAnimation->animWalk();
     }
@@ -228,8 +227,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             case BasePlayerImplementation::Spheric:
             {
                 float& rotZ = getPlayerImpl()->_rotZ;
-                rotZ += getPlayerImpl()->_p_playerPhysics->getAngularForce();
-
+                rotZ += getPlayerImpl()->_p_playerPhysics->getAngularSpeed() * deltaTime;
                 getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
                 getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
 
@@ -242,9 +240,9 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 osg::Vec3f side;
                 side = getPlayerImpl()->_moveDir ^ osg::Vec3f( 0.0f, 0.0f, 1.0f );
                 if ( _moveForward || _moveBackward )
-                    getPlayerImpl()->_p_playerPhysics->addForce( side._v[ 0 ], side._v[ 1 ] );
+                    getPlayerImpl()->_p_playerPhysics->addDirection( side._v[ 0 ], side._v[ 1 ] );
                 else
-                    getPlayerImpl()->_p_playerPhysics->setForce( side._v[ 0 ], side._v[ 1 ] );
+                    getPlayerImpl()->_p_playerPhysics->setDirection( side._v[ 0 ], side._v[ 1 ] );
 
                 getPlayerImpl()->_p_playerAnimation->animTurn();
             }
@@ -262,8 +260,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             case BasePlayerImplementation::Spheric:
             {
                 float& rotZ = getPlayerImpl()->_rotZ;
-                rotZ -= getPlayerImpl()->_p_playerPhysics->getAngularForce();
-
+                rotZ -= getPlayerImpl()->_p_playerPhysics->getAngularSpeed() * deltaTime;
                 getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
                 getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
 
@@ -276,9 +273,9 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 osg::Vec3f side;
                 side = getPlayerImpl()->_moveDir ^ osg::Vec3f( 0.0f, 0.0f, -1.0f );
                 if ( _moveForward || _moveBackward )
-                    getPlayerImpl()->_p_playerPhysics->addForce( side._v[ 0 ], side._v[ 1 ] );
+                    getPlayerImpl()->_p_playerPhysics->addDirection( side._v[ 0 ], side._v[ 1 ] );
                 else
-                    getPlayerImpl()->_p_playerPhysics->setForce( side._v[ 0 ], side._v[ 1 ] );
+                    getPlayerImpl()->_p_playerPhysics->setDirection( side._v[ 0 ], side._v[ 1 ] );
 
                 getPlayerImpl()->_p_playerAnimation->animTurn();
             }

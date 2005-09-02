@@ -130,7 +130,7 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
     }
     s_colStruct->_p_otherEntity = NULL;
     s_colStruct->_p_physics     = p_phys;
-
+/*
     // play appropriate sound only if we are moving
     if ( p_phys->isMoving() && p_phys->getPlayer()->getPlayerSound() && ( p_phys->getSoundTimer() <= 0.0f ) )
     {
@@ -163,7 +163,7 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
                 
         }
     }
-
+*/
     return p_phys->collideWithLevel( p_material, p_contact );
 }
 
@@ -262,12 +262,6 @@ int EnPlayerPhysics::collideWithOtherEntities( const NewtonMaterial* p_material,
 
 void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
 {
-    //! TODO: change the way moving the player is calculated: use desired speed and direction to control the movement
-    // pseudo code:
-    //desiredVeloc = desiredSpeed * desiredDirection
-    //deltaV = desiredVeloc - currentVeloc
-    //force = mass * deltaV / timestepForAcceleration
-
     float mass;
     float Ixx;
     float Iyy;
@@ -284,19 +278,21 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
 
     NewtonBodyGetMassMatrix( p_body, &mass, &Ixx, &Iyy, &Izz );
     EnPlayerPhysics* p_phys = static_cast< EnPlayerPhysics* >( NewtonBodyGetUserData( p_body ) );
-    Vec3f& force  = p_phys->_force;
-    force._v[ 0 ] *= p_phys->_linearForce;
-    force._v[ 1 ] *= p_phys->_linearForce;
 
     // get the current world timestep
     timestep = NewtonGetTimeStep( p_phys->_p_world );
     timestepInv = 1.0f / timestep;
 
+    // calculate force basing on desired velocity
+    const osg::Vec3f& desiredvelocity = p_phys->getVelocity();
     NewtonBodyGetVelocity( p_phys->_p_body, &velocity._v[ 0 ] );
+    osg::Vec3f delta = desiredvelocity - velocity;
+    osg::Vec3f force = delta * ( timestepInv * mass );
+
     NewtonBodyGetMatrix( p_phys->_p_body, matrix.ptr() );
     pos = matrix.getTrans();
 
-    // calculate the torque vector
+    //const float* matelems = matrix.ptr();
     const float* matelems = matrix.ptr();
     Vec3f front( matelems[ 4 ] , matelems[ 5 ], matelems[ 6 ] );
     // moveDir must be normalized
@@ -315,8 +311,6 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
         osg::Vec3f vel;
         vel._v[ 2 ] = ( zdiff + 0.1f ) * mass * timestep * 5.0f;        
         NewtonAddBodyImpulse( p_phys->_p_body, &vel._v [ 0 ], &pos._v[ 0 ] );
-
-        p_phys->_isAirBorne = false;
         // reset climb contact
         p_phys->_climbHeight = 0.0f;
     }
@@ -382,9 +376,9 @@ float EnPlayerPhysics::physicsRayCastPlacement( const NewtonBody* p_body, const 
 EnPlayerPhysics::EnPlayerPhysics() :
 _dimensions( Vec3f( 0.5f, 0.5f, 1.8f ) ),
 _stepHeight( 0.5f ),
-_linearForce( 0.1f ),
-_angularForce( 0.05f ),
 _mass( 50.0f ),
+_speed( 10.0f ),
+_angularSpeed( 90.0f ),
 _gravity( Physics::get()->getWorldGravity() ),
 _linearDamping( 0.2f ),
 
@@ -408,11 +402,11 @@ _jumpForce( 5.0f )
 
     // add entity attributes
     getAttributeManager().addAttribute( "dimensions"    , _dimensions    );
+    getAttributeManager().addAttribute( "speed"         , _speed         );
+    getAttributeManager().addAttribute( "angularSpeed"  , _angularSpeed  );
     getAttributeManager().addAttribute( "stepheight"    , _stepHeight    );
     getAttributeManager().addAttribute( "jumpforce"     , _jumpForce     );
-    getAttributeManager().addAttribute( "linearforce"   , _linearForce   );
     getAttributeManager().addAttribute( "lineardamping" , _linearDamping );
-    getAttributeManager().addAttribute( "angularforce"  , _angularForce  );
     getAttributeManager().addAttribute( "mass"          , _mass          );
     getAttributeManager().addAttribute( "gravity"       , _gravity       );
 }
@@ -510,6 +504,9 @@ void EnPlayerPhysics::initialize()
 {
     // set the step and player height
     _playerHeight = _dimensions._v[ 2 ];
+
+    // convert angular speed from degrees to radiants
+    _angularSpeed = osg::DegreesToRadians( _angularSpeed );
 
     // create the collision 
     NewtonCollision* p_col = NewtonCreateSphere( _p_world, _dimensions._v[ 0 ] * 0.5f, _dimensions._v[ 1 ] * 0.5f, _dimensions._v[ 2 ] * 0.5f, NULL );

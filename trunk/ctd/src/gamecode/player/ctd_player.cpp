@@ -50,7 +50,8 @@ CTD_IMPL_ENTITYFACTORY_AUTO( PlayerEntityFactory );
     
 EnPlayer::EnPlayer() :
 _gameMode( GameState::get()->getMode() ),
-_p_playerImpl( NULL )
+_p_playerImpl( NULL ),
+_deltaTime( 0.03f )
 {
     CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "creating player entity"  << getInstanceName() << ", time: " << CTD::getTimeStamp() << endl;
 
@@ -199,6 +200,7 @@ void EnPlayer::spawn()
 
 void EnPlayer::updateEntity( float deltaTime )
 {
+    _deltaTime = deltaTime;
     _p_playerImpl->update( deltaTime );
 }
 

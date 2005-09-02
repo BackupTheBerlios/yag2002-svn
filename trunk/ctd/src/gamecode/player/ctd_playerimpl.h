@@ -96,6 +96,9 @@ class BasePlayerImplementation
         //! Get player's rotation.
         inline const osg::Quat&                     getPlayerRotation() const;
 
+        //! Get player's rotation only about Z axis.
+        inline float                                getPlayerRotationZ() const;
+
         //! Get player's move direction
         inline const osg::Vec3f&                    getPlayerMoveDirection() const;
 
@@ -218,6 +221,11 @@ inline const osg::Vec3f& BasePlayerImplementation::getPlayerPosition() const
 inline const osg::Quat& BasePlayerImplementation::getPlayerRotation() const
 { 
     return _currentRot; 
+}
+
+inline float BasePlayerImplementation::getPlayerRotationZ() const
+{ 
+    return _rotZ; 
 }
 
 inline const osg::Vec3f& BasePlayerImplementation::getPlayerMoveDirection() const

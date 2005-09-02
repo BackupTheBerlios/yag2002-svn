@@ -81,14 +81,34 @@ class EnPlayerPhysics : public BaseEntity
         const bool                                  isTransformable() const { return false; }
 
         /**
-        * Set force in x and y direction.
+        * Set moving direction
         */
-        void                                        setForce( float x, float y );
+        inline void                                 setDirection( float x, float y );
 
         /**
-        * Add force in x and y direction.
+        * Add moving direction
         */
-        void                                        addForce( float x, float y );
+        inline void                                 addDirection( float x, float y );
+
+        /**
+        * Get moving direction ( it is the same as normalize( getVelocity() ) )
+        */
+        inline const osg::Vec3f&                    getDirection() const;
+
+        /**
+        * Get velocity ( dir * speed )
+        */
+        inline const osg::Vec3f&                    getVelocity() const;
+
+        /**
+        * Get movement speed
+        */
+        inline float                                getSpeed() const;
+
+        /**
+        * Get angular speed
+        */
+        inline float                                getAngularSpeed() const;
 
         /**
         * Set the boy transformation.
@@ -183,17 +203,17 @@ class EnPlayerPhysics : public BaseEntity
         //! Step height
         float                                       _stepHeight;
 
-        //! Max force for movement
-        float                                       _linearForce;
-
-        //! Max force for rotation
-        float                                       _angularForce;
-
         //! Player's mass
         float                                       _mass;
 
-        //! Force for movement
-        osg::Vec3f                                  _force;
+        //! Velocity
+        osg::Vec3f                                  _velocity;
+
+        //! Max speed for movement
+        float                                       _speed;
+
+        //! Max speed for rotation
+        float                                       _angularSpeed;
 
         //! Player's gravity, default is the Physics system gravity
         float                                       _gravity;
@@ -246,27 +266,45 @@ class EnPlayerPhysics : public BaseEntity
 
 };
 
-inline void EnPlayerPhysics::setForce( float x, float y )
+inline void EnPlayerPhysics::setDirection( float x, float y )
 {
-    _force._v[ 0 ] = x;
-    _force._v[ 1 ] = y;
+    _velocity._v[ 0 ] = x * _speed;
+    _velocity._v[ 1 ] = y * _speed;
 }
 
-inline void EnPlayerPhysics::addForce( float x, float y )
+inline void EnPlayerPhysics::addDirection( float x, float y )
 {
-    _force._v[ 0 ] += x;
-    _force._v[ 1 ] += y;
+    _velocity._v[ 0 ] += x * _speed;
+    _velocity._v[ 1 ] += y * _speed;
+}
+
+inline const osg::Vec3f& EnPlayerPhysics::getDirection() const
+{
+    static osg::Vec3f dir;
+    dir = _velocity;
+    dir.normalize();
+    return dir;
+}
+
+inline float EnPlayerPhysics::getSpeed() const
+{
+    return _speed;
+}
+
+inline float EnPlayerPhysics::getAngularSpeed() const
+{
+    return _angularSpeed;
+}
+
+inline const osg::Vec3f& EnPlayerPhysics::getVelocity() const
+{
+    return _velocity;
 }
 
 inline void EnPlayerPhysics::stopMovement()
 {
-    _force._v[ 0 ] = 0;
-    _force._v[ 1 ] = 0;
-}
-
-inline float EnPlayerPhysics::getAngularForce() const
-{
-    return _angularForce;
+    _velocity._v[ 0 ] = 0;
+    _velocity._v[ 1 ] = 0;
 }
 
 //! Entity type definition used for type registry
