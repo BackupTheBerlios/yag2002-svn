@@ -182,24 +182,20 @@ bool Application::initialize( int argc, char **argv )
     //-------------------
     _mediaPath = cleanPath( arguments.getApplicationName() );
     std::vector< std::string > path;
-    explode( _mediaPath, "/", &path );
-    if ( path.size() > 1 )
-    {
-        std::string dir( "/" );
-        for ( size_t cnt = 0; cnt < path.size() - 3; cnt++ )
-            dir += path[ cnt ] + "/";
-
-        dir.erase( dir.size() -1 );
-        _mediaPath = dir;
-    }
-    else
     {
         std::string dir = getCurrentWorkingDirectory();
         dir = cleanPath( dir );
         dir += "/";
         path.clear();
         explode( dir, "/", &path );
+
+#ifdef WIN32
         dir = "";
+#endif
+#ifdef LINUX
+        dir = "/";
+#endif
+
         for ( size_t cnt = 0; cnt < path.size() - 2; cnt++ )
             dir += path[ cnt ] + "/";
 
