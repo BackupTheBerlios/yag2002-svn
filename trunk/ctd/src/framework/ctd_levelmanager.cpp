@@ -39,8 +39,7 @@
 #include <ctd_guimanager.h>
 #include <ctd_gamestate.h>
 
-#define TIXML_USE_STL
-#include <tinyxml.h>
+#include "ctdtinyxml/tinyxml.h"
 
 using namespace std;
 using namespace CTD;
@@ -188,7 +187,7 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
     
     // use tiny xml to parser lvl file
     //  parse in the level configuration
-    TiXmlDocument doc;
+    CTDTinyXML::TiXmlDocument doc;
     doc.SetCondenseWhiteSpace( false );
     if ( !doc.LoadFile( string( Application::get()->getMediaPath() + levelFile ).c_str() ) )
     {
@@ -199,17 +198,16 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
 
     // start evaluating the xml structure
     //---------------------------------//
-    TiXmlNode       *p_node                 = NULL;
-    TiXmlElement    *p_levelElement         = NULL;
-    TiXmlElement    *p_mapElement           = NULL;
-    char            *p_bufName              = NULL;
+    CTDTinyXML::TiXmlNode*      p_node                 = NULL;
+    CTDTinyXML::TiXmlElement*   p_levelElement         = NULL;
+    CTDTinyXML::TiXmlElement*   p_mapElement           = NULL;
+    char*                       p_bufName              = NULL;
 
     // get the level entry if one exists
     p_node = doc.FirstChild( CTD_LVL_ELEM_LEVEL );
     string staticNodeName;
     if ( p_node ) 
-    {
-    
+    {    
         // get level name
         p_levelElement = p_node->ToElement();
         if ( !p_levelElement ) 
@@ -275,7 +273,7 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
     p_node = p_levelElement;
     for ( p_node = p_levelElement->FirstChild( CTD_LVL_ELEM_ENTITY ); p_node; p_node = p_node->NextSiblingElement( CTD_LVL_ELEM_ENTITY ) ) 
     {
-        TiXmlElement* p_entityElement = p_node->ToElement();
+        CTDTinyXML::TiXmlElement* p_entityElement = p_node->ToElement();
         string entitytype, instancename;
         // get entity name
         p_bufName = ( char* )p_entityElement->Attribute( CTD_LVL_ENTITY_TYPE );
@@ -349,8 +347,8 @@ bool LevelManager::loadEntities( const string& levelFile, std::vector< BaseEntit
 
         entityCounter++;
 
-        TiXmlElement* p_entityParam = NULL;
-        TiXmlNode*    p_entityNode  = NULL;
+        CTDTinyXML::TiXmlElement* p_entityParam = NULL;
+        CTDTinyXML::TiXmlNode*    p_entityNode  = NULL;
         for ( p_entityNode = p_entityElement->FirstChild( CTD_LVL_ENTITY_PARAM ); p_entityNode; p_entityNode = p_entityParam->NextSiblingElement( CTD_LVL_ENTITY_PARAM ) )
         {
             p_entityParam = p_entityNode->ToElement();
