@@ -180,7 +180,6 @@ bool Application::initialize( int argc, char **argv )
 
     // set the media path as first step, other modules need it for loading resources etc.
     //-------------------
-    _mediaPath = cleanPath( arguments.getApplicationName() );
     std::vector< std::string > path;
     {
         std::string dir = getCurrentWorkingDirectory();
