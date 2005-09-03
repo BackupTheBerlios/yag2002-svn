@@ -185,7 +185,7 @@ bool Application::initialize( int argc, char **argv )
     explode( _mediaPath, "/", &path );
     if ( path.size() > 1 )
     {
-        std::string dir;
+        std::string dir( "/" );
         for ( size_t cnt = 0; cnt < path.size() - 3; cnt++ )
             dir += path[ cnt ] + "/";
 
