@@ -54,7 +54,7 @@ _invertedMouse( false ),
 _mouseSensitivity( 1.0f )
 {
     // initialize the mouse data considering initial yaw
-    _p_mouseData = new PlayerIHCharacterCameraCtrl< PlayerImplT >::MouseData( 0.0f, getPlayerImpl()->_rotZ );
+    _p_mouseData = new CTD::PlayerIHCharacterCameraCtrl< PlayerImplT >::MouseData( 0.0f, getPlayerImpl()->_rotZ );
     getPlayerImpl()->setCameraPitchYaw( 0, getPlayerImpl()->_rotZ );
 }
 
@@ -351,13 +351,13 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             if ( sdlevent.button.button == SDL_BUTTON_WHEELUP )
             {
                 float& dist = _attributeContainer._camPosOffsetSpheric._v[ 1 ];
-                dist = min( dist + SPHERIC_DIST_INCREMENT, -LIMIT_SPHERIC_MIN_DIST );
+                dist = std::min( dist + SPHERIC_DIST_INCREMENT, -LIMIT_SPHERIC_MIN_DIST );
                 getPlayerImpl()->_p_camera->setCameraOffsetPosition( _attributeContainer._camPosOffsetSpheric );
             }
             else if ( sdlevent.button.button == SDL_BUTTON_WHEELDOWN )
             {
                 float& dist = _attributeContainer._camPosOffsetSpheric._v[ 1 ];
-                dist = max( -LIMIT_SPHERIC_MAX_DIST, dist - SPHERIC_DIST_INCREMENT );
+                dist = std::max( -LIMIT_SPHERIC_MAX_DIST, dist - SPHERIC_DIST_INCREMENT );
                 getPlayerImpl()->_p_camera->setCameraOffsetPosition( _attributeContainer._camPosOffsetSpheric );
             }
         }
@@ -407,7 +407,7 @@ template< class PlayerImplT >
 void PlayerIHCharacterCameraCtrl< PlayerImplT >::updatePlayerPitchYaw( float& pitch, float& yaw )
 {
     // in ego mode the mouse controls the player rotation
-    if ( getPlayerImpl()->_cameraMode == BasePlayerImplementation::Ego )
+    if ( getPlayerImpl()->_cameraMode == CTD::BasePlayerImplementation::Ego )
     {
         // limit pitch
         if ( pitch > LIMIT_PITCH_ANGLE )
