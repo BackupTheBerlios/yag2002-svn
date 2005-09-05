@@ -33,6 +33,10 @@
 #ifndef _CTD_BASE_H_
 #define _CTD_BASE_H_
 
+#ifdef HAVE_CONFIG_H 
+  #include <config.h>
+#endif
+
 // VRC version
 #define VRC_VERSION     "0.5"
 
