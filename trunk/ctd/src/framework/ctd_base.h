@@ -38,7 +38,7 @@
 #endif
 
 // VRC version
-#define VRC_VERSION     "0.5"
+#define VRC_VERSION     "0.5.0"
 
 // STL headers
 #include <string>
