@@ -50,6 +50,10 @@ using namespace osg;
 #define CTD_APP_TITLE           "VRC"
 #define CTD_APP_ICON            "icon.bmp"
 
+// environment variable for media directory
+//  if not existing then the relative path '../../media' of executable is assumed
+#define CTD_ENV_MEDIA_DIR	"CTD_ENV_MEDIA_DIR"
+
 // log file names
 #define LOG_FILE_NAME           "vrc.log"
 #define LOG_FILE_NAME_SERVER    "vrc-server.log"
@@ -142,12 +146,6 @@ bool Application::initialize( int argc, char **argv )
 
     // fetch argument for using osgviewer instead of own camera and scene updating
     int   argpos;
-    bool  useOsgViewer = false;
-    if ( ( argpos = arguments.find( "-useosgviewer" ) ) != 0 )
-    {
-        useOsgViewer = true;
-        arguments.remove( argpos );
-    }
     // enable physics debug rendering?
     bool  enablePhysicsDebugRendering = false;
     if ( ( argpos = arguments.find( "-physicsdebug" ) ) != 0 )
@@ -181,27 +179,35 @@ bool Application::initialize( int argc, char **argv )
     // set the media path as first step, other modules need it for loading resources etc.
     //-------------------
     std::vector< std::string > path;
+    std::string dir;
     {
-        std::string dir = getCurrentWorkingDirectory();
-        dir = cleanPath( dir );
-        dir += "/";
-        path.clear();
-        explode( dir, "/", &path );
-
-#ifdef WIN32
-        dir = "";
-#endif
+        char* p_env = getenv( CTD_ENV_MEDIA_DIR );
+        if ( p_env )
+        {
+            _mediaPath = p_env;
+        }
+        else
+        {
+            dir = getCurrentWorkingDirectory();
+            dir = cleanPath( dir );
+            dir += "/";
+            path.clear();
+            explode( dir, "/", &path );
 #ifdef LINUX
-        dir = "/";
+            dir = "/";
 #endif
+#ifdef WIN32
+            dir = "";
+#endif
+            for ( size_t cnt = 0; cnt < path.size() - 2; cnt++ )
+                dir += path[ cnt ] + "/";
 
-        for ( size_t cnt = 0; cnt < path.size() - 2; cnt++ )
-            dir += path[ cnt ] + "/";
-
-        dir.erase( dir.size() -1 );
-        _mediaPath = dir;
+            dir.erase( dir.size() -1 );
+            _mediaPath = dir;
+            _mediaPath += CTD_MEDIA_PATH;
+        }
     }
-    _mediaPath += CTD_MEDIA_PATH;
+
     //-------------------
     // set the ful binary path of application
     _fulBinaryPath = arguments.getApplicationName();
@@ -231,6 +237,8 @@ bool Application::initialize( int argc, char **argv )
 
     log << Log::LogLevel( Log::L_INFO ) << "time: " << CTD::getTimeStamp() << endl;
     log << Log::LogLevel( Log::L_INFO ) << "initializing viewer" << endl;
+
+    log << Log::LogLevel( Log::L_INFO ) << "using media path: " << _mediaPath << endl;
 
     // setup the viewer
     //----------
