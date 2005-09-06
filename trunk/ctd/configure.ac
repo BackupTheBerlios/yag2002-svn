@@ -4,6 +4,7 @@
 AC_PREREQ(2.59)
 AC_INIT([CTDFramework], [0.5.0])
 
+
 # fix warning caused by SDL stuff
 AC_CANONICAL_TARGET
 
@@ -11,10 +12,26 @@ AM_INIT_AUTOMAKE([CTDFramework], [0.5.0])
 AC_CONFIG_SRCDIR([src/framework/ctd_levelmanager.h])
 AC_CONFIG_HEADER([config.h])
 
+# Templates
+AH_TEMPLATE([_DEBUG], [Define if building with debug symbols])
+
 # Checks for programs.
 AC_PROG_LIBTOOL
 AC_PROG_CXX
 AC_PROG_CC
+
+# configure options
+AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug], [Build with debugging symbols]), , enable_debug=no)
+
+if test "x$enable_debug" = "xno"
+then
+    CFLAGS="-O3"
+    CXXFLAGS="-fomit-frame-pointer -O3"
+else
+    CFLAGS="-g3 -O0"
+    CXXFLAGS="-g3 -O0"
+    AC_DEFINE([_DEBUG], 1)
+fi
 
 # Checks for libraries.
 PKG_CHECK_MODULES(CEGUI, CEGUI >= 0.3.0)
