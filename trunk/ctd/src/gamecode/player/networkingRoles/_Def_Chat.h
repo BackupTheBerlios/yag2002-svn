@@ -1,4 +1,4 @@
-/* Auto-generated with RNROLCompiler V2.0.0.0 don't edit */
+/* Auto-generated with RNROLCompiler V2.2.0.0 don't edit */
 #ifndef ___Def_Chat_h__
 #define ___Def_Chat_h__
 #include "RNReplicaNet/Inc/ReplicaObject.h"

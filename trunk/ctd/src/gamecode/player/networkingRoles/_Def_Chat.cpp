@@ -1,4 +1,4 @@
-/* Auto-generated with RNROLCompiler V2.0.0.0 don't edit */
+/* Auto-generated with RNROLCompiler V2.2.0.0 don't edit */
 #include "_Def_Chat.h"
 #include "RNReplicaNet/Inc/ReplicaNet.h"
 #include "RNReplicaNet/Inc/RO_RegistryBlock.h"
