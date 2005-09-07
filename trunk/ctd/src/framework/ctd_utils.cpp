@@ -49,17 +49,9 @@ namespace CTD
 
 std::string getTimeStamp()
 {
-#ifdef WIN32
-    __time64_t ltime;
-    _time64( &ltime );
-    return std::string( _ctime64( &ltime ) );   
-#endif
-#ifdef LINUX
-    time_t ltime;
-    return std::string( ctime( &ltime ) );
-#endif
-
-    return std::string( "platform not supported" );
+    time_t t;
+    time( &t );
+    return std::string( asctime( localtime( &t ) ) );
 }
 
 std::string::size_type explode( const std::string& str, const std::string& separators, std::vector< std::string >* p_result )
@@ -140,8 +132,8 @@ std::string getCurrentWorkingDirectory()
     assert( p_res && "error getting current working directory" );
 
 #endif
-
-   return std::string( buf );
+    // compilation error for unsupported platforms
+    return std::string( buf );
 }
 
 #ifdef WIN32
