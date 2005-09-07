@@ -66,7 +66,25 @@ const std::string& CmdCd::execute( const std::vector< std::string >& arguments )
     }
     else
     {
-        if ( !_p_console->setCWD( arguments[ 0 ] ) )
+        std::string dir = arguments[ 0 ];
+        if ( !dir.length() )
+            dir = CTD::Application::get()->getMediaPath();
+        else if ( dir == ".." )
+        {
+            dir = _p_console->getCWD();
+            dir.erase( dir.rfind( "/" ) );
+        }
+        else if ( dir == "." )
+            dir = _p_console->getCWD();
+        else if ( dir[ 0 ] != '/' )
+        {
+            if ( _p_console->getCWD() != "/" )
+                dir = _p_console->getCWD() + "/" + dir;
+            else
+                dir = "/" + dir;
+        }
+
+        if ( !_p_console->setCWD( dir ) )
         {
             _cmdResult = "* invalid path";
             return _cmdResult;
