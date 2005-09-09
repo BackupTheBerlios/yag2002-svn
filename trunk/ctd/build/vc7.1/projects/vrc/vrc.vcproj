@@ -465,6 +465,21 @@
 					<File
 						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_console.h">
 					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_consoleiobase.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_consoleiocin.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_consoleiocin.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_consoleiogui.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_consoleiogui.h">
+					</File>
 					<Filter
 						Name="cmd"
 						Filter="">
