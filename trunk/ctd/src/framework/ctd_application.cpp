@@ -88,8 +88,9 @@ Application::~Application()
 
 void Application::shutdown()
 {
-    log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------" << endl;
-    log << Log::LogLevel( Log::L_INFO ) << "shutting down, time: " << CTD::getTimeStamp() << endl;
+    log << Log::LogLevel( Log::L_INFO ) << endl;
+    log << "---------------------------------------" << endl;
+    log << "shutting down, time: " << CTD::getTimeStamp() << endl;
 
     NetworkDevice::get()->shutdown();
     LevelManager::get()->shutdown();
@@ -397,7 +398,7 @@ void Application::run()
     CTD_CHECK_HEAP();
 
     // begin game loop
-    while( ( _p_gameState->getState() != GameState::Quitting ) && !_p_viewer->isTerminated() )
+    while( _p_gameState->getState() != GameState::Quitting )
     {
         lastTick  = curTick;
         curTick   = timer.tick();
@@ -438,6 +439,10 @@ void Application::updateClient( float deltaTime )
     // fire off the cull and draw traversals of the scene.
     _p_viewer->runOnce();
 
+    // check for termination
+    if ( _p_viewer->isTerminated() )
+        stop();
+
     // yield a little processor time for other tasks on system
     if ( !_fullScreen )
         OpenThreads::Thread::microSleep( 1000 );
@@ -453,12 +458,6 @@ void Application::updateServer( float deltaTime )
 
     // update physics
     //_p_physics->update( deltaTime );
-
-    // update gui manager
-    _p_guiManager->update( deltaTime );
-
-     // fire off the cull and draw traversals of the scene.
-    _p_viewer->runOnce();
 
     // yield a little processor time for other tasks on system
     OpenThreads::Thread::microSleep( 1000 );
@@ -477,6 +476,10 @@ void Application::updateStandalone( float deltaTime )
 
     // fire off the cull and draw traversals of the scene.
     _p_viewer->runOnce();
+
+    // check for termination
+    if ( _p_viewer->isTerminated() )
+        stop();
 
     // yield a little processor time for other tasks on system
     if ( !_fullScreen )
