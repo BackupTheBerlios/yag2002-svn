@@ -411,49 +411,49 @@ void LevelManager::finalizeLoading()
     _setupQueue.clear();
 
     // send the notification that the a new level has been loaded and initialized
-    if ( !_firstLoading )
     {
         EntityNotification ennotify( CTD_NOTIFY_NEW_LEVEL_INITIALIZED );
         EntityManager::get()->sendNotification( ennotify );
         // flush the notification queue so perior and new entities get the notification
         EntityManager::get()->flushNotificationQueue();
     }
-    else
-    {
-        // mark that we have done the first level loading
-        _firstLoading = false;
-    }
+
+    // mark that we have done the first level loading
+    _firstLoading = false;
 }
 
 void LevelManager::initializeFirstTime()
 {
-    // initialize sound manager
-    log << Log::LogLevel( Log::L_INFO ) << "initializing sound system..." << endl;
-    osgAL::SoundManager* p_soundManager = osgAL::SoundManager::instance();
-    try 
+    if ( GameState::get()->getMode() != GameState::Server )
     {
-        p_soundManager->init( 16 );
-        p_soundManager->getEnvironment()->setDistanceModel( openalpp::InverseDistance );
-        p_soundManager->getEnvironment()->setDopplerFactor( 1.0f );
-        osg::ref_ptr< osgAL::SoundRoot > soundRoot = new osgAL::SoundRoot;
-        _topGroup->addChild( soundRoot.get() );
-    }
-    catch( const openalpp::InitError& e )
-    {
-        log << Log::LogLevel( Log::L_ERROR ) << "cannot initialize sound device openAL. reason: '" << e.what() << "'" << endl;
-        log << Log::LogLevel( Log::L_ERROR ) << " reason: " << e.what() << endl;
-        log << Log::LogLevel( Log::L_ERROR ) << " have you already installed the openAL drivers?" << endl;
-    }
+        // initialize sound manager
+        log << Log::LogLevel( Log::L_INFO ) << "initializing sound system..." << endl;
+        osgAL::SoundManager* p_soundManager = osgAL::SoundManager::instance();
+        try 
+        {
+            p_soundManager->init( 16 );
+            p_soundManager->getEnvironment()->setDistanceModel( openalpp::InverseDistance );
+            p_soundManager->getEnvironment()->setDopplerFactor( 1.0f );
+            osg::ref_ptr< osgAL::SoundRoot > soundRoot = new osgAL::SoundRoot;
+            _topGroup->addChild( soundRoot.get() );
+        }
+        catch( const openalpp::InitError& e )
+        {
+            log << Log::LogLevel( Log::L_ERROR ) << "cannot initialize sound device openAL. reason: '" << e.what() << "'" << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << " reason: " << e.what() << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << " have you already installed the openAL drivers?" << endl;
+        }
 
-    log << Log::LogLevel( Log::L_INFO ) << "initializing gui system..." << endl;
-    // initialize the gui system
-    GuiManager::get()->initialize();
+        log << Log::LogLevel( Log::L_INFO ) << "initializing gui system..." << endl;
+        // initialize the gui system
+        GuiManager::get()->initialize();
 
-    // for first time we realize the viewer
-    log << Log::LogLevel( Log::L_INFO ) << "starting viewer ..." << endl;
-    // start viewer
-    Application::get()->getViewer()->open();
-    Application::get()->getViewer()->init();
+        // for first time we realize the viewer
+        log << Log::LogLevel( Log::L_INFO ) << "starting viewer ..." << endl;
+        // start viewer
+        Application::get()->getViewer()->open();
+        Application::get()->getViewer()->init();
+    }
 }
 
 void LevelManager::buildPhysicsStaticGeometry()
@@ -539,11 +539,15 @@ void LevelManager::shutdown()
 {
     // clean up entity manager
     EntityManager::get()->shutdown(); 
-    // shutdown all other libs managed by level loader
-    osgAL::SoundManager::instance()->shutdown();
-    Physics::get()->shutdown();
-    GuiManager::get()->shutdown();
 
+    if ( GameState::get()->getMode() != GameState::Server )
+    {
+        // shutdown all other libs managed by level loader
+        osgAL::SoundManager::instance()->shutdown();
+        GuiManager::get()->shutdown();
+    }
+
+    Physics::get()->shutdown();
     // destroy singleton
     destroy();
 }
