@@ -151,35 +151,19 @@ bool NetworkDevice::setupClient( const string& serverIp, int channel, const Node
     _p_session->SetDataRetention( true );
     _p_session->SetPreConnect( true );
 
-    //! if the URL is empty then auto-search for sessions in loacal net
-    string Url;
-    if ( !serverIp.length() )
-    {
-        log << Log::LogLevel( Log::L_INFO ) << "nw client: trying to find sessions ..." << endl;
-        _p_session->SessionFind();
-	OpenThreads::Thread::microSleep( 500 );
-        Url = _p_session->SessionEnumerateFound();
-        if ( Url.length() > 0 ) {
-            log << Log::LogLevel( Log::L_INFO ) << "nw client: session found, url: '" + Url + "'" << endl;
-        } 
-        else 
-        {
-            log << Log::LogLevel( Log::L_WARNING ) << "nw client:   could not find any session!" << endl;
-            _p_session->Disconnect();
-            delete _p_session;
-            _p_session = NULL;   
-            return false;
-        }
-    }
+    //! if the URL is empty or "localhost" then set it to "127.0.0.1"
+    string Url, ip;
+    if ( !serverIp.length() || ( serverIp == "localhost" ) )
+        ip = "127.0.0.1";
     else
-    {	
-        //example url: "SESSION://UDP@127.0.0.1:32001/gameserver"}
-        string servername;
-        Configuration::get()->getSettingValue( CTD_GS_SERVER_NAME, servername );
-        stringstream assembledUrl;
-        assembledUrl << "SESSION://UDP@" << serverIp << ":" << channel << "/" << servername;
-        Url = assembledUrl.str();
-    }
+        ip = serverIp;
+
+    //assemble the url; example url: "SESSION://UDP@127.0.0.1:32001/gameserver"}
+    string servername;
+    Configuration::get()->getSettingValue( CTD_GS_SERVER_NAME, servername );
+    stringstream assembledUrl;
+    assembledUrl << "SESSION://UDP@" << ip << ":" << channel << "/" << servername;
+    Url = assembledUrl.str();
 
     log << Log::LogLevel( Log::L_INFO ) << "nw client: try to join to session: " << Url << endl;
     _p_session->SessionJoin( Url );
