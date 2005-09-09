@@ -38,7 +38,7 @@ namespace CTD
 
 #define ENTITY_NAME_CONSOLE    "Console"
 
-class ConsoleIH;
+class ConsoleIOBase;
 
 //! Console entity
 class EnConsole :  public BaseEntity
@@ -50,6 +50,15 @@ class EnConsole :  public BaseEntity
 
         //! Initialize entity
         void                                        initialize();
+
+        //! Override this method and return true to get a persisten entity
+        const bool                                  isPersistent() const { return true; }
+
+        //! This entity needs no transformation node is scenegraph
+        const bool                                  isTransformable() const { return false; }
+
+        // Console specific public methods
+        // -------------------------------
 
         //! Enqueue command for execution in next update ( is used when commands need other commands for execution, e.g. 'exec' )
         void                                        enqueueCmd( std::string cmd );
@@ -64,7 +73,7 @@ class EnConsole :  public BaseEntity
         void                                        triggerIdle( unsigned int steps );
 
         //! Creates a log file and directs all console outputs also to that file. Returns fals if the log file could not be created.
-        //! If append is false then an existing lod file will be recreated.
+        //! If append is false then an existing log file will be recreated.
         bool                                        createLog( const std::string& filename, bool append = false );
 
         //! Closes the currently active log. Returns false if there is no active log previously created with createLog.
@@ -73,57 +82,41 @@ class EnConsole :  public BaseEntity
         //! Set current working directory. Returns false if the path could not be set.
         bool                                        setCWD( const std::string& cwd );
 
+        //! Enqueue given command including arguments and execute it on next entity update
+        void                                        issueCmd( std::string cmd );
+
         //! Get current working directory
         const std::string&                          getCWD();
 
-        //! Override this method and return true to get a persisten entity
-        const bool                                  isPersistent() const { return true; }
+        //! Returns an already used command from history. If prev is true then the history is stepped forward, otherwise it is stepped backward.
+        std::string                                 cmdHistory( bool prev );
 
-        //! This entity needs no transformation
-        const bool                                  isTransformable() const { return false; }
+        //! Enable / disable console
+        void                                        enable( bool en );
 
     protected:
 
         //! Update entity
         void                                        updateEntity( float deltaTime );
 
-        //! Enable / disable statistics rendering
-        void                                        enable( bool en );
-
-        //! Enqueue given command received from console
-        void                                        issueCmd( std::string cmd );
-
-        //! Apply command, it hashcmd is true then the command will be stored in command history
+        //! Apply command, if hashcmd is true then the command will be stored in command history
         void                                        applyCmd( const std::string& cmd, bool hashcmd = true );
-
-        //! Dispatch command, return its result as string
-        const std::string&                          dispatchCmdLine( const std::string& cmdline );
 
         //! Execute one single command including its arguments and return its result as string
         const std::string&                          executeCmd( const std::string& cmd );
 
+        //! Dispatch command, return its result as string
+        const std::string&                          dispatchCmdLine( const std::string& cmdline );
+
         //! Extract the arguments from given cmdline and store them into 'args'.
         void                                        parseArguments( const std::string& cmdline, std::vector< std::string >& args );
-
-        //! Restores an already used command from history. If prev is true then the history is stepped forward, otherwise it is stepped backward.
-        void                                        cmdHistory( bool prev );
 
         //! Override notification callback
         void                                        handleNotification( const EntityNotification& notification );
 
-        //! Callback for chat frame window close button
-        bool                                        onCloseFrame( const CEGUI::EventArgs& arg );
-
-        // Console window
-        CEGUI::Window*                              _p_wnd;
-
-        CEGUI::Editbox*                             _p_inputWindow;
-
-        CEGUI::MultiLineEditbox*                    _p_outputWindow;
-
         bool                                        _enable;
 
-        ConsoleIH*                                  _p_inputHandler;
+        ConsoleIOBase*                              _p_ioHandler;
 
         std::vector< std::string >                  _cmdHistory;
 
@@ -144,8 +137,6 @@ class EnConsole :  public BaseEntity
         std::ofstream*                              _p_log;
 
         std::string                                 _cwd;
-
-    friend class ConsoleIH;
 };
 
 //! Entity type definition used for type registry

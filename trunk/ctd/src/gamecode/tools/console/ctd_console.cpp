@@ -30,89 +30,25 @@
 
 #include <ctd_main.h>
 #include "ctd_console.h"
+#include "ctd_consoleiobase.h"
+#include "ctd_consoleiogui.h"
+#include "ctd_consoleiocin.h"
 #include "ctd_cmdregistry.h"
 #include "ctd_basecmd.h"
+
+#include <conio.h>
 
 using namespace std;
 
 namespace CTD
 {
 
-#define CON_WND    "_console_"
-
-// Input handler for toggling console window
-class ConsoleIH : public GenericInputHandler< EnConsole >
-{
-    public:
-
-        explicit                            ConsoleIH( EnConsole* p_console ) : 
-                                             GenericInputHandler< EnConsole >( p_console ),
-                                             _toggleEnable( false )
-                                            {
-                                                _retCode = static_cast< int >( KeyMap::get()->getKeyCode( "Return" ) );
-                                                _autoCompleteCode = static_cast< int >( KeyMap::get()->getKeyCode( "Tab" ) );
-                                            }
-                                
-        virtual                             ~ConsoleIH() {}
-
-        //! Handle input events.
-        bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
-                                            {
-                                                const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
-                                                assert( p_eventAdapter && "invalid event adapter received" );
-                                                SDLKey key = p_eventAdapter->getSDLKey();
-
-                                                if ( p_eventAdapter->getEventType() == osgGA::GUIEventAdapter::KEYDOWN ) 
-                                                {
-                                                    if ( key == SDLK_F10 )
-                                                    {
-                                                        _toggleEnable = !_toggleEnable;
-                                                        getUserObject()->enable( _toggleEnable );
-                                                    }
-                                                    else if ( _toggleEnable && key == _retCode )
-                                                    {
-                                                        getUserObject()->issueCmd( _p_userObject->_p_inputWindow->getText().c_str() );
-                                                    }
-                                                    else if ( key == _autoCompleteCode )
-                                                    {
-                                                        getUserObject()->autoCompleteCmd( _p_userObject->_p_inputWindow->getText().c_str() );
-                                                    }
-                                                    else if ( key == SDLK_UP )
-                                                    {
-                                                        getUserObject()->cmdHistory( true );
-                                                    }
-                                                    else if ( key == SDLK_DOWN )
-                                                    {
-                                                        getUserObject()->cmdHistory( false );
-                                                    }
-                                                }
-
-                                                return false;
-                                            }
-
-        void                                resetToggle( bool en ) 
-                                            {
-                                                _toggleEnable = en;
-                                            }
-
-    protected:
-
-        int                                 _retCode;
-        
-        int                                 _autoCompleteCode;
-
-        bool                                _toggleEnable;
-};
-
 //! Implement and register the statistics entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( ConsoleEntityFactory );
 
 EnConsole::EnConsole() :
-_p_wnd( NULL ),
-_p_inputWindow( NULL ),
-_p_outputWindow( NULL ),
 _enable( false ),
-_p_inputHandler( NULL ),
+_p_ioHandler( NULL ),
 _cmdHistoryIndex( 0 ),
 _shutdownInProgress( false ),
 _shutdownCounter( 0 ),
@@ -124,11 +60,10 @@ _cwd( "/" )
 }
 
 EnConsole::~EnConsole()
-{        
-    CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
+{    
 
-    if ( _p_inputHandler )
-        _p_inputHandler->destroyHandler();
+    if ( _p_ioHandler )
+        _p_ioHandler->shutdown();
 
     // destroy the cmd registry singleton
     ConsoleCommandRegistry::get()->destroy();
@@ -153,6 +88,16 @@ void EnConsole::handleNotification( const EntityNotification& notification )
             EntityManager::get()->deleteEntity( this );
             break;
 
+        case CTD_NOTIFY_NEW_LEVEL_INITIALIZED:
+
+            if ( GameState::get()->getMode() == GameState::Server )
+            {
+                std::cout << std::endl;
+                std::cout << "starting VRC server console version " << VRC_VERSION << std::endl;
+                std::cout << std::endl;
+            }
+            break;
+
         default:
             ;
     }
@@ -168,52 +113,19 @@ void EnConsole::initialize()
     }
     alreadycreated = true;
 
-    try
+    if ( GameState::get()->getMode() == GameState::Server )
     {
-        _p_wnd = CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", CON_WND "mainWnd" );
-        _p_wnd->setSize( CEGUI::Size( 0.75f, 0.4f ) );
-        _p_wnd->setPosition( CEGUI::Point( 0.125f, 0.2f ) );
-        _p_wnd->setAlpha( 0.7f );
-        _p_wnd->setFont( CTD_GUI_CONSOLE );
-        _p_wnd->setAlwaysOnTop( true );
-        _p_wnd->setText( "command console" );
-        _p_wnd->setMinimumSize( CEGUI::Size( 0.2f, 0.2f ) );
-        _p_wnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::EnConsole::onCloseFrame, this ) );
-
-        _p_outputWindow = static_cast< CEGUI::MultiLineEditbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/MultiLineEditbox", CON_WND "output" ) );
-        _p_outputWindow->setReadOnly( true );
-        _p_outputWindow->setSize( CEGUI::Size( 0.96f, 0.7f ) );
-        _p_outputWindow->setPosition( CEGUI::Point( 0.02f, 0.1f ) );
-        _p_outputWindow->setFont( CTD_GUI_CONSOLE );
-        _p_outputWindow->setAlpha( 0.7f );
-        _p_wnd->addChildWindow( _p_outputWindow );
-
-        _p_inputWindow = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", CON_WND "input" ) );
-        _p_inputWindow->setSize( CEGUI::Size( 0.96f, 0.1f ) );
-        _p_inputWindow->setPosition( CEGUI::Point( 0.02f, 0.8f ) );
-        _p_inputWindow->setAlpha( 0.7f );
-        _p_inputWindow->setFont( CTD_GUI_CONSOLE );
-        _p_wnd->addChildWindow( _p_inputWindow );
+        _p_ioHandler = new ConsoleIOCin( this );
     }
-    catch ( const CEGUI::Exception& e )
+    else
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** Console: cannot setup dialog layout." << endl;
-        log << "      reason: " << e.getMessage().c_str() << endl;
+        _p_ioHandler = new ConsoleIOGui( this );
     }
 
     // register entity in order to get updated per simulation step
     EntityManager::get()->registerUpdate( this, true );
     // register entity in order to get notifications
     EntityManager::get()->registerNotification( this, true );
-
-    _p_inputHandler = new ConsoleIH( this );
-}
-
-bool EnConsole::onCloseFrame( const CEGUI::EventArgs& arg )
-{
-    enable( false );
-    _p_inputHandler->resetToggle( false );
-    return true;
 }
 
 void EnConsole::enable( bool en )
@@ -221,17 +133,7 @@ void EnConsole::enable( bool en )
     if ( _enable == en )
         return;
 
-    if ( en )
-    {
-        GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
-        _p_inputWindow->activate();
-    }
-    else
-    {
-        GuiManager::get()->getRootWindow()->removeChildWindow( _p_wnd );
-        _p_inputWindow->deactivate();
-    }
-
+    _p_ioHandler->enable( en );
     _enable = en;
 }
 
@@ -343,14 +245,12 @@ const std::string& EnConsole::getCWD()
 
 // some methods for shell functionality 
 //-------------------------------------
-void EnConsole::cmdHistory( bool prev )
+std::string EnConsole::cmdHistory( bool prev )
 {
     if ( !_cmdHistory.size() )
-        return;
+        return "";
 
-    CEGUI::String text( _cmdHistory[ _cmdHistoryIndex ] );
-    _p_inputWindow->setText( text );
-    _p_inputWindow->setCaratIndex( text.length() );
+    std::string cmd = _cmdHistory[ _cmdHistoryIndex ];
 
     // update cmd index
     if ( prev )
@@ -364,37 +264,31 @@ void EnConsole::cmdHistory( bool prev )
     else if ( _cmdHistoryIndex > ( _cmdHistory.size() - 1 ) )
         _cmdHistoryIndex = _cmdHistory.size() - 1;
 
+    return cmd;
 }
 
 void EnConsole::autoCompleteCmd( const std::string& cmd )
 {
-    CEGUI::String text;
-
     // get matching candidates
     std::vector< std::string > candidates;
     unsigned int matchcnt = ConsoleCommandRegistry::get()->getCmdCandidates( cmd, candidates );
 
     if ( !matchcnt ) // we have no match and no candidates
     {
-        text = _p_outputWindow->getText();
-        text += "> type 'help' in order to get a complete list of possible commands.\n";
-        _p_outputWindow->setText( text );
-        _p_outputWindow->setCaratIndex( text.length() );
+        _p_ioHandler->output( "> type 'help' in order to get a complete list of possible commands.\n" );
         return;
     }
 
     std::vector< std::string >::iterator p_beg = candidates.begin(), p_end = candidates.end();
     if ( matchcnt > 1 ) // we have several candidates
     {
-        text = _p_outputWindow->getText();
-        text += "> possible commands: ";
+        std::string text( "> possible commands: " );
         for ( ; p_beg != p_end; p_beg++ )
         {
             text += ( *p_beg ) + "  ";
         }
         text += "\n";
-        _p_outputWindow->setText( text );
-        _p_outputWindow->setCaratIndex( text.length() );
+        _p_ioHandler->output( text );
 
         // now auto-complete up to next unmatching character in candidates
         bool dobreak = false;
@@ -420,14 +314,11 @@ void EnConsole::autoCompleteCmd( const std::string& cmd )
 
         std::string cmdc = *candidates.begin();
         cmdc = cmdc.substr( 0, cnt - 1 );
-        _p_inputWindow->setText( cmdc );
-        _p_inputWindow->setCaratIndex( cmdc.length() );
+        _p_ioHandler->setCmdLine( cmdc );
     }
     else // we have one single match
     {
-        text = *p_beg;
-        _p_inputWindow->setText( text );
-        _p_inputWindow->setCaratIndex( text.length() );
+        _p_ioHandler->setCmdLine( *p_beg );        
     }
 }
 
@@ -445,14 +336,11 @@ void EnConsole::issueCmd( std::string cmd )
 
 void EnConsole::applyCmd( const std::string& cmd, bool hashcmd )
 {
-    CEGUI::String text = _p_outputWindow->getText();
-    text += "> " + cmd + "\n";
+    std::string text( "> " + cmd + "\n" );
     // dispatch the command
     text += dispatchCmdLine( cmd );
-    _p_outputWindow->setText( text );
-    _p_inputWindow->setText( "" );
-    // set carat position in order to trigger text scrolling after a new line has been added
-    _p_outputWindow->setCaratIndex( text.length() - 1 );
+    _p_ioHandler->output( text );
+    _p_ioHandler->setCmdLine( "" );
 
     // store the command in history if it is not the exact same as before
     if ( hashcmd && cmd.length() )
