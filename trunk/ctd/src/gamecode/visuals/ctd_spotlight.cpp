@@ -66,7 +66,7 @@ EnSpotLight::~EnSpotLight()
 void EnSpotLight::initialize()
 {
     // call the get method of light manager so it can register itself for getting camera callbacks (see constructor)
-    LightManager::get();
+    LightManager::get()->initialize();
 
     // create a new light
     _lightSource = new osg::LightSource;

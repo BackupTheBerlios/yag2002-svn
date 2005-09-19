@@ -63,7 +63,7 @@ void LightManager::addLight( BaseLight* p_light )
     _lights.push_back( p_light );
     // assign an available light id to light object
     p_light->_lightSource->getLight()->setLightNum( _currId );
-    if ( _currId < CTD_MAX_GL_LIGHTS ) 
+    if ( _currId < CTD_MAX_GL_LIGHTS - 1 ) 
         _currId++;
 }
 
