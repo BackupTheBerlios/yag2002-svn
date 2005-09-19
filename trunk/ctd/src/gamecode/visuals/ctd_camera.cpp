@@ -109,7 +109,7 @@ CTD_IMPL_ENTITYFACTORY_AUTO( CameraEntityFactory );
 
 EnCamera::EnCamera() :
 _fov( 60.00 ),
-_nearClip( 0.01f ),
+_nearClip( 0.0001f ),
 _farClip( 1000.0f ),
 _backgroundColor( Vec3f( 0.2f, 0.2f, 0.2f ) ),
 _isPersistent( false ),
