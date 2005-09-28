@@ -110,41 +110,12 @@ static const char glsl_fp[] =
     "   float lrp = 1.0 - dot(-normalize(vViewVec), bump);                                      \n"
     "   vec4 col = mix(waterColor, refl, clamp(fadeBias + pow(lrp, fadeExp),0.0, 1.0));         \n"
     "                                                                                           \n"
-    "   // linear fog \n"
-    "   //float fog = (gl_Fog.end - gl_FogFragCoord) * gl_Fog.scale; \n"   
-    "   col.xyz = mix(gl_Fog.color.xyz, col.xyz, fog);  \n"
+    "   // linear fog                                                                           \n"
+    "   col.xyz = mix(gl_Fog.color.xyz, col.xyz, fog);                                          \n"
     "   col.w = transparency;                                                                   \n"
     "   gl_FragColor = col;                                                                     \n"
     "}                                                                                          \n"
 ;
-/*
-struct gl_FogParameters
-{
- vec4 color;
- float density;
- float start;
- float end;
- float scale;
-};
-gl_FogParameters gl_Fog;
-
-From the Orange Book:
-
-Linear Fog
-fog = (gl_Fog.end - gl_FogFragCoord)) * gl_Fog.scale;
-
-gl_Fog.scale is a precomputed 1.0 / (gl_Fog.end - gl_Fog.start).
-
-Exponential Fog
-const float LOG2E = 1.442695; // = 1 / log(2)
-fog = exp2(-gl_Fog.density * gl_FogFragCoord * LOG2E);
-
-Exponential Fog (Squared)
-fog = exp2(-gl_Fog.density * gl_Fog.density * gl_FogFragCoord * gl_FogFragCoord * LOG2E);
-
-The LOG2E constant is used to turn the exp base(2) into exp base(e). Also, if you're going to use GL_EXP2 fog, it recommends precomputing (-gl_Fog.density * gl_Fog.density * LOG2E) and passing it in as a uniform.
-
-*/
 
 // callback for water's wave uniform deltaWave
 class DeltaWaveUpdateCallback: public osg::Uniform::Callback
