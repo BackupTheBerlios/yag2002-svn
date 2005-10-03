@@ -430,7 +430,7 @@ osg::Node* EnWater::setupWater()
         p_stateSet->setTextureAttribute( LOCATION_CUBEMAP_SAMPLER, reflectmap.get() );
         p_stateSet->addUniform( new osg::Uniform( "samplerSkyBox", LOCATION_CUBEMAP_SAMPLER ) );
 
-        // set lighting to diabled and culling to enabled
+        // set lighting and culling
         p_stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
         p_stateSet->setMode( GL_CULL_FACE, osg::StateAttribute::OFF );
 
@@ -441,7 +441,7 @@ osg::Node* EnWater::setupWater()
         p_stateSet->setMode( GL_BLEND, osg::StateAttribute::ON );      
         p_stateSet->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
         // make sure that the water is rendered at first than all other transparent primitives
-        p_stateSet->setBinNumber( 0 ); 
+        p_stateSet->setBinNumber( 0 );
 
         // append state set to geode
         p_node->setStateSet( p_stateSet );
