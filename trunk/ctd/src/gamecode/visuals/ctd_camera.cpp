@@ -109,8 +109,8 @@ CTD_IMPL_ENTITYFACTORY_AUTO( CameraEntityFactory );
 
 EnCamera::EnCamera() :
 _fov( 60.00 ),
-_nearClip( 0.0001f ),
-_farClip( 1000.0f ),
+_nearClip( 0.5f ),
+_farClip( 5000.0f ),
 _backgroundColor( Vec3f( 0.2f, 0.2f, 0.2f ) ),
 _isPersistent( false ),
 _pitch( 0 ),
@@ -161,6 +161,8 @@ void EnCamera::initialize()
     Application::get()->getScreenSize( width, height );
     Application::get()->getSceneView()->setProjectionMatrixAsPerspective( _fov, ( float( width ) / float( height ) ), _nearClip, _farClip );
     Application::get()->getSceneView()->setClearColor( osg::Vec4f( _backgroundColor, 1.0f ) );
+    // avoid overriding our near and far plane setting by scene viewer
+    Application::get()->getSceneView()->setComputeNearFarMode( osgUtil::CullVisitor::DO_NOT_COMPUTE_NEAR_FAR );
 
     _curPosition = _position;
     _curRotation = osg::Quat( 
