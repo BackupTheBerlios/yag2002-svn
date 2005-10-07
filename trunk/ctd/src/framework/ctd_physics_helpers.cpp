@@ -90,7 +90,8 @@ void PhysicsDebugDrawable::drawImplementation( osg::State& state ) const
 void PhysicsVisitor::apply( Geode& node )
 { 
     // retrieve the node mask which is used for physics material and later for other properies
-    _attribute = node.getNodeMask();
+    // only the first byte is relevant for pyhsics material description
+    _attribute = node.getNodeMask() & 0xFF;
     
     // this means no need for building static collision geom
     //  this is not the same as MAT_NOCOL, as MAT_NOCOL collisions are detected
