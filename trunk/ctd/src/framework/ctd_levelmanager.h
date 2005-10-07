@@ -105,7 +105,7 @@ class LevelManager : public Singleton< LevelManager >
         void                                        initializeFirstTime();
 
         //! Build the physics's static collision geometry
-        void                                        buildPhysicsStaticGeometry();
+        void                                        buildPhysicsStaticGeometry( const std::string& levelFile );
 
         //! Static level mesh
         osg::Node*                                  _staticMesh;
@@ -130,6 +130,9 @@ class LevelManager : public Singleton< LevelManager >
 
         //! A queue for all entities which have been loaded before calling filanlizeLoading
         std::vector< BaseEntity* >                  _setupQueue;
+
+        //! Level name which is loaded, this is used for physics serialization
+        std::string                                 _levelFile;
 
     friend class Singleton< LevelManager >;
     friend class Application;

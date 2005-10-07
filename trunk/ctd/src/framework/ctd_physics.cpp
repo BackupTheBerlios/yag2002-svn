@@ -30,7 +30,9 @@
 
 #include <ctd_base.h>
 #include "ctd_log.h"
+#include "ctd_utils.h"
 #include "ctd_physics.h"
+#include "ctd_levelmanager.h"
 #include "ctd_application.h"
 #include "ctd_physics_helpers.h"
 #include <osg/Transform>
@@ -156,30 +158,128 @@ void Physics::shutdown()
     destroy();
 }
 
-bool Physics::buildStaticGeometry( osg::Group* p_root )
+void serializationCallback( void* p_serializeHandle, const void* p_buffer, size_t size )
 {
-    NewtonCollision* p_collision = NewtonCreateTreeCollision( _p_world, levelCollisionCallback );    
-    NewtonTreeCollisionBeginBuild( p_collision );
-    
-    // build the collision faces
+    std::ofstream* p_stream  = static_cast< std::ofstream* >( p_serializeHandle );
+    const char*    p_charbuf = static_cast< const char* >( p_buffer );
+    for ( size_t cnt = 0; cnt < size; cnt++ )
+        p_stream->put( p_charbuf[ cnt ] );
+}
+
+void deserializationCallback( void* p_serializeHandle, void* p_buffer, size_t size )
+{
+    std::ifstream* p_stream  = static_cast< std::ifstream* >( p_serializeHandle );
+    char*          p_charbuf = static_cast< char* >( p_buffer );
+    for ( size_t cnt = 0; cnt < size; cnt++ )
+        p_stream->get( p_charbuf[ cnt ] );
+}
+
+bool Physics::serialize( const std::string& meshFile, const std::string& outputFile )
+{
+    log << Log::LogLevel( Log::L_DEBUG ) << "serializing physics static geometry '" << meshFile << "'" << std::endl;
+    log << Log::LogLevel( Log::L_DEBUG ) << " unloading existing level" << std::endl;
+    // first unload existing level
+    LevelManager::get()->unloadLevel( true, true );
+
+    osg::ref_ptr< osg::Node >  meshnode = LevelManager::get()->loadMesh( meshFile, false );
+    if ( !meshnode.valid() )
+        return false;
+
+    osg::ref_ptr< osg::Group > root = new osg::Group;
+    root->addChild( meshnode.get() );
+
+    // begin build the collision faces
     //--------------------------
+    NewtonCollision* p_collision = NewtonCreateTreeCollision( _p_world, levelCollisionCallback );
+    NewtonTreeCollisionBeginBuild( p_collision );
+
+
+
     // start timer
     osg::Timer_t start_tick = osg::Timer::instance()->tick();
     //! iterate through all geometries and create their collision faces
     PhysicsVisitor physVisitor( NodeVisitor::TRAVERSE_ALL_CHILDREN, p_collision );
-    p_root->accept( physVisitor );
+    root->accept( physVisitor );
     // stop timer and give out the time messure
     osg::Timer_t end_tick = osg::Timer::instance()->tick();
-    log << Log::LogLevel( Log::L_INFO ) << "statistics:" << endl;
-    log << " time to build physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << endl;
-    log << " total num of evaluated primitives: " << PhysicsVisitor::getNumPrimitives() << endl;
-    log << " total num of vertices: " << PhysicsVisitor::getNumVertices() << endl;
+    log << Log::LogLevel( Log::L_DEBUG ) << " elapsed time for building physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << endl;
+    log << Log::LogLevel( Log::L_DEBUG ) << "  total num of evaluated primitives: " << PhysicsVisitor::getNumPrimitives() << endl;
+    log << Log::LogLevel( Log::L_DEBUG ) << "  total num of vertices: " << PhysicsVisitor::getNumVertices() << endl;
 
     //--------------------------
+    // finalize tree building 
+    NewtonTreeCollisionEndBuild( p_collision, 0 );
 
-    // finalize tree building with optimization off ( because the meshes are already optimized by 
-    //  osg _and_ Newton has currently problems with optimization )
-    NewtonTreeCollisionEndBuild( p_collision, 0 /* 1 */);
+    // write out the serialization data
+    std::string file( CTD::Application::get()->getMediaPath() + outputFile + CTD_PHYSICS_SERIALIZE_POSTFIX );
+    log << Log::LogLevel( Log::L_DEBUG ) << " write to serialization file '" << file << "'" << std::endl;
+    std::ofstream serializationoutput;
+    serializationoutput.open( file.c_str(), std::ios_base::binary | std::ios_base::out );
+    if ( !serializationoutput )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << " cannot write to serialization file '" << file << "'" << std::endl;        
+        serializationoutput.close();
+        return false;
+    }
+    NewtonTreeCollisionSerialize( p_collision, serializationCallback, &serializationoutput );
+    serializationoutput.close();
+
+    return true;
+}
+
+bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelFile )
+{
+    NewtonCollision* p_collision = NULL; 
+
+    // check if a serialization file exists, if so then load it. otherwise build the static geometry on the fly.
+    assert( levelFile.length() && "internal error: missing levelFile name!" );
+    std::string file = cleanPath( levelFile );
+    std::vector< std::string > path;
+    explode( file, "/", &path );
+    file = CTD::Application::get()->getMediaPath() + CTD_PHYSICS_MEDIA_FOLDER + path[ path.size() - 1 ] + CTD_PHYSICS_SERIALIZE_POSTFIX;
+    std::ifstream serializationfile;
+    serializationfile.open( file.c_str(), std::ios_base::binary | std::ios_base::in );
+    if ( !serializationfile )
+    {
+        log << Log::LogLevel( Log::L_WARNING ) << "no serialization file for physics static geometry exists. building ..." << std::endl;
+
+        p_collision = NewtonCreateTreeCollision( _p_world, levelCollisionCallback );
+        NewtonTreeCollisionBeginBuild( p_collision );
+        
+        // build the collision faces
+        //--------------------------
+        // start timer
+        osg::Timer_t start_tick = osg::Timer::instance()->tick();
+        //! iterate through all geometries and create their collision faces
+        PhysicsVisitor physVisitor( NodeVisitor::TRAVERSE_ALL_CHILDREN, p_collision );
+        p_root->accept( physVisitor );
+        // stop timer and give out the time messure
+        osg::Timer_t end_tick = osg::Timer::instance()->tick();
+        log << Log::LogLevel( Log::L_DEBUG ) << "elapsed time for building physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << endl;
+        log << Log::LogLevel( Log::L_DEBUG ) << " total num of evaluated primitives: " << PhysicsVisitor::getNumPrimitives() << endl;
+        log << Log::LogLevel( Log::L_DEBUG ) << " total num of vertices: " << PhysicsVisitor::getNumVertices() << endl;
+
+        //--------------------------
+        // finalize tree building with optimization off ( because the meshes are already optimized by 
+        //  osg _and_ Newton has currently problems with optimization )
+        NewtonTreeCollisionEndBuild( p_collision, 0 /* 1 */);
+    }
+    else
+    {
+        log << Log::LogLevel( Log::L_DEBUG ) << "found serialization file for physics static geometry. reading '" << file << "' ..." << std::endl;
+
+        // start timer
+        osg::Timer_t start_tick = osg::Timer::instance()->tick();
+
+        p_collision = NewtonCreateTreeCollisionFromSerialization( _p_world, NULL, deserializationCallback, &serializationfile );
+        assert( p_collision && "internal error, something went wrong during physics deserialization!" );
+
+        // stop timer and give out the time messure
+        osg::Timer_t end_tick = osg::Timer::instance()->tick();
+        log << Log::LogLevel( Log::L_DEBUG ) << "elapsed time for deserializing physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << endl;
+
+        serializationfile.close();
+    }
 
     _p_body = NewtonCreateBody( _p_world, p_collision );
 

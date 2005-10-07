@@ -37,6 +37,11 @@
 namespace CTD
 {
 
+// Physics serialization file postfix
+#define CTD_PHYSICS_SERIALIZE_POSTFIX   ".phys"
+// Folder for storing physics collision geometry serialization files
+#define CTD_PHYSICS_MEDIA_FOLDER        "physics/"
+
 // Newton's update period in seconds
 #define FIX_PHYSICS_UPDATE_PERIOD   ( 1.0f / 60.0f )
 
@@ -91,6 +96,9 @@ class Physics : public Singleton< Physics >
         //! Create a new material id for given name        
         int                                         createMaterialID( const std::string& materialType );
 
+        //! Serialize a given mesh file ( it must be in an OSG readable format ). The result is written to outputFile.
+        bool                                        serialize( const std::string& meshFile, const std::string& outputFile );
+
         //! Generic collision callback function for contact begin ( this can be used in entity material definitions )
         static int                                  genericContactBegin( const NewtonMaterial* p_material, const NewtonBody* p_body0, const NewtonBody* p_body1 );
 
@@ -134,7 +142,7 @@ class Physics : public Singleton< Physics >
         * Note: this process is not done in 'initialize' in order to give entities the
         * opportunity for defining own physics materials during their creation.
         */
-        bool                                        buildStaticGeometry( osg::Group* p_root );
+        bool                                        buildStaticGeometry( osg::Group* p_root, const std::string& levelFile );
 
         //! Create the material graph
         void                                        setupMaterials();

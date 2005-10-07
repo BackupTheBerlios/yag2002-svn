@@ -96,6 +96,8 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
     if ( _firstLoading )
         return false;
 
+    _levelFile = "";
+
     // send out unload level notification
     EntityNotification ennotify( CTD_NOTIFY_UNLOAD_LEVEL );
     EntityManager::get()->sendNotification( ennotify );
@@ -159,6 +161,9 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
 osg::ref_ptr< osg::Group > LevelManager::loadLevel( const string& levelFile )
 {
     log << Log::LogLevel( Log::L_INFO ) << "start loading level: " << levelFile << endl;
+
+    // store the level file name, we will use it for physics serialization
+    _levelFile = levelFile;
 
     // clear the entity list used for loading process
     _setupQueue.clear();
@@ -396,14 +401,14 @@ void LevelManager::finalizeLoading()
         assert( initphysics && "could not init physics" );
 
         if ( _levelHasMap )
-            buildPhysicsStaticGeometry();
+            buildPhysicsStaticGeometry( _levelFile );
 
         initializeFirstTime();
     }
     else
     {
         // build the physics static geometry on every finalizing
-        buildPhysicsStaticGeometry();
+        buildPhysicsStaticGeometry( _levelFile );
     }
 
     // init and post-init entities which have been created before
@@ -456,7 +461,7 @@ void LevelManager::initializeFirstTime()
     }
 }
 
-void LevelManager::buildPhysicsStaticGeometry()
+void LevelManager::buildPhysicsStaticGeometry( const std::string& levelFile )
 {
     // continue setting up physics
     //----------------------------
@@ -478,7 +483,7 @@ void LevelManager::buildPhysicsStaticGeometry()
 
     startTick  = timer.tick();
     // build static geoms for physics collision nodes
-    bool buildphysics = Physics::get()->buildStaticGeometry( _nodeGroup.get() );
+    bool buildphysics = Physics::get()->buildStaticGeometry( _nodeGroup.get(), levelFile );
     assert( buildphysics && "could not build physics" );
 
     curTick    = timer.tick();
