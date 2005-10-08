@@ -130,7 +130,7 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
     }
     s_colStruct->_p_otherEntity = NULL;
     s_colStruct->_p_physics     = p_phys;
-/*
+
     // play appropriate sound only if we are moving
     if ( p_phys->isMoving() && p_phys->getPlayer()->getPlayerSound() && ( p_phys->getSoundTimer() <= 0.0f ) )
     {
@@ -163,7 +163,7 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
                 
         }
     }
-*/
+
     return p_phys->collideWithLevel( p_material, p_contact );
 }
 
@@ -502,6 +502,9 @@ void EnPlayerPhysics::setPlayer( BasePlayerImplementation* p_player )
 
 void EnPlayerPhysics::initialize()
 {
+    // note: remote clients don't get the physics build callback!
+    _p_world = Physics::get()->getWorld();
+
     // set the step and player height
     _playerHeight = _dimensions._v[ 2 ];
 
