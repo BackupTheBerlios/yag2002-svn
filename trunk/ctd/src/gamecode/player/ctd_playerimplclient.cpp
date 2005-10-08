@@ -187,6 +187,7 @@ void PlayerImplClient::postInitialize()
             assert( _p_playerAnimation && "given instance name does not belong to a EnPlayerAnimation entity type, or entity is missing!" );
             _p_playerAnimation->setPlayer( this );
         }
+        log << Log::LogLevel( Log::L_DEBUG ) << "   -  animation entity successfully attached" << endl;
 
         if ( _cameraMode == Ego ) // in ego mode we won't render our character
         {
@@ -203,11 +204,18 @@ void PlayerImplClient::postInitialize()
 
         // setup camera mode
         setCameraMode( _cameraMode );
-
-        log << Log::LogLevel( Log::L_DEBUG ) << "   -  animation entity successfully attached" << endl;
     }
     else // setup remote client ( note, the remote instance names have a postfix )
     {
+        // attach physics entity
+        {
+            log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for physics entity '" << _playerAttributes._physicsEntity + _loadingPostFix << "' ..." << endl;
+            // find and attach physics component
+            _p_playerPhysics = dynamic_cast< EnPlayerPhysics* >( EntityManager::get()->findEntity( ENTITY_NAME_PLPHYS, _playerAttributes._physicsEntity + _loadingPostFix ) );
+            assert( _p_playerPhysics && "given instance name does not belong to a EnPlayerPhysics entity type, or entity is missing!" );
+            _p_playerPhysics->setPlayer( this );
+            log << Log::LogLevel( Log::L_DEBUG ) << "   -  physics entity successfully attached" << endl;
+        }
         // attach sound entity
         {
             log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for sound entity '" << _playerAttributes._soundEntity + _loadingPostFix << "' ..." << endl;
@@ -297,20 +305,43 @@ void PlayerImplClient::update( float deltaTime )
     {
         // update remote client's rotation and position
         osg::Vec3f lastpos = _currentPos;
+        osg::Vec3f clientpos;
+
         float      lastrot = _rotZ;
-        getPlayerNetworking()->getPosition( _currentPos._v[ 0 ], _currentPos._v[ 1 ], _currentPos._v[ 2 ] );
+        getPlayerNetworking()->getPosition( clientpos._v[ 0 ], clientpos._v[ 1 ], clientpos._v[ 2 ] );
         getPlayerNetworking()->getRotation( _rotZ );
         _currentRot.makeRotate( -_rotZ + osg::PI, osg::Vec3f( 0.0f, 0.0f, 1.0f ) );
-        getPlayerEntity()->setPosition( _currentPos );
         getPlayerEntity()->setRotation( _currentRot );
+        getPlayerEntity()->setPosition( _currentPos );
+
+        // calculate the current velocity
+        osg::Vec3f vel( clientpos - lastpos );
+        // do we need a hard position correction?
+        if ( vel.length2() > 4.0f )
+        {
+            osg::Matrix mat;
+            mat.makeRotate( _currentRot );
+            mat.setTrans( clientpos );
+            getPlayerPhysics()->setTransformation( mat );
+            getPlayerPhysics()->setDirection( 0.0f, 0.0f );
+        }
+        else
+        {
+            vel._v[ 2 ] = 0.0f;
+            // limit velocity
+            if ( vel.length2() > 1.0f )
+                vel.normalize();
+
+            getPlayerPhysics()->setDirection( vel.x(), vel.y() );
+        }
 
         // set animation depending on position and rotation changes
-        if ( ( _currentPos.z() - lastpos.z() ) > 0.1f )
+        if ( ( clientpos.z() - lastpos.z() ) > 0.1f )
         {
             getPlayerAnimation()->setAnimation( EnPlayerAnimation::eIdle );
             getPlayerAnimation()->setAnimation( EnPlayerAnimation::eJump );
         }
-        else if ( ( lastpos - _currentPos ).length2() > 0.001f )
+        else if ( vel.length2() > 0.001f )
         {
             getPlayerAnimation()->setAnimation( EnPlayerAnimation::eWalk );
         } else
