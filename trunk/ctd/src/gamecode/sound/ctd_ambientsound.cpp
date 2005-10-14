@@ -130,7 +130,7 @@ void EnAmbientSound::stopPlaying()
         _soundState->setPlay( false );
 }
 
-        //! Set sound volume (0..1)
+//! Set sound volume (0..1)
 void EnAmbientSound::setVolume( float volume )
 {
     _volume = std::max( std::min( volume, 1.0f ), 0.0f );
