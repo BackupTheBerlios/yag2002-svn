@@ -4,64 +4,17 @@
 #pragma warning(disable : 4786)
 #endif
 #include "../ctd_playernetworking.h"
-
 _RO_DO_STD_FRAMEWORK(PlayerNetworking);
 #include "RNReplicaNet/Inc/DataBlock_Function.h"
-_RO_DO_MEMBERFUNC_PRESTAGE_DEF(PlayerNetworking,RPC_AddChatText)
-tChatMsg value1
-_RO_DO_MEMBERFUNC_PRESTAGE(RPC_AddChatText);
-_RO_DO_MEMBERFUNC_ADDVAR(value1);
-_RO_DO_MEMBERFUNC_POSTSTAGE(RPC_AddChatText);
-
-//#define _RO_DO_MEMBERFUNC_CRACK_START(x,y)	
-//void _MAKE_RO(x)::##y(void *classp,void *opaque_message)	
-//{	
-//	_MAKE_RO(x) *thisclass = (_MAKE_RO(x) *) classp;	
-//	RNReplicaNet::MessageHelper *message = (RNReplicaNet::MessageHelper *) opaque_message;	
-//	message = message;
-//
-
-void _MAKE_RO(PlayerNetworking)::RPC_AddChatText(void *classp,void *opaque_message)	
-{	
-	_MAKE_RO(PlayerNetworking) *thisclass = (_MAKE_RO(PlayerNetworking) *) classp;	
-	RNReplicaNet::MessageHelper *message = (RNReplicaNet::MessageHelper *) opaque_message;	
-	message = message;
-/*_RO_DO_MEMBERFUNC_CRACK_START(PlayerNetworking,RPC_AddChatText)*/
-    
-tChatMsg value1;
-MESSAGEHELPER_GETVARIABLEp((*message),value1);
-/* _RO_DO_MEMBERFUNC_MESSAGE_CRACK(value1); */
-
-((PlayerNetworking*)thisclass)->RPC_AddChatText(
-/*_RO_DO_MEMBERFUNC_CRACK_END(PlayerNetworking,RPC_AddChatText)*/
-    
-value1
-_RO_DO_MEMBERFUNC_CRACK_END2()
 _RO_DO_MEMBERFUNC_PRESTAGE_DEF(PlayerNetworking,RPC_Initialize)
 tInitializationData value1
 _RO_DO_MEMBERFUNC_PRESTAGE(RPC_Initialize);
-
-message.AddVariable(&value1,sizeof(value1));
-/*_RO_DO_MEMBERFUNC_ADDVAR(value1);*/
-
+_RO_DO_MEMBERFUNC_ADDVAR(value1);
 _RO_DO_MEMBERFUNC_POSTSTAGE(RPC_Initialize);
-
-
-void _MAKE_RO(PlayerNetworking)::RPC_Initialize(void *classp,void *opaque_message)	
-{	
-	_MAKE_RO(PlayerNetworking) *thisclass = (_MAKE_RO(PlayerNetworking) *) classp;	
-	RNReplicaNet::MessageHelper *message = (RNReplicaNet::MessageHelper *) opaque_message;	
-	message = message;
-/*_RO_DO_MEMBERFUNC_CRACK_START(PlayerNetworking,RPC_Initialize)*/
-
+_RO_DO_MEMBERFUNC_CRACK_START(PlayerNetworking,RPC_Initialize)
 tInitializationData value1;
-
-MESSAGEHELPER_GETVARIABLEp((*message),value1);
-/*_RO_DO_MEMBERFUNC_MESSAGE_CRACK(value1);*/
-
-((PlayerNetworking*)thisclass)->RPC_Initialize(
-/*_RO_DO_MEMBERFUNC_CRACK_END(PlayerNetworking,RPC_Initialize)*/
-    
+_RO_DO_MEMBERFUNC_MESSAGE_CRACK(value1);
+_RO_DO_MEMBERFUNC_CRACK_END(PlayerNetworking,RPC_Initialize)
 value1
 _RO_DO_MEMBERFUNC_CRACK_END2()
 #include "RNReplicaNet/Inc/DataBlock_Predict_Float.h"
@@ -100,9 +53,6 @@ _RO_DO_REGISTERBLOCK_PREDICT_FLOAT_SETMAXERROR(0.1f);
 _RO_DO_REGISTERBLOCK_PREDICT_FLOAT_SETLINEAR();
 _RO_DO_REGISTERBLOCK_END();
 _RO_DO_REGISTERBLOCK_NDATA_VAR(_cmdAnimFlags);
-_RO_DO_DATABLOCK_MAKERELIABLE();
-_RO_DO_REGISTERBLOCK_END();
-_RO_DO_REGISTERBLOCK_FUNCTION_VAR(RPC_AddChatText);
 _RO_DO_DATABLOCK_MAKERELIABLE();
 _RO_DO_REGISTERBLOCK_END();
 _RO_DO_REGISTERBLOCK_FUNCTION_VAR(RPC_Initialize);

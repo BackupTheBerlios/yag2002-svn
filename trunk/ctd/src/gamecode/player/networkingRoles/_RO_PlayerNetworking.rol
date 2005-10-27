@@ -3,7 +3,6 @@ object PlayerNetworking
 {
     
     datablock Function;
-    extern RPC_AddChatText(tChatMsg);
     extern RPC_Initialize(tInitializationData);
     
     datablock Predict_Float;
@@ -59,10 +58,6 @@ object PlayerNetworking
             Reliable();
         }
 
-        Function RPC_AddChatText;
-        { 
-            Reliable();
-        }
         Function RPC_Initialize;
         { 
             Reliable();
