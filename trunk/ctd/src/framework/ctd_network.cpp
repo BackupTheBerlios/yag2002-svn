@@ -41,6 +41,35 @@ using namespace RNReplicaNet;
 
 CTD_SINGLETON_IMPL( NetworkDevice );
 
+CTDReplicaNet::CTDReplicaNet() :
+_numSessions( 0 )
+{
+}
+
+CTDReplicaNet::~CTDReplicaNet()
+{
+}
+
+void CTDReplicaNet::JoinerSessionIDPost( const int sessionID )
+{
+    THREADSAFELOCKCLASS( _mutex );
+    _sessionIDs.push_back( sessionID );
+    _numSessions++;
+}
+
+void CTDReplicaNet::LeaverSessionIDPost( const int sessionID )
+{
+    THREADSAFELOCKCLASS( _mutex );
+
+    std::vector< int >::iterator p_beg = _sessionIDs.begin(), p_end = _sessionIDs.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        if ( *p_beg == sessionID )
+            break;
+
+    assert( ( p_beg != p_end ) && "id of leaving session could not be found!" );
+    _sessionIDs.erase( p_beg );
+    _numSessions--;
+}
 
 NetworkDevice::NetworkDevice() :
 _mode( NONE ),
@@ -98,7 +127,7 @@ bool NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
     CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "starting server, time: " << CTD::getTimeStamp() << endl;
 
     _nodeInfo  = nodeInfo;
-    _p_session = new ReplicaNet;
+    _p_session = new CTDReplicaNet;
 
     log << Log::LogLevel( Log::L_INFO ) << "nw server: starting network session: " << nodeInfo._nodeName << endl;
 
@@ -140,7 +169,7 @@ bool NetworkDevice::setupClient( const string& serverIp, int channel, const Node
     // do we already have a session created?
     assert( _p_session == NULL && "there is already a running session!" );
     _nodeInfo  = nodeInfo;
-    _p_session = new ReplicaNet;
+    _p_session = new CTDReplicaNet;
 
     _p_session->SetManualPoll();
     //_p_session->SetGameChannel( channel );
@@ -298,6 +327,29 @@ NodeInfo* NetworkDevice::getNodeInfo()
         return &_nodeInfo;
 
     return NULL;
+}
+
+int NetworkDevice::getSessionID()
+{
+    assert( _p_session && "no valid session exists!" );
+    return _p_session->GetSessionID();
+}
+
+void NetworkDevice::getObjects( std::vector< ReplicaObject* >& objs )
+{
+    assert( _p_session && "there is no valid session!" );
+    _p_session->ObjectListBeginIterate();
+
+    ReplicaObject* p_obj = NULL;
+    do 
+    {
+        p_obj = _p_session->ObjectListIterate();
+        if ( !p_obj )
+            objs.push_back( p_obj );
+
+    } while( p_obj );
+
+    _p_session->ObjectListFinishIterate();
 }
 
 void NetworkDevice::updateServer( float deltaTime ) 

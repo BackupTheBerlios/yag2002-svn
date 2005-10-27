@@ -93,6 +93,32 @@ class NodeInfo
     friend  class Application;
 };
 
+//! Derived class from RNReplicaNet::ReplicaNet, this class allows tracking of joining / leaving sessions
+class CTDReplicaNet: public RNReplicaNet::ReplicaNet
+{
+    public:
+
+                                                        CTDReplicaNet();
+        
+        virtual                                         ~CTDReplicaNet();
+
+    protected:
+
+        //! Overridden method for getting notified when a session joined
+	    void                                            JoinerSessionIDPost( const int sessionID );
+
+        //! Overridden method for getting notified when a session leaves
+	    void                                            LeaverSessionIDPost( const int sessionID );
+
+        //! Number of joined sessions
+	    int                                             _numSessions;
+
+        //! A list of joined sessions ids
+	    std::vector< int >                              _sessionIDs;
+
+	    RNReplicaNet::MutexClass                        _mutex;
+};
+
 //! Networking device
 class NetworkDevice : public Singleton< NetworkDevice >
 {
@@ -145,6 +171,18 @@ class NetworkDevice : public Singleton< NetworkDevice >
         */
         NodeInfo*                                   getNodeInfo();
 
+        /**
+        * Get the session ID, call this after a successful connection
+        * \return                                   Session ID
+        */
+        int                                         getSessionID();
+
+        /**
+        * Get all replicated objects
+        * \param objs                              List of objects
+        */
+        void                                        getObjects( std::vector< RNReplicaNet::ReplicaObject* >& objs );
+
         /** 
         * Lock object creation and deletion
         */
@@ -182,7 +220,7 @@ class NetworkDevice : public Singleton< NetworkDevice >
         NetworkingMode                              _mode;
 
         //! Session instance
-        RNReplicaNet::ReplicaNet*                   _p_session;
+        CTDReplicaNet*                              _p_session;
 
         //! Server's / client's node information
         NodeInfo                                    _nodeInfo;
