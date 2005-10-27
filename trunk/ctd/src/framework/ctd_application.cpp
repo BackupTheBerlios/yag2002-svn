@@ -307,15 +307,17 @@ bool Application::initialize( int argc, char **argv )
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( CTD_LEVEL_SERVER_DIR + arg_levelname );
         if ( !sceneroot.valid() )
             return false;
-        // complete level loading
-        LevelManager::get()->finalizeLoading();
 
+        // start networking before setting up entities
         string servername;
         Configuration::get()->getSettingValue( CTD_GS_SERVER_NAME, servername );
         NodeInfo nodeinfo( arg_levelname, servername );
         unsigned int channel;
         Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
         _p_networkDevice->setupServer( channel, nodeinfo );
+
+        // complete level loading
+        LevelManager::get()->finalizeLoading();
     }
     else if ( GameState::get()->getMode() == GameState::Client )
     {
