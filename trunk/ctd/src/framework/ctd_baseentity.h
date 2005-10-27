@@ -236,7 +236,7 @@ class BaseEntity
         /** 
         * Avoid usage of copy constructor
         */
-                                                    BaseEntity( BaseEntity& );
+                                                    BaseEntity( const BaseEntity& );
 
         /** 
         * Avoid usage of assignment operator        
