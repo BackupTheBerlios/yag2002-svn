@@ -43,19 +43,6 @@
 #include <ctd_main.h>
 #include "networkingRoles/_RO_PlayerNetworking.h"
 
-//typedef struct _tChatMsg 
-//{
-//    char    _text[ 256 ];
-//} tChatMsg;
-
-//typedef struct _tInitializationData
-//{
-//    float   _posX;
-//    float   _posY;
-//    float   _posZ;
-//    float   _rotZ;
-//} tInitializationData;
-
 namespace CTD
 {
     class EnPlayer;
@@ -110,11 +97,6 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         //-----------------------------------------------------------------------------------//
         //! Object can now be initialized in scene
         void                                        PostObjectCreate();
-
-        // RPCs
-        //-----------------------------------------------------------------------------------//
-        //! New incomming chat text
-        void                                        RPC_AddChatText( tChatMsg chatMsg );
 
         //! Initialization function called on a new connected client and its ghosts
         void                                        RPC_Initialize( tInitializationData initData );

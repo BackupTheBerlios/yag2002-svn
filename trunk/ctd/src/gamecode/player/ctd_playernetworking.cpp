@@ -38,6 +38,7 @@
 #include "ctd_playerimplserver.h"
 #include "ctd_playerphysics.h"
 #include "ctd_player.h"
+#include "chat/ctd_chatmgr.h"
 
 using namespace std;
 
@@ -91,14 +92,7 @@ PlayerNetworking::~PlayerNetworking()
 
     // remove ghost from simulation ( server and client )
     if ( isRemoteClient() ) 
-    {    
-        // print a goodby message before destroying the player entity
-        if ( CTD::GameState::get()->getMode() != CTD::GameState::Server )
-        {
-            string exitingtext( string( "< " ) + _p_playerName + string ( " says goodbye >" ) );
-            _p_playerImpl->addChatMessage( exitingtext, "" );
-        }
-
+    {
         // PlayerNetworking has created the player implementation, so set its networking and other components to NULL in order to abvoid deleting it also by player's implementation
         _p_playerImpl->setPlayerNetworking( NULL );
         _p_playerImpl->setPlayerSound( NULL );
@@ -142,11 +136,6 @@ void PlayerNetworking::PostObjectCreate()
             init._rotZ = _yaw;
 
             ALL_REPLICAS_FUNCTION_CALL( RPC_Initialize( init ) );
-        }
-        else
-        {
-            string enteringtext( string( "< " ) + _p_playerName + string ( " says hello >" ) );
-            _p_playerImpl->addChatMessage( enteringtext, "" );   
         }
     }
 
@@ -228,27 +217,6 @@ void PlayerNetworking::initialize( const osg::Vec3f& pos, const string& playerNa
     _positionZ = pos._v[ 2 ];
     strcpy( _p_playerName, playerName.c_str() );
     strcpy( _p_configFile, cfgFile.c_str() );
-}
-
-void PlayerNetworking::putChatText( const CEGUI::String& text )
-{
-    static tChatMsg s_textBuffer;
-    memset( s_textBuffer._text, 0, sizeof( tChatMsg ) ); // zero out the text buffer
-    text.copy( s_textBuffer._text );
-    ALL_REPLICAS_FUNCTION_CALL( RPC_AddChatText( s_textBuffer ) );
-}
-
-void PlayerNetworking::RPC_AddChatText( tChatMsg chatMsg )
-{
-    chatMsg._text[ 255 ] = 0; // limit text length
-    // server directs all messages into a log file!
-    if ( CTD::GameState::get()->getMode() == CTD::GameState::Server ) 
-        getChatLog() << chatMsg._text << endl;
-    else
-    {
-        CEGUI::String msg( chatMsg._text );
-        _p_playerImpl->addChatMessage( msg, _p_playerName );
-    }
 }
 
 void PlayerNetworking::RPC_Initialize( tInitializationData initData )

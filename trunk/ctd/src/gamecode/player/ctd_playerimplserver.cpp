@@ -19,9 +19,9 @@
  ****************************************************************/
 
 /*###############################################################
- # player implementation for server mode
+ # entity VRC chat server
  #
- #   date of creation:  05/31/2005
+ #   date of creation:  10/26/2005
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
@@ -33,6 +33,8 @@
 #include "ctd_player.h"
 #include "ctd_playerphysics.h"
 #include "ctd_playernetworking.h"
+#include "chat/ctd_chatmgr.h"
+#include "chat/VRC/ctd_chatprotVRC.h"
 
 using namespace std;
 

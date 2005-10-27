@@ -128,7 +128,7 @@ class EnPlayer : public BaseEntity
                 //! Camera's rotation offset for ego mode ( roll/pitch/yaw in degrees )
                 osg::Vec3f                                  _camRotOffsetEgo;
 
-                //! CEGUI layout file for chat
+                //! CEGUI layout file for built-in chat
                 std::string                                 _chatGuiConfig;
         };
 

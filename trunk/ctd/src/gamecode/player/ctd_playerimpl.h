@@ -49,15 +49,17 @@ class PlayerNetworking;
 namespace CTD
 {
 
+// entity name of player's camera
+#define PLAYER_CAMERA_ENTITIY_NAME      "playercam"
+
 class EnCamera;
+class ChatManager;
 class PlayerChatGui;
+class ChatClientIRC;
 class EnPlayerSound;
 class EnPlayerPhysics;
 class EnPlayerAnimation;
 class PlayerInputHandler;
-
-// entity name of player's camera
-#define PLAYER_CAMERA_ENTITIY_NAME      "playercam"
 
 //! Player implementation base class
 /** 
@@ -102,12 +104,6 @@ class BasePlayerImplementation
         //! Get player's move direction
         inline const osg::Vec3f&                    getPlayerMoveDirection() const;
 
-        //! Add the given message to chat box
-        void                                        addChatMessage( const CEGUI::String& msg, const CEGUI::String& author );
-
-        //! Distribute the given message to all other clients
-        void                                        distributeChatMessage( const CEGUI::String& msg );
-
         //! Return player's animation component.
         inline EnPlayerAnimation*                   getPlayerAnimation();
 
@@ -131,6 +127,15 @@ class BasePlayerImplementation
 
         //! Set player's networking component ( used by networking component itself when a new remote client is created ).
         inline void                                 setPlayerNetworking( PlayerNetworking* p_net );
+
+        //! Create the chat manager, return false if something went wrong
+        bool                                        createChatManager();
+
+        //! Destroy the chat manager instance
+        void                                        destroyChatManager();
+
+        //! Return the chat manager, it is shared between local and remote clients
+        static ChatManager*                         getChatManager();
 
         //! Get player entity
         inline EnPlayer*                            getPlayerEntity();
@@ -186,8 +191,8 @@ class BasePlayerImplementation
         //! Networking component
         PlayerNetworking*                           _p_playerNetworking;
 
-        //! Chat gui
-        PlayerChatGui*                              _p_chatGui;
+        //! Chat manager, it's static as it is shared between local and remote clients
+        static ChatManager*                         s_chatMgr;
 
         //! Movement direction
         osg::Vec3f                                  _moveDir;

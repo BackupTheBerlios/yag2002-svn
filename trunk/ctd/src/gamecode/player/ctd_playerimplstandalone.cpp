@@ -31,7 +31,7 @@
 #include <ctd_main.h>
 #include "ctd_playerimplstandalone.h"
 #include "ctd_player.h"
-#include "ctd_chatgui.h"
+#include "chat/ctd_chatmgr.h"
 #include "ctd_playerphysics.h"
 #include "ctd_playeranim.h"
 #include "ctd_playersound.h"
@@ -53,6 +53,8 @@ PlayerImplStandalone::~PlayerImplStandalone()
 {
     // destroy input handler
     _p_inputHandler->destroyHandler();
+    // destroy the chat manager
+    destroyChatManager();
 }
 
 void PlayerImplStandalone::handleNotification( const EntityNotification& notification )
@@ -62,7 +64,7 @@ void PlayerImplStandalone::handleNotification( const EntityNotification& notific
     {
         case CTD_NOTIFY_MENU_ENTER:
 
-            _p_chatGui->show( false );
+            getChatManager()->show( false );
             if ( _p_inputHandler )
                 _p_inputHandler->setMenuEnabled( true );
             
@@ -82,7 +84,7 @@ void PlayerImplStandalone::handleNotification( const EntityNotification& notific
 
         case CTD_NOTIFY_MENU_LEAVE:
         {
-            _p_chatGui->show( true );
+            getChatManager()->show( true );
 
             if ( _p_inputHandler )
             {
@@ -98,12 +100,6 @@ void PlayerImplStandalone::handleNotification( const EntityNotification& notific
         break;
 
         case CTD_NOTIFY_UNLOAD_LEVEL:
-        {
-            // deleting the gui object must happen at last as goodby messages must be sent out
-            PlayerChatGui* p_chatGui = PlayerChatGui::get();
-            if ( p_chatGui )
-                delete p_chatGui;
-        }
         break;
 
         default:
@@ -192,10 +188,13 @@ void PlayerImplStandalone::postInitialize()
     // setup camera mode
     setCameraMode( _cameraMode );
 
-    log << Log::LogLevel( Log::L_INFO ) << "  player implementation successfully initialized" << endl;
+    // create the chat manager
+    if ( !createChatManager() )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "   -  could not create chat system" << endl;
+    }
 
-    _p_chatGui = new PlayerChatGui;
-    _p_chatGui->initialize( this, _playerAttributes._chatGuiConfig );
+    log << Log::LogLevel( Log::L_INFO ) << "  player implementation successfully initialized" << endl;
 
     // create only the input handler when animation and physics are attached
     if ( _p_playerAnimation && _p_playerPhysics )
@@ -252,7 +251,7 @@ void PlayerImplStandalone::update( float deltaTime )
     if ( _p_camera )
         _p_camera->setCameraTranslation( getPlayerPosition(), getPlayerRotation() );
 
-    _p_chatGui->update( deltaTime );
+    getChatManager()->update( deltaTime );
 }
 
 } // namespace CTD

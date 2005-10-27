@@ -31,7 +31,7 @@
 #include <ctd_main.h>
 #include <ctd_gameutils.h>
 #include "ctd_player.h"
-#include "ctd_chatgui.h"
+#include "chat/ctd_chatmgr.h"
 #include "ctd_playersound.h"
 #include "ctd_inputhandler.h"
 #include "ctd_playerphysics.h"
@@ -65,7 +65,7 @@ void PlayerImplClient::handleNotification( const EntityNotification& notificatio
 
             if ( !getPlayerNetworking()->isRemoteClient() )
             {
-                _p_chatGui->show( false );
+                getChatManager()->show( false );
                 _p_inputHandler->setMenuEnabled( true );
 
                 // reset player's movement and sound
@@ -83,7 +83,7 @@ void PlayerImplClient::handleNotification( const EntityNotification& notificatio
         {
             if ( !getPlayerNetworking()->isRemoteClient() )
             {
-                _p_chatGui->show( true );
+                getChatManager()->show( true );
                 _p_inputHandler->setMenuEnabled( false );
 
                 // refresh our configuration settings
@@ -95,12 +95,11 @@ void PlayerImplClient::handleNotification( const EntityNotification& notificatio
         }
         break;
 
+        case CTD_NOTIFY_SHUTDOWN:
         case CTD_NOTIFY_UNLOAD_LEVEL:
         {
-            // deleting the gui object must happen at last as goodby messages must be sent out
-            PlayerChatGui* p_chatGui = PlayerChatGui::get();
-            if ( p_chatGui )
-                delete p_chatGui;
+            // destroy the chat manager
+            destroyChatManager();
         }
         break;
 
@@ -135,10 +134,6 @@ void PlayerImplClient::initialize()
         gameutils::getPlayerConfig( CTD::GameState::get()->getMode(), true, playerconfig );
         // init player's networking 
         getPlayerNetworking()->initialize( _currentPos, getPlayerEntity()->getPlayerName(), playerconfig );
-
-        // create chat gui
-        _p_chatGui = new PlayerChatGui;
-        _p_chatGui->initialize( this, _playerAttributes._chatGuiConfig );
     }
 }
 
@@ -196,6 +191,12 @@ void PlayerImplClient::postInitialize()
         else // if in spheric mode disable the mouse pointer
         {
             GuiManager::get()->showMousePointer( false );
+        }
+
+        // create the chat manager
+        if ( !createChatManager() )
+        {
+            log << Log::LogLevel( Log::L_ERROR ) << "   -  could not create chat system" << endl;
         }
 
         // create a new input handler for this player
@@ -299,15 +300,15 @@ void PlayerImplClient::update( float deltaTime )
         // adjust the camera to updated position and rotation. the physics updates the translation of player.
         _p_camera->setCameraTranslation( getPlayerPosition(), getPlayerRotation() );
         // update chat gui
-        _p_chatGui->update( deltaTime );
+        getChatManager()->update( deltaTime );
     }
     else
     {
         // update remote client's rotation and position
         osg::Vec3f lastpos = _currentPos;
+        float      lastrot = _rotZ;
         osg::Vec3f clientpos;
 
-        float      lastrot = _rotZ;
         getPlayerNetworking()->getPosition( clientpos._v[ 0 ], clientpos._v[ 1 ], clientpos._v[ 2 ] );
         getPlayerNetworking()->getRotation( _rotZ );
         _currentRot.makeRotate( -_rotZ + osg::PI, osg::Vec3f( 0.0f, 0.0f, 1.0f ) );

@@ -44,7 +44,6 @@
 #include "ctd_playeranim.h"
 #include "ctd_playersound.h"
 #include "ctd_playerphysics.h"
-#include "ctd_chatgui.h"
 #include "../visuals/ctd_camera.h"
 
 namespace CTD

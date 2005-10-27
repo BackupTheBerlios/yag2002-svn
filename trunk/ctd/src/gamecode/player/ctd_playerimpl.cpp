@@ -38,15 +38,16 @@
 #include "ctd_playeranim.h"
 #include "ctd_playersound.h"
 #include "ctd_inputhandler.h"
-#include "ctd_chatgui.h"
 #include "ctd_playernetworking.h"
+#include "chat/ctd_chatmgr.h"
+#include "chat/VRC/ctd_chatprotVRC.h"
+#include "chat/IRC/ctd_chatprotIRC.h"
 #include "../visuals/ctd_camera.h"
-
-using namespace osg;
-using namespace std;
 
 namespace CTD
 {
+
+ChatManager* BasePlayerImplementation::s_chatMgr = NULL;
 
 BasePlayerImplementation::BasePlayerImplementation( EnPlayer* player ) :
 _cameraMode( Ego ),
@@ -56,8 +57,7 @@ _p_playerAnimation( NULL ),
 _p_playerSound( NULL ),
 _p_camera( NULL ),
 _p_playerNetworking( NULL ),
-_p_chatGui( NULL ),
-_moveDir( Vec3f( 0, 1.0f, 0 ) ),
+_moveDir( osg::Vec3f( 0, 1.0f, 0 ) ),
 _rotZ( 0 )
 {
     // copy player's attributes
@@ -67,6 +67,59 @@ _rotZ( 0 )
 
 BasePlayerImplementation::~BasePlayerImplementation()
 {
+}
+
+// get the shared chat manager
+ChatManager* BasePlayerImplementation::getChatManager()
+{
+    return s_chatMgr;
+}
+
+void BasePlayerImplementation::destroyChatManager()
+{
+    if ( s_chatMgr )
+    {
+        // delete all chat protocol implementations
+        ChatManager::ProtocolMap& prots = s_chatMgr->getRegisteredProtocols();
+        ChatManager::ProtocolMap::iterator p_beg = prots.begin(), p_end = prots.end();
+        for( ; p_beg != p_end; p_beg++ )
+            delete p_beg->second;
+
+        // delete chat manager
+        delete s_chatMgr;
+        s_chatMgr = NULL;
+    }
+}
+
+bool BasePlayerImplementation::createChatManager()
+{
+    assert( ( s_chatMgr == NULL ) && "chat manager already created!" );
+    s_chatMgr = new ChatManager;
+
+    // register the IRC protocol
+    ChatNetworkingIRC* p_protIRC = new ChatNetworkingIRC;
+    s_chatMgr->registerChatProtocol( "IRC", p_protIRC );
+
+    // create VRC protocol only for client and server mode, not for standalone!
+    if ( CTD::GameState::get()->getMode() != CTD::GameState::Standalone )
+    {
+        ChatNetworkingVRC* p_protVRC = new ChatNetworkingVRC;
+        s_chatMgr->registerChatProtocol( "VRC", p_protVRC );        
+    }
+
+    // build the chat system
+    if ( CTD::GameState::get()->getMode() == CTD::GameState::Server )
+    {
+        if ( !s_chatMgr->buildServer() )
+            return false;
+    }
+    else
+    {
+        if ( !s_chatMgr->buildClient() )
+            return false;
+    }
+
+    return true;
 }
 
 void BasePlayerImplementation::setNextCameraMode()
@@ -105,8 +158,7 @@ void BasePlayerImplementation::setCameraMode( unsigned int mode )
                 );
             _p_camera->setCameraOffsetRotation( rot );
             _p_playerAnimation->enableRendering( true );
-            GuiManager::get()->showMousePointer( false );
-        } 
+        }
         break;
 
         case Ego:
@@ -120,7 +172,6 @@ void BasePlayerImplementation::setCameraMode( unsigned int mode )
                 );
             _p_camera->setCameraOffsetRotation( rot );
             _p_playerAnimation->enableRendering( false );
-            GuiManager::get()->showMousePointer( true );
         }
         break;
 
@@ -129,19 +180,6 @@ void BasePlayerImplementation::setCameraMode( unsigned int mode )
 
     }
     _cameraMode = ( CameraMode )mode;
-}
-
-void BasePlayerImplementation::addChatMessage( const CEGUI::String& msg, const CEGUI::String& author )
-{
-    // this method is used by all clients (local and remote), hence the chat gui must be accessible to all clients
-    PlayerChatGui* p_gui = PlayerChatGui::get();
-    if ( p_gui ) // on exiting a level the gui may be destroyed at this point, catch this case here
-        PlayerChatGui::get()->addMessage( msg, author );
-}
-
-void BasePlayerImplementation::distributeChatMessage( const CEGUI::String& msg )
-{
-    _p_playerNetworking->putChatText( msg );
 }
 
 } // namespace CTD

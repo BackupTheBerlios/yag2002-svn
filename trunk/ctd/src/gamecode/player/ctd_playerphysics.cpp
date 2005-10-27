@@ -44,6 +44,9 @@ namespace CTD
 
 // used to avoid playing too short sound 
 #define SND_PLAY_RELAX_TIME     0.5f
+// thereshold for considering the player as stopped for sound playing
+//  the player is always moving a little also when standing on ground ( in particular on uneven terrains )
+#define STOP_THRESHOLD2         0.1f
 
 //! Implement and register the player physics entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( PlayerPhysicsEntityFactory );
@@ -346,8 +349,10 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     }
     p_phys->_jumpTimer = p_phys->_jumpTimer ? p_phys->_jumpTimer - 1 : 0;
 
-    // set the stopped flag
-    p_phys->_isStopped = ( ( force._v[ 0 ] == 0 ) && ( force._v[ 1 ] == 0 ) );  
+    // set the stopped flag when no movement
+    osg::Vec3f move( force );
+    move._v[ 2 ] = 0.0f;
+    p_phys->_isStopped = move.length2() < STOP_THRESHOLD2;
 
     // set body force
     NewtonBodySetForce( p_body, &force._v[ 0 ] );
