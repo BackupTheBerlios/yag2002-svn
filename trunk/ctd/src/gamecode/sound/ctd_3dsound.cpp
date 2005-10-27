@@ -34,7 +34,7 @@
 namespace CTD
 {
 
-//! Implement and register the platform entity factory
+//! Implement and register the 3d sound entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( ThreeDSoundEntityFactory );
 
 
