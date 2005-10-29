@@ -50,6 +50,17 @@ _built( false )
 ChatManager::~ChatManager()
 {
     closeConnections();
+
+    // delete protocol handlers
+    ChatConnections::iterator p_beg = _connections.begin(), p_end = _connections.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        delete p_beg->first._p_protocolHandler;
+
+    if ( _p_chatGuiCtrl )
+        delete _p_chatGuiCtrl;
+
+    if ( _p_chatGuiBox )
+        delete _p_chatGuiBox;
 }
 
 bool ChatManager::buildClient()
@@ -113,8 +124,8 @@ void ChatManager::show( bool en )
 {
     assert( !_serverMode && "don't call this method in server mode!" );
 
-    _p_chatGuiBox->show( en );
     _p_chatGuiCtrl->show( en );
+    _p_chatGuiBox->show( en );
 }
 
 void ChatManager::createConnection( const ChatConnectionConfig& config )
@@ -179,8 +190,11 @@ void ChatManager::onDisconnection( const ChatConnectionConfig& config )
         if ( config._p_protocolHandler == p_beg->second )
             break;
     }
-    assert( ( p_beg != p_end ) && "chat protocol handler was previously not stored!" );
-    _connections.erase( p_beg );
+    if ( p_beg != p_end )
+    {
+        delete config._p_protocolHandler;
+        _connections.erase( p_beg );
+    }
 }
 
 void ChatManager::onJoinedChannel( const ChatConnectionConfig& config )

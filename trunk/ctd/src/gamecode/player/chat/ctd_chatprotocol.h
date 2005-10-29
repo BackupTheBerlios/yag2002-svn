@@ -98,7 +98,10 @@ class BaseChatProtocol
         //! Send a chat message to a channel
         virtual void                                send( const std::string& msg, const std::string& channel ) = 0;
 
-        //! Get list of chat members in given channel.
+        //! Request for getting list of chat members in given channel.
+        virtual void                                requestMemberList( const std::string& channel ) = 0;
+
+        //! Get list of chat members in given channel. Call this method after callback method onReceiveMemberList has been called by protocol handler.
         virtual void                                getMemberList( const std::string& channel, std::vector< std::string >& list ) = 0;
 
         //! Register a protocol callback for given channel filter. Use asterix '*' for channel name to get unfiltered callbacks.

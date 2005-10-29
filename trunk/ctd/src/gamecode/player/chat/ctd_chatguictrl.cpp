@@ -50,6 +50,9 @@ ChatGuiCtrl::~ChatGuiCtrl()
 {
     try
     {
+        if ( _p_wnd )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
+
         if ( _p_btnCreate )
             CEGUI::WindowManager::getSingleton().destroyWindow( _p_btnCreate );
     }
@@ -66,7 +69,9 @@ void ChatGuiCtrl::initialize( ChatManager* p_chatMgr )
 
     try
     {
-        _p_wnd = GuiManager::get()->getRootWindow();
+        CEGUI::Window* p_rootwnd = GuiManager::get()->getRootWindow();
+        _p_wnd = static_cast< CEGUI::Window* >( CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", "_chatctrl_wnd_" ) );
+        p_rootwnd->addChildWindow( _p_wnd );
 
         // load our custom imageset
         CEGUI::Imageset* p_imageSet = NULL;

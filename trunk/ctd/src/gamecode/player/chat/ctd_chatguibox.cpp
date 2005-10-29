@@ -64,6 +64,7 @@ _p_listbox( NULL )
         _p_messagebox->setReadOnly( true );
         _p_messagebox->setPosition( CEGUI::Point( 0.005f, 0.005f ) );
         _p_messagebox->setSize( CEGUI::Size( 0.90f, 0.7f ) );
+        _p_messagebox->setFont( "CTD-8" );
         _p_tabPane->addChildWindow( _p_messagebox );
 
         _p_editbox = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CHATLAYOUT_PREFIX "tabpane_editbox" ) + postfix ) );
@@ -73,11 +74,11 @@ _p_listbox( NULL )
         _p_tabPane->addChildWindow( _p_editbox );
 
         // nickname list
-        _p_listbox = static_cast< CEGUI::Listbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Listbox", "_chatbox_nicklist_" ) );
+        _p_listbox = static_cast< CEGUI::Listbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Listbox", std::string( CHATLAYOUT_PREFIX "tabpane_nicklist" ) + postfix ) );
         _p_listbox->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::ChannelTabPane::onListItemSelChanged, this ) );
         _p_listbox->setSortingEnabled( true );
         _p_listbox->setPosition( CEGUI::Point( 0.91f, 0.005f ) );
-        _p_listbox->setSize( CEGUI::Size( 0.089f, 0.91f ) );
+        _p_listbox->setSize( CEGUI::Size( 0.085f, 0.93f ) );
         _p_listbox->setAlpha( 0.8f );
         _p_listbox->setFont( "CTD-8" );
         _p_tabPane->addChildWindow( _p_listbox );
@@ -94,6 +95,7 @@ ChatGuiBox::ChannelTabPane::~ChannelTabPane()
     try
     {
         _p_tabCtrl->removeTab( _p_tabPane->getID() );
+        CEGUI::WindowManager::getSingleton().destroyWindow( _p_tabPane );
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -139,18 +141,13 @@ void ChatGuiBox::ChannelTabPane::addMessage( const CEGUI::String& msg, const CEG
 
 bool ChatGuiBox::ChannelTabPane::onListItemSelChanged( const CEGUI::EventArgs& arg )
 {
-//! TODO
+    //! TODO: in combination with other buttons we can implement the pm, or whois etc.
     //// get selection
     //CEGUI::ListboxItem* p_sel = _p_listbox->getFirstSelectedItem();
     //if ( !p_sel )
     //{
-    //    _p_lastListSelection->setSelected( true );
-    //    p_sel = _p_lastListSelection;
-    //}
-    //else
-    //{
-    //    _p_lastListSelection = p_sel;
-    //}
+    //    return;
+    //} ...
 
     return true;
 }
@@ -162,7 +159,13 @@ bool ChatGuiBox::ChannelTabPane::onEditboxTextChanged( const CEGUI::EventArgs& a
     if ( ke.codepoint == SDLK_RETURN )
     {
         assert( _configuration._p_protocolHandler && "invalid protocol handler!" );
-        _configuration._p_protocolHandler->send( _p_editbox->getText().c_str(), _configuration._channel ); // send the msg over net
+
+        // skip empty lines
+        if ( !_p_editbox->getText().length() )
+            return true;
+        
+        // send the msg over net
+        _configuration._p_protocolHandler->send( _p_editbox->getText().c_str(), _configuration._channel ); 
 
         // add the msg to local chat box ( if it was not a command )
         if ( _p_editbox->getText().compare( 0, 1, "/" ) )
@@ -195,7 +198,7 @@ void ChatGuiBox::ChannelTabPane::onReceive( const std::string& channel, const st
 void ChatGuiBox::ChannelTabPane::onNicknameChanged( const std::string& newname, const std::string& oldname )
 {
     // did _we_ change our nick name or someone else changed nickname?
-    if ( _configuration._nickname == oldname )
+    if ( !_configuration._nickname.length() || ( _configuration._nickname == oldname ) )
     {
         addMessage( " you changed your nickname to '" + newname  + "'", "* " );
         _configuration._nickname = newname;
@@ -480,6 +483,11 @@ ChatGuiBox::~ChatGuiBox()
     {
         if ( _p_wnd )
         {
+            // delete all tab panes
+            ChatGuiBox::TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
+            for ( ; p_beg != p_end; p_beg++ )
+                delete p_beg->second;
+
             CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
             CEGUI::ImagesetManager::getSingleton().destroyImageset( CTD_IMAGE_SET );
         }
@@ -494,7 +502,6 @@ ChatGuiBox::~ChatGuiBox()
 void ChatGuiBox::initialize( ChatManager* p_chatMgr )
 {
     _p_chatMgr = p_chatMgr;
-
     // init nickname with player name
     Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, _nickname );
 
@@ -579,7 +586,7 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
         // create tab control
         _p_tabCtrl = static_cast< CEGUI::TabControl* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/TabControl", "_chatbox_channeltab_" ) );
         _p_tabCtrl->setPosition( CEGUI::Point( 0.02f, 0.15f ) );
-        _p_tabCtrl->setSize( CEGUI::Size( 0.85f, 0.7f ) );
+        _p_tabCtrl->setSize( CEGUI::Size( 0.96f, 0.7f ) );
         _p_tabCtrl->setRelativeTabHeight( 0.15f );
         _p_frame->addChildWindow( _p_tabCtrl );
     }
@@ -603,7 +610,22 @@ ChatGuiBox::ChannelTabPane* ChatGuiBox::getTabPane( const ChatConnectionConfig& 
 
 void ChatGuiBox::destroyChannelPane( const ChatConnectionConfig& cfg )
 {
+    // close all tab panes
+    ChatGuiBox::TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        if ( cfg._channel == p_beg->first._channel )
+            break;
 
+
+    assert( ( p_beg != p_end ) && "pane not found!" );
+
+    if ( p_beg != p_end )
+    {
+        // deregister callback first
+        p_beg->second->getConfiguration()._p_protocolHandler->deregisterProtocolCallback( p_beg->second );
+        delete p_beg->second;
+        _tabpanes.erase( p_beg );
+    }
 }
 
 ChatGuiBox::ChannelTabPane* ChatGuiBox::createChannelPane( const ChatConnectionConfig& cfg )
@@ -792,19 +814,10 @@ bool ChatGuiBox::onClickedDisconnect( const CEGUI::EventArgs& arg )
     // close all connections
     _p_chatMgr->closeConnections();
 
-
-todo: move this to destroyChannelPane !
-
     // close all tab panes
     ChatGuiBox::TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
     for ( ; p_beg != p_end; p_beg++ )
-    {
-        // deregister callback first
-        p_beg->second->getConfiguration()._p_protocolHandler->deregisterProtocolCallback( p_beg->second );
-        delete p_beg->second;
-    }
-
-    _tabpanes.clear();
+        destroyChannelPane( p_beg->first );
 
     return true;
 }

@@ -57,31 +57,26 @@ void BaseChatProtocol::deregisterProtocolCallback( const std::string& channelnam
         if ( p_beg->first == channelname )
         {
             _protocolCallbacks.erase( p_beg );
-            delete p_beg->second;
+            return;
         }
     }
 
-    throw ChatExpection( "Callback for channel '" + channelname + "' does not exist" );
+    throw ChatExpection( "Callback for channel '" + channelname + "' does not exist." );
 }
 
 void BaseChatProtocol::deregisterProtocolCallback( const ChatProtocolCallback* p_cb )
 {
-    bool deleted = false;
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
         if ( p_beg->second == p_cb )
         {
             _protocolCallbacks.erase( p_beg );
-
-            if ( !deleted )
-                delete p_beg->second;
-            deleted = true;
-
-            p_beg = _protocolCallbacks.begin();
-            p_end = _protocolCallbacks.end();
+            return;
         }
     }
+
+    throw ChatExpection( "Callback does not exist." );
 }
 
 } // namespace CTD

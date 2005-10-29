@@ -158,6 +158,9 @@ class ChatGuiBox
         //! Create tabpane for a new chat channel
         ChannelTabPane*                             createChannelPane( const ChatConnectionConfig& cfg );
 
+        //! Destroy a tab pane
+        void                                        destroyChannelPane( const ChatConnectionConfig& cfg );
+
         //! Returns the associated tabpane given a channel configuration
         ChannelTabPane*                             getTabPane( const ChatConnectionConfig& cfg );
 
