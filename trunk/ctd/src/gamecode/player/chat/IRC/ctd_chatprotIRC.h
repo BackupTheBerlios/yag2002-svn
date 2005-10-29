@@ -41,6 +41,10 @@
 namespace CTD
 {
 
+// some C funtion declarations ( it's used for wrapping IRC lib )
+void event_numeric( irc_session_t *p_session, unsigned int event, const char* p_origin, const char** pp_params, unsigned int count );
+void event_nick( irc_session_t* p_session, const char* p_event, const char* p_origin, const char** pp_params, unsigned int count );
+
 // Chat client for IRC protocol
 class ChatNetworkingIRC : public OpenThreads::Thread, public BaseChatProtocol
 {
@@ -66,11 +70,17 @@ class ChatNetworkingIRC : public OpenThreads::Thread, public BaseChatProtocol
         //! This method is called uppon successful connection
         void                                        connected();
 
-        //! Get list of chat members in given channel.
+        //! Request for getting list of chat members in given channel.
+        void                                        requestMemberList( const std::string& channel );
+
+        //! Get list of chat members in given channel. Call this method after callback method onReceiveMemberList has been called by protocol handler.
         void                                        getMemberList( const std::string& channel, std::vector< std::string >& list );
 
         //! This method is called uppon joining to a channel
         void                                        joined( const std::string& channel, const std::string& name );
+
+        //! This method is called when a client ( chat memeber ) has left the chat 
+        void                                        left( const std::string& channel, const std::string& name );
 
         //! Method for distributing new incoming message to all registered callbacks.
         //! In normal case only internal functions make use of this method.
@@ -78,7 +88,10 @@ class ChatNetworkingIRC : public OpenThreads::Thread, public BaseChatProtocol
 
         //! Method for distributing a nickname change in channel to all registered callbacks.
         //! In normal case only internal functions make use of this method.
-        void                                        recvNicknameChange( const std::string& newname, const std::string& oldname );
+        void                                        recvNicknameChange( const std::string& channel, const std::string& newname, const std::string& oldname );
+
+        //! Method for distributing member list changes in channel to all registered callbacks.
+        void                                        recvMemberList( const std::string& channel );
 
     protected:
 
@@ -88,6 +101,12 @@ class ChatNetworkingIRC : public OpenThreads::Thread, public BaseChatProtocol
         irc_session_t*                              _p_session;
 
         ChatConnectionConfig*                       _p_config;
+
+        //! A list of names in current channel
+        std::vector< std::string >                 _nickNames;
+
+    friend void event_numeric( irc_session_t *p_session, unsigned int event, const char* p_origin, const char** pp_params, unsigned int count );
+    friend void event_nick( irc_session_t* p_session, const char* p_event, const char* p_origin, const char** pp_params, unsigned int count );
 };
 
 } // namespace CTD
