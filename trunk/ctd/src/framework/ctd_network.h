@@ -93,6 +93,22 @@ class NodeInfo
     friend  class Application;
 };
 
+//! Class for registering a callback in order to get notification when clients join / leave the network session.
+class SessionNotifyCallback
+{
+    public:
+    
+                                                        SessionNotifyCallback() {}
+
+        virtual                                         ~SessionNotifyCallback() {}
+
+        //! Override this method for getting notification when a client joins to the network
+        virtual void                                    onSessionJoined( int sessionID ) = 0;
+
+        //! Override this method for getting notification when a client leaves the network
+        virtual void                                    onSessionLeft( int sessionID ) = 0;
+};
+
 //! Derived class from RNReplicaNet::ReplicaNet, this class allows tracking of joining / leaving sessions
 class CTDReplicaNet: public RNReplicaNet::ReplicaNet
 {
@@ -101,6 +117,15 @@ class CTDReplicaNet: public RNReplicaNet::ReplicaNet
                                                         CTDReplicaNet();
         
         virtual                                         ~CTDReplicaNet();
+
+        //! Use this method in order to register a callback object in order to get notification when a client joins to or leaves the network
+        void                                            registerSessionNotify( SessionNotifyCallback* p_cb );
+
+        //! Deregister the callback object
+        void                                            deregisterSessionNotify( SessionNotifyCallback* p_cb );
+
+        //! Get all currently active session IDs
+        void                                            getSessionIDs( std::vector< int >& ids );
 
     protected:
 
@@ -115,6 +140,8 @@ class CTDReplicaNet: public RNReplicaNet::ReplicaNet
 
         //! A list of joined sessions ids
 	    std::vector< int >                              _sessionIDs;
+
+        std::vector< SessionNotifyCallback* >           _sessionCallbacks;
 
 	    RNReplicaNet::MutexClass                        _mutex;
 };
@@ -154,6 +181,25 @@ class NetworkDevice : public Singleton< NetworkDevice >
         * \return                                   true if successfully started.
         */
         bool                                        startClient();
+
+        /**
+        * Use this method in order to register a callback object in order to get notification when a client joins to or leaves the network.
+        * \param p_cb                               Callback object
+        */
+        void                                        registerSessionNotify( SessionNotifyCallback* p_cb );
+
+        /**
+        * Deregister a previously registered callback object to getting notification when a client joins to or leaves the network..
+        * \param p_cb                               Callback object
+        */
+        void                                        deregisterSessionNotify( SessionNotifyCallback* p_cb );
+
+        /**
+        * Get all currently active session IDs.
+        * \param ids                                List of IDs which will be filled by this method.
+        */
+        void                                        getSessionIDs( std::vector< int >& ids );
+
 
         /**
         * Disconnect any connection and reset the networking states.

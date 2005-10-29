@@ -36,8 +36,10 @@
 #include <RNPlatform/Inc/FreewareCode.h>
 
 using namespace std;
-using namespace CTD;
 using namespace RNReplicaNet;
+
+namespace CTD
+{
 
 CTD_SINGLETON_IMPL( NetworkDevice );
 
@@ -50,11 +52,45 @@ CTDReplicaNet::~CTDReplicaNet()
 {
 }
 
+void CTDReplicaNet::registerSessionNotify( SessionNotifyCallback* p_cb )
+{
+    std::vector< SessionNotifyCallback* >::iterator p_beg = _sessionCallbacks.begin(), p_end = _sessionCallbacks.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        if ( *p_beg == p_cb )
+            break;
+
+    assert( ( p_beg == p_end ) && "session callback already exists!" );
+
+    _sessionCallbacks.push_back( p_cb );
+}
+
+void CTDReplicaNet::deregisterSessionNotify( SessionNotifyCallback* p_cb )
+{
+    std::vector< SessionNotifyCallback* >::iterator p_beg = _sessionCallbacks.begin(), p_end = _sessionCallbacks.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        if ( *p_beg == p_cb )
+            break;
+
+    assert( ( p_beg != p_end ) && "session callback does not exist!" );
+
+    _sessionCallbacks.erase( p_beg );
+}
+
+void CTDReplicaNet::getSessionIDs( std::vector< int >& ids )
+{
+    ids = _sessionIDs;
+}
+
 void CTDReplicaNet::JoinerSessionIDPost( const int sessionID )
 {
     THREADSAFELOCKCLASS( _mutex );
     _sessionIDs.push_back( sessionID );
     _numSessions++;
+
+    // notify registered callback objects
+    std::vector< SessionNotifyCallback* >::iterator p_beg = _sessionCallbacks.begin(), p_end = _sessionCallbacks.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        ( *p_beg )->onSessionJoined( sessionID );
 }
 
 void CTDReplicaNet::LeaverSessionIDPost( const int sessionID )
@@ -69,6 +105,11 @@ void CTDReplicaNet::LeaverSessionIDPost( const int sessionID )
     assert( ( p_beg != p_end ) && "id of leaving session could not be found!" );
     _sessionIDs.erase( p_beg );
     _numSessions--;
+
+    // notify registered callback objects
+    std::vector< SessionNotifyCallback* >::iterator p_cbbeg = _sessionCallbacks.begin(), p_cbend = _sessionCallbacks.end();
+    for ( ; p_cbbeg != p_cbend; p_cbbeg++ )
+        ( *p_cbbeg )->onSessionLeft( sessionID );
 }
 
 NetworkDevice::NetworkDevice() :
@@ -321,6 +362,24 @@ bool NetworkDevice::startClient()
     return true;
 }
 
+void NetworkDevice::registerSessionNotify( SessionNotifyCallback* p_cb )
+{
+    assert( _p_session && "no valid session exists!" );
+    _p_session->registerSessionNotify( p_cb );
+}
+
+void NetworkDevice::deregisterSessionNotify( SessionNotifyCallback* p_cb )
+{
+    assert( _p_session && "no valid session exists!" );
+    _p_session->deregisterSessionNotify( p_cb );
+}
+
+void NetworkDevice::getSessionIDs( std::vector< int >& ids )
+{
+    assert( _p_session && "no valid session exists!" );
+    _p_session->getSessionIDs( ids );
+}
+
 NodeInfo* NetworkDevice::getNodeInfo()
 {
     if ( _clientSessionStable || _serverSessionStable )
@@ -393,4 +452,6 @@ void NetworkDevice::unlockObjects()
 {
     if ( _p_session )
         _p_session->UnLockObjects();
+}
+
 }
