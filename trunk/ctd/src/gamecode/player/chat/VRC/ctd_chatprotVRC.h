@@ -41,7 +41,7 @@ class ChatNetworkingVRC;
 class CTD::ChatConnectionConfig;
 
 //!  Networking implementation for VRC protocol
-class ImplChatNetworkingVRC : _RO_DO_PUBLIC_RO( ImplChatNetworkingVRC )
+class ImplChatNetworkingVRC : _RO_DO_PUBLIC_RO( ImplChatNetworkingVRC ), public CTD::SessionNotifyCallback
 {
 
     public:
@@ -59,11 +59,20 @@ class ImplChatNetworkingVRC : _RO_DO_PUBLIC_RO( ImplChatNetworkingVRC )
         //! Get list of chat members in given channel.
         void                                        getMemberList( const std::string& channel, std::vector< std::string >& list );
 
-        // RN Overrides
+        // ReplicaNet overrides
         //-----------------------------------------------------------------------------------//
         
         //! Object can now be initialized in scene ( on clients )
         void                                        PostObjectCreate();
+
+        // CTD networking interface overrides
+        //-----------------------------------------------------------------------------------//
+
+        //! Overridden method for getting notification when a client joins to the network
+        void                                        onSessionJoined( int sessionID );
+
+        //! Overridden method for getting notification when a client leaves the network
+        void                                        onSessionLeft( int sessionID );
 
         // RPCs
         //-----------------------------------------------------------------------------------//
@@ -146,7 +155,10 @@ class ChatNetworkingVRC : public CTD::BaseChatProtocol
         //! This method when the client is disconnected ( e.g. because of networking errors )
         void                                        disconnected();
 
-        //! Get list of chat members in given channel.
+        //! Request for getting list of chat members in given channel.
+        void                                        requestMemberList( const std::string& channel );
+
+        //! Get list of chat members in given channel. Call this method after callback method onReceiveMemberList has been called by protocol handler.
         void                                        getMemberList( const std::string& channel, std::vector< std::string >& list );
 
         //! This method is called uppon joining to a channel

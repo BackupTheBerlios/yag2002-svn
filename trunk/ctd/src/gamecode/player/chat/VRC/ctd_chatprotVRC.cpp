@@ -39,7 +39,7 @@ using namespace RNReplicaNet;
 
 #define VRC_CMD_LIST    "\n"\
                         "/help\n"\
-                        "/list\n"\
+                        "/names\n"\
                         "/nick [nickname]"
 
 ImplChatNetworkingVRC::ImplChatNetworkingVRC( ChatNetworkingVRC* p_nw ) :
@@ -54,7 +54,7 @@ _p_protVRC( p_nw )
     _config._sessionID = _clientSID;
     strcpy( _config._realname, "" );
 
-    // p_nw is NULL then the instace is created by ReplicaNet, i.e. this instance is a ghost on a client
+    // p_nw is NULL then the instance is created by ReplicaNet, i.e. this instance is a ghost on a client
     // the only master instance is created on server
     if ( !_p_protVRC )
     {
@@ -72,8 +72,10 @@ _p_protVRC( p_nw )
         strcpy( _config._nickname, playername.c_str() );
     }
     else
-    {
+    { // this code is executed on server
         strcpy( _config._nickname, "" );
+        // register for getting network session joining / leaving notification
+        CTD::NetworkDevice::get()->registerSessionNotify( this );
     }
 }
 
@@ -90,6 +92,20 @@ void ImplChatNetworkingVRC::PostObjectCreate()
     // do an RPC on server object
     CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "requesting VRC server to join ..." << std::endl;
     NOMINATED_REPLICAS_FUNCTION_CALL( 1, &_serverSID, RPC_RequestJoin( _config ) );
+}
+
+void ImplChatNetworkingVRC::onSessionJoined( int sessionID )
+{
+    // nothing to do
+}
+
+void ImplChatNetworkingVRC::onSessionLeft( int sessionID )
+{ // this callback is done only on server ( see registration in constructor )
+    // inform all remaining clients about left client
+    tChatData chatdata;
+    strcpy( chatdata._nickname, _nickNames[ sessionID ].c_str() );
+    chatdata._sessionID = sessionID;
+    RPC_RequestLeave( chatdata );
 }
 
 void ImplChatNetworkingVRC::getMemberList( const std::string& channel, std::vector< std::string >& list )
@@ -301,7 +317,7 @@ void ImplChatNetworkingVRC::postChatText( const CEGUI::String& text )
         // all commands without arguments go here
         if ( args.size() == 1 )
         {
-            if ( ( args[ 0 ] == "/list" ) || ( args[ 0 ] == "/LIST" ) )
+            if ( ( args[ 0 ] == "/names" ) || ( args[ 0 ] == "/NAMES" ) )
             {
                 tChatData chatdata;
                 chatdata._sessionID = _clientSID;
@@ -388,8 +404,6 @@ void ChatNetworkingVRC::destroyConnection()
     {
         // send out leaving notification if not running in server mode
         _p_nwImpl->leave();
-        //delete _p_nwImpl;
-        //_p_nwImpl = NULL;
     }
 }
 
@@ -462,6 +476,13 @@ void ChatNetworkingVRC::recvMessage( const std::string& channel, const std::stri
         // check also for unfiltered callbacks ( '*' )
         if ( ( channel == p_beg->first ) || ( p_beg->first == "*" ) )
             p_beg->second->onReceive( channel, sender, msg );
+}
+
+void ChatNetworkingVRC::requestMemberList( const std::string& channel )
+{
+    // this protocol has always an up-to-date member list
+    // just ready to get, so notify the world about it.
+    recvMemberList( channel );
 }
 
 void ChatNetworkingVRC::recvMemberList( const std::string& channel )
