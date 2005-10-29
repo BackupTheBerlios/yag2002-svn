@@ -201,6 +201,9 @@ basic_ios< char >::int_type Log::LogStreamBuf::overflow( int_type c )
         _msg += c;
         if( c == '\n' )
         {
+            if ( _p_log->_printSeverityLevel )
+                _p_log->setSeverity( _p_log->_severity );
+
             _p_log->out( _msg );
             _msg = "";
         }
