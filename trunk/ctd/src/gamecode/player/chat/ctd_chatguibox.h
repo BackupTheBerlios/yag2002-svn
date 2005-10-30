@@ -59,8 +59,8 @@ class ChatGuiBox
         //! Set / Unset focus to edit box
         void                                        setEditBoxFocus( bool en );
 
-        //! Create a new chat input / output gui for a channel
-        void                                        createChatIO( const ChatConnectionConfig& config );
+        //! Setup a new chat input / output gui for a channel
+        void                                        setupChatIO( const ChatConnectionConfig& config );
 
     protected:
 
@@ -81,7 +81,7 @@ class ChatGuiBox
         {
             public:
 
-                                                            ChannelTabPane( CEGUI::TabControl* p_tabcontrol, ChatManager* p_chatMgr );
+                                                            ChannelTabPane( CEGUI::TabControl* p_tabcontrol, ChatGuiBox* p_guibox );
 
                 virtual                                     ~ChannelTabPane();
 
@@ -142,7 +142,7 @@ class ChatGuiBox
 
                 CEGUI::TabControl*                          _p_tabCtrl;
 
-                ChatManager*                                _p_chatMgr;
+                ChatGuiBox*                                 _p_guibox;
 
                 CEGUI::Window*                              _p_tabPane;
 
@@ -153,16 +153,27 @@ class ChatGuiBox
                 CEGUI::Listbox*                             _p_listbox;
 
                 ChatConnectionConfig                        _configuration;
+
+                std::vector< std::string >                  _nickNames;
         };
 
         //! Create tabpane for a new chat channel
-        ChannelTabPane*                             createChannelPane( const ChatConnectionConfig& cfg );
+        ChannelTabPane*                             getOrCreateChannelPane( const ChatConnectionConfig& cfg );
+
+        //! Remove the given tab pane from tab control
+        void                                        removeTabPane( ChatGuiBox::ChannelTabPane* p_pane )
+                                                    {   
+                                                        _queueRemoveTabPane.push( p_pane );
+                                                    }
 
         //! Destroy a tab pane
         void                                        destroyChannelPane( const ChatConnectionConfig& cfg );
 
         //! Returns the associated tabpane given a channel configuration
         ChannelTabPane*                             getTabPane( const ChatConnectionConfig& cfg );
+
+        //! A queue for removing tab panes on next update
+        std::queue< ChatGuiBox::ChannelTabPane*, std::deque< ChatGuiBox::ChannelTabPane* > >   _queueRemoveTabPane;
 
         //! Class for connection dialog
         class ConnectionDialog

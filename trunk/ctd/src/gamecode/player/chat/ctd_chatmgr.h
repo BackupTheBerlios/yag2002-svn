@@ -197,7 +197,7 @@ class ChatManager : public ChatProtocolCallback
         //! Overriden protocol handler callback method for getting disconnection notification
         void                                        onDisconnection( const ChatConnectionConfig& config );
 
-        //! Overriden protocol handler callback method for getting notification when joined to a new channel
+        //! Overriden protocol handler callback method for getting notification when someone joined to a new channel
         void                                        onJoinedChannel( const ChatConnectionConfig& config );
 
         //! Get all registered chat protocols

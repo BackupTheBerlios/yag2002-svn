@@ -201,7 +201,7 @@ void ChatManager::onJoinedChannel( const ChatConnectionConfig& config )
 {
     // create a new chat io for the channel
     if ( !_serverMode )
-        _p_chatGuiBox->createChatIO( config );
+        _p_chatGuiBox->setupChatIO( config );
 }
 
 void ChatManager::update( float deltaTime )

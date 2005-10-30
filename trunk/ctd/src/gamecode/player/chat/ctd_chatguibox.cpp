@@ -40,9 +40,9 @@ namespace CTD
 #define CTD_IMAGE_SET           "CTDImageSet"
 #define CTD_IMAGE_SET_FILE      "gui/imagesets/CTDImageSet.imageset"
 
-ChatGuiBox::ChannelTabPane::ChannelTabPane( CEGUI::TabControl* p_tabcontrol, ChatManager* p_chatMgr ) :
+ChatGuiBox::ChannelTabPane::ChannelTabPane( CEGUI::TabControl* p_tabcontrol, ChatGuiBox* p_guibox ) :
 _p_tabCtrl( p_tabcontrol ),
-_p_chatMgr( p_chatMgr ),
+_p_guibox( p_guibox ),
 _p_tabPane( NULL ),
 _p_messagebox( NULL ),
 _p_editbox( NULL ),
@@ -198,39 +198,74 @@ void ChatGuiBox::ChannelTabPane::onReceive( const std::string& channel, const st
 void ChatGuiBox::ChannelTabPane::onNicknameChanged( const std::string& newname, const std::string& oldname )
 {
     // did _we_ change our nick name or someone else changed nickname?
-    if ( !_configuration._nickname.length() || ( _configuration._nickname == oldname ) )
+    if ( newname == oldname )
     {
+        // change nick name in internal list
+        size_t numnicks = _nickNames.size();
+        for ( size_t cnt = 0; cnt < numnicks; cnt ++ )
+        {
+            if ( _nickNames[ cnt ] == _configuration._nickname )
+            {
+                _nickNames[ cnt ] = newname;
+                break;
+            }
+        }
+
         addMessage( " you changed your nickname to '" + newname  + "'", "* " );
         _configuration._nickname = newname;
     }
     else
     {
+        // change nick name in internal list
+        size_t numnicks = _nickNames.size();
+        for ( size_t cnt = 0; cnt < numnicks; cnt ++ )
+        {
+            if ( _nickNames[ cnt ] == oldname )
+            {
+                _nickNames[ cnt ] = newname;
+                break;
+            }
+        }
+
         addMessage( "'" + oldname + "' changed nickname to '" + newname  + "'", "* " );
     }
+
+    // trigger updating the listbox
+    _configuration._p_protocolHandler->requestMemberList( _configuration._channel );
 }
 
 void ChatGuiBox::ChannelTabPane::onJoinedChannel( const ChatConnectionConfig& cfg )
 {
-    addMessage( cfg._nickname + " entered the chat room", "*" );
+    if ( _configuration._nickname != cfg._nickname )
+        addMessage( cfg._nickname + " entered the chat room", "* " );
+
+    // trigger updating the listbox
+    _configuration._p_protocolHandler->requestMemberList( _configuration._channel );
 }
 
 void ChatGuiBox::ChannelTabPane::onLeftChannel( const ChatConnectionConfig& cfg )
 {
-    addMessage( cfg._nickname + " left the chat room", "*" );
+    // have _we_ left the channel ?
+    if ( ( cfg._nickname == _configuration._nickname ) && ( cfg._channel == _configuration._channel ) )
+    {
+        // trigger removal of this tab pane
+        _p_guibox->removeTabPane( this );
+    }
+    else
+    {
+        addMessage( cfg._nickname + " left the chat room", "* " );
+        // trigger updating the listbox
+        _configuration._p_protocolHandler->requestMemberList( _configuration._channel );
+    }
 }
 
 void ChatGuiBox::ChannelTabPane::onReceiveMemberList( const std::string& channel )
 {
     // update member list
-    std::vector< std::string > list;
-    _configuration._p_protocolHandler->getMemberList( _configuration._channel, list );
-    updateMemberList( list );
+    _nickNames.clear();
+    _configuration._p_protocolHandler->getMemberList( _configuration._channel, _nickNames );
+    updateMemberList( _nickNames );
 }
-
-//! TODO
-//void ChatGuiBox::ChannelTabPane::onLeftChannel( const ChatConnectionConfig& config )
-//{
-//}
 
 //------------------------
 
@@ -616,9 +651,7 @@ void ChatGuiBox::destroyChannelPane( const ChatConnectionConfig& cfg )
         if ( cfg._channel == p_beg->first._channel )
             break;
 
-
-    assert( ( p_beg != p_end ) && "pane not found!" );
-
+    // tollerate when a pane cannot be found
     if ( p_beg != p_end )
     {
         // deregister callback first
@@ -628,7 +661,7 @@ void ChatGuiBox::destroyChannelPane( const ChatConnectionConfig& cfg )
     }
 }
 
-ChatGuiBox::ChannelTabPane* ChatGuiBox::createChannelPane( const ChatConnectionConfig& cfg )
+ChatGuiBox::ChannelTabPane* ChatGuiBox::getOrCreateChannelPane( const ChatConnectionConfig& cfg )
 {
     // check if already have this pane
     ChannelTabPane* p_pane = getTabPane( cfg );
@@ -636,7 +669,7 @@ ChatGuiBox::ChannelTabPane* ChatGuiBox::createChannelPane( const ChatConnectionC
         return p_pane;
 
     // create new tab pane
-    p_pane = new ChannelTabPane( _p_tabCtrl, _p_chatMgr );
+    p_pane = new ChannelTabPane( _p_tabCtrl, this );
     p_pane->setTitle( cfg._protocol + " " + cfg._channel );
 
     // append the new channel to list
@@ -724,6 +757,14 @@ void ChatGuiBox::update( float deltaTime )
         default:
             assert( NULL && "invalid chat gui state!" );
 
+    }
+
+    // check the tab pane removal queue
+    while ( _queueRemoveTabPane.size() )
+    { 
+        ChannelTabPane* p_pane = _queueRemoveTabPane.front();
+        destroyChannelPane( p_pane->getConfiguration() );
+        _queueRemoveTabPane.pop();
     }
 }
 
@@ -822,9 +863,9 @@ bool ChatGuiBox::onClickedDisconnect( const CEGUI::EventArgs& arg )
     return true;
 }
 
-void ChatGuiBox::createChatIO( const ChatConnectionConfig& config )
+void ChatGuiBox::setupChatIO( const ChatConnectionConfig& config )
 {
-    ChannelTabPane* p_pane = createChannelPane( config );
+    ChannelTabPane* p_pane = getOrCreateChannelPane( config );
     // set tab selection to new created or exsiting pane
     p_pane->setSelection();
     // set focus
