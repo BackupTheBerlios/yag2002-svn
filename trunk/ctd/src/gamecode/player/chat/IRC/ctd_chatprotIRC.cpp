@@ -39,9 +39,12 @@
 namespace CTD
 {
 
-#define IRC_CMD_LIST    "/help\n"\
+#define IRC_CMD_LIST    "\n"\
+                        "/help\n"\
+                        "/names\n"\
+                        "/part\n"\
                         "/nick [nickname]\n"\
-                        "/join [still_not_implemented]"
+                        "/join [#channel]"
 
 //! Class for defining an IRC session context
 class IRCSessionContext
@@ -90,18 +93,10 @@ void event_join( irc_session_t * session, const char * event, const char * origi
         return;
 
     // hide IP address, in sake of security 
-	irc_cmd_user_mode( session, "+x" );
+	//irc_cmd_user_mode( session, "+x" );
 
     IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
-    if ( std::string( origin ) != p_ctx->_nickname )
-    {
-        p_ctx->_p_handler->recvMessage( p_ctx->_channel, origin, " joined the channel" );
-        p_ctx->_p_handler->requestMemberList( p_ctx->_channel );
-    }
-    else
-    {
-        p_ctx->_p_handler->joined( params[ 0 ], origin );
-    }
+    p_ctx->_p_handler->joined( params[ 0 ], origin );
 }
 
 void event_nick( irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count )
@@ -110,16 +105,16 @@ void event_nick( irc_session_t * session, const char * event, const char * origi
         return;
 
     IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
-    if ( std::string( origin ) != p_ctx->_nickname )
-        p_ctx->_p_handler->recvMessage( p_ctx->_channel, "* ", std::string( origin ) + " changed nickname to " + std::string( params[ 0 ] ) );
-    else
-    {        
-        // notify for nickname change
-        p_ctx->_p_handler->recvNicknameChange( p_ctx->_channel, params[ 0 ], p_ctx->_nickname );
+    if ( std::string( origin ) == p_ctx->_nickname )
+    {
+        // notify for nickname change, we identify an own nick change by setting old and new names to new name
+        p_ctx->_p_handler->recvNicknameChange( params[ 0 ], params[ 0 ], params[ 0 ] );
         p_ctx->_nickname = params[ 0 ];
     }
-
-    p_ctx->_p_handler->requestMemberList( p_ctx->_channel );
+    else
+    {        
+        p_ctx->_p_handler->recvNicknameChange( params[ 0 ], params[ 0 ], origin );
+    }
 }
 
 void event_kick( irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count )
@@ -129,11 +124,11 @@ void event_kick( irc_session_t * session, const char * event, const char * origi
 
     IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
     if ( std::string( params[ 1 ] ) == p_ctx->_nickname )
-        p_ctx->_p_handler->recvMessage( p_ctx->_channel, "* ", std::string( origin ) + " has kicked you!" );
+        p_ctx->_p_handler->recvMessage( params[ 0 ], "* ", std::string( origin ) + " has kicked you!" );
     else
-        p_ctx->_p_handler->recvMessage( p_ctx->_channel, "* ", std::string( origin ) + " has kicked " + std::string( params[ 1 ] ) );
+        p_ctx->_p_handler->recvMessage( params[ 0 ], "* ", std::string( origin ) + " has kicked " + std::string( params[ 1 ] ) );
 
-    p_ctx->_p_handler->left( p_ctx->_channel, std::string( params[ 1 ] ) );
+    p_ctx->_p_handler->left( params[ 0 ], std::string( params[ 1 ] ) );
 }
 
 void event_part( irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count )
@@ -142,7 +137,7 @@ void event_part( irc_session_t * session, const char * event, const char * origi
         return;
 
     IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
-    p_ctx->_p_handler->left( p_ctx->_channel, std::string( origin ) );
+    p_ctx->_p_handler->left( params[ 0 ], std::string( origin ) );
 }
 
 void event_numeric( irc_session_t * session, unsigned int event, const char * origin, const char ** params, unsigned int count )
@@ -157,6 +152,7 @@ void event_numeric( irc_session_t * session, unsigned int event, const char * or
         
         explode( namestring, " ", &names );
         // fill the list
+        p_ctx->_p_handler->_nickNames.clear();
         for ( size_t cnt = 0; cnt < names.size(); cnt++ )
             p_ctx->_p_handler->_nickNames.push_back( names[ cnt ] );
     }
@@ -183,14 +179,19 @@ void event_numeric( irc_session_t * session, unsigned int event, const char * or
     }
     else if ( event > 400 )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "IRC protocol error " << 
-            event << ": " << std::string( params[ 0 ] );
+        log << Log::LogLevel( Log::L_ERROR ) << "IRC protocol error " << std::endl;
+        log << " " << event;
 
-        std::string err;
-        err += " " + ( count > 1 ) ? std::string( params[ 1 ] ) : "";
-        err += " " + ( count > 2 ) ? std::string( params[ 2 ] ) : "";
-        err += " " + ( count > 3 ) ? std::string( params[ 3 ] ) : "";
-        log << err << std::endl;
+        if ( count > 0 ) 
+            log << ": " << std::string( params[ 0 ] );
+
+        if ( count > 1 )
+            log << params[ 1 ] << " ";
+
+        if ( count > 2 )
+            log << params[ 2 ] << " ";
+
+        log << " " << std::endl;
     }
 }
 
@@ -203,7 +204,7 @@ void event_channel( irc_session_t * session, const char * event, const char * or
 
     std::string sender( origin ? origin : "someone" );
     IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
-    p_ctx->_p_handler->recvMessage( p_ctx->_channel, sender, params[1] );
+    p_ctx->_p_handler->recvMessage( params[ 0 ], sender, params[1] );
 
     if ( !origin )
         return;
@@ -305,10 +306,13 @@ void ChatNetworkingIRC::send( const std::string& msg, const std::string& channel
         {
             if ( args[ 0 ] == "/names" )
             {
-                _nickNames.clear();
-                irc_cmd_names( _p_session, channel.c_str() );
+                requestMemberList( channel );
             }
-            else if ( args[ 0 ] == "/help" )
+            else if ( args[ 0 ] == "/part" )
+            {
+                requestLeaveChannel( channel );
+            }
+            else
             {
                 recvMessage( channel, "* ", IRC_CMD_LIST );
             }
@@ -342,6 +346,11 @@ void ChatNetworkingIRC::send( const std::string& msg, const std::string& channel
     }
 }
 
+void ChatNetworkingIRC::requestLeaveChannel( const std::string& channel )
+{
+    irc_cmd_part( _p_session, channel.c_str() );
+}
+
 void ChatNetworkingIRC::requestMemberList( const std::string& channel )
 {
     _nickNames.clear();
@@ -367,12 +376,11 @@ void ChatNetworkingIRC::left( const std::string& channel, const std::string& nam
 {
     CTD::ChatConnectionConfig cfg( *_p_config );
     cfg._nickname = name;
+    cfg._channel  = channel;
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
     for ( ; p_beg != p_end; p_beg++ )
         if ( ( p_beg->first == channel ) || ( p_beg->first == "*" ) )
             p_beg->second->onLeftChannel( cfg );
-
-    requestMemberList( channel );
 }
 
 void ChatNetworkingIRC::joined( const std::string& channel, const std::string& name )
@@ -380,10 +388,14 @@ void ChatNetworkingIRC::joined( const std::string& channel, const std::string& n
     CTD::ChatConnectionConfig cfg( *_p_config );
     cfg._nickname = name;
     cfg._channel  = channel;
-    ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
+    // work on local copy of callback list, as during callbacks new registrations can follow
+    ProtocolCallbackList localcopy = _protocolCallbacks;
+    ProtocolCallbackList::iterator p_beg = localcopy.begin(), p_end = localcopy.end();
     for ( ; p_beg != p_end; p_beg++ )
         if ( ( p_beg->first == channel ) || ( p_beg->first == "*" ) )
             p_beg->second->onJoinedChannel( cfg );
+
+    requestMemberList( channel );
 }
 
 void ChatNetworkingIRC::recvMessage( const std::string& channel, const std::string& sender, const std::string& msg )

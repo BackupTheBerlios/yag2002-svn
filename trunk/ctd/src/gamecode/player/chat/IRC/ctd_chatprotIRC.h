@@ -70,6 +70,9 @@ class ChatNetworkingIRC : public OpenThreads::Thread, public BaseChatProtocol
         //! This method is called uppon successful connection
         void                                        connected();
 
+        //! Request for leaving given channel
+        void                                        requestLeaveChannel( const std::string& channel );
+
         //! Request for getting list of chat members in given channel.
         void                                        requestMemberList( const std::string& channel );
 
