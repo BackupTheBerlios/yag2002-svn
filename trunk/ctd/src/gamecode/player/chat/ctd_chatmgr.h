@@ -200,6 +200,9 @@ class ChatManager : public ChatProtocolCallback
         //! Overriden protocol handler callback method for getting notification when someone joined to a new channel
         void                                        onJoinedChannel( const ChatConnectionConfig& config );
 
+        //! Overriden protocol handler callback method for getting system messages
+        void                                        onReceiveSystemMessage( const std::string& msg );
+
         //! Get all registered chat protocols
         ProtocolMap&                                getRegisteredProtocols();
 

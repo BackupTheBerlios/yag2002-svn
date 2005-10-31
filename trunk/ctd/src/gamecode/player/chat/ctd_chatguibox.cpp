@@ -59,6 +59,8 @@ _p_listbox( NULL )
 
         _p_tabPane = static_cast< CEGUI::Window* >( CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", std::string( CHATLAYOUT_PREFIX "tabpane" ) + postfix ) );
         _p_tabCtrl->addTab( _p_tabPane );
+        // we must also set a unique id for later removal from tab control
+        _p_tabPane->setID( instnum );
 
         _p_messagebox = static_cast< CEGUI::MultiLineEditbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/MultiLineEditbox", std::string( CHATLAYOUT_PREFIX "tabpane_msgbox" ) + postfix ) );
         _p_messagebox->setReadOnly( true );
@@ -177,9 +179,29 @@ bool ChatGuiBox::ChannelTabPane::onEditboxTextChanged( const CEGUI::EventArgs& a
     return true;
 }
 
+void ChatGuiBox::ChannelTabPane::setTitle( const std::string& title )
+{
+    _p_tabPane->setText( title );
+}
+
+const ChatConnectionConfig& ChatGuiBox::ChannelTabPane::getConfiguration()
+{
+    return _configuration;
+}
+
+void ChatGuiBox::ChannelTabPane::setConfiguration( const ChatConnectionConfig& conf )
+{
+    _configuration = conf;
+}
+
 void ChatGuiBox::ChannelTabPane::setSelection()
 {
     _p_tabCtrl->setSelectedTab( _p_tabPane->getID() );
+}
+
+bool ChatGuiBox::ChannelTabPane::isSelected()
+{       
+    return _p_tabCtrl->isTabContentsSelected( _p_tabCtrl->getTabContents( _p_tabPane->getID() ) );
 }
 
 void ChatGuiBox::ChannelTabPane::setEditBoxFocus( bool en )
@@ -218,18 +240,25 @@ void ChatGuiBox::ChannelTabPane::onNicknameChanged( const std::string& newname, 
     {
         // change nick name in internal list
         size_t numnicks = _nickNames.size();
+        bool nickfound = false;
         for ( size_t cnt = 0; cnt < numnicks; cnt ++ )
         {
-            if ( _nickNames[ cnt ] == oldname )
+            std::string realnick = _nickNames[ cnt ];
+            if ( realnick[ 0 ] == '@' )
+                realnick = realnick.erase( 0, 1 );
+
+            if ( realnick == oldname )
             {
-                _nickNames[ cnt ] = newname;
+                nickfound = true;
                 break;
             }
         }
-
-        addMessage( "'" + oldname + "' changed nickname to '" + newname  + "'", "* " );
+        // post a message only if the user is in this channel
+        if ( nickfound )
+        {
+            addMessage( "'" + oldname + "' changed nickname to '" + newname  + "'", "* " );
+        }
     }
-
     // trigger updating the listbox
     _configuration._p_protocolHandler->requestMemberList( _configuration._channel );
 }
@@ -256,6 +285,19 @@ void ChatGuiBox::ChannelTabPane::onLeftChannel( const ChatConnectionConfig& cfg 
         addMessage( cfg._nickname + " left the chat room", "* " );
         // trigger updating the listbox
         _configuration._p_protocolHandler->requestMemberList( _configuration._channel );
+    }
+}
+
+void ChatGuiBox::ChannelTabPane::onKicked( const std::string& channel, const std::string& kicker, const std::string& kicked )
+{
+    // were _we_ kicked ?
+    if ( kicked == _configuration._nickname )
+    {
+        addMessage( "you have been kicked by " + kicker + " from channel " + channel, "* " );
+    }
+    else
+    {
+        addMessage( kicked + " has been kicked by " + kicker, "* " );
     }
 }
 
@@ -870,6 +912,20 @@ void ChatGuiBox::setupChatIO( const ChatConnectionConfig& config )
     p_pane->setSelection();
     // set focus
     p_pane->setEditBoxFocus( true );
+}
+
+void ChatGuiBox::outputText( const std::string& channel, const std::string& msg )
+{
+    // output the system message to currently selected pane
+    ChatGuiBox::TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
+    for ( ; p_beg != p_end; p_beg++ )
+    {
+        if ( p_beg->second->isSelected() )
+        {
+            p_beg->second->addMessage( msg, "* " );
+            break;
+        }
+    }
 }
 
 } // namespace CTD

@@ -60,6 +60,9 @@ class ChatProtocolCallback
         //! Override this method in derived classes in order to get notification when someone left the channel.
         virtual void                                onLeftChannel( const ChatConnectionConfig& cfg ) {}
 
+        //! Override this method in derived classes in order to get notification when someone has been kicked from a channel.
+        virtual void                                onKicked( const std::string& channel, const std::string& kicker, const std::string& kicked ) {}
+
         //! Override this method in derived classes in order to receive the chat traffic.
         virtual void                                onReceive( const std::string& channel, const std::string& sender, const std::string& msg ) {}
 
@@ -69,6 +72,9 @@ class ChatProtocolCallback
 
         //! Override this method in derived classes in order to receive member list changes.
         virtual void                                onReceiveMemberList( const std::string& channel ) {}
+
+        //! Override this method in derived classes in order to get system messages.
+        virtual void                                onReceiveSystemMessage( const std::string& msg ) {}
 
     private:
 

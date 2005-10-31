@@ -62,6 +62,10 @@ class ChatGuiBox
         //! Setup a new chat input / output gui for a channel
         void                                        setupChatIO( const ChatConnectionConfig& config );
 
+        //! Print a text into message box of given channel, this can be used for system messages
+        //! Use wildcard "*" for channel in order to address all channels.
+        void                                        outputText( const std::string& channel, const std::string& msg );
+
     protected:
 
         //! Callback for chat frame window close button
@@ -86,29 +90,23 @@ class ChatGuiBox
                 virtual                                     ~ChannelTabPane();
 
                 //! Set pane title
-                void                                        setTitle( const std::string& title )
-                                                            {
-                                                                _p_tabPane->setText( title );
-                                                            }
+                void                                        setTitle( const std::string& title );
 
                 //! Add new message into message box, author will be places at begin of message.
                 //! It is usually used by protocol handlers or for printing system messages.
                 void                                        addMessage( const CEGUI::String& msg, const CEGUI::String& author );
-                       
-                //! Set the connection configuration
-                void                                        setConfiguration( const ChatConnectionConfig& conf )
-                                                            {
-                                                                _configuration = conf;
-                                                            }
 
-                //! Return the nickname
-                const ChatConnectionConfig&                 getConfiguration()
-                                                            {
-                                                                return _configuration;
-                                                            }
+                //! Set the connection configuration
+                void                                        setConfiguration( const ChatConnectionConfig& conf );
+
+                //! Return the configuration
+                const ChatConnectionConfig&                 getConfiguration();
 
                 //! Set pane selection
                 void                                        setSelection();
+
+                //! Get the selection state
+                bool                                        isSelected();
 
                 //! Set / Unset focus to edit box
                 void                                        setEditBoxFocus( bool en );
@@ -125,6 +123,9 @@ class ChatGuiBox
 
                 //! Overridden method for getting notified when someone left the channel.
                 void                                        onLeftChannel( const ChatConnectionConfig& cfg );
+
+                //! Overridden method for getting notified when someone has been kicked from a channel.
+                void                                        onKicked( const std::string& channel, const std::string& kicker, const std::string& kicked );
 
                 //! Overridden method for getting notified when member list changes.
                 void                                        onReceiveMemberList( const std::string& channel );

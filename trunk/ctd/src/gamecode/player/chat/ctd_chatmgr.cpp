@@ -204,6 +204,12 @@ void ChatManager::onJoinedChannel( const ChatConnectionConfig& config )
         _p_chatGuiBox->setupChatIO( config );
 }
 
+void ChatManager::onReceiveSystemMessage( const std::string& msg )
+{
+    if ( !_serverMode )
+        _p_chatGuiBox->outputText( "*", msg );
+}
+
 void ChatManager::update( float deltaTime )
 {
     if ( !_serverMode )
