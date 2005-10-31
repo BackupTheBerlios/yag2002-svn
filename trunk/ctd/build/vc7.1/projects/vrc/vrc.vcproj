@@ -141,12 +141,6 @@
 				Name="player"
 				Filter="">
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_chatgui.cpp">
-				</File>
-				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_chatgui.h">
-				</File>
-				<File
 					RelativePath="..\..\..\..\src\gamecode\player\ctd_inputhandler.cpp">
 				</File>
 				<File
@@ -219,33 +213,13 @@
 					Name="nw-roles"
 					Filter="">
 					<File
-						RelativePath="..\..\..\..\src\gamecode\player\networkingRoles\_Def_Chat.cpp">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\..\..\src\gamecode\player\networkingRoles\_Def_Chat.h">
-					</File>
-					<File
-						RelativePath="..\..\..\..\src\gamecode\player\networkingRoles\_Def_Chat.rol">
-					</File>
-					<File
 						RelativePath="..\..\..\..\src\gamecode\player\networkingRoles\_RO_PlayerNetworking.cpp">
 						<FileConfiguration
 							Name="Debug|Win32">
 							<Tool
 								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""/>
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32">
@@ -257,9 +231,90 @@
 					<File
 						RelativePath="..\..\..\..\src\gamecode\player\networkingRoles\_RO_PlayerNetworking.h">
 					</File>
+				</Filter>
+				<Filter
+					Name="chat"
+					Filter="">
 					<File
-						RelativePath="..\..\..\..\src\gamecode\player\networkingRoles\_RO_PlayerNetworking.rol">
+						RelativePath="..\..\..\..\src\gamecode\player\chat\ctd_chatguibox.cpp">
 					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\ctd_chatguibox.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\ctd_chatguictrl.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\ctd_chatguictrl.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\ctd_chatmgr.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\ctd_chatmgr.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\ctd_chatprotocol.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\ctd_chatprotocol.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\ctd_chatserverVRC.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\ctd_chatserverVRC.h">
+					</File>
+					<Filter
+						Name="IRC"
+						Filter="">
+						<File
+							RelativePath="..\..\..\..\src\gamecode\player\chat\Irc\ctd_chatprotIRC.cpp">
+						</File>
+						<File
+							RelativePath="..\..\..\..\src\gamecode\player\chat\Irc\ctd_chatprotIRC.h">
+						</File>
+						<Filter
+							Name="libIRC"
+							Filter="">
+							<File
+								RelativePath="..\..\..\..\src\gamecode\player\chat\Irc\libIRC\libircclient.c">
+								<FileConfiguration
+									Name="Debug|Win32">
+									<Tool
+										Name="VCCLCompilerTool"
+										UsePrecompiledHeader="0"/>
+								</FileConfiguration>
+							</File>
+						</Filter>
+					</Filter>
+					<Filter
+						Name="VRC"
+						Filter="">
+						<File
+							RelativePath="..\..\..\..\src\gamecode\player\chat\Vrc\ctd_chatprotVRC.cpp">
+						</File>
+						<File
+							RelativePath="..\..\..\..\src\gamecode\player\chat\Vrc\ctd_chatprotVRC.h">
+						</File>
+						<Filter
+							Name="nw-roles"
+							Filter="">
+							<File
+								RelativePath="..\..\..\..\src\gamecode\player\chat\Vrc\networkingRoles\_RO_PlayerChat.cpp">
+								<FileConfiguration
+									Name="Debug|Win32">
+									<Tool
+										Name="VCCLCompilerTool"
+										UsePrecompiledHeader="0"
+										PrecompiledHeaderThrough=""/>
+								</FileConfiguration>
+							</File>
+							<File
+								RelativePath="..\..\..\..\src\gamecode\player\chat\Vrc\networkingRoles\_RO_PlayerChat.h">
+							</File>
+						</Filter>
+					</Filter>
 				</Filter>
 			</Filter>
 			<Filter
@@ -698,6 +753,20 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\extern\Noise.h">
+				</File>
+			</Filter>
+			<Filter
+				Name="networking"
+				Filter="">
+				<File
+					RelativePath="..\..\..\..\src\gamecode\networking\_Def_replicaregs.cpp">
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
 				</File>
 			</Filter>
 		</Filter>
