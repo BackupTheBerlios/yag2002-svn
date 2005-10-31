@@ -92,9 +92,6 @@ void event_join( irc_session_t * session, const char * event, const char * origi
     if ( !origin )
         return;
 
-    // hide IP address, in sake of security 
-	//irc_cmd_user_mode( session, "+x" );
-
     IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
     p_ctx->_p_handler->joined( params[ 0 ], origin );
 }
@@ -123,12 +120,7 @@ void event_kick( irc_session_t * session, const char * event, const char * origi
         return;
 
     IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
-    if ( std::string( params[ 1 ] ) == p_ctx->_nickname )
-        p_ctx->_p_handler->recvMessage( params[ 0 ], "* ", std::string( origin ) + " has kicked you!" );
-    else
-        p_ctx->_p_handler->recvMessage( params[ 0 ], "* ", std::string( origin ) + " has kicked " + std::string( params[ 1 ] ) );
-
-    p_ctx->_p_handler->left( params[ 0 ], std::string( params[ 1 ] ) );
+    p_ctx->_p_handler->recvKicked( params[ 0 ], std::string( origin ), std::string( params[ 1 ] ) );
 }
 
 void event_part( irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count )
@@ -177,21 +169,21 @@ void event_numeric( irc_session_t * session, unsigned int event, const char * or
     {
         p_ctx->_p_handler->recvMessage( p_ctx->_channel, "* ", "--------" );
     }
+    // just output system message
     else if ( event > 400 )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "IRC protocol error " << std::endl;
-        log << " " << event;
+        std::string msg;
 
         if ( count > 0 ) 
-            log << ": " << std::string( params[ 0 ] );
+            msg += std::string( params[ 0 ] );
 
         if ( count > 1 )
-            log << params[ 1 ] << " ";
+            msg += " " + std::string( params[ 1 ] );
 
         if ( count > 2 )
-            log << params[ 2 ] << " ";
+            msg += " " + std::string( params[ 2 ] );
 
-        log << " " << std::endl;
+        p_ctx->_p_handler->recvSystemMessage( msg );
     }
 }
 
@@ -210,52 +202,6 @@ void event_channel( irc_session_t * session, const char * event, const char * or
         return;
 
     irc_target_get_nick( origin, nickbuf, sizeof( nickbuf ) );
-
-    //! TBD
-
-    //if ( !strcmp (params[1], "quit") )
-    //  irc_cmd_quit (session, "of course, Master!");
-
-    //if ( !strcmp (params[1], "help") )
-    //{
-    //  irc_cmd_msg (session, params[0], "quit, help, dcc chat, dcc send, ctcp");
-    //}
-
-    //if ( !strcmp (params[1], "ctcp") )
-    //{
-    //  irc_cmd_ctcp_request (session, nickbuf, "PING 223");
-    //  irc_cmd_ctcp_request (session, nickbuf, "FINGER");
-    //  irc_cmd_ctcp_request (session, nickbuf, "VERSION");
-    //  irc_cmd_ctcp_request (session, nickbuf, "TIME");
-    //}
-
-    //if ( !strcmp (params[1], "dcc chat") )
-    //{
-    //  irc_dcc_t dccid;
-    //  irc_dcc_chat (session, 0, nickbuf, dcc_recv_callback, &dccid);
-    //  printf ("DCC chat ID: %d\n", dccid);
-    //}
-
-    //if ( !strcmp (params[1], "dcc send") )
-    //{
-    //  irc_dcc_t dccid;
-    //  irc_dcc_sendfile (session, 0, nickbuf, "irctest.c", dcc_file_recv_callback, &dccid);
-    //  printf ("DCC send ID: %d\n", dccid);
-    //}
-
-    //if ( !strcmp (params[1], "/topic") )
-    //    irc_cmd_topic (session, params[0], 0);
-    //else if ( strstr (params[1], "/topic ") == params[1] )
-    //    irc_cmd_topic (session, params[0], params[1] + 6);
-
-    //if ( strstr (params[1], "/mode ") == params[1] )
-    //    irc_cmd_channel_mode (session, params[0], params[1] + 5);
-
-    //if ( strstr (params[1], "/nick ") == params[1] )
-    //    irc_cmd_nick (session, params[1] + 5);
-
-    //if ( strstr (params[1], "/whois ") == params[1] )
-    //    irc_cmd_whois (session, params[1] + 5);
 }
 //----
 
@@ -294,7 +240,8 @@ void ChatNetworkingIRC::send( const std::string& msg, const std::string& channel
         // check for /msg commands, send them raw
         if ( ( msg.length() > 4 ) && !msg.compare( 0, 4, "/msg" ) )
         {
-            irc_send_raw( _p_session, msg.c_str() );
+            std::string cmd = msg.substr( 4, msg.length() );
+            irc_send_raw( _p_session, cmd.c_str() );
             return;
         }
 
@@ -383,6 +330,15 @@ void ChatNetworkingIRC::left( const std::string& channel, const std::string& nam
             p_beg->second->onLeftChannel( cfg );
 }
 
+void ChatNetworkingIRC::recvKicked( const std::string& channel, const std::string& kicker, const std::string& kicked )
+{
+    ProtocolCallbackList localcopy = _protocolCallbacks;
+    ProtocolCallbackList::iterator p_beg = localcopy.begin(), p_end = localcopy.end();
+    // send the kick notification unfiltered
+    for ( ; p_beg != p_end; p_beg++ )
+        p_beg->second->onKicked( channel, kicker, kicked );
+}
+
 void ChatNetworkingIRC::joined( const std::string& channel, const std::string& name )
 {
     CTD::ChatConnectionConfig cfg( *_p_config );
@@ -418,10 +374,17 @@ void ChatNetworkingIRC::recvMemberList( const std::string& channel )
             p_beg->second->onReceiveMemberList( channel );
 }
 
+void ChatNetworkingIRC::recvSystemMessage( const std::string& msg )
+{
+    ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
+    for ( ; p_beg != p_end; p_beg++ )            
+        p_beg->second->onReceiveSystemMessage( msg );
+}
+
 void ChatNetworkingIRC::recvNicknameChange( const std::string& channel, const std::string& newname, const std::string& oldname )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; p_beg++ ) 
         p_beg->second->onNicknameChanged( newname, oldname );
 }
 

@@ -85,6 +85,9 @@ class ChatNetworkingIRC : public OpenThreads::Thread, public BaseChatProtocol
         //! This method is called when a client ( chat memeber ) has left the chat 
         void                                        left( const std::string& channel, const std::string& name );
 
+        //! Mehtod for notifying that someone has been kicked in a channel
+        void                                        recvKicked( const std::string& channel, const std::string& kicker, const std::string& kicked );
+
         //! Method for distributing new incoming message to all registered callbacks.
         //! In normal case only internal functions make use of this method.
         void                                        recvMessage( const std::string& channel, const std::string& sender, const std::string& msg );
@@ -95,6 +98,9 @@ class ChatNetworkingIRC : public OpenThreads::Thread, public BaseChatProtocol
 
         //! Method for distributing member list changes in channel to all registered callbacks.
         void                                        recvMemberList( const std::string& channel );
+
+        //! Method for distributing system messages
+        void                                        recvSystemMessage( const std::string& msg );
 
     protected:
 
