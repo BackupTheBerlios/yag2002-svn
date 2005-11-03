@@ -81,6 +81,7 @@ _p_protVRC( p_nw )
 
 ImplChatNetworkingVRC::~ImplChatNetworkingVRC()
 {
+    _p_protVRC->setNetworkingImpl( NULL );
 }
 
 void ImplChatNetworkingVRC::PostObjectCreate()
