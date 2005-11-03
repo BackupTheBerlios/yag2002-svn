@@ -42,6 +42,8 @@ EnAmbientSound::EnAmbientSound() :
 _loop( true ),
 _autoPlay( true ),
 _volume( 0.8f ),
+_isPlaying( false ),
+_wasPlaying( false ),
 _p_soundNode( NULL )
 {
     // register entity attributes
@@ -58,6 +60,32 @@ EnAmbientSound::~EnAmbientSound()
     {
         _soundState->setPlay( false );
         _soundState = NULL; // delete the sound object
+    }
+}
+
+void EnAmbientSound::handleNotification( const EntityNotification& notification )
+{
+    // handle menu entring / leaving
+    switch( notification.getId() )
+    {
+        case CTD_NOTIFY_MENU_ENTER:
+        {   
+            if ( _isPlaying )
+                stopPlaying( true );
+
+            _wasPlaying = _isPlaying;
+        }
+        break;
+
+        case CTD_NOTIFY_MENU_LEAVE:
+        {
+            if ( _wasPlaying )
+                startPlaying();
+        }
+        break;
+
+        default:
+            ;
     }
 }
 
@@ -91,31 +119,33 @@ void EnAmbientSound::initialize()
     uniquename << uniqueId;
     uniqueId++;
     _soundState = new osgAL::SoundState( uniquename.str() );
-    // Let the soundstate use the sample we just created
+    // let the soundstate use the sample we just created
     _soundState->setSample( p_sample );
     _soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
-    // Set its pitch to 1 (normal speed)
+    // set its pitch to 1 (normal speed)
     _soundState->setPitch( 1.0f );
-    // Make it play
+
+    // make it play
     _soundState->setPlay( _autoPlay );
-    // The sound should loop over and over again
+    _isPlaying = _autoPlay;
+
+    // the sound should loop over and over again
     _soundState->setLooping( _loop );
     _soundState->setAmbient( true );
-    // Allocate a hardware soundsource to this soundstate (priority 10)
+    // allocate a hardware soundsource to this soundstate (priority 10)
     _soundState->allocateSource( 10, false );
 
     _soundState->setReferenceDistance( 50.0f );
     _soundState->setRolloffFactor( 5.0f );
 
-    osg::Vec3f pos;
-    osgAL::SoundManager::instance()->getListener()->getPosition( pos._v[ 0 ], pos._v[ 1 ], pos._v[ 2 ] );
-    _soundState->setPosition( pos );
-
     _soundState->apply();
 
-    // Create a sound node and attach the soundstate to it.
+    // create a sound node and attach the soundstate to it.
     _p_soundNode = new osgAL::SoundNode;
     _p_soundNode->setSoundState( _soundState.get() );
+
+    // register entity in order to get menu notifications
+    EntityManager::get()->registerNotification( this, true );
 }
 
 void EnAmbientSound::startPlaying()
@@ -124,10 +154,23 @@ void EnAmbientSound::startPlaying()
         _soundState->setPlay( true );
 }
 
-void EnAmbientSound::stopPlaying()
+void EnAmbientSound::stopPlaying( bool pause )
 {
     if ( _soundState.valid() )
+    {
+        // first set stop mode
+        if ( pause )
+        {
+            _soundState->setStopMethod( openalpp::Paused );
+        }
+        else
+        {
+            _soundState->setStopMethod( openalpp::Stopped );
+            _isPlaying = false;
+        }
+
         _soundState->setPlay( false );
+    }
 }
 
 //! Set sound volume (0..1)

@@ -46,19 +46,25 @@ class En3DSound : public BaseEntity
 
         virtual                                     ~En3DSound();
 
-        //! This entity does not need a transform node, which would be created by level manager on loading
-        const bool                                  isTransformable() const { return false; }
-
         //! Initialize 
         void                                        initialize();
 
-        //! Start playing sound
+        //! Start / continue playing sound
         void                                        startPlaying();
 
-        //! Stop playing sound
-        void                                        stopPlaying();
+        //! Stop playing sound, pass 'true' in order to pause only, otherwise the sound is stopped
+        void                                        stopPlaying( bool pause = false );
+
+        //! Set sound volume (0..1)
+        void                                        setVolume( float volume );
+
+        //! Get sound volume (0..1)
+        float                                       getVolume();
 
     protected:
+
+        // Handler system notifications
+        void                                        handleNotification( const EntityNotification& notification );
 
         //! This entity needs updating
         void                                        updateEntity( float deltaTime );
@@ -86,6 +92,15 @@ class En3DSound : public BaseEntity
 
         //! Rolloff factor
         float                                       _rolloffFac;
+
+        //! Flag indicating whether the sound is currently playing
+        bool                                        _isPlaying;
+
+        //! Flag indicating whether the sound was playing before entering the menu
+        bool                                        _wasPlaying;
+
+        //! Mesh file name sound source ( is usually used during level creation for debugging purpose )
+        std::string                                 _sourceMesh;
 
         //! Used for visualizing sound sources
         bool                                        _showSource;

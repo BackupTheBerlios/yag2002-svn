@@ -43,7 +43,9 @@ _loop( true ),
 _autoPlay( true ),
 _volume( 0.8f ),
 _referenceDist( 70.0f ),
-_rolloffFac( 4.0f ),
+_rolloffFac( 1.0f ),
+_isPlaying( false ),
+_wasPlaying( false ),
 _showSource( false ),
 _p_soundNode( NULL )
 {
@@ -56,7 +58,7 @@ _p_soundNode( NULL )
     getAttributeManager().addAttribute( "volume",       _volume         );
     getAttributeManager().addAttribute( "rollOff",      _rolloffFac     );
     getAttributeManager().addAttribute( "refDistance",  _referenceDist  );
-    getAttributeManager().addAttribute( "showSource",   _showSource     );
+    getAttributeManager().addAttribute( "sourceMesh",   _sourceMesh     );
 }
 
 En3DSound::~En3DSound()
@@ -65,6 +67,32 @@ En3DSound::~En3DSound()
     {
         _soundState->setPlay( false );
         _soundState = NULL; // delete the sound object
+    }
+}
+
+void En3DSound::handleNotification( const EntityNotification& notification )
+{
+    // handle menu entring / leaving
+    switch( notification.getId() )
+    {
+        case CTD_NOTIFY_MENU_ENTER:
+        {   
+            if ( _isPlaying )
+                stopPlaying( true );
+
+            _wasPlaying = _isPlaying;
+        }
+        break;
+
+        case CTD_NOTIFY_MENU_LEAVE:
+        {
+            if ( _wasPlaying )
+                startPlaying();
+        }
+        break;
+
+        default:
+            ;
     }
 }
 
@@ -99,35 +127,42 @@ void En3DSound::initialize()
     uniquename << uniqueId;
     uniqueId++;
     _soundState = new osgAL::SoundState( uniquename.str() );
-    // Let the soundstate use the sample we just created
+
+    // let the soundstate use the sample we just created
     _soundState->setSample( p_sample );
     _soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
-    // Set its pitch to 1 (normal speed)
+    // set its pitch to 1 (normal speed)
     _soundState->setPitch( 1 );
-    // Make it play
+    
+    // automatically start playing?
     _soundState->setPlay( _autoPlay );
-    // The sound should loop over and over again
+    _isPlaying = _autoPlay;
+
+    // the sound should loop over and over again
     _soundState->setLooping( _loop );
-    // Allocate a hardware soundsource to this soundstate (priority 10)
+    // allocate a hardware soundsource to this soundstate (priority 10)
     _soundState->allocateSource( 10, false );
 
-    _soundState->setReferenceDistance( _referenceDist );
+    // to make a radial 3d sound source we first have to make the source ambient then add rolloff
+    _soundState->setAmbient( true );
     _soundState->setRolloffFactor( _rolloffFac );
+    _soundState->setReferenceDistance( _referenceDist );
 
     _soundState->setPosition( _position );
 
-    // Create a sound node and attach the soundstate to it.
+    // create a sound node and attach the soundstate to it.
     _p_soundNode = new osgAL::SoundNode;
     _p_soundNode->setSoundState( _soundState.get() );
 
     // this is for debugging
-    if ( _showSource )
+    if ( _sourceMesh.length() )
     {
-        osg::Node* p_mesh = LevelManager::get()->loadMesh( "sound/soundsrc.osg" );
+        osg::Node* p_mesh = LevelManager::get()->loadMesh( _sourceMesh );
         if ( p_mesh )
         {
             addToTransformationNode( p_mesh );
             setPosition( _position );
+            _showSource = true;
         }
         else
         {
@@ -135,6 +170,9 @@ void En3DSound::initialize()
         }
 
     }
+
+    // register entity in order to get menu notifications
+    EntityManager::get()->registerNotification( this, true );
 }
 
 void En3DSound::updateEntity( float deltaTime )
@@ -153,12 +191,40 @@ void En3DSound::startPlaying()
 {
     if ( _soundState.valid() )
         _soundState->setPlay( true );
+
+    _isPlaying = true;
 }
 
-void En3DSound::stopPlaying()
+void En3DSound::stopPlaying( bool pause )
 {
     if ( _soundState.valid() )
+    {
+        // first set stop mode
+        if ( pause )
+        {
+            _soundState->setStopMethod( openalpp::Paused );
+        }
+        else
+        {
+            _soundState->setStopMethod( openalpp::Stopped );
+            _isPlaying = false;
+        }
+
         _soundState->setPlay( false );
+    }
+}
+
+//! Set sound volume (0..1)
+void En3DSound::setVolume( float volume )
+{
+    _volume = std::max( std::min( volume, 1.0f ), 0.0f );
+    if ( _soundState.get() )
+        _soundState->setGain( _volume );
+}
+
+float En3DSound::getVolume()
+{
+    return _volume;
 }
 
 } // namespace CTD
