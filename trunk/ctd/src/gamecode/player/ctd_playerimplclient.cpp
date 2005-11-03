@@ -38,6 +38,7 @@
 #include "ctd_playerimplclient.h"
 #include "ctd_playernetworking.h"
 #include "../visuals/ctd_camera.h"
+#include "../ctd_gameutils.h"
 
 using namespace std;
 
@@ -52,8 +53,19 @@ _p_inputHandler( NULL )
 
 PlayerImplClient::~PlayerImplClient()
 {
+    // if _p_playerNetworking is NULL then we were a remote client, otherwise we were a local client
     if ( _p_playerNetworking )
+    {
         delete _p_playerNetworking;
+
+        // remove local player in player utils
+        CTD::gameutils::PlayerUtils::get()->setLocalPlayer( NULL );
+    }
+    else
+    {
+        // remove us from remote player list in player utility if we are a remote player
+        CTD::gameutils::PlayerUtils::get()->removeRemotePlayer( getPlayerEntity() );
+    }
 }
 
 void PlayerImplClient::handleNotification( const EntityNotification& notification )
@@ -131,7 +143,7 @@ void PlayerImplClient::initialize()
     {
         // get player's remote client config file so its ghosts load the right config while they get setup on remote machines
         std::string playerconfig;
-        gameutils::getPlayerConfig( CTD::GameState::get()->getMode(), true, playerconfig );
+        gameutils::PlayerUtils::get()->getPlayerConfig( CTD::GameState::get()->getMode(), true, playerconfig );
         // init player's networking 
         getPlayerNetworking()->initialize( _currentPos, getPlayerEntity()->getPlayerName(), playerconfig );
     }
@@ -144,6 +156,9 @@ void PlayerImplClient::postInitialize()
     // local client specific setup
     if ( !getPlayerNetworking()->isRemoteClient() )
     {
+        // set us as local player entity in player utility; other entities may need us
+        CTD::gameutils::PlayerUtils::get()->setLocalPlayer( getPlayerEntity() );
+
         // attach camera entity
         {
             log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for camera entity '" << PLAYER_CAMERA_ENTITIY_NAME << "'..." << endl;
@@ -208,6 +223,9 @@ void PlayerImplClient::postInitialize()
     }
     else // setup remote client ( note, the remote instance names have a postfix )
     {
+        // set us as remote player entity in player utility
+        CTD::gameutils::PlayerUtils::get()->addRemotePlayer( getPlayerEntity() );
+
         // attach physics entity
         {
             log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for physics entity '" << _playerAttributes._physicsEntity + _loadingPostFix << "' ..." << endl;

@@ -91,7 +91,7 @@ PlayerNetworking::~PlayerNetworking()
     CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "player left: " << _p_playerName << endl;
 
     // remove ghost from simulation ( server and client )
-    if ( isRemoteClient() ) 
+    if ( isRemoteClient() )
     {
         // PlayerNetworking has created the player implementation, so set its networking and other components to NULL in order to abvoid deleting it also by player's implementation
         _p_playerImpl->setPlayerNetworking( NULL );
@@ -233,6 +233,11 @@ void PlayerNetworking::RPC_Initialize( tInitializationData initData )
     mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
     mat.setTrans( _p_playerImpl->getPlayerPosition() ); 
     _p_playerImpl->getPlayerPhysics()->setTransformation( mat );
+
+    _positionX = initData._posX;
+    _positionY = initData._posY;
+    _positionZ = initData._posZ;
+    _yaw       = initData._rotZ;
 }
 
 void PlayerNetworking::update()
