@@ -68,13 +68,13 @@ class EnCamera :  public BaseEntity
         inline void                                 setCameraPosition( const osg::Vec3f& pos );
 
         //! Get camera position
-        inline const osg::Vec3f&                    getCameraPosition();
+        inline const osg::Vec3f&                    getCameraPosition() const;
 
         //! Set camera rotation
         inline void                                 setCameraRotation( const osg::Quat& rot );
 
         //! Get camera rotation
-        inline const osg::Quat&                     getCameraRotation();
+        inline const osg::Quat&                     getCameraRotation() const;
 
         //! Rotate camera
         inline void                                 rotateCamera( const osg::Quat& rot );
@@ -86,8 +86,14 @@ class EnCamera :  public BaseEntity
         */
         inline void                                 setCameraOffsetRotation( const osg::Quat& rotOffset );
 
+        //! Get offset rotation
+        inline const osg::Quat&                     getCameraOffsetRotation() const;
+
         //! Add an offset to camera position
         inline void                                 setCameraOffsetPosition( const osg::Vec3f& posOffset );
+
+        //! Get offset position
+        inline const osg::Vec3f&                    getCameraOffsetPosition() const;
 
         //! Set camera's pitch and yaw, used for looking around.
         /**
@@ -100,7 +106,7 @@ class EnCamera :  public BaseEntity
         inline void                                 getLocalPitchYaw( float& pitch, float& yaw ) const;
 
         //! Get local rotation ( pitch / yaw as quaternion that is )
-        inline const osg::Quat                      getLocalRotation();
+        inline const osg::Quat                      getLocalRotation() const;
 
         //! Set camera's pitch, used for looking around.
         /**
@@ -214,7 +220,7 @@ inline void EnCamera::setCameraPosition( const osg::Vec3f& pos )
     _needUpdate = true;
 }
 
-inline const osg::Vec3f& EnCamera::getCameraPosition()
+inline const osg::Vec3f& EnCamera::getCameraPosition() const
 {
     return _curPosition;
 }
@@ -225,10 +231,11 @@ inline void EnCamera::setCameraRotation( const osg::Quat& rot )
     _needUpdate = true;
 }
 
-inline const osg::Quat& EnCamera::getCameraRotation()
+inline const osg::Quat& EnCamera::getCameraRotation() const
 {
     return _curRotation;
 }
+
 
 inline void EnCamera::rotateCamera( const osg::Quat& rot )
 {
@@ -242,10 +249,24 @@ inline void EnCamera::setCameraOffsetRotation( const osg::Quat& rotOffset )
     _needUpdate = true;
 }
 
+inline const osg::Quat& EnCamera::getCameraOffsetRotation() const
+{
+    static osg::Quat offset;
+    _offsetMatrixRotation.get( offset );
+    return offset;
+}
+
 inline void EnCamera::setCameraOffsetPosition( const osg::Vec3f& posOffset )
 {
     _offsetMatrixPosition.makeTranslate( posOffset );
     _needUpdate = true;
+}
+
+inline const osg::Vec3f& EnCamera::getCameraOffsetPosition() const
+{
+    static osg::Vec3f offset;
+    offset = _offsetMatrixPosition.getTrans();
+    return offset;
 }
 
 inline void EnCamera::setLocalPitchYaw( float pitch, float yaw )
@@ -262,7 +283,7 @@ inline void EnCamera::setLocalPitchYaw( float pitch, float yaw )
     _needUpdate = true;
 }
 
-inline const osg::Quat EnCamera::getLocalRotation()
+inline const osg::Quat EnCamera::getLocalRotation() const
 {
     osg::Quat rot( 
                     _pitch, osg::Vec3f( 1.0f, 0.0f, 0.0f ),
