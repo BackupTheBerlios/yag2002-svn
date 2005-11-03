@@ -61,6 +61,7 @@ void GameState::setState( unsigned int state )
             ( state == GameState::Menu         ) ||
             ( state == GameState::Running      ) ||
             ( state == GameState::Pausing      ) ||
+            ( state == GameState::Leaving      ) ||
             ( state == GameState::Quitting     ) &&
             "GameState: trying to set an invalid game state!" 
           );
@@ -91,4 +92,4 @@ void GameState::setMode( unsigned int mode )
     _gameMode = mode;
 }
 
-}
+} // namespace CTD

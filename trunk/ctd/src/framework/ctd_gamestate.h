@@ -63,11 +63,15 @@ class GameState : public Singleton< GameState >
             Menu,                   // user is in menu
             Running,                // running game
             Pausing,                // game pausing
+            Leaving,                // leaving a level
             Quitting                // quitting application
         };
 
         //! Set game mode to Server, Client, or Standalone
         void                                    setMode( unsigned int mode );
+
+        //! Get game mode
+        unsigned int                            getMode();
 
         //! Set new state
         void                                    setState( unsigned int state );
@@ -75,9 +79,6 @@ class GameState : public Singleton< GameState >
         //! Get state state
         unsigned int                            getState();
  
-        //! Get game mode
-        unsigned int                            getMode();
-
     protected:
 
                                                 GameState();
