@@ -128,6 +128,9 @@ class BasePlayerImplementation
         //! Set player's networking component ( used by networking component itself when a new remote client is created ).
         inline void                                 setPlayerNetworking( PlayerNetworking* p_net );
 
+        //! Return player's camera
+        inline EnCamera*                            getPlayerCamera();
+
         //! Create the chat manager, return false if something went wrong
         bool                                        createChatManager();
 
@@ -276,6 +279,11 @@ inline PlayerNetworking* BasePlayerImplementation::getPlayerNetworking()
 inline void BasePlayerImplementation::setPlayerNetworking( PlayerNetworking* p_net ) 
 { 
     _p_playerNetworking = p_net; 
+}
+
+inline EnCamera* BasePlayerImplementation::getPlayerCamera() 
+{ 
+    return _p_camera; 
 }
 
 inline EnPlayer* BasePlayerImplementation::getPlayerEntity() 
