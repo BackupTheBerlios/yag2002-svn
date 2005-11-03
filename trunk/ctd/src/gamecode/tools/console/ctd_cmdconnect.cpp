@@ -94,7 +94,7 @@ const std::string& CmdConnect::execute( const std::vector< std::string >& argume
     GameState::get()->setMode( GameState::Client );
     std::string playerCfgFile;
     // load local client's config ( .lvl file ) 
-    if ( !gameutils::getPlayerConfig( GameState::Client, false, playerCfgFile ) )
+    if ( !CTD::gameutils::PlayerUtils::get()->getPlayerConfig( GameState::Client, false, playerCfgFile ) )
     {
         _cmdResult = "* error: cannot determine player configuration file";
         return _cmdResult;
