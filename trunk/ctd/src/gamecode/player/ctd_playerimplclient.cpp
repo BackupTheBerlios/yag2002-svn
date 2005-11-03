@@ -47,17 +47,15 @@ namespace CTD
 
 PlayerImplClient::PlayerImplClient( EnPlayer* player ) :
 BasePlayerImplementation( player ),
+_isRemoteClient( false ),
 _p_inputHandler( NULL )
 {
 }
 
 PlayerImplClient::~PlayerImplClient()
 {
-    // if _p_playerNetworking is NULL then we were a remote client, otherwise we were a local client
-    if ( _p_playerNetworking )
+    if ( !_isRemoteClient )
     {
-        delete _p_playerNetworking;
-
         // remove local player in player utils
         CTD::gameutils::PlayerUtils::get()->setLocalPlayer( NULL );
     }
@@ -66,6 +64,9 @@ PlayerImplClient::~PlayerImplClient()
         // remove us from remote player list in player utility if we are a remote player
         CTD::gameutils::PlayerUtils::get()->removeRemotePlayer( getPlayerEntity() );
     }
+
+    if ( _p_playerNetworking )
+        delete _p_playerNetworking;
 }
 
 void PlayerImplClient::handleNotification( const EntityNotification& notification )
@@ -75,7 +76,7 @@ void PlayerImplClient::handleNotification( const EntityNotification& notificatio
     {
         case CTD_NOTIFY_MENU_ENTER:
 
-            if ( !getPlayerNetworking()->isRemoteClient() )
+            if ( !_isRemoteClient )
             {
                 getChatManager()->show( false );
                 _p_inputHandler->setMenuEnabled( true );
@@ -93,7 +94,7 @@ void PlayerImplClient::handleNotification( const EntityNotification& notificatio
 
         case CTD_NOTIFY_MENU_LEAVE:
         {
-            if ( !getPlayerNetworking()->isRemoteClient() )
+            if ( !_isRemoteClient )
             {
                 getChatManager()->show( true );
                 _p_inputHandler->setMenuEnabled( false );
@@ -137,9 +138,15 @@ void PlayerImplClient::initialize()
         // for local client we create the networking component
         _p_playerNetworking = new PlayerNetworking( this );
         _p_playerNetworking->Publish();
+        _isRemoteClient = false;
     }
+    else
+    {
+        _isRemoteClient = true;
+    }
+
     // actions to be taken for local client
-    if ( !getPlayerNetworking()->isRemoteClient() )
+    if ( !_isRemoteClient )
     {
         // get player's remote client config file so its ghosts load the right config while they get setup on remote machines
         std::string playerconfig;
@@ -154,7 +161,7 @@ void PlayerImplClient::postInitialize()
     log << Log::LogLevel( Log::L_INFO ) << "  setup player implementation Client ..." << endl;
 
     // local client specific setup
-    if ( !getPlayerNetworking()->isRemoteClient() )
+    if ( !_isRemoteClient )
     {
         // set us as local player entity in player utility; other entities may need us
         CTD::gameutils::PlayerUtils::get()->setLocalPlayer( getPlayerEntity() );
@@ -305,7 +312,7 @@ void PlayerImplClient::getConfiguration()
 
 void PlayerImplClient::update( float deltaTime )
 {
-    if ( !getPlayerNetworking()->isRemoteClient() )
+    if ( !_isRemoteClient )
     {
         // update player's actual position and rotation once per frame
         getPlayerEntity()->setPosition( _currentPos );

@@ -91,21 +91,25 @@ PlayerNetworking::~PlayerNetworking()
     CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "player left: " << _p_playerName << endl;
 
     // remove ghost from simulation ( server and client )
-    if ( isRemoteClient() )
+
+    // we have to delete player associated entities only if we are not unloading the level
+    if ( CTD::GameState::get()->getState() != CTD::GameState::Leaving )
     {
-        // PlayerNetworking has created the player implementation, so set its networking and other components to NULL in order to abvoid deleting it also by player's implementation
-        _p_playerImpl->setPlayerNetworking( NULL );
-        _p_playerImpl->setPlayerSound( NULL );
-        _p_playerImpl->setPlayerAnimation( NULL );
-        _p_playerImpl->setPlayerPhysics( NULL );
+        if ( isRemoteClient() )
+        {
+            // PlayerNetworking has created the player implementation, so set its networking and other components to NULL in order to abvoid deleting it also by player's implementation
+            _p_playerImpl->setPlayerNetworking( NULL );
+            _p_playerImpl->setPlayerSound( NULL );
+            _p_playerImpl->setPlayerAnimation( NULL );
+            _p_playerImpl->setPlayerPhysics( NULL );
 
-        // remove all associated entities
-        std::vector< CTD::BaseEntity* >::iterator p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
-        for ( ; p_beg != p_end; p_beg++ )
-            CTD::EntityManager::get()->deleteEntity( *p_beg );
+            // remove all associated entities
+            std::vector< CTD::BaseEntity* >::iterator p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
+            for ( ; p_beg != p_end; p_beg++ )
+                CTD::EntityManager::get()->deleteEntity( *p_beg );
+        }
     }
-
-    *s_chatLog << CTD::getTimeStamp() << ": [" << _p_playerName << "] left the chat room " << std::endl;
+    *s_chatLog << CTD::getTimeStamp() << ": [" << _p_playerName << "] left" << std::endl;
 }
 
 void PlayerNetworking::PostObjectCreate()
@@ -217,6 +221,11 @@ void PlayerNetworking::initialize( const osg::Vec3f& pos, const string& playerNa
     _positionZ = pos._v[ 2 ];
     strcpy( _p_playerName, playerName.c_str() );
     strcpy( _p_configFile, cfgFile.c_str() );
+
+    ContinuityBreak( _positionX, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
+    ContinuityBreak( _positionY, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
+    ContinuityBreak( _positionZ, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
+    ContinuityBreak( _yaw, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
 }
 
 void PlayerNetworking::RPC_Initialize( tInitializationData initData )

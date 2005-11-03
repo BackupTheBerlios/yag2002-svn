@@ -72,6 +72,9 @@ class PlayerImplClient : public BasePlayerImplementation
         //! Get the configuration settings
         void                                        getConfiguration();
 
+        //! Indicated remote / local client
+        bool                                        _isRemoteClient;
+
         //! Input handler
         PlayerIHCharacterCameraCtrl< PlayerImplClient >* _p_inputHandler;
 
