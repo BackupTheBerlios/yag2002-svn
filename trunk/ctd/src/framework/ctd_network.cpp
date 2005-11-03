@@ -332,14 +332,16 @@ bool NetworkDevice::startClient()
     //-----------------------------//
 
     unsigned int tryCounter = 0;
-    log.enableSeverityLevelPrinting( false );
 	while ( !_p_session->IsStable() )
 	{
         _p_session->Poll();    // during this time we have to poll the session instance as we disabled the automatic poll!
 
         CurrentThread::Sleep( 200 );
         tryCounter++;
-        log << Log::LogLevel( Log::L_DEBUG ) << ".";
+
+        log.enableSeverityLevelPrinting( false );
+        log << ".";
+        log.enableSeverityLevelPrinting( true );
 
         // try up to 10 seconds
         if ( tryCounter > 50 ) 
@@ -354,7 +356,6 @@ bool NetworkDevice::startClient()
         }
     }    
     log << Log::LogLevel( Log::L_DEBUG ) << endl;
-    log.enableSeverityLevelPrinting( true );
 
     string sessionurl = _p_session->SessionExportURL();
     log << Log::LogLevel( Log::L_INFO ) << "nw client: successfully joined to session: " << sessionurl << endl;
