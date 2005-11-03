@@ -31,12 +31,20 @@
 #include <ctd_main.h>
 #include "ctd_gameutils.h"
 
+
+CTD_SINGLETON_IMPL( CTD::gameutils::PlayerUtils );
+
 namespace CTD
 {
 namespace gameutils
 {
 
-bool getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile )
+PlayerUtils::PlayerUtils() :
+_p_localPlayer( NULL )
+{
+}
+
+bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile )
 {
     std::string playercfgdir;
     std::string playercfgfile;
@@ -79,6 +87,42 @@ bool getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile )
     SettingsManager::get()->destroyProfile( profile );
 
     return true;
+}
+
+void PlayerUtils::setLocalPlayer( BaseEntity* p_entity )
+{
+    _p_localPlayer = p_entity;
+}
+
+BaseEntity* PlayerUtils::getLocalPlayer()
+{
+    return _p_localPlayer;
+}
+
+void PlayerUtils::addRemotePlayer( BaseEntity* p_entity )
+{
+    // first check whether the entity is already in list
+    std::vector< BaseEntity* >::iterator p_beg = _remotePlayers.begin(), p_end = _remotePlayers.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        if ( *p_beg = p_entity )
+            break;
+
+    assert( ( p_beg == p_end ) && "remote player already exists in list!" );
+    
+    _remotePlayers.push_back( p_entity );
+}
+
+void PlayerUtils::removeRemotePlayer( BaseEntity* p_entity )
+{
+    // first check whether the entity is in list
+    std::vector< BaseEntity* >::iterator p_beg = _remotePlayers.begin(), p_end = _remotePlayers.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        if ( *p_beg = p_entity )
+            break;
+
+    assert( ( p_beg != p_end ) && "remote player does not exist in list!" );
+
+    _remotePlayers.erase( p_beg );
 }
 
 // level file class

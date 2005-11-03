@@ -38,10 +38,46 @@ namespace CTD
 namespace gameutils
 {
 
-//! Retrieve player configuration file path depending on game settings and given game mode ( Server, Client, Standalone ) and
-//! in case of Client the remote flag determines local or remote client.
-//! Returns false if something went wrong.
-bool getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile );
+//! Single instance providing player-related utility services
+class PlayerUtils : public CTD::Singleton< CTD::gameutils::PlayerUtils >
+{
+    public:
+
+                                                    PlayerUtils();
+
+        //! Retrieve player configuration file path depending on game settings and given game mode ( Server, Client, Standalone ) and
+        //! in case of Client the remote flag determines local or remote client.
+        //! Returns false if something went wrong.
+        bool                                        getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile );
+
+        //! Stores a pointer to local player entity
+        void                                        setLocalPlayer( BaseEntity* p_entity );
+
+        //! Return the previousely set local player entity
+        BaseEntity*                                 getLocalPlayer();
+
+        //! Add a new remote player ( ghost ) into internal list
+        void                                        addRemotePlayer( BaseEntity* p_entity );
+
+        //! Remove a remote player from internal list
+        void                                        removeRemotePlayer( BaseEntity* p_entity );
+
+        //! Return the list of remote players
+        inline std::vector< BaseEntity* >&          getRemotePlayers();
+
+    protected:
+
+        BaseEntity*                                 _p_localPlayer;
+    
+        std::vector< BaseEntity* >                  _remotePlayers;
+
+    friend public CTD::Singleton< CTD::gameutils::PlayerUtils >;
+};
+
+inline std::vector< BaseEntity* >& PlayerUtils::getRemotePlayers()
+{                                                     
+    return _remotePlayers;
+}
 
 //! Helper class for getting a lookup table with level files and their preview images
 class LevelFiles
@@ -49,22 +85,22 @@ class LevelFiles
     public:
 
         //! Given a directory all preview images are gathered in a lookup table
-                                                LevelFiles( const std::string& dir );
+                                                    LevelFiles( const std::string& dir );
 
-        virtual                                 ~LevelFiles();
+        virtual                                     ~LevelFiles();
 
         //! Given a file name return its preview image. NULL if the file or preview pic does not exist.
-        CEGUI::Image*                           getImage( const std::string& file );
+        CEGUI::Image*                               getImage( const std::string& file );
 
         //! Get look up table
-        std::map< std::string, CEGUI::Image* >& getAllFiles() { return _files; }
+        std::map< std::string, CEGUI::Image* >&     getAllFiles() { return _files; }
 
         //! Get count of level files
-        unsigned int                            count() { return _files.size(); }
+        unsigned int                                count() { return _files.size(); }
 
     protected:
 
-        std::map< std::string, CEGUI::Image* >  _files;
+        std::map< std::string, CEGUI::Image* >      _files;
 };
 
 } // namespace gameutils
