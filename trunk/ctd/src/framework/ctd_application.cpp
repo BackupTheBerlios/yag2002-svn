@@ -106,34 +106,11 @@ void Application::shutdown()
     destroy();
 }
 
-#ifdef WIN32
-// console handler for catching Ctrl+C events on WIN32 platform
-BOOL WINAPI consoleHandler( DWORD ctrlType )
-{
-    switch ( ctrlType )
-    {
-        case CTRL_CLOSE_EVENT:
-        case CTRL_C_EVENT:
-            Application::get()->stop();
-            break;
-
-        default:
-            ;
-    }
-    return TRUE;
-}
-#endif
-
 bool Application::initialize( int argc, char **argv )
 {
 #ifdef CTD_ENABLE_HEAPCHECK
     // trigger debugger
-//    __asm int 3;
-#endif
-
-    // set console handler in order to catch Ctrl+C and close events
-#ifdef WIN32
-    SetConsoleCtrlHandler( consoleHandler, TRUE );
+    //__asm int 3;
 #endif
 
     // set game state
