@@ -155,27 +155,6 @@ void Log::out( const string& msg )
 void Log::setSeverity( unsigned int severity )
 {
     _severity = severity;
-
-    if ( !_printSeverityLevel )
-        return;
-
-    switch ( severity )
-    {
-        case L_INFO:
-            out( "info:    " );
-            break;
-        case L_DEBUG:
-            out( "debug:   " );
-            break;
-        case L_WARNING:
-            out( "warning: " );
-            break;
-        case L_ERROR:
-            out( "error:   " );
-            break;
-        default:
-            assert( NULL && "unknown log severity" );
-    }
 }
 
 //---------------------------
@@ -201,10 +180,29 @@ basic_ios< char >::int_type Log::LogStreamBuf::overflow( int_type c )
         _msg += c;
         if( c == '\n' )
         {
+            std::string severity;
             if ( _p_log->_printSeverityLevel )
-                _p_log->setSeverity( _p_log->_severity );
+            {
+                switch ( _p_log->_severity )
+                {
+                case L_INFO:
+                    severity = "info:    ";
+                    break;
+                case L_DEBUG:
+                    severity = "debug:   ";
+                    break;
+                case L_WARNING:
+                    severity = "warning: ";
+                    break;
+                case L_ERROR:
+                    severity = "error:   ";
+                    break;
+                default:
+                    assert( NULL && "unknown log severity" );
+                }
+            }
 
-            _p_log->out( _msg );
+            _p_log->out( severity + _msg );
             _msg = "";
         }
     }
