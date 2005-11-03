@@ -186,6 +186,12 @@
 					RelativePath="..\..\..\..\src\gamecode\player\ctd_playerimplstandalone.h">
 				</File>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\player\ctd_playernamedisp.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\player\ctd_playernamedisp.h">
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\player\ctd_playernetworking.cpp">
 				</File>
 				<File
@@ -285,6 +291,13 @@
 										Name="VCCLCompilerTool"
 										UsePrecompiledHeader="0"/>
 								</FileConfiguration>
+								<FileConfiguration
+									Name="Release|Win32">
+									<Tool
+										Name="VCCLCompilerTool"
+										UsePrecompiledHeader="0"
+										PrecompiledHeaderThrough=""/>
+								</FileConfiguration>
 							</File>
 						</Filter>
 					</Filter>
@@ -304,6 +317,13 @@
 								RelativePath="..\..\..\..\src\gamecode\player\chat\Vrc\networkingRoles\_RO_PlayerChat.cpp">
 								<FileConfiguration
 									Name="Debug|Win32">
+									<Tool
+										Name="VCCLCompilerTool"
+										UsePrecompiledHeader="0"
+										PrecompiledHeaderThrough=""/>
+								</FileConfiguration>
+								<FileConfiguration
+									Name="Release|Win32">
 									<Tool
 										Name="VCCLCompilerTool"
 										UsePrecompiledHeader="0"
@@ -762,6 +782,13 @@
 					RelativePath="..\..\..\..\src\gamecode\networking\_Def_replicaregs.cpp">
 					<FileConfiguration
 						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
