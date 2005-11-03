@@ -62,6 +62,8 @@ class EnMesh :  public BaseEntity
 
     protected:
 
+        void                                        handleNotification( const EntityNotification& notification );
+
         osg::ref_ptr< osg::Node >                   _mesh;
 
         bool                                        _enable;

@@ -51,6 +51,30 @@ EnMesh::~EnMesh()
 {
 }
 
+void EnMesh::handleNotification( const EntityNotification& notification )
+{
+    // handle notifications, add and remove the mesh to / from scenegraph on menu entring / leaving
+    switch( notification.getId() )
+    {
+        case CTD_NOTIFY_MENU_ENTER:
+        {
+            removeFromTransformationNode( _mesh.get() );
+        }
+        break;
+
+        case CTD_NOTIFY_MENU_LEAVE:
+        {
+            if ( _enable )
+                addToTransformationNode( _mesh.get() );
+        }
+        break;
+
+
+        default:
+            ;
+    }
+}
+
 void EnMesh::initialize()
 {
     osg::Node* p_node = LevelManager::get()->loadMesh( _meshFile );
@@ -61,7 +85,6 @@ void EnMesh::initialize()
     }
 
     _mesh = p_node;
-    addToTransformationNode( _mesh.get() );
     setPosition( _position );
     osg::Quat   rot( 
                      osg::DegreesToRadians( _rotation.x() ), osg::Vec3f( 1.0f, 0.0f, 0.0f ),
@@ -69,6 +92,9 @@ void EnMesh::initialize()
                      osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0.0f, 0.0f, 1.0f )
                     );
     setRotation( rot );
+
+    // register entity in order to get menu notifications
+    EntityManager::get()->registerNotification( this, true );
 }
 
 void EnMesh::enable( bool en )
