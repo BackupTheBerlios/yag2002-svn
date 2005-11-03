@@ -719,7 +719,7 @@ void EnMenu::updateEntity( float deltaTime )
 
             // now load the player and its other entities
             string playerCfgFile;
-            gameutils::getPlayerConfig( GameState::get()->getMode(), false, playerCfgFile );
+            CTD::gameutils::PlayerUtils::get()->getPlayerConfig( GameState::get()->getMode(), false, playerCfgFile );
             LevelManager::get()->loadEntities( playerCfgFile );
 
             // complete level loading
@@ -980,6 +980,9 @@ void EnMenu::switchMenuScene( bool tomenu )
 {
     if ( tomenu )
     {
+        // set the proper game state
+        GameState::get()->setState( GameState::Menu );
+
         // replace the level scene node by menu scene node
         LevelManager::get()->setStaticMesh( NULL ); // remove the current mesh node from scene graph
         LevelManager::get()->setStaticMesh( _menuScene.get() );
@@ -990,6 +993,9 @@ void EnMenu::switchMenuScene( bool tomenu )
     }
     else
     {
+        // set the proper game state
+        GameState::get()->setState( GameState::Running );
+
         // replace the menu scene node by level scene node
         LevelManager::get()->setStaticMesh( NULL ); // remove the current mesh node from scene graph
         LevelManager::get()->setStaticMesh( _levelScene.get() );
@@ -1070,6 +1076,9 @@ void EnMenu::leaveLevel()
 {
     if ( !_levelLoaded )
         return;
+
+    // set the proper game state
+    GameState::get()->setState( GameState::Leaving );
 
     _menuState = UnloadLevel;
 
