@@ -83,6 +83,9 @@ class EnPlayerNameDisplay : public BaseEntity
 
         //! Internal timer for updating the name
         float                                       _updateTimer;
+
+        //! Name field
+        CEGUI::Editbox*                             _nameBox;
 };
 
 //! Entity type definition used for type registry
