@@ -207,8 +207,6 @@ inline const std::string& EnPlayer::getPlayerName() const
 inline void EnPlayer::setPlayerName( const std::string& name )
 {
     _playerName = name;
-    // update the instance name
-    setInstanceName( name );
 }
 
 inline void EnPlayer::setPlayerImplementation( BasePlayerImplementation* p_impl )
