@@ -92,8 +92,8 @@ PlayerNetworking::~PlayerNetworking()
 
     // remove ghost from simulation ( server and client )
 
-    // we have to delete player associated entities only if we are not unloading the level
-    if ( CTD::GameState::get()->getState() != CTD::GameState::Leaving )
+    // we have to delete player associated entities only if we are not unloading the level or quitting
+    if ( ( CTD::GameState::get()->getState() != CTD::GameState::Leaving ) && ( CTD::GameState::get()->getState() != CTD::GameState::Quitting ) )
     {
         if ( isRemoteClient() )
         {
