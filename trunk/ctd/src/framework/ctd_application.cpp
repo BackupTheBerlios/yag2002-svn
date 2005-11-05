@@ -122,16 +122,7 @@ bool Application::initialize( int argc, char **argv )
     ArgumentParser::Parameter levelparam( arg_levelname );
     arguments.read( "-level", arg_levelname ); // read the level file if one given
 
-    // fetch argument for using osgviewer instead of own camera and scene updating
     int   argpos;
-    // enable physics debug rendering?
-    bool  enablePhysicsDebugRendering = false;
-    if ( ( argpos = arguments.find( "-physicsdebug" ) ) != 0 )
-    {
-        enablePhysicsDebugRendering = true;
-        arguments.remove( argpos );
-    }
-
     // set proper game mode
     GameState::get()->setMode( GameState::Standalone );
     if ( ( argpos = arguments.find( "-server" ) ) != 0 )
@@ -208,7 +199,7 @@ bool Application::initialize( int argc, char **argv )
     log << Log::LogLevel( Log::L_INFO ) << "version: " << string( VRC_VERSION )      << endl;
     log << Log::LogLevel( Log::L_INFO ) << "project: Yag2002"                        << endl;
     log << Log::LogLevel( Log::L_INFO ) << "site:    http://yag2002.sourceforge.net" << endl;
-    log << Log::LogLevel( Log::L_INFO ) << "contact: info@botorabi.de"               << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "contact: botorabi@gmx.net"               << endl;
     log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------" << endl;
     log << Log::LogLevel( Log::L_INFO ) << endl;
     log.enableSeverityLevelPrinting( true );
@@ -222,9 +213,9 @@ bool Application::initialize( int argc, char **argv )
     //----------
     
     // load the display settings
-    Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  _screenWidth );
+    Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  _screenWidth  );
     Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, _screenHeight );
-    Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN, _fullScreen );
+    Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN,   _fullScreen   );
     unsigned int colorBits = 24;
     Configuration::get()->getSettingValue( CTD_GS_COLORBITS, colorBits );
 
@@ -295,6 +286,9 @@ bool Application::initialize( int argc, char **argv )
 
         // complete level loading
         LevelManager::get()->finalizeLoading();
+
+        // the server needs no drawing
+        _p_viewer->setUpdateAllViewports( false );
     }
     else if ( GameState::get()->getMode() == GameState::Client )
     {
@@ -345,10 +339,6 @@ bool Application::initialize( int argc, char **argv )
         EntityManager::get()->sendNotification( notification );
     }
 
-    // enable physics debug rendering
-    if ( enablePhysicsDebugRendering )
-        _p_physics->enableDebugRender();
-
     return true;
 }
 
@@ -398,7 +388,31 @@ void Application::run()
 
         // check heap if enabled ( used for detecting heap corruptions )
         CTD_CHECK_HEAP();
-    }   
+    }
+}
+
+void Application::updateStandalone( float deltaTime )
+{
+    // update entities
+    _p_entityManager->update( deltaTime  );
+
+    // update physics
+    _p_physics->update( deltaTime );
+
+    // update gui manager
+    _p_guiManager->update( deltaTime );
+
+    // update viewer and draw scene
+    _p_viewer->update();
+    _p_viewer->draw();
+
+    // check for termination
+    if ( _p_viewer->isTerminated() )
+        stop();
+
+    // yield a little processor time for other tasks on system
+    if ( !_fullScreen )
+        OpenThreads::Thread::microSleep( 1000 );
 }
 
 void Application::updateClient( float deltaTime )
@@ -415,8 +429,9 @@ void Application::updateClient( float deltaTime )
     // update gui manager
     _p_guiManager->update( deltaTime );
 
-    // fire off the cull and draw traversals of the scene.
-    _p_viewer->runOnce();
+    // update viewer and draw scene
+    _p_viewer->update();
+    _p_viewer->draw();
 
     // check for termination
     if ( _p_viewer->isTerminated() )
@@ -435,34 +450,18 @@ void Application::updateServer( float deltaTime )
     // update entities
     _p_entityManager->update( deltaTime  );
 
-    // update physics
+    // update physics on server? once we may need it, but not now
     //_p_physics->update( deltaTime );
 
-    // yield a little processor time for other tasks on system
-    OpenThreads::Thread::microSleep( 1000 );
-}
-
-void Application::updateStandalone( float deltaTime )
-{
-    // update entities
-    _p_entityManager->update( deltaTime  );
-
-    // update physics
-    _p_physics->update( deltaTime );
-
-    // update gui manager
-    _p_guiManager->update( deltaTime );
-
-    // fire off the cull and draw traversals of the scene.
-    _p_viewer->runOnce();
+    // update viewer, no draw on server
+    _p_viewer->update();
 
     // check for termination
     if ( _p_viewer->isTerminated() )
         stop();
 
     // yield a little processor time for other tasks on system
-    if ( !_fullScreen )
-        OpenThreads::Thread::microSleep( 1000 );
+    OpenThreads::Thread::microSleep( 1000 );
 }
 
 void Application::stop()
