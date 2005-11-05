@@ -78,6 +78,12 @@ class EnPlayerNameDisplay : public BaseEntity
         //! Relative display gui position screen [ 0..1, 0..1 ] ( only x and y coords are used )
         osg::Vec3f                                  _position;
 
+        //! Player detection cone angle
+        float                                       _detectionAngle;
+
+        //! Detection view
+        float                                       _viewAngle;
+
         //! List of player entities
         std::vector< BaseEntity* >                  _players;
 
@@ -85,7 +91,7 @@ class EnPlayerNameDisplay : public BaseEntity
         float                                       _updateTimer;
 
         //! Name field
-        CEGUI::Editbox*                             _nameBox;
+        CEGUI::StaticText*                          _nameBox;
 };
 
 //! Entity type definition used for type registry

@@ -44,12 +44,15 @@ CTD_IMPL_ENTITYFACTORY_AUTO( PlayerNameDisplayEntityFactory );
     
 EnPlayerNameDisplay::EnPlayerNameDisplay() :
 _position( osg::Vec3f( 0.02f, 0.9f ,0.0f ) ),
+_detectionAngle( 20.0f ),
+_viewAngle( 0.0f ),
 _updateTimer( 0.0f ),
 _nameBox( NULL )
 {
     CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "creating player name display entity"  << std::endl;
 
-    getAttributeManager().addAttribute( "position", _position );
+    getAttributeManager().addAttribute( "position",       _position       );
+    getAttributeManager().addAttribute( "detectionAngle", _detectionAngle );
 }
 
 EnPlayerNameDisplay::~EnPlayerNameDisplay()
@@ -96,10 +99,12 @@ void EnPlayerNameDisplay::initialize()
     {
         CEGUI::Window* p_rootwnd = GuiManager::get()->getRootWindow();
 
-        _nameBox = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", NAMEDISPLAY_PREFIX ) );
+        _nameBox = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", NAMEDISPLAY_PREFIX ) );
         _nameBox->setPosition( CEGUI::Point( 0.0f, 0.97f ) );
         _nameBox->setSize( CEGUI::Size( 0.10f, 0.03f ) );
         _nameBox->setFont( "CTD-8" );
+        _nameBox->setBackgroundEnabled( false );
+        _nameBox->setFrameEnabled( false );
         _nameBox->hide();
 
         p_rootwnd->addChildWindow( _nameBox );
@@ -112,6 +117,9 @@ void EnPlayerNameDisplay::initialize()
 
     // register for getting system notifications
     EntityManager::get()->registerNotification( this, true );
+
+    //! setup view angle
+    _viewAngle = cos( osg::DegreesToRadians( _detectionAngle ) );
 }
 
 void EnPlayerNameDisplay::postInitialize()
@@ -140,8 +148,12 @@ void EnPlayerNameDisplay::updateName()
     if ( !p_player )
         return;
 
+    // names are only displayed in Ego camera mode
+    if ( p_player->getPlayerImplementation()->getCameraMode() != BasePlayerImplementation::Ego )
+        return;
+
     EnCamera*   p_playercamera    = p_player->getPlayerImplementation()->getPlayerCamera();
-    const osg::Vec3f& campos      = p_playercamera->getCameraPosition() - p_playercamera->getCameraOffsetPosition();
+    const osg::Vec3f& campos      = p_playercamera->getCameraPosition() + p_playercamera->getCameraOffsetPosition();
     const osg::Quat&  camrotlocal = p_playercamera->getLocalRotation();
     const osg::Quat&  camrot      = p_playercamera->getCameraRotation();
     
@@ -151,27 +163,40 @@ void EnPlayerNameDisplay::updateName()
     
     // a line between a remote and camera
     osg::Vec3f  line;
+    osg::Vec3f  maxdist( 1000000.0f, 0.0f, 0.0f );
 
-    //! TODO: determining and outputting the name(s)
-    std::string names;
+    //! find nearest player in front of us
+    BaseEntity* p_playerinfront = NULL;
     std::vector< BaseEntity* >& remoteplayers = CTD::gameutils::PlayerUtils::get()->getRemotePlayers();
     std::vector< BaseEntity* >::iterator p_beg = remoteplayers.begin(), p_end = remoteplayers.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
         line = ( *p_beg )->getPosition() - campos;
-        line.normalize();
-        if ( ( line * lookdir ) > cos( osg::PI / 20.0f ) )
+        osg::Vec3f  dir( line );
+        dir.normalize();
+        // check if the player is in our view
+        if ( ( dir * lookdir ) > _viewAngle )
         {
-            static int s_i = 0;
-            std::stringstream i;
-            i << s_i++;
-            CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << i.str() << " player '"  << ( *p_beg )->getInstanceName() << "' is in fron" << std::endl;
-
-            names += ( *p_beg )->getInstanceName() + " ";
+            // remark the nearest distance ( sorting )
+            if ( maxdist.length2() > line.length2() )
+            {
+                maxdist = line;
+                p_playerinfront = *p_beg;
+            }
         }
     }
 
-    _nameBox->setText( names );
+    if ( p_playerinfront )
+    {
+        EnPlayer* p_playerentity = dynamic_cast< EnPlayer* >( p_playerinfront );
+        assert( p_playerentity && "wrong object type: EnPlayer expected!" );
+        std::string playername = p_playerentity->getPlayerName();
+        _nameBox->setText( playername );
+    }
+    else
+    {
+        _nameBox->setText( "" );
+    }
 }
 
 } // namespace CTD
