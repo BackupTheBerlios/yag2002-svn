@@ -344,9 +344,8 @@ void EntityManager::deregisterUpdate( BaseEntity* p_entity )
             return;
         }
     }
-#ifdef _DEBUG
+
     assert( NULL && "request for entity update deregistration: entity was not registered before!" );
-#endif
 }
 
 void EntityManager::addToScene( BaseEntity* p_entity, osg::Group *p_scenegr )
