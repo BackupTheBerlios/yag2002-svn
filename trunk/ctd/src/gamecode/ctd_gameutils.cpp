@@ -104,9 +104,9 @@ void PlayerUtils::addRemotePlayer( BaseEntity* p_entity )
     // first check whether the entity is already in list
     std::vector< BaseEntity* >::iterator p_beg = _remotePlayers.begin(), p_end = _remotePlayers.end();
     for ( ; p_beg != p_end; p_beg++ )
-        if ( *p_beg = p_entity )
+        if ( *p_beg == p_entity )
             break;
-
+   
     assert( ( p_beg == p_end ) && "remote player already exists in list!" );
     
     _remotePlayers.push_back( p_entity );
@@ -117,7 +117,7 @@ void PlayerUtils::removeRemotePlayer( BaseEntity* p_entity )
     // first check whether the entity is in list
     std::vector< BaseEntity* >::iterator p_beg = _remotePlayers.begin(), p_end = _remotePlayers.end();
     for ( ; p_beg != p_end; p_beg++ )
-        if ( *p_beg = p_entity )
+        if ( *p_beg == p_entity )
             break;
 
     assert( ( p_beg != p_end ) && "remote player does not exist in list!" );
