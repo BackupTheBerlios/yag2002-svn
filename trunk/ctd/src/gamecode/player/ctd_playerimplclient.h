@@ -46,7 +46,7 @@ namespace CTD
 template< class PlayerImplT > class PlayerIHCharacterCameraCtrl;
 
 //! Player implementation for game mode Client ( see framework class GameState )
-class PlayerImplClient : public BasePlayerImplementation
+class PlayerImplClient : public BasePlayerImplementation, public CTD::SessionNotifyCallback
 {
     public:
 
@@ -66,6 +66,9 @@ class PlayerImplClient : public BasePlayerImplementation
 
         //! Implementation's notification callback
         void                                        handleNotification( const EntityNotification& notification );
+
+        //! Networking callback for getting notified when server dicsonnection occures because of network problems or server shutdown
+        void                                        onServerDisconnect( int sessionID );
 
     protected:
 

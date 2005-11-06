@@ -121,6 +121,12 @@ void PlayerImplClient::handleNotification( const EntityNotification& notificatio
     }
 }
 
+void PlayerImplClient::onServerDisconnect( int sessionID )
+{
+    MessageBoxDialog* p_msg = new MessageBoxDialog( "Networking Problem", "Disconnected from server.\nLeave the level and try to re-connect to server.\n", MessageBoxDialog::OK, true );
+    p_msg->show();
+}
+
 void PlayerImplClient::initialize()
 {
     // setup position, rotation and move direction
@@ -139,6 +145,9 @@ void PlayerImplClient::initialize()
         _p_playerNetworking = new PlayerNetworking( this );
         _p_playerNetworking->Publish();
         _isRemoteClient = false;
+
+        // register for getting network session notifications
+        CTD::NetworkDevice::get()->registerSessionNotify( this );
     }
     else
     {
