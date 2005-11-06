@@ -54,6 +54,9 @@ _remoteClient( false ),
 _p_playerImpl( p_playerImpl ),
 _loadedPlayerEntity( NULL )
 {   
+    // we have to lock creation / deletion of network objects during construction
+    CTD::NetworkDevice::get()->lockObjects();
+
     // this constructor can be called either by player entity or networking system (in client or server mode)
     //  when called by player entity then it means that we are a local client, otherwise we are a remote client
     if ( !p_playerImpl )
@@ -84,10 +87,15 @@ _loadedPlayerEntity( NULL )
         *s_chatLog << "log file created on " << CTD::getTimeStamp() << std::endl;
         *s_chatLog << "-----------" << std::endl;
     }
+
+    CTD::NetworkDevice::get()->unlockObjects();
 }
 
 PlayerNetworking::~PlayerNetworking()
 {
+    // we have to lock creation / deletion of network objects during destruction
+    CTD::NetworkDevice::get()->lockObjects();
+
     CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "player left: " << _p_playerName << endl;
 
     // remove ghost from simulation ( server and client )
@@ -110,6 +118,8 @@ PlayerNetworking::~PlayerNetworking()
         }
     }
     *s_chatLog << CTD::getTimeStamp() << ": [" << _p_playerName << "] left" << std::endl;
+
+    CTD::NetworkDevice::get()->unlockObjects();
 }
 
 void PlayerNetworking::PostObjectCreate()
