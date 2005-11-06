@@ -103,10 +103,13 @@ class SessionNotifyCallback
         virtual                                         ~SessionNotifyCallback() {}
 
         //! Override this method for getting notification when a client joins to the network
-        virtual void                                    onSessionJoined( int sessionID ) = 0;
+        virtual void                                    onSessionJoined( int sessionID ) {}
 
         //! Override this method for getting notification when a client leaves the network
-        virtual void                                    onSessionLeft( int sessionID ) = 0;
+        virtual void                                    onSessionLeft( int sessionID ) {}
+
+        //! Override this method for getting notification when disconnected from server ( server shutdown, network problems )
+        virtual void                                    onServerDisconnect( int sessionID ) {}
 };
 
 //! Derived class from RNReplicaNet::ReplicaNet, this class allows tracking of joining / leaving sessions

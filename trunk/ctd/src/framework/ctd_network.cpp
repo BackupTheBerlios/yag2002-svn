@@ -87,6 +87,8 @@ void CTDReplicaNet::JoinerSessionIDPost( const int sessionID )
     _sessionIDs.push_back( sessionID );
     _numSessions++;
 
+    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "NetworkDevice: client with session ID " << sessionID << " joined" << endl;
+
     // notify registered callback objects
     std::vector< SessionNotifyCallback* >::iterator p_beg = _sessionCallbacks.begin(), p_end = _sessionCallbacks.end();
     for ( ; p_beg != p_end; p_beg++ )
@@ -97,12 +99,33 @@ void CTDReplicaNet::LeaverSessionIDPost( const int sessionID )
 {
     THREADSAFELOCKCLASS( _mutex );
 
+    // check if we have been disconnected from server ( because of server shutdown or network disturbance )
+    if ( sessionID == GetMasterSessionID() )
+    {
+        _numSessions = 0;
+        std::vector< SessionNotifyCallback* >::iterator p_cbbeg = _sessionCallbacks.begin(), p_cbend = _sessionCallbacks.end();
+        for ( ; p_cbbeg != p_cbend; p_cbbeg++ )
+            ( *p_cbbeg )->onServerDisconnect( sessionID );
+
+        _sessionIDs.clear();
+        return;
+    }
+
     std::vector< int >::iterator p_beg = _sessionIDs.begin(), p_end = _sessionIDs.end();
     for ( ; p_beg != p_end; p_beg++ )
         if ( *p_beg == sessionID )
             break;
 
-    assert( ( p_beg != p_end ) && "id of leaving session could not be found!" );
+    if ( p_beg == p_end )
+    {
+        CTD::log << CTD::Log::LogLevel( CTD::Log::L_WARNING ) << "NetworkDevice: a session is leaving which has an unregistered ID: " << sessionID << endl;
+        return;
+    }
+    else
+    {
+        CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "NetworkDevice: leaving network session (" << sessionID << ")" << endl;
+    }
+
     _sessionIDs.erase( p_beg );
     _numSessions--;
 
@@ -110,6 +133,7 @@ void CTDReplicaNet::LeaverSessionIDPost( const int sessionID )
     std::vector< SessionNotifyCallback* >::iterator p_cbbeg = _sessionCallbacks.begin(), p_cbend = _sessionCallbacks.end();
     for ( ; p_cbbeg != p_cbend; p_cbbeg++ )
         ( *p_cbbeg )->onSessionLeft( sessionID );
+
 }
 
 NetworkDevice::NetworkDevice() :
@@ -138,6 +162,8 @@ void NetworkDevice::disconnect()
     _mode = NetworkDevice::NONE;
     _nodeInfo._levelName = "";
     _nodeInfo._nodeName  = "";
+
+    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "NetworkDevice: successfully disconnected from network session" << endl;
 }
 
 void NetworkDevice::shutdown()
@@ -286,6 +312,8 @@ bool NetworkDevice::setupClient( const string& serverIp, int channel, const Node
                 _nodeInfo._levelName = p_data->_p_levelName;
                 _nodeInfo._nodeName  = p_data->_p_serverName;
                 gotServerInfo = true;
+
+                log << Log::LogLevel( Log::L_DEBUG ) << "nw client:  got preconnect data from server" << endl;
             }
         }
 
