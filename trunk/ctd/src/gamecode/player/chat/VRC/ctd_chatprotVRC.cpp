@@ -410,7 +410,8 @@ void ChatNetworkingVRC::destroyConnection()
 
 void ChatNetworkingVRC::send( const std::string& msg, const std::string& channel )
 {
-    _p_nwImpl->postChatText( msg );
+    if ( _p_nwImpl )
+        _p_nwImpl->postChatText( msg );
 }
 
 void ChatNetworkingVRC::connected()
@@ -439,7 +440,8 @@ void ChatNetworkingVRC::disconnected()
 
 void ChatNetworkingVRC::getMemberList( const std::string& channel, std::vector< std::string >& list )
 {
-    _p_nwImpl->getMemberList( channel, list );
+    if ( _p_nwImpl )
+        _p_nwImpl->getMemberList( channel, list );
 }
 
 void ChatNetworkingVRC::joined( const std::string& channel, const std::string& name )
