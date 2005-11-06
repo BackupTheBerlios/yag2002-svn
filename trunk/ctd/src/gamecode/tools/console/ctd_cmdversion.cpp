@@ -57,7 +57,7 @@ const std::string& CmdVersion::execute( const std::vector< std::string >& argume
     _cmdResult += "version: '" + string( VRC_VERSION ) + "'\n";
     _cmdResult += "project: Yag2002\n";
     _cmdResult += "site: http://yag2002.sourceforge.net\n";
-    _cmdResult += "contact: info@botorabi.de\n";
+    _cmdResult += "contact: botorabi@gmx.net\n";
     return _cmdResult;
 }
 
