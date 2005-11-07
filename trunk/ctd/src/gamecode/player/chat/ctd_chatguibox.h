@@ -138,6 +138,9 @@ class ChatGuiBox
                 //! Callback for changing nickname selection in list
                 bool                                        onListItemSelChanged( const CEGUI::EventArgs& arg );
 
+                //! Callback for resizing the pane
+                bool                                        onSizeChanged( const CEGUI::EventArgs& arg );
+
                 //! Update the member
                 void                                        updateMemberList( std::vector< std::string >& list );
 
@@ -235,6 +238,9 @@ class ChatGuiBox
 
                 ChatConnectionConfig                        _cfg;
         };
+
+        //! Callback for resizing the chat box frame
+        bool                                        onSizeChanged( const CEGUI::EventArgs& arg );
 
         //! Callback for connection dialog's 'connect' button
         void                                        onConnectionDialogClickedConnect( const ChatConnectionConfig& conf );

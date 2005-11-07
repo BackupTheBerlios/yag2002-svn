@@ -40,6 +40,16 @@ namespace CTD
 #define CTD_IMAGE_SET           "CTDImageSet"
 #define CTD_IMAGE_SET_FILE      "gui/imagesets/CTDImageSet.imageset"
 
+// some layout related constants
+#define GUI_TABCTRL_OFFSETX         25.0f
+#define GUI_TABCTRL_OFFSETY         35.0f
+#define GUI_TABCTRL_SIZEY           35.0f
+#define GUI_TABCTRL_TAB_HEIGHT      20.0f
+
+#define GUI_PANE_SPACING            5.0f
+#define GUI_PANE_MSG_OFFSET_RIGHT   100.0f
+#define GUI_PANE_MSG_OFFSET_BUTTOM  50.0f
+
 ChatGuiBox::ChannelTabPane::ChannelTabPane( CEGUI::TabControl* p_tabcontrol, ChatGuiBox* p_guibox ) :
 _p_tabCtrl( p_tabcontrol ),
 _p_guibox( p_guibox ),
@@ -58,29 +68,30 @@ _p_listbox( NULL )
         postfix += prefcounter.str().c_str();
 
         _p_tabPane = static_cast< CEGUI::Window* >( CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", std::string( CHATLAYOUT_PREFIX "tabpane" ) + postfix ) );
+        _p_tabPane->setMetricsMode( CEGUI::Relative );
         _p_tabCtrl->addTab( _p_tabPane );
         // we must also set a unique id for later removal from tab control
         _p_tabPane->setID( instnum );
-
+        _p_tabPane->subscribeEvent( CEGUI::Window::EventParentSized, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::ChannelTabPane::onSizeChanged, this ) );
         _p_messagebox = static_cast< CEGUI::MultiLineEditbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/MultiLineEditbox", std::string( CHATLAYOUT_PREFIX "tabpane_msgbox" ) + postfix ) );
         _p_messagebox->setReadOnly( true );
-        _p_messagebox->setPosition( CEGUI::Point( 0.005f, 0.005f ) );
-        _p_messagebox->setSize( CEGUI::Size( 0.90f, 0.7f ) );
+        _p_messagebox->setMetricsMode( CEGUI::Absolute );
+        _p_messagebox->setPosition( CEGUI::Point( GUI_PANE_SPACING, GUI_PANE_SPACING ) );
+        // actual size is calculated in resize callback
+        _p_messagebox->setSize( CEGUI::Size( 150.0f, 100.0f ) );
         _p_messagebox->setFont( "CTD-8" );
         _p_tabPane->addChildWindow( _p_messagebox );
 
         _p_editbox = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CHATLAYOUT_PREFIX "tabpane_editbox" ) + postfix ) );
         _p_editbox->subscribeEvent( CEGUI::MultiLineEditbox::EventCharacterKey, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::ChannelTabPane::onEditboxTextChanged, this ) );
-        _p_editbox->setPosition( CEGUI::Point( 0.005f, 0.75f ) );
-        _p_editbox->setSize( CEGUI::Size( 0.90f, 0.2f ) );
+        _p_editbox->setMetricsMode( CEGUI::Absolute );
         _p_tabPane->addChildWindow( _p_editbox );
 
         // nickname list
         _p_listbox = static_cast< CEGUI::Listbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Listbox", std::string( CHATLAYOUT_PREFIX "tabpane_nicklist" ) + postfix ) );
         _p_listbox->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::ChannelTabPane::onListItemSelChanged, this ) );
         _p_listbox->setSortingEnabled( true );
-        _p_listbox->setPosition( CEGUI::Point( 0.91f, 0.005f ) );
-        _p_listbox->setSize( CEGUI::Size( 0.085f, 0.93f ) );
+        _p_listbox->setMetricsMode( CEGUI::Absolute );
         _p_listbox->setAlpha( 0.8f );
         _p_listbox->setFont( "CTD-8" );
         _p_tabPane->addChildWindow( _p_listbox );
@@ -143,13 +154,23 @@ void ChatGuiBox::ChannelTabPane::addMessage( const CEGUI::String& msg, const CEG
 
 bool ChatGuiBox::ChannelTabPane::onListItemSelChanged( const CEGUI::EventArgs& arg )
 {
-    //! TODO: in combination with other buttons we can implement the pm, or whois etc.
-    //// get selection
-    //CEGUI::ListboxItem* p_sel = _p_listbox->getFirstSelectedItem();
-    //if ( !p_sel )
-    //{
-    //    return;
-    //} ...
+    // currently nothing to do
+    return true;
+}
+
+bool ChatGuiBox::ChannelTabPane::onSizeChanged( const CEGUI::EventArgs& arg )
+{
+    // recalculate gui elements
+
+    CEGUI::Size size = _p_tabPane->getSize( CEGUI::Absolute );
+    _p_messagebox->setPosition( CEGUI::Point( GUI_PANE_SPACING, GUI_PANE_SPACING ) );
+    _p_messagebox->setSize( CEGUI::Size( size.d_width - GUI_PANE_MSG_OFFSET_RIGHT, size.d_height - GUI_PANE_MSG_OFFSET_BUTTOM - GUI_PANE_SPACING ) );
+
+    _p_editbox->setPosition( CEGUI::Point( GUI_PANE_SPACING, size.d_height - GUI_PANE_MSG_OFFSET_BUTTOM + GUI_PANE_SPACING ) );
+    _p_editbox->setSize( CEGUI::Size( size.d_width - GUI_PANE_MSG_OFFSET_RIGHT, GUI_PANE_MSG_OFFSET_BUTTOM - 2.0f * GUI_PANE_SPACING ) );
+
+    _p_listbox->setPosition( CEGUI::Point( size.d_width - GUI_PANE_MSG_OFFSET_RIGHT + 2.0f * GUI_PANE_SPACING, GUI_PANE_SPACING ) );
+    _p_listbox->setSize( CEGUI::Size( GUI_PANE_MSG_OFFSET_RIGHT - 3.0f * GUI_PANE_SPACING, size.d_height - 2.0f * GUI_PANE_SPACING ) );
 
     return true;
 }
@@ -486,6 +507,15 @@ _p_chatbox( p_chatbox )
 
 ChatGuiBox::ConnectionDialog::~ConnectionDialog()
 {
+    try
+    {
+        CEGUI::WindowManager::getSingleton().destroyWindow( _p_frame );
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "~ConnectionDialog: problem cleaning up gui resources" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
+    }
 }
 
 void ChatGuiBox::ConnectionDialog::show( bool en )
@@ -560,6 +590,9 @@ ChatGuiBox::~ChatGuiBox()
     {
         if ( _p_wnd )
         {
+            if ( _p_connectionDialog )
+                delete _p_connectionDialog;
+
             // delete all tab panes
             ChatGuiBox::TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
             for ( ; p_beg != p_end; p_beg++ )
@@ -611,11 +644,14 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
 
     try
     {
+        //! TODO: we have to shift these buttons to gui control
+        //------------
         CEGUI::PushButton* p_btnIRC = static_cast< CEGUI::PushButton* >( _p_frame->getChild( prefix + "btn_irc" ) );
         p_btnIRC->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::onClickedIRC, this ) );
 
         CEGUI::PushButton* p_btnDisconnect = static_cast< CEGUI::PushButton* >( _p_frame->getChild( prefix + "btn_disconnect" ) );
         p_btnDisconnect->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::onClickedDisconnect, this ) );
+        //------------
 
         // setup chat box hide button with ctd specific image set
         _p_btnOpen = static_cast< CEGUI::PushButton* >( _p_wnd->getChild( prefix + "btn_openbox" ) );
@@ -662,9 +698,12 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
 
         // create tab control
         _p_tabCtrl = static_cast< CEGUI::TabControl* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/TabControl", "_chatbox_channeltab_" ) );
-        _p_tabCtrl->setPosition( CEGUI::Point( 0.02f, 0.15f ) );
-        _p_tabCtrl->setSize( CEGUI::Size( 0.96f, 0.7f ) );
-        _p_tabCtrl->setRelativeTabHeight( 0.15f );
+        _p_tabCtrl->setMetricsMode( CEGUI::Absolute );
+        _p_tabCtrl->setPosition( CEGUI::Point( GUI_TABCTRL_OFFSETX, GUI_TABCTRL_OFFSETY ) );
+        // some initial size, the actual one are calculated in resize callback
+        _p_tabCtrl->setSize( CEGUI::Size( 200.0f, 200.0f ) );
+        _p_tabCtrl->setTabHeight( GUI_TABCTRL_TAB_HEIGHT );
+        _p_tabCtrl->subscribeEvent( CEGUI::Window::EventParentSized, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::onSizeChanged, this ) );
         _p_frame->addChildWindow( _p_tabCtrl );
     }
     catch ( const CEGUI::Exception& e )
@@ -844,6 +883,15 @@ bool ChatGuiBox::onClickedOpen( const CEGUI::EventArgs& arg )
         _p_btnMsgArrived->hide();
     }
 
+    return true;
+}
+
+bool ChatGuiBox::onSizeChanged( const CEGUI::EventArgs& arg )
+{
+    CEGUI::Size size = _p_frame->getSize( CEGUI::Absolute );
+    _p_tabCtrl->setSize( CEGUI::Size( size.d_width - 2.0f * GUI_TABCTRL_OFFSETX, size.d_height - GUI_TABCTRL_SIZEY - GUI_TABCTRL_OFFSETY ) );
+    // it's courios, we have to set the tab height here, otherwise the height is changed ( although we have absolute metric mode )
+    _p_tabCtrl->setTabHeight( GUI_TABCTRL_TAB_HEIGHT );
     return true;
 }
 
