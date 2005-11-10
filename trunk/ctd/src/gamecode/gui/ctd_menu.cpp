@@ -697,7 +697,7 @@ void EnMenu::updateEntity( float deltaTime )
         {
             _p_loadingWindow->show();
             // show up the loading window           
-            GuiManager::get()->showMousePointer( false ); // let the mouse disappear 
+            gameutils::GuiUtils::get()->showMousePointer( false ); // let the mouse disappear 
             _menuState = PrepareLoadingLevel;
         }
         break;
@@ -989,7 +989,7 @@ void EnMenu::switchMenuScene( bool tomenu )
         _p_cameraControl->setEnable( true );
         enableSkybox( true );
         enableFog( true );
-        GuiManager::get()->showMousePointer( true );
+        gameutils::GuiUtils::get()->showMousePointer( true );
     }
     else
     {

@@ -30,6 +30,7 @@
 
 #include <ctd_main.h>
 #include "ctd_intro.h"
+#include "../ctd_gameutils.h"
 #include "../sound/ctd_ambientsound.h"
 
 using namespace std;
@@ -148,7 +149,7 @@ void IntroControl::start()
     _introState = Running;
     _introTimer = 0;
 
-    GuiManager::get()->showMousePointer( false ); // let the mouse disappear 
+    gameutils::GuiUtils::get()->showMousePointer( false ); // let the mouse disappear 
 }
 
 void IntroControl::stop()
@@ -167,7 +168,7 @@ void IntroControl::stop()
 
     _introState = Stopped;
 
-    GuiManager::get()->showMousePointer( true ); // let the mouse appear 
+    gameutils::GuiUtils::get()->showMousePointer( true ); // let the mouse appear 
 }
 
 } // namespace CTD
