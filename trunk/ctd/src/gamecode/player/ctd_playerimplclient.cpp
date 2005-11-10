@@ -221,7 +221,7 @@ void PlayerImplClient::postInitialize()
         }
         else // if in spheric mode disable the mouse pointer
         {
-            GuiManager::get()->showMousePointer( false );
+            gameutils::GuiUtils::get()->showMousePointer( false );
         }
 
         // create the chat manager

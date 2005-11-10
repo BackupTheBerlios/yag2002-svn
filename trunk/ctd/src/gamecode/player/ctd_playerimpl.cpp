@@ -98,13 +98,13 @@ bool BasePlayerImplementation::createChatManager()
 
     // register the IRC protocol
     ChatNetworkingIRC* p_protIRC = new ChatNetworkingIRC;
-    s_chatMgr->registerChatProtocol( "IRC", p_protIRC );
+    s_chatMgr->registerChatProtocol( IRC_PROTOCOL_NAME, p_protIRC );
 
     // create VRC protocol only for client and server mode, not for standalone!
     if ( CTD::GameState::get()->getMode() != CTD::GameState::Standalone )
     {
         ChatNetworkingVRC* p_protVRC = new ChatNetworkingVRC;
-        s_chatMgr->registerChatProtocol( "VRC", p_protVRC );        
+        s_chatMgr->registerChatProtocol( VRC_PROTOCOL_NAME, p_protVRC );        
     }
 
     // build the chat system

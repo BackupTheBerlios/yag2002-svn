@@ -36,6 +36,7 @@
 #include "ctd_playeranim.h"
 #include "ctd_playersound.h"
 #include "ctd_inputhandler.h"
+#include "../ctd_gameutils.h"
 #include "../visuals/ctd_camera.h"
 
 using namespace std;
@@ -165,7 +166,7 @@ void PlayerImplStandalone::postInitialize()
         }
         else // if in spheric mode disable the mouse pointer
         {
-            GuiManager::get()->showMousePointer( false );
+            gameutils::GuiUtils::get()->showMousePointer( false );
         }
     }
     else
