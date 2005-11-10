@@ -38,6 +38,42 @@ namespace CTD
 namespace gameutils
 {
 
+//! Single instance providing GUI-related utility services
+class GuiUtils : public CTD::Singleton< CTD::gameutils::GuiUtils >
+{
+    public:
+
+                                                    GuiUtils();
+
+        virtual                                     ~GuiUtils();
+
+        //! Returns the main GUI window.
+        //! Note: all other GUIs in a level must be attached to this one.
+        CEGUI::Window*                              getMainGuiWindow();
+
+        //! Show / hide main window
+        void                                        showMainWindow( bool show );
+
+        //! Destroy main window
+        void                                        destroyMainWindow();
+
+        //! Hide mouse pointer
+        void                                        hidePointer();
+
+        //! Show mouse pointer. Pass 'true' in order to show, otherwise hide the pointer.
+        void                                        showMousePointer( bool show );
+
+    protected:
+
+        //! The main window instance
+        CEGUI::Window*                              _p_mainWindow;        
+        
+        //! Application's root window
+        CEGUI::Window*                              _p_rootWindow;
+
+    friend public CTD::Singleton< CTD::gameutils::GuiUtils >;
+};
+
 //! Single instance providing player-related utility services
 class PlayerUtils : public CTD::Singleton< CTD::gameutils::PlayerUtils >
 {

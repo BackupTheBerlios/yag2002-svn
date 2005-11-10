@@ -33,12 +33,88 @@
 
 
 CTD_SINGLETON_IMPL( CTD::gameutils::PlayerUtils );
+CTD_SINGLETON_IMPL( CTD::gameutils::GuiUtils );
 
 namespace CTD
 {
 namespace gameutils
 {
 
+// Implementation of player utils
+GuiUtils::GuiUtils() :
+_p_mainWindow( NULL ),
+_p_rootWindow( NULL )
+{
+
+}
+
+GuiUtils::~GuiUtils()
+{
+    // clean up gui resources
+    destroyMainWindow();
+}
+
+CEGUI::Window* GuiUtils::getMainGuiWindow()
+{
+    if ( _p_mainWindow )
+        return _p_mainWindow;
+
+    // create main window
+    try
+    {
+        _p_rootWindow = GuiManager::get()->getRootWindow();
+        _p_mainWindow = static_cast< CEGUI::Window* >( CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", "_guiutils_game_main_window_" ) );
+        _p_rootWindow->addChildWindow( _p_mainWindow );
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "*** error setting up main gui window" << std::endl;
+        log << "   reason: " << e.getMessage().c_str() << std::endl;
+        return NULL;
+    }
+
+    return _p_mainWindow;
+}
+
+void GuiUtils::showMainWindow( bool show )
+{
+    if ( !_p_mainWindow )
+        return;
+ 
+    if ( show )
+        _p_rootWindow->addChildWindow( _p_mainWindow );
+    else
+        _p_rootWindow->removeChildWindow( _p_mainWindow );
+}
+
+void GuiUtils::destroyMainWindow()
+{
+    if ( !_p_mainWindow )
+        return;
+
+    try
+    {
+        _p_rootWindow->removeChildWindow( _p_mainWindow );
+        CEGUI::WindowManager::getSingleton().destroyWindow( _p_mainWindow );
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "guiutils: problem cleaning up gui resources" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
+    }
+    _p_mainWindow = NULL;
+    _p_rootWindow = NULL;
+}
+
+void GuiUtils::showMousePointer( bool show )
+{
+    if ( show )
+        GuiManager::get()->showMousePointer( true );
+    else
+        GuiManager::get()->showMousePointer( false );
+}
+
+// Implementation of player utils
 PlayerUtils::PlayerUtils() :
 _p_localPlayer( NULL )
 {
