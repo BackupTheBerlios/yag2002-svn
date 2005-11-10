@@ -229,8 +229,9 @@ ChatNetworkingIRC* ChatNetworkingIRC::createInstance()
 
 void ChatNetworkingIRC::send( const std::string& msg, const std::string& channel )
 {
+    // ignore input if no valid session exists
     if ( !_p_session )
-        throw ChatExpection( "Invalid network session" );
+        return;
 
     if ( !msg.length() )
         return;
@@ -454,7 +455,7 @@ void ChatNetworkingIRC::createConnection( const ChatConnectionConfig& conf )
         conf._username.length() ? conf._username.c_str() : NULL, 
         conf._realname.length() ? conf._realname.c_str() : NULL ) )
     {
-        throw ChatExpection( "Could not connect: " + std::string( irc_strerror( irc_errno( p_session ) ) ) );
+        throw ChatExpection( std::string( irc_strerror( irc_errno( p_session ) ) ) );
     }
 
     // store the configuration
@@ -468,20 +469,28 @@ void ChatNetworkingIRC::createConnection( const ChatConnectionConfig& conf )
 
 void ChatNetworkingIRC::run()
 {
-    // start the IRC protocol loop
-    irc_run( _p_session );
+    IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( _p_session ) );
+    // passing through an exception silently kills the process, very subtile source of error!
+    try
+    {
+        // start the IRC protocol loop
+        irc_run( _p_session );
+    }
+    catch ( ... )
+    {
+        log << Log::LogLevel( Log::L_ERROR ) << "*** internal error occured in ChatNetworkingIRC::run" << std::endl;
+        irc_destroy_session( _p_session );
+    }
+    delete p_ctx;
+    irc_destroy_session( _p_session );
+    _p_session = NULL;
 }
 
 void ChatNetworkingIRC::destroyConnection()
 {
-    // kill the thread
-    cancel();
-
-    IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( _p_session ) );
-    delete p_ctx;
-
-    irc_destroy_session( _p_session );
-    _p_session = NULL;
+    irc_disconnect( _p_session );
+    // wait until thread is shut down
+    while( isRunning() );
 }
 
 } // namespace CTD
