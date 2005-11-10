@@ -135,35 +135,46 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
     s_colStruct->_p_physics     = p_phys;
 
     // play appropriate sound only if we are moving
-    if ( p_phys->isMoving() && p_phys->getPlayer()->getPlayerSound() && ( p_phys->getSoundTimer() <= 0.0f ) )
+    EnPlayerSound* p_playerSound = p_phys->getPlayer()->getPlayerSound();
+    if ( p_playerSound )
     {
-        // reset sound timer
-        p_phys->setSoundTimer( SND_PLAY_RELAX_TIME );
-
-        unsigned int attribute = ( unsigned int )( NewtonMaterialGetContactFaceAttribute( p_material ) );
-        unsigned int materialType = attribute & 0xFF;
-        switch ( materialType )
+        if ( p_phys->getSoundTimer() <= 0.0f )
         {
-            case Physics::MAT_DEFAULT:
-            case Physics::MAT_STONE:
-                p_phys->getPlayer()->getPlayerSound()->playWalkGround();
-                break;
+            if ( p_phys->isMoving() )
+            {
+                // reset sound timer
+                p_phys->setSoundTimer( SND_PLAY_RELAX_TIME );
 
-            case Physics::MAT_WOOD:
-                p_phys->getPlayer()->getPlayerSound()->playWalkWood();
-                break;
+                unsigned int attribute = ( unsigned int )( NewtonMaterialGetContactFaceAttribute( p_material ) );
+                unsigned int materialType = attribute & 0xFF;
+                switch ( materialType )
+                {
+                case Physics::MAT_DEFAULT:
+                case Physics::MAT_STONE:
+                    p_playerSound->playWalkGround();
+                    break;
 
-            case Physics::MAT_METALL:
-                p_phys->getPlayer()->getPlayerSound()->playWalkMetal();
-                break;
+                case Physics::MAT_WOOD:
+                    p_playerSound->playWalkWood();
+                    break;
 
-            case Physics::MAT_GRASS:
-                p_phys->getPlayer()->getPlayerSound()->playWalkGrass();
-                break;
+                case Physics::MAT_METALL:
+                    p_playerSound->playWalkMetal();
+                    break;
 
-            default:
-                p_phys->setSoundTimer( 0.0f );
-                
+                case Physics::MAT_GRASS:
+                    p_playerSound->playWalkGrass();
+                    break;
+
+                default:
+                    ;
+                }
+            }
+            else
+            {        
+                p_playerSound->stopPlayingAll();
+                p_phys->setSoundTimer( SND_PLAY_RELAX_TIME );
+            }
         }
     }
 
@@ -258,8 +269,6 @@ int EnPlayerPhysics::collideWithLevel( const NewtonMaterial* p_material, const N
 
 int EnPlayerPhysics::collideWithOtherEntities( const NewtonMaterial* p_material, const NewtonContact* p_contact )
 { 
-    //! TODO: let players collide with each other
-    //! currently we allow players pass through each other
     return 1;
 }
 
