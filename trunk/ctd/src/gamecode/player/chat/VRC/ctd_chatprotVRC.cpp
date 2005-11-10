@@ -64,7 +64,6 @@ _p_protVRC( p_nw )
         // we have to setup the player chat manager now when the object is replicated
         CTD::ChatManager* p_playerChatMgr = CTD::BasePlayerImplementation::getChatManager();
         _p_protVRC->registerProtocolCallback( p_playerChatMgr, "*" );
-        _p_protVRC->connected();
 
         // use player name as default nickname
         std::string playername;
