@@ -248,6 +248,12 @@
 						RelativePath="..\..\..\..\src\gamecode\player\chat\ctd_chatguibox.h">
 					</File>
 					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\ctd_chatguicondiag.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\ctd_chatguicondiag.inl">
+					</File>
+					<File
 						RelativePath="..\..\..\..\src\gamecode\player\chat\ctd_chatguictrl.cpp">
 					</File>
 					<File
