@@ -33,6 +33,7 @@
 
 #include <ctd_main.h>
 #include "ctd_chatmgr.h"
+#include "ctd_chatguicondiag.h"
 
 namespace CTD
 {
@@ -71,14 +72,20 @@ class ChatGuiBox
         //! Callback for chat frame window close button
         bool                                        onCloseFrame( const CEGUI::EventArgs& arg );
 
-        //! Callback for button "IRC"
-        bool                                        onClickedIRC( const CEGUI::EventArgs& arg );
-
-        //! Callback for button "Disconnect"
-        bool                                        onClickedDisconnect( const CEGUI::EventArgs& arg );
-
-        //! Callback for button 'hide'
+        //! Callback for button 'open'
         bool                                        onClickedOpen( const CEGUI::EventArgs& arg );
+
+        //! Fade in / fade out the chat box
+        void                                        fadeChatbox( bool fadeout );
+
+        //! Shows if the chat box is hidden ( faded out )
+        bool                                        isHidden() const { return ( _boxState == BoxHidden ) || ( _boxState == BoxFadeOut ); }
+
+        //! Show / hide the "message arrived" icon
+        void                                        showMsgArrived( bool show );
+
+        //! Callback for button "IRC connect"
+        bool                                        onClickedConnectIRC( const CEGUI::EventArgs& arg );
 
         //! Class describing a tab pane for one chat channel
         class ChannelTabPane : public ChatProtocolCallback
@@ -141,6 +148,9 @@ class ChatGuiBox
                 //! Callback for resizing the pane
                 bool                                        onSizeChanged( const CEGUI::EventArgs& arg );
 
+                //! Callback for selecting the pane by clicking
+                bool                                        onSelected( const CEGUI::EventArgs& arg );
+
                 //! Update the member
                 void                                        updateMemberList( std::vector< std::string >& list );
 
@@ -149,6 +159,8 @@ class ChatGuiBox
                 ChatGuiBox*                                 _p_guibox;
 
                 CEGUI::Window*                              _p_tabPane;
+
+                std::string                                 _title;
 
                 CEGUI::MultiLineEditbox*                    _p_messagebox;
 
@@ -179,68 +191,11 @@ class ChatGuiBox
         //! A queue for removing tab panes on next update
         std::queue< ChatGuiBox::ChannelTabPane*, std::deque< ChatGuiBox::ChannelTabPane* > >   _queueRemoveTabPane;
 
-        //! Class for connection dialog
-        class ConnectionDialog
-        {
-            public:
-
-                                                            ConnectionDialog( ChatGuiBox* p_chatbox );
-
-                virtual                                     ~ConnectionDialog();
-
-                //! Set pane title
-                void                                        setTitle( const std::string& title )
-                                                            {
-                                                                _p_frame->setText( title );
-                                                            }
-
-                //! Update the configuration settings
-                void                                        setConfiguration( const ChatConnectionConfig& cfg )
-                                                            {
-                                                                _cfg = cfg;
-                                                            }
-
-                ChatConnectionConfig&                       getConfiguration()
-                                                            {
-                                                                return _cfg;
-                                                            }
-
-                //! Show / hide dialog
-                void                                        show( bool en );
-
-            protected:
-
-                //! Callback for clicking 'connect' button
-                bool                                        onClickedConnect( const CEGUI::EventArgs& arg );
-
-                //! Callback for clicking 'cancel' button
-                bool                                        onClickedCancel( const CEGUI::EventArgs& arg );
-
-                ChatGuiBox*                                 _p_chatbox;
-
-                CEGUI::FrameWindow*                         _p_frame;
-
-                CEGUI::Editbox*                             _p_editProtocol;
-
-                CEGUI::Editbox*                             _p_editServerUrl;
-
-                CEGUI::Editbox*                             _p_editChannel;
-
-                CEGUI::Editbox*                             _p_editNickName;
-
-                CEGUI::Editbox*                             _p_editUserName;
-
-                CEGUI::Editbox*                             _p_editRealName;
-
-                CEGUI::Editbox*                             _p_editPassword;
-
-                CEGUI::Editbox*                             _p_editPort;
-
-                ChatConnectionConfig                        _cfg;
-        };
-
         //! Callback for resizing the chat box frame
         bool                                        onSizeChanged( const CEGUI::EventArgs& arg );
+
+        //! Callback for clicking channel close button
+        bool                                        onClickedCloseChannelPane( const CEGUI::EventArgs& arg );
 
         //! Callback for connection dialog's 'connect' button
         void                                        onConnectionDialogClickedConnect( const ChatConnectionConfig& conf );
@@ -248,20 +203,31 @@ class ChatGuiBox
         //! Callback for connection dialog's 'cancel' button
         void                                        onConnectionDialogClickedCancel();
 
+        //! Box frame states
         enum {
-            Idle,
+            BoxVisible,
+            BoxHidden,
             BoxFadeIn,
             BoxFadeOut
-        }                                           _state;
+        }                                           _boxState;
+
+        //! Connection states
+        enum
+        {
+            ConnectionIdle,
+            Connecting,
+        }                                           _connectionState;
 
         ChatManager*                                _p_chatMgr;
 
         std::string                                 _nickname;
 
         //! Gui stuff
-        CEGUI::Window*                              _p_wnd;
-
         CEGUI::Window*                              _p_frame;
+
+        CEGUI::PushButton*                          _p_btnCloseChannel;
+
+        CEGUI::PushButton*                          _p_btnConnectIRC;
 
         CEGUI::PushButton*                          _p_btnOpen;
 
@@ -269,16 +235,12 @@ class ChatGuiBox
 
         CEGUI::TabControl*                          _p_tabCtrl;
 
-        ConnectionDialog*                           _p_connectionDialog;
-
         //! Type for listing chat channels and their associated tabpanes ( gui )
         typedef std::vector< std::pair< ChatConnectionConfig, ChannelTabPane* > >  TabPanePairList;
 
         TabPanePairList                             _tabpanes;
 
         //! Fading in / out stuff
-        bool                                        _hidden;
-
         bool                                        _modeEdit;
 
         float                                       _fadeTimer;
@@ -286,6 +248,10 @@ class ChatGuiBox
         osg::Vec2f                                  _boxFrameSize;
 
         float                                       _frameAlphaValue;
+
+        ConnectionDialog< ChatGuiBox >*             _p_connectionDialog;
+
+    friend class ConnectionDialog< ChatGuiBox >;
 };
 
 } // namespace CTD

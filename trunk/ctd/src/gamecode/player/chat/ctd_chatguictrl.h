@@ -32,6 +32,7 @@
 #define _CTD_CHATGUICTRL_H_
 
 #include <ctd_main.h>
+#include "ctd_chatmgr.h"
 
 namespace CTD
 {
@@ -59,12 +60,7 @@ class ChatGuiCtrl
 
     protected:
 
-        //! Callback for button 'create'
-        bool                                        onClickedCreate( const CEGUI::EventArgs& arg );
-
         CEGUI::Window*                              _p_wnd;
-
-        CEGUI::PushButton*                          _p_btnCreate;
 
         CEGUI::StaticImage*                         _p_btnMode;
 

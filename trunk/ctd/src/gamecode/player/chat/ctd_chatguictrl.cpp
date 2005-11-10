@@ -31,6 +31,7 @@
 #include <ctd_main.h>
 #include "ctd_chatguictrl.h"
 #include "ctd_chatmgr.h"
+#include "../../ctd_gameutils.h"
 
 namespace CTD
 {
@@ -38,10 +39,12 @@ namespace CTD
 #define CTD_IMAGE_SET           "CTDImageSet"
 #define CTD_IMAGE_SET_FILE      "gui/imagesets/CTDImageSet.imageset"
 
+#define CHATLAYOUT_PREFIX       "chatctrl_"
+#define FOOT_IMAGE_NAME         "FootNormal"
+
 
 ChatGuiCtrl::ChatGuiCtrl() :
 _p_wnd( NULL ),
-_p_btnCreate( NULL ),
 _p_btnMode( NULL )
 {
 }
@@ -50,11 +53,8 @@ ChatGuiCtrl::~ChatGuiCtrl()
 {
     try
     {
-        if ( _p_wnd )
-            CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
-
-        if ( _p_btnCreate )
-            CEGUI::WindowManager::getSingleton().destroyWindow( _p_btnCreate );
+        if ( _p_btnMode )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_btnMode );
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -69,9 +69,9 @@ void ChatGuiCtrl::initialize( ChatManager* p_chatMgr )
 
     try
     {
-        CEGUI::Window* p_rootwnd = GuiManager::get()->getRootWindow();
-        _p_wnd = static_cast< CEGUI::Window* >( CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", "_chatctrl_wnd_" ) );
-        p_rootwnd->addChildWindow( _p_wnd );
+        // get the main gui window and add some elements to it
+
+        _p_wnd = gameutils::GuiUtils::get()->getMainGuiWindow();
 
         // load our custom imageset
         CEGUI::Imageset* p_imageSet = NULL;
@@ -88,13 +88,12 @@ void ChatGuiCtrl::initialize( ChatManager* p_chatMgr )
         _p_btnMode = static_cast< CEGUI::StaticImage* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticImage", "_chatctrl_mode_" ) );
         _p_btnMode->setPosition( CEGUI::Point( 0.025f, 0.725f ) );
         _p_btnMode->setAlpha( 0.9f );
-        _p_btnMode->setAlwaysOnTop( true );
         _p_btnMode->setPosition( CEGUI::Relative, CEGUI::Point( 0.0f, 0.8f ) );
         _p_btnMode->setSize( CEGUI::Size( 0.06f, 0.07f ) );
         _p_btnMode->setBackgroundEnabled( false );
         _p_btnMode->setFrameEnabled( false );
         _p_wnd->addChildWindow( _p_btnMode );
-        const CEGUI::Image* p_image = &p_imageSet->getImage( "FootNormal" );
+        const CEGUI::Image* p_image = &p_imageSet->getImage( FOOT_IMAGE_NAME );
         _p_btnMode->setImage( p_image );
         _p_btnMode->hide();
     }
@@ -107,7 +106,7 @@ void ChatGuiCtrl::initialize( ChatManager* p_chatMgr )
 
     // we begin with walkmode enabled
     _p_btnMode->show();
-    GuiManager::get()->showMousePointer( false );
+    gameutils::GuiUtils::get()->showMousePointer( false );
 }
 
 void ChatGuiCtrl::setEditMode( bool en )

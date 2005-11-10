@@ -30,6 +30,7 @@
 
 #include <ctd_main.h>
 #include "ctd_chatguibox.h"
+#include "../../ctd_gameutils.h"
 
 namespace CTD
 {
@@ -44,11 +45,17 @@ namespace CTD
 #define GUI_TABCTRL_OFFSETX         25.0f
 #define GUI_TABCTRL_OFFSETY         35.0f
 #define GUI_TABCTRL_SIZEY           35.0f
-#define GUI_TABCTRL_TAB_HEIGHT      20.0f
+#define GUI_TABCTRL_TAB_HEIGHT      25.0f
 
 #define GUI_PANE_SPACING            5.0f
 #define GUI_PANE_MSG_OFFSET_RIGHT   100.0f
-#define GUI_PANE_MSG_OFFSET_BUTTOM  50.0f
+#define GUI_PANE_MSG_OFFSET_BUTTOM  45.0f
+
+#define GUI_CLOSE_BTN_WIDTH         70.0f
+#define GUI_CLOSE_BTN_HEIGHT        20.0f
+
+#define GUI_IRCCONNECT_BTN_WIDTH    110.0f
+#define GUI_IRCCONNECT_BTN_HEIGHT   20.0f
 
 ChatGuiBox::ChannelTabPane::ChannelTabPane( CEGUI::TabControl* p_tabcontrol, ChatGuiBox* p_guibox ) :
 _p_tabCtrl( p_tabcontrol ),
@@ -73,6 +80,9 @@ _p_listbox( NULL )
         // we must also set a unique id for later removal from tab control
         _p_tabPane->setID( instnum );
         _p_tabPane->subscribeEvent( CEGUI::Window::EventParentSized, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::ChannelTabPane::onSizeChanged, this ) );
+        _p_tabPane->subscribeEvent( CEGUI::Window::EventShown, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::ChannelTabPane::onSelected, this ) );
+        _p_tabPane->setFont( "CTD-8" );
+
         _p_messagebox = static_cast< CEGUI::MultiLineEditbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/MultiLineEditbox", std::string( CHATLAYOUT_PREFIX "tabpane_msgbox" ) + postfix ) );
         _p_messagebox->setReadOnly( true );
         _p_messagebox->setMetricsMode( CEGUI::Absolute );
@@ -145,11 +155,29 @@ void ChatGuiBox::ChannelTabPane::updateMemberList( std::vector< std::string >& l
 
 void ChatGuiBox::ChannelTabPane::addMessage( const CEGUI::String& msg, const CEGUI::String& author )
 {
+    // let the user see that a message arrived when the chat box is hidden
+    if ( _p_guibox->isHidden() )
+    {
+        _p_guibox->showMsgArrived( true );
+    }
+
+    // mark also the pane head
+    if ( !isSelected() )
+        _p_tabPane->setText( _title + " *" );
+
     CEGUI::String buffer = _p_messagebox->getText();
     buffer += author + "> " + msg;
     _p_messagebox->setText( buffer );
     // set carat position in order to trigger text scrolling after a new line has been added
     _p_messagebox->setCaratIndex( buffer.length() - 1 );
+}
+
+bool ChatGuiBox::ChannelTabPane::onSelected( const CEGUI::EventArgs& arg )
+{
+    // remove "new message" marker ( '*' )
+    _p_tabPane->setText( _title );
+
+    return true;
 }
 
 bool ChatGuiBox::ChannelTabPane::onListItemSelChanged( const CEGUI::EventArgs& arg )
@@ -163,6 +191,7 @@ bool ChatGuiBox::ChannelTabPane::onSizeChanged( const CEGUI::EventArgs& arg )
     // recalculate gui elements
 
     CEGUI::Size size = _p_tabPane->getSize( CEGUI::Absolute );
+
     _p_messagebox->setPosition( CEGUI::Point( GUI_PANE_SPACING, GUI_PANE_SPACING ) );
     _p_messagebox->setSize( CEGUI::Size( size.d_width - GUI_PANE_MSG_OFFSET_RIGHT, size.d_height - GUI_PANE_MSG_OFFSET_BUTTOM - GUI_PANE_SPACING ) );
 
@@ -202,6 +231,7 @@ bool ChatGuiBox::ChannelTabPane::onEditboxTextChanged( const CEGUI::EventArgs& a
 
 void ChatGuiBox::ChannelTabPane::setTitle( const std::string& title )
 {
+    _title = title;
     _p_tabPane->setText( title );
 }
 
@@ -243,19 +273,23 @@ void ChatGuiBox::ChannelTabPane::onNicknameChanged( const std::string& newname, 
     // did _we_ change our nick name or someone else changed nickname?
     if ( newname == oldname )
     {
-        // change nick name in internal list
-        size_t numnicks = _nickNames.size();
-        for ( size_t cnt = 0; cnt < numnicks; cnt ++ )
+        // check for initial nick name notification
+        if ( _configuration._nickname != newname )
         {
-            if ( _nickNames[ cnt ] == _configuration._nickname )
+            // change nick name in internal list
+            size_t numnicks = _nickNames.size();
+            for ( size_t cnt = 0; cnt < numnicks; cnt ++ )
             {
-                _nickNames[ cnt ] = newname;
-                break;
+                if ( _nickNames[ cnt ] == _configuration._nickname )
+                {
+                    _nickNames[ cnt ] = newname;
+                    break;
+                }
             }
-        }
 
-        addMessage( " you changed your nickname to '" + newname  + "'", "* " );
-        _configuration._nickname = newname;
+            addMessage( " you changed your nickname to '" + newname  + "'", "* " );
+            _configuration._nickname = newname;
+        }
     }
     else
     {
@@ -332,255 +366,20 @@ void ChatGuiBox::ChannelTabPane::onReceiveMemberList( const std::string& channel
 
 //------------------------
 
-ChatGuiBox::ConnectionDialog::ConnectionDialog( ChatGuiBox* p_chatbox ) :
-_p_chatbox( p_chatbox )
-{
-    try
-    {
-        _p_frame = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", std::string( CHATLAYOUT_PREFIX "_connect_dialog_" ) ) );
-        _p_frame->setPosition( CEGUI::Point( 0.35f, 0.1f ) ); 
-        _p_frame->setSize( CEGUI::Size( 0.3f, 0.4f ) );
-        _p_frame->setAlwaysOnTop( true );
-        _p_frame->setDragMovingEnabled( false );
-        _p_frame->setCloseButtonEnabled( false );
-        _p_frame->setSizingEnabled( false );
-        _p_frame->setText( "Connection settings" );
-        _p_frame->setAlpha( 0.75f );
-        _p_frame->hide();
-
-        // protocol
-        CEGUI::StaticText*  p_stProtocol = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", std::string( CHATLAYOUT_PREFIX "_connect_dialog_st_protocol_" ) ) );
-        p_stProtocol->setPosition( CEGUI::Point( 0.05f, 0.15f ) ); 
-        p_stProtocol->setSize( CEGUI::Size( 0.3f, 0.05f ) );
-        p_stProtocol->setFrameEnabled( false );
-        p_stProtocol->setBackgroundEnabled( false );
-        p_stProtocol->setText( "protocol" );
-        _p_frame->addChildWindow( p_stProtocol );
-
-        _p_editProtocol = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CHATLAYOUT_PREFIX "_connect_dialog_st_editprotocol_" ) ) );
-        _p_editProtocol->setPosition( CEGUI::Point( 0.5f, 0.15f ) ); 
-        _p_editProtocol->setSize( CEGUI::Size( 0.45f, 0.07f ) );
-        _p_editProtocol->setText( "?" );
-        _p_editProtocol->setFont( "CTD-8" );
-        _p_editProtocol->disable(); // protocol field is read-only
-        _p_frame->addChildWindow( _p_editProtocol );
-
-        // server URL 
-        CEGUI::StaticText*  p_stServerUrl = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", std::string( CHATLAYOUT_PREFIX "_connect_dialog_st_serverurl_" ) ) );
-        p_stServerUrl->setPosition( CEGUI::Point( 0.05f, 0.24f ) ); 
-        p_stServerUrl->setSize( CEGUI::Size( 0.3f, 0.05f ) );
-        p_stServerUrl->setFrameEnabled( false );
-        p_stServerUrl->setBackgroundEnabled( false );
-        p_stServerUrl->setText( "server" );
-        _p_frame->addChildWindow( p_stServerUrl );
-
-        _p_editServerUrl = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CHATLAYOUT_PREFIX "_connect_dialog_st_editserverurl_" ) ) );
-        _p_editServerUrl->setPosition( CEGUI::Point( 0.5f, 0.24f ) ); 
-        _p_editServerUrl->setSize( CEGUI::Size( 0.45f, 0.07f ) );
-        _p_editServerUrl->setText( "irc.freenode.net" );
-        _p_editServerUrl->setFont( "CTD-8" );
-        _p_frame->addChildWindow( _p_editServerUrl );
-
-        // channel
-        CEGUI::StaticText*  p_stChannel = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", std::string( CHATLAYOUT_PREFIX "_connect_dialog_st_channel_" ) ) );
-        p_stChannel->setPosition( CEGUI::Point( 0.05f, 0.33f ) ); 
-        p_stChannel->setSize( CEGUI::Size( 0.3f, 0.05f ) );
-        p_stChannel->setFrameEnabled( false );
-        p_stChannel->setBackgroundEnabled( false );
-        p_stChannel->setText( "channel" );
-        _p_frame->addChildWindow( p_stChannel );
-
-        _p_editChannel = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CHATLAYOUT_PREFIX "_connect_dialog_st_editchannel_" ) ) );
-        _p_editChannel->setPosition( CEGUI::Point( 0.5f, 0.33f ) ); 
-        _p_editChannel->setSize( CEGUI::Size( 0.45f, 0.07f ) );
-        _p_editChannel->setText( "#" );
-        _p_editChannel->setFont( "CTD-8" );
-        _p_frame->addChildWindow( _p_editChannel );
-
-        // nickname
-        CEGUI::StaticText*  p_stNickName = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", std::string( CHATLAYOUT_PREFIX "_connect_dialog_st_nickname_" ) ) );
-        p_stNickName->setPosition( CEGUI::Point( 0.05f, 0.42f ) ); 
-        p_stNickName->setSize( CEGUI::Size( 0.3f, 0.05f ) );
-        p_stNickName->setFrameEnabled( false );
-        p_stNickName->setBackgroundEnabled( false );
-        p_stNickName->setText( "nick name" );
-        _p_frame->addChildWindow( p_stNickName );
-
-        _p_editNickName = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CHATLAYOUT_PREFIX "_connect_dialog_st_editnickname_" ) ) );
-        _p_editNickName->setPosition( CEGUI::Point( 0.5f, 0.42f ) ); 
-        _p_editNickName->setSize( CEGUI::Size( 0.45f, 0.07f ) );
-        _p_editNickName->setText( "" );
-        _p_editNickName->setFont( "CTD-8" );
-        _p_frame->addChildWindow( _p_editNickName );
-
-        // username
-        CEGUI::StaticText*  p_stUserName = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", std::string( CHATLAYOUT_PREFIX "_connect_dialog_st_username_" ) ) );
-        p_stUserName->setPosition( CEGUI::Point( 0.05f, 0.51f ) ); 
-        p_stUserName->setSize( CEGUI::Size( 0.3f, 0.05f ) );
-        p_stUserName->setFrameEnabled( false );
-        p_stUserName->setBackgroundEnabled( false );
-        p_stUserName->setText( "user name" );
-        _p_frame->addChildWindow( p_stUserName );
-
-        _p_editUserName = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CHATLAYOUT_PREFIX "_connect_dialog_st_editusername_" ) ) );
-        _p_editUserName->setPosition( CEGUI::Point( 0.5f, 0.51f ) ); 
-        _p_editUserName->setSize( CEGUI::Size( 0.45f, 0.07f ) );
-        _p_editUserName->setText( "" );
-        _p_editUserName->setFont( "CTD-8" );
-        _p_frame->addChildWindow( _p_editUserName );
-
-         // realname
-        CEGUI::StaticText*  p_stRealName = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", std::string( CHATLAYOUT_PREFIX "_connect_dialog_st_realname_" ) ) );
-        p_stRealName->setPosition( CEGUI::Point( 0.05f, 0.60f ) ); 
-        p_stRealName->setSize( CEGUI::Size( 0.3f, 0.05f ) );
-        p_stRealName->setFrameEnabled( false );
-        p_stRealName->setBackgroundEnabled( false );
-        p_stRealName->setText( "real name" );
-        _p_frame->addChildWindow( p_stRealName );
-
-        _p_editRealName = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CHATLAYOUT_PREFIX "_connect_dialog_st_editrealname_" ) ) );
-        _p_editRealName->setPosition( CEGUI::Point( 0.5f, 0.60f ) ); 
-        _p_editRealName->setSize( CEGUI::Size( 0.45f, 0.07f ) );
-        _p_editRealName->setText( "" );
-        _p_editRealName->setFont( "CTD-8" );
-        _p_frame->addChildWindow( _p_editRealName );
-
-         // passwd
-        CEGUI::StaticText*  p_stPassword = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", std::string( CHATLAYOUT_PREFIX "_connect_dialog_st_password_" ) ) );
-        p_stPassword->setPosition( CEGUI::Point( 0.05f, 0.69f ) ); 
-        p_stPassword->setSize( CEGUI::Size( 0.3f, 0.05f ) );
-        p_stPassword->setFrameEnabled( false );
-        p_stPassword->setBackgroundEnabled( false );
-        p_stPassword->setText( "password" );
-        _p_frame->addChildWindow( p_stPassword );
-
-        _p_editPassword = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CHATLAYOUT_PREFIX "_connect_dialog_st_editpassword_" ) ) );
-        _p_editPassword->setPosition( CEGUI::Point( 0.5f, 0.69f ) ); 
-        _p_editPassword->setSize( CEGUI::Size( 0.45f, 0.07f ) );
-        _p_editPassword->setText( "" );
-        _p_editPassword->setFont( "CTD-8" );
-        _p_frame->addChildWindow( _p_editPassword );
-
-         // port
-        CEGUI::StaticText*  p_stPort = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", std::string( CHATLAYOUT_PREFIX "_connect_dialog_st_port_" ) ) );
-        p_stPort->setPosition( CEGUI::Point( 0.05f, 0.78f ) ); 
-        p_stPort->setSize( CEGUI::Size( 0.3f, 0.05f ) );
-        p_stPort->setFrameEnabled( false );
-        p_stPort->setBackgroundEnabled( false );
-        p_stPort->setText( "port" );
-        _p_frame->addChildWindow( p_stPort );
-
-        _p_editPort = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CHATLAYOUT_PREFIX "_connect_dialog_st_editport_" ) ) );
-        _p_editPort->setPosition( CEGUI::Point( 0.5f, 0.78f ) ); 
-        _p_editPort->setSize( CEGUI::Size( 0.45f, 0.07f ) );
-        _p_editPort->setText( "0" );
-        _p_editPort->setFont( "CTD-8" );
-        _p_frame->addChildWindow( _p_editPort );
-
-        // create connect button
-        CEGUI::PushButton*  p_btnConnect = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", std::string( CHATLAYOUT_PREFIX "_connect_dialog_btn_connect_" ) ) );
-        p_btnConnect->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::ConnectionDialog::onClickedConnect, this ) );
-        p_btnConnect->setPosition( CEGUI::Point( 0.65f, 0.9f ) ); 
-        p_btnConnect->setSize( CEGUI::Size( 0.3f, 0.075f ) ); 
-        p_btnConnect->setText( "Connect" );
-        p_btnConnect->setFont( "CTD-8" );
-        _p_frame->addChildWindow( p_btnConnect );
-
-        // create cancel button
-        CEGUI::PushButton*  p_btnCancel = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", std::string( CHATLAYOUT_PREFIX "_connect_dialog_btn_cancel_" ) ) );
-        p_btnCancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::ConnectionDialog::onClickedCancel, this ) );
-        p_btnCancel->setPosition( CEGUI::Point( 0.3f, 0.9f ) ); 
-        p_btnCancel->setSize( CEGUI::Size( 0.3f, 0.075f ) ); 
-        p_btnCancel->setText( "Cancel" );
-        p_btnCancel->setFont( "CTD-8" );
-        _p_frame->addChildWindow( p_btnCancel );
-
-        // append frame to main chat window
-        _p_chatbox->_p_wnd->addChildWindow( _p_frame );
-    }
-    catch ( const CEGUI::Exception& e )
-    {
-        log << Log::LogLevel( Log::L_ERROR ) << "ChatGuiBox::ConnectionDialog: problem creating connection dialog" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
-    }
-}
-
-ChatGuiBox::ConnectionDialog::~ConnectionDialog()
-{
-    try
-    {
-        CEGUI::WindowManager::getSingleton().destroyWindow( _p_frame );
-    }
-    catch ( const CEGUI::Exception& e )
-    {
-        log << Log::LogLevel( Log::L_ERROR ) << "~ConnectionDialog: problem cleaning up gui resources" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
-    }
-}
-
-void ChatGuiBox::ConnectionDialog::show( bool en )
-{
-    if ( en )
-    {
-        // update settings
-        _p_editProtocol->setText( _cfg._protocol );
-        _p_editServerUrl->setText( _cfg._serverURL );
-        _p_editChannel->setText( _cfg._channel );
-        _p_editNickName->setText( _cfg._nickname );
-        _p_editUserName->setText( _cfg._username );
-
-        std::stringstream port;
-        port << _cfg._port;
-        _p_editPort->setText( port.str() );
-
-        _p_frame->show();       // unhide
-        _p_frame->activate();   // gain focus
-    }
-    else
-    {
-        _p_frame->hide();
-    }
-}
-
-bool ChatGuiBox::ConnectionDialog::onClickedConnect( const CEGUI::EventArgs& arg )
-{
-    // store settings
-    _cfg._protocol  = _p_editProtocol->getText().c_str();
-    _cfg._serverURL = _p_editServerUrl->getText().c_str();
-    _cfg._channel   = _p_editChannel->getText().c_str();
-    _cfg._nickname  = _p_editNickName->getText().c_str();
-    _cfg._username  = _p_editUserName->getText().c_str();
-
-    std::stringstream port;
-    port << _p_editPort->getText().c_str();
-    port >> _cfg._port;
-
-    _p_chatbox->onConnectionDialogClickedConnect( _cfg );
-
-    return true;
-}
-
-bool ChatGuiBox::ConnectionDialog::onClickedCancel( const CEGUI::EventArgs& arg )
-{
-    _p_chatbox->onConnectionDialogClickedCancel();
-
-    return true;
-}
-
-//------------------------
 ChatGuiBox::ChatGuiBox() :
-_state( Idle ),
+_boxState( BoxHidden ),
+_connectionState( ConnectionIdle ),
 _p_chatMgr( NULL ),
-_p_wnd( NULL ),
 _p_frame( NULL ),
+_p_btnCloseChannel( NULL ),
+_p_btnConnectIRC( NULL ),
 _p_btnOpen( NULL ),
 _p_btnMsgArrived( NULL ),
 _p_tabCtrl( NULL ),
-_p_connectionDialog( NULL ),
-_hidden( true ),
 _modeEdit( false ),
 _fadeTimer( 0 ),
-_frameAlphaValue( 1.0f )
+_frameAlphaValue( 1.0f ),
+_p_connectionDialog( NULL )
 {
 }
 
@@ -588,19 +387,18 @@ ChatGuiBox::~ChatGuiBox()
 {
     try
     {
-        if ( _p_wnd )
-        {
-            if ( _p_connectionDialog )
-                delete _p_connectionDialog;
+        if ( _p_connectionDialog )
+            delete _p_connectionDialog;
 
-            // delete all tab panes
-            ChatGuiBox::TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
-            for ( ; p_beg != p_end; p_beg++ )
-                delete p_beg->second;
+        // delete all tab panes
+        ChatGuiBox::TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
+        for ( ; p_beg != p_end; p_beg++ )
+            delete p_beg->second;
 
-            CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
-            CEGUI::ImagesetManager::getSingleton().destroyImageset( CTD_IMAGE_SET );
-        }
+        CEGUI::WindowManager::getSingleton().destroyWindow( _p_btnOpen );
+        CEGUI::WindowManager::getSingleton().destroyWindow( _p_frame );
+        CEGUI::ImagesetManager::getSingleton().destroyImageset( CTD_IMAGE_SET );
+
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -622,41 +420,62 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
     prefcounter << instnum++;
     prefix += prefcounter.str().c_str();
 
-    //! TODO: setup the chat box on-the-fly instead of reading a layout file
-    std::string layoutFile( "gui/chat.xml" );
+    CEGUI::Window* p_wnd = gameutils::GuiUtils::get()->getMainGuiWindow();
     try
     {
-        _p_wnd = static_cast< CEGUI::Window* >( GuiManager::get()->loadLayout( layoutFile, NULL, prefix ) );
-        _p_frame = static_cast< CEGUI::Window* >( _p_wnd->getChild( prefix + "fr_chatbox" ) );
+        _p_frame = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", CHATLAYOUT_PREFIX "_charboxframe_" ) );
 		_p_frame->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::onCloseFrame, this ) );
-        _p_frame->setMinimumSize( CEGUI::Size( 0.1f, 0.08f ) );
+        // note: a minimum size must exist, otherwise cegui may hang during some internal calculations!
+        _p_frame->setMinimumSize( CEGUI::Size( 0.2f, 0.15f ) );
         _p_frame->hide();
+        _p_frame->setText( "chatbox" );
+        _p_frame->setAlpha( 0.8f );
+        _p_frame->setPosition( CEGUI::Point( 0.08f, 0.7f ) );
+        _p_frame->setSize( CEGUI::Size( 0.86f, 0.28f ) );
+
+        p_wnd->addChildWindow( _p_frame );
+
+        // create close channel button
+        _p_btnCloseChannel = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", std::string( CHATLAYOUT_PREFIX "_charboxframe_close_" ) ) );
+        _p_btnCloseChannel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::onClickedCloseChannelPane, this ) );
+        _p_btnCloseChannel->setMetricsMode( CEGUI::Absolute );
+        // actual size is calculated in resize callback
+        _p_btnCloseChannel->setSize( CEGUI::Size( 50.0f, 20.0f ) );
+        _p_btnCloseChannel->setText( "close" );
+        _p_btnCloseChannel->setFont( "CTD-8" );
+        _p_btnCloseChannel->show();
+        _p_frame->addChildWindow( _p_btnCloseChannel );
+
+        // create irc connection button
+        _p_btnConnectIRC = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", "_chatctrl_irc_" ) );
+        _p_btnConnectIRC->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::onClickedConnectIRC, this ) );
+        _p_btnConnectIRC->setMetricsMode( CEGUI::Absolute );
+        // actual size and position are calculated in resize callback
+        _p_btnConnectIRC->setSize( CEGUI::Size( 100.0f, 20.0f ) );
+        _p_btnConnectIRC->setText( "IRC connect" );
+        _p_btnConnectIRC->setFont( "CTD-8" );
+        _p_btnConnectIRC->show();
+        _p_frame->addChildWindow( _p_btnConnectIRC );
 
         _boxFrameSize = osg::Vec2f( _p_frame->getSize().d_width, _p_frame->getSize().d_height );
         _frameAlphaValue = _p_frame->getAlpha();
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading layout '" << layoutFile << "'" << std::endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** error setting up chat box gui" << std::endl;
         log << "   reason: " << e.getMessage().c_str() << std::endl;
         return;
     }
 
     try
     {
-        //! TODO: we have to shift these buttons to gui control
-        //------------
-        CEGUI::PushButton* p_btnIRC = static_cast< CEGUI::PushButton* >( _p_frame->getChild( prefix + "btn_irc" ) );
-        p_btnIRC->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::onClickedIRC, this ) );
-
-        CEGUI::PushButton* p_btnDisconnect = static_cast< CEGUI::PushButton* >( _p_frame->getChild( prefix + "btn_disconnect" ) );
-        p_btnDisconnect->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::onClickedDisconnect, this ) );
-        //------------
-
         // setup chat box hide button with ctd specific image set
-        _p_btnOpen = static_cast< CEGUI::PushButton* >( _p_wnd->getChild( prefix + "btn_openbox" ) );
+        _p_btnOpen = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", CHATLAYOUT_PREFIX "_btn_openbox_" ) );
         _p_btnOpen->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::onClickedOpen, this ) );
         _p_btnOpen->setStandardImageryEnabled( false );
+        _p_btnOpen->setPosition( CEGUI::Point( 0.0f, 0.7f ) );
+        _p_btnOpen->setSize( CEGUI::Size( 0.08f, 0.1f ) );
+        p_wnd->addChildWindow( _p_btnOpen );
 
         // load our custom imageset
         CEGUI::Imageset* p_imageSet = NULL;
@@ -691,7 +510,7 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
         _p_btnMsgArrived->setSize( CEGUI::Size( 0.03f, 0.03f ) );
         _p_btnMsgArrived->setBackgroundEnabled( false );
         _p_btnMsgArrived->setFrameEnabled( false );
-        _p_wnd->addChildWindow( _p_btnMsgArrived );
+        p_wnd->addChildWindow( _p_btnMsgArrived );
         p_image = &p_imageSet->getImage( "Post" );
         _p_btnMsgArrived->setImage( p_image );
         _p_btnMsgArrived->hide();
@@ -708,10 +527,18 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** error setting up layout '" << layoutFile << "'" << std::endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** error setting up chat box frame" << std::endl;
         log << "   reason: " << e.getMessage().c_str() << std::endl;
         return;
     }
+}
+
+void ChatGuiBox::showMsgArrived( bool show )
+{
+    if ( show )
+        _p_btnMsgArrived->show();
+    else
+        _p_btnMsgArrived->hide();
 }
 
 ChatGuiBox::ChannelTabPane* ChatGuiBox::getTabPane( const ChatConnectionConfig& cfg )
@@ -760,6 +587,9 @@ ChatGuiBox::ChannelTabPane* ChatGuiBox::getOrCreateChannelPane( const ChatConnec
     p_pane->setConfiguration( cfg );
     cfg._p_protocolHandler->registerProtocolCallback( p_pane, cfg._channel );
 
+    // open the chat box
+    fadeChatbox( false );
+
     return p_pane;
 }
 
@@ -768,22 +598,33 @@ void ChatGuiBox::setEditBoxFocus( bool en )
     if ( !_p_tabCtrl )
         return;
 
-    if ( _p_tabCtrl->getTabCount() > 0 )
-    {
-        unsigned int tabindex = _p_tabCtrl->getSelectedTabIndex();
-        if( _tabpanes.size() )
-        {
-            ChannelTabPane* p_sel = _tabpanes[ tabindex ].second;
-            p_sel->setEditBoxFocus( en );
-        }
-    }
+    //! TODO: sometimes, determining the selected pane makes problems
+    //        temporarily we disable this feature
+
+    //// search active pane and set selection to its edit box field
+    //if ( ( _p_tabCtrl->getTabCount() > 0 ) && ( _tabpanes.size() > 0 ) )
+    //{
+    //    TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
+    //    for ( ; p_beg != p_end; p_beg++ )
+    //    {
+    //        if ( p_beg->second->isSelected() )
+    //        {
+    //            // set focus to edit field of active pane
+    //            p_beg->second->setEditBoxFocus( en );
+    //            break;
+    //        }
+    //    }
+    //}
 }
 
 void ChatGuiBox::update( float deltaTime )
 {
-    switch( _state )
+    switch( _boxState )
     {
-        case Idle:
+        case BoxVisible:
+            break;
+
+        case BoxHidden:
             break;
 
         case BoxFadeIn:
@@ -798,7 +639,7 @@ void ChatGuiBox::update( float deltaTime )
                 _p_frame->setSize( size );
                 _p_btnOpen->hide();
                 setEditBoxFocus( true );
-                _state = Idle;
+                _boxState = BoxVisible;
                 break;
             }
             _fadeTimer += deltaTime;
@@ -822,7 +663,7 @@ void ChatGuiBox::update( float deltaTime )
                 _p_frame->setSize( size );
                 _p_frame->hide();
                 setEditBoxFocus( false );
-                _state = Idle;
+                _boxState = BoxHidden;
                 break;
             }
             _fadeTimer += deltaTime;
@@ -846,87 +687,78 @@ void ChatGuiBox::update( float deltaTime )
         ChannelTabPane* p_pane = _queueRemoveTabPane.front();
         destroyChannelPane( p_pane->getConfiguration() );
         _queueRemoveTabPane.pop();
+
+        // if all tab panes ( except VRC ) are closed then close also all open connections to chat servers
+        // we should work out a better control for disconnecting from chat servers!
+        if ( ( _tabpanes.size() == 0 ) || ( ( _tabpanes.size() == 1 ) && ( _tabpanes[ 0 ].first._protocol == VRC_PROTOCOL_NAME ) ) )
+            _p_chatMgr->closeConnections();
     }
 }
 
 void ChatGuiBox::show( bool visible )
 {
     if ( visible )
-        _p_wnd->show();
+    {
+        _p_btnOpen->show();
+        if ( _boxState != BoxHidden )
+            _p_frame->show();
+    }
     else
-        _p_wnd->hide();
+    {
+        _p_btnOpen->hide();
+        _p_frame->hide();
+    }
 }
 
 bool ChatGuiBox::onCloseFrame( const CEGUI::EventArgs& arg )
 {
-    onClickedOpen( arg );
+    fadeChatbox( true );
     return true;
 }
 
-bool ChatGuiBox::onClickedOpen( const CEGUI::EventArgs& arg )
+bool ChatGuiBox::onClickedCloseChannelPane( const CEGUI::EventArgs& arg )
 {
-    // are we already in fading action?
-    if ( _state != Idle )
+    // search for currently active pane
+    ChatGuiBox::TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        if ( p_beg->second->isSelected() )
+            break;
+
+    // is any pane active?
+    if ( p_beg == p_end )
         return true;
 
-    _hidden = !_hidden;
+    // we don't close VRC pane!
+    if ( p_beg->first._protocol == VRC_PROTOCOL_NAME )
+        return true;
 
-    if ( _hidden )
-    {
-        // store the current size for later fade-out
-        _boxFrameSize = osg::Vec2f( _p_frame->getSize().d_width, _p_frame->getSize().d_height );
-        _state = BoxFadeOut;
-    }
-    else
-    {
-        _state = BoxFadeIn;
-        _p_btnMsgArrived->hide();
-    }
+    // trigger leaving the channel in the same way as the user would do via command
+    p_beg->first._p_protocolHandler->send( "/part", p_beg->first._channel );
 
     return true;
 }
 
-bool ChatGuiBox::onSizeChanged( const CEGUI::EventArgs& arg )
+// this is called when clicking on connection button
+bool ChatGuiBox::onClickedConnectIRC( const CEGUI::EventArgs& arg )
 {
-    CEGUI::Size size = _p_frame->getSize( CEGUI::Absolute );
-    _p_tabCtrl->setSize( CEGUI::Size( size.d_width - 2.0f * GUI_TABCTRL_OFFSETX, size.d_height - GUI_TABCTRL_SIZEY - GUI_TABCTRL_OFFSETY ) );
-    // it's courios, we have to set the tab height here, otherwise the height is changed ( although we have absolute metric mode )
-    _p_tabCtrl->setTabHeight( GUI_TABCTRL_TAB_HEIGHT );
-    return true;
-}
-
-void ChatGuiBox::onConnectionDialogClickedConnect( const ChatConnectionConfig& conf )
-{
-    _p_connectionDialog->show( false );
-
-    // try to connect
-    try
+    // check if we are already connecting
+    if ( _connectionState == Connecting )
     {
-        _p_chatMgr->createConnection( conf );
+        MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "Already trying to connect to a chat server.", MessageBoxDialog::OK, true );
+        p_msg->show();                
+        return true;
     }
-    catch( const ChatExpection& e )
-    {
-        log << Log::LogLevel( Log::L_ERROR ) << "exception occured trying to connect to a chat server" << std::endl;
-        log << "   reason: " << e.what() << std::endl;
-    }
-}
 
-void ChatGuiBox::onConnectionDialogClickedCancel()
-{
-    _p_connectionDialog->show( false );
-}
+    _connectionState = Connecting;
 
-bool ChatGuiBox::onClickedIRC( const CEGUI::EventArgs& arg )
-{
     if ( !_p_connectionDialog )
-        _p_connectionDialog = new ChatGuiBox::ConnectionDialog( this );
+        _p_connectionDialog = new ConnectionDialog< ChatGuiBox >( this );
 
     // set IRC as protocol
     ChatConnectionConfig& conf = _p_connectionDialog->getConfiguration();
     conf._protocol = "IRC";
+    //! TODO: read in these settings from a history file
     conf._port     = 6667;
-
-    //! TODO: remove this test stuff
     conf._serverURL = "localhost";
     conf._channel  = "#vrc";
     conf._nickname = "boto";
@@ -940,17 +772,82 @@ bool ChatGuiBox::onClickedIRC( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool ChatGuiBox::onClickedDisconnect( const CEGUI::EventArgs& arg )
+// this is called by connection dialog instance
+void ChatGuiBox::onConnectionDialogClickedConnect( const ChatConnectionConfig& conf )
 {
-    // close all connections
-    _p_chatMgr->closeConnections();
+    _p_connectionDialog->show( false );
 
-    // close all tab panes
-    ChatGuiBox::TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
-    for ( ; p_beg != p_end; p_beg++ )
-        destroyChannelPane( p_beg->first );
+    // try to connect
+    try
+    {
+        _p_chatMgr->createConnection( conf );
+    }
+    catch( const ChatExpection& e )
+    {
+        MessageBoxDialog* p_msg = new MessageBoxDialog( "Connection error", "Could not connect to server.\n" + e.what(), MessageBoxDialog::OK, true );
+        p_msg->show();                
+
+        log << Log::LogLevel( Log::L_ERROR ) << "exception occured trying to connect to a chat server" << std::endl;
+        log << "   reason: " << e.what() << std::endl;
+    }
+        
+    _connectionState = ConnectionIdle;
+}
+
+void ChatGuiBox::onConnectionDialogClickedCancel()
+{
+    // set connection state
+    _connectionState = ConnectionIdle;
+    _p_connectionDialog->show( false );
+}
+
+bool ChatGuiBox::onSizeChanged( const CEGUI::EventArgs& arg )
+{
+    CEGUI::Size size = _p_frame->getSize( CEGUI::Absolute );
+
+    _p_tabCtrl->setSize( CEGUI::Size( size.d_width - 2.0f * GUI_TABCTRL_OFFSETX, size.d_height - GUI_TABCTRL_SIZEY - GUI_TABCTRL_OFFSETY ) );
+    // it's curious, we have to set the tab height here, otherwise the height is changed ( although we have absolute metric mode )
+    _p_tabCtrl->setTabHeight( GUI_TABCTRL_TAB_HEIGHT );
+
+    _p_btnCloseChannel->setPosition( CEGUI::Point( 5.0f * GUI_PANE_SPACING, size.d_height - 1.5f * GUI_PANE_SPACING - GUI_CLOSE_BTN_HEIGHT ) );
+    _p_btnCloseChannel->setSize( CEGUI::Size( GUI_CLOSE_BTN_WIDTH, GUI_CLOSE_BTN_HEIGHT ) );
+
+    _p_btnConnectIRC->setPosition( CEGUI::Point( size.d_width - GUI_IRCCONNECT_BTN_WIDTH - 5.0f * GUI_PANE_SPACING, size.d_height - 1.5f * GUI_PANE_SPACING - GUI_IRCCONNECT_BTN_HEIGHT ) );
+    _p_btnConnectIRC->setSize( CEGUI::Size( GUI_IRCCONNECT_BTN_WIDTH, GUI_IRCCONNECT_BTN_HEIGHT ) );
 
     return true;
+}
+
+bool ChatGuiBox::onClickedOpen( const CEGUI::EventArgs& arg )
+{
+    // are we already in fading action?
+    if ( ( _boxState == BoxFadeIn ) || ( _boxState == BoxFadeOut ) )
+        return true;
+
+    fadeChatbox( false );
+
+    showMsgArrived( false );
+
+    return true;
+}
+
+void ChatGuiBox::fadeChatbox( bool fadeout )
+{
+    if ( ( fadeout && ( _boxState == BoxHidden ) ) ||
+         ( !fadeout && ( _boxState == BoxVisible ) ) )
+        return;
+
+    if ( fadeout )
+    {
+        // store the current size for later fade-out
+        _boxFrameSize = osg::Vec2f( _p_frame->getSize().d_width, _p_frame->getSize().d_height );
+        _boxState = BoxFadeOut;
+    }
+    else
+    {
+        _boxState = BoxFadeIn;
+        _p_btnMsgArrived->hide();
+    }
 }
 
 void ChatGuiBox::setupChatIO( const ChatConnectionConfig& config )

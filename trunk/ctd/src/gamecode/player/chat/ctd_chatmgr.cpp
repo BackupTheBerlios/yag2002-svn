@@ -34,6 +34,7 @@
 #include "ctd_chatguibox.h"
 #include "ctd_chatguictrl.h"
 #include "ctd_chatprotocol.h"
+#include "../../ctd_gameutils.h"
 
 namespace CTD
 {
@@ -50,11 +51,6 @@ _built( false )
 ChatManager::~ChatManager()
 {
     closeConnections();
-
-    // delete protocol handlers
-    ChatConnections::iterator p_beg = _connections.begin(), p_end = _connections.end();
-    for ( ; p_beg != p_end; p_beg++ )
-        delete p_beg->first._p_protocolHandler;
 
     if ( _p_chatGuiCtrl )
         delete _p_chatGuiCtrl;
@@ -117,7 +113,7 @@ void ChatManager::activateBox( bool en )
     _activeBox = en;
     _p_chatGuiCtrl->setEditMode( _activeBox );
     _p_chatGuiBox->setEditBoxFocus( _activeBox );
-    GuiManager::get()->showMousePointer( _activeBox );
+    gameutils::GuiUtils::get()->showMousePointer( _activeBox );
 }
 
 void ChatManager::show( bool en )
@@ -155,13 +151,9 @@ void ChatManager::createConnection( const ChatConnectionConfig& config )
     catch( const ChatExpection& e )
     {
         // could not setup connection       
-        MessageBoxDialog* p_msg = new MessageBoxDialog( "Connection error", "Could not connect to server.\n\n" + e.what(), MessageBoxDialog::OK, true );
+        MessageBoxDialog* p_msg = new MessageBoxDialog( "Connection Problem", "Reason: " + e.what(), MessageBoxDialog::OK, true );
         p_msg->show();
     }
-
-    //! TODO: 
-    // start a timer, after about 30 seconds without connecting a message box should appear notifying that no connection possible
-    // in that time no new connection should be possible (disable connection button)
 }
 
 void ChatManager::closeConnections()
@@ -170,15 +162,24 @@ void ChatManager::closeConnections()
     ChatConnections::iterator p_beg = _connections.begin(), p_end = _connections.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
+        _p_chatGuiBox->outputText( "*", "*** we have been disconnected from server: " + p_beg->first._serverURL );
         p_beg->second->destroyConnection();
+        delete p_beg->second;
     }
     _connections.clear();
 }
 
 void ChatManager::onConnection( const ChatConnectionConfig& config )
 {
-    // store the new created connection for internal housekeeping
-    _connections.push_back( std::make_pair( config, config._p_protocolHandler ) );
+    // VRC connection is handled special
+    if ( config._protocol != VRC_PROTOCOL_NAME )
+    {
+        // store the new created connection for internal housekeeping
+        _connections.push_back( std::make_pair( config, config._p_protocolHandler ) );
+    }
+
+    // pop up the chat box
+    activateBox( true );
 }
 
 void ChatManager::onDisconnection( const ChatConnectionConfig& config )

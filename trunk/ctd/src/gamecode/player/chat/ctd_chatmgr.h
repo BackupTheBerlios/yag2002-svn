@@ -38,6 +38,10 @@
 namespace CTD
 {
 
+//! Chat protocol names
+#define VRC_PROTOCOL_NAME "VRC"
+#define IRC_PROTOCOL_NAME "IRC"
+
 class BaseChatProtocol;
 class BasePlayerImplementation;
 
