@@ -352,13 +352,21 @@ void PlayerImplClient::update( float deltaTime )
         // calculate the current velocity
         osg::Vec3f vel( clientpos - lastpos );
         // do we need a hard position correction?
-        if ( vel.length2() > 4.0f )
+        if ( vel.length2() > 5.0f )
         {
             osg::Matrix mat;
             mat.makeRotate( _currentRot );
+            //mat.setTrans( lastpos + vel * deltaTime );
             mat.setTrans( clientpos );
+            getPlayerPhysics()->enablePhysicsCalculation( false );
             getPlayerPhysics()->setTransformation( mat );
             getPlayerPhysics()->setDirection( 0.0f, 0.0f );
+
+            //log << Log::LogLevel( Log::L_DEBUG ) << "* hard player position correction: " << 
+            //    clientpos.x() << " " <<
+            //    clientpos.y() << " " <<
+            //    clientpos.z() << " " <<                
+            //    endl;
         }
         else
         {
@@ -367,6 +375,8 @@ void PlayerImplClient::update( float deltaTime )
             if ( vel.length2() > 1.0f )
                 vel.normalize();
 
+
+            getPlayerPhysics()->enablePhysicsCalculation( true );
             getPlayerPhysics()->setDirection( vel.x(), vel.y() );
         }
 
