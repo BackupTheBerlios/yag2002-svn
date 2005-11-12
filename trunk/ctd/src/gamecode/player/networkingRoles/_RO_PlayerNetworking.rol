@@ -24,25 +24,25 @@ object PlayerNetworking
         Predict_Float _positionX;
         {
             SetMinError(0.1f);
-            SetMinDistance(6.0f);
-            SetMaxError(0.3f);
-            SetMaxDistance(10.0f);
+            SetMinDistance(0.2f);
+            SetMaxError(0.5f);
+            SetMaxDistance(1.0f);
             Quadratic();
         }
         Predict_Float _positionY;
         {
             SetMinError(0.1f);
-            SetMinDistance(6.0f);
-            SetMaxError(0.3f);
-            SetMaxDistance(10.0f);
+            SetMinDistance(0.2f);
+            SetMaxError(0.5f);
+            SetMaxDistance(1.0f);
             Quadratic();
         }
         Predict_Float _positionZ;
         {
             SetMinError(0.1f);
-            SetMinDistance(6.0f);
-            SetMaxError(0.3f);
-            SetMaxDistance(10.0f);
+            SetMinDistance(0.2f);
+            SetMaxError(0.5f);
+            SetMaxDistance(1.0f);
             Quadratic();
         }
 
