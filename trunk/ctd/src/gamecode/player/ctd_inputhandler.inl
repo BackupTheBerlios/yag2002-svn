@@ -137,8 +137,8 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 _camSwitch = true;
 
                 // store current pitch / yaw and restore the old values
-                _p_mouseData->pushPitchYaw();
-                _p_mouseData->popPitchYaw();
+                _p_mouseData->pushbackPitchYaw();
+                _p_mouseData->popfrontPitchYaw();
                 // after cam mode switching and restoring the pitch / yaw we have also to update the player pitch / yaw
                 updatePlayerPitchYaw( _p_mouseData->_pitch, _p_mouseData->_yaw );
             }
@@ -156,10 +156,10 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         if ( key == _keyCodeMoveLeft )
             _left = true;
 
-        if ( key == _keyCodeJump && !getPlayerImpl()->getPlayerPhysics()->isJumping() )
+        if ( ( key == _keyCodeJump ) && ( !getPlayerImpl()->getPlayerPhysics()->isJumping() ) )
         {
             getPlayerImpl()->getPlayerPhysics()->jump();
-            getPlayerImpl()->getPlayerAnimation()->animIdle(); // stop any movement animation first
+            getPlayerImpl()->getPlayerAnimation()->animIdle();
             getPlayerImpl()->getPlayerAnimation()->animJump();
         }
     } 

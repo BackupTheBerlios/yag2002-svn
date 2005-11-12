@@ -124,13 +124,13 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
                                                 }
 
                 //! Stores the current pitch / yaw values, used for camera mode switching
-                void                            pushPitchYaw()
+                void                            pushbackPitchYaw()
                                                 {
                                                     _pyQueue.push( std::make_pair( _pitch, _yaw ) );
                                                 }
 
                 //! Restores pitch / yaw values, used for camera mode switching
-                void                            popPitchYaw()
+                void                            popfrontPitchYaw()
                                                 {
                                                     _pitch = _pyQueue.front().first;
                                                     _yaw   = _pyQueue.front().second;
