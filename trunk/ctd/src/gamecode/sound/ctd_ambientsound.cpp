@@ -34,7 +34,7 @@
 namespace CTD
 {
 
-//! Implement and register the platform entity factory
+//! Implement and register the ambient sound entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( AmbientSoundEntityFactory );
 
 

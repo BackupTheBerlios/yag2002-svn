@@ -102,9 +102,6 @@ class En3DSound : public BaseEntity
         //! Mesh file name sound source ( is usually used during level creation for debugging purpose )
         std::string                                 _sourceMesh;
 
-        //! Used for visualizing sound sources
-        bool                                        _showSource;
-
         osgAL::SoundNode*                           _p_soundNode;
 
         osg::ref_ptr< osgAL::SoundState >           _soundState;

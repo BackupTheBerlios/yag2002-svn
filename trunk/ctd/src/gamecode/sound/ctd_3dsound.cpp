@@ -46,7 +46,6 @@ _referenceDist( 70.0f ),
 _rolloffFac( 1.0f ),
 _isPlaying( false ),
 _wasPlaying( false ),
-_showSource( false ),
 _p_soundNode( NULL )
 {
     // register entity attributes
@@ -116,9 +115,6 @@ void En3DSound::initialize()
         return;
     }
  
-    // register entity in order to get updated per simulation step
-    EntityManager::get()->registerUpdate( this );   
-
     // create a named sound state.
     // note: we have to make the state name unique as otherwise new need unique sound states for every entity instance
     std::stringstream uniquename;
@@ -162,13 +158,13 @@ void En3DSound::initialize()
         {
             addToTransformationNode( p_mesh );
             setPosition( _position );
-            _showSource = true;
+            // register entity in order to get updated per simulation step
+            EntityManager::get()->registerUpdate( this );   
         }
         else
         {
             log << Log::LogLevel( Log::L_ERROR ) << "*** error loading mesh file for sound source 'sound/soundsrc.osg'" << std::endl;
         }
-
     }
 
     // register entity in order to get menu notifications
@@ -177,14 +173,11 @@ void En3DSound::initialize()
 
 void En3DSound::updateEntity( float deltaTime )
 {
-    if ( _showSource )
-    {
-        static float a = 0;
-        a = ( a < 2.0f * osg::PI ) ? a + deltaTime : a - 2.0f * osg::PI + deltaTime;
-        osg::Quat quat;
-        quat.makeRotate( a,  osg::Vec3f( 0.0f, 0.0f, 1.0f ) );
-        setRotation( quat );
-    }
+    static float a = 0;
+    a = ( a < 2.0f * osg::PI ) ? a + deltaTime : a - 2.0f * osg::PI + deltaTime;
+    osg::Quat quat;
+    quat.makeRotate( a,  osg::Vec3f( 0.0f, 0.0f, 1.0f ) );
+    setRotation( quat );
 }
 
 void En3DSound::startPlaying()
