@@ -43,10 +43,10 @@ namespace CTD
 {
 
 // used to avoid playing too short sound 
-#define SND_PLAY_RELAX_TIME     0.5f
+#define SND_PLAY_RELAX_TIME     0.2f
 // thereshold for considering the player as stopped for sound playing
 //  the player is always moving a little also when standing on ground ( in particular on uneven terrains )
-#define STOP_THRESHOLD2         0.1f
+#define STOP_THRESHOLD2         0.01f
 
 //! Implement and register the player physics entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( PlayerPhysicsEntityFactory );
@@ -264,7 +264,7 @@ int EnPlayerPhysics::collideWithLevel( const NewtonMaterial* p_material, const N
             _climbHeight = diff;
     }
 
-    return 1;
+    return _enableCalculation;
 }
 
 int EnPlayerPhysics::collideWithOtherEntities( const NewtonMaterial* p_material, const NewtonContact* p_contact )
@@ -300,6 +300,9 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     NewtonBodyGetVelocity( p_phys->_p_body, &velocity._v[ 0 ] );
     osg::Vec3f delta = desiredvelocity - velocity;
     osg::Vec3f force = delta * ( timestepInv * mass );
+
+    // set the stopped flag when no movement
+    p_phys->_isStopped = delta.length2() < STOP_THRESHOLD2;
 
     NewtonBodyGetMatrix( p_phys->_p_body, matrix.ptr() );
     pos = matrix.getTrans();
@@ -358,11 +361,6 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     }
     p_phys->_jumpTimer = p_phys->_jumpTimer ? p_phys->_jumpTimer - 1 : 0;
 
-    // set the stopped flag when no movement
-    osg::Vec3f move( force );
-    move._v[ 2 ] = 0.0f;
-    p_phys->_isStopped = move.length2() < STOP_THRESHOLD2;
-
     // set body force
     NewtonBodySetForce( p_body, &force._v[ 0 ] );
 }
@@ -395,7 +393,6 @@ _speed( 10.0f ),
 _angularSpeed( 90.0f ),
 _gravity( Physics::get()->getWorldGravity() ),
 _linearDamping( 0.2f ),
-
 _p_playerImpl( NULL ),
 _p_world( NULL ),
 _p_body( NULL ),
@@ -409,7 +406,8 @@ _climbForce( 30.0f ),
 _jumpTimer( 0 ),
 _isJumping( false ),
 _jumpState( BeginJumping ),
-_jumpForce( 5.0f )
+_jumpForce( 5.0f ),
+_enableCalculation( true )
 { 
     // register entity in order to get notifications about physics building
     EntityManager::get()->registerNotification( this, true );   

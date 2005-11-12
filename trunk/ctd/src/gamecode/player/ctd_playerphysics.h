@@ -81,6 +81,12 @@ class EnPlayerPhysics : public BaseEntity
         const bool                                  isTransformable() const { return false; }
 
         /**
+        * Enable / Disable physics calculation. This is used for temorarily disable physics when networking 
+        * interpolators are disturbed.
+        */
+        inline void                                 enablePhysicsCalculation( bool en );
+
+        /**
         * Set moving direction
         */
         inline void                                 setDirection( float x, float y );
@@ -175,11 +181,8 @@ class EnPlayerPhysics : public BaseEntity
         //-------------------------------------------------------------------------------------------------//
 
     protected:
-
-        /**
-        * Update entity
-        * \param deltaTime                          Time passed since last update
-        */
+        
+        //! Update entity
         void                                        updateEntity( float deltaTime );
 
         // handle physics building when notified
@@ -264,7 +267,13 @@ class EnPlayerPhysics : public BaseEntity
         //! Body matrix
         osg::Matrixf                                _matrix;
 
+        bool                                        _enableCalculation;
 };
+
+inline void EnPlayerPhysics::enablePhysicsCalculation( bool en )
+{
+    _enableCalculation = en;
+}
 
 inline void EnPlayerPhysics::setDirection( float x, float y )
 {
