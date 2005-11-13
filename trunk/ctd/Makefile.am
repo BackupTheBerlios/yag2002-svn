@@ -1,4 +1,4 @@
 SUBDIRS = . src
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = CTDFramework.pc
+pkgconfig_DATA = YAF3D.pc
