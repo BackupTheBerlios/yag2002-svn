@@ -1,3 +1,8 @@
+
+boto ( 11/13/2005 )
+
+- name space cleanups and filename changes; replaced CTD by yaf3d
+
 boto ( 08/27/2005 )
 
 - began the port to linux
