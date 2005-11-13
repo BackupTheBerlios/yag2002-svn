@@ -33,7 +33,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 //! Period for updating name
@@ -43,7 +43,7 @@ namespace CTD
 #define ENTITY_NAME_PLAYERNAMEDISP      "PlayerNameDisplay"
 
 //! Entity for displaying player name in front of local player
-class EnPlayerNameDisplay : public BaseEntity
+class EnPlayerNameDisplay : public yaf3d::BaseEntity
 {
     public:
 
@@ -69,8 +69,8 @@ class EnPlayerNameDisplay : public BaseEntity
         //! Update entity
         void                                        updateEntity( float deltaTime );
 
-        //! Override this method of BaseEntity to get notifications (from menu system)
-        void                                        handleNotification( const EntityNotification& notification );
+        //! Override this method of yaf3d::BaseEntity to get notifications (from menu system)
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Determine the name of player in front and update the name gui
         void                                        updateName();
@@ -85,7 +85,7 @@ class EnPlayerNameDisplay : public BaseEntity
         float                                       _viewAngle;
 
         //! List of player entities
-        std::vector< BaseEntity* >                  _players;
+        std::vector< yaf3d::BaseEntity* >                  _players;
 
         //! Internal timer for updating the name
         float                                       _updateTimer;
@@ -95,11 +95,11 @@ class EnPlayerNameDisplay : public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class PlayerNameDisplayEntityFactory : public BaseEntityFactory
+class PlayerNameDisplayEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     PlayerNameDisplayEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_PLAYERNAMEDISP, BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PLAYERNAMEDISP, yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~PlayerNameDisplayEntityFactory() {}
@@ -107,6 +107,6 @@ class PlayerNameDisplayEntityFactory : public BaseEntityFactory
         Macro_CreateEntity( EnPlayerNameDisplay );
 };
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_PLAYERNAMEDISP_H_

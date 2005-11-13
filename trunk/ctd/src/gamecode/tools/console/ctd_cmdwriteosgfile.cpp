@@ -35,7 +35,7 @@
 #include "ctd_cmdregistry.h"
 #include <osgDB/WriteFile>
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -60,11 +60,11 @@ const std::string& CmdWriteOSGFile::execute( const std::vector< std::string >& a
         return _cmdResult;
     }
 
-    osg::Group* grp = Application::get()->getSceneRootNode();
+    osg::Group* grp = yaf3d::Application::get()->getSceneRootNode();
     if ( grp )
     {
         _cmdResult = "writing scene to osg file '" + arguments[ 0 ] + "\n";
-        std::string filename = Application::get()->getMediaPath() + arguments[ 0 ];
+        std::string filename = yaf3d::Application::get()->getMediaPath() + arguments[ 0 ];
 
         if ( !osgDB::writeNodeFile( *grp, filename ) )
         {
@@ -75,4 +75,4 @@ const std::string& CmdWriteOSGFile::execute( const std::vector< std::string >& a
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

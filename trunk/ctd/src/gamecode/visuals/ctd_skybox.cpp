@@ -31,10 +31,8 @@
 #include <ctd_main.h>
 #include "ctd_skybox.h"
 
-using namespace std;
-using namespace CTD; 
-using namespace osg; 
-
+namespace vrc
+{
 
 //! Implement and register the skybox entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( SkyBoxEntityFactory );
@@ -59,7 +57,7 @@ EnSkyBox::~EnSkyBox()
 {
 }
 
-void EnSkyBox::handleNotification( const EntityNotification& notification )
+void EnSkyBox::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle notifications
     switch( notification.getId() )
@@ -68,7 +66,7 @@ void EnSkyBox::handleNotification( const EntityNotification& notification )
         case CTD_NOTIFY_SHUTDOWN:
 
             if ( _isPersistent )
-                EntityManager::get()->deleteEntity( this );
+                yaf3d::EntityManager::get()->deleteEntity( this );
             break;
 
         default:
@@ -79,19 +77,19 @@ void EnSkyBox::handleNotification( const EntityNotification& notification )
 void EnSkyBox::initialize()
 {
     // register entity in order to get notifications   
-    EntityManager::get()->registerNotification( this, true );   
+    yaf3d::EntityManager::get()->registerNotification( this, true );   
 
     // setup texture side names
-    _textureFilenameMap.insert( make_pair( TextureCubeMap::POSITIVE_X, _texNames[ 0 ] ) );
-    _textureFilenameMap.insert( make_pair( TextureCubeMap::NEGATIVE_X, _texNames[ 1 ] ) );
-    _textureFilenameMap.insert( make_pair( TextureCubeMap::POSITIVE_Y, _texNames[ 2 ] ) );
-    _textureFilenameMap.insert( make_pair( TextureCubeMap::NEGATIVE_Y, _texNames[ 3 ] ) );
-    _textureFilenameMap.insert( make_pair( TextureCubeMap::POSITIVE_Z, _texNames[ 4 ] ) );
-    _textureFilenameMap.insert( make_pair( TextureCubeMap::NEGATIVE_Z, _texNames[ 5 ] ) );
+    _textureFilenameMap.insert( make_pair( osg::TextureCubeMap::POSITIVE_X, _texNames[ 0 ] ) );
+    _textureFilenameMap.insert( make_pair( osg::TextureCubeMap::NEGATIVE_X, _texNames[ 1 ] ) );
+    _textureFilenameMap.insert( make_pair( osg::TextureCubeMap::POSITIVE_Y, _texNames[ 2 ] ) );
+    _textureFilenameMap.insert( make_pair( osg::TextureCubeMap::NEGATIVE_Y, _texNames[ 3 ] ) );
+    _textureFilenameMap.insert( make_pair( osg::TextureCubeMap::POSITIVE_Z, _texNames[ 4 ] ) );
+    _textureFilenameMap.insert( make_pair( osg::TextureCubeMap::NEGATIVE_Z, _texNames[ 5 ] ) );
 
     _p_skyGrp = new osg::Group();
     _p_skyGrp->setName( "_skybox_" );
-    _p_transformEyePoint = new EyeTransform();
+    _p_transformEyePoint = new yaf3d::EyeTransform();
     _p_transformEyePoint->setCullingActive( false );
     _p_transformEyePoint->addChild( makeBox() );
     _p_skyGrp->addChild( _p_transformEyePoint );
@@ -213,7 +211,7 @@ osg::Node* EnSkyBox::makeBox()
         //   dstate->setAttributeAndModes(polymode, osg::StateAttribute::OVERRIDE|osg::StateAttribute::ON);
         if (!_textureFilenameMap[side].empty())
         {
-            string filename = Application::get()->getMediaPath() + _textureFilenameMap[side].c_str();
+            std::string filename = yaf3d::Application::get()->getMediaPath() + _textureFilenameMap[side].c_str();
             image[side] = osgDB::readImageFile(filename);
 
             if (image[side])
@@ -231,3 +229,5 @@ osg::Node* EnSkyBox::makeBox()
     }
     return _geode.get();
 }
+
+} // namespace vrc

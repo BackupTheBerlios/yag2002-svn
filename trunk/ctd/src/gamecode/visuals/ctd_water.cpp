@@ -32,19 +32,15 @@
  ################################################################*/
 
 #include <ctd_main.h>
-#include "ctd_water.h"
-
 #include <osg/Program>
 #include <osg/Shader>
 #include <osg/Uniform>
 #include <osg/Texture3D>
 #include <osgUtil/UpdateVisitor>
-
+#include "ctd_water.h"
 #include "../extern/Noise.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 #define LOCATION_CUBEMAP_SAMPLER    0
@@ -168,7 +164,7 @@ class ViewPositionUpdateCallback: public osg::Uniform::Callback
         
                                             ViewPositionUpdateCallback() 
                                             {
-                                                _p_sceneView = Application::get()->getSceneView();
+                                                _p_sceneView = yaf3d::Application::get()->getSceneView();
                                             }
 
         virtual                             ~ViewPositionUpdateCallback() {}
@@ -232,7 +228,7 @@ EnWater::~EnWater()
 {
 }
 
-void EnWater::handleNotification( const EntityNotification& notification )
+void EnWater::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle notifications
     switch( notification.getId() )
@@ -269,7 +265,7 @@ void EnWater::initialize()
     // the water is added to entity's transform node in notification call-back, when entering game ( leaving menu )!
     _water = setupWater();
 
-    EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
+    yaf3d::EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 }
 
 // this function is taken from osg example Shaders ( osg version 0.9.9 )
@@ -325,11 +321,11 @@ osg::Node* EnWater::setupWater()
     // check if a water mesh is given, if so load it and place it into level
     if ( _meshFile.length() )
     {
-        p_node = LevelManager::get()->loadMesh( _meshFile );
+        p_node = yaf3d::LevelManager::get()->loadMesh( _meshFile );
         if ( !p_node )
         {
-            log << Log::LogLevel( Log::L_WARNING ) << "could not load water mesh file: " << _meshFile << ", in '" << getInstanceName() << "'" << std::endl;
-            log << Log::LogLevel( Log::L_WARNING ) << " creating a simple plane for water mesh." << std::endl;
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "could not load water mesh file: " << _meshFile << ", in '" << getInstanceName() << "'" << std::endl;
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << " creating a simple plane for water mesh." << std::endl;
         }
 
         setPosition( _position );
@@ -425,7 +421,7 @@ osg::Node* EnWater::setupWater()
         texfiles.push_back( _cubeMapTextures[ 3 ] );
         texfiles.push_back( _cubeMapTextures[ 4 ] );
         texfiles.push_back( _cubeMapTextures[ 5 ] );
-        osg::ref_ptr< osg::TextureCubeMap > reflectmap = readCubeMap( texfiles );
+        osg::ref_ptr< osg::TextureCubeMap > reflectmap = yaf3d::readCubeMap( texfiles );
 
         p_stateSet->setTextureAttribute( LOCATION_CUBEMAP_SAMPLER, reflectmap.get() );
         p_stateSet->addUniform( new osg::Uniform( "samplerSkyBox", LOCATION_CUBEMAP_SAMPLER ) );

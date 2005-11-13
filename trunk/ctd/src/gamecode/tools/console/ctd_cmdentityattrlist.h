@@ -33,7 +33,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_ENTITYATTRLIST   "entity.attribute.list"
@@ -55,6 +55,6 @@ class CmdEntityAttributeList : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CMDENTITYATTRLIST_H_

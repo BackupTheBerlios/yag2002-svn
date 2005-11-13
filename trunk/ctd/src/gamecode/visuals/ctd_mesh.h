@@ -33,13 +33,13 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_MESH    "Mesh"
 
 //! Mesh entity
-class EnMesh :  public BaseEntity
+class EnMesh :  public yaf3d::BaseEntity
 {
     public:
                                                     EnMesh();
@@ -62,7 +62,7 @@ class EnMesh :  public BaseEntity
 
     protected:
 
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         osg::ref_ptr< osg::Node >                   _mesh;
 
@@ -70,11 +70,11 @@ class EnMesh :  public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class MeshEntityFactory : public BaseEntityFactory
+class MeshEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     MeshEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_MESH, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_MESH, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~MeshEntityFactory() {}
@@ -82,6 +82,6 @@ class MeshEntityFactory : public BaseEntityFactory
         Macro_CreateEntity( EnMesh );
 };
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_MESH_H_

@@ -33,7 +33,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_PWD    "pwd"
@@ -60,6 +60,6 @@ class CmdPwd : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CMDPWD_H_

@@ -33,7 +33,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 class EnMenu;
@@ -42,12 +42,12 @@ class DialogGameSettings;
 class DialogPlayerConfig;
 
 //! Input handler for sensing
-class BtnInputHandler : public GenericInputHandler< CEGUI::PushButton >
+class BtnInputHandler : public yaf3d::GenericInputHandler< CEGUI::PushButton >
 {
     public:
 
                                                     BtnInputHandler( CEGUI::PushButton* p_obj, DialogGameSettings* p_dlg ) : 
-                                                        GenericInputHandler< CEGUI::PushButton >( p_obj ),
+                                                        yaf3d::GenericInputHandler< CEGUI::PushButton >( p_obj ),
                                                         _p_dlg( p_dlg ),
                                                         _lockInput( false )
                                                     {}

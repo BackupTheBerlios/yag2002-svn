@@ -40,12 +40,12 @@
 #include <ctd_main.h>
 #include "ctd_playerimpl.h"
 
-namespace CTD
+namespace vrc
 {
 
 template< class PlayerImplT > class PlayerIHCharacterCameraCtrl;
 
-//! Player implementation for game mode Standalone ( see framework class GameState )
+//! Player implementation for game mode Standalone ( see framework class yaf3d::GameState )
 class PlayerImplStandalone : public BasePlayerImplementation
 {
     public:
@@ -65,7 +65,7 @@ class PlayerImplStandalone : public BasePlayerImplementation
         void                                        update( float deltaTime );
 
         //! Implementation's notification callback
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
     protected:
 
@@ -78,6 +78,6 @@ class PlayerImplStandalone : public BasePlayerImplementation
     friend class PlayerIHCharacterCameraCtrl< PlayerImplStandalone >;
 };
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_PLAYERIMPLSTANDALONE_H_

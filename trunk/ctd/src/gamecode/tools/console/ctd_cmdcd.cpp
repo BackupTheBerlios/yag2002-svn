@@ -33,7 +33,7 @@
 #include "ctd_cmdcd.h"
 #include "ctd_console.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -56,7 +56,7 @@ const std::string& CmdCd::execute( const std::vector< std::string >& arguments )
     _cmdResult = "";
     if ( !_p_console )
     {
-        _p_console = static_cast< EnConsole* >( EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
+        _p_console = static_cast< EnConsole* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
         assert( _p_console && "CmdExec::execute: console entity could not be found!" );
     }
 
@@ -68,7 +68,7 @@ const std::string& CmdCd::execute( const std::vector< std::string >& arguments )
     {
         std::string dir = arguments[ 0 ];
         if ( !dir.length() )
-            dir = CTD::Application::get()->getMediaPath();
+            dir = yaf3d::Application::get()->getMediaPath();
         else if ( dir == ".." )
         {
             dir = _p_console->getCWD();
@@ -93,4 +93,4 @@ const std::string& CmdCd::execute( const std::vector< std::string >& arguments )
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

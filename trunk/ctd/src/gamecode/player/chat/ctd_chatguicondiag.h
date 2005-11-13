@@ -32,10 +32,10 @@
 #define _CTD_CHATGUICONDIAG_H_
 
 #include <ctd_main.h>
+#include <ctd_gameutils.h>
 #include "ctd_chatmgr.h"
-#include "../../ctd_gameutils.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Connection dialog
@@ -109,6 +109,6 @@ class ConnectionDialog
 // include the inline file
 #include "ctd_chatguicondiag.inl"
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CHATGUICONDIAG_H_

@@ -32,12 +32,11 @@
 #include "ctd_cmdregistry.h"
 #include "ctd_basecmd.h"
 
-using namespace std;
+CTD_SINGLETON_IMPL( vrc::ConsoleCommandRegistry );
 
-namespace CTD
+namespace vrc
 {
 
-CTD_SINGLETON_IMPL( ConsoleCommandRegistry );
 
 ConsoleCommandRegistry::ConsoleCommandRegistry()
 {
@@ -54,7 +53,7 @@ bool ConsoleCommandRegistry::registerCmd( BaseConsoleCommand* p_cmd )
 {
     if ( _cmdRegistry.find( p_cmd->getCmdName() ) != _cmdRegistry.end() )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "ConsoleCommandRegistry: the command '" << p_cmd->getCmdName() << "' is already registered, ignoring it!" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "ConsoleCommandRegistry: the command '" << p_cmd->getCmdName() << "' is already registered, ignoring it!" << std::endl;
         return false;
     }
 
@@ -99,4 +98,4 @@ unsigned int ConsoleCommandRegistry::getCmdCandidates( const std::string& text, 
     return matchfound;
 }
 
-} // namespace CTD
+} // namespace vrc

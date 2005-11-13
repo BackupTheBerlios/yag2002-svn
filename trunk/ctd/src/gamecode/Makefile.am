@@ -62,7 +62,8 @@ vrc_SOURCES = ctd_exceptionlogger.cpp \
 			tools/console/ctd_cmdlogclose.cpp \
 			tools/console/ctd_cmdlogcreate.cpp \
 			tools/console/ctd_cmdls.cpp \
-			tools/console/ctd_cmdphysics.cpp \
+			tools/console/ctd_cmdphysicsrender.cpp \
+			tools/console/ctd_cmdphysicsserialize.cpp \
 			tools/console/ctd_cmdpwd.cpp \
 			tools/console/ctd_cmdregistry.cpp \
 			tools/console/ctd_cmdserverstart.cpp \
@@ -75,6 +76,8 @@ vrc_SOURCES = ctd_exceptionlogger.cpp \
 			tools/console/ctd_cmdversion.cpp \
 			tools/console/ctd_cmdwriteosgfile.cpp \
 			tools/console/ctd_console.cpp \
+			tools/console/ctd_consoleiocin.cpp \
+			tools/console/ctd_consoleiogui.cpp \
 			visuals/ctd_camera.cpp \
 			visuals/ctd_candle.cpp \
 			visuals/ctd_fog.cpp \

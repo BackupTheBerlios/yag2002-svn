@@ -19,7 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # console command for closing an open log channel
+ # console command for closing an open yaf3d::log channel
  #
  #   date of creation:  06/16/2005
  #
@@ -33,7 +33,7 @@
 #include "ctd_cmdlogclose.h"
 #include "ctd_console.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -52,13 +52,13 @@ CmdLogClose::~CmdLogClose()
 
 const std::string& CmdLogClose::execute( const std::vector< std::string >& arguments )
 {
-    EnConsole* p_console = static_cast< EnConsole* >( EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
+    EnConsole* p_console = static_cast< EnConsole* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
     if ( !p_console->closeLog() )
-        _cmdResult = "* there is no open log channel";
+        _cmdResult = "* there is no open yaf3d::log channel";
     else
-        _cmdResult = "log channel closed";
+        _cmdResult = "yaf3d::log channel closed";
 
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

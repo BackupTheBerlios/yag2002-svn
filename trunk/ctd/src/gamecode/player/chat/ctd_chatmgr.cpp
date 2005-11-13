@@ -30,13 +30,13 @@
  ################################################################*/
 
 #include <ctd_main.h>
+#include <ctd_gameutils.h>
 #include "ctd_chatmgr.h"
 #include "ctd_chatguibox.h"
 #include "ctd_chatguictrl.h"
 #include "ctd_chatprotocol.h"
-#include "../../ctd_gameutils.h"
 
-namespace CTD
+namespace vrc
 {
 
 ChatManager::ChatManager() :
@@ -151,7 +151,7 @@ void ChatManager::createConnection( const ChatConnectionConfig& config )
     catch( const ChatExpection& e )
     {
         // could not setup connection       
-        MessageBoxDialog* p_msg = new MessageBoxDialog( "Connection Problem", "Reason: " + e.what(), MessageBoxDialog::OK, true );
+        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Connection Problem", "Reason: " + e.what(), yaf3d::MessageBoxDialog::OK, true );
         p_msg->show();
     }
 }
@@ -217,4 +217,4 @@ void ChatManager::update( float deltaTime )
         _p_chatGuiBox->update( deltaTime );
 }
 
-} // namespace CTD
+} // namespace vrc

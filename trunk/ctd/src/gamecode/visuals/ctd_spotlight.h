@@ -34,13 +34,13 @@
 #include <ctd_main.h>
 #include "ctd_lightmanager.h"
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_SPOTLIGHT    "SpotLight"
 
 //! Spot light entity
-class EnSpotLight :  public BaseEntity, public BaseLight
+class EnSpotLight :  public yaf3d::BaseEntity, public BaseLight
 {
     public:
                                                     EnSpotLight();
@@ -65,11 +65,11 @@ class EnSpotLight :  public BaseEntity, public BaseLight
 };
 
 //! Entity type definition used for type registry
-class SpotLightEntityFactory : public BaseEntityFactory
+class SpotLightEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     SpotLightEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_SPOTLIGHT, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_SPOTLIGHT, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~SpotLightEntityFactory() {}

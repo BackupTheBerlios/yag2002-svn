@@ -31,12 +31,10 @@
 #include <ctd_main.h>
 #include "ctd_lightmanager.h"
 
-using namespace std;
+CTD_SINGLETON_IMPL( vrc::LightManager );
 
-namespace CTD
+namespace vrc
 {
-
-CTD_SINGLETON_IMPL( LightManager );
 
 LightManager::LightManager() : 
 _currId( 0 ),
@@ -51,10 +49,10 @@ void LightManager::initialize()
     if ( !_initialized ) // we register the callback only once
     {
         _initialized = true;
-        Application::get()->getViewer()->addPreDrawCallback( this );
+        yaf3d::Application::get()->getViewer()->addPreDrawCallback( this );
 
         // enable the lighting for scene
-        Application::get()->getSceneView()->getGlobalStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::ON );
+        yaf3d::Application::get()->getSceneView()->getGlobalStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::ON );
     }
 }
 
@@ -69,9 +67,9 @@ void LightManager::addLight( BaseLight* p_light )
 
 void LightManager::flush()
 {
-    unsigned int numlights = min( ( int )_lights.size(), CTD_MAX_GL_LIGHTS - 1 );
+    unsigned int numlights = std::min( ( int )_lights.size(), CTD_MAX_GL_LIGHTS - 1 );
     
-    osg::StateSet*  p_stateset = Application::get()->getSceneView()->getGlobalStateSet();
+    osg::StateSet*  p_stateset = yaf3d::Application::get()->getSceneView()->getGlobalStateSet();
     // first turn off all lights
     for ( unsigned int l = 0; l < CTD_MAX_GL_LIGHTS - 1; l++ )
         p_stateset->setMode( GL_LIGHT0 + l, osg::StateAttribute::OFF );
@@ -89,8 +87,8 @@ void LightManager::flush()
 
     // check if we can see more than maximal allowed count of lights
     if ( _lights.size() > CTD_MAX_GL_LIGHTS )
-        log << Log::LogLevel( Log::L_WARNING ) << " *** LightManager: more than " << CTD_MAX_GL_LIGHTS <<
-        " lights can be seen by camera! ( total count: " << _lights.size() << " )" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << " *** LightManager: more than " << CTD_MAX_GL_LIGHTS <<
+        " lights can be seen by camera! ( total count: " << _lights.size() << " )" << std::endl;
 
     // clear the list for next frame
     _lights.clear();
@@ -110,4 +108,4 @@ void LightCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         LightManager::get()->addLight( _lightEntity );    
 }
 
-} // namespace CTD
+} // namespace vrc

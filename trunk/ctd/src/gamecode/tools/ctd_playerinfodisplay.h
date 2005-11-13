@@ -33,7 +33,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_PLAYERINFODISPLAY    "PlayerInfoDisplay"
@@ -41,7 +41,7 @@ namespace CTD
 class EnPlayer;
 
 //! Player information display entity
-class EnPlayerInfoDisplay :  public BaseEntity
+class EnPlayerInfoDisplay :  public yaf3d::BaseEntity
 {
     public:
                                                     EnPlayerInfoDisplay();
@@ -64,7 +64,7 @@ class EnPlayerInfoDisplay :  public BaseEntity
     protected:
 
         //! Override notification callback
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Override this method and return true to get a persisten entity
         const bool                                  isPersistent() const { return true; }
@@ -88,11 +88,11 @@ class EnPlayerInfoDisplay :  public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class PlayerInfoDisplayEntityFactory : public BaseEntityFactory
+class PlayerInfoDisplayEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     PlayerInfoDisplayEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_PLAYERINFODISPLAY, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PLAYERINFODISPLAY, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~PlayerInfoDisplayEntityFactory() {}
@@ -100,6 +100,6 @@ class PlayerInfoDisplayEntityFactory : public BaseEntityFactory
         Macro_CreateEntity( EnPlayerInfoDisplay );
 };
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_PLAYERINFODISPLAY_H_

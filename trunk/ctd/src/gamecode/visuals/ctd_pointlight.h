@@ -34,7 +34,7 @@
 #include <ctd_main.h>
 #include "ctd_lightmanager.h"
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_POINTLIGHT    "PointLight"
@@ -42,7 +42,7 @@ namespace CTD
 class LightManager;
 
 //! Point light entity
-class EnPointLight :  public BaseEntity, public BaseLight
+class EnPointLight :  public yaf3d::BaseEntity, public BaseLight
 {
     public:
                                                     EnPointLight();
@@ -56,18 +56,18 @@ class EnPointLight :  public BaseEntity, public BaseLight
 
     protected:
 
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Max radius for culling ( deactivating ) light source during rendering
         float                                       _lightRadius;
 };
 
 //! Entity type definition used for type registry
-class PointLightEntityFactory : public BaseEntityFactory
+class PointLightEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     PointLightEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_POINTLIGHT, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_POINTLIGHT, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~PointLightEntityFactory() {}

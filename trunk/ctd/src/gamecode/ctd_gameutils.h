@@ -33,13 +33,61 @@
 
 #include <ctd_base.h>
 
-namespace CTD
+namespace vrc
 {
 namespace gameutils
 {
 
+//! Game code specific notifications ( all begining with 0xA )
+#define PLAYER_NOTIFY_NAME_CHANGED  0xA0000001      // notification for player name change
+
+
+//! Single instance providing player-related utility services
+class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
+{
+    public:
+
+                                                    PlayerUtils();
+
+        //! Retrieve player configuration file path depending on game settings and given game mode ( Server, Client, Standalone ) and
+        //! in case of Client the remote flag determines local or remote client.
+        //! Returns false if something went wrong.
+        bool                                        getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile );
+
+        //! Stores a pointer to local player entity
+        void                                        setLocalPlayer( yaf3d::BaseEntity* p_entity );
+
+        //! Change the name of local player
+        void                                        changeLocalPlayerName( const std::string& name );
+
+        //! Return the previousely set local player entity
+        yaf3d::BaseEntity*                                 getLocalPlayer();
+
+        //! Add a new remote player ( ghost ) into internal list
+        void                                        addRemotePlayer( yaf3d::BaseEntity* p_entity );
+
+        //! Remove a remote player from internal list
+        void                                        removeRemotePlayer( yaf3d::BaseEntity* p_entity );
+
+        //! Return the list of remote players
+        inline std::vector< yaf3d::BaseEntity* >&          getRemotePlayers();
+
+    protected:
+
+        yaf3d::BaseEntity*                                 _p_localPlayer;
+    
+        std::vector< yaf3d::BaseEntity* >                  _remotePlayers;
+
+    friend public yaf3d::Singleton< vrc::gameutils::PlayerUtils >;
+};
+
+inline std::vector< yaf3d::BaseEntity* >& PlayerUtils::getRemotePlayers()
+{                                                     
+    return _remotePlayers;
+}
+
 //! Single instance providing GUI-related utility services
-class GuiUtils : public CTD::Singleton< CTD::gameutils::GuiUtils >
+class GuiUtils : public yaf3d::Singleton< vrc::gameutils::GuiUtils >
 {
     public:
 
@@ -68,52 +116,11 @@ class GuiUtils : public CTD::Singleton< CTD::gameutils::GuiUtils >
         //! The main window instance
         CEGUI::Window*                              _p_mainWindow;        
         
-        //! Application's root window
+        //! yaf3d::Application's root window
         CEGUI::Window*                              _p_rootWindow;
 
-    friend public CTD::Singleton< CTD::gameutils::GuiUtils >;
+    friend public yaf3d::Singleton< vrc::gameutils::GuiUtils >;
 };
-
-//! Single instance providing player-related utility services
-class PlayerUtils : public CTD::Singleton< CTD::gameutils::PlayerUtils >
-{
-    public:
-
-                                                    PlayerUtils();
-
-        //! Retrieve player configuration file path depending on game settings and given game mode ( Server, Client, Standalone ) and
-        //! in case of Client the remote flag determines local or remote client.
-        //! Returns false if something went wrong.
-        bool                                        getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile );
-
-        //! Stores a pointer to local player entity
-        void                                        setLocalPlayer( BaseEntity* p_entity );
-
-        //! Return the previousely set local player entity
-        BaseEntity*                                 getLocalPlayer();
-
-        //! Add a new remote player ( ghost ) into internal list
-        void                                        addRemotePlayer( BaseEntity* p_entity );
-
-        //! Remove a remote player from internal list
-        void                                        removeRemotePlayer( BaseEntity* p_entity );
-
-        //! Return the list of remote players
-        inline std::vector< BaseEntity* >&          getRemotePlayers();
-
-    protected:
-
-        BaseEntity*                                 _p_localPlayer;
-    
-        std::vector< BaseEntity* >                  _remotePlayers;
-
-    friend public CTD::Singleton< CTD::gameutils::PlayerUtils >;
-};
-
-inline std::vector< BaseEntity* >& PlayerUtils::getRemotePlayers()
-{                                                     
-    return _remotePlayers;
-}
 
 //! Helper class for getting a lookup table with level files and their preview images
 class LevelFiles
@@ -140,6 +147,6 @@ class LevelFiles
 };
 
 } // namespace gameutils
-} // namespace CTD
+} // namespace vrc
 
 #endif //_CTD_GAMEUTILS_H_

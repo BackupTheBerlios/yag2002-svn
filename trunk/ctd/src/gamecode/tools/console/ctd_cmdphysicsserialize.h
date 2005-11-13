@@ -33,7 +33,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_PHYSICSSERIALIZE    "physics.serialize"
@@ -55,6 +55,6 @@ class CmdPhysicsSerialize : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CMDPHYSICSSERIALIZE_H_

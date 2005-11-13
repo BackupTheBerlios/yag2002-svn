@@ -38,9 +38,7 @@
 
 #include <conio.h>
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the statistics entity factory
@@ -72,7 +70,7 @@ EnConsole::~EnConsole()
         closeLog();
 }
 
-void EnConsole::handleNotification( const EntityNotification& notification )
+void EnConsole::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle some notifications
     switch( notification.getId() )
@@ -85,12 +83,12 @@ void EnConsole::handleNotification( const EntityNotification& notification )
 
         case CTD_NOTIFY_SHUTDOWN:
 
-            EntityManager::get()->deleteEntity( this );
+            yaf3d::EntityManager::get()->deleteEntity( this );
             break;
 
         case CTD_NOTIFY_NEW_LEVEL_INITIALIZED:
 
-            if ( GameState::get()->getMode() == GameState::Server )
+            if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
             {
                 std::cout << std::endl;
                 std::cout << "starting VRC server console version " << VRC_VERSION << std::endl;
@@ -108,12 +106,12 @@ void EnConsole::initialize()
     static bool alreadycreated = false;
     if ( alreadycreated )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "the console entity can be created only once for entire application run-time."
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "the console entity can be created only once for entire application run-time."
                                              << "you are trying to create a second instance!" << std::endl;
     }
     alreadycreated = true;
 
-    if ( GameState::get()->getMode() == GameState::Server )
+    if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
     {
         _p_ioHandler = new ConsoleIOCin( this );
     }
@@ -123,9 +121,9 @@ void EnConsole::initialize()
     }
 
     // register entity in order to get updated per simulation step
-    EntityManager::get()->registerUpdate( this, true );
+    yaf3d::EntityManager::get()->registerUpdate( this, true );
     // register entity in order to get notifications
-    EntityManager::get()->registerNotification( this, true );
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 void EnConsole::enable( bool en )
@@ -159,7 +157,7 @@ bool EnConsole::createLog( const std::string& filename, bool append )
     if ( append )
         mode |= std::ios_base::app;
 
-    _p_log->open( ( Application::get()->getMediaPath() + filename ).c_str(), mode );
+    _p_log->open( ( yaf3d::Application::get()->getMediaPath() + filename ).c_str(), mode );
     if ( !*_p_log )
     {
         delete _p_log;
@@ -168,7 +166,7 @@ bool EnConsole::createLog( const std::string& filename, bool append )
     }
 
     std::string text = ( append ? "' appended on " : "' created on " );
-    *_p_log << "# log file '" << filename << text << getTimeStamp() << std::endl;
+    *_p_log << "# yaf3d::log file '" << filename << text << yaf3d::getTimeStamp() << std::endl;
 
     return true;
 }
@@ -230,7 +228,7 @@ bool EnConsole::setCWD( const std::string& cwd )
     }
 
     // now check if the new directory exists in file system
-    if ( !checkDirectory( Application::get()->getMediaPath() + newcwd ) )
+    if ( !yaf3d::checkDirectory( yaf3d::Application::get()->getMediaPath() + newcwd ) )
         return false;
  
     _cwd = newcwd;
@@ -363,25 +361,25 @@ void EnConsole::applyCmd( const std::string& cmd, bool hashcmd )
 
 const std::string& EnConsole::dispatchCmdLine( const std::string& cmdline )
 {
-    static string result;
+    static std::string result;
     result = "";
 
-    vector< string > cmds;
-    explode( cmdline, ";", &cmds ); // multiple commands can be given separated by semicolon 
-    vector< string >::iterator p_beg = cmds.begin(), p_end = cmds.end();
+    std::vector< std::string > cmds;
+    yaf3d::explode( cmdline, ";", &cmds ); // multiple commands can be given separated by semicolon 
+    std::vector< std::string >::iterator p_beg = cmds.begin(), p_end = cmds.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
         // clean up cmd from leading whitespaces
-        string cmd = *p_beg;
+        std::string cmd = *p_beg;
         cmd.erase( 0, cmd.find_first_not_of( " " ) );
 
-        // append to log if log is created
+        // append to yaf3d::log if yaf3d::log is created
         if ( _p_log )
             *_p_log << ">" << cmd << std::endl;
 
         result += executeCmd( cmd );
 
-        // append to log if log is created
+        // append to yaf3d::log if yaf3d::log is created
         if ( _p_log )
         {
             *_p_log << result << std::endl;
@@ -394,11 +392,11 @@ const std::string& EnConsole::dispatchCmdLine( const std::string& cmdline )
 
 const std::string& EnConsole::executeCmd( const std::string& cmd )
 {
-    static string result;
+    static std::string result;
     result = "";
-    string lcmd = cmd + ";"; // append a semicolon for easiert parsing
-    string command;
-    string arguments;
+    std::string lcmd = cmd + ";"; // append a semicolon for easiert parsing
+    std::string command;
+    std::string arguments;
 
     // parse and extract the command and its arguments
     size_t pos = lcmd.find_first_of( " " );
@@ -429,7 +427,7 @@ void EnConsole::parseArguments( const std::string& cmdline, std::vector< std::st
     // arguments are white space separated, except they are placed in "" like: "my server name"
     size_t strsize = cmdline.size();
     int  marker = -1;
-    string curstr;
+    std::string curstr;
     for ( size_t cnt = 0; cnt <= strsize; cnt++ ) // merge string areas noted by ""
     {
         if ( ( marker == -1 ) && ( cmdline[ cnt ] == '\"' ) )
@@ -438,7 +436,7 @@ void EnConsole::parseArguments( const std::string& cmdline, std::vector< std::st
         }
         else if ( cmdline[ cnt ] == '\"' )
         {
-            string mergeit = cmdline.substr( marker + 1, cnt - marker - 1 ); // cut the "" from string
+            std::string mergeit = cmdline.substr( marker + 1, cnt - marker - 1 ); // cut the "" from string
             args.push_back( mergeit );
             marker = -1;
             // skip white spaces until next argument
@@ -511,10 +509,10 @@ void EnConsole::updateEntity( float deltaTime )
     if ( _shutdownInProgress )
     {
         if ( _shutdownCounter < 0 )
-            Application::get()->stop();
+            yaf3d::Application::get()->stop();
         else
             _shutdownCounter -= deltaTime;
     }
 }
 
-} // namespace CTD
+} // namespace vrc

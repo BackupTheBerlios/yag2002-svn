@@ -35,8 +35,8 @@
 #include "ctd_spawnpoint.h"
 #include "ctd_player.h"
 
-using namespace std;
-using namespace CTD; 
+namespace vrc
+{
 
 //! Implement and register the spawn point entity factory
 CTD_IMPL_ENTITYFACTORY_AUTO( SpawnPointEntityFactory );
@@ -57,7 +57,7 @@ EnSpawnPoint::~EnSpawnPoint()
 {
 }
 
-void EnSpawnPoint::handleNotification( const EntityNotification& notification )
+void EnSpawnPoint::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle notifications
     switch( notification.getId() )
@@ -84,24 +84,24 @@ void EnSpawnPoint::initialize()
                       );
 
     // register entity in order to get notifications
-    EntityManager::get()->registerNotification( this, true );   
+    yaf3d::EntityManager::get()->registerNotification( this, true );   
 }
 
 bool EnSpawnPoint::getNextSpawnPoint( osg::Vec3f& pos, osg::Quat& rot )
 {
     if ( !_allSpawnPoints.size() )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "no SpawnPoint entities found in level, cannot select one!" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "no SpawnPoint entities found in level, cannot select one!" << std::endl;
         return false;
     }
 
     std::vector< EnPlayer* > players;
-    std::vector< BaseEntity* > entities;
+    std::vector< yaf3d::BaseEntity* > entities;
 
     // get all existing player entities
     {
-        EntityManager::get()->getAllEntities( entities );
-        std::vector< BaseEntity* >::iterator pp_beg = entities.begin(), pp_end = entities.end();
+        yaf3d::EntityManager::get()->getAllEntities( entities );
+        std::vector< yaf3d::BaseEntity* >::iterator pp_beg = entities.begin(), pp_end = entities.end();
         for ( ; pp_beg != pp_end; pp_beg++ )
         {
             if ( ( *pp_beg )->getTypeName() == ENTITY_NAME_PLAYER )
@@ -146,9 +146,11 @@ bool EnSpawnPoint::getNextSpawnPoint( osg::Vec3f& pos, osg::Quat& rot )
     pos = p_spawnentity->getSpawnPosition();
     rot = p_spawnentity->getSpawnRotation();
 
-    log << Log::LogLevel( Log::L_DEBUG ) << "player takes SpawnPoint '" 
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "player takes SpawnPoint '" 
         << p_spawnentity->getInstanceName() 
-        << "' at position '" << pos.x() <<  " " <<  pos.y() << " " << pos.z() << endl;
+        << "' at position '" << pos.x() <<  " " <<  pos.y() << " " << pos.z() << std::endl;
 
     return true;
 }
+
+} // namespace vrc

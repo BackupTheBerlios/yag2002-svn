@@ -43,10 +43,10 @@
 #include <ctd_main.h>
 #include "networkingRoles/_RO_PlayerNetworking.h"
 
-namespace CTD
+namespace vrc
 {
     class EnPlayer;
-    class BaseEntity;
+    class yaf3d::BaseEntity;
     class BasePlayerImplementation;
 }
 
@@ -55,7 +55,7 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
 
     public:
 
-        explicit                                    PlayerNetworking( CTD::BasePlayerImplementation* p_playerImp = NULL );
+        explicit                                    PlayerNetworking( vrc::BasePlayerImplementation* p_playerImp = NULL );
                                                         
         virtual                                     ~PlayerNetworking();
 
@@ -101,8 +101,8 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         //! Initialization function called on a new connected client and its ghosts
         void                                        RPC_Initialize( tInitializationData initData );
 
-        //! Return chat's log
-        static CTD::Log&                            getChatLog() { return *s_chatLog; }
+        //! Return chat's yaf3d::log
+        static yaf3d::Log&                            getChatLog() { return *s_chatLog; }
 
     protected:
 
@@ -127,13 +127,13 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
 
         bool                                        _remoteClient;
 
-        CTD::BasePlayerImplementation*              _p_playerImpl;
+        vrc::BasePlayerImplementation*              _p_playerImpl;
 
-        static CTD::Log*                            s_chatLog;
+        static yaf3d::Log*                            s_chatLog;
 
-        std::vector< CTD::BaseEntity* >             _loadedEntities;
+        std::vector< yaf3d::BaseEntity* >             _loadedEntities;
 
-        CTD::EnPlayer*                              _loadedPlayerEntity;
+        vrc::EnPlayer*                              _loadedPlayerEntity;
 
     friend class _MAKE_RO( PlayerNetworking );
 };

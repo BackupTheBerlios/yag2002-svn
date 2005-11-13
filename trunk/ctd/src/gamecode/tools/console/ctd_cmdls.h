@@ -34,7 +34,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_LEVELLIST    "ls"
@@ -61,6 +61,6 @@ class CmdLs : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CMDLS_H_

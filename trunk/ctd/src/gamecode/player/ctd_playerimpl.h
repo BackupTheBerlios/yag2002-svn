@@ -46,7 +46,7 @@
 
 class PlayerNetworking;
 
-namespace CTD
+namespace vrc
 {
 
 // entity name of player's camera
@@ -84,7 +84,7 @@ class BasePlayerImplementation
         virtual void                                update( float deltaTime ) = 0;
 
         //! Implementation's notification callback
-        virtual void                                handleNotification( const EntityNotification& notification ) {}
+        virtual void                                handleNotification( const yaf3d::EntityNotification& notification ) {}
 
         //! Set player's position.
         inline void                                 setPlayerPosition( const osg::Vec3f& pos );
@@ -306,6 +306,6 @@ inline EnPlayer::PlayerAttributes& BasePlayerImplementation::getPlayerAttributes
     return _playerAttributes;
 }
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_PLAYERIMPL_H_

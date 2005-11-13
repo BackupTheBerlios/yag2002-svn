@@ -33,11 +33,11 @@
 #include "ctd_physicsbase.h"
 #include "../sound/ctd_3dsound.h"
 
-using namespace std;
-namespace CTD
+namespace vrc
 {
+
 // Collision struct for internal usage
-CollisionStruct* s_entityColStruct = NULL;
+yaf3d::CollisionStruct* s_entityColStruct = NULL;
 
 std::map< std::string, bool > s_entityMaterialInits;
 
@@ -46,11 +46,11 @@ _playThreshold( 10.0f ),
 _pastTime( 0 )
 {
     // register entity in order to get notifications about building physics
-    EntityManager::get()->registerNotification( this, true );
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 // catch the physics notifications
-void EnPhysicsBase::handleNotification( const EntityNotification& notification )
+void EnPhysicsBase::handleNotification( const yaf3d::EntityNotification& notification )
 {
     switch( notification.getId() )
     {
@@ -117,13 +117,13 @@ void EnPhysicsBase::playSoundColGrass()
     }
 }
 
-En3DSound* EnPhysicsBase::getSoundEntity( const string& name )
+En3DSound* EnPhysicsBase::getSoundEntity( const std::string& name )
 {
     En3DSound* _p_sndEntity = NULL;
-    _p_sndEntity = dynamic_cast< En3DSound* >( EntityManager::get()->findEntity( ENTITY_NAME_3DSOUND, name ) );
+    _p_sndEntity = dynamic_cast< En3DSound* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_3DSOUND, name ) );
     if ( !_p_sndEntity )
     {
-        log << Log::LogLevel( Log::L_WARNING ) << "*** entity '" << name << "' is not of type 3DSound or does not exist!" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "*** entity '" << name << "' is not of type 3DSound or does not exist!" << std::endl;
     }
     return _p_sndEntity;
 }
@@ -131,7 +131,7 @@ En3DSound* EnPhysicsBase::getSoundEntity( const string& name )
 int entityContactBegin( const NewtonMaterial* p_material, const NewtonBody* p_body0, const NewtonBody* p_body1 )
 {
     // get the pointer to collision struture
-    s_entityColStruct = static_cast< CollisionStruct* >( NewtonMaterialGetMaterialPairUserData( p_material ) );
+    s_entityColStruct = static_cast< yaf3d::CollisionStruct* >( NewtonMaterialGetMaterialPairUserData( p_material ) );
     // save the colliding bodies
     s_entityColStruct->_p_body0 = const_cast< NewtonBody* >( p_body0 );
     s_entityColStruct->_p_body1 = const_cast< NewtonBody* >( p_body1 );
@@ -142,7 +142,7 @@ int entityContactBegin( const NewtonMaterial* p_material, const NewtonBody* p_bo
 
     // set also Physics' col struct as we may need some useful Physics' callbacks during contanct processing
     // see implementation of "entityContactProcessLevel"
-    Physics::setCollisionStruct( s_entityColStruct );
+    yaf3d::Physics::setCollisionStruct( s_entityColStruct );
 
     return 1;
 } 
@@ -152,4 +152,4 @@ void entityContactEnd( const NewtonMaterial* p_material )
 {
 }
 
-} // namespace CTD
+} // namespace vrc

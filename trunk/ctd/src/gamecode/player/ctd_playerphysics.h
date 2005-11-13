@@ -42,7 +42,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_PLPHYS  "PlayerPhysics"
@@ -50,7 +50,7 @@ namespace CTD
 class BasePlayerImplementation;
 
 //! Player physics entity
-class EnPlayerPhysics : public BaseEntity
+class EnPlayerPhysics : public yaf3d::BaseEntity
 {
 
     public:
@@ -75,16 +75,16 @@ class EnPlayerPhysics : public BaseEntity
         */
         void                                        postInitialize();
 
+
+        /**
+        * Update entity, note: player entity has to update the physics!
+        */
+        void                                        updateEntity( float deltaTime );
+
         /**
         * This entity needs no transformation node.
         */
         const bool                                  isTransformable() const { return false; }
-
-        /**
-        * Enable / Disable physics calculation. This is used for temorarily disable physics when networking 
-        * interpolators are disturbed.
-        */
-        inline void                                 enablePhysicsCalculation( bool en );
 
         /**
         * Set moving direction
@@ -180,13 +180,10 @@ class EnPlayerPhysics : public BaseEntity
 
         //-------------------------------------------------------------------------------------------------//
 
-    protected:
-        
-        //! Update entity
-        void                                        updateEntity( float deltaTime );
+    protected:        
 
         // handle physics building when notified
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         // init physics materials
         void                                        initializePhysicsMaterials();
@@ -256,6 +253,8 @@ class EnPlayerPhysics : public BaseEntity
 
         bool                                        _isJumping;
 
+        bool                                        _highUpGradient;
+
         enum
         {
             BeginJumping,
@@ -266,14 +265,7 @@ class EnPlayerPhysics : public BaseEntity
 
         //! Body matrix
         osg::Matrixf                                _matrix;
-
-        bool                                        _enableCalculation;
 };
-
-inline void EnPlayerPhysics::enablePhysicsCalculation( bool en )
-{
-    _enableCalculation = en;
-}
 
 inline void EnPlayerPhysics::setDirection( float x, float y )
 {
@@ -317,11 +309,11 @@ inline void EnPlayerPhysics::stopMovement()
 }
 
 //! Entity type definition used for type registry
-class PlayerPhysicsEntityFactory : public BaseEntityFactory
+class PlayerPhysicsEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     PlayerPhysicsEntityFactory() :
-                                                     BaseEntityFactory( ENTITY_NAME_PLPHYS, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PLPHYS, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~PlayerPhysicsEntityFactory() {}
@@ -330,6 +322,6 @@ class PlayerPhysicsEntityFactory : public BaseEntityFactory
 };
 
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_PLAYERPHYSICS_H_

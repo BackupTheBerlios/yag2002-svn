@@ -31,7 +31,7 @@
 
 template< class PlayerImplT >
 PlayerIHCharacterCameraCtrl< PlayerImplT >::PlayerIHCharacterCameraCtrl( PlayerImplT* p_player, EnPlayer* p_playerentity ) : 
-GenericInputHandler< PlayerImplT >( p_player ),
+yaf3d::GenericInputHandler< PlayerImplT >( p_player ),
 _p_mouseData( NULL ),
 _p_playerEntity( p_playerentity ),
 _attributeContainer( p_player->getPlayerAttributes() ),
@@ -54,7 +54,7 @@ _invertedMouse( false ),
 _mouseSensitivity( 1.0f )
 {
     // initialize the mouse data considering initial yaw
-    _p_mouseData = new CTD::PlayerIHCharacterCameraCtrl< PlayerImplT >::MouseData( 0.0f, getPlayerImpl()->_rotZ );
+    _p_mouseData = new vrc::PlayerIHCharacterCameraCtrl< PlayerImplT >::MouseData( 0.0f, getPlayerImpl()->_rotZ );
     getPlayerImpl()->setCameraPitchYaw( 0, getPlayerImpl()->_rotZ );
 }
 
@@ -343,7 +343,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         updatePlayerPitchYaw( _p_mouseData->_pitch, _p_mouseData->_yaw );
 
         // reset mouse position in order to avoid leaving the app window
-        Application::get()->getViewer()->requestWarpPointer( _p_mouseData->_screenMiddleX, _p_mouseData->_screenMiddleY );
+        yaf3d::Application::get()->getViewer()->requestWarpPointer( _p_mouseData->_screenMiddleX, _p_mouseData->_screenMiddleY );
     }
 
     return false;
@@ -353,7 +353,7 @@ template< class PlayerImplT >
 void PlayerIHCharacterCameraCtrl< PlayerImplT >::updatePlayerPitchYaw( float& pitch, float& yaw )
 {
     // in ego mode the mouse controls the player rotation
-    if ( getPlayerImpl()->_cameraMode == CTD::BasePlayerImplementation::Ego )
+    if ( getPlayerImpl()->_cameraMode == vrc::BasePlayerImplementation::Ego )
     {
         // limit pitch
         if ( pitch > LIMIT_PITCH_ANGLE )

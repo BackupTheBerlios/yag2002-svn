@@ -33,7 +33,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_MENU    "Menu"
@@ -53,7 +53,7 @@ namespace gameutils
 }
 
 //! The menu system is controlled by this entity
-class EnMenu :  public BaseEntity
+class EnMenu :  public yaf3d::BaseEntity
 {
     public:
                                                     EnMenu();
@@ -93,8 +93,8 @@ class EnMenu :  public BaseEntity
         void                                        onLevelSelectCanceled();
         //-----
 
-        //! Override this method of BaseEntity to get notifications (from menu system)
-        void                                        handleNotification( const EntityNotification& notification );
+        //! Override this method of yaf3d::BaseEntity to get notifications (from menu system)
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Load a new level, optionally a background image can be shown during loading
         void                                        loadLevel( std::string levelfile, CEGUI::Image* p_img = NULL );
@@ -271,11 +271,11 @@ class EnMenu :  public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class MenuEntityFactory : public BaseEntityFactory
+class MenuEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     MenuEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_MENU, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_MENU, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~MenuEntityFactory() {}
@@ -283,6 +283,6 @@ class MenuEntityFactory : public BaseEntityFactory
         Macro_CreateEntity( EnMenu );
 };
 
-}
+} // namespace vrc
 
 #endif // _CTD_MENU_H_

@@ -44,7 +44,7 @@
 #include "chat/IRC/ctd_chatprotIRC.h"
 #include "../visuals/ctd_camera.h"
 
-namespace CTD
+namespace vrc
 {
 
 ChatManager* BasePlayerImplementation::s_chatMgr = NULL;
@@ -101,14 +101,14 @@ bool BasePlayerImplementation::createChatManager()
     s_chatMgr->registerChatProtocol( IRC_PROTOCOL_NAME, p_protIRC );
 
     // create VRC protocol only for client and server mode, not for standalone!
-    if ( CTD::GameState::get()->getMode() != CTD::GameState::Standalone )
+    if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Standalone )
     {
         ChatNetworkingVRC* p_protVRC = new ChatNetworkingVRC;
         s_chatMgr->registerChatProtocol( VRC_PROTOCOL_NAME, p_protVRC );        
     }
 
     // build the chat system
-    if ( CTD::GameState::get()->getMode() == CTD::GameState::Server )
+    if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
     {
         if ( !s_chatMgr->buildServer() )
             return false;
@@ -182,4 +182,4 @@ void BasePlayerImplementation::setCameraMode( unsigned int mode )
     _cameraMode = ( CameraMode )mode;
 }
 
-} // namespace CTD
+} // namespace vrc

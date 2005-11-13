@@ -34,13 +34,13 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_GEOMEMITTER    "GeomEmitter"
 
 //! GeoEmitter Entity
-class EnGeomEmitter : public BaseEntity
+class EnGeomEmitter : public yaf3d::BaseEntity
 {
     public:
                                                     EnGeomEmitter();
@@ -71,10 +71,10 @@ class EnGeomEmitter : public BaseEntity
         float                                       _life;
 
         //! List of instantiated entities which are cloned during emitting
-        std::vector< BaseEntity* >                  _geomStock;
+        std::vector< yaf3d::BaseEntity* >                  _geomStock;
 
         //! List of active geoms
-        std::vector< std::pair< BaseEntity*, float > > _geoms;
+        std::vector< std::pair< yaf3d::BaseEntity*, float > > _geoms;
 
         float                                       _time;
 
@@ -83,11 +83,11 @@ class EnGeomEmitter : public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class GeomEmitteEntityFactory : public BaseEntityFactory
+class GeomEmitteEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     GeomEmitteEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_GEOMEMITTER, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_GEOMEMITTER, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~GeomEmitteEntityFactory() {}

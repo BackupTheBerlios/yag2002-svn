@@ -33,7 +33,7 @@
 #include "ctd_chatprotocol.h"
 #include "ctd_chatmgr.h"
 
-namespace CTD
+namespace vrc
 {
 
 void BaseChatProtocol::registerProtocolCallback( ChatProtocolCallback* p_cb, const std::string& channelname )
@@ -79,4 +79,4 @@ void BaseChatProtocol::deregisterProtocolCallback( const ChatProtocolCallback* p
     throw ChatExpection( "Callback does not exist." );
 }
 
-} // namespace CTD
+} // namespace vrc

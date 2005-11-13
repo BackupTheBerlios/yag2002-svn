@@ -36,7 +36,7 @@
 #include "libIRC/libircclient.h"
 #include "libIRC/libirc_rfcnumeric.h"
 
-namespace CTD
+namespace vrc
 {
 
 #define IRC_CMD_LIST    "\n"\
@@ -142,7 +142,7 @@ void event_numeric( irc_session_t * session, unsigned int event, const char * or
         std::vector< std::string > names;
         std::string namestring( params[ 3 ] );
         
-        explode( namestring, " ", &names );
+        yaf3d::explode( namestring, " ", &names );
         // fill the list
         p_ctx->_p_handler->_nickNames.clear();
         for ( size_t cnt = 0; cnt < names.size(); cnt++ )
@@ -247,7 +247,7 @@ void ChatNetworkingIRC::send( const std::string& msg, const std::string& channel
         }
 
         std::vector< std::string > args;
-        explode( msg, " ", &args );
+        yaf3d::explode( msg, " ", &args );
 
         // all commands without arguments go here
         if ( args.size() == 1 )
@@ -322,7 +322,7 @@ void ChatNetworkingIRC::connected()
 
 void ChatNetworkingIRC::left( const std::string& channel, const std::string& name )
 {
-    CTD::ChatConnectionConfig cfg( *_p_config );
+    vrc::ChatConnectionConfig cfg( *_p_config );
     cfg._nickname = name;
     cfg._channel  = channel;
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
@@ -342,7 +342,7 @@ void ChatNetworkingIRC::recvKicked( const std::string& channel, const std::strin
 
 void ChatNetworkingIRC::joined( const std::string& channel, const std::string& name )
 {
-    CTD::ChatConnectionConfig cfg( *_p_config );
+    vrc::ChatConnectionConfig cfg( *_p_config );
     cfg._nickname = name;
     cfg._channel  = channel;
     // work on local copy of callback list, as during callbacks new registrations can follow
@@ -478,7 +478,7 @@ void ChatNetworkingIRC::run()
     }
     catch ( ... )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** internal error occured in ChatNetworkingIRC::run" << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** internal error occured in ChatNetworkingIRC::run" << std::endl;
         irc_destroy_session( _p_session );
     }
     delete p_ctx;
@@ -493,4 +493,4 @@ void ChatNetworkingIRC::destroyConnection()
     while( isRunning() );
 }
 
-} // namespace CTD
+} // namespace vrc

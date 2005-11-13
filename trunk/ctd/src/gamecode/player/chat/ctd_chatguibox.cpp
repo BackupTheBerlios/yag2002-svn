@@ -29,10 +29,10 @@
  ################################################################*/
 
 #include <ctd_main.h>
+#include <ctd_gameutils.h>
 #include "ctd_chatguibox.h"
-#include "../../ctd_gameutils.h"
 
-namespace CTD
+namespace vrc
 {
 // layout prefix
 #define CHATLAYOUT_PREFIX       "chatbox_"
@@ -79,9 +79,9 @@ _p_listbox( NULL )
         _p_tabCtrl->addTab( _p_tabPane );
         // we must also set a unique id for later removal from tab control
         _p_tabPane->setID( instnum );
-        _p_tabPane->subscribeEvent( CEGUI::Window::EventParentSized, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::ChannelTabPane::onSizeChanged, this ) );
-        _p_tabPane->subscribeEvent( CEGUI::Window::EventShown, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::ChannelTabPane::onSelected, this ) );
-        _p_tabPane->setFont( "CTD-8" );
+        _p_tabPane->subscribeEvent( CEGUI::Window::EventParentSized, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::ChannelTabPane::onSizeChanged, this ) );
+        _p_tabPane->subscribeEvent( CEGUI::Window::EventShown, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::ChannelTabPane::onSelected, this ) );
+        _p_tabPane->setFont( "vrc-8" );
 
         _p_messagebox = static_cast< CEGUI::MultiLineEditbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/MultiLineEditbox", std::string( CHATLAYOUT_PREFIX "tabpane_msgbox" ) + postfix ) );
         _p_messagebox->setReadOnly( true );
@@ -89,27 +89,27 @@ _p_listbox( NULL )
         _p_messagebox->setPosition( CEGUI::Point( GUI_PANE_SPACING, GUI_PANE_SPACING ) );
         // actual size is calculated in resize callback
         _p_messagebox->setSize( CEGUI::Size( 150.0f, 100.0f ) );
-        _p_messagebox->setFont( "CTD-8" );
+        _p_messagebox->setFont( "vrc-8" );
         _p_tabPane->addChildWindow( _p_messagebox );
 
         _p_editbox = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CHATLAYOUT_PREFIX "tabpane_editbox" ) + postfix ) );
-        _p_editbox->subscribeEvent( CEGUI::MultiLineEditbox::EventCharacterKey, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::ChannelTabPane::onEditboxTextChanged, this ) );
+        _p_editbox->subscribeEvent( CEGUI::MultiLineEditbox::EventCharacterKey, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::ChannelTabPane::onEditboxTextChanged, this ) );
         _p_editbox->setMetricsMode( CEGUI::Absolute );
         _p_tabPane->addChildWindow( _p_editbox );
 
         // nickname list
         _p_listbox = static_cast< CEGUI::Listbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Listbox", std::string( CHATLAYOUT_PREFIX "tabpane_nicklist" ) + postfix ) );
-        _p_listbox->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::ChannelTabPane::onListItemSelChanged, this ) );
+        _p_listbox->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::ChannelTabPane::onListItemSelChanged, this ) );
         _p_listbox->setSortingEnabled( true );
         _p_listbox->setMetricsMode( CEGUI::Absolute );
         _p_listbox->setAlpha( 0.8f );
-        _p_listbox->setFont( "CTD-8" );
+        _p_listbox->setFont( "vrc-8" );
         _p_tabPane->addChildWindow( _p_listbox );
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "ChannelTabPane: problem creating a new tab pane" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "ChannelTabPane: problem creating a new tab pane" << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -122,8 +122,8 @@ ChatGuiBox::ChannelTabPane::~ChannelTabPane()
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "~ChannelTabPane: problem cleaning up gui resources" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "~ChannelTabPane: problem cleaning up gui resources" << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -402,8 +402,8 @@ ChatGuiBox::~ChatGuiBox()
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "ChatGuiBox: problem cleaning up gui resources" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "ChatGuiBox: problem cleaning up gui resources" << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -411,7 +411,7 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
 {
     _p_chatMgr = p_chatMgr;
     // init nickname with player name
-    Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, _nickname );
+    yaf3d::Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, _nickname );
 
     // as this class can be instatiated several times it is important to generated unique prefix for every instance
     std::string prefix( CHATLAYOUT_PREFIX );
@@ -424,7 +424,7 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
     try
     {
         _p_frame = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", CHATLAYOUT_PREFIX "_charboxframe_" ) );
-		_p_frame->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::onCloseFrame, this ) );
+		_p_frame->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onCloseFrame, this ) );
         // note: a minimum size must exist, otherwise cegui may hang during some internal calculations!
         _p_frame->setMinimumSize( CEGUI::Size( 0.2f, 0.15f ) );
         _p_frame->hide();
@@ -437,23 +437,23 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
 
         // create close channel button
         _p_btnCloseChannel = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", std::string( CHATLAYOUT_PREFIX "_charboxframe_close_" ) ) );
-        _p_btnCloseChannel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::onClickedCloseChannelPane, this ) );
+        _p_btnCloseChannel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onClickedCloseChannelPane, this ) );
         _p_btnCloseChannel->setMetricsMode( CEGUI::Absolute );
         // actual size is calculated in resize callback
         _p_btnCloseChannel->setSize( CEGUI::Size( 50.0f, 20.0f ) );
         _p_btnCloseChannel->setText( "close" );
-        _p_btnCloseChannel->setFont( "CTD-8" );
+        _p_btnCloseChannel->setFont( "vrc-8" );
         _p_btnCloseChannel->show();
         _p_frame->addChildWindow( _p_btnCloseChannel );
 
         // create irc connection button
         _p_btnConnectIRC = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", "_chatctrl_irc_" ) );
-        _p_btnConnectIRC->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::onClickedConnectIRC, this ) );
+        _p_btnConnectIRC->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onClickedConnectIRC, this ) );
         _p_btnConnectIRC->setMetricsMode( CEGUI::Absolute );
         // actual size and position are calculated in resize callback
         _p_btnConnectIRC->setSize( CEGUI::Size( 100.0f, 20.0f ) );
         _p_btnConnectIRC->setText( "IRC connect" );
-        _p_btnConnectIRC->setFont( "CTD-8" );
+        _p_btnConnectIRC->setFont( "vrc-8" );
         _p_btnConnectIRC->show();
         _p_frame->addChildWindow( _p_btnConnectIRC );
 
@@ -462,8 +462,8 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** error setting up chat box gui" << std::endl;
-        log << "   reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error setting up chat box gui" << std::endl;
+        yaf3d::log << "   reason: " << e.getMessage().c_str() << std::endl;
         return;
     }
 
@@ -471,7 +471,7 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
     {
         // setup chat box hide button with ctd specific image set
         _p_btnOpen = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", CHATLAYOUT_PREFIX "_btn_openbox_" ) );
-        _p_btnOpen->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::onClickedOpen, this ) );
+        _p_btnOpen->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onClickedOpen, this ) );
         _p_btnOpen->setStandardImageryEnabled( false );
         _p_btnOpen->setPosition( CEGUI::Point( 0.0f, 0.7f ) );
         _p_btnOpen->setSize( CEGUI::Size( 0.08f, 0.1f ) );
@@ -522,13 +522,13 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
         // some initial size, the actual one are calculated in resize callback
         _p_tabCtrl->setSize( CEGUI::Size( 200.0f, 200.0f ) );
         _p_tabCtrl->setTabHeight( GUI_TABCTRL_TAB_HEIGHT );
-        _p_tabCtrl->subscribeEvent( CEGUI::Window::EventParentSized, CEGUI::Event::Subscriber( &CTD::ChatGuiBox::onSizeChanged, this ) );
+        _p_tabCtrl->subscribeEvent( CEGUI::Window::EventParentSized, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onSizeChanged, this ) );
         _p_frame->addChildWindow( _p_tabCtrl );
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** error setting up chat box frame" << std::endl;
-        log << "   reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error setting up chat box frame" << std::endl;
+        yaf3d::log << "   reason: " << e.getMessage().c_str() << std::endl;
         return;
     }
 }
@@ -744,7 +744,7 @@ bool ChatGuiBox::onClickedConnectIRC( const CEGUI::EventArgs& arg )
     // check if we are already connecting
     if ( _connectionState == Connecting )
     {
-        MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "Already trying to connect to a chat server.", MessageBoxDialog::OK, true );
+        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", "Already trying to connect to a chat server.", yaf3d::MessageBoxDialog::OK, true );
         p_msg->show();                
         return true;
     }
@@ -766,7 +766,7 @@ bool ChatGuiBox::onClickedConnectIRC( const CEGUI::EventArgs& arg )
     _p_connectionDialog->setConfiguration( conf );
 
     // show up the dialog
-    _p_connectionDialog->setTitle( "IRC Connection Settings" );
+    _p_connectionDialog->setTitle( "IRC Connection yaf3d::Settings" );
     _p_connectionDialog->show( true );
 
     return true;
@@ -784,11 +784,11 @@ void ChatGuiBox::onConnectionDialogClickedConnect( const ChatConnectionConfig& c
     }
     catch( const ChatExpection& e )
     {
-        MessageBoxDialog* p_msg = new MessageBoxDialog( "Connection error", "Could not connect to server.\n" + e.what(), MessageBoxDialog::OK, true );
+        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Connection error", "Could not connect to server.\n" + e.what(), yaf3d::MessageBoxDialog::OK, true );
         p_msg->show();                
 
-        log << Log::LogLevel( Log::L_ERROR ) << "exception occured trying to connect to a chat server" << std::endl;
-        log << "   reason: " << e.what() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "exception occured trying to connect to a chat server" << std::endl;
+        yaf3d::log << "   reason: " << e.what() << std::endl;
     }
         
     _connectionState = ConnectionIdle;
@@ -873,4 +873,4 @@ void ChatGuiBox::outputText( const std::string& channel, const std::string& msg 
     }
 }
 
-} // namespace CTD
+} // namespace vrc

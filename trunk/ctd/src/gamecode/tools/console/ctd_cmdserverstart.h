@@ -33,7 +33,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_SERVERSTART    "server.start"
@@ -56,6 +56,6 @@ class CmdServerStart : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CMDSERVERSTART_H_

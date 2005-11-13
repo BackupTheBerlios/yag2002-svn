@@ -33,9 +33,7 @@
 #include "ctd_cmdhelp.h"
 #include "ctd_cmdregistry.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -98,4 +96,4 @@ const std::string& CmdHelp::execute( const std::vector< std::string >& arguments
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

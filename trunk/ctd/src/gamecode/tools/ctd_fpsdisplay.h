@@ -33,13 +33,13 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_FPSDISPLAY    "FPSDisplay"
 
 //! FPS display entity
-class EnFPSDisplay :  public BaseEntity
+class EnFPSDisplay :  public yaf3d::BaseEntity
 {
     public:
                                                     EnFPSDisplay();
@@ -69,7 +69,7 @@ class EnFPSDisplay :  public BaseEntity
         void                                        updateEntity( float deltaTime );
 
         //! Override notification callback
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         float                                       _fpsTimer;
 
@@ -84,11 +84,11 @@ class EnFPSDisplay :  public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class FPSDisplayEntityFactory : public BaseEntityFactory
+class FPSDisplayEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     FPSDisplayEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_FPSDISPLAY, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_FPSDISPLAY, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~FPSDisplayEntityFactory() {}
@@ -96,6 +96,6 @@ class FPSDisplayEntityFactory : public BaseEntityFactory
         Macro_CreateEntity( EnFPSDisplay );
 };
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_FPSDISPLAY_H_

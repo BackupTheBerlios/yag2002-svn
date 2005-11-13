@@ -32,7 +32,7 @@
 #include "ctd_basecmd.h"
 #include "ctd_cmdphysicsserialize.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -58,15 +58,15 @@ const std::string& CmdPhysicsSerialize::execute( const std::vector< std::string 
         return _cmdResult;
     }
 
-    if ( !Physics::get()->serialize( arguments[ 0 ], arguments[ 1 ] ) )
+    if ( !yaf3d::Physics::get()->serialize( arguments[ 0 ], arguments[ 1 ] ) )
     {
         _cmdResult = "error occured during serialization";
         return _cmdResult;
     }
 
-    _cmdResult = "serialization successful, output file created: '" + CTD::Application::get()->getMediaPath() + arguments[ 1 ] + "'";
+    _cmdResult = "serialization successful, output file created: '" + yaf3d::Application::get()->getMediaPath() + arguments[ 1 ] + "'";
 
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

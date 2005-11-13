@@ -33,7 +33,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_ENTITYATTRSET   "entity.attribute.set"
@@ -55,6 +55,6 @@ class CmdEntityAttributeSet : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CMDENTITYATTRSET_H_

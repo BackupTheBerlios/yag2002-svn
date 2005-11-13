@@ -32,7 +32,7 @@
 #include "ctd_basecmd.h"
 #include "ctd_cmdconfiglist.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -55,7 +55,7 @@ const std::string& CmdConfigList::execute( const std::vector< std::string >& arg
     _cmdResult += "-----------------\n";
 
     std::vector< std::pair< std::string, std::string > > settings;
-    Configuration::get()->getConfigurationAsString( settings );
+    yaf3d::Configuration::get()->getConfigurationAsString( settings );
     std::vector< std::pair< std::string, std::string > >::iterator p_beg = settings.begin(), p_end = settings.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
@@ -68,4 +68,4 @@ const std::string& CmdConfigList::execute( const std::vector< std::string >& arg
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

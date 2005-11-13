@@ -32,9 +32,7 @@
 #include "ctd_basecmd.h"
 #include "ctd_cmdloadlevel.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -80,16 +78,16 @@ const std::string& CmdLoadLevel::execute( const std::vector< std::string >& argu
     }    
     
     _cmdResult = "loading level ...\n";
-    LevelManager::get()->loadLevel( levelfile );
+    yaf3d::LevelManager::get()->loadLevel( levelfile );
 
     if ( finalize )
     {
         _cmdResult += "finalizing loading ...\n";
-        LevelManager::get()->finalizeLoading();
+        yaf3d::LevelManager::get()->finalizeLoading();
     }
     _cmdResult += "loading completed";
 
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

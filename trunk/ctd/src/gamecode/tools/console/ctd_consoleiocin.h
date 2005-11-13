@@ -34,7 +34,7 @@
 #include <ctd_main.h>
 #include "ctd_consoleiobase.h"
 
-namespace CTD
+namespace vrc
 {
 
 class EnConsole;
@@ -70,6 +70,6 @@ class ConsoleIOCin : public OpenThreads::Thread, public ConsoleIOBase
         bool                                        _terminate;
 };
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CONSOLE_IO_CIN_H_

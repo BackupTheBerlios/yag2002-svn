@@ -34,13 +34,13 @@
 #include <ctd_main.h>
 #include "ctd_consoleiobase.h"
 
-namespace CTD
+namespace vrc
 {
 
 class EnConsole;
 
 // Input handler for gui based console
-class ConsoleIOGui : public GenericInputHandler< EnConsole >, public ConsoleIOBase
+class ConsoleIOGui : public yaf3d::GenericInputHandler< EnConsole >, public ConsoleIOBase
 {
     public:
 
@@ -86,6 +86,6 @@ class ConsoleIOGui : public GenericInputHandler< EnConsole >, public ConsoleIOBa
         bool                                        _enable;
 };
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CONSOLE_IO_GUI_H_

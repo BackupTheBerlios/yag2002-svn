@@ -34,9 +34,7 @@
 #include "ctd_cmdexec.h"
 #include "ctd_console.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -75,9 +73,9 @@ const std::string& CmdExec::execute( const std::vector< std::string >& arguments
         return _cmdResult;
     }
 
-    std::string filename = Application::get()->getMediaPath() + arguments[ 0 ];
+    std::string filename = yaf3d::Application::get()->getMediaPath() + arguments[ 0 ];
     std::fstream file;
-    file.open( filename.c_str(), ios_base::binary | ios_base::in );
+    file.open( filename.c_str(), std::ios_base::binary | std::ios_base::in );
     if ( !file )
     {
         _cmdResult = "* cannot open batch file '" + filename + "'";
@@ -109,7 +107,7 @@ const std::string& CmdExec::execute( const std::vector< std::string >& arguments
     // get the console entity where we will post command lines to
     if ( !_p_console )
     {
-        _p_console = static_cast< EnConsole* >( EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
+        _p_console = static_cast< EnConsole* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
         assert( _p_console && "CmdExec::execute: console entity could not be found!" );
     }
     // execute the batch file lines
@@ -126,4 +124,4 @@ const std::string& CmdExec::execute( const std::vector< std::string >& arguments
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

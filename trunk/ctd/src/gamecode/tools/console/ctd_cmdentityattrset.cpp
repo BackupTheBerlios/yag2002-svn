@@ -32,9 +32,7 @@
 #include "ctd_basecmd.h"
 #include "ctd_cmdentityattrset.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -60,7 +58,7 @@ const std::string& CmdEntityAttributeSet::execute( const std::vector< std::strin
         return _cmdResult;
     }
 
-    BaseEntity* p_entity = EntityManager::get()->findInstance( arguments[ 0 ] );
+    yaf3d::BaseEntity* p_entity = yaf3d::EntityManager::get()->findInstance( arguments[ 0 ] );
     if ( ! p_entity )
     {
         _cmdResult = "* entity instance '" + arguments[ 0 ] + "' does not exist";
@@ -76,11 +74,11 @@ const std::string& CmdEntityAttributeSet::execute( const std::vector< std::strin
     {
         // now send out a notification to the entity this way letting it know that we changed an attribute value
         //  the entity can decide itself if an appropriate action is necessary in this case
-        EntityNotification notification( CTD_NOTIFY_ENTITY_ATTRIBUTE_CHANGED );
-        EntityManager::get()->sendNotification( notification, p_entity );
+        yaf3d::EntityNotification notification( CTD_NOTIFY_ENTITY_ATTRIBUTE_CHANGED );
+        yaf3d::EntityManager::get()->sendNotification( notification, p_entity );
     }
 
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

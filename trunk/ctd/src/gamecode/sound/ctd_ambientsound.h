@@ -33,13 +33,13 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_AMBIENTSOUND    "AmbientSound"
 
 //! 3DSound Entity
-class EnAmbientSound : public BaseEntity
+class EnAmbientSound : public yaf3d::BaseEntity
 {
     public:
                                                     EnAmbientSound();
@@ -67,7 +67,7 @@ class EnAmbientSound : public BaseEntity
     protected:
 
         // Handler system notifications
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Resource directory for searching for sound files
         std::string                                 _soundFileDir;
@@ -96,11 +96,11 @@ class EnAmbientSound : public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class AmbientSoundEntityFactory : public BaseEntityFactory
+class AmbientSoundEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     AmbientSoundEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_AMBIENTSOUND, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_AMBIENTSOUND, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~AmbientSoundEntityFactory() {}

@@ -29,12 +29,12 @@
  ################################################################*/
 
 #include <ctd_main.h>
+#include <ctd_gameutils.h>
 #include "ctd_playernamedisp.h"
-#include "../ctd_gameutils.h"
 #include "../visuals/ctd_camera.h"
 #include "ctd_playerimpl.h"
 
-namespace CTD
+namespace vrc
 {
 
 #define NAMEDISPLAY_PREFIX  "_playernamedisplay_"
@@ -49,7 +49,7 @@ _viewAngle( 0.0f ),
 _updateTimer( 0.0f ),
 _nameBox( NULL )
 {
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "creating player name display entity"  << std::endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "creating player name display entity"  << std::endl;
 
     getAttributeManager().addAttribute( "position",       _position       );
     getAttributeManager().addAttribute( "detectionAngle", _detectionAngle );
@@ -64,12 +64,12 @@ EnPlayerNameDisplay::~EnPlayerNameDisplay()
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "EnPlayerNameDisplay: problem cleaning up gui resources" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnPlayerNameDisplay: problem cleaning up gui resources" << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
-void EnPlayerNameDisplay::handleNotification( const EntityNotification& notification )
+void EnPlayerNameDisplay::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle menu notifications
     switch( notification.getId() )
@@ -97,12 +97,12 @@ void EnPlayerNameDisplay::initialize()
 {
     try
     {
-        CEGUI::Window* p_rootwnd = GuiManager::get()->getRootWindow();
+        CEGUI::Window* p_rootwnd = yaf3d::GuiManager::get()->getRootWindow();
 
         _nameBox = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", NAMEDISPLAY_PREFIX ) );
         _nameBox->setPosition( CEGUI::Point( 0.0f, 0.97f ) );
         _nameBox->setSize( CEGUI::Size( 0.10f, 0.03f ) );
-        _nameBox->setFont( "CTD-8" );
+        _nameBox->setFont( "vrc-8" );
         _nameBox->setBackgroundEnabled( false );
         _nameBox->setFrameEnabled( false );
         _nameBox->hide();
@@ -111,12 +111,12 @@ void EnPlayerNameDisplay::initialize()
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "EnPlayerNameDisplay: problem creating gui" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnPlayerNameDisplay: problem creating gui" << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     // register for getting system notifications
-    EntityManager::get()->registerNotification( this, true );
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 
     //! setup view angle
     _viewAngle = cos( osg::DegreesToRadians( _detectionAngle ) );
@@ -125,7 +125,7 @@ void EnPlayerNameDisplay::initialize()
 void EnPlayerNameDisplay::postInitialize()
 {
     // register entity in order to get updated per simulation step.
-    EntityManager::get()->registerUpdate( this, true );
+    yaf3d::EntityManager::get()->registerUpdate( this, true );
 }
 
 void EnPlayerNameDisplay::updateEntity( float deltaTime )
@@ -144,7 +144,7 @@ void EnPlayerNameDisplay::updateEntity( float deltaTime )
 void EnPlayerNameDisplay::updateName()
 {
     // do a simple in-sight check for all remote clients
-    EnPlayer* p_player = dynamic_cast< EnPlayer* >( CTD::gameutils::PlayerUtils::get()->getLocalPlayer() );
+    EnPlayer* p_player = dynamic_cast< EnPlayer* >( vrc::gameutils::PlayerUtils::get()->getLocalPlayer() );
     if ( !p_player )
         return;
 
@@ -166,9 +166,9 @@ void EnPlayerNameDisplay::updateName()
     osg::Vec3f  maxdist( 1000000.0f, 0.0f, 0.0f );
 
     //! find nearest player in front of us
-    BaseEntity* p_playerinfront = NULL;
-    std::vector< BaseEntity* >& remoteplayers = CTD::gameutils::PlayerUtils::get()->getRemotePlayers();
-    std::vector< BaseEntity* >::iterator p_beg = remoteplayers.begin(), p_end = remoteplayers.end();
+    yaf3d::BaseEntity* p_playerinfront = NULL;
+    std::vector< yaf3d::BaseEntity* >& remoteplayers = vrc::gameutils::PlayerUtils::get()->getRemotePlayers();
+    std::vector< yaf3d::BaseEntity* >::iterator p_beg = remoteplayers.begin(), p_end = remoteplayers.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
         line = ( *p_beg )->getPosition() - campos;
@@ -199,4 +199,4 @@ void EnPlayerNameDisplay::updateName()
     }
 }
 
-} // namespace CTD
+} // namespace vrc

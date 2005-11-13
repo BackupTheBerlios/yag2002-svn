@@ -32,15 +32,15 @@
 #include <ctd_main.h>
 #include "ctd_radialsound.h"
 
-namespace CTD
+namespace vrc
 {
 
-class RadialSoundIH : public GenericInputHandler< EnRadialSound >
+class RadialSoundIH : public yaf3d::GenericInputHandler< EnRadialSound >
 {
     public:
 
         explicit                            RadialSoundIH( EnRadialSound* p_soundentity ) :
-                                             GenericInputHandler< EnRadialSound >( p_soundentity )
+                                             yaf3d::GenericInputHandler< EnRadialSound >( p_soundentity )
                                             {
                                             }
                                             
@@ -108,7 +108,7 @@ EnRadialSound::~EnRadialSound()
         _p_soundUpdater->destroyHandler();
 }
 
-void EnRadialSound::handleNotification( const EntityNotification& notification )
+void EnRadialSound::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle menu entring / leaving and attribute changing
     switch( notification.getId() )
@@ -149,7 +149,7 @@ void EnRadialSound::handleNotification( const EntityNotification& notification )
 
 void EnRadialSound::initialize()
 {
-    osgAL::SoundManager::instance()->addFilePath( Application::get()->getMediaPath() + _soundFileDir );
+    osgAL::SoundManager::instance()->addFilePath( yaf3d::Application::get()->getMediaPath() + _soundFileDir );
 
     openalpp::Sample* p_sample = NULL;
     try {
@@ -157,15 +157,15 @@ void EnRadialSound::initialize()
         p_sample = osgAL::SoundManager::instance()->getSample( _soundFile );
         if ( !p_sample )
         {
-            log << Log::LogLevel( Log::L_WARNING ) << "*** cannot create sampler for '" << _soundFileDir + _soundFile << "'" << std::endl;
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "*** cannot create sampler for '" << _soundFileDir + _soundFile << "'" << std::endl;
             return;
         }
 
     } 
     catch ( const openalpp::Error& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading sound file" << std::endl;
-        log << Log::LogLevel( Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error loading sound file" << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
         return;
     }
 
@@ -200,7 +200,7 @@ void EnRadialSound::initialize()
     _p_soundNode->setSoundState( _soundState.get() );
 
     // register entity in order to get menu notifications
-    EntityManager::get()->registerNotification( this, true );
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 
     // create the sound updater instance now
     _p_soundUpdater = new RadialSoundIH( this );
@@ -208,7 +208,7 @@ void EnRadialSound::initialize()
     // this is for vieualizing the sound source, good for level design phase
     if ( _sourceMesh.length() )
     {
-        osg::Node* p_mesh = LevelManager::get()->loadMesh( _sourceMesh );
+        osg::Node* p_mesh = yaf3d::LevelManager::get()->loadMesh( _sourceMesh );
         if ( p_mesh )
         {
             addToTransformationNode( p_mesh );
@@ -216,7 +216,7 @@ void EnRadialSound::initialize()
         }
         else
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "*** error loading mesh file for sound source 'sound/soundsrc.osg'" << std::endl;
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error loading mesh file for sound source 'sound/soundsrc.osg'" << std::endl;
         }
 
     }
@@ -247,4 +247,4 @@ void EnRadialSound::stopPlaying( bool pause )
     }
 }
 
-} // namespace CTD
+} // namespace vrc

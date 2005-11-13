@@ -32,9 +32,7 @@
 #include "ctd_basecmd.h"
 #include "ctd_cmdregistry.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 BaseConsoleCommand::BaseConsoleCommand( const std::string& cmdname ) :
@@ -49,4 +47,4 @@ BaseConsoleCommand::~BaseConsoleCommand()
 {
 }
 
-} // namespace CTD
+} // namespace vrc

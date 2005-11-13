@@ -33,7 +33,7 @@
 #include "ctd_cmdidle.h"
 #include "ctd_console.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -62,7 +62,7 @@ const std::string& CmdIdle::execute( const std::vector< std::string >& arguments
     // get the console entity 
     if ( !_p_console )
     {
-        _p_console = static_cast< EnConsole* >( EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
+        _p_console = static_cast< EnConsole* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
         assert( _p_console && "CmdIdle::execute: console entity could not be found!" );
     }
 
@@ -77,4 +77,4 @@ const std::string& CmdIdle::execute( const std::vector< std::string >& arguments
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

@@ -34,9 +34,7 @@
 #include "ctd_menu.h"
 #include "../sound/ctd_ambientsound.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 // some defines
@@ -66,17 +64,17 @@ DialogLevelSelect::~DialogLevelSelect()
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "DialogLevelSelect: problem cleaning up entity." << endl;
-        log << "      reason: " << e.getMessage().c_str() << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "DialogLevelSelect: problem cleaning up entity." << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
-bool DialogLevelSelect::initialize( const string& layoutfile )
+bool DialogLevelSelect::initialize( const std::string& layoutfile )
 {    
-    _p_levelSelectDialog = GuiManager::get()->loadLayout( layoutfile, NULL, LDLG_PREFIX );
+    _p_levelSelectDialog = yaf3d::GuiManager::get()->loadLayout( layoutfile, NULL, LDLG_PREFIX );
     if ( !_p_levelSelectDialog )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** DialogLevelSelect: cannot find layout: " << layoutfile << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** DialogLevelSelect: cannot find layout: " << layoutfile << std::endl;
         return false;
     }
 
@@ -86,28 +84,28 @@ bool DialogLevelSelect::initialize( const string& layoutfile )
     {
         // setup start button
         CEGUI::PushButton* p_btnstart = static_cast< CEGUI::PushButton* >( _p_levelSelectDialog->getChild( LDLG_PREFIX "btn_start" ) );
-        p_btnstart->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogLevelSelect::onClickedStart, this ) );
+        p_btnstart->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogLevelSelect::onClickedStart, this ) );
 
         // setup return button
         CEGUI::PushButton* p_btnreturn = static_cast< CEGUI::PushButton* >( _p_levelSelectDialog->getChild( LDLG_PREFIX "btn_return" ) );
-        p_btnreturn->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogLevelSelect::onClickedReturn, this ) );
+        p_btnreturn->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogLevelSelect::onClickedReturn, this ) );
 
         // get list box
         _p_listbox = static_cast< CEGUI::Listbox* >( _p_levelSelectDialog->getChild( LDLG_PREFIX "lst_levels" ) );
-        _p_listbox->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &CTD::DialogLevelSelect::onListItemSelChanged, this ) );
+        _p_listbox->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &vrc::DialogLevelSelect::onListItemSelChanged, this ) );
 
         _p_image = static_cast< CEGUI::StaticImage* >( _p_levelSelectDialog->getChild( LDLG_PREFIX "img_pic" ) );
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** DialogLevelSelect: cannot setup dialog layout." << endl;
-        log << "      reason: " << e.getMessage().c_str() << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** DialogLevelSelect: cannot setup dialog layout." << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     return true;
 }
 
-void DialogLevelSelect::changeSearchDirectory( const string& dir )
+void DialogLevelSelect::changeSearchDirectory( const std::string& dir )
 {
     if ( _p_levelFiles )
         delete _p_levelFiles;
@@ -160,7 +158,7 @@ void DialogLevelSelect::setPreviewPic( CEGUI::ListboxItem* p_item )
 {
     assert( _p_levelFiles && "level files not created" );
 
-    string* p_texname = static_cast< string* >( p_item->getUserData() );
+    std::string* p_texname = static_cast< std::string* >( p_item->getUserData() );
     CEGUI::Image*  p_image = _p_levelFiles->getImage( *p_texname );
     if ( !p_image )
     {

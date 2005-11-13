@@ -33,7 +33,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_PHYSICSRENDER    "physics.render"
@@ -59,6 +59,6 @@ class CmdPhysicsRender : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CMDPHYSICSRENDER_H_

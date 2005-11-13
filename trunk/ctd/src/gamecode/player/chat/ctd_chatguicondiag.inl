@@ -65,7 +65,7 @@ _p_parent( p_parent )
         _p_editProtocol->setPosition( CEGUI::Point( 0.5f, 0.15f ) ); 
         _p_editProtocol->setSize( CEGUI::Size( 0.45f, 0.07f ) );
         _p_editProtocol->setText( "?" );
-        _p_editProtocol->setFont( "CTD-8" );
+        _p_editProtocol->setFont( "vrc-8" );
         _p_editProtocol->disable(); // protocol field is read-only
         _p_frame->addChildWindow( _p_editProtocol );
 
@@ -82,7 +82,7 @@ _p_parent( p_parent )
         _p_editServerUrl->setPosition( CEGUI::Point( 0.5f, 0.24f ) ); 
         _p_editServerUrl->setSize( CEGUI::Size( 0.45f, 0.07f ) );
         _p_editServerUrl->setText( "irc.freenode.net" );
-        _p_editServerUrl->setFont( "CTD-8" );
+        _p_editServerUrl->setFont( "vrc-8" );
         _p_frame->addChildWindow( _p_editServerUrl );
 
         // channel
@@ -98,7 +98,7 @@ _p_parent( p_parent )
         _p_editChannel->setPosition( CEGUI::Point( 0.5f, 0.33f ) ); 
         _p_editChannel->setSize( CEGUI::Size( 0.45f, 0.07f ) );
         _p_editChannel->setText( "#" );
-        _p_editChannel->setFont( "CTD-8" );
+        _p_editChannel->setFont( "vrc-8" );
         _p_frame->addChildWindow( _p_editChannel );
 
         // nickname
@@ -114,7 +114,7 @@ _p_parent( p_parent )
         _p_editNickName->setPosition( CEGUI::Point( 0.5f, 0.42f ) ); 
         _p_editNickName->setSize( CEGUI::Size( 0.45f, 0.07f ) );
         _p_editNickName->setText( "" );
-        _p_editNickName->setFont( "CTD-8" );
+        _p_editNickName->setFont( "vrc-8" );
         _p_frame->addChildWindow( _p_editNickName );
 
         // username
@@ -130,7 +130,7 @@ _p_parent( p_parent )
         _p_editUserName->setPosition( CEGUI::Point( 0.5f, 0.51f ) ); 
         _p_editUserName->setSize( CEGUI::Size( 0.45f, 0.07f ) );
         _p_editUserName->setText( "" );
-        _p_editUserName->setFont( "CTD-8" );
+        _p_editUserName->setFont( "vrc-8" );
         _p_frame->addChildWindow( _p_editUserName );
 
          // realname
@@ -146,7 +146,7 @@ _p_parent( p_parent )
         _p_editRealName->setPosition( CEGUI::Point( 0.5f, 0.60f ) ); 
         _p_editRealName->setSize( CEGUI::Size( 0.45f, 0.07f ) );
         _p_editRealName->setText( "" );
-        _p_editRealName->setFont( "CTD-8" );
+        _p_editRealName->setFont( "vrc-8" );
         _p_frame->addChildWindow( _p_editRealName );
 
          // passwd
@@ -162,7 +162,7 @@ _p_parent( p_parent )
         _p_editPassword->setPosition( CEGUI::Point( 0.5f, 0.69f ) ); 
         _p_editPassword->setSize( CEGUI::Size( 0.45f, 0.07f ) );
         _p_editPassword->setText( "" );
-        _p_editPassword->setFont( "CTD-8" );
+        _p_editPassword->setFont( "vrc-8" );
         _p_frame->addChildWindow( _p_editPassword );
 
          // port
@@ -178,25 +178,25 @@ _p_parent( p_parent )
         _p_editPort->setPosition( CEGUI::Point( 0.5f, 0.78f ) ); 
         _p_editPort->setSize( CEGUI::Size( 0.45f, 0.07f ) );
         _p_editPort->setText( "0" );
-        _p_editPort->setFont( "CTD-8" );
+        _p_editPort->setFont( "vrc-8" );
         _p_frame->addChildWindow( _p_editPort );
 
         // create connect button
         CEGUI::PushButton*  p_btnConnect = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", std::string( CONDIALOGLAYOUT_PREFIX "_connect_dialog_btn_connect_" ) ) );
-        p_btnConnect->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::ConnectionDialog< TypeT >::onClickedConnect, this ) );
+        p_btnConnect->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::ConnectionDialog< TypeT >::onClickedConnect, this ) );
         p_btnConnect->setPosition( CEGUI::Point( 0.65f, 0.9f ) ); 
         p_btnConnect->setSize( CEGUI::Size( 0.3f, 0.075f ) ); 
         p_btnConnect->setText( "Connect" );
-        p_btnConnect->setFont( "CTD-8" );
+        p_btnConnect->setFont( "vrc-8" );
         _p_frame->addChildWindow( p_btnConnect );
 
         // create cancel button
         CEGUI::PushButton*  p_btnCancel = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", std::string( CONDIALOGLAYOUT_PREFIX "_connect_dialog_btn_cancel_" ) ) );
-        p_btnCancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::ConnectionDialog< TypeT >::onClickedCancel, this ) );
+        p_btnCancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::ConnectionDialog< TypeT >::onClickedCancel, this ) );
         p_btnCancel->setPosition( CEGUI::Point( 0.3f, 0.9f ) ); 
         p_btnCancel->setSize( CEGUI::Size( 0.3f, 0.075f ) ); 
         p_btnCancel->setText( "Cancel" );
-        p_btnCancel->setFont( "CTD-8" );
+        p_btnCancel->setFont( "vrc-8" );
         _p_frame->addChildWindow( p_btnCancel );
 
         // append frame to main gui window
@@ -204,8 +204,8 @@ _p_parent( p_parent )
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "ChatGuiCtrl::ConnectionDialog: problem creating connection dialog" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "ChatGuiCtrl::ConnectionDialog: problem creating connection dialog" << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -219,8 +219,8 @@ ConnectionDialog< TypeT >::~ConnectionDialog()
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "~ConnectionDialog: problem cleaning up gui resources" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "~ConnectionDialog: problem cleaning up gui resources" << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 

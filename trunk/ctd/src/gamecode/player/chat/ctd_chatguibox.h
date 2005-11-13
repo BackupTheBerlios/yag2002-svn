@@ -35,7 +35,7 @@
 #include "ctd_chatmgr.h"
 #include "ctd_chatguicondiag.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Class for chat gui control
@@ -254,5 +254,5 @@ class ChatGuiBox
     friend class ConnectionDialog< ChatGuiBox >;
 };
 
-} // namespace CTD
+} // namespace vrc
 #endif // _CTD_CHATGUI_H_

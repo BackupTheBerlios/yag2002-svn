@@ -32,7 +32,7 @@
 #include "ctd_basecmd.h"
 #include "ctd_cmdlevellist.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -65,7 +65,7 @@ const std::string& CmdLevelList::execute( const std::vector< std::string >& argu
         filelisting.clear();
         _cmdResult += "# levels availabe in '" + *p_dir + "':\n";
         // get a directory listing
-        getDirectoryListing( filelisting, Application::get()->getMediaPath() + *p_dir, "lvl" );
+        yaf3d::getDirectoryListing( filelisting, yaf3d::Application::get()->getMediaPath() + *p_dir, "lvl" );
         std::vector< std::string >::iterator p_beg = filelisting.begin(), p_end = filelisting.end();
         for ( ; p_beg != p_end; p_beg++ )
             _cmdResult += *p_beg + "\n";
@@ -74,4 +74,4 @@ const std::string& CmdLevelList::execute( const std::vector< std::string >& argu
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

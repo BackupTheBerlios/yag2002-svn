@@ -34,7 +34,7 @@
 #include "ctd_playersound.h"
 #include "ctd_playerimpl.h"
 
-namespace CTD
+namespace vrc
 {
 
 // internal material names
@@ -44,12 +44,12 @@ namespace CTD
 #define SND_GRASS       "grs"
 
 
-class PlayerSoundIH : public GenericInputHandler< EnPlayerSound >
+class PlayerSoundIH : public yaf3d::GenericInputHandler< EnPlayerSound >
 {
     public:
 
         explicit                            PlayerSoundIH( EnPlayerSound* p_sound ) :
-                                             GenericInputHandler< EnPlayerSound >( p_sound )
+                                             yaf3d::GenericInputHandler< EnPlayerSound >( p_sound )
                                             {
                                             }
                                             
@@ -108,7 +108,7 @@ EnPlayerSound::~EnPlayerSound()
         _p_soundUpdater->destroyHandler();
 }
 
-void EnPlayerSound::handleNotification( const EntityNotification& notification )
+void EnPlayerSound::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle attribute changing
     switch( notification.getId() )
@@ -138,7 +138,7 @@ void EnPlayerSound::postInitialize()
     osgAL::SoundState* p_soundState;
 
     // set file search path for sound resources
-    osgAL::SoundManager::instance()->addFilePath( Application::get()->getMediaPath() + _soundFileDir );
+    osgAL::SoundManager::instance()->addFilePath( yaf3d::Application::get()->getMediaPath() + _soundFileDir );
 
     p_soundState = createSound( _walkGround );
     if ( p_soundState )
@@ -175,7 +175,7 @@ void EnPlayerSound::postInitialize()
     _p_soundUpdater = new PlayerSoundIH( this );
 
     // register entity for getting notifications
-    EntityManager::get()->registerNotification( this, true );
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 osgAL::SoundState* EnPlayerSound::createSound( const std::string& filename )
@@ -191,8 +191,8 @@ osgAL::SoundState* EnPlayerSound::createSound( const std::string& filename )
     } 
     catch ( const openalpp::Error& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "error loading sound file '" << filename << "' in '" << getInstanceName() << "'" << std::endl;
-        log << Log::LogLevel( Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "error loading sound file '" << filename << "' in '" << getInstanceName() << "'" << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
         return NULL;
     }
 
@@ -301,4 +301,4 @@ osg::Vec3f EnPlayerSound::getSoundPosition() const
     return _p_playerImpl->getPlayerPosition() + _offset;
 }
 
-} // namespace CTD
+} // namespace vrc

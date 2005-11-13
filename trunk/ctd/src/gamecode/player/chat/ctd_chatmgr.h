@@ -35,7 +35,7 @@
 
 #include "ctd_chatprotocol.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Chat protocol names
@@ -237,5 +237,5 @@ class ChatManager : public ChatProtocolCallback
         bool                                        _built;
 };
 
-} // namespace CTD
+} // namespace vrc
 #endif // _CTD_CHATMGR_H_

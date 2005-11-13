@@ -34,7 +34,7 @@
 #include <ctd_main.h>
 #include "ctd_chatmgr.h"
 
-namespace CTD
+namespace vrc
 {
 
 class ChatManager;
@@ -67,6 +67,6 @@ class ChatGuiCtrl
         ChatManager*                                _p_chatMgr;
 };
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CHATGUICTRL_H_

@@ -32,9 +32,7 @@
 #include "ctd_candle.h"
 #include "ctd_pointlight.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the candle entity factory
@@ -57,7 +55,7 @@ EnCandle::~EnCandle()
 {
 }
 
-void EnCandle::handleNotification( const EntityNotification& notification )
+void EnCandle::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle notifications
     switch( notification.getId() )
@@ -80,18 +78,18 @@ void EnCandle::handleNotification( const EntityNotification& notification )
 
 void EnCandle::postInitialize()
 {
-    _p_pointLightEntity = dynamic_cast< EnPointLight* >( EntityManager::get()->findEntity( ENTITY_NAME_POINTLIGHT, _lightEntity ) );
+    _p_pointLightEntity = dynamic_cast< EnPointLight* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_POINTLIGHT, _lightEntity ) );
     if ( !_p_pointLightEntity )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "Canlde: cannot find PointLight entity '" << _lightEntity << "', animation disabled!" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "Canlde: cannot find PointLight entity '" << _lightEntity << "', animation disabled!" << std::endl;
         return;
     }
 
     _p_pointLightEntity->setPosition( _position );
 
     // register entity in order to get notifications (e.g. from menu entity)
-    EntityManager::get()->registerNotification( this, true );   
-    EntityManager::get()->registerUpdate( this, true );   
+    yaf3d::EntityManager::get()->registerNotification( this, true );   
+    yaf3d::EntityManager::get()->registerUpdate( this, true );   
 }
 
 void EnCandle::updateEntity( float deltaTime )

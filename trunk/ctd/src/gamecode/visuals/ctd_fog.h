@@ -33,13 +33,13 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_FOG    "Fog"
 
 //! This entity sets up fog.
-class EnFog :  public BaseEntity
+class EnFog :  public yaf3d::BaseEntity
 {
     public:
                                                     EnFog();
@@ -63,7 +63,7 @@ class EnFog :  public BaseEntity
     protected:
 
         //! This entity is persistent so it has to trigger its destruction on shutdown ifself.
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         float                                       _density;
 
@@ -84,11 +84,11 @@ class EnFog :  public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class FogEntityFactory : public BaseEntityFactory
+class FogEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     FogEntityFactory() :
-                                                     BaseEntityFactory( ENTITY_NAME_FOG, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_FOG, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~FogEntityFactory() {}
@@ -96,6 +96,6 @@ class FogEntityFactory : public BaseEntityFactory
         Macro_CreateEntity( EnFog );
 };
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_FOG_H_

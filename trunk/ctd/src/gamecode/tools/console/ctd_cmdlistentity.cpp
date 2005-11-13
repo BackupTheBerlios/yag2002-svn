@@ -32,9 +32,7 @@
 #include "ctd_basecmd.h"
 #include "ctd_cmdlistentity.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -55,10 +53,10 @@ const std::string& CmdListEntity::execute( const std::vector< std::string >& arg
 {
     _cmdResult = "list of currently existing entities:\n";
 
-    string info;
-    std::vector< BaseEntity* > entities;
-    EntityManager::get()->getAllEntities( entities );
-    std::vector< BaseEntity* >::iterator p_beg = entities.begin(), p_end = entities.end();
+    std::string info;
+    std::vector< yaf3d::BaseEntity* > entities;
+    yaf3d::EntityManager::get()->getAllEntities( entities );
+    std::vector< yaf3d::BaseEntity* >::iterator p_beg = entities.begin(), p_end = entities.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
         info += ( *p_beg )->getInstanceName() + "(" + ( *p_beg )->getTypeName() + ")    ";
@@ -67,4 +65,4 @@ const std::string& CmdListEntity::execute( const std::vector< std::string >& arg
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

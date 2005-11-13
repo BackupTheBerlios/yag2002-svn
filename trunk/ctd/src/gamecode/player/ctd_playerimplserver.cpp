@@ -36,9 +36,7 @@
 #include "chat/ctd_chatmgr.h"
 #include "chat/VRC/ctd_chatprotVRC.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 PlayerImplServer::PlayerImplServer( EnPlayer* player ) :
@@ -50,7 +48,7 @@ PlayerImplServer::~PlayerImplServer()
 {
 }
 
-void PlayerImplServer::handleNotification( const EntityNotification& notification )
+void PlayerImplServer::handleNotification( const yaf3d::EntityNotification& notification )
 {
 }
 
@@ -63,11 +61,11 @@ void PlayerImplServer::postInitialize()
     _currentPos = getPlayerEntity()->getPosition();
     _currentRot = getPlayerEntity()->getRotation();
 
-    log << Log::LogLevel( Log::L_INFO ) << "  setup player implementation Server ..." << endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO ) << "  setup player implementation Server ..." << std::endl;
 
     //! TODO: check if we need physics on server
 
-    log << Log::LogLevel( Log::L_INFO ) << "  player implementation successfully initialized" << endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO ) << "  player implementation successfully initialized" << std::endl;
 }
 
 void PlayerImplServer::update( float deltaTime )
@@ -80,4 +78,4 @@ void PlayerImplServer::update( float deltaTime )
     getPlayerEntity()->setRotation( _currentRot );
 }
 
-} // namespace CTD
+} // namespace vrc

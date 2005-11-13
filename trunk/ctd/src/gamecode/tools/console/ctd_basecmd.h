@@ -33,7 +33,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 //! Helper macro for implementing and registering a command
 #define CTD_IMPL_CONSOLE_CMD( cmd )   std::auto_ptr< cmd > cmd##_impl( new cmd );
@@ -85,6 +85,6 @@ inline const std::string& BaseConsoleCommand::getUsage() const
     return _usage;
 }
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_BASECMD_H_

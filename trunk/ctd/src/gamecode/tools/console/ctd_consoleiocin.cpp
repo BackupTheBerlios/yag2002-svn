@@ -34,7 +34,7 @@
 #include <conio.h>
 
 
-namespace CTD
+namespace vrc
 {
 
 #define CON_WND             "_console_gui_"
@@ -98,4 +98,4 @@ void ConsoleIOCin::run()
 }
 
 
-} // namespace CTD
+} // namespace vrc

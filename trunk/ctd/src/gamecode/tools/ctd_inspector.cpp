@@ -34,7 +34,7 @@
 #include "../visuals/ctd_camera.h"
 #include <osgUtil/IntersectVisitor>
 
-namespace CTD
+namespace vrc
 {
 // prefix for gui elements
 #define INSPECTOR_WND      "_inspector_"
@@ -43,12 +43,12 @@ namespace CTD
 #define MAX_PICKING_DISTANCE 1000.0f
 
 //! Input handler for inspector
-class InspectorIH : public GenericInputHandler< EnInspector >
+class InspectorIH : public yaf3d::GenericInputHandler< EnInspector >
 {
     public:
 
         explicit                            InspectorIH( EnInspector* p_ent ) : 
-                                             GenericInputHandler< EnInspector >( p_ent )
+                                             yaf3d::GenericInputHandler< EnInspector >( p_ent )
                                             {
                                                 _p_pickResults   = new PickResults;
                                                 _lockMovement    = false;
@@ -68,7 +68,7 @@ class InspectorIH : public GenericInputHandler< EnInspector >
 
                                                 // get the current screen size
                                                 unsigned int width, height;
-                                                Application::get()->getScreenSize( width, height );
+                                                yaf3d::Application::get()->getScreenSize( width, height );
                                                 // calculate the middle of app window
                                                 _screenMiddleX = static_cast< Uint16 >( width * 0.5f );
                                                 _screenMiddleY = static_cast< Uint16 >( height * 0.5f );
@@ -121,7 +121,7 @@ class InspectorIH : public GenericInputHandler< EnInspector >
                                                     // create the primitive set for bbox and append it to top root node
                                                     _p_linesGeom->addPrimitiveSet( new osg::DrawElementsUShort( osg::PrimitiveSet::LINES, 24, indices ) );
                                                     _bboxGeode->addDrawable( _p_linesGeom );                                               
-                                                    Application::get()->getSceneRootNode()->addChild( _bboxGeode.get() );
+                                                    yaf3d::Application::get()->getSceneRootNode()->addChild( _bboxGeode.get() );
 
                                                     // create a line segment for intersection tests
                                                     _p_lineSegment = new osg::LineSegment;
@@ -258,7 +258,7 @@ class InspectorIH : public GenericInputHandler< EnInspector >
 bool InspectorIH::pick( float x, float y )
 {
     // calculate start and end point of ray
-    osgUtil::SceneView* p_sv = Application::get()->getSceneView();
+    osgUtil::SceneView* p_sv = yaf3d::Application::get()->getSceneView();
     osg::Matrixd vum;
     vum.set( 
             osg::Matrixd( p_sv->getViewMatrix() ) *
@@ -281,7 +281,7 @@ bool InspectorIH::pick( float x, float y )
     _lastY = y;
 
     // we are going to test the complete scenegraph
-    osg::Group* p_grp = Application::get()->getSceneRootNode();
+    osg::Group* p_grp = yaf3d::Application::get()->getSceneRootNode();
     osgUtil::IntersectVisitor iv;
     iv.addLineSegment( _p_lineSegment.get() );
     // do the intesection test
@@ -427,7 +427,7 @@ bool InspectorIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
 
     // terminate application on Escape
     if ( key == SDLK_ESCAPE )
-        Application::get()->stop();
+        yaf3d::Application::get()->stop();
 
     // toggle info dialog rendering
     if ( ( key == SDLK_SPACE ) && ( eventType == osgGA::GUIEventAdapter::KEYDOWN ) )
@@ -588,7 +588,7 @@ bool InspectorIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
         p_camera->setLocalPitchYaw( -_pitch, -_yaw );
 
         // reset mouse position in order to avoid leaving the app window
-        Application::get()->getViewer()->requestWarpPointer( _screenMiddleX, _screenMiddleY );
+        yaf3d::Application::get()->getViewer()->requestWarpPointer( _screenMiddleX, _screenMiddleY );
     }
 
     // update camera position
@@ -636,12 +636,12 @@ EnInspector::~EnInspector()
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "EnInspector: problem cleaning up entity." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnInspector: problem cleaning up entity." << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
-void EnInspector::handleNotification( const EntityNotification& notification )
+void EnInspector::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle notifications
     switch( notification.getId() )
@@ -653,7 +653,7 @@ void EnInspector::handleNotification( const EntityNotification& notification )
         case CTD_NOTIFY_SHUTDOWN:
 
             if ( _isPersistent )
-                EntityManager::get()->deleteEntity( this );
+                yaf3d::EntityManager::get()->deleteEntity( this );
             break;
 
         default:
@@ -668,7 +668,7 @@ void EnInspector::initialize()
         // setup main gui
         {
             _p_wndMain = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", INSPECTOR_WND "mainFrame" ) );
-            _p_wndMain->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::EnInspector::onClickedCloseMain, this ) );
+            _p_wndMain->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &vrc::EnInspector::onClickedCloseMain, this ) );
             _p_wndMain->setSize( CEGUI::Size( 0.35f, 0.25f ) );
             _p_wndMain->setText( "tools" );
             _p_wndMain->setPosition( CEGUI::Point( 0, 0 ) );
@@ -677,7 +677,7 @@ void EnInspector::initialize()
             _p_wndMain->setSizingEnabled( false );
 
             _p_lockCheckboxMain = static_cast< CEGUI::Checkbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Checkbox", INSPECTOR_WND "lockMain" ) );
-            _p_lockCheckboxMain->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &CTD::EnInspector::onLockChanged, this ) );
+            _p_lockCheckboxMain->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::EnInspector::onLockChanged, this ) );
             _p_lockCheckboxMain->setSize( CEGUI::Size( 0.9f, 0.22f ) );
             _p_lockCheckboxMain->setPosition( CEGUI::Point( 0.05f, 0.1f ) );
             _p_lockCheckboxMain->setSelected( false );
@@ -693,7 +693,7 @@ void EnInspector::initialize()
             _p_wndMain->addChildWindow( p_stext );
 
             _p_speedBarMain = static_cast< CEGUI::Scrollbar* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/HorizontalScrollbar", INSPECTOR_WND "speedMain" ) );
-            _p_speedBarMain->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &CTD::EnInspector::onSpeedChanged, this ) );
+            _p_speedBarMain->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::EnInspector::onSpeedChanged, this ) );
             _p_speedBarMain->setSize( CEGUI::Size( 0.75f, 0.075f ) );
             _p_speedBarMain->setPosition( CEGUI::Point( 0.2f, 0.3f ) );
             _p_speedBarMain->setScrollPosition( 1.0f );
@@ -705,12 +705,12 @@ void EnInspector::initialize()
             _p_outputTextMain->setFont( CTD_GUI_CONSOLE );
             _p_wndMain->addChildWindow( _p_outputTextMain );
 
-            GuiManager::get()->getRootWindow()->addChildWindow( _p_wndMain );
+            yaf3d::GuiManager::get()->getRootWindow()->addChildWindow( _p_wndMain );
         }
         // setup picker gui
         {
             _p_wndPicker = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", INSPECTOR_WND "pickerFrame" ) );
-            _p_wndPicker->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::EnInspector::onClickedClosePicker, this ) );
+            _p_wndPicker->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &vrc::EnInspector::onClickedClosePicker, this ) );
             _p_wndPicker->setSize( CEGUI::Size( 0.35f, 0.21f ) );
             _p_wndPicker->setText( "picker" );
             _p_wndPicker->setPosition( CEGUI::Point( 0.65f, 0.0f ) );
@@ -724,31 +724,31 @@ void EnInspector::initialize()
             _p_outputTextPicker->setFont( CTD_GUI_CONSOLE );
             _p_wndPicker->addChildWindow( _p_outputTextPicker );
 
-            GuiManager::get()->getRootWindow()->addChildWindow( _p_wndPicker );
+            yaf3d::GuiManager::get()->getRootWindow()->addChildWindow( _p_wndPicker );
             _p_wndPicker->hide();
         }
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
-    EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
-    EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
+    yaf3d::EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
+    yaf3d::EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 }
 
 void EnInspector::postInitialize()
 {
-    _p_cameraEntity = dynamic_cast< EnCamera* >( EntityManager::get()->findEntity( ENTITY_NAME_CAMERA ) );
+    _p_cameraEntity = dynamic_cast< EnCamera* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CAMERA ) );
     if ( _p_cameraEntity )
     {
-        log << Log::LogLevel( Log::L_WARNING ) << "inspector entity's camera disabled as there is already a camera instance in level!" << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "inspector entity's camera disabled as there is already a camera instance in level!" << std::endl;
         return;
     }
 
     // create a camera instance
-    _p_cameraEntity = dynamic_cast< EnCamera* >( EntityManager::get()->createEntity( ENTITY_NAME_CAMERA, "_inpectorCamera_" ) );
+    _p_cameraEntity = dynamic_cast< EnCamera* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_CAMERA, "_inpectorCamera_" ) );
     assert( _p_cameraEntity && "error creating observer camera" );
 
     // set any camera attributes before initializing it
@@ -855,4 +855,4 @@ void EnInspector::enableInfoWindow( bool en )
     }
 }
 
-} // namespace CTD
+} // namespace vrc

@@ -31,7 +31,7 @@
 #include <ctd_main.h>
 #include "ctd_inputhandler.h"
 
-namespace CTD
+namespace vrc
 {
 
-} // namespace CTD
+} // namespace vrc

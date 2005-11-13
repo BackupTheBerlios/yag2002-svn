@@ -34,13 +34,13 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 class En3DSound;
 
 //! Base class for physics entities
-class EnPhysicsBase : public BaseEntity
+class EnPhysicsBase : public yaf3d::BaseEntity
 {
     public:
                                                     EnPhysicsBase();
@@ -74,7 +74,7 @@ class EnPhysicsBase : public BaseEntity
     protected:
 
         //! Catch physics notifications
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! This method is called on derived classed when a build physics world notification is received
         /**
@@ -96,7 +96,7 @@ class EnPhysicsBase : public BaseEntity
 };
 
 // Collision struct for internal usage
-extern CollisionStruct* s_entityColStruct;
+extern yaf3d::CollisionStruct* s_entityColStruct;
 
 //! Begin contact processing callback
 int entityContactBegin( const NewtonMaterial* p_material, const NewtonBody* p_body0, const NewtonBody* p_body1 );
@@ -108,7 +108,7 @@ int entityContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
 //! This function is called affter all collision contacts are proccesed
 void entityContactEnd( const NewtonMaterial* p_material );
 
-} // namespace CTD
+} // namespace vrc
 
 #include "ctd_physicsbase.inl"
 

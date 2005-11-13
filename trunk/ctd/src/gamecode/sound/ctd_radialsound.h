@@ -34,7 +34,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_RADIALSOUND    "RadialSound"
@@ -42,7 +42,7 @@ namespace CTD
 class RadialSoundIH;
 
 //! RadialSound Entity
-class EnRadialSound : public BaseEntity
+class EnRadialSound : public yaf3d::BaseEntity
 {
     public:
                                                     EnRadialSound();
@@ -76,7 +76,7 @@ class EnRadialSound : public BaseEntity
     protected:
 
         // Handler system notifications
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Resource directory for searching for sound files
         std::string                                 _soundFileDir;
@@ -116,11 +116,11 @@ class EnRadialSound : public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class RadialSoundEntityFactory : public BaseEntityFactory
+class RadialSoundEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     RadialSoundEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_RADIALSOUND, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_RADIALSOUND, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~RadialSoundEntityFactory() {}

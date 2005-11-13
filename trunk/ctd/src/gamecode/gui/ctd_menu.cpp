@@ -42,9 +42,7 @@
 // used for starting server process
 static SPAWN_PROC_ID _serverProcHandle = static_cast< SPAWN_PROC_ID >( 0 );
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 // prefix for menu layout resources
@@ -61,12 +59,12 @@ namespace CTD
 #define BCKRGD_SND_PLAY_VOLUME          0.5f
 
 //! Input handler class for menu, it handles ESC key press and toggles the menu gui
-class MenuInputHandler : public GenericInputHandler< EnMenu >
+class MenuInputHandler : public yaf3d::GenericInputHandler< EnMenu >
 {
     public:
 
         explicit                            MenuInputHandler( EnMenu* p_menu ) :
-                                             GenericInputHandler< EnMenu >( p_menu ),
+                                             yaf3d::GenericInputHandler< EnMenu >( p_menu ),
                                              _menuActive( true ),
                                              _lockEsc( false )
                                             {}
@@ -217,13 +215,13 @@ EnMenu::~EnMenu()
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "EnMenu: problem cleaning up entity." << endl;
-        log << "      reason: " << e.getMessage().c_str() << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnMenu: problem cleaning up entity." << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     // destroy self-created entities
-    // note: these entities are created via EntityManager with "no add to pool" option,
-    //       thus we must not use EntityManager's detroyEntity method to destroy them, we have to delete them manually instead!
+    // note: these entities are created via yaf3d::EntityManager with "no add to pool" option,
+    //       thus we must not use yaf3d::EntityManager's detroyEntity method to destroy them, we have to delete them manually instead!
     if ( _p_hoverSound )
         delete _p_hoverSound;
 
@@ -241,7 +239,7 @@ EnMenu::~EnMenu()
         _p_inputHandler->destroyHandler();
 }
 
-void EnMenu::handleNotification( const EntityNotification& notification )
+void EnMenu::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle notifications
     switch( notification.getId() )
@@ -257,7 +255,7 @@ void EnMenu::handleNotification( const EntityNotification& notification )
 
         // we have to trigger the deletion ourselves! ( we disabled auto-deletion for this entity )
         case CTD_NOTIFY_SHUTDOWN:
-            EntityManager::get()->deleteEntity( this );
+            yaf3d::EntityManager::get()->deleteEntity( this );
             break;
 
         default:
@@ -286,42 +284,42 @@ void EnMenu::initialize()
     // load the menu layout
     try
     {
-        _p_menuWindow = GuiManager::get()->loadLayout( _menuConfig, NULL, MENU_PREFIX );
+        _p_menuWindow = yaf3d::GuiManager::get()->loadLayout( _menuConfig, NULL, MENU_PREFIX );
         _p_menuWindow->hide();
 
         // set button callbacks
         _p_btnStartJoin = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_startjoin" ) );
-        _p_btnStartJoin->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::EnMenu::onClickedJoin, this ) );
-        _p_btnStartJoin->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &CTD::EnMenu::onButtonHover, this ) );
+        _p_btnStartJoin->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedJoin, this ) );
+        _p_btnStartJoin->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMenu::onButtonHover, this ) );
 
         _p_btnStartServer = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_startserver" ) );
-        _p_btnStartServer->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::EnMenu::onClickedServer, this ) );
-        _p_btnStartServer->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &CTD::EnMenu::onButtonHover, this ) );
+        _p_btnStartServer->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedServer, this ) );
+        _p_btnStartServer->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMenu::onButtonHover, this ) );
 
         _p_btnStartWT = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_startwt" ) );
-        _p_btnStartWT->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::EnMenu::onClickedWT, this ) );
-        _p_btnStartWT->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &CTD::EnMenu::onButtonHover, this ) );
+        _p_btnStartWT->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedWT, this ) );
+        _p_btnStartWT->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMenu::onButtonHover, this ) );
 
         CEGUI::PushButton* p_btnGS = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_game_settings" ) );
-        p_btnGS->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::EnMenu::onClickedGameSettings, this ) );
-        p_btnGS->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &CTD::EnMenu::onButtonHover, this ) );
+        p_btnGS->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedGameSettings, this ) );
+        p_btnGS->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMenu::onButtonHover, this ) );
 
         CEGUI::PushButton* p_btnQuit = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_quit" ) );
-        p_btnQuit->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::EnMenu::onClickedQuit, this ) );
-        p_btnQuit->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &CTD::EnMenu::onButtonHover, this ) );
+        p_btnQuit->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedQuit, this ) );
+        p_btnQuit->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMenu::onButtonHover, this ) );
 
         _p_btnReturn = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_return" ) );
-        _p_btnReturn->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::EnMenu::onClickedReturnToLevel, this ) );
-        _p_btnReturn->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &CTD::EnMenu::onButtonHover, this ) );
+        _p_btnReturn->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedReturnToLevel, this ) );
+        _p_btnReturn->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMenu::onButtonHover, this ) );
 
         _p_btnLeave = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_leave" ) );
-        _p_btnLeave->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::EnMenu::onClickedLeave, this ) );
-        _p_btnLeave->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &CTD::EnMenu::onButtonHover, this ) );
+        _p_btnLeave->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedLeave, this ) );
+        _p_btnLeave->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMenu::onButtonHover, this ) );
 
         // setup loading window
         _p_loadingWindow = static_cast< CEGUI::Window* >( CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", ( MENU_PREFIX "wnd_loading" ) ) );
         _p_loadingWindow->hide();
-        GuiManager::get()->getRootWindow()->addChildWindow( _p_loadingWindow );
+        yaf3d::GuiManager::get()->getRootWindow()->addChildWindow( _p_loadingWindow );
         // ------------------
         // we support a level preview pic and an overlay ( e.g. with text "level loading" )
         _p_loadingOverly = static_cast< CEGUI::StaticImage* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticImage", ( MENU_PREFIX "img_loadingoverlay" ) ) );
@@ -340,8 +338,8 @@ void EnMenu::initialize()
         _p_loadingWindow->addChildWindow( _p_loadingLevelPic );
 
         // create a new imageset for loading pic
-        string materialName( OVERLAY_IMAGESET );
-        CEGUI::Texture*  p_texture = GuiManager::get()->getGuiRenderer()->createTexture( _loadingOverlayTexture, "MenuResources" );
+        std::string materialName( OVERLAY_IMAGESET );
+        CEGUI::Texture*  p_texture = yaf3d::GuiManager::get()->getGuiRenderer()->createTexture( _loadingOverlayTexture, "MenuResources" );
         CEGUI::Imageset* p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( materialName, p_texture );        
         if ( !p_imageSet->isImageDefined( _loadingOverlayTexture ) )
         {
@@ -354,27 +352,27 @@ void EnMenu::initialize()
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** Menu: cannot find layout: " << _menuConfig << endl;
-        log << "      reason: " << e.getMessage().c_str() << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** Menu: cannot find layout: " << _menuConfig << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
         return;
     }
 
     // setup dialog for editing game settings
-    _settingsDialog = auto_ptr< DialogGameSettings >( new DialogGameSettings( this ) );
+    _settingsDialog = std::auto_ptr< DialogGameSettings >( new DialogGameSettings( this ) );
     if ( !_settingsDialog->initialize( _settingsDialogConfig ) )
         return;
     // set the click sound object
     _settingsDialog->setClickSound( _p_clickSound );
 
     // setup dialog for selecting a level
-    _levelSelectDialog = auto_ptr< DialogLevelSelect >( new DialogLevelSelect( this ) );
+    _levelSelectDialog = std::auto_ptr< DialogLevelSelect >( new DialogLevelSelect( this ) );
     if ( !_levelSelectDialog->initialize( _levelSelectDialogConfig ) )
         return;
     // set the click sound object
     _levelSelectDialog->setClickSound( _p_clickSound );
 
     // setup intro layout
-    _intro = auto_ptr< IntroControl >( new IntroControl );
+    _intro = std::auto_ptr< IntroControl >( new IntroControl );
     if ( !_intro->initialize( _introTexture ) )
         return;
     // set the click and intro sound objects
@@ -388,18 +386,18 @@ void EnMenu::initialize()
     beginIntro();
 
     // this entity needs updates initially for getting the intro running
-    EntityManager::get()->registerUpdate( this, true );
+    yaf3d::EntityManager::get()->registerUpdate( this, true );
 
     // we register ourself to get notifications. interesting one is the shutdown notification
     //  as we have to trigger the destruction ourself as this entity is persistent.
-    EntityManager::get()->registerNotification( this, true );
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 void EnMenu::createMenuScene()
 {
     // load the menu scene and camera path
-    osg::Node* p_scenenode = LevelManager::get()->loadMesh( _menuSceneFile );
-    osg::Node* p_animnode  = LevelManager::get()->loadMesh( _menuCameraPathFile );
+    osg::Node* p_scenenode = yaf3d::LevelManager::get()->loadMesh( _menuSceneFile );
+    osg::Node* p_animnode  = yaf3d::LevelManager::get()->loadMesh( _menuCameraPathFile );
     if ( p_scenenode && p_animnode )
     {
         _menuAnimationPath = new osg::Group();
@@ -407,7 +405,7 @@ void EnMenu::createMenuScene()
     }
     else
     {
-        log << Log::LogLevel( Log::L_WARNING ) << "*** EnMenu: cannot setup scene; either menu scene or camera animation is missing" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "*** EnMenu: cannot setup scene; either menu scene or camera animation is missing" << std::endl;
         return;
     }
     _menuScene = new osg::Group;
@@ -417,8 +415,8 @@ void EnMenu::createMenuScene()
     _menuScene->addChild( _menuAnimationPath.get() );
 
     // create and setup camera
-    log << Log::LogLevel( Log::L_DEBUG ) << "creating menu camera entity '_menuCam_'" << endl;
-    EnCamera* p_camEntity = static_cast< EnCamera* >( EntityManager::get()->createEntity( ENTITY_NAME_CAMERA, "_menuCam_" ) );
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "creating menu camera entity '_menuCam_'" << std::endl;
+    EnCamera* p_camEntity = static_cast< EnCamera* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_CAMERA, "_menuCam_" ) );
     assert( p_camEntity && "cannot create camera entity!" );
     _p_cameraControl = p_camEntity;
     // our camera must be persistent, as it must survive every subsequent level loading
@@ -434,8 +432,8 @@ void EnMenu::createMenuScene()
     p_camEntity->postInitialize();
 
     // create and setup skybox
-    log << Log::LogLevel( Log::L_DEBUG ) << "creating menu skybox entity '_menuSkybox_'" << endl;
-    EnSkyBox* p_skyboxEntity = dynamic_cast< EnSkyBox* >( EntityManager::get()->createEntity( ENTITY_NAME_SKYBOX, "_menuSkybox_" ) );
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "creating menu skybox entity '_menuSkybox_'" << std::endl;
+    EnSkyBox* p_skyboxEntity = dynamic_cast< EnSkyBox* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_SKYBOX, "_menuSkybox_" ) );
     assert( p_skyboxEntity && "cannot create skybox entity!" );
     _p_skyBox = p_skyboxEntity;
     p_skyboxEntity->getAttributeManager().setAttributeValue( "persistence", true                );
@@ -446,13 +444,13 @@ void EnMenu::createMenuScene()
     p_skyboxEntity->getAttributeManager().setAttributeValue( "front",      _skyboxImages[ 3 ]   );
     p_skyboxEntity->getAttributeManager().setAttributeValue( "up",         _skyboxImages[ 4 ]   );
     p_skyboxEntity->getAttributeManager().setAttributeValue( "down",       _skyboxImages[ 5 ]   );
-    EntityManager::get()->addToScene( p_skyboxEntity );
+    yaf3d::EntityManager::get()->addToScene( p_skyboxEntity );
     p_skyboxEntity->initialize();
     p_skyboxEntity->postInitialize();
 
     // create and setup fog
-    log << Log::LogLevel( Log::L_DEBUG ) << "creating menu fog entity '_menuFog_'" << endl;
-    EnFog* p_fogEntity = dynamic_cast< EnFog* >( EntityManager::get()->createEntity( ENTITY_NAME_FOG, "_menuFog_" ) );
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "creating menu fog entity '_menuFog_'" << std::endl;
+    EnFog* p_fogEntity = dynamic_cast< EnFog* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_FOG, "_menuFog_" ) );
     assert( p_fogEntity && "cannot create fog entity!" );
     _p_menuFog = p_fogEntity;
     p_fogEntity->getAttributeManager().setAttributeValue( "persistence",    true                            );
@@ -460,7 +458,7 @@ void EnMenu::createMenuScene()
     p_fogEntity->getAttributeManager().setAttributeValue( "start",          200.0f                          );
     p_fogEntity->getAttributeManager().setAttributeValue( "end",            1000.0f                         );
     p_fogEntity->getAttributeManager().setAttributeValue( "color",          osg::Vec3f( 0.5f, 0.5f, 0.5f )  );
-    EntityManager::get()->addToScene( p_fogEntity );
+    yaf3d::EntityManager::get()->addToScene( p_fogEntity );
     p_fogEntity->initialize();
     p_fogEntity->postInitialize();
 }
@@ -469,16 +467,16 @@ EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume ) 
 {
     // manually create an entity of type AmbientSound without adding it to pool as we use the entity locally
     //  and do not need managed destruction or searchable ability for the entity
-    EnAmbientSound* p_ent = dynamic_cast< EnAmbientSound* >( EntityManager::get()->createEntity( ENTITY_NAME_AMBIENTSOUND, filename, false ) );
+    EnAmbientSound* p_ent = dynamic_cast< EnAmbientSound* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_AMBIENTSOUND, filename, false ) );
     if ( !p_ent )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** EnMenu: cannot create sound entity of type '" << ENTITY_NAME_AMBIENTSOUND << "'" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** EnMenu: cannot create sound entity of type '" << ENTITY_NAME_AMBIENTSOUND << "'" << std::endl;
         return NULL;
     }
 
     // setup entity parameters
-    string dir  = extractPath( filename );
-    string file = extractFileName( filename );
+    std::string dir  = yaf3d::extractPath( filename );
+    std::string file = yaf3d::extractFileName( filename );
     p_ent->getAttributeManager().setAttributeValue( "resourceDir", dir      );
     p_ent->getAttributeManager().setAttributeValue( "soundFile",   file     );
     p_ent->getAttributeManager().setAttributeValue( "loop",        false    );
@@ -516,7 +514,7 @@ bool EnMenu::onClickedQuit( const CEGUI::EventArgs& arg )
     if ( _p_clickSound )
         _p_clickSound->startPlaying();
 
-    Application::get()->stop();
+    yaf3d::Application::get()->stop();
 
     return true;
 }
@@ -538,10 +536,10 @@ bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
 
     // ask user before leaving
     {
-        MessageBoxDialog* p_msg = new MessageBoxDialog( "", "You really want to leave the level?", MessageBoxDialog::YES_NO, true );
+        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "", "You really want to leave the level?", yaf3d::MessageBoxDialog::YES_NO, true );
 
         // create a call back for yes/no buttons of messagebox
-        class MsgYesNoClick: public MessageBoxDialog::ClickCallback
+        class MsgYesNoClick: public yaf3d::MessageBoxDialog::ClickCallback
         {
             public:
 
@@ -552,7 +550,7 @@ bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
                 void                    onClicked( unsigned int btnId )
                                         {
                                             // did the user clicked yes? if so then store settings
-                                            if ( btnId == MessageBoxDialog::BTN_YES )                                                    
+                                            if ( btnId == yaf3d::MessageBoxDialog::BTN_YES )                                                    
                                                 _p_menu->leaveLevel();
                                             else
                                                 _p_menu->leave();
@@ -576,22 +574,22 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
     if ( _p_clickSound )
         _p_clickSound->startPlaying();
 
-    string url;
-    Configuration::get()->getSettingValue( CTD_GS_SERVER_IP, url );
-    string clientname;
-    Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, clientname );
-    NodeInfo nodeinfo( "", clientname );
+    std::string url;
+    yaf3d::Configuration::get()->getSettingValue( CTD_GS_SERVER_IP, url );
+    std::string clientname;
+    yaf3d::Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, clientname );
+    yaf3d::NodeInfo nodeinfo( "", clientname );
     unsigned int channel;
-    Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
+    yaf3d::Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
 
     // try to join
-    if ( !NetworkDevice::get()->setupClient( url, channel, nodeinfo ) )
+    if ( !yaf3d::NetworkDevice::get()->setupClient( url, channel, nodeinfo ) )
     {
-        log << Log::LogLevel( Log::L_WARNING ) << "cannot setup client networking" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "cannot setup client networking" << std::endl;
 
-        MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "Cannot connect to server!", MessageBoxDialog::OK, true );
+        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", "Cannot connect to server!", yaf3d::MessageBoxDialog::OK, true );
         // create a call back for Ok button of messagebox
-        class MsgOkClick: public MessageBoxDialog::ClickCallback
+        class MsgOkClick: public yaf3d::MessageBoxDialog::ClickCallback
         {
             public:
 
@@ -617,9 +615,9 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
         return true;
     }
     // set the game mode to Client before loading the level
-    GameState::get()->setMode( GameState::Client );
+    yaf3d::GameState::get()->setMode( yaf3d::GameState::Client );
     // now prepare loading level
-    string levelfilename = NetworkDevice::get()->getNodeInfo()->getLevelName();
+    std::string levelfilename = yaf3d::NetworkDevice::get()->getNodeInfo()->getLevelName();
     _queuedLevelFile = CTD_LEVEL_CLIENT_DIR + levelfilename;
 
     // get preview pic for level
@@ -657,7 +655,7 @@ bool EnMenu::onClickedWT( const CEGUI::EventArgs& arg )
     if ( _p_clickSound )
         _p_clickSound->startPlaying();
 
-    GameState::get()->setMode( GameState::Standalone );
+    yaf3d::GameState::get()->setMode( yaf3d::GameState::Standalone );
     _levelSelectDialog->changeSearchDirectory( CTD_LEVEL_SALONE_DIR );
     _p_menuWindow->disable();
     _levelSelectDialog->show( true );
@@ -706,7 +704,7 @@ void EnMenu::updateEntity( float deltaTime )
         {
             // unload level, don't keep physics and entities
             // note: the menu entity is persistent anyway, it handles the level switch itself!
-            LevelManager::get()->unloadLevel( true, true );
+            yaf3d::LevelManager::get()->unloadLevel( true, true );
             _menuState  = LoadingLevel;
             _p_sceneFog = NULL;
         }
@@ -714,19 +712,19 @@ void EnMenu::updateEntity( float deltaTime )
 
         case LoadingLevel:
         {
-            LevelManager::get()->loadLevel( _queuedLevelFile );
+            yaf3d::LevelManager::get()->loadLevel( _queuedLevelFile );
             _queuedLevelFile = ""; // reset the queue
 
             // now load the player and its other entities
-            string playerCfgFile;
-            CTD::gameutils::PlayerUtils::get()->getPlayerConfig( GameState::get()->getMode(), false, playerCfgFile );
-            LevelManager::get()->loadEntities( playerCfgFile );
+            std::string playerCfgFile;
+            vrc::gameutils::PlayerUtils::get()->getPlayerConfig( yaf3d::GameState::get()->getMode(), false, playerCfgFile );
+            yaf3d::LevelManager::get()->loadEntities( playerCfgFile );
 
             // complete level loading
-            LevelManager::get()->finalizeLoading();
+            yaf3d::LevelManager::get()->finalizeLoading();
 
             // store level scene's static mesh for later switching
-            _levelScene = LevelManager::get()->getStaticMesh();
+            _levelScene = yaf3d::LevelManager::get()->getStaticMesh();
 
             // set flag that we have loaded a level; some menu oprions depend on this flag
             _levelLoaded = true;
@@ -737,11 +735,11 @@ void EnMenu::updateEntity( float deltaTime )
             _p_clientLevelFiles = NULL;
 
             // now start client networking when we joined to a session
-            if ( GameState::get()->getMode() == GameState::Client )
+            if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client )
             {
-                if ( !NetworkDevice::get()->startClient() )
+                if ( !yaf3d::NetworkDevice::get()->startClient() )
                 {
-                    MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "Problem starting client!", MessageBoxDialog::OK, true );
+                    yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", "Problem starting client!", yaf3d::MessageBoxDialog::OK, true );
                     p_msg->show();
 
                     _menuState = UnloadLevel;
@@ -755,9 +753,9 @@ void EnMenu::updateEntity( float deltaTime )
 
             // check if the new level has a fog entity, the fog must be handled extra on menu switching
             {
-                std::vector< BaseEntity* > sceneentities;
-                EntityManager::get()->getAllEntities( sceneentities );
-                std::vector< BaseEntity* >::iterator p_beg = sceneentities.begin(), p_end = sceneentities.end();
+                std::vector< yaf3d::BaseEntity* > sceneentities;
+                yaf3d::EntityManager::get()->getAllEntities( sceneentities );
+                std::vector< yaf3d::BaseEntity* >::iterator p_beg = sceneentities.begin(), p_end = sceneentities.end();
                 for ( ; p_beg != p_end; p_beg++ )
                 {
                     if ( ( *p_beg )->getTypeName() == ENTITY_NAME_FOG )
@@ -779,7 +777,7 @@ void EnMenu::updateEntity( float deltaTime )
 
         case UnloadLevel:
         {
-            LevelManager::get()->unloadLevel();
+            yaf3d::LevelManager::get()->unloadLevel();
             _levelLoaded = false;
             _p_sceneFog  = NULL;
             switchMenuScene( true );
@@ -798,7 +796,7 @@ void EnMenu::updateEntity( float deltaTime )
             if ( _menuAnimationPath.get() )
             {
                 // play the camera animation during the user is in menu            
-                TransformationVisitor tv( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ); // see ctd_utils.h in framework
+                yaf3d::TransformationVisitor tv( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ); // see ctd_utils.h in framework
                 _menuAnimationPath->accept( tv );
                 const osg::Matrixf&  mat = tv.getMatrix();
                 osg::Quat rot;
@@ -837,7 +835,7 @@ void EnMenu::updateEntity( float deltaTime )
                 break;
             }
 
-            float volume = min( BCKRGD_SND_PLAY_VOLUME * ( _soundFadingCnt / BCKRGD_SND_FADEIN_PERIOD ), 1.0f );
+            float volume = std::min( BCKRGD_SND_PLAY_VOLUME * ( _soundFadingCnt / BCKRGD_SND_FADEIN_PERIOD ), 1.0f );
             _p_backgrdSound->setVolume( volume );
         }
         break;
@@ -853,7 +851,7 @@ void EnMenu::updateEntity( float deltaTime )
                 break;
             }
 
-            float volume = max( BCKRGD_SND_PLAY_VOLUME * ( 1.0f - _soundFadingCnt / BCKRGD_SND_FADEOUT_PERIOD ), 0.0f );
+            float volume = std::max( BCKRGD_SND_PLAY_VOLUME * ( 1.0f - _soundFadingCnt / BCKRGD_SND_FADEOUT_PERIOD ), 0.0f );
             _p_backgrdSound->setVolume( volume );
         }
         break;
@@ -907,7 +905,7 @@ void EnMenu::enter()
         return;
 
     // send notification to all notification-registered entities about entering menu
-    EntityManager::get()->sendNotification( EntityNotification( CTD_NOTIFY_MENU_ENTER ) );
+    yaf3d::EntityManager::get()->sendNotification( yaf3d::EntityNotification( CTD_NOTIFY_MENU_ENTER ) );
 
     // set the right text for the multi-function buttons
     if ( _levelLoaded )
@@ -952,7 +950,7 @@ void EnMenu::leave()
         return;
 
     // send notification to all notification-registered entities about leaving menu
-    EntityManager::get()->sendNotification( EntityNotification( CTD_NOTIFY_MENU_LEAVE ) );
+    yaf3d::EntityManager::get()->sendNotification( yaf3d::EntityNotification( CTD_NOTIFY_MENU_LEAVE ) );
 
     _p_menuWindow->hide();
     _p_menuWindow->enable();
@@ -981,11 +979,11 @@ void EnMenu::switchMenuScene( bool tomenu )
     if ( tomenu )
     {
         // set the proper game state
-        GameState::get()->setState( GameState::Menu );
+        yaf3d::GameState::get()->setState( yaf3d::GameState::Menu );
 
         // replace the level scene node by menu scene node
-        LevelManager::get()->setStaticMesh( NULL ); // remove the current mesh node from scene graph
-        LevelManager::get()->setStaticMesh( _menuScene.get() );
+        yaf3d::LevelManager::get()->setStaticMesh( NULL ); // remove the current mesh node from scene graph
+        yaf3d::LevelManager::get()->setStaticMesh( _menuScene.get() );
         _p_cameraControl->setEnable( true );
         enableSkybox( true );
         enableFog( true );
@@ -994,11 +992,11 @@ void EnMenu::switchMenuScene( bool tomenu )
     else
     {
         // set the proper game state
-        GameState::get()->setState( GameState::Running );
+        yaf3d::GameState::get()->setState( yaf3d::GameState::Running );
 
         // replace the menu scene node by level scene node
-        LevelManager::get()->setStaticMesh( NULL ); // remove the current mesh node from scene graph
-        LevelManager::get()->setStaticMesh( _levelScene.get() );
+        yaf3d::LevelManager::get()->setStaticMesh( NULL ); // remove the current mesh node from scene graph
+        yaf3d::LevelManager::get()->setStaticMesh( _levelScene.get() );
         _p_cameraControl->setEnable( false );
         enableSkybox( false );
         enableFog( false );
@@ -1017,7 +1015,7 @@ void EnMenu::onLevelSelectCanceled()
 }
 
 // called by DialogLevelSelect when a level has been selected by user
-void EnMenu::onLevelSelected( string levelfile, CEGUI::Image* p_img )
+void EnMenu::onLevelSelected( std::string levelfile, CEGUI::Image* p_img )
 {
     // if we have already started a server then return without starting a new one
     if ( _serverProcHandle )
@@ -1035,7 +1033,7 @@ void EnMenu::onLevelSelected( string levelfile, CEGUI::Image* p_img )
         _p_menuWindow->hide();
 
         // set game mode to standalone
-        GameState::get()->setMode( GameState::Standalone );
+        yaf3d::GameState::get()->setMode( yaf3d::GameState::Standalone );
     }
     else if ( _levelSelectionState == ForServer ) 
     {
@@ -1043,14 +1041,14 @@ void EnMenu::onLevelSelected( string levelfile, CEGUI::Image* p_img )
         _p_btnStartServer->disable();
 
         // get the full binary path
-        string cmd = Application::get()->getFullBinPath();
-        string arg1( "-server" );
-        string arg2( "-level" );
-        string arg3( levelfile );
+        std::string cmd = yaf3d::Application::get()->getFullBinPath();
+        std::string arg1( "-server" );
+        std::string arg2( "-level" );
+        std::string arg3( levelfile );
 
         // use utility function to start the server
-        string args = arg1 + "  " + arg2 + "  " + arg3;
-        _serverProcHandle = spawnApplication( cmd, args );
+        std::string args = arg1 + "  " + arg2 + "  " + arg3;
+        _serverProcHandle = yaf3d::spawnApplication( cmd, args );
     }
     else
     {
@@ -1060,7 +1058,7 @@ void EnMenu::onLevelSelected( string levelfile, CEGUI::Image* p_img )
     _p_menuWindow->enable();
 }
 
-void EnMenu::loadLevel( string levelfile, CEGUI::Image* p_img )
+void EnMenu::loadLevel( std::string levelfile, CEGUI::Image* p_img )
 {
     // prepare the level loading; the actual loading is done in update method
     _menuState = BeginLoadingLevel;
@@ -1078,7 +1076,7 @@ void EnMenu::leaveLevel()
         return;
 
     // set the proper game state
-    GameState::get()->setState( GameState::Leaving );
+    yaf3d::GameState::get()->setState( yaf3d::GameState::Leaving );
 
     _menuState = UnloadLevel;
 
@@ -1089,11 +1087,11 @@ void EnMenu::leaveLevel()
     _p_btnLeave->hide();
 
     // end networking
-    if ( GameState::get()->getMode() == GameState::Client || GameState::get()->getMode() == GameState::Server )
-        NetworkDevice::get()->disconnect();
+    if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client || yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
+        yaf3d::NetworkDevice::get()->disconnect();
 
     // reset the game state
-    GameState::get()->setMode( GameState::None );
+    yaf3d::GameState::get()->setMode( yaf3d::GameState::None );
 }
 
-} // namespace CTD
+} // namespace vrc

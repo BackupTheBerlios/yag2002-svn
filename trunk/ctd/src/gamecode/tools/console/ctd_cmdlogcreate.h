@@ -19,7 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # console command for creating a log channel for console output
+ # console command for creating a yaf3d::log channel for console output
  #
  #   date of creation:  06/16/2005
  #
@@ -33,16 +33,16 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
-#define CMD_NAME_LOGCREATE    "log.create"
-#define CMD_USAGE_LOGCREATE   "direct the console output to given log file. specify option -a to append the log to an already existing file.\n"\
-                              "use: log.create [ -a ] < log file name >"
+#define CMD_NAME_LOGCREATE    "yaf3d::log.create"
+#define CMD_USAGE_LOGCREATE   "direct the console output to given yaf3d::log file. specify option -a to append the yaf3d::log to an already existing file.\n"\
+                              "use: yaf3d::log.create [ -a ] < yaf3d::log file name >"
 
 class BaseConsoleCommand;
 
-//! Class for command 'log.create'
+//! Class for command 'yaf3d::log.create'
 class CmdLogCreate : public BaseConsoleCommand
 {
     public:
@@ -55,6 +55,6 @@ class CmdLogCreate : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CMDLOGCREATE_H_

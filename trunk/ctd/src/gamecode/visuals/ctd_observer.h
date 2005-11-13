@@ -34,7 +34,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 //! Entity type name
 #define ENTITY_NAME_OBSERVER    "Observer"
@@ -43,7 +43,7 @@ class EnCamera;
 class ObserverIH;
 
 //! Observer entity
-class EnObserver :  public BaseEntity
+class EnObserver :  public yaf3d::BaseEntity
 {
     public:
                                                     EnObserver();
@@ -73,7 +73,7 @@ class EnObserver :  public BaseEntity
 
         //! This entity is persistent so we have to handle entity's update registration on every level loading and
         //  destruction ourselves.
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Enable / disable info window rendering
         void                                        enableInfoWindow( bool en );
@@ -138,11 +138,11 @@ class EnObserver :  public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class ObserverEntityFactory : public BaseEntityFactory
+class ObserverEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     ObserverEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_OBSERVER, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_OBSERVER, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~ObserverEntityFactory() {}

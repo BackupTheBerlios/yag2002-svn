@@ -34,7 +34,7 @@
 #include <ctd_main.h>
 #include "ctd_chatprotocol.h"
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_CHATSRV_VRC    "ChatServerVRC"
@@ -42,7 +42,7 @@ namespace CTD
 class ChatManager;
 
 //! VRC chat server
-class EnChatServerVRC : public BaseEntity, public ChatProtocolCallback
+class EnChatServerVRC : public yaf3d::BaseEntity, public ChatProtocolCallback
 {
     public:
                                                     EnChatServerVRC();
@@ -69,11 +69,11 @@ class EnChatServerVRC : public BaseEntity, public ChatProtocolCallback
 };
 
 //! Entity type definition used for type registry
-class ChatServerVRCEntityFactory : public BaseEntityFactory
+class ChatServerVRCEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     ChatServerVRCEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_CHATSRV_VRC, BaseEntityFactory::Server )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_CHATSRV_VRC, yaf3d::BaseEntityFactory::Server )
                                                     {}
 
         virtual                                     ~ChatServerVRCEntityFactory() {}

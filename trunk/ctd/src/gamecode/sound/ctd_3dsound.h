@@ -33,13 +33,13 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_3DSOUND    "3DSound"
 
 //! 3DSound Entity
-class En3DSound : public BaseEntity
+class En3DSound : public yaf3d::BaseEntity
 {
     public:
                                                     En3DSound();
@@ -64,7 +64,7 @@ class En3DSound : public BaseEntity
     protected:
 
         // Handler system notifications
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! This entity needs updating
         void                                        updateEntity( float deltaTime );
@@ -108,11 +108,11 @@ class En3DSound : public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class ThreeDSoundEntityFactory : public BaseEntityFactory
+class ThreeDSoundEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     ThreeDSoundEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_3DSOUND, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_3DSOUND, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~ThreeDSoundEntityFactory() {}

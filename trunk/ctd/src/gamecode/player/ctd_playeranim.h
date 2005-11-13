@@ -44,7 +44,7 @@
 #include <osgCal/CoreModel>
 #include <osgCal/Model>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_PLANIM    "PlayerAnimation"
@@ -52,7 +52,7 @@ namespace CTD
 class BasePlayerImplementation;
 
 //! Class for controling player animations
-class EnPlayerAnimation  : public BaseEntity
+class EnPlayerAnimation  : public yaf3d::BaseEntity
 {
 
     public:
@@ -160,11 +160,11 @@ class EnPlayerAnimation  : public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class PlayerAnimationEntityFactory : public BaseEntityFactory
+class PlayerAnimationEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     PlayerAnimationEntityFactory() :
-                                                     BaseEntityFactory( ENTITY_NAME_PLANIM, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PLANIM, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~PlayerAnimationEntityFactory() {}
@@ -172,6 +172,6 @@ class PlayerAnimationEntityFactory : public BaseEntityFactory
         Macro_CreateEntity( EnPlayerAnimation );
 };
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_PLAYERANIM_H_

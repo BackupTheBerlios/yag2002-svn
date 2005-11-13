@@ -32,9 +32,7 @@
 #include "ctd_basecmd.h"
 #include "ctd_cmdloadentities.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -88,15 +86,15 @@ const std::string& CmdLoadEntities::execute( const std::vector< std::string >& a
     _cmdResult = "loading entities ...\n";
 
     // load entities
-    std::vector< BaseEntity* > entities;
-    if ( !LevelManager::get()->loadEntities( file, &entities, postfix ) )
+    std::vector< yaf3d::BaseEntity* > entities;
+    if ( !yaf3d::LevelManager::get()->loadEntities( file, &entities, postfix ) )
     {
         _cmdResult = "* error loading entity file";
         return _cmdResult;
     }
     _cmdResult = "loading completed\n";
 
-    stringstream statistics;
+    std::stringstream statistics;
     statistics << "number of created entities: " << entities.size();
 
     if ( !initentities )
@@ -108,7 +106,7 @@ const std::string& CmdLoadEntities::execute( const std::vector< std::string >& a
     _cmdResult = "setting up entities ...\n";
 
     // setup entities
-    std::vector< BaseEntity* >::iterator pp_beg = entities.begin(), pp_end = entities.end();
+    std::vector< yaf3d::BaseEntity* >::iterator pp_beg = entities.begin(), pp_end = entities.end();
     for ( ; pp_beg != pp_end; pp_beg++ )
     {
         _cmdResult += ( *pp_beg )->getInstanceName() + "(" + ( *pp_beg )->getTypeName() + ")   ";
@@ -125,4 +123,4 @@ const std::string& CmdLoadEntities::execute( const std::vector< std::string >& a
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

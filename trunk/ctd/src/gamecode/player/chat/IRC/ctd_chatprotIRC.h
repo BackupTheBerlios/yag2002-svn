@@ -38,7 +38,7 @@
 #include "libIRC/libircclient.h"
 
 
-namespace CTD
+namespace vrc
 {
 
 // some C funtion declarations ( it's used for wrapping IRC lib )
@@ -118,5 +118,5 @@ class ChatNetworkingIRC : public OpenThreads::Thread, public BaseChatProtocol
     friend void event_nick( irc_session_t* p_session, const char* p_event, const char* p_origin, const char** pp_params, unsigned int count );
 };
 
-} // namespace CTD
+} // namespace vrc
 #endif // _CTD_CHATPROTIRC_H_

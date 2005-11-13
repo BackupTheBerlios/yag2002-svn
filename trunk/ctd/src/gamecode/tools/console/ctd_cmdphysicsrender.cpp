@@ -32,7 +32,7 @@
 #include "ctd_basecmd.h"
 #include "ctd_cmdphysicsrender.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -56,11 +56,11 @@ const std::string& CmdPhysicsRender::execute( const std::vector< std::string >& 
 
     _enableDebugRendering = !_enableDebugRendering;
     if ( _enableDebugRendering )
-        Physics::get()->enableDebugRender();
+        yaf3d::Physics::get()->enableDebugRender();
     else
-        Physics::get()->disableDebugRender();
+        yaf3d::Physics::get()->disableDebugRender();
 
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

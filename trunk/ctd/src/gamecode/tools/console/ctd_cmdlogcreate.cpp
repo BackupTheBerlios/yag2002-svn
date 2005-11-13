@@ -19,7 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # console command for creating a log channel for console output
+ # console command for creating a yaf3d::log channel for console output
  #
  #   date of creation:  06/16/2005
  #
@@ -33,7 +33,7 @@
 #include "ctd_cmdlogcreate.h"
 #include "ctd_console.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -80,14 +80,14 @@ const std::string& CmdLogCreate::execute( const std::vector< std::string >& argu
             logfile = arguments[ 0 ];
     }
 
-    EnConsole* p_console = static_cast< EnConsole* >( EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
+    EnConsole* p_console = static_cast< EnConsole* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
     if ( !p_console->createLog( logfile, append ) )
     {
-        _cmdResult = "* cannot create log file '" + logfile + "', check the file path!";
+        _cmdResult = "* cannot create yaf3d::log file '" + logfile + "', check the file path!";
         return _cmdResult;
     }
 
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

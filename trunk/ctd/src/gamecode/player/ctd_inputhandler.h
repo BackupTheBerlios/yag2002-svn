@@ -46,7 +46,7 @@
 #include "ctd_playerphysics.h"
 #include "../visuals/ctd_camera.h"
 
-namespace CTD
+namespace vrc
 {
 
 // Pitch limit
@@ -60,7 +60,7 @@ namespace CTD
 
 //! Input handler class for player, it controls player character and camera
 template< class PlayerImplT >
-class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
+class PlayerIHCharacterCameraCtrl : public yaf3d::GenericInputHandler< PlayerImplT >
 {
     public:
 
@@ -110,7 +110,7 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
                                                 {
                                                     // get the current screen size
                                                     unsigned int width, height;
-                                                    Application::get()->getScreenSize( width, height );
+                                                    yaf3d::Application::get()->getScreenSize( width, height );
                                                     _screenSizeX = float( width );
                                                     _screenSizeY = float( height );
 
@@ -191,6 +191,6 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
 
 #include "ctd_inputhandler.inl"
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_INPUTHANDLER_H_

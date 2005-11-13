@@ -45,7 +45,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 //! Entity name
@@ -57,7 +57,7 @@ namespace CTD
 class BasePlayerImplementation;
 
 //! Player entity
-class EnPlayer : public BaseEntity
+class EnPlayer : public yaf3d::BaseEntity
 {
     public:
 
@@ -91,7 +91,7 @@ class EnPlayer : public BaseEntity
         inline BasePlayerImplementation*            getPlayerImplementation();
 
         //! Register an entity for getting player deletion notification
-        void                                        registerNotifyDeletion( BaseEntity* p_entity );
+        void                                        registerNotifyDeletion( yaf3d::BaseEntity* p_entity );
 
         //! Get last update time
         inline float                                getDeltaTime() const;
@@ -146,8 +146,8 @@ class EnPlayer : public BaseEntity
         //! Update entity
         void                                        updateEntity( float deltaTime );
 
-        //! Override this method of BaseEntity to get notifications (from menu system)
-        void                                        handleNotification( const EntityNotification& notification );
+        //! Override this method of yaf3d::BaseEntity to get notifications (from menu system)
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Spawn player considering spawn points in level
         void                                        spawn();
@@ -165,18 +165,18 @@ class EnPlayer : public BaseEntity
         BasePlayerImplementation*                   _p_playerImpl;
 
         //! List of registered entities for getting deletion notification
-        std::vector< BaseEntity* >                  _deletionNotifications;
+        std::vector< yaf3d::BaseEntity* >                  _deletionNotifications;
 
         //! Stored deltaTime needed by some player components
         float                                       _deltaTime;
 };
 
 //! Entity type definition used for type registry
-class PlayerEntityFactory : public BaseEntityFactory
+class PlayerEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     PlayerEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_PLAYER, BaseEntityFactory::Standalone | BaseEntityFactory::Client | BaseEntityFactory::Server )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PLAYER, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client | yaf3d::BaseEntityFactory::Server )
                                                     {}
 
         virtual                                     ~PlayerEntityFactory() {}
@@ -225,6 +225,6 @@ inline float EnPlayer::getDeltaTime() const
     return _deltaTime;
 }
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_PLAYER_H_

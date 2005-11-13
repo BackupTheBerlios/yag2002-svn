@@ -33,7 +33,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_SHOWPLAYERINFO    "show.playerinfo"
@@ -59,6 +59,6 @@ class CmdShowPlayerInfo : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CMDSHOWPLAYERINFO_H_

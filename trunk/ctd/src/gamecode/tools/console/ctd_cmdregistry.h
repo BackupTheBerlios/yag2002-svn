@@ -33,13 +33,13 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 class EnConsole;
 class BaseConsoleCommand;
 
-class ConsoleCommandRegistry : public Singleton< ConsoleCommandRegistry >
+class ConsoleCommandRegistry : public yaf3d::Singleton< ConsoleCommandRegistry >
 {
     public:
 
@@ -64,11 +64,11 @@ class ConsoleCommandRegistry : public Singleton< ConsoleCommandRegistry >
         //! Lookup table for all registered commands < cmd name, cmd object >
         std::map< std::string, BaseConsoleCommand* > _cmdRegistry;
 
-    friend class Singleton< ConsoleCommandRegistry >;
+    friend class yaf3d::Singleton< ConsoleCommandRegistry >;
     friend class EnConsole;
 };
 
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CMDREGISTRY_H_

@@ -38,10 +38,10 @@
 #include "../ctd_chatprotocol.h"
 
 class ChatNetworkingVRC;
-class CTD::ChatConnectionConfig;
+class vrc::ChatConnectionConfig;
 
 //!  Networking implementation for VRC protocol
-class ImplChatNetworkingVRC : _RO_DO_PUBLIC_RO( ImplChatNetworkingVRC ), public CTD::SessionNotifyCallback
+class ImplChatNetworkingVRC : _RO_DO_PUBLIC_RO( ImplChatNetworkingVRC ), public yaf3d::SessionNotifyCallback
 {
 
     public:
@@ -65,7 +65,7 @@ class ImplChatNetworkingVRC : _RO_DO_PUBLIC_RO( ImplChatNetworkingVRC ), public 
         //! Object can now be initialized in scene ( on clients )
         void                                        PostObjectCreate();
 
-        // CTD networking interface overrides
+        // vrc networking interface overrides
         //-----------------------------------------------------------------------------------//
 
         //! Overridden method for getting notification when a client joins to the network
@@ -134,7 +134,7 @@ class ImplChatNetworkingVRC : _RO_DO_PUBLIC_RO( ImplChatNetworkingVRC ), public 
 };
 
 //!  Handler for VRC protocol
-class ChatNetworkingVRC : public CTD::BaseChatProtocol
+class ChatNetworkingVRC : public vrc::BaseChatProtocol
 {
 
     public:
@@ -147,7 +147,7 @@ class ChatNetworkingVRC : public CTD::BaseChatProtocol
         ChatNetworkingVRC*                          createInstance();
 
         //! Create a new connection to a chat server
-        void                                        createConnection( const CTD::ChatConnectionConfig& conf );
+        void                                        createConnection( const vrc::ChatConnectionConfig& conf );
 
         //! This method is called uppon establishing the connection
         void                                        connected();
@@ -199,7 +199,7 @@ class ChatNetworkingVRC : public CTD::BaseChatProtocol
 
         ImplChatNetworkingVRC*                      _p_nwImpl;
 
-        CTD::ChatConnectionConfig*                  _p_config;
+        vrc::ChatConnectionConfig*                  _p_config;
 };
 
 #endif // _CTD_CHATPROTVRC_H_

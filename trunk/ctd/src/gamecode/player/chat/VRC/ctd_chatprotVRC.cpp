@@ -30,6 +30,7 @@
  ################################################################*/
 
 #include <ctd_main.h>
+#include <ctd_gameutils.h>
 #include "ctd_chatprotVRC.h"
 #include "../ctd_chatmgr.h"
 #include "../../ctd_playerimpl.h"
@@ -47,7 +48,7 @@ _p_protVRC( p_nw )
 {
     // store sesstion ids
     _serverSID = GetSessionID();
-    _clientSID = CTD::NetworkDevice::get()->getSessionID();
+    _clientSID = yaf3d::NetworkDevice::get()->getSessionID();
     assert( ( _serverSID >= 0 ) && "invalid server session id!" );
     assert( ( _clientSID >= 0 ) && "invalid client session id!" );
 
@@ -62,19 +63,19 @@ _p_protVRC( p_nw )
         _p_protVRC->setNetworkingImpl( this );
 
         // we have to setup the player chat manager now when the object is replicated
-        CTD::ChatManager* p_playerChatMgr = CTD::BasePlayerImplementation::getChatManager();
+        vrc::ChatManager* p_playerChatMgr = vrc::BasePlayerImplementation::getChatManager();
         _p_protVRC->registerProtocolCallback( p_playerChatMgr, "*" );
 
         // use player name as default nickname
         std::string playername;
-        CTD::Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, playername );
+        yaf3d::Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, playername );
         strcpy( _config._nickname, playername.c_str() );
     }
     else
     { // this code is executed on server
         strcpy( _config._nickname, "" );
         // register for getting network session joining / leaving notification
-        CTD::NetworkDevice::get()->registerSessionNotify( this );
+        yaf3d::NetworkDevice::get()->registerSessionNotify( this );
     }
 }
 
@@ -90,7 +91,7 @@ void ImplChatNetworkingVRC::PostObjectCreate()
     _p_protVRC->connected();
 
     // do an RPC on server object
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "requesting VRC server to join ..." << std::endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "requesting VRC server to join ..." << std::endl;
     NOMINATED_REPLICAS_FUNCTION_CALL( 1, &_serverSID, RPC_RequestJoin( _config ) );
 }
 
@@ -148,7 +149,7 @@ std::string ImplChatNetworkingVRC::makeUniqueNickname( const std::string& reqnic
 void ImplChatNetworkingVRC::RPC_InitializeClient( tChatData chatdata )
 {
     chatdata._nickname[ sizeof( chatdata._nickname ) - 1 ] = '\0';
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "successfully joined to VRC chat server, our nickname: " << chatdata._nickname << std::endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "successfully joined to VRC chat server, our nickname: " << chatdata._nickname << std::endl;
     // store the server given nick name
     std::string channel;
     _p_protVRC->recvNicknameChange( chatdata._nickname, _config._nickname );
@@ -157,8 +158,8 @@ void ImplChatNetworkingVRC::RPC_InitializeClient( tChatData chatdata )
 
 void ImplChatNetworkingVRC::RPC_RequestJoin( tChatData chatdata )
 {
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "VRC chat server got joining request" << std::endl;
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "nickname: " << chatdata._nickname << ", sid: " << chatdata._sessionID << std::endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "VRC chat server got joining request" << std::endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "nickname: " << chatdata._nickname << ", sid: " << chatdata._sessionID << std::endl;
 
     chatdata._nickname[ sizeof( chatdata._nickname ) - 1 ] = '\0';
     // create a unique nickname
@@ -197,7 +198,7 @@ void ImplChatNetworkingVRC::RPC_ClientJoined( tChatData chatdata )
 void ImplChatNetworkingVRC::RPC_RequestLeave( tChatData chatdata )
 { // this is called only on server
 
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "request leaving: " << chatdata._nickname << " " << chatdata._sessionID << std::endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "request leaving: " << chatdata._nickname << " " << chatdata._sessionID << std::endl;
 
     // remove client form nickname lookup
     std::map< int, std::string >::iterator p_it = _nickNames.find( chatdata._sessionID );
@@ -312,7 +313,7 @@ void ImplChatNetworkingVRC::postChatText( const CEGUI::String& text )
     if ( !text.compare( 0, 1, "/" ) )
     {
         std::vector< std::string > args;
-        CTD::explode( text.c_str(), " ", &args );
+        yaf3d::explode( text.c_str(), " ", &args );
 
         // all commands without arguments go here
         if ( args.size() == 1 )
@@ -394,7 +395,7 @@ ChatNetworkingVRC* ChatNetworkingVRC::createInstance()
     return p_inst;
 }
 
-void ChatNetworkingVRC::createConnection( const CTD::ChatConnectionConfig& conf )
+void ChatNetworkingVRC::createConnection( const vrc::ChatConnectionConfig& conf )
 {
 }
 
@@ -417,7 +418,7 @@ void ChatNetworkingVRC::connected()
 {
     if ( !_p_config )
     {
-        _p_config  = new CTD::ChatConnectionConfig;
+        _p_config  = new vrc::ChatConnectionConfig;
         _p_config->_nickname = "NOT-SET";
         _p_config->_protocol = "VRC";
         _p_config->_p_protocolHandler = this;
@@ -445,7 +446,7 @@ void ChatNetworkingVRC::getMemberList( const std::string& channel, std::vector< 
 
 void ChatNetworkingVRC::joined( const std::string& channel, const std::string& name )
 {
-    CTD::ChatConnectionConfig cfg( *_p_config );
+    vrc::ChatConnectionConfig cfg( *_p_config );
     cfg._nickname = name;
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
     for ( ; p_beg != p_end; p_beg++ )
@@ -455,7 +456,7 @@ void ChatNetworkingVRC::joined( const std::string& channel, const std::string& n
 
 void ChatNetworkingVRC::left( const std::string& channel, const std::string& name )
 {
-    CTD::ChatConnectionConfig cfg( *_p_config );
+    vrc::ChatConnectionConfig cfg( *_p_config );
     cfg._nickname = name;
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
     for ( ; p_beg != p_end; p_beg++ )
@@ -469,6 +470,9 @@ void ChatNetworkingVRC::recvNicknameChange( const std::string& newname, const st
     for ( ; p_beg != p_end; p_beg++ )
         if ( ( p_beg->first == _p_config->_channel ) || ( p_beg->first == "*" ) )
             p_beg->second->onNicknameChanged( newname, oldname );
+
+    // we change the player name too
+    vrc::gameutils::PlayerUtils::get()->changeLocalPlayerName( newname );
 }
 
 void ChatNetworkingVRC::recvMessage( const std::string& channel, const std::string& sender, const std::string& msg )

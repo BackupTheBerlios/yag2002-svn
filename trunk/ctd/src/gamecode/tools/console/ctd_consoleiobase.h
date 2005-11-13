@@ -33,7 +33,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 class EnConsole;
@@ -67,6 +67,6 @@ class ConsoleIOBase
         EnConsole*                                  _p_consoleEntity;
 };
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CONSOLE_IO_BASE_H_

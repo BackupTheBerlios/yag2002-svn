@@ -33,7 +33,7 @@
 #include "ctd_chatmgr.h"
 #include "VRC/ctd_chatprotVRC.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the VRC chat server entity factory
@@ -41,7 +41,7 @@ CTD_IMPL_ENTITYFACTORY_AUTO( ChatServerVRCEntityFactory );
 
 
 EnChatServerVRC::EnChatServerVRC():
-_logFile( "chatsrvVRC.log" ),
+_logFile( "chatsrvVRC.yaf3d::log" ),
 _p_chatMgr( NULL )
 {
     // register entity attributes
@@ -54,7 +54,7 @@ EnChatServerVRC::~EnChatServerVRC()
 
 void EnChatServerVRC::initialize()
 {
-    assert( ( CTD::GameState::get()->getMode() == CTD::GameState::Server ) && "this entity must only be used in server mode!" );
+    assert( ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server ) && "this entity must only be used in server mode!" );
     _p_chatMgr = new ChatManager;
 
     // create VRC protocol
@@ -68,7 +68,7 @@ void EnChatServerVRC::initialize()
 
 
     // register entity in order to get updated per simulation step
-    EntityManager::get()->registerUpdate( this );   
+    yaf3d::EntityManager::get()->registerUpdate( this );   
 }
 
 void EnChatServerVRC::onConnection( const ChatConnectionConfig& config )

@@ -34,7 +34,7 @@
 #define _CTD_CHATPROTOCOLS_H_
 
 
-namespace CTD
+namespace vrc
 {
 
 class BaseChatProtocol;
@@ -136,5 +136,5 @@ class BaseChatProtocol
         BaseChatProtocol&                           operator = ( const BaseChatProtocol& );
 };
 
-} // namespace CTD
+} // namespace vrc
 #endif // _CTD_CHATPROTOCOLS_H_

@@ -32,9 +32,7 @@
 #include "ctd_pointlight.h"
 #include "ctd_lightmanager.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 //-----------------
 //! Implement and register the pointlight entity factory
@@ -59,7 +57,7 @@ EnPointLight::~EnPointLight()
 {
 }
 
-void EnPointLight::handleNotification( const EntityNotification& notification )
+void EnPointLight::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle notifications
     switch( notification.getId() )
@@ -125,9 +123,9 @@ void EnPointLight::initialize()
     // set mesh if one defined
     if ( _meshFile.length() )
     {
-        osg::ref_ptr< osg::Node > mesh = LevelManager::get()->loadMesh( _meshFile );
+        osg::ref_ptr< osg::Node > mesh = yaf3d::LevelManager::get()->loadMesh( _meshFile );
         if ( !mesh.valid() ) 
-            log << Log::LogLevel( Log::L_WARNING ) << " cannot find mesh file" << _meshFile << endl;
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << " cannot find mesh file" << _meshFile << std::endl;
         else
             addToTransformationNode( mesh.get() );
     }

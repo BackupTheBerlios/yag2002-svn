@@ -31,7 +31,7 @@
 #include <ctd_main.h>
 #include "ctd_ambientsound.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the ambient sound entity factory
@@ -63,7 +63,7 @@ EnAmbientSound::~EnAmbientSound()
     }
 }
 
-void EnAmbientSound::handleNotification( const EntityNotification& notification )
+void EnAmbientSound::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle menu entring / leaving
     switch( notification.getId() )
@@ -91,7 +91,7 @@ void EnAmbientSound::handleNotification( const EntityNotification& notification 
 
 void EnAmbientSound::initialize()
 {
-    osgAL::SoundManager::instance()->addFilePath( Application::get()->getMediaPath() + _soundFileDir );
+    osgAL::SoundManager::instance()->addFilePath( yaf3d::Application::get()->getMediaPath() + _soundFileDir );
 
     openalpp::Sample* p_sample = NULL;
     try {
@@ -99,15 +99,15 @@ void EnAmbientSound::initialize()
         p_sample = osgAL::SoundManager::instance()->getSample( _soundFile );
         if ( !p_sample )
         {
-            log << Log::LogLevel( Log::L_WARNING ) << "*** cannot create sampler for '" << _soundFileDir + _soundFile << "'" << std::endl;
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "*** cannot create sampler for '" << _soundFileDir + _soundFile << "'" << std::endl;
             return;
         }
 
     } 
     catch ( const openalpp::Error& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading sound file" << std::endl;
-        log << Log::LogLevel( Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error loading sound file" << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
         return;
     }
 
@@ -145,7 +145,7 @@ void EnAmbientSound::initialize()
     _p_soundNode->setSoundState( _soundState.get() );
 
     // register entity in order to get menu notifications
-    EntityManager::get()->registerNotification( this, true );
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 void EnAmbientSound::startPlaying()
@@ -186,4 +186,4 @@ float EnAmbientSound::getVolume()
     return _volume;
 }
 
-} // namespace CTD
+} // namespace vrc

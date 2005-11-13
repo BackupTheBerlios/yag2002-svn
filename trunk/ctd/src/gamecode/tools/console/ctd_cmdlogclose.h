@@ -19,7 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # console command for closing an open log channel
+ # console command for closing an open yaf3d::log channel
  #
  #   date of creation:  06/16/2005
  #
@@ -33,16 +33,16 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
-#define CMD_NAME_LOGCLOSE    "log.close"
-#define CMD_USAGE_LOGCLOSE   "close an open log channel.\n"\
-                             "use: log.close"
+#define CMD_NAME_LOGCLOSE    "yaf3d::log.close"
+#define CMD_USAGE_LOGCLOSE   "close an open yaf3d::log channel.\n"\
+                             "use: yaf3d::log.close"
 
 class BaseConsoleCommand;
 
-//! Class for command 'log.close'
+//! Class for command 'yaf3d::log.close'
 class CmdLogClose : public BaseConsoleCommand
 {
     public:
@@ -55,6 +55,6 @@ class CmdLogClose : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CMDLOGCLOSE_H_

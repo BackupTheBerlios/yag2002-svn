@@ -29,7 +29,7 @@
  #
  ################################################################*/
 
-namespace CTD
+namespace vrc
 {
 
 inline void EnPhysicsBase::updateSound( float deltaTime )
@@ -42,7 +42,7 @@ template< class EntityT >
 int entityContactProcessLevel( const NewtonMaterial* p_material, const NewtonContact* p_contact )
 {
     // set right parameters for predfined materials
-    Physics::levelContactProcess( p_material, p_contact );
+    yaf3d::Physics::levelContactProcess( p_material, p_contact );
 
     // determine which body is the cylinder entity
 	NewtonBody*        p_body = s_entityColStruct->_p_body1;
@@ -50,7 +50,7 @@ int entityContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
     void*              p_userData = NewtonBodyGetUserData( p_body );
     if ( p_userData ) // check for entity collision
     {
-        BaseEntity* p_entity = reinterpret_cast< BaseEntity* >( p_userData );
+        yaf3d::BaseEntity* p_entity = reinterpret_cast< yaf3d::BaseEntity* >( p_userData );
         p_ent  = dynamic_cast< EntityT* >( p_entity );
         if ( !p_ent )
         {
@@ -64,8 +64,8 @@ int entityContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
     }
 
     // let the phyiscs core calculate the tangent and normal speeds
-    Physics::genericContactProcess( p_material, p_contact );
-    CollisionStruct* p_colStruct = Physics::getCollisionStruct();
+    yaf3d::Physics::genericContactProcess( p_material, p_contact );
+    yaf3d::CollisionStruct* p_colStruct = yaf3d::Physics::getCollisionStruct();
     p_ent->_contactMaxNormalSpeed  = p_colStruct->_contactMaxNormalSpeed;
     p_ent->_contactMaxTangentSpeed = p_colStruct->_contactMaxTangentSpeed;
 
@@ -82,20 +82,20 @@ int entityContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
                 p_ent->playSoundColStone();
                 break;
 
-            case Physics::MAT_DEFAULT:
-            case Physics::MAT_METALL:
+            case yaf3d::Physics::MAT_DEFAULT:
+            case yaf3d::Physics::MAT_METALL:
                 p_ent->playSoundColMetal();
                 break;
 
-            case Physics::MAT_WOOD:
+            case yaf3d::Physics::MAT_WOOD:
                 p_ent->playSoundColWood();
                 break;
 
-            case Physics::MAT_STONE:
+            case yaf3d::Physics::MAT_STONE:
                 p_ent->playSoundColStone();
                 break;
 
-            case Physics::MAT_GRASS:
+            case yaf3d::Physics::MAT_GRASS:
                 p_ent->playSoundColGrass();
                 break;
 
@@ -108,4 +108,4 @@ int entityContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
     return 1;
 }
 
-} // namespace CTD
+} // namespace vrc

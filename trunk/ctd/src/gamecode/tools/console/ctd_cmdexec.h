@@ -34,7 +34,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_EXEC    "exec"
@@ -63,6 +63,6 @@ class CmdExec : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CMDUNLOADLEVEL_H_

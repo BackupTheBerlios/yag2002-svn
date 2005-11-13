@@ -35,7 +35,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_CAMERA    "Camera"
@@ -44,7 +44,7 @@ class CameraFrameHandler;
 
 //! This entity controls the camera
 //! Note: take care that you don't have more than one enabled camera at same time!
-class EnCamera :  public BaseEntity
+class EnCamera :  public yaf3d::BaseEntity
 {
     public:
                                                     EnCamera();
@@ -135,7 +135,7 @@ class EnCamera :  public BaseEntity
 
         //! This entity is persistent so we have to handle entity's update registration on every level loading and
         //  destruction ourselves.
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Overriden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraPosition!
         void                                        setPosition( osg::Vec3f& pos );
@@ -193,11 +193,11 @@ class EnCamera :  public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class CameraEntityFactory : public BaseEntityFactory
+class CameraEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     CameraEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_CAMERA, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_CAMERA, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~CameraEntityFactory() {}

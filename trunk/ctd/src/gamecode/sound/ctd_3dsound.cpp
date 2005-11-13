@@ -31,7 +31,7 @@
 #include <ctd_main.h>
 #include "ctd_3dsound.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the 3d sound entity factory
@@ -69,7 +69,7 @@ En3DSound::~En3DSound()
     }
 }
 
-void En3DSound::handleNotification( const EntityNotification& notification )
+void En3DSound::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle menu entring / leaving
     switch( notification.getId() )
@@ -98,7 +98,7 @@ void En3DSound::handleNotification( const EntityNotification& notification )
 void En3DSound::initialize()
 {
     // set file search path for sound resources
-    osgAL::SoundManager::instance()->addFilePath( Application::get()->getMediaPath() + _soundFileDir );
+    osgAL::SoundManager::instance()->addFilePath( yaf3d::Application::get()->getMediaPath() + _soundFileDir );
 
     openalpp::Sample* p_sample = NULL;
     try {
@@ -110,8 +110,8 @@ void En3DSound::initialize()
     } 
     catch ( const openalpp::Error& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading sound file in '" << getInstanceName() << "'" << std::endl;
-        log << Log::LogLevel( Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error loading sound file in '" << getInstanceName() << "'" << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
         return;
     }
  
@@ -153,22 +153,22 @@ void En3DSound::initialize()
     // this is for debugging
     if ( _sourceMesh.length() )
     {
-        osg::Node* p_mesh = LevelManager::get()->loadMesh( _sourceMesh );
+        osg::Node* p_mesh = yaf3d::LevelManager::get()->loadMesh( _sourceMesh );
         if ( p_mesh )
         {
             addToTransformationNode( p_mesh );
             setPosition( _position );
             // register entity in order to get updated per simulation step
-            EntityManager::get()->registerUpdate( this );   
+            yaf3d::EntityManager::get()->registerUpdate( this );   
         }
         else
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "*** error loading mesh file for sound source 'sound/soundsrc.osg'" << std::endl;
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error loading mesh file for sound source 'sound/soundsrc.osg'" << std::endl;
         }
     }
 
     // register entity in order to get menu notifications
-    EntityManager::get()->registerNotification( this, true );
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 void En3DSound::updateEntity( float deltaTime )
@@ -220,4 +220,4 @@ float En3DSound::getVolume()
     return _volume;
 }
 
-} // namespace CTD
+} // namespace vrc

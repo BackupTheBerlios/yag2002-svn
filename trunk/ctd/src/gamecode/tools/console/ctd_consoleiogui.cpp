@@ -33,7 +33,7 @@
 #include "ctd_consoleiogui.h"
 
 
-namespace CTD
+namespace vrc
 {
 
 #define CON_WND             "_console_gui_"
@@ -42,11 +42,11 @@ namespace CTD
 
 ConsoleIOGui::ConsoleIOGui( EnConsole* p_console ) : 
  ConsoleIOBase( p_console ),
- GenericInputHandler< EnConsole >( p_console ),
+ yaf3d::GenericInputHandler< EnConsole >( p_console ),
  _toggleEnable( false )
 {
-    _retCode = static_cast< int >( KeyMap::get()->getKeyCode( KEY_ISSUE_CMD ) );
-    _autoCompleteCode = static_cast< int >( KeyMap::get()->getKeyCode( KEY_AUTOCOMPLETE ) );
+    _retCode = static_cast< int >( yaf3d::KeyMap::get()->getKeyCode( KEY_ISSUE_CMD ) );
+    _autoCompleteCode = static_cast< int >( yaf3d::KeyMap::get()->getKeyCode( KEY_AUTOCOMPLETE ) );
 
     try
     {
@@ -58,7 +58,7 @@ ConsoleIOGui::ConsoleIOGui( EnConsole* p_console ) :
         _p_wnd->setAlwaysOnTop( true );
         _p_wnd->setText( "command console" );
         _p_wnd->setMinimumSize( CEGUI::Size( 0.2f, 0.2f ) );
-        _p_wnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::ConsoleIOGui::onCloseFrame, this ) );
+        _p_wnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &vrc::ConsoleIOGui::onCloseFrame, this ) );
 
         _p_outputWindow = static_cast< CEGUI::MultiLineEditbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/MultiLineEditbox", CON_WND "output" ) );
         _p_outputWindow->setReadOnly( true );
@@ -77,8 +77,8 @@ ConsoleIOGui::ConsoleIOGui( EnConsole* p_console ) :
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** Console GUI: cannot setup dialog layout." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** Console GUI: cannot setup dialog layout." << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
                                         
@@ -143,12 +143,12 @@ void ConsoleIOGui::enable( bool en )
 
     if ( en )
     {
-        GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
+        yaf3d::GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
         _p_inputWindow->activate();
     }
     else
     {
-        GuiManager::get()->getRootWindow()->removeChildWindow( _p_wnd );
+        yaf3d::GuiManager::get()->getRootWindow()->removeChildWindow( _p_wnd );
         _p_inputWindow->deactivate();
     }
 
@@ -178,4 +178,4 @@ bool ConsoleIOGui::onCloseFrame( const CEGUI::EventArgs& arg )
     return true;
 }
 
-} // namespace CTD
+} // namespace vrc

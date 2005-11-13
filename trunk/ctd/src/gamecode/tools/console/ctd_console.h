@@ -33,7 +33,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_CONSOLE    "Console"
@@ -41,7 +41,7 @@ namespace CTD
 class ConsoleIOBase;
 
 //! Console entity
-class EnConsole :  public BaseEntity
+class EnConsole :  public yaf3d::BaseEntity
 {
     public:
                                                     EnConsole();
@@ -72,11 +72,11 @@ class EnConsole :  public BaseEntity
         //! Trigger idle state for 'steps' updates, while in idle state no queued commands are executed
         void                                        triggerIdle( unsigned int steps );
 
-        //! Creates a log file and directs all console outputs also to that file. Returns fals if the log file could not be created.
-        //! If append is false then an existing log file will be recreated.
+        //! Creates a yaf3d::log file and directs all console outputs also to that file. Returns fals if the yaf3d::log file could not be created.
+        //! If append is false then an existing yaf3d::log file will be recreated.
         bool                                        createLog( const std::string& filename, bool append = false );
 
-        //! Closes the currently active log. Returns false if there is no active log previously created with createLog.
+        //! Closes the currently active yaf3d::log. Returns false if there is no active yaf3d::log previously created with createLog.
         bool                                        closeLog();
 
         //! Set current working directory. Returns false if the path could not be set.
@@ -112,7 +112,7 @@ class EnConsole :  public BaseEntity
         void                                        parseArguments( const std::string& cmdline, std::vector< std::string >& args );
 
         //! Override notification callback
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         bool                                        _enable;
 
@@ -140,11 +140,11 @@ class EnConsole :  public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class ConsoleEntityFactory : public BaseEntityFactory
+class ConsoleEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     ConsoleEntityFactory() : 
-          BaseEntityFactory( ENTITY_NAME_CONSOLE, BaseEntityFactory::Standalone | BaseEntityFactory::Client | BaseEntityFactory::Server )
+          yaf3d::BaseEntityFactory( ENTITY_NAME_CONSOLE, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client | yaf3d::BaseEntityFactory::Server )
                                                     {}
 
         virtual                                     ~ConsoleEntityFactory() {}
@@ -152,6 +152,6 @@ class ConsoleEntityFactory : public BaseEntityFactory
         Macro_CreateEntity( EnConsole );
 };
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_CONSOLE_H_

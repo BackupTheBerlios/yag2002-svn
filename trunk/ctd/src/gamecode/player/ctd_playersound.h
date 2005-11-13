@@ -41,7 +41,7 @@
 
 #include <ctd_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_PLSOUND   "PlayerSound"
@@ -50,7 +50,7 @@ class PlayerSoundIH;
 class BasePlayerImplementation;
 
 //! Entity for player sounds
-class EnPlayerSound  : public BaseEntity
+class EnPlayerSound  : public yaf3d::BaseEntity
 {
 
     public:
@@ -95,7 +95,7 @@ class EnPlayerSound  : public BaseEntity
     protected:
 
         // Handler system notifications
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Helper method; stops all other sounds except given one ( p_state )
         void                                        stopOtherSounds( const osgAL::SoundState* p_state );
@@ -144,11 +144,11 @@ class EnPlayerSound  : public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class PlayerSoundEntityFactory : public BaseEntityFactory
+class PlayerSoundEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     PlayerSoundEntityFactory() :
-                                                     BaseEntityFactory( ENTITY_NAME_PLSOUND, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PLSOUND, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~PlayerSoundEntityFactory() {}
@@ -156,6 +156,6 @@ class PlayerSoundEntityFactory : public BaseEntityFactory
         Macro_CreateEntity( EnPlayerSound );
 };
 
-} // namespace CTD
+} // namespace vrc
 
 #endif // _CTD_PLAYERSOUND_H_

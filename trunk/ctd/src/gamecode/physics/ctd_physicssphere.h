@@ -34,7 +34,7 @@
 #include <ctd_main.h>
 #include "ctd_physicsbase.h"
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_PHYSICSSPHERE    "PhysicsSphere"
@@ -90,11 +90,11 @@ class EnPhysicsSphere : public EnPhysicsBase
 };
 
 //! Entity type definition used for type registry
-class PhysicsSphereEntityFactory : public BaseEntityFactory
+class PhysicsSphereEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     PhysicsSphereEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_PHYSICSSPHERE, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PHYSICSSPHERE, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~PhysicsSphereEntityFactory() {}
