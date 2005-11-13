@@ -3,7 +3,7 @@
 #ifdef _WIN32
 #pragma warning(disable : 4786)
 #endif
-#include "../ctd_chatprotVRC.h"
+#include "../vrc_chatprotVRC.h"
 _RO_DO_STD_FRAMEWORK(ImplChatNetworkingVRC);
 #include "RNReplicaNet/Inc/DataBlock_Function.h"
 _RO_DO_MEMBERFUNC_PRESTAGE_DEF(ImplChatNetworkingVRC,RPC_RequestJoin)

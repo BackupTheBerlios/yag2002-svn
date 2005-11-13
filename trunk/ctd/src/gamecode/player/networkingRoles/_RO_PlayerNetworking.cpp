@@ -3,7 +3,7 @@
 #ifdef _WIN32
 #pragma warning(disable : 4786)
 #endif
-#include "../ctd_playernetworking.h"
+#include "../vrc_playernetworking.h"
 _RO_DO_STD_FRAMEWORK(PlayerNetworking);
 #include "RNReplicaNet/Inc/DataBlock_Function.h"
 _RO_DO_MEMBERFUNC_PRESTAGE_DEF(PlayerNetworking,RPC_Initialize)
