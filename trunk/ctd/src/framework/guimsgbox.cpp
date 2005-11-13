@@ -28,10 +28,10 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_log.h"
-#include "ctd_utils.h"
-#include "ctd_guimsgbox.h"
+#include <base.h>
+#include "log.h"
+#include "utils.h"
+#include "guimsgbox.h"
 
 namespace yaf3d
 {
@@ -53,7 +53,7 @@ _autodel( autodelete )
 
     // determine the size of messagebox needed to show the required message text
     //--------
-    CEGUI::Font* p_font = GuiManager::get()->getFont( YAF3DGUI_FONT10 ); // we take the font with pointsize 10
+    CEGUI::Font* p_font = GuiManager::get()->getFont( YAF3D_GUI_FONT10 ); // we take the font with pointsize 10
     assert( p_font && "font does not exist!" );
 
     // consider line breaks in text

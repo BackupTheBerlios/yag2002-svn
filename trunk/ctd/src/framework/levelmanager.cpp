@@ -29,16 +29,16 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include <ctd_log.h>
-#include <ctd_physics.h>
-#include <ctd_levelmanager.h>
-#include <ctd_application.h>
-#include <ctd_attributemanager.h>
-#include <ctd_entitymanager.h>
-#include <ctd_guimanager.h>
-#include <ctd_gamestate.h>
-#include "ctdtinyxml/tinyxml.h"
+#include <base.h>
+#include <log.h>
+#include <physics.h>
+#include <levelmanager.h>
+#include <application.h>
+#include <attributemanager.h>
+#include <entitymanager.h>
+#include <guimanager.h>
+#include <gamestate.h>
+#include "yaf3dtinyxml/tinyxml.h"
 
 // XML item names
 //---------------------------------------------------------//
@@ -63,7 +63,7 @@
 namespace yaf3d
 {
 
-YAF3DSINGLETON_IMPL( LevelManager );
+YAF3D_SINGLETON_IMPL( LevelManager );
 
 LevelManager::LevelManager() :
 _staticMesh( NULL ),
@@ -192,7 +192,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
     
     // use tiny xml to parser lvl file
     //  parse in the level configuration
-    CTDTinyXML::TiXmlDocument doc;
+    yaf3dTinyXml::TiXmlDocument doc;
     doc.SetCondenseWhiteSpace( false );
     if ( !doc.LoadFile( std::string( Application::get()->getMediaPath() + levelFile ).c_str() ) )
     {
@@ -203,10 +203,10 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
 
     // start evaluating the xml structure
     //---------------------------------//
-    CTDTinyXML::TiXmlNode*      p_node                 = NULL;
-    CTDTinyXML::TiXmlElement*   p_levelElement         = NULL;
-    CTDTinyXML::TiXmlElement*   p_mapElement           = NULL;
-    char*                       p_bufName              = NULL;
+    yaf3dTinyXml::TiXmlNode*      p_node          = NULL;
+    yaf3dTinyXml::TiXmlElement*   p_levelElement  = NULL;
+    yaf3dTinyXml::TiXmlElement*   p_mapElement    = NULL;
+    char*                         p_bufName       = NULL;
 
     // get the level entry if one exists
     p_node = doc.FirstChild( YAF3D_LVL_ELEM_LEVEL );
@@ -278,7 +278,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
     p_node = p_levelElement;
     for ( p_node = p_levelElement->FirstChild( YAF3D_LVL_ELEM_ENTITY ); p_node; p_node = p_node->NextSiblingElement( YAF3D_LVL_ELEM_ENTITY ) ) 
     {
-        CTDTinyXML::TiXmlElement* p_entityElement = p_node->ToElement();
+        yaf3dTinyXml::TiXmlElement* p_entityElement = p_node->ToElement();
         std::string entitytype, instancename;
         // get entity name
         p_bufName = ( char* )p_entityElement->Attribute( YAF3D_LVL_ENTITY_TYPE );
@@ -352,8 +352,8 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
 
         entityCounter++;
 
-        CTDTinyXML::TiXmlElement* p_entityParam = NULL;
-        CTDTinyXML::TiXmlNode*    p_entityNode  = NULL;
+        yaf3dTinyXml::TiXmlElement* p_entityParam = NULL;
+        yaf3dTinyXml::TiXmlNode*    p_entityNode  = NULL;
         for ( p_entityNode = p_entityElement->FirstChild( YAF3D_LVL_ENTITY_PARAM ); p_entityNode; p_entityNode = p_entityParam->NextSiblingElement( YAF3D_LVL_ENTITY_PARAM ) )
         {
             p_entityParam = p_entityNode->ToElement();

@@ -28,11 +28,11 @@
  #
  ################################################################*/
 
-#ifndef _YAF3DPHYSICS_H_
-#define _YAF3DPHYSICS_H_
+#ifndef _PHYSICS_H_
+#define _PHYSICS_H_
 
-#include <ctd_base.h>
-#include "ctd_singleton.h"
+#include <base.h>
+#include "singleton.h"
 
 namespace yaf3d
 {
@@ -228,4 +228,4 @@ extern CollisionStruct grass_grassCollStruct;
 
 }
 
-#endif // _YAF3DPHYSICS_H_
+#endif // _PHYSICS_H_

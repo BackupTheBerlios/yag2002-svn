@@ -29,12 +29,12 @@
  #
  ################################################################*/
 
-#ifndef _YAF3DGAMESTATE_H_
-#define _YAF3DGAMESTATE_H_
+#ifndef _GAMESTATE_H_
+#define _GAMESTATE_H_
 
-#include <ctd_base.h>
-#include <ctd_singleton.h>
-#include <ctd_application.h>
+#include <base.h>
+#include <singleton.h>
+#include <application.h>
 
 namespace yaf3d
 {
@@ -100,4 +100,4 @@ class GameState : public Singleton< GameState >
 
 } // namespace yaf3d
 
-#endif //_YAF3DGAMESTATE_H_
+#endif //_GAMESTATE_H_

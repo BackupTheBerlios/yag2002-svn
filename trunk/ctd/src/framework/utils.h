@@ -28,11 +28,11 @@
  #
  ################################################################*/
 
-#ifndef _YAF3DUTILS_H_
-#define _YAF3DUTILS_H_
+#ifndef _UTILS_H_
+#define _UTILS_H_
 
-#include <ctd_base.h>
-#include <ctd_application.h>
+#include <base.h>
+#include <application.h>
 
 namespace yaf3d
 {
@@ -239,4 +239,4 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
 
 } // namespace yaf3d
 
-#endif //_YAF3DUTILS_H_
+#endif //_UTILS_H_

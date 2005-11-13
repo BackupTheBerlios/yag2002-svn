@@ -38,10 +38,10 @@
  ################################################################*/
 
 
-#ifndef _YAF3DBASEENTITY_H_
-#define _YAF3DBASEENTITY_H_
+#ifndef _BASEENTITY_H_
+#define _BASEENTITY_H_
 
-#include "ctd_attributemanager.h"
+#include "attributemanager.h"
 
 namespace yaf3d 
 {
@@ -263,8 +263,8 @@ class BaseEntity
     friend class BaseEntityFactory;
 };
 
-#include "ctd_baseentity.inl"
+#include "baseentity.inl"
 
 }; // namespace yaf3d
 
-#endif //_YAF3DBASEENTITY_H_
+#endif //_BASEENTITY_H_

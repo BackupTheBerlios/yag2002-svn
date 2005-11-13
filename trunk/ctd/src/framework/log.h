@@ -28,10 +28,10 @@
  #
  ################################################################*/
 
-#ifndef _YAF3DLOG_H_
-#define _YAF3DLOG_H_
+#ifndef _LOG_H_
+#define _LOG_H_
 
-#include <ctd_base.h>
+#include <base.h>
 
 namespace yaf3d
 {
@@ -156,4 +156,4 @@ class Log : public std::basic_ostream< char >
 
 } // namespace yaf3d
 
-#endif //_YAF3DLOG_H_
+#endif //_LOG_H_

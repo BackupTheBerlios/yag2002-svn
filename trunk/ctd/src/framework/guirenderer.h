@@ -30,8 +30,8 @@
  #
  ################################################################*/
 
-#ifndef _YAF3DGUIRENDERER_H_
-#define _YAF3DGUIRENDERER_H_
+#ifndef _GUIRENDERER_H_
+#define _GUIRENDERER_H_
 
 #include <list>
 #include <set>
@@ -189,4 +189,4 @@ class CTDGuiRenderer : public CEGUI::Renderer
 
 } // namespace yaf3d
 
-#endif // _YAF3DGUIRENDERER_H_
+#endif // _GUIRENDERER_H_

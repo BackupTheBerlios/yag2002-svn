@@ -28,10 +28,10 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_application.h"
-#include "ctd_log.h"
-#include "ctd_utils.h"
+#include <base.h>
+#include "application.h"
+#include "log.h"
+#include "utils.h"
 #include <errno.h>
 
 #ifdef WIN32

@@ -41,16 +41,16 @@
  #
  ################################################################*/
 
-#ifndef _YAF3DNETWORK_H_
-#define _YAF3DNETWORK_H_
+#ifndef _NETWORK_H_
+#define _NETWORK_H_
 
 #include <RNReplicaNet/Inc/ReplicaNet.h>
 #include <RNPlatform/Inc/ThreadClass.h>
 #include <RNPlatform/Inc/PlatformHeap.h>
 #include <RNXPURL/Inc/XPURL.h>
 
-#include "ctd_singleton.h"
-#include "ctd_network_defs.h"
+#include "singleton.h"
+#include "network_defs.h"
 
 namespace yaf3d
 {
@@ -62,32 +62,32 @@ class NetworkDevice;
 class NodeInfo
 {
     public:
-                                                        NodeInfo() {}
+                                                    NodeInfo() {}
 
-                                                        NodeInfo( const std::string& levelname, const std::string& nodename ) :
-                                                         _levelName( levelname ),
-                                                         _nodeName( nodename )
-                                                        {}
+                                                    NodeInfo( const std::string& levelname, const std::string& nodename ) :
+                                                     _levelName( levelname ),
+                                                     _nodeName( nodename )
+                                                    {}
 
         /**
         * Get level name, this is relevant for clients
         * \return                                       Level name
         */
-        const std::string&                              getLevelName() const { return _levelName; }
+        const std::string&                          getLevelName() const { return _levelName; }
 
         /**
         * Get Node name, for server it is the connecting client name, for client it is the server name
         * \return                               Node name
         */
-        const std::string&                              getNodeName() const { return _nodeName; }
+        const std::string&                          getNodeName() const { return _nodeName; }
 
     protected:
 
         //! Level name
-        std::string                                     _levelName;
+        std::string                                 _levelName;
 
         // Node name
-        std::string                                     _nodeName;
+        std::string                                 _nodeName;
 
     friend  class NetworkDevice;
     friend  class Application;
@@ -98,18 +98,18 @@ class SessionNotifyCallback
 {
     public:
     
-                                                        SessionNotifyCallback() {}
+                                                    SessionNotifyCallback() {}
 
-        virtual                                         ~SessionNotifyCallback() {}
+        virtual                                     ~SessionNotifyCallback() {}
 
         //! Override this method for getting notification when a client joins to the network
-        virtual void                                    onSessionJoined( int sessionID ) {}
+        virtual void                                onSessionJoined( int sessionID ) {}
 
         //! Override this method for getting notification when a client leaves the network
-        virtual void                                    onSessionLeft( int sessionID ) {}
+        virtual void                                onSessionLeft( int sessionID ) {}
 
         //! Override this method for getting notification when disconnected from server ( server shutdown, network problems )
-        virtual void                                    onServerDisconnect( int sessionID ) {}
+        virtual void                                onServerDisconnect( int sessionID ) {}
 };
 
 //! Derived class from RNReplicaNet::ReplicaNet, this class allows tracking of joining / leaving sessions
@@ -117,36 +117,36 @@ class CTDReplicaNet: public RNReplicaNet::ReplicaNet
 {
     public:
 
-                                                        CTDReplicaNet();
+                                                    CTDReplicaNet();
         
-        virtual                                         ~CTDReplicaNet();
+        virtual                                     ~CTDReplicaNet();
 
         //! Use this method in order to register a callback object in order to get notification when a client joins to or leaves the network
-        void                                            registerSessionNotify( SessionNotifyCallback* p_cb );
+        void                                        registerSessionNotify( SessionNotifyCallback* p_cb );
 
         //! Deregister the callback object
-        void                                            deregisterSessionNotify( SessionNotifyCallback* p_cb );
+        void                                        deregisterSessionNotify( SessionNotifyCallback* p_cb );
 
         //! Get all currently active session IDs
-        void                                            getSessionIDs( std::vector< int >& ids );
+        void                                        getSessionIDs( std::vector< int >& ids );
 
     protected:
 
         //! Overridden method for getting notified when a session joined
-	    void                                            JoinerSessionIDPost( const int sessionID );
+	    void                                        JoinerSessionIDPost( const int sessionID );
 
         //! Overridden method for getting notified when a session leaves
-	    void                                            LeaverSessionIDPost( const int sessionID );
+	    void                                        LeaverSessionIDPost( const int sessionID );
 
         //! Number of joined sessions
-	    int                                             _numSessions;
+	    int                                         _numSessions;
 
         //! A list of joined sessions ids
-	    std::vector< int >                              _sessionIDs;
+	    std::vector< int >                          _sessionIDs;
 
-        std::vector< SessionNotifyCallback* >           _sessionCallbacks;
+        std::vector< SessionNotifyCallback* >       _sessionCallbacks;
 
-	    RNReplicaNet::MutexClass                        _mutex;
+	    RNReplicaNet::MutexClass                    _mutex;
 };
 
 //! Networking device
@@ -228,7 +228,7 @@ class NetworkDevice : public Singleton< NetworkDevice >
 
         /**
         * Get all replicated objects
-        * \param objs                              List of objects
+        * \param objs                               List of objects
         */
         void                                        getObjects( std::vector< RNReplicaNet::ReplicaObject* >& objs );
 
@@ -286,4 +286,4 @@ class NetworkDevice : public Singleton< NetworkDevice >
 
 } // namespace yaf3d
 
-#endif //_YAF3DNETWORK_H_
+#endif //_NETWORK_H_

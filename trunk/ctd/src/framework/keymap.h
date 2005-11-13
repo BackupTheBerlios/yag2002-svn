@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _YAF3DKEYMAP_H_
-#define _YAF3DKEYMAP_H_
+#ifndef _KEYMAP_H_
+#define _KEYMAP_H_
 
-#include <ctd_base.h>
-#include <ctd_singleton.h>
-#include <ctd_application.h>
+#include <base.h>
+#include <singleton.h>
+#include <application.h>
 
 namespace yaf3d
 {
@@ -108,4 +108,4 @@ class KeyMap : public Singleton< KeyMap >
 
 } // namespace yaf3d
 
-#endif //_YAF3DKEYMAP_H_
+#endif //_KEYMAP_H_

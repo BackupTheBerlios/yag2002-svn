@@ -28,13 +28,13 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_keymap.h"
+#include <base.h>
+#include "keymap.h"
 
 namespace yaf3d
 {
 
-YAF3DSINGLETON_IMPL( KeyMap );
+YAF3D_SINGLETON_IMPL( KeyMap );
 
 //! Implementation of KeyMap
 KeyMap::KeyMap() :

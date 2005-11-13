@@ -28,18 +28,18 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_levelmanager.h"
-#include "ctd_entitymanager.h"
-#include "ctd_physics.h"
-#include "ctd_guimanager.h"
-#include "ctd_configuration.h"
-#include "ctd_keymap.h"
-#include "ctd_gamestate.h"
-#include "ctd_network.h"
-#include "ctd_log.h"
-#include "ctd_utils.h"
-#include "ctd_application.h"
+#include <base.h>
+#include "levelmanager.h"
+#include "entitymanager.h"
+#include "physics.h"
+#include "guimanager.h"
+#include "configuration.h"
+#include "keymap.h"
+#include "gamestate.h"
+#include "network.h"
+#include "log.h"
+#include "utils.h"
+#include "application.h"
 
 
 // app icon and tile
@@ -50,14 +50,9 @@
 //  if not existing then the relative path '../../media' of executable is assumed
 #define YAF3D_ENV_MEDIA_DIR	"YAF3D_ENV_MEDIA_DIR"
 
-//! Location of level file directory for Server, Client, and Standalone level
-#define YAF3D_LEVEL_SERVER_DIR    "level/server/"
-#define YAF3D_LEVEL_CLIENT_DIR    "level/client/"
-#define YAF3D_LEVEL_SALONE_DIR    "level/standalone/"
-
 // log file names
-#define LOG_FILE_NAME           "vrc.log"
-#define LOG_FILE_NAME_SERVER    "vrc-server.log"
+#define LOG_FILE_NAME             "vrc.log"
+#define LOG_FILE_NAME_SERVER      "vrc-server.log"
 
 // media path relative to inst dir
 #define YAF3D_MEDIA_PATH          "/media/"
@@ -195,13 +190,13 @@ bool Application::initialize( int argc, char **argv )
     log.addSink( "stdout", std::cout, Log::L_ERROR );
 
     log.enableSeverityLevelPrinting( false );
-    log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------" << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "Virtual Reality Chat (VRC)"              << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "version: " << std::string( VRC_VERSION )      << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "project: Yag2002"                        << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "site:    http://yag2002.sourceforge.net" << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "contact: botorabi@gmx.net"               << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------" << std::endl;
+    log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------"    << std::endl;
+    log << Log::LogLevel( Log::L_INFO ) << "yaf3d -- Yet another Framework 3D      "    << std::endl;
+    log << Log::LogLevel( Log::L_INFO ) << "version: " << std::string( YAF3D_VERSION )  << std::endl;
+    log << Log::LogLevel( Log::L_INFO ) << "project: Yag2002"                           << std::endl;
+    log << Log::LogLevel( Log::L_INFO ) << "site:    http://yag2002.sourceforge.net"    << std::endl;
+    log << Log::LogLevel( Log::L_INFO ) << "contact: botorabi@gmx.net"                  << std::endl;
+    log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------"    << std::endl;
     log << Log::LogLevel( Log::L_INFO ) << std::endl;
     log.enableSeverityLevelPrinting( true );
 

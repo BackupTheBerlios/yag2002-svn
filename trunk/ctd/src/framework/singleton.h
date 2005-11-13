@@ -28,8 +28,8 @@
  #
  ################################################################*/
 
-#ifndef _YAF3DSINGLETON_H_
-#define _YAF3DSINGLETON_H_
+#ifndef _SINGLETON_H_
+#define _SINGLETON_H_
 
 //! Convenient macro for implementing a singleton
 #define YAF3D_SINGLETON_IMPL( Type ) template<> Type* yaf3d::Singleton< Type >::_p_instance = 0;
@@ -64,8 +64,8 @@ class Singleton
         Singleton&                          operator = ( const Singleton& );
 };
 
-#include "ctd_singleton.inl"
+#include "singleton.inl"
 
 }
 
-#endif // _YAF3DSINGLETON_H_
+#endif // _SINGLETON_H_

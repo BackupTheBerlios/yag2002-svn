@@ -29,13 +29,13 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_gamestate.h"
+#include <base.h>
+#include "gamestate.h"
 
 namespace yaf3d
 {
 
-YAF3DSINGLETON_IMPL( GameState );
+YAF3D_SINGLETON_IMPL( GameState );
 
 //! Implementation of GameState
 GameState::GameState() :

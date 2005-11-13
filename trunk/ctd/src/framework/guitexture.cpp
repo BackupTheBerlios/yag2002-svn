@@ -30,9 +30,9 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_application.h"
-#include "ctd_guitexture.h"
+#include <base.h>
+#include "application.h"
+#include "guitexture.h"
 #include <CEGUIExceptions.h>
 #include <CEGUISystem.h>
 

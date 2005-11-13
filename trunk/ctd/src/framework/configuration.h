@@ -32,12 +32,12 @@
  #
  ################################################################*/
 
-#ifndef _YAF3D_CONFIGURATION_H_
-#define _YAF3D_CONFIGURATION_H_
+#ifndef __CONFIGURATION_H_
+#define __CONFIGURATION_H_
 
-#include <ctd_base.h>
-#include <ctd_singleton.h>
-#include "ctd_settings.h"
+#include <base.h>
+#include <singleton.h>
+#include "settings.h"
 
 namespace yaf3d
 {
@@ -182,4 +182,4 @@ inline bool Configuration::setSettingValue( const std::string& name, const TypeT
 
 } // namespace yaf3d
 
-#endif //_YAF3D_CONFIGURATION_H_
+#endif //__CONFIGURATION_H_

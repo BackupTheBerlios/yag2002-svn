@@ -30,7 +30,7 @@ distribution.
 //
 // It also cleans up the code a bit.
 //
-namespace CTDTinyXML
+namespace yaf3dTinyXml
 {
 
 const char* TiXmlBase::errorString[ TIXML_ERROR_STRING_COUNT ] =
@@ -52,4 +52,4 @@ const char* TiXmlBase::errorString[ TIXML_ERROR_STRING_COUNT ] =
 	"Error null (0) or unexpected EOF found in input stream.",
 };
 
-} // namespace CTDTinyXML
+} // namespace yaf3dTinyXml

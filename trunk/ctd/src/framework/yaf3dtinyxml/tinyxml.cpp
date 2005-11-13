@@ -29,7 +29,7 @@ distribution.
 #include <sstream>
 #endif
 
-namespace CTDTinyXML
+namespace yaf3dTinyXml
 {
 
 bool TiXmlBase::condenseWhiteSpace = true;
@@ -1593,5 +1593,5 @@ TiXmlHandle TiXmlHandle::ChildElement( const char* value, int count ) const
 	return TiXmlHandle( 0 );
 }
 
-} // namespace CTDTinyXML
+} // namespace yaf3dTinyXml
 

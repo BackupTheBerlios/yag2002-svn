@@ -29,11 +29,14 @@
  #
  ################################################################*/
 
-#ifndef _YAF3D_ENTITYMANAGER_H_
-#define _YAF3D_ENTITYMANAGER_H_
+#ifndef __ENTITYMANAGER_H_
+#define __ENTITYMANAGER_H_
 
-#include <ctd_baseentity.h>
-#include <ctd_singleton.h>
+#include <baseentity.h>
+#include <singleton.h>
+
+//! Helper macro for implementing a new entity type factory
+#define YAF3D_IMPL_ENTITYFACTORY( factory )   static std::auto_ptr< factory > factory##_impl_auto( new factory );
 
 namespace yaf3d
 {
@@ -264,14 +267,6 @@ yaf3d::BaseEntity* createEntity() \
     return p_entity;\
 }
 
-
-//! Helper macro for implementing a new entity type factory with automatic deletion
-//  Use this if you don't intent to remove the entity type factory during the lifetime of the application
-#define YAF3D_IMPL_ENTITYFACTORY_AUTO( factory )   static std::auto_ptr< factory > factory##_impl_auto( new factory );
-
-//! Helper macro for implementing a new entity type factory
-#define YAF3D_IMPL_ENTITYFACTORY( factory )        static factory* factory##_impl = new factory;
-
 // inlines
 //--------
 inline const std::string& yaf3d::BaseEntityFactory::getType() const
@@ -294,4 +289,4 @@ inline void yaf3d::BaseEntityFactory::setEntityType( yaf3d::BaseEntity* p_entity
     p_entity->_typeName = _typeTypeName;
 }
 
-#endif // _YAF3D_ENTITYMANAGER_H_
+#endif // __ENTITYMANAGER_H_

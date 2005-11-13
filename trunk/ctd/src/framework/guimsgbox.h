@@ -28,11 +28,11 @@
  #
  ################################################################*/
 
-#ifndef	_YAF3DGUIMSGBOX_H_
-#define	_YAF3DGUIMSGBOX_H_
+#ifndef	_GUIMSGBOX_H_
+#define	_GUIMSGBOX_H_
 
 #include <CEGUIBase.h>
-#include <ctd_guimanager.h>
+#include <guimanager.h>
 
 namespace yaf3d
 {
@@ -138,4 +138,4 @@ class MessageBoxDialog
 } // namespace yaf3d
 
 
-#endif	// _YAF3DGUIMSGBOX_H_
+#endif	// _GUIMSGBOX_H_

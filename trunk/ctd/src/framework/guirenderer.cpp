@@ -30,9 +30,9 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_guitexture.h"
-#include "ctd_guirenderer.h"
+#include <base.h>
+#include "guitexture.h"
+#include "guirenderer.h"
 #include <GL/glu.h>
 #include <osg/GLExtensions>
 

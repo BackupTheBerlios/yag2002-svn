@@ -28,18 +28,18 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_network.h"
-#include "ctd_log.h"
-#include "ctd_utils.h"
-#include "ctd_configuration.h"
+#include <base.h>
+#include "network.h"
+#include "log.h"
+#include "utils.h"
+#include "configuration.h"
 #include <RNPlatform/Inc/FreewareCode.h>
 
 
 namespace yaf3d
 {
 
-YAF3DSINGLETON_IMPL( NetworkDevice );
+YAF3D_SINGLETON_IMPL( NetworkDevice );
 
 CTDReplicaNet::CTDReplicaNet() :
 _numSessions( 0 )

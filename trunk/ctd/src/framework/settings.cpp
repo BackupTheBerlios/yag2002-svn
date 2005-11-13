@@ -28,15 +28,15 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_log.h"
-#include "ctd_settings.h"
+#include <base.h>
+#include "log.h"
+#include "settings.h"
 
 
 namespace yaf3d
 {
 
-YAF3DSINGLETON_IMPL( SettingsManager );
+YAF3D_SINGLETON_IMPL( SettingsManager );
 
 // implementation of SettingsManager
 SettingsManager::SettingsManager()

@@ -1,5 +1,5 @@
 INCLUDES = $(CEGUI_CFLAGS) $(SDL_CFLAGS) $(OPENAL_CFLAGS) $(VORBIS_CFLAGS) $(OSGAL_CFLAGS) $(OSGSDL_CFLAGS) $(AM_CFLAGS)
-lib_LTLIBRARIES=libCTDFramework.la
+lib_LTLIBRARIES=libYAF3D.la
 
 libCTDFramework_la_SOURCES = application.cpp \
 							attributemanager.cpp \
@@ -57,5 +57,5 @@ noinst_HEADERS = yaf3dtinyxml/tinystr.h \
 				yaf3dtinyxml/tinyxml.h
 
 
-libCTDFramework_la_LDFLAGS = -version-info @CTDFWK_VERSION_INFO@
-libCTDFramework_la_LIBADD =
+libYAF3D_la_LDFLAGS = -version-info @YAF3D_VERSION_INFO@
+libYAF3D_la_LIBADD =

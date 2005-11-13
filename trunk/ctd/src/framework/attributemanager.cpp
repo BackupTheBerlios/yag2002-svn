@@ -28,8 +28,8 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include <ctd_attributemanager.h>
+#include <base.h>
+#include <attributemanager.h>
 
 namespace yaf3d
 {

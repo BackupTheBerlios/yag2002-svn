@@ -32,10 +32,10 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_configuration.h"
-#include "ctd_application.h"
-#include "ctd_settings.h"
+#include <base.h>
+#include "configuration.h"
+#include "application.h"
+#include "settings.h"
 
 // default gui scheme
 #define YAF3D_GUI_DEFUALT_SCHEME "gui/schemes/TaharezLook.scheme"

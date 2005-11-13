@@ -28,11 +28,11 @@
  #
  ################################################################*/
 
-#ifndef _YAF3DAPPLICATION_H_
-#define _YAF3DAPPLICATION_H_
+#ifndef _APPLICATION_H_
+#define _APPLICATION_H_
 
-#include <ctd_base.h>
-#include <ctd_singleton.h>
+#include <base.h>
+#include <singleton.h>
 
 namespace yaf3d
 {
@@ -161,4 +161,4 @@ inline void Application::getScreenSize( unsigned int& x, unsigned int& y ) const
 }
 
 }
-#endif // _YAF3DAPPLICATION_H_
+#endif // _APPLICATION_H_

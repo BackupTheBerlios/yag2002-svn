@@ -33,21 +33,21 @@
 #ifndef _YAF3DFRAMEWORK_H_
 #define _YAF3DFRAMEWORK_H_
 
-#include <ctd_application.h>
-#include <ctd_attributemanager.h>
-#include <ctd_baseentity.h>
-#include <ctd_configuration.h>
-#include <ctd_entitymanager.h>
-#include <ctd_gamestate.h>
-#include <ctd_guimanager.h>
-#include <ctd_guimsgbox.h>
-#include <ctd_keymap.h>
-#include <ctd_levelmanager.h>
-#include <ctd_log.h>
-#include <ctd_network.h>
-#include <ctd_physics.h>
-#include <ctd_settings.h>
-#include <ctd_singleton.h>
-#include <ctd_utils.h>
+#include <application.h>
+#include <attributemanager.h>
+#include <baseentity.h>
+#include <configuration.h>
+#include <entitymanager.h>
+#include <gamestate.h>
+#include <guimanager.h>
+#include <guimsgbox.h>
+#include <keymap.h>
+#include <levelmanager.h>
+#include <log.h>
+#include <network.h>
+#include <physics.h>
+#include <settings.h>
+#include <singleton.h>
+#include <utils.h>
 
 #endif // _YAF3DFRAMEWORK_H_

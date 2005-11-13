@@ -28,13 +28,13 @@
  #
  ################################################################*/
 
-#ifndef _YAF3DGUI_H_
-#define _YAF3DGUI_H_
+#ifndef _GUI_H_
+#define _GUI_H_
 
-#include <ctd_base.h>
-#include <ctd_singleton.h>
-#include <ctd_guirenderer.h>
-#include <ctd_utils.h>
+#include <base.h>
+#include <singleton.h>
+#include <guirenderer.h>
+#include <utils.h>
 
 namespace yaf3d
 {
@@ -46,10 +46,10 @@ class GuiPostDrawCallback;
 class GuiViewerInitCallback;
 
 // some definitions
-#define YAF3DGUI_FONT8           "yaf3d-8"
-#define YAF3DGUI_FONT10          "yaf3d-10"
-#define YAF3DGUI_CONSOLE         "yaf3d-Console"
-#define YAF3DGUI_SCHEME          "TaharezLookWidgets"
+#define YAF3D_GUI_FONT8           "yaf3d-8"
+#define YAF3D_GUI_FONT10          "yaf3d-10"
+#define YAF3D_GUI_CONSOLE         "yaf3d-Console"
+#define YAF3D_GUI_SCHEME          "TaharezLookWidgets"
 
 // Graphical User Interface
 /**
@@ -189,4 +189,4 @@ class GuiManager : public Singleton< GuiManager >
 
 } // namespace yaf3d
 
-#endif //_YAF3DGUI_H_
+#endif //_GUI_H_

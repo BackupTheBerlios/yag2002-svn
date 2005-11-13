@@ -33,7 +33,7 @@ distribution.
 
 #include "tinystr.h"
 
-namespace CTDTinyXML
+namespace yaf3dTinyXml
 {
     
 // TiXmlString constructor, based on a C string
@@ -317,6 +317,6 @@ bool TiXmlString::operator > (const TiXmlString & compare) const
 	return false;
 }
 
-} // namespace CTDTinyXML
+} // namespace yaf3dTinyXml
 
 #endif	// TIXML_USE_STL

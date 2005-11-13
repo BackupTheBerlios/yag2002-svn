@@ -28,8 +28,8 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_log.h"
+#include <base.h>
+#include "log.h"
 
 namespace yaf3d
 {

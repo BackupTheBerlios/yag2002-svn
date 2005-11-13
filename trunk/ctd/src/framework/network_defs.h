@@ -34,8 +34,8 @@
  #
  ################################################################*/
 
-#ifndef _YAF3DNETWORK_DEFS_H_
-#define _YAF3DNETWORK_DEFS_H_
+#ifndef _NETWORK_DEFS_H_
+#define _NETWORK_DEFS_H_
 
 namespace yaf3d
 {
@@ -59,4 +59,4 @@ struct PreconnectDataServer
 
 } // namespace yaf3d
 
-#endif //_YAF3DNETWORK_DEFS_H_
+#endif //_NETWORK_DEFS_H_

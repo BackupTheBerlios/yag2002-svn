@@ -29,10 +29,16 @@
  #
  ################################################################*/
 
-#ifndef _YAF3DLEVELMANAGER_H_
-#define _YAF3DLEVELMANAGER_H_
+#ifndef _LEVELMANAGER_H_
+#define _LEVELMANAGER_H_
 
-#include "ctd_singleton.h"
+#include "singleton.h"
+
+
+//! Location of level file directory for Server, Client, and Standalone level
+#define YAF3D_LEVEL_SERVER_DIR    "level/server/"
+#define YAF3D_LEVEL_CLIENT_DIR    "level/client/"
+#define YAF3D_LEVEL_SALONE_DIR    "level/standalone/"
 
 namespace yaf3d
 {
@@ -171,4 +177,4 @@ inline osg::Node* LevelManager::setStaticMesh( osg::Node* p_newnode )
 
 }
 
-#endif // _YAF3DLEVELMANAGER_H_
+#endif // _LEVELMANAGER_H_

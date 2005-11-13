@@ -29,11 +29,11 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_application.h"
-#include "ctd_entitymanager.h"
-#include "ctd_log.h"
-#include "ctd_utils.h"
+#include <base.h>
+#include "application.h"
+#include "entitymanager.h"
+#include "log.h"
+#include "utils.h"
 
 namespace yaf3d
 {

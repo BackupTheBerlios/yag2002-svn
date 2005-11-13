@@ -61,7 +61,7 @@ distribution.
 	#define TIXML_OSTREAM	TiXmlOutStream
 #endif
 
-namespace CTDTinyXML
+namespace yaf3dTinyXml
 {
 
 class TiXmlDocument;
@@ -1420,7 +1420,7 @@ private:
 	TiXmlNode* node;
 };
 
-} // namespace CTDTinyXML
+} // namespace yaf3dTinyXml
 
 #ifdef _MSC_VER
 #pragma warning( default : 4530 )

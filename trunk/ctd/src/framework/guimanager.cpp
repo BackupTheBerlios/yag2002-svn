@@ -28,13 +28,13 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_guimanager.h"
-#include "ctd_application.h"
-#include "ctd_configuration.h"
-#include "ctd_guirenderer.h"
-#include "ctd_keymap.h"
-#include "ctd_log.h"
+#include <base.h>
+#include "guimanager.h"
+#include "application.h"
+#include "configuration.h"
+#include "guirenderer.h"
+#include "keymap.h"
+#include "log.h"
 #include <CEGUILogger.h>
 
 
@@ -119,7 +119,7 @@ void CTDResourceProvider::loadRawDataContainer( const CEGUI::String& filename, C
 }
 
 
-YAF3DSINGLETON_IMPL( GuiManager );
+YAF3D_SINGLETON_IMPL( GuiManager );
 
 // implementation of GuiManager
 GuiManager::GuiManager() :
@@ -188,13 +188,13 @@ void GuiManager::doInitialize()
 
     // create necessary fonts
     CEGUI::Font* p_font = NULL;
-    p_font = createFont( std::string( "gui/fonts/" YAF3DGUI_FONT8 ".font" ) );
-    p_font = createFont( std::string( "gui/fonts/" YAF3DGUI_FONT10 ".font" ) );
+    p_font = createFont( std::string( "gui/fonts/" YAF3D_GUI_FONT8 ".font" ) );
+    p_font = createFont( std::string( "gui/fonts/" YAF3D_GUI_FONT10 ".font" ) );
     CEGUI::System::getSingleton().setDefaultFont( p_font ); // set the default font
-    p_font = createFont( std::string( "gui/fonts/" YAF3DGUI_CONSOLE ".font" ) );
+    p_font = createFont( std::string( "gui/fonts/" YAF3D_GUI_CONSOLE ".font" ) );
 
     // load scheme
-    CEGUI::SchemeManager::getSingleton().loadScheme( std::string( "gui/schemes/" YAF3DGUI_SCHEME ".scheme" ) );
+    CEGUI::SchemeManager::getSingleton().loadScheme( std::string( "gui/schemes/" YAF3D_GUI_SCHEME ".scheme" ) );
 
     // create the root window called 'Root'.
     _p_root = static_cast< CEGUI::DefaultWindow* >( CEGUI::WindowManager::getSingleton().createWindow("DefaultWindow", "Root") );

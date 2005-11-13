@@ -28,10 +28,10 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_log.h"
-#include "ctd_physics_helpers.h"
-#include "ctd_physics.h"
+#include <base.h>
+#include "log.h"
+#include "physics_helpers.h"
+#include "physics.h"
 #include <osg/Transform>
 
 namespace yaf3d

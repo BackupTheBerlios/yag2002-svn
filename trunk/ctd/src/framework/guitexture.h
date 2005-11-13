@@ -30,10 +30,10 @@
  #
  ################################################################*/
 
-#ifndef	_YAF3DGUITEXTURE_H_
-#define	_YAF3DGUITEXTURE_H_
+#ifndef	_GUITEXTURE_H_
+#define	_GUITEXTURE_H_
 
-#include <ctd_guirenderer.h>
+#include <guirenderer.h>
 
 namespace yaf3d
 {
@@ -107,4 +107,4 @@ class CTDGuiTexture	: public CEGUI::Texture
 } // namespace yaf3d
 
 
-#endif	// _YAF3DGUITEXTURE_H_
+#endif	// _GUITEXTURE_H_
