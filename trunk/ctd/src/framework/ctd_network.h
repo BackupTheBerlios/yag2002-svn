@@ -41,8 +41,8 @@
  #
  ################################################################*/
 
-#ifndef _CTD_NETWORK_H_
-#define _CTD_NETWORK_H_
+#ifndef _YAF3DNETWORK_H_
+#define _YAF3DNETWORK_H_
 
 #include <RNReplicaNet/Inc/ReplicaNet.h>
 #include <RNPlatform/Inc/ThreadClass.h>
@@ -52,7 +52,7 @@
 #include "ctd_singleton.h"
 #include "ctd_network_defs.h"
 
-namespace CTD
+namespace yaf3d
 {
 
 class Application;
@@ -284,6 +284,6 @@ class NetworkDevice : public Singleton< NetworkDevice >
     friend class Application;
 };
 
-} // namespace CTD
+} // namespace yaf3d
 
-#endif //_CTD_NETWORK_H_
+#endif //_YAF3DNETWORK_H_

@@ -28,19 +28,19 @@
  #
  ################################################################*/
 
-#ifndef _CTD_PHYSICS_H_
-#define _CTD_PHYSICS_H_
+#ifndef _YAF3DPHYSICS_H_
+#define _YAF3DPHYSICS_H_
 
 #include <ctd_base.h>
 #include "ctd_singleton.h"
 
-namespace CTD
+namespace yaf3d
 {
 
 // Physics serialization file postfix
-#define CTD_PHYSICS_SERIALIZE_POSTFIX   ".phys"
+#define YAF3DPHYSICS_SERIALIZE_POSTFIX   ".phys"
 // Folder for storing physics collision geometry serialization files
-#define CTD_PHYSICS_MEDIA_FOLDER        "physics/"
+#define YAF3DPHYSICS_MEDIA_FOLDER        "physics/"
 
 // Newton's update period in seconds
 #define FIX_PHYSICS_UPDATE_PERIOD   ( 1.0f / 60.0f )
@@ -228,4 +228,4 @@ extern CollisionStruct grass_grassCollStruct;
 
 }
 
-#endif // _CTD_PHYSICS_H_
+#endif // _YAF3DPHYSICS_H_

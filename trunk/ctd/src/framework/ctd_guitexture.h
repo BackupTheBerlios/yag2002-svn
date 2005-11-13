@@ -30,12 +30,12 @@
  #
  ################################################################*/
 
-#ifndef	_CTD_GUITEXTURE_H_
-#define	_CTD_GUITEXTURE_H_
+#ifndef	_YAF3DGUITEXTURE_H_
+#define	_YAF3DGUITEXTURE_H_
 
 #include <ctd_guirenderer.h>
 
-namespace CTD
+namespace yaf3d
 {
 
 //!	Adapter	for	CEGUI's	texture	creation / manipulation
@@ -104,7 +104,7 @@ class CTDGuiTexture	: public CEGUI::Texture
 
 };
 
-} // namespace CTD
+} // namespace yaf3d
 
 
-#endif	// _CTD_GUITEXTURE_H_
+#endif	// _YAF3DGUITEXTURE_H_

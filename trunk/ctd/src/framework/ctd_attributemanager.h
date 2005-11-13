@@ -35,13 +35,13 @@
  ################################################################*/
 
 
-#ifndef _CTD_ATTRIBUTEMANAGER_H_
-#define _CTD_ATTRIBUTEMANAGER_H_
+#ifndef _YAF3DATTRIBUTEMANAGER_H_
+#define _YAF3DATTRIBUTEMANAGER_H_
 
 #include <ctd_base.h>
 #include <ctd_log.h>
 
-namespace CTD 
+namespace yaf3d 
 {
 
 //! Attribute types for entities
@@ -248,6 +248,6 @@ class AttributeManager
 
 #include "ctd_attributemanager.inl"
 
-}; // namespace CTD
+}; // namespace yaf3d
 
-#endif //_CTD_ATTRIBUTEMANAGER_H_
+#endif //_YAF3DATTRIBUTEMANAGER_H_

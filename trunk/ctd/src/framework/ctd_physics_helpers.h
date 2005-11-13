@@ -35,7 +35,7 @@
 #ifndef _PHYSICS_HELPERS_H_
 #define _PHYSICS_HELPERS_H_
 
-namespace CTD
+namespace yaf3d
 {
 
 //! Class used for rendering physics debug info 

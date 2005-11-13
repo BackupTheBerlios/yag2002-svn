@@ -36,12 +36,10 @@
 #include <CEGUIExceptions.h>
 #include <CEGUISystem.h>
 
-using namespace CEGUI;
-
-namespace CTD
+namespace yaf3d
 {
 
-CTDGuiTexture::CTDGuiTexture( Renderer* p_owner ) :
+CTDGuiTexture::CTDGuiTexture( CEGUI::Renderer* p_owner ) :
 CEGUI::Texture( p_owner ),
 _width( 0 ),
 _height( 0 )
@@ -63,13 +61,13 @@ CTDGuiTexture::~CTDGuiTexture()
     glDeleteTextures( 1, &_ogltexture );
 }
 
-void CTDGuiTexture::loadFromFile( const String& filename, const String& resourceGroup )
+void CTDGuiTexture::loadFromFile( const CEGUI::String& filename, const CEGUI::String& resourceGroup )
 {
     glBindTexture( GL_TEXTURE_2D, _ogltexture );        
 
     // load file to memory via resource provider
-    RawDataContainer texFile;
-    System::getSingleton().getResourceProvider()->loadRawDataContainer( filename, texFile, resourceGroup );
+    CEGUI::RawDataContainer texFile;
+    CEGUI::System::getSingleton().getResourceProvider()->loadRawDataContainer( filename, texFile, resourceGroup );
 
     tImageTGA*  img = LoadTGA(texFile.getDataPtr(), texFile.getSize());
     if (img != 0)
@@ -96,7 +94,7 @@ void CTDGuiTexture::loadFromFile( const String& filename, const String& resource
     }
     else
     {
-        throw RendererException("CTDGuiTexture::loadFromFile - internal Targa loader failed to load image '" + filename + "'.");
+        throw CEGUI::RendererException("CTDGuiTexture::loadFromFile - internal Targa loader failed to load image '" + filename + "'.");
     }
 }
 
@@ -127,7 +125,7 @@ void CTDGuiTexture::setOGLTextureSize(CEGUI::uint size)
     }
 
     // allocate temp buffer for texture
-    uchar* buff = new uchar[size * size * 4];
+    CEGUI::uchar* buff = new CEGUI::uchar[size * size * 4];
 
     // load empty buffer to texture
     glBindTexture(GL_TEXTURE_2D, _ogltexture);
@@ -151,7 +149,7 @@ void CTDGuiTexture::flipImageTGA(CTDGuiTexture::tImageTGA* img)
 
         for (int colBit = 0; colBit < pitch; ++colBit)
         {
-            uchar tmp = img->data[dstOffest + colBit];
+            CEGUI::uchar tmp = img->data[dstOffest + colBit];
             img->data[dstOffest + colBit] = img->data[srcOffset + colBit];
             img->data[srcOffset + colBit] = tmp;
         }
@@ -402,4 +400,4 @@ CTDGuiTexture::tImageTGA* CTDGuiTexture::LoadTGA( const unsigned char* buffer, s
     return pImageData;
 }
 
-} // namespace CTD
+} // namespace yaf3d

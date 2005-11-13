@@ -33,7 +33,7 @@
 #include "ctd_utils.h"
 #include "ctd_guimsgbox.h"
 
-namespace CTD
+namespace yaf3d
 {
 
 MessageBoxDialog::MessageBoxDialog( const std::string& title, const std::string& text, unsigned int type, bool autodelete, CEGUI::Window* p_parent ) :
@@ -53,7 +53,7 @@ _autodel( autodelete )
 
     // determine the size of messagebox needed to show the required message text
     //--------
-    CEGUI::Font* p_font = GuiManager::get()->getFont( CTD_GUI_FONT10 ); // we take the font with pointsize 10
+    CEGUI::Font* p_font = GuiManager::get()->getFont( YAF3DGUI_FONT10 ); // we take the font with pointsize 10
     assert( p_font && "font does not exist!" );
 
     // consider line breaks in text
@@ -141,7 +141,7 @@ _autodel( autodelete )
                 p_btnyes->setText( "Yes" );
                 _p_wnd->addChildWindow( p_btnyes );
                 // set callback
-                p_btnyes->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedYes, this ) );
+                p_btnyes->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &yaf3d::MessageBoxDialog::onClickedYes, this ) );
 
                 // create 'No' button
                 CEGUI::PushButton* p_btnno = 
@@ -151,7 +151,7 @@ _autodel( autodelete )
                 p_btnno->setText( "No" );
                 _p_wnd->addChildWindow( p_btnno );
                 // set callback
-                p_btnno->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedNo, this ) );
+                p_btnno->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &yaf3d::MessageBoxDialog::onClickedNo, this ) );
             }
             break;
 
@@ -165,7 +165,7 @@ _autodel( autodelete )
                 p_btnok->setText( "Ok" );
                 _p_wnd->addChildWindow( p_btnok );
                 // set callback
-                p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedOk, this ) );
+                p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &yaf3d::MessageBoxDialog::onClickedOk, this ) );
 
                 // create 'Cancel' button
                 CEGUI::PushButton* p_btncancel = 
@@ -175,7 +175,7 @@ _autodel( autodelete )
                 p_btncancel->setText( "Cancel" );
                 _p_wnd->addChildWindow( p_btncancel );
                 // set callback
-			    p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedCancel, this ) );
+			    p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &yaf3d::MessageBoxDialog::onClickedCancel, this ) );
             }
             break;
 
@@ -189,7 +189,7 @@ _autodel( autodelete )
                 p_btnok->setText( "Ok" );
                 _p_wnd->addChildWindow( p_btnok );
                 // set callback
-			    p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::MessageBoxDialog::onClickedOk, this ) );
+			    p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &yaf3d::MessageBoxDialog::onClickedOk, this ) );
             }
             break;
 
@@ -296,4 +296,4 @@ void MessageBoxDialog::setText( const std::string& text )
     _p_msgtext->setText( t );
 }
 
-} // namespace CTD
+} // namespace yaf3d

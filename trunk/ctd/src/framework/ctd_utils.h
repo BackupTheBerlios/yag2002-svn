@@ -28,13 +28,13 @@
  #
  ################################################################*/
 
-#ifndef _CTD_UTILS_H_
-#define _CTD_UTILS_H_
+#ifndef _YAF3DUTILS_H_
+#define _YAF3DUTILS_H_
 
 #include <ctd_base.h>
 #include <ctd_application.h>
 
-namespace CTD
+namespace yaf3d
 {
 
 //! Returns a string with current date and time
@@ -220,23 +220,23 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
 
 #ifdef WIN32
 
-//! Utility function for validating application Heaps, set CTD_ENABLE_HEAPCHECK for enabling
-  #if defined( CTD_ENABLE_HEAPCHECK )
-    #define CTD_CHECK_HEAP()   checkHeap();
+//! Utility function for validating application Heaps, set YAF3DENABLE_HEAPCHECK for enabling
+  #if defined( YAF3D_ENABLE_HEAPCHECK )
+    #define YAF3D_CHECK_HEAP()   checkHeap();
     // dynamically validate all heaps; trigger a user breakpoint if one of the heaps is corrupt
     void checkHeap();
   #else
-    #define CTD_CHECK_HEAP()
+    #define YAF3D_CHECK_HEAP()
   #endif
   
 #endif
 #ifdef LINUX 
 
     // heap check is not implemented on Linux
-    #define CTD_CHECK_HEAP()   
+    #define YAF3D_CHECK_HEAP()   
 	
 #endif
 
-} // namespace CTD
+} // namespace yaf3d
 
-#endif //_CTD_UTILS_H_
+#endif //_YAF3DUTILS_H_

@@ -29,12 +29,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_LEVELMANAGER_H_
-#define _CTD_LEVELMANAGER_H_
+#ifndef _YAF3DLEVELMANAGER_H_
+#define _YAF3DLEVELMANAGER_H_
 
 #include "ctd_singleton.h"
 
-namespace CTD
+namespace yaf3d
 {
 
 class Application;
@@ -171,4 +171,4 @@ inline osg::Node* LevelManager::setStaticMesh( osg::Node* p_newnode )
 
 }
 
-#endif // _CTD_LEVELMANAGER_H_
+#endif // _YAF3DLEVELMANAGER_H_

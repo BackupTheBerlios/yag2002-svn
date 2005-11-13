@@ -32,61 +32,56 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CONFIGURATION_H_
-#define _CTD_CONFIGURATION_H_
+#ifndef _YAF3D_CONFIGURATION_H_
+#define _YAF3D_CONFIGURATION_H_
 
 #include <ctd_base.h>
 #include <ctd_singleton.h>
 #include "ctd_settings.h"
 
-namespace CTD
+namespace yaf3d
 {
 
-//! Location of level file directory for Server, Client, and Standalone level
-#define CTD_LEVEL_SERVER_DIR            "level/server/"
-#define CTD_LEVEL_CLIENT_DIR            "level/client/"
-#define CTD_LEVEL_SALONE_DIR            "level/standalone/"
-
 //! Profile name of game settings
-#define CTD_GAMESETTING_PROFILENAME     "gamesettings"
+#define YAF3D_GAMESETTING_PROFILENAME     "gamesettings"
 //! File name for game settings storage
-#define CTD_GAMESETTING_FILENAME        "gamesettings.cfg"
+#define YAF3D_GAMESETTING_FILENAME        "gamesettings.cfg"
 
 //! Game settings' token names
 //keyboard type
-#define CTD_GS_KEYBOARD                 "keyboard"
-#define CTD_GS_KEYBOARD_ENGLISH         "english"
-#define CTD_GS_KEYBOARD_GERMAN          "german"
+#define YAF3D_GS_KEYBOARD                 "keyboard"
+#define YAF3D_GS_KEYBOARD_ENGLISH         "english"
+#define YAF3D_GS_KEYBOARD_GERMAN          "german"
 // screen
-#define CTD_GS_SCREENWIDTH              "screenWidth"
-#define CTD_GS_SCREENHEIGHT             "screenHeight"
-#define CTD_GS_COLORBITS                "colorBits"
-#define CTD_GS_FULLSCREEN               "fullScreen"
+#define YAF3D_GS_SCREENWIDTH              "screenWidth"
+#define YAF3D_GS_SCREENHEIGHT             "screenHeight"
+#define YAF3D_GS_COLORBITS                "colorBits"
+#define YAF3D_GS_FULLSCREEN               "fullScreen"
 
 // gui
-#define CTD_GS_GUISCHEME                "guiScheme"
+#define YAF3D_GS_GUISCHEME                "guiScheme"
 // player
-#define CTD_GS_PLAYER_NAME              "playerName"
+#define YAF3D_GS_PLAYER_NAME              "playerName"
 //   folder in media directory for player configuration files
-#define CTD_GS_PLAYER_CONFIG_DIR        "playerConfigDir"
+#define YAF3D_GS_PLAYER_CONFIG_DIR        "playerConfigDir"
 //   player configuration
-#define CTD_GS_PLAYER_CONFIG            "playerConfig"
+#define YAF3D_GS_PLAYER_CONFIG            "playerConfig"
 //   player key bindings
-#define CTD_GS_KEY_MOVE_FORWARD         "moveForward"
-#define CTD_GS_KEY_MOVE_BACKWARD        "moveBackward"
-#define CTD_GS_KEY_MOVE_LEFT            "moveLeft"
-#define CTD_GS_KEY_MOVE_RIGHT           "moveRight"
-#define CTD_GS_KEY_JUMP                 "jump"
-#define CTD_GS_KEY_CAMERAMODE           "cameraMode"
-#define CTD_GS_KEY_CHATMODE             "chatMode"
+#define YAF3D_GS_KEY_MOVE_FORWARD         "moveForward"
+#define YAF3D_GS_KEY_MOVE_BACKWARD        "moveBackward"
+#define YAF3D_GS_KEY_MOVE_LEFT            "moveLeft"
+#define YAF3D_GS_KEY_MOVE_RIGHT           "moveRight"
+#define YAF3D_GS_KEY_JUMP                 "jump"
+#define YAF3D_GS_KEY_CAMERAMODE           "cameraMode"
+#define YAF3D_GS_KEY_CHATMODE             "chatMode"
 // mouse settings
-#define CTD_GS_MOUSESENS                "mouseSensitivity"
-#define CTD_GS_MAX_MOUSESENS            3.0f                /* maximal mouse sensitivity */
-#define CTD_GS_INVERTMOUSE              "mouseInverted"
+#define YAF3D_GS_MOUSESENS                "mouseSensitivity"
+#define YAF3D_GS_MAX_MOUSESENS            3.0f                /* maximal mouse sensitivity */
+#define YAF3D_GS_INVERTMOUSE              "mouseInverted"
 // networking
-#define CTD_GS_SERVER_NAME              "serverName"
-#define CTD_GS_SERVER_IP                "serverIP"
-#define CTD_GS_SERVER_PORT              "serverPort"
+#define YAF3D_GS_SERVER_NAME              "serverName"
+#define YAF3D_GS_SERVER_IP                "serverIP"
+#define YAF3D_GS_SERVER_PORT              "serverPort"
 
 class Application;
 
@@ -95,7 +90,7 @@ class Configuration : public Singleton< Configuration >
 {
     public:
 
-        //! Given a setting name ( e.g. screen width CTD_GS_SCREENWIDTH ) return its value in 'value'
+        //! Given a setting name ( e.g. screen width YAF3D_GS_SCREENWIDTH ) return its value in 'value'
         template< typename TypeT >
         inline bool                             getSettingValue( const std::string& name, TypeT& value );
 
@@ -185,6 +180,6 @@ inline bool Configuration::setSettingValue( const std::string& name, const TypeT
     return _p_settings->setValue( name, value );
 }
 
-} // namespace CTD
+} // namespace yaf3d
 
-#endif //_CTD_CONFIGURATION_H_
+#endif //_YAF3D_CONFIGURATION_H_

@@ -37,13 +37,10 @@
 #include "ctd_physics_helpers.h"
 #include <osg/Transform>
 
-using namespace std;
-using namespace osg; 
-
-namespace CTD
+namespace yaf3d
 {
 
-CTD_SINGLETON_IMPL( CTD::Physics );
+YAF3DSINGLETON_IMPL( Physics );
 
 // default collision struct for materials
 CollisionStruct defaultCollStruct;
@@ -134,7 +131,7 @@ bool Physics::reinitialize()
     // clear the material cache
     _materials.clear();
 
-    log << Log::LogLevel( Log::L_DEBUG ) << "-Physics: remaining non-freed bytes: " <<  allocBytesSum - freedBytesSum << endl;
+    log << Log::LogLevel( Log::L_DEBUG ) << "-Physics: remaining non-freed bytes: " <<  allocBytesSum - freedBytesSum << std::endl;
 
     return initialize();
 }
@@ -152,7 +149,7 @@ void Physics::shutdown()
         _p_world = NULL;
     }
 
-    log << Log::LogLevel( Log::L_DEBUG ) << "-Physics: remaining non-freed bytes: " <<  allocBytesSum - freedBytesSum << endl;
+    log << Log::LogLevel( Log::L_DEBUG ) << "-Physics: remaining non-freed bytes: " <<  allocBytesSum - freedBytesSum << std::endl;
 
     // destroy singleton
     destroy();
@@ -198,20 +195,20 @@ bool Physics::serialize( const std::string& meshFile, const std::string& outputF
     // start timer
     osg::Timer_t start_tick = osg::Timer::instance()->tick();
     //! iterate through all geometries and create their collision faces
-    PhysicsVisitor physVisitor( NodeVisitor::TRAVERSE_ALL_CHILDREN, p_collision );
+    PhysicsVisitor physVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN, p_collision );
     root->accept( physVisitor );
     // stop timer and give out the time messure
     osg::Timer_t end_tick = osg::Timer::instance()->tick();
-    log << Log::LogLevel( Log::L_DEBUG ) << " elapsed time for building physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << endl;
-    log << Log::LogLevel( Log::L_DEBUG ) << "  total num of evaluated primitives: " << PhysicsVisitor::getNumPrimitives() << endl;
-    log << Log::LogLevel( Log::L_DEBUG ) << "  total num of vertices: " << PhysicsVisitor::getNumVertices() << endl;
+    log << Log::LogLevel( Log::L_DEBUG ) << " elapsed time for building physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << std::endl;
+    log << Log::LogLevel( Log::L_DEBUG ) << "  total num of evaluated primitives: " << PhysicsVisitor::getNumPrimitives() << std::endl;
+    log << Log::LogLevel( Log::L_DEBUG ) << "  total num of vertices: " << PhysicsVisitor::getNumVertices() << std::endl;
 
     //--------------------------
     // finalize tree building 
     NewtonTreeCollisionEndBuild( p_collision, 0 );
 
     // write out the serialization data
-    std::string file( CTD::Application::get()->getMediaPath() + outputFile + CTD_PHYSICS_SERIALIZE_POSTFIX );
+    std::string file( yaf3d::Application::get()->getMediaPath() + outputFile + YAF3DPHYSICS_SERIALIZE_POSTFIX );
     log << Log::LogLevel( Log::L_DEBUG ) << " write to serialization file '" << file << "'" << std::endl;
     std::ofstream serializationoutput;
     serializationoutput.open( file.c_str(), std::ios_base::binary | std::ios_base::out );
@@ -236,7 +233,7 @@ bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelF
     std::string file = cleanPath( levelFile );
     std::vector< std::string > path;
     explode( file, "/", &path );
-    file = CTD::Application::get()->getMediaPath() + CTD_PHYSICS_MEDIA_FOLDER + path[ path.size() - 1 ] + CTD_PHYSICS_SERIALIZE_POSTFIX;
+    file = yaf3d::Application::get()->getMediaPath() + YAF3DPHYSICS_MEDIA_FOLDER + path[ path.size() - 1 ] + YAF3DPHYSICS_SERIALIZE_POSTFIX;
     std::ifstream serializationfile;
     serializationfile.open( file.c_str(), std::ios_base::binary | std::ios_base::in );
     if ( !serializationfile )
@@ -251,13 +248,13 @@ bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelF
         // start timer
         osg::Timer_t start_tick = osg::Timer::instance()->tick();
         //! iterate through all geometries and create their collision faces
-        PhysicsVisitor physVisitor( NodeVisitor::TRAVERSE_ALL_CHILDREN, p_collision );
+        PhysicsVisitor physVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN, p_collision );
         p_root->accept( physVisitor );
         // stop timer and give out the time messure
         osg::Timer_t end_tick = osg::Timer::instance()->tick();
-        log << Log::LogLevel( Log::L_DEBUG ) << "elapsed time for building physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << endl;
-        log << Log::LogLevel( Log::L_DEBUG ) << " total num of evaluated primitives: " << PhysicsVisitor::getNumPrimitives() << endl;
-        log << Log::LogLevel( Log::L_DEBUG ) << " total num of vertices: " << PhysicsVisitor::getNumVertices() << endl;
+        log << Log::LogLevel( Log::L_DEBUG ) << "elapsed time for building physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << std::endl;
+        log << Log::LogLevel( Log::L_DEBUG ) << " total num of evaluated primitives: " << PhysicsVisitor::getNumPrimitives() << std::endl;
+        log << Log::LogLevel( Log::L_DEBUG ) << " total num of vertices: " << PhysicsVisitor::getNumVertices() << std::endl;
 
         //--------------------------
         // finalize tree building with optimization off ( because the meshes are already optimized by 
@@ -276,7 +273,7 @@ bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelF
 
         // stop timer and give out the time messure
         osg::Timer_t end_tick = osg::Timer::instance()->tick();
-        log << Log::LogLevel( Log::L_DEBUG ) << "elapsed time for deserializing physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << endl;
+        log << Log::LogLevel( Log::L_DEBUG ) << "elapsed time for deserializing physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << std::endl;
 
         serializationfile.close();
     }
@@ -289,7 +286,7 @@ bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelF
     // set Material Id for this object
     NewtonBodySetMaterialGroupID( _p_body, getMaterialId( "level" ) );
 
-    Matrixf mat;
+    osg::Matrixf mat;
     mat.identity();
     NewtonBodySetMatrix( _p_body, mat.ptr() ); 
 
@@ -330,13 +327,13 @@ void Physics::setupMaterials()
     int stoneID = NewtonMaterialCreateGroupID( _p_world );
     int grassID = NewtonMaterialCreateGroupID( _p_world );
 
-    _materials.insert( make_pair( "default", defaultID ) );
-    _materials.insert( make_pair( "nocol"  , nocolID   ) );
-    _materials.insert( make_pair( "level"  , levelID   ) );
-    _materials.insert( make_pair( "wood"   , woodID    ) );
-    _materials.insert( make_pair( "metal"  , metalID   ) );
-    _materials.insert( make_pair( "stone"  , stoneID   ) );
-    _materials.insert( make_pair( "grass"  , grassID   ) );
+    _materials.insert( std::make_pair( "default", defaultID ) );
+    _materials.insert( std::make_pair( "nocol"  , nocolID   ) );
+    _materials.insert( std::make_pair( "level"  , levelID   ) );
+    _materials.insert( std::make_pair( "wood"   , woodID    ) );
+    _materials.insert( std::make_pair( "metal"  , metalID   ) );
+    _materials.insert( std::make_pair( "stone"  , stoneID   ) );
+    _materials.insert( std::make_pair( "grass"  , grassID   ) );
 
     // set non-colliding pairs
     NewtonMaterialSetDefaultCollidable( _p_world, nocolID, defaultID, 0 );
@@ -425,9 +422,9 @@ void Physics::setupMaterials()
     NewtonMaterialSetCollisionCallback( _p_world, grassID, grassID, &grass_grassCollStruct, genericContactBegin, genericContactProcess, genericContactEnd );
 }
 
-int Physics::createMaterialID( const string& materialType )
+int Physics::createMaterialID( const std::string& materialType )
 {
-    std::map< string, int >::iterator id = _materials.find( materialType );
+    std::map< std::string, int >::iterator id = _materials.find( materialType );
     assert( _p_world && "physics world has not been created, first initialize the physics system" );
     assert( id == _materials.end() && "material already exists!" );
     
@@ -436,9 +433,9 @@ int Physics::createMaterialID( const string& materialType )
     return matID;
 }
 
-int Physics::getMaterialId( const string& materialType )
+int Physics::getMaterialId( const std::string& materialType )
 {
-    std::map< string, int >::iterator id = _materials.find( materialType );
+    std::map< std::string, int >::iterator id = _materials.find( materialType );
     assert( id != _materials.end() && "requesting for an invalid material id!" );
     return id->second;
 }
@@ -449,15 +446,15 @@ void Physics::enableDebugRender()
         return;
 
     // create and attach the debug node into scene
-    _p_debugGeode = new Geode;
+    _p_debugGeode = new osg::Geode;
     PhysicsDebugDrawable* p_debugdraw = new PhysicsDebugDrawable;
     _p_debugGeode->addDrawable( p_debugdraw );
-    static_cast< Group* >( Application::get()->getSceneRootNode() )->addChild( _p_debugGeode );
+    static_cast< osg::Group* >( Application::get()->getSceneRootNode() )->addChild( _p_debugGeode );
 }
 
 void Physics::disableDebugRender()
 {
-   static_cast< Group* >( Application::get()->getSceneRootNode() )->removeChild( _p_debugGeode );
+   static_cast< osg::Group* >( Application::get()->getSceneRootNode() )->removeChild( _p_debugGeode );
    _p_debugGeode = NULL;
 }
 
@@ -522,7 +519,7 @@ int Physics::genericContactProcess( const NewtonMaterial* p_material, const Newt
 {
     float speed0;
     float speed1;
-    Vec3f normal;
+    osg::Vec3f normal;
 
     // get the maximun normal speed of this impact.
     speed0 = NewtonMaterialGetContactNormalSpeed( p_material, p_contact );
@@ -617,4 +614,4 @@ int Physics::levelContactProcess(const NewtonMaterial* p_material, const NewtonC
     return 1;
 }
 
-}
+} // namespace yaf3d

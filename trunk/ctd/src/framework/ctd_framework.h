@@ -30,8 +30,8 @@
  ################################################################*/
 
 
-#ifndef _CTD_FRAMEWORK_H_
-#define _CTD_FRAMEWORK_H_
+#ifndef _YAF3DFRAMEWORK_H_
+#define _YAF3DFRAMEWORK_H_
 
 #include <ctd_application.h>
 #include <ctd_attributemanager.h>
@@ -50,4 +50,4 @@
 #include <ctd_singleton.h>
 #include <ctd_utils.h>
 
-#endif // _CTD_FRAMEWORK_H_
+#endif // _YAF3DFRAMEWORK_H_

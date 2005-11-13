@@ -29,14 +29,14 @@
  #
  ################################################################*/
 
-#ifndef _CTD_GAMESTATE_H_
-#define _CTD_GAMESTATE_H_
+#ifndef _YAF3DGAMESTATE_H_
+#define _YAF3DGAMESTATE_H_
 
 #include <ctd_base.h>
 #include <ctd_singleton.h>
 #include <ctd_application.h>
 
-namespace CTD
+namespace yaf3d
 {
 //! Game state
 /**
@@ -98,6 +98,6 @@ class GameState : public Singleton< GameState >
     friend class Application;
 };
 
-} // namespace CTD
+} // namespace yaf3d
 
-#endif //_CTD_GAMESTATE_H_
+#endif //_YAF3DGAMESTATE_H_

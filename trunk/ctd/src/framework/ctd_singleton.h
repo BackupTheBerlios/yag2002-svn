@@ -28,10 +28,13 @@
  #
  ################################################################*/
 
-#ifndef _CTD_SINGLETON_H_
-#define _CTD_SINGLETON_H_
+#ifndef _YAF3DSINGLETON_H_
+#define _YAF3DSINGLETON_H_
 
-namespace CTD
+//! Convenient macro for implementing a singleton
+#define YAF3D_SINGLETON_IMPL( Type ) template<> Type* yaf3d::Singleton< Type >::_p_instance = 0;
+
+namespace yaf3d
 {
 
 //! Inherit from this class for your singletons ( phoenix type, single threaded singleton )
@@ -63,8 +66,6 @@ class Singleton
 
 #include "ctd_singleton.inl"
 
-#define CTD_SINGLETON_IMPL( Type ) template<> Type* CTD::Singleton< Type >::_p_instance = 0;
-
 }
 
-#endif // _CTD_SINGLETON_H_
+#endif // _YAF3DSINGLETON_H_

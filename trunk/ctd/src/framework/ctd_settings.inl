@@ -28,7 +28,7 @@
  #
  ################################################################*/
 
-#ifndef _CTD_SETTINGS_H_
+#ifndef _YAF3DSETTINGS_H_
 #error "do not include this file! this is an inline header."
 #endif
 

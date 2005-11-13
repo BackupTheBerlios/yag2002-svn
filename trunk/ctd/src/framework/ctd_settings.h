@@ -34,13 +34,13 @@
  #
  ################################################################*/
 
-#ifndef _CTD_SETTINGS_H_
-#define _CTD_SETTINGS_H_
+#ifndef _YAF3DSETTINGS_H_
+#define _YAF3DSETTINGS_H_
 
 #include <ctd_base.h>
 #include <ctd_singleton.h>
 
-namespace CTD
+namespace yaf3d
 {
 
 class Application;
@@ -232,9 +232,9 @@ class Settings
 
 #include "ctd_settings.inl"
 
-} // namespace CTD
+} // namespace yaf3d
 
-#endif // _CTD_SETTINGS_H_
+#endif // _YAF3DSETTINGS_H_
 
 
 /**

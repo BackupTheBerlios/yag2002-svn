@@ -36,10 +36,7 @@
 #include <GL/glu.h>
 #include <osg/GLExtensions>
 
-using namespace std;
-using namespace CEGUI;
-
-namespace CTD
+namespace yaf3d
 {
 
 const int CTDGuiRenderer::VERTEX_PER_QUAD           = 6;
@@ -86,7 +83,7 @@ void CTDGuiRenderer::changeDisplayResolution( float width, float height )
     _display_area.d_bottom  = height;
 }
 
-void CTDGuiRenderer::addQuad( const Rect& dest_rect, float z, const Texture* tex, const Rect& texture_rect, const ColourRect& colours, QuadSplitMode quad_split_mode )
+void CTDGuiRenderer::addQuad( const CEGUI::Rect& dest_rect, float z, const CEGUI::Texture* tex, const CEGUI::Rect& texture_rect, const CEGUI::ColourRect& colours, CEGUI::QuadSplitMode quad_split_mode )
 {
     // if not queuing, render directly (as in, right now!)
     if (!_queueing)
@@ -154,7 +151,7 @@ void CTDGuiRenderer::doRender()
         //vert2
 
         // top-left to bottom-right diagonal
-        if (quad.splitMode == TopLeftToBottomRight)
+        if (quad.splitMode == CEGUI::TopLeftToBottomRight)
         {
             _buff[_bufferPos].vertex[0] = quad.position.d_right;
             _buff[_bufferPos].vertex[1] = quad.position.d_bottom;
@@ -187,7 +184,7 @@ void CTDGuiRenderer::doRender()
         //vert4
 
         // top-left to bottom-right diagonal
-        if (quad.splitMode == TopLeftToBottomRight)
+        if (quad.splitMode == CEGUI::TopLeftToBottomRight)
         {
             _buff[_bufferPos].vertex[0] = quad.position.d_left;
             _buff[_bufferPos].vertex[1] = quad.position.d_top;
@@ -233,14 +230,14 @@ void CTDGuiRenderer::clearRenderList()
     _quadlist.clear();  
 }
 
-Texture* CTDGuiRenderer::createTexture()
+CEGUI::Texture* CTDGuiRenderer::createTexture()
 {
     CTDGuiTexture* p_tex = new CTDGuiTexture( this );
     _texturelist.push_back( p_tex );
     return p_tex;
 }
 
-Texture* CTDGuiRenderer::createTexture( const String& filename, const String& resourceGroup )
+CEGUI::Texture* CTDGuiRenderer::createTexture( const CEGUI::String& filename, const CEGUI::String& resourceGroup )
 {
     CTDGuiTexture* p_tex = static_cast< CTDGuiTexture* >( this->createTexture() );
     p_tex->loadFromFile( filename, resourceGroup );
@@ -248,7 +245,7 @@ Texture* CTDGuiRenderer::createTexture( const String& filename, const String& re
     return p_tex;
 }
 
-Texture* CTDGuiRenderer::createTexture( float size )
+CEGUI::Texture* CTDGuiRenderer::createTexture( float size )
 {
     CTDGuiTexture* p_tex = static_cast< CTDGuiTexture* >( this->createTexture() );
     p_tex->setOGLTextureSize( ( CEGUI::uint )size );
@@ -256,7 +253,7 @@ Texture* CTDGuiRenderer::createTexture( float size )
     return p_tex;
 }
 
-void CTDGuiRenderer::destroyTexture( Texture* p_texture )
+void CTDGuiRenderer::destroyTexture( CEGUI::Texture* p_texture )
 {
     if ( p_texture )
     {
@@ -358,7 +355,7 @@ void CTDGuiRenderer::sortQuads()
     // no need to do anything here.
 }
 
-void CTDGuiRenderer::renderQuadDirect(const Rect& dest_rect, float z, const Texture* tex, const Rect& texture_rect, const ColourRect& colours, QuadSplitMode quad_split_mode)
+void CTDGuiRenderer::renderQuadDirect(const CEGUI::Rect& dest_rect, float z, const CEGUI::Texture* tex, const CEGUI::Rect& texture_rect, const CEGUI::ColourRect& colours, CEGUI::QuadSplitMode quad_split_mode)
 {
     QuadInfo quad;
     quad.position.d_left    = dest_rect.d_left;
@@ -397,7 +394,7 @@ void CTDGuiRenderer::renderQuadDirect(const Rect& dest_rect, float z, const Text
     //vert2
 
     // top-left to bottom-right diagonal
-    if (quad_split_mode == TopLeftToBottomRight)
+    if (quad_split_mode == CEGUI::TopLeftToBottomRight)
     {
         myquad[2].vertex[0] = quad.position.d_right;
         myquad[2].vertex[1] = quad.position.d_bottom;
@@ -428,7 +425,7 @@ void CTDGuiRenderer::renderQuadDirect(const Rect& dest_rect, float z, const Text
     //vert4
 
     // top-left to bottom-right diagonal
-    if (quad_split_mode == TopLeftToBottomRight)
+    if (quad_split_mode == CEGUI::TopLeftToBottomRight)
     {
         myquad[4].vertex[0] = quad.position.d_left;
         myquad[4].vertex[1] = quad.position.d_top;
@@ -472,5 +469,5 @@ long CTDGuiRenderer::colourToOGL(const CEGUI::colour& col) const
     return cval;
 }
 
-} // namespace CTD
+} // namespace yaf3d
 

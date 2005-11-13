@@ -44,7 +44,7 @@
  #include <dirent.h>
 #endif
 
-namespace CTD
+namespace yaf3d
 {
 
 std::string getTimeStamp()
@@ -411,7 +411,7 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
 }
 
 #ifdef WIN32
-#ifdef CTD_ENABLE_HEAPCHECK
+#ifdef YAF3D_ENABLE_HEAPCHECK
 void checkHeap()
 {
     // go through all heaps and validate them, trigger a user breakpoint if one of the heaps is corrupt
@@ -470,4 +470,4 @@ osg::ref_ptr< osg::TextureCubeMap > readCubeMap( const std::vector< std::string 
     return p_cubemap;
 }
 
-} // namespace CTD
+} // namespace yaf3d

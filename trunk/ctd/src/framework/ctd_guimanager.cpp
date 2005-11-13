@@ -37,10 +37,8 @@
 #include "ctd_log.h"
 #include <CEGUILogger.h>
 
-using namespace std;
-using namespace CEGUI;
 
-namespace CTD
+namespace yaf3d
 {
 
 //! Viewer's init callback. Here we initialize CEGUI's renderer.
@@ -75,14 +73,14 @@ class GuiPostDrawCallback : public osgSDL::Viewer::DrawCallback
 };
 
 //! Resource loader for gui resource loading
-class CTDResourceProvider : public ResourceProvider
+class CTDResourceProvider : public CEGUI::ResourceProvider
 {
     public:
                                                     CTDResourceProvider() : ResourceProvider() {}
 
                                                     ~CTDResourceProvider() {}
 
-        void                                        loadRawDataContainer( const CEGUI::String& filename, RawDataContainer& output, const CEGUI::String& resourceGroup );
+        void                                        loadRawDataContainer( const CEGUI::String& filename, CEGUI::RawDataContainer& output, const CEGUI::String& resourceGroup );
 
 };
 GuiManager::InputHandler::InputHandler( GuiManager* p_guimgr ) : 
@@ -90,23 +88,23 @@ GenericInputHandler< GuiManager >( p_guimgr )
 {
 }
 
-void CTDResourceProvider::loadRawDataContainer( const CEGUI::String& filename, RawDataContainer& output, const CEGUI::String& resourceGroup )
+void CTDResourceProvider::loadRawDataContainer( const CEGUI::String& filename, CEGUI::RawDataContainer& output, const CEGUI::String& resourceGroup )
 {
-    auto_ptr< fstream > p_stream( new fstream );
+    std::auto_ptr< std::fstream > p_stream( new std::fstream );
 
-    string fullpath = Application::get()->getMediaPath() + filename.c_str();
+    std::string fullpath = Application::get()->getMediaPath() + filename.c_str();
     p_stream->open( fullpath.c_str(), std::ios_base::binary | std::ios_base::in );
     // if the file does not exist then return
     if ( !( *p_stream ) )
     {   
-        log << Log::LogLevel( Log::L_WARNING ) << " CTDResourceProvider: file '" << fullpath << "' does not exist." << endl;
+        log << Log::LogLevel( Log::L_WARNING ) << " CTDResourceProvider: file '" << fullpath << "' does not exist." << std::endl;
         throw CEGUI::Exception( "CTDResourceProvider cannot find file '" + fullpath + "'" );
     }
 
     // get file size
-    p_stream->seekg( 0, ios_base::end );
+    p_stream->seekg( 0, std::ios_base::end );
     int filesize = ( int )p_stream->tellg();
-    p_stream->seekg( 0, ios_base::beg );
+    p_stream->seekg( 0, std::ios_base::beg );
 
     // load the file
     unsigned char* p_buf = new unsigned char[ filesize + 1 ];
@@ -121,7 +119,7 @@ void CTDResourceProvider::loadRawDataContainer( const CEGUI::String& filename, R
 }
 
 
-CTD_SINGLETON_IMPL( GuiManager );
+YAF3DSINGLETON_IMPL( GuiManager );
 
 // implementation of GuiManager
 GuiManager::GuiManager() :
@@ -164,8 +162,8 @@ void GuiManager::doInitialize()
 {
     // get window size
     unsigned int width, height;
-    Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  width  );
-    Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, height );
+    Configuration::get()->getSettingValue( YAF3D_GS_SCREENWIDTH,  width  );
+    Configuration::get()->getSettingValue( YAF3D_GS_SCREENHEIGHT, height );
     _windowWidth = float( width );
     _windowHeight = float( height );
 
@@ -180,32 +178,32 @@ void GuiManager::doInitialize()
     CEGUI::Logger::getSingleton().setLoggingLevel( CEGUI::Insane );
 //#endif
 
-    string guiScheme;
-    Configuration::get()->getSettingValue( CTD_GS_GUISCHEME, guiScheme );
+    std::string guiScheme;
+    Configuration::get()->getSettingValue( YAF3D_GS_GUISCHEME, guiScheme );
 
-    CEGUI::Imageset* p_images = ImagesetManager::getSingleton().createImageset( "gui/imagesets/TaharezLook.imageset" );
+    CEGUI::Imageset* p_images = CEGUI::ImagesetManager::getSingleton().createImageset( "gui/imagesets/TaharezLook.imageset" );
 
     _p_mouseImg = const_cast< CEGUI::Image* >( &p_images->getImage( "MouseArrow" ) );
     CEGUI::System::getSingleton().setDefaultMouseCursor( _p_mouseImg );
 
     // create necessary fonts
     CEGUI::Font* p_font = NULL;
-    p_font = createFont( string( "gui/fonts/" CTD_GUI_FONT8 ".font" ) );
-    p_font = createFont( string( "gui/fonts/" CTD_GUI_FONT10 ".font" ) );
+    p_font = createFont( std::string( "gui/fonts/" YAF3DGUI_FONT8 ".font" ) );
+    p_font = createFont( std::string( "gui/fonts/" YAF3DGUI_FONT10 ".font" ) );
     CEGUI::System::getSingleton().setDefaultFont( p_font ); // set the default font
-    p_font = createFont( string( "gui/fonts/" CTD_GUI_CONSOLE ".font" ) );
+    p_font = createFont( std::string( "gui/fonts/" YAF3DGUI_CONSOLE ".font" ) );
 
     // load scheme
-    SchemeManager::getSingleton().loadScheme( string( "gui/schemes/" CTD_GUI_SCHEME ".scheme" ) );
+    CEGUI::SchemeManager::getSingleton().loadScheme( std::string( "gui/schemes/" YAF3DGUI_SCHEME ".scheme" ) );
 
     // create the root window called 'Root'.
-    _p_root = static_cast< DefaultWindow* >( WindowManager::getSingleton().createWindow("DefaultWindow", "Root") );
+    _p_root = static_cast< CEGUI::DefaultWindow* >( CEGUI::WindowManager::getSingleton().createWindow("DefaultWindow", "Root") );
     _p_root->setMetricsMode( CEGUI::Absolute );
     _p_root->setPosition( CEGUI::Point( 0, 0 ) );
     _p_root->setSize( CEGUI::Size( _windowWidth, _windowHeight ) );
 
     // set the GUI root window (also known as the GUI "sheet"), all layout will be added to this root for showing up
-    System::getSingleton().setGUISheet( _p_root );
+    CEGUI::System::getSingleton().setGUISheet( _p_root );
 
     // create input handler
     _inputHandler = new InputHandler( this );
@@ -218,7 +216,7 @@ CEGUI::Font* GuiManager::createFont( const std::string& fontname )
     try 
     {
         // load font
-        p_font = FontManager::getSingleton().createFont( fontname );
+        p_font = CEGUI::FontManager::getSingleton().createFont( fontname );
         // add german specific glyphs to font
         CEGUI::String glyphs = p_font->getAvailableGlyphs();
         CEGUI::String germanGlyphs;
@@ -233,8 +231,8 @@ CEGUI::Font* GuiManager::createFont( const std::string& fontname )
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "GuiManager: cannot create font: '" << fontname << "'" << endl;
-        log << Log::LogLevel( Log::L_ERROR ) << " reason: " << e.getMessage().c_str() << "'" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "GuiManager: cannot create font: '" << fontname << "'" << std::endl;
+        log << Log::LogLevel( Log::L_ERROR ) << " reason: " << e.getMessage().c_str() << "'" << std::endl;
         return NULL;
     }
 
@@ -250,7 +248,7 @@ CEGUI::Font* GuiManager::getFont( const std::string& fontname )
     if ( p_font != p_end )
         return p_font->second;
 
-    log << Log::LogLevel( Log::L_ERROR ) << " GuiManager: no font with name '" << fontname << "' exists!" << endl;
+    log << Log::LogLevel( Log::L_ERROR ) << " GuiManager: no font with name '" << fontname << "' exists!" << std::endl;
     return NULL;
 }
 
@@ -277,9 +275,9 @@ void GuiManager::changeDisplayResolution( float width, float height )
 void GuiManager::showMousePointer( bool show ) const
 {    
     if ( show )
-        MouseCursor::getSingleton().show();
+        CEGUI::MouseCursor::getSingleton().show();
     else
-        MouseCursor::getSingleton().hide();
+        CEGUI::MouseCursor::getSingleton().hide();
 }
 
 void GuiManager::lockPointer( float x, float y )
@@ -297,11 +295,11 @@ void GuiManager::releasePointer()
     _lockMouse = false;
 }
 
-CEGUI::Window* GuiManager::loadLayout( const string& filename, CEGUI::Window* p_parent, const string& handle )
+CEGUI::Window* GuiManager::loadLayout( const std::string& filename, CEGUI::Window* p_parent, const std::string& handle )
 {
     assert( _p_root && " gui system is not initialized!" );
 
-    stringstream pref;
+    std::stringstream pref;
 
     if ( !handle.length() )
     {
@@ -313,10 +311,10 @@ CEGUI::Window* GuiManager::loadLayout( const string& filename, CEGUI::Window* p_
     else
         pref << handle;
 
-    Window* p_layout = NULL;
+    CEGUI::Window* p_layout = NULL;
     try
     {
-        p_layout = WindowManager::getSingleton().loadWindowLayout( filename.c_str(), pref.str() );
+        p_layout = CEGUI::WindowManager::getSingleton().loadWindowLayout( filename.c_str(), pref.str() );
 
         if ( !p_parent )
             _p_root->addChildWindow( p_layout );
@@ -326,8 +324,8 @@ CEGUI::Window* GuiManager::loadLayout( const string& filename, CEGUI::Window* p_
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "GuiManager: cannot load layout: '" << filename << "'" << endl;
-        log << Log::LogLevel( Log::L_ERROR ) << " reason: " << e.getMessage().c_str() << "'" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "GuiManager: cannot load layout: '" << filename << "'" << std::endl;
+        log << Log::LogLevel( Log::L_ERROR ) << " reason: " << e.getMessage().c_str() << "'" << std::endl;
         return NULL;
     }
 

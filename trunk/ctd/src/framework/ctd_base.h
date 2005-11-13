@@ -30,8 +30,8 @@
  ################################################################*/
 
 
-#ifndef _CTD_BASE_H_
-#define _CTD_BASE_H_
+#ifndef _YAF3DBASE_H_
+#define _YAF3DBASE_H_
 
 #ifdef HAVE_CONFIG_H 
   #include <config.h>
@@ -102,4 +102,4 @@
 // CEGUI headers
 #include <CEGUI.h>
 
-#endif // _CTD_BASE_H_
+#endif // _YAF3DBASE_H_

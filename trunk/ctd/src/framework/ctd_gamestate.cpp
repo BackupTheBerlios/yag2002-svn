@@ -32,10 +32,10 @@
 #include <ctd_base.h>
 #include "ctd_gamestate.h"
 
-namespace CTD
+namespace yaf3d
 {
 
-CTD_SINGLETON_IMPL( GameState );
+YAF3DSINGLETON_IMPL( GameState );
 
 //! Implementation of GameState
 GameState::GameState() :
@@ -92,4 +92,4 @@ void GameState::setMode( unsigned int mode )
     _gameMode = mode;
 }
 
-} // namespace CTD
+} // namespace yaf3d

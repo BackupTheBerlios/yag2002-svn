@@ -34,29 +34,29 @@
  #
  ################################################################*/
 
-#ifndef _CTD_NETWORK_DEFS_H_
-#define _CTD_NETWORK_DEFS_H_
+#ifndef _YAF3DNETWORK_DEFS_H_
+#define _YAF3DNETWORK_DEFS_H_
 
-namespace CTD
+namespace yaf3d
 {
 
 // structure for requesting server info during pre-connection ( client side )
-#define CTD_NW_PRECON_DATA_CLIENT      0x01
+#define YAF3DNW_PRECON_DATA_CLIENT      0x01
 struct PreconnectDataClient
 {
-    unsigned char  _typeId;  // set this to CTD_NW_PRECON_DATA_CLIENT
+    unsigned char  _typeId;  // set this to YAF3DNW_PRECON_DATA_CLIENT
 };
 
 
 // structure for sending server info during pre-connection ( server side )
-#define CTD_NW_PRECON_DATA_SERVER      0x02
+#define YAF3DNW_PRECON_DATA_SERVER      0x02
 struct PreconnectDataServer
 {
-    unsigned char  _typeId;  // set this to CTD_NW_PRECON_DATA_SERVER    
+    unsigned char  _typeId;  // set this to YAF3DNW_PRECON_DATA_SERVER    
     char           _p_levelName[ 64 ];
     char           _p_serverName[ 64 ];
 };
 
-} // namespace CTD
+} // namespace yaf3d
 
-#endif //_CTD_NETWORK_DEFS_H_
+#endif //_YAF3DNETWORK_DEFS_H_

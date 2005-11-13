@@ -28,15 +28,15 @@
  #
  ################################################################*/
 
-#ifndef _CTD_GUI_H_
-#define _CTD_GUI_H_
+#ifndef _YAF3DGUI_H_
+#define _YAF3DGUI_H_
 
 #include <ctd_base.h>
 #include <ctd_singleton.h>
 #include <ctd_guirenderer.h>
 #include <ctd_utils.h>
 
-namespace CTD
+namespace yaf3d
 {
 
 class Application;
@@ -46,10 +46,10 @@ class GuiPostDrawCallback;
 class GuiViewerInitCallback;
 
 // some definitions
-#define CTD_GUI_FONT8           "CTD-8"
-#define CTD_GUI_FONT10          "CTD-10"
-#define CTD_GUI_CONSOLE         "CTD-Console"
-#define CTD_GUI_SCHEME          "TaharezLookWidgets"
+#define YAF3DGUI_FONT8           "yaf3d-8"
+#define YAF3DGUI_FONT10          "yaf3d-10"
+#define YAF3DGUI_CONSOLE         "yaf3d-Console"
+#define YAF3DGUI_SCHEME          "TaharezLookWidgets"
 
 // Graphical User Interface
 /**
@@ -85,7 +85,7 @@ class GuiManager : public Singleton< GuiManager >
         //! Retrieve the gui renderer. One can used it e.g. to create textures for StaticImage elements.
         CTDGuiRenderer*                         getGuiRenderer();
 
-        //! Retrieve a pre-loaded font resource given its name ( e.g. CTD-8 or CTD-10 )
+        //! Retrieve a pre-loaded font resource given its name ( e.g. yaf3d-8 or yaf3d-10 )
         /**
          * If there is no font with that name then the return value is NULL.
          */
@@ -187,6 +187,6 @@ class GuiManager : public Singleton< GuiManager >
     friend class Application;
 };
 
-} // namespace CTD
+} // namespace yaf3d
 
-#endif //_CTD_GUI_H_
+#endif //_YAF3DGUI_H_

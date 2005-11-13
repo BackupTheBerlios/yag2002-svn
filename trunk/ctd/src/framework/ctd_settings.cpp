@@ -32,12 +32,11 @@
 #include "ctd_log.h"
 #include "ctd_settings.h"
 
-using namespace std;
 
-namespace CTD
+namespace yaf3d
 {
 
-CTD_SINGLETON_IMPL( SettingsManager );
+YAF3DSINGLETON_IMPL( SettingsManager );
 
 // implementation of SettingsManager
 SettingsManager::SettingsManager()
@@ -47,7 +46,7 @@ SettingsManager::SettingsManager()
 SettingsManager::~SettingsManager()
 {
     // delete all profiles
-    map< string, Settings* >::iterator pp_profile = _profiles.begin(), pp_profileEnd = _profiles.end();
+    std::map< std::string, Settings* >::iterator pp_profile = _profiles.begin(), pp_profileEnd = _profiles.end();
     while ( pp_profile != pp_profileEnd )
         delete pp_profile->second;
 }
@@ -58,12 +57,12 @@ void SettingsManager::shutdown()
     destroy();
 }
 
-Settings* SettingsManager::createProfile( const string& profilename, const string& filename )
+Settings* SettingsManager::createProfile( const std::string& profilename, const std::string& filename )
 {
-    map< string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
+    std::map< std::string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile != pp_profileEnd )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** requested profile '" << profilename << "' already exists!" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** requested profile '" << profilename << "' already exists!" << std::endl;
         return NULL;
     }
 
@@ -75,10 +74,10 @@ Settings* SettingsManager::createProfile( const string& profilename, const strin
 
 void SettingsManager::destroyProfile( const std::string& profilename )
 {
-    map< string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
+    std::map< std::string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile == pp_profileEnd )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** profile '" << profilename << "' does not exist!" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** profile '" << profilename << "' does not exist!" << std::endl;
         return;
     }
 
@@ -86,24 +85,24 @@ void SettingsManager::destroyProfile( const std::string& profilename )
     _profiles.erase( pp_profile );
 }
 
-bool SettingsManager::loadProfile( const string& profilename )
+bool SettingsManager::loadProfile( const std::string& profilename )
 {
-    map< string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
+    std::map< std::string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile == pp_profileEnd )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** profile '" << profilename << "' does not exist!" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** profile '" << profilename << "' does not exist!" << std::endl;
         return false;
     }
 
     return pp_profile->second->load();
 }
 
-bool SettingsManager::storeProfile( const string& profilename )
+bool SettingsManager::storeProfile( const std::string& profilename )
 {
-    map< string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
+    std::map< std::string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile == pp_profileEnd )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** profile '" << profilename << "' does not exist!" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** profile '" << profilename << "' does not exist!" << std::endl;
         return false;
     }
 
@@ -112,7 +111,7 @@ bool SettingsManager::storeProfile( const string& profilename )
 
 Settings* SettingsManager::getProfile( const std::string& profilename )
 {
-    map< string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
+    std::map< std::string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile != pp_profileEnd )
         return pp_profile->second;
     
@@ -137,30 +136,30 @@ bool Settings::load( const std::string& filename )
 {
     if ( _loaded )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** there is already an open settings file '" << filename << "'." << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "*** there is already an open settings file '" << filename << "'." << std::endl;
         return false;
     }
 
-    string openfile = filename;
+    std::string openfile = filename;
     if ( !filename.length() )
         openfile = _settingsFile;
 
-    auto_ptr< fstream > p_stream( new fstream );
+    std::auto_ptr< std::fstream > p_stream( new std::fstream );
 
-    p_stream->open( openfile.c_str(), ios_base::binary | ios_base::in );
+    p_stream->open( openfile.c_str(), std::ios_base::binary | std::ios_base::in );
     // if the file does not exist then create one
     if ( !*p_stream )
     {   
-        p_stream->open( openfile.c_str(), ios_base::binary | ios_base::out );
-        log << Log::LogLevel( Log::L_WARNING ) << "*** settings file '" << openfile << "' does not exist. one has been created." << endl;
+        p_stream->open( openfile.c_str(), std::ios_base::binary | std::ios_base::out );
+        log << Log::LogLevel( Log::L_WARNING ) << "*** settings file '" << openfile << "' does not exist. one has been created." << std::endl;
         _loaded   = true;
         return false;
     }
 
     // get file size
-    p_stream->seekg( 0, ios_base::end );
+    p_stream->seekg( 0, std::ios_base::end );
     int filesize = ( int )p_stream->tellg();
-    p_stream->seekg( 0, ios_base::beg );
+    p_stream->seekg( 0, std::ios_base::beg );
 
     // load the settings into the file buffer
     _fileBuffer = "";
@@ -168,7 +167,7 @@ bool Settings::load( const std::string& filename )
     p_stream->read( p_buf, filesize );
     p_buf[ filesize - 1 ] = 0;
     _fileBuffer = p_buf;
-    _fileBuffer += "\n"; // terminate the buffer string by a CR
+    _fileBuffer += "\n"; // terminate the buffer std::string by a CR
     delete[] p_buf;
 
     p_stream->close();
@@ -188,8 +187,8 @@ bool Settings::load( const std::string& filename )
         if ( settings_typeinfo == typeid( unsigned int ) ) {
             read( p_setting->getTokenName(), static_cast< Setting< unsigned int >* >( p_setting )->_value );
         } else 
-        if ( settings_typeinfo == typeid( string ) ) {
-            read( p_setting->getTokenName(), static_cast< Setting< string >* >( p_setting )->_value );
+        if ( settings_typeinfo == typeid( std::string ) ) {
+            read( p_setting->getTokenName(), static_cast< Setting< std::string >* >( p_setting )->_value );
         } else 
         if ( settings_typeinfo == typeid( float ) ) {
             read( p_setting->getTokenName(), static_cast< Setting< float >* >( p_setting )->_value );
@@ -206,30 +205,30 @@ bool Settings::load( const std::string& filename )
     return true;
 }
 
-bool Settings::store( const string& filename )
+bool Settings::store( const std::string& filename )
 {
-    auto_ptr< fstream > p_stream( new fstream );
+    std::auto_ptr< std::fstream > p_stream( new std::fstream );
 
     if ( !filename.length() )
     {
         if ( !_loaded ) 
         {
-            log << Log::LogLevel( Log::L_WARNING ) << "*** no settings file was previously loaded" << endl;
+            log << Log::LogLevel( Log::L_WARNING ) << "*** no settings file was previously loaded" << std::endl;
             return false;
         }
-        p_stream->open( _settingsFile.c_str(), ios_base::binary | ios_base::out );
+        p_stream->open( _settingsFile.c_str(), std::ios_base::binary | std::ios_base::out );
         if ( !*p_stream )
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "*** cannot open settings file '" << filename << "'" << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "*** cannot open settings file '" << filename << "'" << std::endl;
             assert( NULL && " internal error, cannot open settings file for writing" );
         }
     } 
     else
     {
-        p_stream->open( filename.c_str(), ios_base::binary | ios_base::out );
+        p_stream->open( filename.c_str(), std::ios_base::binary | std::ios_base::out );
         if ( !*p_stream )
         {   
-            log << Log::LogLevel( Log::L_ERROR ) << "*** cannot open settings file '" << filename << "'" << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "*** cannot open settings file '" << filename << "'" << std::endl;
             return false;
         }
     }
@@ -252,8 +251,8 @@ bool Settings::store( const string& filename )
         if ( settings_typeinfo == typeid( unsigned int ) ) {
             write( p_setting->getTokenName(), static_cast< Setting< unsigned int >* >( p_setting )->_value );
         } else 
-        if ( settings_typeinfo == typeid( string ) ) {
-            write( p_setting->getTokenName(), static_cast< Setting< string >* >( p_setting )->_value );
+        if ( settings_typeinfo == typeid( std::string ) ) {
+            write( p_setting->getTokenName(), static_cast< Setting< std::string >* >( p_setting )->_value );
         } else 
         if ( settings_typeinfo == typeid( float ) ) {
             write( p_setting->getTokenName(), static_cast< Setting< float >* >( p_setting )->_value );
@@ -272,17 +271,17 @@ bool Settings::store( const string& filename )
     return true;
 }
 
-bool Settings::read( const string& token, string& value )
+bool Settings::read( const std::string& token, std::string& value )
 {
     size_t  curpos = ( size_t )-1;
-    // search the exact match of the token string
+    // search the exact match of the token std::string
     do {
 
         curpos++;
         curpos = _fileBuffer.find( token.c_str(), curpos, token.length() );
-        if ( curpos == basic_string< char >::npos ) 
+        if ( curpos == std::basic_string< char >::npos ) 
         {
-            log << Log::LogLevel( Log::L_DEBUG ) << "*** settings manager could not read requested token '" << token << "', skipping..." << endl;
+            log << Log::LogLevel( Log::L_DEBUG ) << "*** settings manager could not read requested token '" << token << "', skipping..." << std::endl;
             return false;
 
         }
@@ -300,9 +299,9 @@ bool Settings::read( const string& token, string& value )
     return true;
 }
 
-bool Settings::read( const string& token, bool& value )
+bool Settings::read( const std::string& token, bool& value )
 {
-    string  strvalue;
+    std::string  strvalue;
     if ( read( token, strvalue ) == false )
         return false;
 
@@ -310,93 +309,93 @@ bool Settings::read( const string& token, bool& value )
     return true;
 }
 
-bool Settings::read( const string& token, int& value )
+bool Settings::read( const std::string& token, int& value )
 {
-    string  strvalue;
+    std::string  strvalue;
     if ( read( token, strvalue ) == false )
         return false;
 
-    stringstream strstream( strvalue );
+    std::stringstream strstream( strvalue );
     strstream >> value;
     return true;
 }
 
-bool Settings::read( const string& token, unsigned int& value )
+bool Settings::read( const std::string& token, unsigned int& value )
 {
-    string  strvalue;
+    std::string  strvalue;
     if ( read( token, strvalue ) == false )
         return false;
 
-    stringstream strstream( strvalue );
+    std::stringstream strstream( strvalue );
     strstream >> value;
     return true;
 }
 
-bool Settings::read( const string& token, float& value )
+bool Settings::read( const std::string& token, float& value )
 {
-    string  strvalue;
+    std::string  strvalue;
     if ( read( token, strvalue ) == false ) 
         return false;
 
-    stringstream strstream( strvalue );
+    std::stringstream strstream( strvalue );
     strstream >> value;
     return true;
 }
 
-bool Settings::read( const string& token, osg::Vec3f& value )
+bool Settings::read( const std::string& token, osg::Vec3f& value )
 {
-    string  strvalue;
+    std::string  strvalue;
     if ( read( token, strvalue ) == false ) 
         return false;
 
-    stringstream strstream( strvalue );
+    std::stringstream strstream( strvalue );
     strstream >> value._v [ 0 ] >> value._v [ 1 ] >> value._v [ 2 ];
     return true;
 }
 
-bool Settings::write( const string& token, const string& value )
+bool Settings::write( const std::string& token, const std::string& value )
 {
-    _fileBuffer += string( token + "=" + value + "\r\n" );
+    _fileBuffer += std::string( token + "=" + value + "\r\n" );
     return true;
 }
 
-bool Settings::write( const string& token, const bool& value )
+bool Settings::write( const std::string& token, const bool& value )
 {
-    string  strvalue = value ? "true" : "false";
-    _fileBuffer += string( token + "=" + strvalue + "\r\n" );
+    std::string  strvalue = value ? "true" : "false";
+    _fileBuffer += std::string( token + "=" + strvalue + "\r\n" );
     return true;
 }
 
-bool Settings::write( const string& token, const int& value )
+bool Settings::write( const std::string& token, const int& value )
 {
-    stringstream str;
+    std::stringstream str;
     str << token << "=" << value << "\r\n";
     _fileBuffer += str.str();
     return true;
 }
 
-bool Settings::write( const string& token, const unsigned int& value )
+bool Settings::write( const std::string& token, const unsigned int& value )
 {
-    stringstream str;
+    std::stringstream str;
     str << token << "=" << value << "\r\n";
     _fileBuffer += str.str();
     return true;
 }
 
-bool Settings::write( const string& token, const float& value )
+bool Settings::write( const std::string& token, const float& value )
 {
-    stringstream str;
+    std::stringstream str;
     str << token << "=" << value << "\r\n";
     _fileBuffer += str.str();
     return true;
 }
 
-bool Settings::write( const string& token, const osg::Vec3f& value )
+bool Settings::write( const std::string& token, const osg::Vec3f& value )
 {
-    stringstream str;
+    std::stringstream str;
     str << token << "=" << value._v[ 0 ] << " " << value._v[ 1 ] << " " << value._v[ 2 ] << "\r\n";
     _fileBuffer += str.str();
     return true;
 }
 
-} // namespace CTD
+} // namespace yaf3d

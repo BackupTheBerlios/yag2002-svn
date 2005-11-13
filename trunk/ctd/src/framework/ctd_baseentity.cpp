@@ -33,8 +33,8 @@
 #include "ctd_log.h"
 #include "ctd_entitymanager.h"
 
-using namespace std;
-using namespace CTD;
+namespace yaf3d
+{
 
 BaseEntity::BaseEntity() :
 _p_attributeManager( NULL ),
@@ -52,7 +52,7 @@ BaseEntity::~BaseEntity()
             size_t parents = _p_transformNode->getParents().size();
             if ( parents == 0 )
             {
-                log << Log::LogLevel( Log::L_WARNING ) << "the transformation node of entity '" << getInstanceName() << "' has no parent!" << endl;
+                log << Log::LogLevel( Log::L_WARNING ) << "the transformation node of entity '" << getInstanceName() << "' has no parent!" << std::endl;
             }
             else
             {
@@ -65,7 +65,7 @@ BaseEntity::~BaseEntity()
     }
     catch( ... )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "exception occured in destructor of '" << getInstanceName() << "'" << endl;
+        log << Log::LogLevel( Log::L_ERROR ) << "exception occured in destructor of '" << getInstanceName() << "'" << std::endl;
     }
 
     // remove all attributes
@@ -73,7 +73,7 @@ BaseEntity::~BaseEntity()
     delete _p_attributeManager;
 }
 
-BaseEntity* BaseEntity::clone( const string& instanceName, osg::Group* p_scenegroup )
+BaseEntity* BaseEntity::clone( const std::string& instanceName, osg::Group* p_scenegroup )
 {
     BaseEntity* p_entity = EntityManager ::get()->createEntity( _typeName, instanceName );
     assert( p_entity );
@@ -95,7 +95,7 @@ BaseEntity* BaseEntity::clone( const string& instanceName, osg::Group* p_scenegr
     return p_entity;
 }
 
-BaseEntity* BaseEntity::cloneAndInitialize( const string& instanceName, osg::Group* p_scenegroup )
+BaseEntity* BaseEntity::cloneAndInitialize( const std::string& instanceName, osg::Group* p_scenegroup )
 {
     BaseEntity* p_entity = clone( instanceName, p_scenegroup );
     if ( !p_entity )
@@ -105,3 +105,5 @@ BaseEntity* BaseEntity::cloneAndInitialize( const string& instanceName, osg::Gro
     p_entity->postInitialize();
     return p_entity;
 }
+
+} // namespace yaf3d
