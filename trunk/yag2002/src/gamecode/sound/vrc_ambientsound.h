@@ -28,18 +28,18 @@
  #
  ################################################################*/
 
-#ifndef _CTD_AMBIENTSOUND_H_
-#define _CTD_AMBIENTSOUND_H_
+#ifndef _VRC_AMBIENTSOUND_H_
+#define _VRC_AMBIENTSOUND_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_AMBIENTSOUND    "AmbientSound"
 
 //! 3DSound Entity
-class EnAmbientSound : public BaseEntity
+class EnAmbientSound : public yaf3d::BaseEntity
 {
     public:
                                                     EnAmbientSound();
@@ -52,11 +52,11 @@ class EnAmbientSound : public BaseEntity
         //! Initialize 
         void                                        initialize();
 
-        //! Start playing sound
+        //! Start / continue playing sound
         void                                        startPlaying();
 
-        //! Stop playing sound
-        void                                        stopPlaying();
+        //! Stop playing sound, pass 'true' in order to pause only, otherwise the sound is stopped
+        void                                        stopPlaying( bool pause = false );
 
         //! Set sound volume (0..1)
         void                                        setVolume( float volume );
@@ -65,6 +65,9 @@ class EnAmbientSound : public BaseEntity
         float                                       getVolume();
 
     protected:
+
+        // Handler system notifications
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Resource directory for searching for sound files
         std::string                                 _soundFileDir;
@@ -81,17 +84,23 @@ class EnAmbientSound : public BaseEntity
         //! Sound volume [ 0..1 ]
         float                                       _volume;
 
+        //! Flag indicating whether the sound is currently playing
+        bool                                        _isPlaying;
+
+        //! Flag indicating whether the sound was playing before entering the menu
+        bool                                        _wasPlaying;
+
         osgAL::SoundNode*                           _p_soundNode;
 
         osg::ref_ptr< osgAL::SoundState >           _soundState;
 };
 
 //! Entity type definition used for type registry
-class AmbientSoundEntityFactory : public BaseEntityFactory
+class AmbientSoundEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     AmbientSoundEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_AMBIENTSOUND, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_AMBIENTSOUND, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~AmbientSoundEntityFactory() {}
@@ -101,4 +110,4 @@ class AmbientSoundEntityFactory : public BaseEntityFactory
 
 }
 
-#endif // _CTD_AMBIENTSOUND_H_
+#endif // _VRC_AMBIENTSOUND_H_

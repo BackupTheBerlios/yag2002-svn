@@ -28,14 +28,14 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_3dsound.h"
+#include <vrc_main.h>
+#include "vrc_3dsound.h"
 
-namespace CTD
+namespace vrc
 {
 
-//! Implement and register the platform entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( ThreeDSoundEntityFactory );
+//! Implement and register the 3d sound entity factory
+YAF3D_IMPL_ENTITYFACTORY( ThreeDSoundEntityFactory );
 
 
 En3DSound::En3DSound() :
@@ -43,8 +43,9 @@ _loop( true ),
 _autoPlay( true ),
 _volume( 0.8f ),
 _referenceDist( 70.0f ),
-_rolloffFac( 4.0f ),
-_showSource( false ),
+_rolloffFac( 1.0f ),
+_isPlaying( false ),
+_wasPlaying( false ),
 _p_soundNode( NULL )
 {
     // register entity attributes
@@ -56,7 +57,7 @@ _p_soundNode( NULL )
     getAttributeManager().addAttribute( "volume",       _volume         );
     getAttributeManager().addAttribute( "rollOff",      _rolloffFac     );
     getAttributeManager().addAttribute( "refDistance",  _referenceDist  );
-    getAttributeManager().addAttribute( "showSource",   _showSource     );
+    getAttributeManager().addAttribute( "sourceMesh",   _sourceMesh     );
 }
 
 En3DSound::~En3DSound()
@@ -68,10 +69,36 @@ En3DSound::~En3DSound()
     }
 }
 
+void En3DSound::handleNotification( const yaf3d::EntityNotification& notification )
+{
+    // handle menu entring / leaving
+    switch( notification.getId() )
+    {
+        case YAF3D_NOTIFY_MENU_ENTER:
+        {   
+            if ( _isPlaying )
+                stopPlaying( true );
+
+            _wasPlaying = _isPlaying;
+        }
+        break;
+
+        case YAF3D_NOTIFY_MENU_LEAVE:
+        {
+            if ( _wasPlaying )
+                startPlaying();
+        }
+        break;
+
+        default:
+            ;
+    }
+}
+
 void En3DSound::initialize()
 {
     // set file search path for sound resources
-    osgAL::SoundManager::instance()->addFilePath( Application::get()->getMediaPath() + _soundFileDir );
+    osgAL::SoundManager::instance()->addFilePath( yaf3d::Application::get()->getMediaPath() + _soundFileDir );
 
     openalpp::Sample* p_sample = NULL;
     try {
@@ -83,14 +110,11 @@ void En3DSound::initialize()
     } 
     catch ( const openalpp::Error& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading sound file in '" << getInstanceName() << "'" << std::endl;
-        log << Log::LogLevel( Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error loading sound file in '" << getInstanceName() << "'" << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
         return;
     }
  
-    // register entity in order to get updated per simulation step
-    EntityManager::get()->registerUpdate( this );   
-
     // create a named sound state.
     // note: we have to make the state name unique as otherwise new need unique sound states for every entity instance
     std::stringstream uniquename;
@@ -99,66 +123,101 @@ void En3DSound::initialize()
     uniquename << uniqueId;
     uniqueId++;
     _soundState = new osgAL::SoundState( uniquename.str() );
-    // Let the soundstate use the sample we just created
+
+    // let the soundstate use the sample we just created
     _soundState->setSample( p_sample );
     _soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
-    // Set its pitch to 1 (normal speed)
+    // set its pitch to 1 (normal speed)
     _soundState->setPitch( 1 );
-    // Make it play
+    
+    // automatically start playing?
     _soundState->setPlay( _autoPlay );
-    // The sound should loop over and over again
+    _isPlaying = _autoPlay;
+
+    // the sound should loop over and over again
     _soundState->setLooping( _loop );
-    // Allocate a hardware soundsource to this soundstate (priority 10)
+    // allocate a hardware soundsource to this soundstate (priority 10)
     _soundState->allocateSource( 10, false );
 
-    _soundState->setReferenceDistance( _referenceDist );
+    // to make a radial 3d sound source we first have to make the source ambient then add rolloff
+    _soundState->setAmbient( true );
     _soundState->setRolloffFactor( _rolloffFac );
+    _soundState->setReferenceDistance( _referenceDist );
 
     _soundState->setPosition( _position );
 
-    // Create a sound node and attach the soundstate to it.
+    // create a sound node and attach the soundstate to it.
     _p_soundNode = new osgAL::SoundNode;
     _p_soundNode->setSoundState( _soundState.get() );
 
     // this is for debugging
-    if ( _showSource )
+    if ( _sourceMesh.length() )
     {
-        osg::Node* p_mesh = LevelManager::get()->loadMesh( "sound/soundsrc.osg" );
+        osg::Node* p_mesh = yaf3d::LevelManager::get()->loadMesh( _sourceMesh );
         if ( p_mesh )
         {
             addToTransformationNode( p_mesh );
             setPosition( _position );
+            // register entity in order to get updated per simulation step
+            yaf3d::EntityManager::get()->registerUpdate( this );   
         }
         else
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "*** error loading mesh file for sound source 'sound/soundsrc.osg'" << std::endl;
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error loading mesh file for sound source 'sound/soundsrc.osg'" << std::endl;
         }
-
     }
+
+    // register entity in order to get menu notifications
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 void En3DSound::updateEntity( float deltaTime )
 {
-    if ( _showSource )
-    {
-        static float a = 0;
-        a = ( a < 2.0f * osg::PI ) ? a + deltaTime : a - 2.0f * osg::PI + deltaTime;
-        osg::Quat quat;
-        quat.makeRotate( a,  osg::Vec3f( 0.0f, 0.0f, 1.0f ) );
-        setRotation( quat );
-    }
+    static float a = 0;
+    a = ( a < 2.0f * osg::PI ) ? a + deltaTime : a - 2.0f * osg::PI + deltaTime;
+    osg::Quat quat;
+    quat.makeRotate( a,  osg::Vec3f( 0.0f, 0.0f, 1.0f ) );
+    setRotation( quat );
 }
 
 void En3DSound::startPlaying()
 {
     if ( _soundState.valid() )
         _soundState->setPlay( true );
+
+    _isPlaying = true;
 }
 
-void En3DSound::stopPlaying()
+void En3DSound::stopPlaying( bool pause )
 {
     if ( _soundState.valid() )
+    {
+        // first set stop mode
+        if ( pause )
+        {
+            _soundState->setStopMethod( openalpp::Paused );
+        }
+        else
+        {
+            _soundState->setStopMethod( openalpp::Stopped );
+            _isPlaying = false;
+        }
+
         _soundState->setPlay( false );
+    }
 }
 
-} // namespace CTD
+//! Set sound volume (0..1)
+void En3DSound::setVolume( float volume )
+{
+    _volume = std::max( std::min( volume, 1.0f ), 0.0f );
+    if ( _soundState.get() )
+        _soundState->setGain( _volume );
+}
+
+float En3DSound::getVolume()
+{
+    return _volume;
+}
+
+} // namespace vrc
