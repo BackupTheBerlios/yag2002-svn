@@ -20,8 +20,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(CTD_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(CTD_DEP_DIR)\OpenThreads\include&quot;;&quot;$(CTD_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(CTD_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(CTD_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(CTD_DEP_DIR)\Physics\Newton&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(CTD_DEP_DIR)\Sound\osgAL\include&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\src&quot;;../../../../src/framework"
-				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\osgAL\include&quot;;../../../../src/framework"
+				PreprocessorDefinitions="TIXML_USE_STL;_DEBUG;WIN32;_WINDOWS"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
@@ -29,7 +29,7 @@
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="ctd_base.h"
+				PrecompiledHeaderThrough="base.h"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="4"/>
@@ -69,13 +69,13 @@
 				EnableFiberSafeOptimizations="FALSE"
 				OptimizeForProcessor="0"
 				OptimizeForWindowsApplication="FALSE"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(CTD_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(CTD_DEP_DIR)\OpenThreads\include&quot;;&quot;$(CTD_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(CTD_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(CTD_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(CTD_DEP_DIR)\Physics\Newton&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(CTD_DEP_DIR)\Sound\osgAL\include&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\src&quot;;../../../../src/framework"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\osgAL\include&quot;;../../../../src/framework"
+				PreprocessorDefinitions="TIXML_USE_STL;WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="ctd_base.h"
+				PrecompiledHeaderThrough="base.h"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="0"/>
@@ -111,22 +111,22 @@
 			Name="src"
 			Filter="">
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_application.cpp">
+				RelativePath="..\..\..\..\src\framework\application.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_application.h">
+				RelativePath="..\..\..\..\src\framework\application.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_attributemanager.cpp">
+				RelativePath="..\..\..\..\src\framework\attributemanager.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_attributemanager.h">
+				RelativePath="..\..\..\..\src\framework\attributemanager.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_attributemanager.inl">
+				RelativePath="..\..\..\..\src\framework\attributemanager.inl">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_base.cpp">
+				RelativePath="..\..\..\..\src\framework\base.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
@@ -141,123 +141,201 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_base.h">
+				RelativePath="..\..\..\..\src\framework\base.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_baseentity.cpp">
+				RelativePath="..\..\..\..\src\framework\baseentity.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_baseentity.h">
+				RelativePath="..\..\..\..\src\framework\baseentity.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_baseentity.inl">
+				RelativePath="..\..\..\..\src\framework\baseentity.inl">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_configuration.cpp">
+				RelativePath="..\..\..\..\src\framework\configuration.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_configuration.h">
+				RelativePath="..\..\..\..\src\framework\configuration.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_entitymanager.cpp">
+				RelativePath="..\..\..\..\src\framework\entitymanager.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_entitymanager.h">
+				RelativePath="..\..\..\..\src\framework\entitymanager.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_gamestate.cpp">
+				RelativePath="..\..\..\..\src\framework\gamestate.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_gamestate.h">
+				RelativePath="..\..\..\..\src\framework\gamestate.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_guimanager.cpp">
+				RelativePath="..\..\..\..\src\framework\guimanager.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_guimanager.h">
+				RelativePath="..\..\..\..\src\framework\guimanager.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_guimsgbox.cpp">
+				RelativePath="..\..\..\..\src\framework\guimsgbox.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_guimsgbox.h">
+				RelativePath="..\..\..\..\src\framework\guimsgbox.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_guirenderer.cpp">
+				RelativePath="..\..\..\..\src\framework\guirenderer.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_guirenderer.h">
+				RelativePath="..\..\..\..\src\framework\guirenderer.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_guitexture.cpp">
+				RelativePath="..\..\..\..\src\framework\guitexture.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_guitexture.h">
+				RelativePath="..\..\..\..\src\framework\guitexture.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_keymap.cpp">
+				RelativePath="..\..\..\..\src\framework\keymap.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_keymap.h">
+				RelativePath="..\..\..\..\src\framework\keymap.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_levelmanager.cpp">
+				RelativePath="..\..\..\..\src\framework\levelmanager.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_levelmanager.h">
+				RelativePath="..\..\..\..\src\framework\levelmanager.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_log.cpp">
+				RelativePath="..\..\..\..\src\framework\log.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_log.h">
+				RelativePath="..\..\..\..\src\framework\log.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_network.cpp">
+				RelativePath="..\..\..\..\src\framework\network.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_network.h">
+				RelativePath="..\..\..\..\src\framework\network.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_network_defs.h">
+				RelativePath="..\..\..\..\src\framework\network_defs.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_physics.cpp">
+				RelativePath="..\..\..\..\src\framework\physics.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_physics.h">
+				RelativePath="..\..\..\..\src\framework\physics.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_physics_helpers.cpp">
+				RelativePath="..\..\..\..\src\framework\physics_helpers.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_physics_helpers.h">
+				RelativePath="..\..\..\..\src\framework\physics_helpers.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_settings.cpp">
+				RelativePath="..\..\..\..\src\framework\settings.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_settings.h">
+				RelativePath="..\..\..\..\src\framework\settings.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_settings_inl.h">
+				RelativePath="..\..\..\..\src\framework\settings.inl">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_singleton.h">
+				RelativePath="..\..\..\..\src\framework\singleton.h">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_singleton.inl">
+				RelativePath="..\..\..\..\src\framework\singleton.inl">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_utils.cpp">
+				RelativePath="..\..\..\..\src\framework\utils.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\ctd_utils.h">
+				RelativePath="..\..\..\..\src\framework\utils.h">
 			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\yaf3dframework.h">
+			</File>
+			<Filter
+				Name="yaf3tinyxml"
+				Filter="">
+				<File
+					RelativePath="..\..\..\..\src\framework\yaf3dtinyxml\tinystr.cpp">
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\framework\yaf3dtinyxml\tinystr.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\framework\yaf3dtinyxml\tinyxml.cpp">
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\framework\yaf3dtinyxml\tinyxml.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\framework\yaf3dtinyxml\tinyxmlerror.cpp">
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\framework\yaf3dtinyxml\tinyxmlparser.cpp">
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+				</File>
+			</Filter>
 		</Filter>
-		<File
-			RelativePath="..\..\..\..\src\framework\ctd_framework.h">
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

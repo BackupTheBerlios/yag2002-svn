@@ -20,7 +20,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(CTD_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(CTD_DEP_DIR)\OpenThreads\include&quot;;&quot;$(CTD_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(CTD_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(CTD_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(CTD_DEP_DIR)\Physics\Newton&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(CTD_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(CTD_DEP_DIR)\Sound\osgAL\include&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\src&quot;;../../../../src/framework;../../../../src/gamecode"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\osgAL\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="_DEBUG;WIN32;_CONSOLE"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="3"
@@ -29,7 +29,7 @@
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="ctd_main.h"
+				PrecompiledHeaderThrough="vrc_main.h"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="4"/>
@@ -37,10 +37,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsWin32d.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgALd.lib osgcald.lib oalppd.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib tinyxmld.lib frameworkd.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsWin32d.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgALd.lib osgcald.lib oalppd.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib libpng.lib frameworkd.lib"
 				OutputFile="../../../../bin/win32/vrc_debug.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(CTD_DEP_DIR)\all_Libs&quot;;../../../../lib/framework"
+				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
 				IgnoreDefaultLibraryNames="msvcrt"
 				GenerateDebugInformation="TRUE"
 				SubSystem="1"
@@ -81,13 +81,13 @@
 				EnableFiberSafeOptimizations="FALSE"
 				OptimizeForProcessor="0"
 				OptimizeForWindowsApplication="FALSE"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(CTD_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(CTD_DEP_DIR)\OpenThreads\include&quot;;&quot;$(CTD_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(CTD_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(CTD_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(CTD_DEP_DIR)\Physics\Newton&quot;;&quot;$(CTD_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(CTD_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(CTD_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(CTD_DEP_DIR)\Sound\osgAL\include&quot;;&quot;$(CTD_DEP_DIR)\tinyxml\src&quot;;../../../../src/framework;../../../../src/gamecode"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\osgAL\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="ctd_main.h"
+				PrecompiledHeaderThrough="vrc_main.h"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="0"/>
@@ -95,9 +95,9 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgUtil.lib osgAL.lib osgcal.lib oalpp.lib cal3d.lib osgSDL.lib SDL.lib SDLmain.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib tinyxml.lib framework.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgUtil.lib osgAL.lib osgcal.lib oalpp.lib cal3d.lib osgSDL.lib SDL.lib SDLmain.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib libpng.lib framework.lib"
 				OutputFile="../../../../bin/win32/vrc.exe"
-				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(CTD_DEP_DIR)\all_Libs&quot;;../../../../lib/framework"
+				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
 				IgnoreAllDefaultLibraries="FALSE"
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="FALSE"
@@ -141,111 +141,91 @@
 				Name="player"
 				Filter="">
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_chatgui.cpp">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_inputhandler.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_chatgui.h">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_inputhandler.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_inputhandler.cpp">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_inputhandler.inl">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_inputhandler.h">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_player.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_inputhandler.inl">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_player.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_player.cpp">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playeranim.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_player.h">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playeranim.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_playeranim.cpp">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playerimpl.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_playeranim.h">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playerimpl.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_playerimpl.cpp">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playerimplclient.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_playerimpl.h">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playerimplclient.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_playerimplclient.cpp">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playerimplserver.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_playerimplclient.h">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playerimplserver.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_playerimplserver.cpp">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playerimplstandalone.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_playerimplserver.h">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playerimplstandalone.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_playerimplstandalone.cpp">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playernamedisp.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_playerimplstandalone.h">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playernamedisp.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_playernetworking.cpp">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playernetworking.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_playernetworking.h">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playernetworking.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_playerphysics.cpp">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playerphysics.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_playerphysics.h">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playerphysics.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_playersound.cpp">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playersound.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_playersound.h">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playersound.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_spawnpoint.cpp">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_spawnpoint.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\player\ctd_spawnpoint.h">
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_spawnpoint.h">
 				</File>
 				<Filter
 					Name="nw-roles"
 					Filter="">
-					<File
-						RelativePath="..\..\..\..\src\gamecode\player\networkingRoles\_Def_Chat.cpp">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\..\..\src\gamecode\player\networkingRoles\_Def_Chat.h">
-					</File>
-					<File
-						RelativePath="..\..\..\..\src\gamecode\player\networkingRoles\_Def_Chat.rol">
-					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\player\networkingRoles\_RO_PlayerNetworking.cpp">
 						<FileConfiguration
 							Name="Debug|Win32">
 							<Tool
 								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""/>
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32">
@@ -257,402 +237,530 @@
 					<File
 						RelativePath="..\..\..\..\src\gamecode\player\networkingRoles\_RO_PlayerNetworking.h">
 					</File>
+				</Filter>
+				<Filter
+					Name="chat"
+					Filter="">
 					<File
-						RelativePath="..\..\..\..\src\gamecode\player\networkingRoles\_RO_PlayerNetworking.rol">
+						RelativePath="..\..\..\..\src\gamecode\player\chat\vrc_chatguibox.cpp">
 					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\vrc_chatguibox.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\vrc_chatguicondiag.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\vrc_chatguicondiag.inl">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\vrc_chatguictrl.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\vrc_chatguictrl.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\vrc_chatmgr.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\vrc_chatmgr.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\vrc_chatprotocol.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\vrc_chatprotocol.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\vrc_chatserverVRC.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\vrc_chatserverVRC.h">
+					</File>
+					<Filter
+						Name="IRC"
+						Filter="">
+						<File
+							RelativePath="..\..\..\..\src\gamecode\player\chat\Irc\vrc_chatprotIRC.cpp">
+						</File>
+						<File
+							RelativePath="..\..\..\..\src\gamecode\player\chat\Irc\vrc_chatprotIRC.h">
+						</File>
+						<Filter
+							Name="libIRC"
+							Filter="">
+							<File
+								RelativePath="..\..\..\..\src\gamecode\player\chat\Irc\libIRC\libircclient.c">
+								<FileConfiguration
+									Name="Debug|Win32">
+									<Tool
+										Name="VCCLCompilerTool"
+										UsePrecompiledHeader="0"/>
+								</FileConfiguration>
+								<FileConfiguration
+									Name="Release|Win32">
+									<Tool
+										Name="VCCLCompilerTool"
+										UsePrecompiledHeader="0"
+										PrecompiledHeaderThrough=""/>
+								</FileConfiguration>
+							</File>
+						</Filter>
+					</Filter>
+					<Filter
+						Name="VRC"
+						Filter="">
+						<File
+							RelativePath="..\..\..\..\src\gamecode\player\chat\Vrc\vrc_chatprotVRC.cpp">
+						</File>
+						<File
+							RelativePath="..\..\..\..\src\gamecode\player\chat\Vrc\vrc_chatprotVRC.h">
+						</File>
+						<Filter
+							Name="nw-roles"
+							Filter="">
+							<File
+								RelativePath="..\..\..\..\src\gamecode\player\chat\Vrc\networkingRoles\_RO_PlayerChat.cpp">
+								<FileConfiguration
+									Name="Debug|Win32">
+									<Tool
+										Name="VCCLCompilerTool"
+										UsePrecompiledHeader="0"
+										PrecompiledHeaderThrough=""/>
+								</FileConfiguration>
+								<FileConfiguration
+									Name="Release|Win32">
+									<Tool
+										Name="VCCLCompilerTool"
+										UsePrecompiledHeader="0"
+										PrecompiledHeaderThrough=""/>
+								</FileConfiguration>
+							</File>
+							<File
+								RelativePath="..\..\..\..\src\gamecode\player\chat\Vrc\networkingRoles\_RO_PlayerChat.h">
+							</File>
+						</Filter>
+					</Filter>
 				</Filter>
 			</Filter>
 			<Filter
 				Name="platform"
 				Filter="">
 				<File
-					RelativePath="..\..\..\..\src\gamecode\platform\ctd_platform.cpp">
+					RelativePath="..\..\..\..\src\gamecode\platform\vrc_platform.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\platform\ctd_platform.h">
+					RelativePath="..\..\..\..\src\gamecode\platform\vrc_platform.h">
 				</File>
 			</Filter>
 			<Filter
 				Name="physics"
 				Filter="">
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_geomemitter.cpp">
+					RelativePath="..\..\..\..\src\gamecode\physics\vrc_geomemitter.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_geomemitter.h">
+					RelativePath="..\..\..\..\src\gamecode\physics\vrc_geomemitter.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicsbase.cpp">
+					RelativePath="..\..\..\..\src\gamecode\physics\vrc_physicsbase.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicsbase.h">
+					RelativePath="..\..\..\..\src\gamecode\physics\vrc_physicsbase.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicsbase.inl">
+					RelativePath="..\..\..\..\src\gamecode\physics\vrc_physicsbase.inl">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicsbox.cpp">
+					RelativePath="..\..\..\..\src\gamecode\physics\vrc_physicsbox.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicsbox.h">
+					RelativePath="..\..\..\..\src\gamecode\physics\vrc_physicsbox.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicscylinder.cpp">
+					RelativePath="..\..\..\..\src\gamecode\physics\vrc_physicscylinder.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicscylinder.h">
+					RelativePath="..\..\..\..\src\gamecode\physics\vrc_physicscylinder.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicssphere.cpp">
+					RelativePath="..\..\..\..\src\gamecode\physics\vrc_physicssphere.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\physics\ctd_physicssphere.h">
+					RelativePath="..\..\..\..\src\gamecode\physics\vrc_physicssphere.h">
 				</File>
 			</Filter>
 			<Filter
 				Name="sound"
 				Filter="">
 				<File
-					RelativePath="..\..\..\..\src\gamecode\sound\ctd_3dsound.cpp">
+					RelativePath="..\..\..\..\src\gamecode\sound\vrc_3dsound.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\sound\ctd_3dsound.h">
+					RelativePath="..\..\..\..\src\gamecode\sound\vrc_3dsound.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\sound\ctd_ambientsound.cpp">
+					RelativePath="..\..\..\..\src\gamecode\sound\vrc_ambientsound.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\sound\ctd_ambientsound.h">
+					RelativePath="..\..\..\..\src\gamecode\sound\vrc_ambientsound.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\sound\vrc_radialsound.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\sound\vrc_radialsound.h">
 				</File>
 			</Filter>
 			<Filter
 				Name="visuals"
 				Filter="">
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_camera.cpp">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_camera.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_camera.h">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_camera.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_candle.cpp">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_candle.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_candle.h">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_candle.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_fog.cpp">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_fog.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_fog.h">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_fog.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_lightmanager.cpp">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_lightmanager.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_lightmanager.h">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_lightmanager.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_mesh.cpp">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_mesh.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_mesh.h">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_mesh.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_observer.cpp">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_observer.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_observer.h">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_observer.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_pointlight.cpp">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_pointlight.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_pointlight.h">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_pointlight.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_skybox.cpp">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_skybox.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_skybox.h">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_skybox.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_spotlight.cpp">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_spotlight.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_spotlight.h">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_spotlight.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_water.cpp">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_water.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\visuals\ctd_water.h">
+					RelativePath="..\..\..\..\src\gamecode\visuals\vrc_water.h">
 				</File>
 			</Filter>
 			<Filter
 				Name="gui"
 				Filter="">
 				<File
-					RelativePath="..\..\..\..\src\gamecode\gui\ctd_dialoglevelselect.cpp">
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_dialoglevelselect.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\gui\ctd_dialoglevelselect.h">
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_dialoglevelselect.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\gui\ctd_dialogplayercfg.cpp">
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_dialogplayercfg.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\gui\ctd_dialogplayercfg.h">
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_dialogplayercfg.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\gui\ctd_dialogsettings.cpp">
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_dialogsettings.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\gui\ctd_dialogsettings.h">
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_dialogsettings.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\gui\ctd_intro.cpp">
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_intro.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\gui\ctd_intro.h">
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_intro.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\gui\ctd_menu.cpp">
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_menu.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\gui\ctd_menu.h">
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_menu.h">
 				</File>
 			</Filter>
 			<Filter
 				Name="tools"
 				Filter="">
 				<File
-					RelativePath="..\..\..\..\src\gamecode\tools\ctd_fpsdisplay.cpp">
+					RelativePath="..\..\..\..\src\gamecode\tools\vrc_fpsdisplay.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\tools\ctd_fpsdisplay.h">
+					RelativePath="..\..\..\..\src\gamecode\tools\vrc_fpsdisplay.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\tools\ctd_inspector.cpp">
+					RelativePath="..\..\..\..\src\gamecode\tools\vrc_inspector.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\tools\ctd_inspector.h">
+					RelativePath="..\..\..\..\src\gamecode\tools\vrc_inspector.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\tools\ctd_playerinfodisplay.cpp">
+					RelativePath="..\..\..\..\src\gamecode\tools\vrc_playerinfodisplay.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\tools\ctd_playerinfodisplay.h">
+					RelativePath="..\..\..\..\src\gamecode\tools\vrc_playerinfodisplay.h">
 				</File>
 				<Filter
 					Name="console"
 					Filter="">
 					<File
-						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_basecmd.cpp">
+						RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_basecmd.cpp">
 					</File>
 					<File
-						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_basecmd.h">
+						RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_basecmd.h">
 					</File>
 					<File
-						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdregistry.cpp">
+						RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdregistry.cpp">
 					</File>
 					<File
-						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdregistry.h">
+						RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdregistry.h">
 					</File>
 					<File
-						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_console.cpp">
+						RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_console.cpp">
 					</File>
 					<File
-						RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_console.h">
+						RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_console.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_consoleiobase.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_consoleiocin.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_consoleiocin.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_consoleiogui.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_consoleiogui.h">
 					</File>
 					<Filter
 						Name="cmd"
 						Filter="">
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdcd.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdcd.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdcd.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdcd.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdconfiglist.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdconfiglist.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdconfiglist.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdconfiglist.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdconfigset.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdconfigset.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdconfigset.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdconfigset.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdconnect.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdconnect.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdconnect.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdconnect.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdentityattrlist.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdentityattrlist.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdentityattrlist.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdentityattrlist.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdentityattrset.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdentityattrset.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdentityattrset.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdentityattrset.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdentitydump.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdentitydump.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdentitydump.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdentitydump.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdentitylist.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdentitylist.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdentitylist.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdentitylist.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdexec.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdexec.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdexec.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdexec.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdgetconfig.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdgetconfig.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdgetconfig.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdgetconfig.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdhelp.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdhelp.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdhelp.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdhelp.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdidle.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdidle.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdidle.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdidle.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdlevellist.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdlevellist.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdlevellist.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdlevellist.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdlistentity.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdlistentity.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdlistentity.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdlistentity.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdloadentities.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdloadentities.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdloadentities.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdloadentities.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdloadfinalize.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdloadfinalize.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdloadfinalize.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdloadfinalize.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdloadlevel.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdloadlevel.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdloadlevel.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdloadlevel.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdlogclose.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdlogclose.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdlogclose.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdlogclose.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdlogcreate.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdlogcreate.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdlogcreate.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdlogcreate.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdls.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdls.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdls.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdls.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdphysics.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdphysicsrender.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdphysics.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdphysicsrender.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdpwd.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdphysicsserialize.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdpwd.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdphysicsserialize.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdserverstart.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdpwd.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdserverstart.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdpwd.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdsetconfig.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdserverstart.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdsetconfig.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdserverstart.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdshowfps.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdsetconfig.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdshowfps.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdsetconfig.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdshowplayerinfo.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdshowfps.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdshowplayerinfo.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdshowfps.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdshutdown.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdshowplayerinfo.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdshutdown.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdshowplayerinfo.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdtime.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdshutdown.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdtime.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdshutdown.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdunloadlevel.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdtime.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdunloadlevel.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdtime.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdversion.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdunloadlevel.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdversion.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdunloadlevel.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdwriteosgfile.cpp">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdversion.cpp">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\ctd_cmdwriteosgfile.h">
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdversion.h">
+						</File>
+						<File
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdwriteosgfile.cpp">
+						</File>
+						<File
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdwriteosgfile.h">
 						</File>
 					</Filter>
 				</Filter>
@@ -679,21 +787,42 @@
 					RelativePath="..\..\..\..\src\gamecode\extern\Noise.h">
 				</File>
 			</Filter>
+			<Filter
+				Name="networking"
+				Filter="">
+				<File
+					RelativePath="..\..\..\..\src\gamecode\networking\_Def_replicaregs.cpp">
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+				</File>
+			</Filter>
 		</Filter>
 		<File
-			RelativePath="..\..\..\..\src\gamecode\ctd_exceptionlogger.cpp">
+			RelativePath="..\..\..\..\src\gamecode\vrc_exceptionlogger.cpp">
 		</File>
 		<File
-			RelativePath="..\..\..\..\src\gamecode\ctd_exceptionlogger.h">
+			RelativePath="..\..\..\..\src\gamecode\vrc_exceptionlogger.h">
 		</File>
 		<File
-			RelativePath="..\..\..\..\src\gamecode\ctd_gameutils.cpp">
+			RelativePath="..\..\..\..\src\gamecode\vrc_gameutils.cpp">
 		</File>
 		<File
-			RelativePath="..\..\..\..\src\gamecode\ctd_gameutils.h">
+			RelativePath="..\..\..\..\src\gamecode\vrc_gameutils.h">
 		</File>
 		<File
-			RelativePath="..\..\..\..\src\gamecode\ctd_main.cpp">
+			RelativePath="..\..\..\..\src\gamecode\vrc_main.cpp">
 			<FileConfiguration
 				Name="Debug|Win32">
 				<Tool
@@ -705,11 +834,11 @@
 				<Tool
 					Name="VCCLCompilerTool"
 					UsePrecompiledHeader="1"
-					PrecompiledHeaderThrough="ctd_main.h"/>
+					PrecompiledHeaderThrough="vrc_main.h"/>
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="..\..\..\..\src\gamecode\ctd_main.h">
+			RelativePath="..\..\..\..\src\gamecode\vrc_main.h">
 		</File>
 		<File
 			RelativePath=".\VRC.rc">
