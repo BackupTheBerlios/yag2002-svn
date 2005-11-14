@@ -29,14 +29,14 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_geomemitter.h"
+#include <vrc_main.h>
+#include "vrc_geomemitter.h"
 
-namespace CTD
+namespace vrc
 {
 	
 //! Implement and register the entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( GeomEmitteEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( GeomEmitteEntityFactory );
 
 EnGeomEmitter::EnGeomEmitter():
 _dimensions( osg::Vec3f( 5.0f, 5.0f, 5.0f ) ),
@@ -61,21 +61,21 @@ void EnGeomEmitter::postInitialize()
 {
     setPosition( _position );
     std::vector< std::string > tokens;
-    BaseEntity*      p_entity = NULL;
-    explode( _geomTypes, " ", &tokens );
+    yaf3d::BaseEntity*      p_entity = NULL;
+    yaf3d::explode( _geomTypes, " ", &tokens );
     for ( size_t cnt = 0; cnt < tokens.size(); cnt++ )
     {
-        p_entity = EntityManager::get()->findInstance( tokens[ cnt ] );
+        p_entity = yaf3d::EntityManager::get()->findInstance( tokens[ cnt ] );
         if ( !p_entity )
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "***EnGeomEmitter: entity type not found : '" << tokens[ cnt ] << "'" << std::endl;
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***EnGeomEmitter: entity type not found : '" << tokens[ cnt ] << "'" << std::endl;
             continue;
         }
 
         _geomStock.push_back( p_entity );
     }
 
-    EntityManager::get()->registerUpdate( this );     // register entity in order to get updated per simulation step
+    yaf3d::EntityManager::get()->registerUpdate( this );     // register entity in order to get updated per simulation step
 }
 
 void EnGeomEmitter::updateEntity( float deltaTime )
@@ -89,12 +89,12 @@ void EnGeomEmitter::updateEntity( float deltaTime )
 
         // take a random geom type
         int ran = rand() % _geomStock.size();
-        BaseEntity* p_entity = _geomStock[ ran ];
+        yaf3d::BaseEntity* p_entity = _geomStock[ ran ];
 
         // clone the found geom
         std::stringstream geomcnt;
         geomcnt << _geomCount;
-        p_entity = p_entity->clone( p_entity->getInstanceName() + geomcnt.str(), Application::get()->getSceneRootNode() );
+        p_entity = p_entity->clone( p_entity->getInstanceName() + geomcnt.str(), yaf3d::Application::get()->getSceneRootNode() );
 
         // set a random position before entity gets initialized
         osg::Vec3f randPos( ( float )( ( rand() % ( int ) _dimensions.x() ) - _dimensions.x() ), ( float )( ( rand() % ( int )_dimensions.y() ) - _dimensions.y() ), ( float )( ( rand() % ( int )_dimensions.z() ) - _dimensions.z() ) );
@@ -109,12 +109,12 @@ void EnGeomEmitter::updateEntity( float deltaTime )
     }
 
     // update geoms
-    std::vector< std::pair< BaseEntity*, float > >::iterator geom = _geoms.begin(), geomEnd = _geoms.end();
+    std::vector< std::pair< yaf3d::BaseEntity*, float > >::iterator geom = _geoms.begin(), geomEnd = _geoms.end();
     for ( ; geom != geomEnd; geom++ )
     {
         if ( ( geom->second -= deltaTime ) < 0 )
         {
-            EntityManager::get()->deleteEntity( geom->first );
+            yaf3d::EntityManager::get()->deleteEntity( geom->first );
             _geoms.erase( geom );
             // we delete objects in a smooth way
             break;
@@ -122,4 +122,4 @@ void EnGeomEmitter::updateEntity( float deltaTime )
     }
 }
 
-} // namespace CTD
+} // namespace vrc

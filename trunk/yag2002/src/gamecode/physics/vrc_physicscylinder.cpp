@@ -28,21 +28,18 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_physicscylinder.h"
-#include "../sound/ctd_3dsound.h"
+#include <vrc_main.h>
+#include "vrc_physicscylinder.h"
+#include "../sound/vrc_3dsound.h"
 
-using namespace std;
-using namespace osg; 
-
-namespace CTD
+namespace vrc
 {
 
 // Internally used collision struct
-static CollisionStruct s_cylinderCollStruct;
+static yaf3d::CollisionStruct s_cylinderCollStruct;
 
 //! Implement and register the entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( PhysicsCylinderEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( PhysicsCylinderEntityFactory );
 
 EnPhysicsCylinder::EnPhysicsCylinder():
 _mass( 1.0f ),
@@ -73,25 +70,25 @@ EnPhysicsCylinder::~EnPhysicsCylinder()
     if ( _p_body )
     {
         NewtonBodySetUserData( _p_body, NULL );
-        NewtonDestroyBody( Physics::get()->getWorld(), _p_body );
+        NewtonDestroyBody( yaf3d::Physics::get()->getWorld(), _p_body );
     }
 }
 
 void EnPhysicsCylinder::initializePhysicsMaterials()
 {
-    _p_world = Physics::get()->getWorld();
+    _p_world = yaf3d::Physics::get()->getWorld();
 
     // create and setup collision matrials
-    int cylinderID = Physics::get()->createMaterialID( "cylinder" );
-    int defaultID  = Physics::get()->getMaterialId( "default" );
-    int levelID    = Physics::get()->getMaterialId( "level" );
-    int woodID     = Physics::get()->getMaterialId( "wood" );
-    int metalID    = Physics::get()->getMaterialId( "metal" );
-    int grassID    = Physics::get()->getMaterialId( "grass" );
-    int stoneID    = Physics::get()->getMaterialId( "stone" );
+    int cylinderID = yaf3d::Physics::get()->createMaterialID( "cylinder" );
+    int defaultID  = yaf3d::Physics::get()->getMaterialId( "default" );
+    int levelID    = yaf3d::Physics::get()->getMaterialId( "level" );
+    int woodID     = yaf3d::Physics::get()->getMaterialId( "wood" );
+    int metalID    = yaf3d::Physics::get()->getMaterialId( "metal" );
+    int grassID    = yaf3d::Physics::get()->getMaterialId( "grass" );
+    int stoneID    = yaf3d::Physics::get()->getMaterialId( "stone" );
 
     // set non-colliding for cylinder-nocol collisions
-    NewtonMaterialSetDefaultCollidable( _p_world, Physics::get()->getMaterialId( "nocol" ), cylinderID, 0 );
+    NewtonMaterialSetDefaultCollidable( _p_world, yaf3d::Physics::get()->getMaterialId( "nocol" ), cylinderID, 0 );
 
     // set the material properties for cylinder on cylinder
     NewtonMaterialSetDefaultElasticity( _p_world, cylinderID, cylinderID, 0.3f );
@@ -143,16 +140,16 @@ void EnPhysicsCylinder::physicsBodyDestructor( const NewtonBody* body )
 {
 	EnPhysicsCylinder* p_node = ( EnPhysicsCylinder* )NewtonBodyGetUserData( body );
     if ( p_node )
-        EntityManager::get()->deleteEntity( p_node );
+        yaf3d::EntityManager::get()->deleteEntity( p_node );
 }
 
 // transformation callback
 void EnPhysicsCylinder::physicsSetTransform( const NewtonBody* body, const float* matrix )
 {
 	EnPhysicsCylinder* p_node = static_cast< EnPhysicsCylinder* >( NewtonBodyGetUserData( body ) );
-    p_node->setPosition( Vec3f( matrix[ 12 ], matrix[ 13 ], matrix[ 14 ] ) );
-    Matrixf mat( matrix );
-    Quat quat;
+    p_node->setPosition( osg::Vec3f( matrix[ 12 ], matrix[ 13 ], matrix[ 14 ] ) );
+    osg::Matrixf mat( matrix );
+    osg::Quat quat;
     mat.get( quat );
     p_node->setRotation( quat );
 }
@@ -165,17 +162,17 @@ void EnPhysicsCylinder::physicsApplyForceAndTorque( const NewtonBody* body )
 	float Izz;
 
 	NewtonBodyGetMassMatrix( body, &mass, &Ixx, &Iyy, &Izz );
-    Vec3f force( 0, 0, mass * Physics::get()->getWorldGravity() );
+    osg::Vec3f force( 0, 0, mass * yaf3d::Physics::get()->getWorldGravity() );
 	NewtonBodySetForce( body, &force._v[ 0 ] );
 }
 
 void EnPhysicsCylinder::initialize()
 {
-    osg::Node* p_mesh = LevelManager::get()->loadMesh( _meshFile );
+    osg::Node* p_mesh = yaf3d::LevelManager::get()->loadMesh( _meshFile );
     if ( !p_mesh ) 
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading mesh file '" << _meshFile << "'" << endl;
-        EntityManager::get()->registerUpdate( this, false );   // deregister entity
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error loading mesh file '" << _meshFile << "'" << std::endl;
+        yaf3d::EntityManager::get()->registerUpdate( this, false );   // deregister entity
         return;
     }
 
@@ -184,18 +181,18 @@ void EnPhysicsCylinder::initialize()
     setPosition( _position );
 
     // create the collision
-    NewtonCollision* p_col = NewtonCreateCylinder( Physics::get()->getWorld(), _radius, _height, NULL ); 
-	NewtonCollision* p_collision = NewtonCreateConvexHullModifier( Physics::get()->getWorld(), p_col );
-    NewtonReleaseCollision( Physics::get()->getWorld(), p_col );
+    NewtonCollision* p_col = NewtonCreateCylinder( yaf3d::Physics::get()->getWorld(), _radius, _height, NULL ); 
+	NewtonCollision* p_collision = NewtonCreateConvexHullModifier( yaf3d::Physics::get()->getWorld(), p_col );
+    NewtonReleaseCollision( yaf3d::Physics::get()->getWorld(), p_col );
 
-    Matrixf mat;
+    osg::Matrixf mat;
     mat.setTrans( _position ); 
 
     //create the rigid body
-    _p_body = NewtonCreateBody( Physics::get()->getWorld(), p_collision );
+    _p_body = NewtonCreateBody( yaf3d::Physics::get()->getWorld(), p_collision );
     
     // set material, see material definition above
-    NewtonBodySetMaterialGroupID( _p_body, Physics::get()->getMaterialId( "cylinder" ) );
+    NewtonBodySetMaterialGroupID( _p_body, yaf3d::Physics::get()->getMaterialId( "cylinder" ) );
 
     NewtonBodySetUserData( _p_body, this );
 
@@ -211,7 +208,7 @@ void EnPhysicsCylinder::initialize()
     NewtonBodySetMatrix ( _p_body, mat.ptr() );
     physicsSetTransform ( _p_body, mat.ptr() );
 
-    NewtonReleaseCollision( Physics::get()->getWorld(), p_collision );
+    NewtonReleaseCollision( yaf3d::Physics::get()->getWorld(), p_collision );
 }
 
 void EnPhysicsCylinder::postInitialize()
@@ -221,28 +218,28 @@ void EnPhysicsCylinder::postInitialize()
     if ( _soundEntities[ 0 ].length() )
         _pp_sounds[ 0 ] = getSoundEntity( _soundEntities[ 0 ] );
     else
-        log << Log::LogLevel( Log::L_WARNING ) << "* wood sound is not defined. it will be disabled " << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "* wood sound is not defined. it will be disabled " << std::endl;
 
     _pp_sounds[ 1 ] = NULL;
     if ( _soundEntities[ 1 ].length() )
         _pp_sounds[ 1 ] = getSoundEntity( _soundEntities[ 1 ] );
     else
-        log << Log::LogLevel( Log::L_WARNING ) << "* metal sound is not defined. it will be disabled " << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "* metal sound is not defined. it will be disabled " << std::endl;
 
     _pp_sounds[ 2 ] = NULL;
     if ( _soundEntities[ 2 ].length() )
         _pp_sounds[ 2 ] = getSoundEntity( _soundEntities[ 2 ] );
     else
-        log << Log::LogLevel( Log::L_WARNING ) << "* stone sound is not defined. it will be disabled " << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "* stone sound is not defined. it will be disabled " << std::endl;
 
     _pp_sounds[ 3 ] = NULL;
     if ( _soundEntities[ 3 ].length() )
         _pp_sounds[ 3 ] = getSoundEntity( _soundEntities[ 3 ] );
     else
-        log << Log::LogLevel( Log::L_WARNING ) << "* grass sound is not defined. it will be disabled " << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "* grass sound is not defined. it will be disabled " << std::endl;
 
     // register entity in order to get updated per simulation step
-    EntityManager::get()->registerUpdate( this ); 
+    yaf3d::EntityManager::get()->registerUpdate( this ); 
 }
 
 void EnPhysicsCylinder::updateEntity( float deltaTime )
@@ -250,4 +247,4 @@ void EnPhysicsCylinder::updateEntity( float deltaTime )
     updateSound( deltaTime );
 }
 
-} // namespace CTD
+} // namespace vrc

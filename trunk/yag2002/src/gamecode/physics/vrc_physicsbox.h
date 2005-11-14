@@ -28,13 +28,13 @@
  #
  ################################################################*/
 
-#ifndef _CTD_PHYSICSBOX_H_
-#define _CTD_PHYSICSBOX_H_
+#ifndef _VRC_PHYSICSBOX_H_
+#define _VRC_PHYSICSBOX_H_
 
-#include <ctd_main.h>
-#include "ctd_physicsbase.h"
+#include <vrc_main.h>
+#include "vrc_physicsbase.h"
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_PHYSICSBOX    "PhysicsBox"
@@ -84,11 +84,11 @@ class EnPhysicsBox : public EnPhysicsBase
 };
 
 //! Entity type definition used for type registry
-class PhysicsBoxEntityFactory : public BaseEntityFactory
+class PhysicsBoxEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     PhysicsBoxEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_PHYSICSBOX, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PHYSICSBOX, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~PhysicsBoxEntityFactory() {}
@@ -98,4 +98,4 @@ class PhysicsBoxEntityFactory : public BaseEntityFactory
 
 }
 
-#endif // _CTD_PHYSICSBOX_H_
+#endif // _VRC_PHYSICSBOX_H_
