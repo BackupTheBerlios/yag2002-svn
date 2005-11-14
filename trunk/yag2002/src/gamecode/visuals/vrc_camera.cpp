@@ -30,22 +30,19 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_camera.h"
+#include <vrc_main.h>
+#include "vrc_camera.h"
 
-using namespace std;
-using namespace osg; 
-
-namespace CTD
+namespace vrc
 {
 
 //! Input handler for setting the view matrix in 'frame' callback phase
-class CameraFrameHandler : public GenericInputHandler< EnCamera >
+class CameraFrameHandler : public yaf3d::GenericInputHandler< EnCamera >
 {
     public:
 
         explicit                        CameraFrameHandler( EnCamera* p_camEntity ) : 
-                                          GenericInputHandler< EnCamera >( p_camEntity ),
+                                          yaf3d::GenericInputHandler< EnCamera >( p_camEntity ),
                                           _enable( true )
                                         {}
 
@@ -89,13 +86,13 @@ bool CameraFrameHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
             mat = _p_userObject->_offsetMatrixPosition * mat;
 
             //  inverse the matrix
-            osg::Matrixf inv = Matrixf::inverse( mat );
+            osg::Matrixf inv = osg::Matrixf::inverse( mat );
 
             // adjust Z-UP
             static osg::Matrixf adjustZ_Up ( osg::Matrixf::rotate( -osg::PI / 2.0f, 1.0f, 0.0f, 0.0f ) );
 
             // set view matrix
-            Application::get()->getSceneView()->setViewMatrix( osg::Matrixf( inv.ptr() ) * adjustZ_Up  );
+            yaf3d::Application::get()->getSceneView()->setViewMatrix( osg::Matrixf( inv.ptr() ) * adjustZ_Up  );
 
             // reset update flag
             getUserObject()->_needUpdate = false;
@@ -105,13 +102,13 @@ bool CameraFrameHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
 }
 
 //! Implement and register the camera entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( CameraEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( CameraEntityFactory );
 
 EnCamera::EnCamera() :
 _fov( 60.00 ),
-_nearClip( 0.01f ),
-_farClip( 1000.0f ),
-_backgroundColor( Vec3f( 0.2f, 0.2f, 0.2f ) ),
+_nearClip( 0.5f ),
+_farClip( 5000.0f ),
+_backgroundColor( osg::Vec3f( 0.2f, 0.2f, 0.2f ) ),
 _isPersistent( false ),
 _pitch( 0 ),
 _yaw( 0 ),
@@ -134,20 +131,20 @@ EnCamera::~EnCamera()
         _p_cameraHandler->destroyHandler();
 }
 
-void EnCamera::handleNotification( const EntityNotification& notification )
+void EnCamera::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle notifications
     switch( notification.getId() )
     {
         // for every subsequent level loading we must register outself again for getting updating
-        case CTD_NOTIFY_NEW_LEVEL_INITIALIZED:
+        case YAF3D_NOTIFY_NEW_LEVEL_INITIALIZED:
             break;
 
         // we have to trigger the deletion ourselves! ( this entity can be peristent )
-        case CTD_NOTIFY_SHUTDOWN:
+        case YAF3D_NOTIFY_SHUTDOWN:
 
             if ( _isPersistent )
-                EntityManager::get()->deleteEntity( this );
+                yaf3d::EntityManager::get()->deleteEntity( this );
             break;
 
         default:
@@ -158,9 +155,11 @@ void EnCamera::handleNotification( const EntityNotification& notification )
 void EnCamera::initialize()
 {
     unsigned int width, height;
-    Application::get()->getScreenSize( width, height );
-    Application::get()->getSceneView()->setProjectionMatrixAsPerspective( _fov, ( float( width ) / float( height ) ), _nearClip, _farClip );
-    Application::get()->getSceneView()->setClearColor( osg::Vec4f( _backgroundColor, 1.0f ) );
+    yaf3d::Application::get()->getScreenSize( width, height );
+    yaf3d::Application::get()->getSceneView()->setProjectionMatrixAsPerspective( _fov, ( float( width ) / float( height ) ), _nearClip, _farClip );
+    yaf3d::Application::get()->getSceneView()->setClearColor( osg::Vec4f( _backgroundColor, 1.0f ) );
+    // avoid overriding our near and far plane setting by scene viewer
+    yaf3d::Application::get()->getSceneView()->setComputeNearFarMode( osgUtil::CullVisitor::DO_NOT_COMPUTE_NEAR_FAR );
 
     _curPosition = _position;
     _curRotation = osg::Quat( 
@@ -174,8 +173,8 @@ void EnCamera::initialize()
     // setup the event handler for handling 'frame' callbacks (for setting the view matrix)
     _p_cameraHandler = new CameraFrameHandler( this );
 
-    EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
-    EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
+    yaf3d::EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
+    yaf3d::EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 }
 
 void EnCamera::setEnable( bool enable )
@@ -188,4 +187,4 @@ void EnCamera::updateEntity( float deltaTime )
     // we may add camera fx here later
 }
 
-} // namespace CTD
+} // namespace vrc

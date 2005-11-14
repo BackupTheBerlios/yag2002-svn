@@ -31,20 +31,16 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_water.h"
-
+#include <vrc_main.h>
 #include <osg/Program>
 #include <osg/Shader>
 #include <osg/Uniform>
 #include <osg/Texture3D>
 #include <osgUtil/UpdateVisitor>
-
+#include "vrc_water.h"
 #include "../extern/Noise.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 #define LOCATION_CUBEMAP_SAMPLER    0
@@ -110,41 +106,12 @@ static const char glsl_fp[] =
     "   float lrp = 1.0 - dot(-normalize(vViewVec), bump);                                      \n"
     "   vec4 col = mix(waterColor, refl, clamp(fadeBias + pow(lrp, fadeExp),0.0, 1.0));         \n"
     "                                                                                           \n"
-    "   // linear fog \n"
-    "   //float fog = (gl_Fog.end - gl_FogFragCoord) * gl_Fog.scale; \n"   
-    "   col.xyz = mix(gl_Fog.color.xyz, col.xyz, fog);  \n"
+    "   // linear fog                                                                           \n"
+    "   col.xyz = mix(gl_Fog.color.xyz, col.xyz, fog);                                          \n"
     "   col.w = transparency;                                                                   \n"
     "   gl_FragColor = col;                                                                     \n"
     "}                                                                                          \n"
 ;
-/*
-struct gl_FogParameters
-{
- vec4 color;
- float density;
- float start;
- float end;
- float scale;
-};
-gl_FogParameters gl_Fog;
-
-From the Orange Book:
-
-Linear Fog
-fog = (gl_Fog.end - gl_FogFragCoord)) * gl_Fog.scale;
-
-gl_Fog.scale is a precomputed 1.0 / (gl_Fog.end - gl_Fog.start).
-
-Exponential Fog
-const float LOG2E = 1.442695; // = 1 / log(2)
-fog = exp2(-gl_Fog.density * gl_FogFragCoord * LOG2E);
-
-Exponential Fog (Squared)
-fog = exp2(-gl_Fog.density * gl_Fog.density * gl_FogFragCoord * gl_FogFragCoord * LOG2E);
-
-The LOG2E constant is used to turn the exp base(2) into exp base(e). Also, if you're going to use GL_EXP2 fog, it recommends precomputing (-gl_Fog.density * gl_Fog.density * LOG2E) and passing it in as a uniform.
-
-*/
 
 // callback for water's wave uniform deltaWave
 class DeltaWaveUpdateCallback: public osg::Uniform::Callback
@@ -197,7 +164,7 @@ class ViewPositionUpdateCallback: public osg::Uniform::Callback
         
                                             ViewPositionUpdateCallback() 
                                             {
-                                                _p_sceneView = Application::get()->getSceneView();
+                                                _p_sceneView = yaf3d::Application::get()->getSceneView();
                                             }
 
         virtual                             ~ViewPositionUpdateCallback() {}
@@ -222,7 +189,7 @@ class ViewPositionUpdateCallback: public osg::Uniform::Callback
 // Entity water
 //---------------------------------------------------
 //! Implement and register the water entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( WaterEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( WaterEntityFactory );
 
 // Implementation of water entity
 EnWater::EnWater() :
@@ -261,24 +228,24 @@ EnWater::~EnWater()
 {
 }
 
-void EnWater::handleNotification( const EntityNotification& notification )
+void EnWater::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle notifications
     switch( notification.getId() )
     {
         // disable water rendering when in menu
-        case CTD_NOTIFY_MENU_ENTER:
+        case YAF3D_NOTIFY_MENU_ENTER:
 
             removeFromTransformationNode( _water.get() );
             break;
 
         // enable water entity when get back in game
-        case CTD_NOTIFY_MENU_LEAVE:
+        case YAF3D_NOTIFY_MENU_LEAVE:
 
             addToTransformationNode( _water.get() );
             break;
 
-        case CTD_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
+        case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
             // re-create the water
             removeFromTransformationNode( _water.get() );
             _water = setupWater();
@@ -298,7 +265,7 @@ void EnWater::initialize()
     // the water is added to entity's transform node in notification call-back, when entering game ( leaving menu )!
     _water = setupWater();
 
-    EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
+    yaf3d::EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 }
 
 // this function is taken from osg example Shaders ( osg version 0.9.9 )
@@ -354,11 +321,11 @@ osg::Node* EnWater::setupWater()
     // check if a water mesh is given, if so load it and place it into level
     if ( _meshFile.length() )
     {
-        p_node = LevelManager::get()->loadMesh( _meshFile );
+        p_node = yaf3d::LevelManager::get()->loadMesh( _meshFile );
         if ( !p_node )
         {
-            log << Log::LogLevel( Log::L_WARNING ) << "could not load water mesh file: " << _meshFile << ", in '" << getInstanceName() << "'" << std::endl;
-            log << Log::LogLevel( Log::L_WARNING ) << " creating a simple plane for water mesh." << std::endl;
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "could not load water mesh file: " << _meshFile << ", in '" << getInstanceName() << "'" << std::endl;
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << " creating a simple plane for water mesh." << std::endl;
         }
 
         setPosition( _position );
@@ -454,12 +421,12 @@ osg::Node* EnWater::setupWater()
         texfiles.push_back( _cubeMapTextures[ 3 ] );
         texfiles.push_back( _cubeMapTextures[ 4 ] );
         texfiles.push_back( _cubeMapTextures[ 5 ] );
-        osg::ref_ptr< osg::TextureCubeMap > reflectmap = readCubeMap( texfiles );
+        osg::ref_ptr< osg::TextureCubeMap > reflectmap = yaf3d::readCubeMap( texfiles );
 
         p_stateSet->setTextureAttribute( LOCATION_CUBEMAP_SAMPLER, reflectmap.get() );
         p_stateSet->addUniform( new osg::Uniform( "samplerSkyBox", LOCATION_CUBEMAP_SAMPLER ) );
 
-        // set lighting to diabled and culling to enabled
+        // set lighting and culling
         p_stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
         p_stateSet->setMode( GL_CULL_FACE, osg::StateAttribute::OFF );
 
@@ -470,7 +437,7 @@ osg::Node* EnWater::setupWater()
         p_stateSet->setMode( GL_BLEND, osg::StateAttribute::ON );      
         p_stateSet->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
         // make sure that the water is rendered at first than all other transparent primitives
-        p_stateSet->setBinNumber( 0 ); 
+        p_stateSet->setBinNumber( 0 );
 
         // append state set to geode
         p_node->setStateSet( p_stateSet );

@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_LIGHTMANAGER_H_
-#define _CTD_LIGHTMANAGER_H_
+#ifndef _VRC_LIGHTMANAGER_H_
+#define _VRC_LIGHTMANAGER_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 //! Maximal lights enabled during one frame
@@ -104,7 +104,7 @@ class BaseLight
 
 class LightCallback;
 //! Class for enabling up to CTD_MAX_GL_LIGHTS gl lights per frame considering light source culling
-class LightManager : public Singleton< LightManager >, public osgSDL::Viewer::DrawCallback
+class LightManager : public yaf3d::Singleton< LightManager >, public osgSDL::Viewer::DrawCallback
 {
     public:
 
@@ -138,7 +138,7 @@ class LightManager : public Singleton< LightManager >, public osgSDL::Viewer::Dr
 
         bool                                        _initialized;
 
-    friend class Singleton< LightManager >;
+    friend class yaf3d::Singleton< LightManager >;
     friend class LightCallback;
 };
 
@@ -161,4 +161,4 @@ class LightCallback : public osg::NodeCallback
 
 }
 
-#endif // _CTD_LIGHTMANAGER_H_
+#endif // _VRC_LIGHTMANAGER_H_

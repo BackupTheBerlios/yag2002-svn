@@ -35,12 +35,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_WATER_H_
-#define _CTD_WATER_H_
+#ifndef _VRC_WATER_H_
+#define _VRC_WATER_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_WATER    "Water"
@@ -50,7 +50,7 @@ class DeltaNoiseUpdateCallback;
 class EnCamera;
 
 //! This entity simulates water using glsl shaders
-class EnWater :  public BaseEntity
+class EnWater :  public yaf3d::BaseEntity
 {
     public:
                                                     EnWater();
@@ -97,7 +97,7 @@ class EnWater :  public BaseEntity
         //--------------------------------------------------------//
 
         //! Notification call-back
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Setup water geom, shaders and state sets
         osg::Node*                                  setupWater();
@@ -110,11 +110,11 @@ class EnWater :  public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class WaterEntityFactory : public BaseEntityFactory
+class WaterEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     WaterEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_WATER, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_WATER, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~WaterEntityFactory() {}
@@ -124,4 +124,4 @@ class WaterEntityFactory : public BaseEntityFactory
 
 }
 
-#endif // _CTD_WATER_H_
+#endif // _VRC_WATER_H_

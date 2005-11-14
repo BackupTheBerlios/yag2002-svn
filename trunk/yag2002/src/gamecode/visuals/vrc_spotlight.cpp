@@ -28,15 +28,13 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_spotlight.h"
+#include <vrc_main.h>
+#include "vrc_spotlight.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 //! Implement and register the spotlight entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( SpotLightEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( SpotLightEntityFactory );
 
 EnSpotLight::EnSpotLight() :
 _direction( osg::Vec3f( 0.0f, 0.0f, -1.0f ) ),
@@ -66,7 +64,7 @@ EnSpotLight::~EnSpotLight()
 void EnSpotLight::initialize()
 {
     // call the get method of light manager so it can register itself for getting camera callbacks (see constructor)
-    LightManager::get();
+    LightManager::get()->initialize();
 
     // create a new light
     _lightSource = new osg::LightSource;
@@ -107,9 +105,9 @@ void EnSpotLight::initialize()
     // set mesh if one defined
     if ( _meshFile.length() )
     {
-        osg::ref_ptr< osg::Node > mesh = LevelManager::get()->loadMesh( _meshFile );
+        osg::ref_ptr< osg::Node > mesh = yaf3d::LevelManager::get()->loadMesh( _meshFile );
         if ( !mesh.valid() ) 
-            log << Log::LogLevel( Log::L_WARNING ) << " cannot find mesh file" << _meshFile << endl;
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << " cannot find mesh file" << _meshFile << std::endl;
         else
             addToTransformationNode( mesh.get() );
     }
@@ -118,4 +116,4 @@ void EnSpotLight::initialize()
     setPosition( _position );
 }
 
-} // namespace CTD
+} // namespace vrc

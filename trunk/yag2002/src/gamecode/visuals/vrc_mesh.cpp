@@ -28,14 +28,14 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_mesh.h"
+#include <vrc_main.h>
+#include "vrc_mesh.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the mesh entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( MeshEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( MeshEntityFactory );
 
 EnMesh::EnMesh() :
 _enable( true )
@@ -51,17 +51,40 @@ EnMesh::~EnMesh()
 {
 }
 
+void EnMesh::handleNotification( const yaf3d::EntityNotification& notification )
+{
+    // handle notifications, add and remove the mesh to / from scenegraph on menu entring / leaving
+    switch( notification.getId() )
+    {
+        case YAF3D_NOTIFY_MENU_ENTER:
+        {
+            removeFromTransformationNode( _mesh.get() );
+        }
+        break;
+
+        case YAF3D_NOTIFY_MENU_LEAVE:
+        {
+            if ( _enable )
+                addToTransformationNode( _mesh.get() );
+        }
+        break;
+
+
+        default:
+            ;
+    }
+}
+
 void EnMesh::initialize()
 {
-    osg::Node* p_node = LevelManager::get()->loadMesh( _meshFile );
+    osg::Node* p_node = yaf3d::LevelManager::get()->loadMesh( _meshFile );
     if ( !p_node )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** could not load mesh file: " << _meshFile << ", in '" << getInstanceName() << "'" << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** could not load mesh file: " << _meshFile << ", in '" << getInstanceName() << "'" << std::endl;
         return;
     }
 
     _mesh = p_node;
-    addToTransformationNode( _mesh.get() );
     setPosition( _position );
     osg::Quat   rot( 
                      osg::DegreesToRadians( _rotation.x() ), osg::Vec3f( 1.0f, 0.0f, 0.0f ),
@@ -69,6 +92,9 @@ void EnMesh::initialize()
                      osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0.0f, 0.0f, 1.0f )
                     );
     setRotation( rot );
+
+    // register entity in order to get menu notifications
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 void EnMesh::enable( bool en )
@@ -88,4 +114,4 @@ void EnMesh::enable( bool en )
     _enable = en;
 }
 
-} // namespace CTD
+} // namespace vrc

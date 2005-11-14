@@ -28,14 +28,14 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_fog.h"
+#include <vrc_main.h>
+#include "vrc_fog.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the fog entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( FogEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( FogEntityFactory );
 
 osg::Fog*    EnFog::_p_fog     = NULL;
 unsigned int EnFog::_instCount = 0;
@@ -63,7 +63,7 @@ EnFog::~EnFog()
 {
     if ( _p_fog && _instCount < 1 )
     {
-        osg::StateSet* p_stateset = Application::get()->getSceneView()->getGlobalStateSet();
+        osg::StateSet* p_stateset = yaf3d::Application::get()->getSceneView()->getGlobalStateSet();
         p_stateset->removeAttribute( _p_fog );
         _p_fog = NULL;
     }
@@ -71,19 +71,19 @@ EnFog::~EnFog()
     _instCount--;
 }
 
-void EnFog::handleNotification( const EntityNotification& notification )
+void EnFog::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle notifications
     switch( notification.getId() )
     {
         // we have to trigger the deletion ourselves! ( this entity can be peristent )
-        case CTD_NOTIFY_SHUTDOWN:
+        case YAF3D_NOTIFY_SHUTDOWN:
 
             if ( _isPersistent )
-                EntityManager::get()->deleteEntity( this );
+                yaf3d::EntityManager::get()->deleteEntity( this );
             break;
 
-        case CTD_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
+        case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
             
             if ( _enable )
             {
@@ -108,9 +108,9 @@ void EnFog::initialize()
         return;
 
     // register entity in order to get shutdown notification
-    EntityManager::get()->registerNotification( this, true );   
+    yaf3d::EntityManager::get()->registerNotification( this, true );   
 
-    osg::StateSet* p_stateset = Application::get()->getSceneView()->getGlobalStateSet();
+    osg::StateSet* p_stateset = yaf3d::Application::get()->getSceneView()->getGlobalStateSet();
     _p_fog = new osg::Fog;
     _p_fog->setMode( osg::Fog::LINEAR );
     _p_fog->setDensity( _density );
@@ -129,7 +129,7 @@ void EnFog::enable( bool en )
 
     if ( en )
     {
-        osg::StateSet* p_stateset = Application::get()->getSceneView()->getGlobalStateSet();
+        osg::StateSet* p_stateset = yaf3d::Application::get()->getSceneView()->getGlobalStateSet();
         _p_fog->setDensity( _density );
         _p_fog->setStart( _start );
         _p_fog->setEnd( _end );
@@ -139,7 +139,7 @@ void EnFog::enable( bool en )
     }
     else
     {
-        osg::StateSet* p_stateset = Application::get()->getSceneView()->getGlobalStateSet();
+        osg::StateSet* p_stateset = yaf3d::Application::get()->getSceneView()->getGlobalStateSet();
         p_stateset->setAttributeAndModes( _p_fog, osg::StateAttribute::OFF );
         p_stateset->setMode( GL_FOG, osg::StateAttribute::OFF );
     }
@@ -147,4 +147,4 @@ void EnFog::enable( bool en )
     _enable = en;
 }
 
-} // namespace CTD
+} // namespace vrc

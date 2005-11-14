@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CANDLE_H_
-#define _CTD_CANDLE_H_
+#ifndef _VRC_CANDLE_H_
+#define _VRC_CANDLE_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_CANDLE    "Candle"
@@ -41,7 +41,7 @@ namespace CTD
 class EnPointLight;
 
 //! This entity implements a candle fire
-class EnCandle :  public BaseEntity
+class EnCandle :  public yaf3d::BaseEntity
 {
     public:
                                                     EnCandle();
@@ -74,17 +74,17 @@ class EnCandle :  public BaseEntity
         //--------------------------------------------------------//
 
         //! Notification call-back
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         EnPointLight*                               _p_pointLightEntity;
 };
 
 //! Entity type definition used for type registry
-class CandleEntityFactory : public BaseEntityFactory
+class CandleEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     CandleEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_CANDLE, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_CANDLE, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~CandleEntityFactory() {}
@@ -94,4 +94,4 @@ class CandleEntityFactory : public BaseEntityFactory
 
 }
 
-#endif // _CTD_CANDLE_H_
+#endif // _VRC_CANDLE_H_

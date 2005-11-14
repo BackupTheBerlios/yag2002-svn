@@ -28,17 +28,15 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_pointlight.h"
-#include "ctd_lightmanager.h"
+#include <vrc_main.h>
+#include "vrc_pointlight.h"
+#include "vrc_lightmanager.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 //-----------------
 //! Implement and register the pointlight entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( PointLightEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( PointLightEntityFactory );
 
 EnPointLight::EnPointLight() :
 _lightRadius( 100.0f )
@@ -59,13 +57,13 @@ EnPointLight::~EnPointLight()
 {
 }
 
-void EnPointLight::handleNotification( const EntityNotification& notification )
+void EnPointLight::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle notifications
     switch( notification.getId() )
     {
         // update the light settings when attributes are changed (e.g. by a level editor)
-        case CTD_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
+        case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
         {
             osg::Light* p_light = _lightSource->getLight();
             if ( p_light )
@@ -125,9 +123,9 @@ void EnPointLight::initialize()
     // set mesh if one defined
     if ( _meshFile.length() )
     {
-        osg::ref_ptr< osg::Node > mesh = LevelManager::get()->loadMesh( _meshFile );
+        osg::ref_ptr< osg::Node > mesh = yaf3d::LevelManager::get()->loadMesh( _meshFile );
         if ( !mesh.valid() ) 
-            log << Log::LogLevel( Log::L_WARNING ) << " cannot find mesh file" << _meshFile << endl;
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << " cannot find mesh file" << _meshFile << std::endl;
         else
             addToTransformationNode( mesh.get() );
     }

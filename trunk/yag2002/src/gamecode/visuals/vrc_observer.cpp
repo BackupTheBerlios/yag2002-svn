@@ -29,22 +29,22 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_observer.h"
-#include "ctd_camera.h"
+#include <vrc_main.h>
+#include "vrc_observer.h"
+#include "vrc_camera.h"
 
-namespace CTD
+namespace vrc
 {
 #define OBSERVER_WND      "_observer_"
 
 
 //! Input handler for observer
-class ObserverIH : public GenericInputHandler< EnObserver >
+class ObserverIH : public yaf3d::GenericInputHandler< EnObserver >
 {
     public:
 
         explicit                            ObserverIH( EnObserver* p_ent ) : 
-                                             GenericInputHandler< EnObserver >( p_ent )
+                                             yaf3d::GenericInputHandler< EnObserver >( p_ent )
                                             {
                                                 _lockMovement    = false;
                                                 _moveRight       = false;
@@ -59,7 +59,7 @@ class ObserverIH : public GenericInputHandler< EnObserver >
 
                                                 // get the current screen size
                                                 unsigned int width, height;
-                                                Application::get()->getScreenSize( width, height );
+                                                yaf3d::Application::get()->getScreenSize( width, height );
                                                 // calculate the middle of app window
                                                 _screenMiddleX = static_cast< Uint16 >( width * 0.5f );
                                                 _screenMiddleY = static_cast< Uint16 >( height * 0.5f );
@@ -125,7 +125,7 @@ bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
 
     // terminate application on Escape
     if ( key == SDLK_ESCAPE )
-        Application::get()->stop();
+        yaf3d::Application::get()->stop();
 
     // toggle info dialog rendering
     if ( ( key == SDLK_F9 ) && ( eventType == osgGA::GUIEventAdapter::KEYDOWN ) )
@@ -209,7 +209,7 @@ bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
         p_camera->setLocalPitchYaw( -_pitch, -_yaw );
 
         // reset mouse position in order to avoid leaving the app window
-        Application::get()->getViewer()->requestWarpPointer( _screenMiddleX, _screenMiddleY );
+        yaf3d::Application::get()->getViewer()->requestWarpPointer( _screenMiddleX, _screenMiddleY );
     }
 
     // update camera position
@@ -223,7 +223,7 @@ bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
 }
 
 //! Implement and register the observer entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( ObserverEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( ObserverEntityFactory );
 
 EnObserver::EnObserver() :
 _maxSpeed( 10.0f ),
@@ -255,24 +255,24 @@ EnObserver::~EnObserver()
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "EnObserver: problem cleaning up entity." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnObserver: problem cleaning up entity." << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
-void EnObserver::handleNotification( const EntityNotification& notification )
+void EnObserver::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle notifications
     switch( notification.getId() )
     {
-        case CTD_NOTIFY_NEW_LEVEL_INITIALIZED:
+        case YAF3D_NOTIFY_NEW_LEVEL_INITIALIZED:
             break;
 
         // we have to trigger the deletion ourselves! ( this entity can be peristent )
-        case CTD_NOTIFY_SHUTDOWN:
+        case YAF3D_NOTIFY_SHUTDOWN:
 
             if ( _isPersistent )
-                EntityManager::get()->deleteEntity( this );
+                yaf3d::EntityManager::get()->deleteEntity( this );
             break;
 
         default:
@@ -285,7 +285,7 @@ void EnObserver::initialize()
     try
     {        
         _p_wnd = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", OBSERVER_WND "mainFrame" ) );
-        _p_wnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::EnObserver::onClickedClose, this ) );
+        _p_wnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &vrc::EnObserver::onClickedClose, this ) );
         _p_wnd->setSize( CEGUI::Size( 0.35f, 0.25f ) );
         _p_wnd->setText( "tools" );
         _p_wnd->setPosition( CEGUI::Point( 0, 0 ) );
@@ -294,7 +294,7 @@ void EnObserver::initialize()
         _p_wnd->setSizingEnabled( false );
 
         _p_lockCheckbox = static_cast< CEGUI::Checkbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Checkbox", OBSERVER_WND "lock" ) );
-        _p_lockCheckbox->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &CTD::EnObserver::onLockChanged, this ) );
+        _p_lockCheckbox->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::EnObserver::onLockChanged, this ) );
         _p_lockCheckbox->setSize( CEGUI::Size( 0.9f, 0.22f ) );
         _p_lockCheckbox->setPosition( CEGUI::Point( 0.05f, 0.1f ) );
         _p_lockCheckbox->setSelected( false );
@@ -310,7 +310,7 @@ void EnObserver::initialize()
         _p_wnd->addChildWindow( p_stext );
         
         _p_speedBar = static_cast< CEGUI::Scrollbar* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/HorizontalScrollbar", OBSERVER_WND "speed" ) );
-        _p_speedBar->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &CTD::EnObserver::onSpeedChanged, this ) );
+        _p_speedBar->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::EnObserver::onSpeedChanged, this ) );
         _p_speedBar->setSize( CEGUI::Size( 0.75f, 0.075f ) );
         _p_speedBar->setPosition( CEGUI::Point( 0.2f, 0.3f ) );
         _p_speedBar->setScrollPosition( 1.0f );
@@ -319,33 +319,33 @@ void EnObserver::initialize()
         _p_outputText = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", OBSERVER_WND "output" ) );
         _p_outputText->setSize( CEGUI::Size( 0.9f, 0.4f ) );
         _p_outputText->setPosition( CEGUI::Point( 0.05f, 0.45f ) );
-        _p_outputText->setFont( CTD_GUI_CONSOLE );
+        _p_outputText->setFont( YAF3D_GUI_CONSOLE );
         _p_wnd->addChildWindow( _p_outputText );
 
-        GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
+        yaf3d::GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
 
-    EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
-    EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
+    yaf3d::EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
+    yaf3d::EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 }
 
 void EnObserver::postInitialize()
 {
-    _p_cameraEntity = dynamic_cast< EnCamera* >( EntityManager::get()->findEntity( ENTITY_NAME_CAMERA ) );
+    _p_cameraEntity = dynamic_cast< EnCamera* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CAMERA ) );
     if ( _p_cameraEntity )
     {
-        log << Log::LogLevel( Log::L_WARNING ) << "observer entity cannot be set up as there is already a camera instance in level!" << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "observer entity cannot be set up as there is already a camera instance in level!" << std::endl;
         return;
     }
 
     // create a camera instance for observer
-    _p_cameraEntity = dynamic_cast< EnCamera* >( EntityManager::get()->createEntity( ENTITY_NAME_CAMERA, "_observerCamera_" ) );
+    _p_cameraEntity = dynamic_cast< EnCamera* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_CAMERA, "_observerCamera_" ) );
     assert( _p_cameraEntity && "error creating observer camera" );
 
     _p_cameraEntity->initialize();
@@ -429,4 +429,4 @@ void EnObserver::enableInfoWindow( bool en )
         _p_wnd->hide();
 }
 
-} // namespace CTD
+} // namespace vrc
