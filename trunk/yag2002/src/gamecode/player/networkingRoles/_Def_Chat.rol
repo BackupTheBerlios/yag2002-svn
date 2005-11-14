@@ -1,6 +1,0 @@
-/* This defines the objects to be used in the game and that can be referenced by ReplicaNet */
-application
-{
-    object PlayerNetworking;
-}
-
