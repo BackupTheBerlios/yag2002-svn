@@ -30,11 +30,11 @@
 
 
 #include "vrc_main.h"
-#include <vrc_application.h>
+#include <application.h>
 
 int main( int argc, char *argv[] )
 {
-    CTD::Application* p_app = CTD::Application::get();
+    yaf3d::Application* p_app = yaf3d::Application::get();
     
     if ( !p_app->initialize( argc, argv ) )
         return -1;

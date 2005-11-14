@@ -30,11 +30,11 @@
  ################################################################*/
 
 
-#ifndef _CTD_MAIN_H_
-#define _CTD_MAIN_H_
+#ifndef _VRC_MAIN_H_
+#define _VRC_MAIN_H_
 
 // framework's central header for most important dependencies
-#include <ctd_base.h>
+#include <base.h>
 
 // ms windows stuff
 #ifdef WIN32
@@ -45,6 +45,6 @@
 #endif
 
 // main header of framework itself
-#include <ctd_framework.h>
+#include <yaf3dframework.h>
 
-#endif // _CTD_MAIN_H_
+#endif // _VRC_MAIN_H_

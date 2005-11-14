@@ -28,45 +28,129 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_gameutils.h"
+#include <vrc_main.h>
+#include <vrc_gameutils.h>
 
-namespace CTD
+
+YAF3D_SINGLETON_IMPL( vrc::gameutils::PlayerUtils );
+YAF3D_SINGLETON_IMPL( vrc::gameutils::GuiUtils );
+
+namespace vrc
 {
 namespace gameutils
 {
 
-bool getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile )
+// Implementation of player utils
+GuiUtils::GuiUtils() :
+_p_mainWindow( NULL ),
+_p_rootWindow( NULL )
+{
+
+}
+
+GuiUtils::~GuiUtils()
+{
+    // clean up gui resources
+    destroyMainWindow();
+}
+
+CEGUI::Window* GuiUtils::getMainGuiWindow()
+{
+    if ( _p_mainWindow )
+        return _p_mainWindow;
+
+    // create main window
+    try
+    {
+        _p_rootWindow = yaf3d::GuiManager::get()->getRootWindow();
+        _p_mainWindow = static_cast< CEGUI::Window* >( CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", "_guiutils_game_main_window_" ) );
+        _p_rootWindow->addChildWindow( _p_mainWindow );
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error setting up main gui window" << std::endl;
+        yaf3d::log << "   reason: " << e.getMessage().c_str() << std::endl;
+        return NULL;
+    }
+
+    return _p_mainWindow;
+}
+
+void GuiUtils::showMainWindow( bool show )
+{
+    if ( !_p_mainWindow )
+        return;
+ 
+    if ( show )
+        _p_rootWindow->addChildWindow( _p_mainWindow );
+    else
+        _p_rootWindow->removeChildWindow( _p_mainWindow );
+}
+
+void GuiUtils::destroyMainWindow()
+{
+    if ( !_p_mainWindow )
+        return;
+
+    try
+    {
+        _p_rootWindow->removeChildWindow( _p_mainWindow );
+        CEGUI::WindowManager::getSingleton().destroyWindow( _p_mainWindow );
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "guiutils: problem cleaning up gui resources" << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+    }
+    _p_mainWindow = NULL;
+    _p_rootWindow = NULL;
+}
+
+void GuiUtils::showMousePointer( bool show )
+{
+    if ( show )
+        yaf3d::GuiManager::get()->showMousePointer( true );
+    else
+        yaf3d::GuiManager::get()->showMousePointer( false );
+}
+
+// Implementation of player utils
+PlayerUtils::PlayerUtils() :
+_p_localPlayer( NULL )
+{
+}
+
+bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile )
 {
     std::string playercfgdir;
     std::string playercfgfile;
-    Configuration::get()->getSettingValue( CTD_GS_PLAYER_CONFIG_DIR, playercfgdir );
-    Configuration::get()->getSettingValue( CTD_GS_PLAYER_CONFIG, playercfgfile );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_CONFIG_DIR, playercfgdir );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_CONFIG, playercfgfile );
     // assemble full path of player cfg file
-    std::string cfg = Application::get()->getMediaPath() + playercfgdir + "/" + playercfgfile;
+    std::string cfg = yaf3d::Application::get()->getMediaPath() + playercfgdir + "/" + playercfgfile;
     // load player config
     std::string profile( cfg );
-    Settings* p_settings = SettingsManager::get()->createProfile( profile, cfg );
+    yaf3d::Settings* p_settings = yaf3d::SettingsManager::get()->createProfile( profile, cfg );
     if ( !p_settings )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "Menu: cannot find player settings: " << cfg << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "Menu: cannot find player settings: " << cfg << std::endl;
         return false;
     }
     std::string key, value;
     switch ( mode )
     {
-        case GameState::Standalone:
+        case yaf3d::GameState::Standalone:
             key = "standaloneConfig";
             break;
 
-        case GameState::Client:
+        case yaf3d::GameState::Client:
             if ( remote )
                 key = "remoteClientConfig";
             else
                 key = "clientConfig";
             break;
 
-        case GameState::Server:
+        case yaf3d::GameState::Server:
                 key = "serverConfig";
             break;
 
@@ -74,20 +158,69 @@ bool getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile )
             return false;
     }
     p_settings->registerSetting( key, value );
-    SettingsManager::get()->loadProfile( profile );
+    yaf3d::SettingsManager::get()->loadProfile( profile );
     p_settings->getValue( key, cfgfile );
-    SettingsManager::get()->destroyProfile( profile );
+    yaf3d::SettingsManager::get()->destroyProfile( profile );
 
     return true;
+}
+
+yaf3d::BaseEntity* PlayerUtils::getLocalPlayer()
+{
+    return _p_localPlayer;
+}
+
+void PlayerUtils::setLocalPlayer( yaf3d::BaseEntity* p_entity )
+{
+    _p_localPlayer = p_entity;
+}
+
+void PlayerUtils::changeLocalPlayerName( const std::string& name )
+{
+    if ( !_p_localPlayer )
+        return;
+
+    // change the player name in configuration
+    yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_PLAYER_NAME, name );
+
+    // send a notification that the player name has been changed
+    yaf3d::EntityNotification ennotify( PLAYER_NOTIFY_NAME_CHANGED );
+    yaf3d::EntityManager::get()->sendNotification( ennotify );
+}
+
+void PlayerUtils::addRemotePlayer( yaf3d::BaseEntity* p_entity )
+{
+    // first check whether the entity is already in list
+    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _remotePlayers.begin(), p_end = _remotePlayers.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        if ( *p_beg == p_entity )
+            break;
+   
+    assert( ( p_beg == p_end ) && "remote player already exists in list!" );
+    
+    _remotePlayers.push_back( p_entity );
+}
+
+void PlayerUtils::removeRemotePlayer( yaf3d::BaseEntity* p_entity )
+{
+    // first check whether the entity is in list
+    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _remotePlayers.begin(), p_end = _remotePlayers.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        if ( *p_beg == p_entity )
+            break;
+
+    assert( ( p_beg != p_end ) && "remote player does not exist in list!" );
+
+    _remotePlayers.erase( p_beg );
 }
 
 // level file class
 LevelFiles::LevelFiles( const std::string& dir )
 {
     // get level file names
-    std::string searchdir = Application::get()->getMediaPath() + dir;
+    std::string searchdir = yaf3d::Application::get()->getMediaPath() + dir;
     std::vector< std::string > files;
-    getDirectoryListing( files, searchdir, "lvl" );
+    yaf3d::getDirectoryListing( files, searchdir, "lvl" );
 
     static unsigned int s_postfix = 0;
     std::stringstream   postfix;
@@ -103,7 +236,7 @@ LevelFiles::LevelFiles( const std::string& dir )
             try
             {
                 // create a new imageset
-                CEGUI::Texture*  p_texture = GuiManager::get()->getGuiRenderer()->createTexture( textureFile, std::string( "_levelPics_" ) + postfix.str() );
+                CEGUI::Texture*  p_texture = yaf3d::GuiManager::get()->getGuiRenderer()->createTexture( textureFile, std::string( "_levelPics_" ) + postfix.str() );
                 CEGUI::Imageset* p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( materialName + postfix.str(), p_texture );
              
                 if ( !p_imageSet->isImageDefined( textureFile ) )
@@ -139,8 +272,8 @@ LevelFiles::~LevelFiles()
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "DialogLevelSelect: problem cleaning up entity." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "DialogLevelSelect: problem cleaning up entity." << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -156,4 +289,4 @@ CEGUI::Image* LevelFiles::getImage( const std::string& file )
 //----------
 
 } // namespace gameutils
-} // namespace CTD
+} // namespace vrc

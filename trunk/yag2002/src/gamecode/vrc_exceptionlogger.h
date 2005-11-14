@@ -35,7 +35,7 @@
 #ifndef _EXCEPTION_LOGGER_H_
 #define _EXCEPTION_LOGGER_H_
 
-#include "ctd_main.h"
+#include "vrc_main.h"
 
 #ifdef WIN32
 
