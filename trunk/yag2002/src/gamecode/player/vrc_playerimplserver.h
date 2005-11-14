@@ -34,16 +34,16 @@
  #
  ################################################################*/
 
-#ifndef _CTD_PLAYERIMPLSERVER_H_
-#define _CTD_PLAYERIMPLSERVER_H_
+#ifndef _VRC_PLAYERIMPLSERVER_H_
+#define _VRC_PLAYERIMPLSERVER_H_
 
-#include <ctd_main.h>
-#include "ctd_playerimpl.h"
+#include <vrc_main.h>
+#include "vrc_playerimpl.h"
 
-namespace CTD
+namespace vrc
 {
 
-//! Player implementation for game mode Server ( see framework class GameState )
+//! Player implementation for game mode Server ( see framework class yaf3d::GameState )
 class PlayerImplServer : public BasePlayerImplementation
 {
     public:
@@ -63,9 +63,9 @@ class PlayerImplServer : public BasePlayerImplementation
         void                                        update( float deltaTime );
 
         //! Implementation's notification callback
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 };
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_PLAYERIMPLSERVER_H_
+#endif // _VRC_PLAYERIMPLSERVER_H_

@@ -31,12 +31,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_SPAWNPOINT_H_
-#define _CTD_SPAWNPOINT_H_
+#ifndef _VRC_SPAWNPOINT_H_
+#define _VRC_SPAWNPOINT_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 //! Minimum radius of free area around a spawn point which is evaluated for selecting a spawn point
 #define SPAWN_MIN_FREE_RADIUS      2.0f
@@ -44,7 +44,7 @@ namespace CTD
 
 #define ENTITY_NAME_SPAWNPOINT    "SpawnPoint"
 
-class EnSpawnPoint :  public BaseEntity
+class EnSpawnPoint :  public yaf3d::BaseEntity
 {
     public:
                                                     EnSpawnPoint();
@@ -67,7 +67,7 @@ class EnSpawnPoint :  public BaseEntity
     protected:
 
         //! Handle level changing etc.
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         osg::Vec3f                                  _position;
 
@@ -79,11 +79,11 @@ class EnSpawnPoint :  public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class SpawnPointEntityFactory : public BaseEntityFactory
+class SpawnPointEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     SpawnPointEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_SPAWNPOINT, BaseEntityFactory::Standalone | BaseEntityFactory::Server )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_SPAWNPOINT, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Server )
                                                     {}
 
         virtual                                     ~SpawnPointEntityFactory() {}
@@ -93,4 +93,4 @@ class SpawnPointEntityFactory : public BaseEntityFactory
 
 }
 
-#endif // _CTD_SPAWNPOINT_H_
+#endif // _VRC_SPAWNPOINT_H_

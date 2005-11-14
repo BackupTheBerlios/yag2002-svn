@@ -31,19 +31,18 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_playernetworking.h"
-#include "ctd_playerimpl.h"
-#include "ctd_playerimplclient.h"
-#include "ctd_playerimplserver.h"
-#include "ctd_playerphysics.h"
-#include "ctd_player.h"
+#include <vrc_main.h>
+#include "vrc_playernetworking.h"
+#include "vrc_playerimpl.h"
+#include "vrc_playerimplclient.h"
+#include "vrc_playerimplserver.h"
+#include "vrc_playerphysics.h"
+#include "vrc_player.h"
+#include "chat/vrc_chatmgr.h"
 
-using namespace std;
+yaf3d::Log* PlayerNetworking::s_chatLog = NULL;
 
-CTD::Log* PlayerNetworking::s_chatLog = NULL;
-
-PlayerNetworking::PlayerNetworking( CTD::BasePlayerImplementation* p_playerImpl ) :
+PlayerNetworking::PlayerNetworking( vrc::BasePlayerImplementation* p_playerImpl ) :
 _positionX( 0 ),
 _positionY( 0 ),
 _positionZ( 0 ),
@@ -53,6 +52,9 @@ _remoteClient( false ),
 _p_playerImpl( p_playerImpl ),
 _loadedPlayerEntity( NULL )
 {   
+    // we have to lock creation / deletion of network objects during construction
+    yaf3d::NetworkDevice::get()->lockObjects();
+
     // this constructor can be called either by player entity or networking system (in client or server mode)
     //  when called by player entity then it means that we are a local client, otherwise we are a remote client
     if ( !p_playerImpl )
@@ -71,47 +73,51 @@ _loadedPlayerEntity( NULL )
     if ( !s_chatLog )
     {
         std::string filename;
-        if ( CTD::GameState::get()->getMode() == CTD::GameState::Server )
+        if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
             filename = "server-chat.log";
         else
             filename = "client-chat.log";
 
-        s_chatLog = new CTD::Log();
-        s_chatLog->addSink( "chatlog", CTD::Application::get()->getMediaPath() + filename, CTD::Log::L_ERROR );
+        s_chatLog = new yaf3d::Log();
+        s_chatLog->addSink( "chatlog", yaf3d::Application::get()->getMediaPath() + filename, yaf3d::Log::L_ERROR );
         s_chatLog->enableSeverityLevelPrinting( false );
-        *s_chatLog << CTD::Log::LogLevel( CTD::Log::L_INFO );
-        *s_chatLog << "log file created on " << CTD::getTimeStamp() << std::endl;
+        *s_chatLog << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO );
+        *s_chatLog << "yaf3d::log file created on " << yaf3d::getTimeStamp() << std::endl;
         *s_chatLog << "-----------" << std::endl;
     }
+
+    yaf3d::NetworkDevice::get()->unlockObjects();
 }
 
 PlayerNetworking::~PlayerNetworking()
 {
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "player left: " << _p_playerName << endl;
+    // we have to lock creation / deletion of network objects during destruction
+    yaf3d::NetworkDevice::get()->lockObjects();
+
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO ) << "player left: " << _p_playerName << std::endl;
 
     // remove ghost from simulation ( server and client )
-    if ( isRemoteClient() ) 
-    {    
-        // print a goodby message before destroying the player entity
-        if ( CTD::GameState::get()->getMode() != CTD::GameState::Server )
+
+    // we have to delete player associated entities only if we are not unloading the level or quitting
+    if ( ( yaf3d::GameState::get()->getState() != yaf3d::GameState::Leaving ) && ( yaf3d::GameState::get()->getState() != yaf3d::GameState::Quitting ) )
+    {
+        if ( isRemoteClient() )
         {
-            string exitingtext( string( "< " ) + _p_playerName + string ( " says goodbye >" ) );
-            _p_playerImpl->addChatMessage( exitingtext, "" );
+            // PlayerNetworking has created the player implementation, so set its networking and other components to NULL in order to abvoid deleting it also by player's implementation
+            _p_playerImpl->setPlayerNetworking( NULL );
+            _p_playerImpl->setPlayerSound( NULL );
+            _p_playerImpl->setPlayerAnimation( NULL );
+            _p_playerImpl->setPlayerPhysics( NULL );
+
+            // remove all associated entities
+            std::vector< yaf3d::BaseEntity* >::iterator p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
+            for ( ; p_beg != p_end; p_beg++ )
+                yaf3d::EntityManager::get()->deleteEntity( *p_beg );
         }
-
-        // PlayerNetworking has created the player implementation, so set its networking and other components to NULL in order to abvoid deleting it also by player's implementation
-        _p_playerImpl->setPlayerNetworking( NULL );
-        _p_playerImpl->setPlayerSound( NULL );
-        _p_playerImpl->setPlayerAnimation( NULL );
-        _p_playerImpl->setPlayerPhysics( NULL );
-
-        // remove all associated entities
-        std::vector< CTD::BaseEntity* >::iterator p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
-        for ( ; p_beg != p_end; p_beg++ )
-            CTD::EntityManager::get()->deleteEntity( *p_beg );
     }
+    *s_chatLog << yaf3d::getTimeStamp() << ": [" << _p_playerName << "] left" << std::endl;
 
-    *s_chatLog << CTD::getTimeStamp() << ": [" << _p_playerName << "] left the chat room " << std::endl;
+    yaf3d::NetworkDevice::get()->unlockObjects();
 }
 
 void PlayerNetworking::PostObjectCreate()
@@ -123,7 +129,7 @@ void PlayerNetworking::PostObjectCreate()
         createPlayer();
 
         // setup new connected client
-        if ( CTD::GameState::get()->getMode() == CTD::GameState::Server )
+        if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
         {
             // send intialization data
             static tInitializationData init;
@@ -143,36 +149,31 @@ void PlayerNetworking::PostObjectCreate()
 
             ALL_REPLICAS_FUNCTION_CALL( RPC_Initialize( init ) );
         }
-        else
-        {
-            string enteringtext( string( "< " ) + _p_playerName + string ( " says hello >" ) );
-            _p_playerImpl->addChatMessage( enteringtext, "" );   
-        }
     }
 
-    *s_chatLog << CTD::getTimeStamp() << ": [" << _p_playerName << "] entered the chat room " << std::endl;
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << " player created: " << _p_playerName << endl;
+    *s_chatLog << yaf3d::getTimeStamp() << ": [" << _p_playerName << "] entered the chat room " << std::endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO ) << " player created: " << _p_playerName << std::endl;
 }
 
 void PlayerNetworking::createPlayer()
 {
     std::string playerconfig = _p_configFile;
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_INFO ) << "player '" <<  _p_playerName << "' connected" << endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO ) << "player '" <<  _p_playerName << "' connected" << std::endl;
 
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "loading player configuration file: " << playerconfig << endl;            
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "loading player configuration file: " << playerconfig << std::endl;
     std::stringstream postfix;
     static unsigned int postcnt = 0;
     postfix << "_" << postcnt;
     postcnt++;
     // load player related entities
-    if ( !CTD::LevelManager::get()->loadEntities( playerconfig, &_loadedEntities, postfix.str() ) )
+    if ( !yaf3d::LevelManager::get()->loadEntities( playerconfig, &_loadedEntities, postfix.str() ) )
     {
-        CTD::log << CTD::Log::LogLevel( CTD::Log::L_ERROR ) << "cannot find player configuration file: " << playerconfig << endl;            
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "cannot find player configuration file: " << playerconfig << std::endl;            
         return;
     }
 
     // search for player entity and set it up
-    std::vector< CTD::BaseEntity* >::iterator p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
+    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
     {
         for ( ; p_beg != p_end; p_beg++ )
         {
@@ -181,16 +182,16 @@ void PlayerNetworking::createPlayer()
         }
         if ( p_beg == p_end )
         {
-            CTD::log << CTD::Log::LogLevel( CTD::Log::L_ERROR ) << "cannot find player entity in file: " << playerconfig << endl;            
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "cannot find player entity in file: " << playerconfig << std::endl;            
             return;
         }
-        _loadedPlayerEntity = static_cast< CTD::EnPlayer* >( *p_beg );
+        _loadedPlayerEntity = static_cast< vrc::EnPlayer* >( *p_beg );
 
         // for a remote client we must setup the player implementation before initializing
-        if ( CTD::GameState::get()->getMode() == CTD::GameState::Server )
-            _p_playerImpl = new CTD::PlayerImplServer( _loadedPlayerEntity );
+        if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
+            _p_playerImpl = new vrc::PlayerImplServer( _loadedPlayerEntity );
         else
-            _p_playerImpl = new CTD::PlayerImplClient( _loadedPlayerEntity );
+            _p_playerImpl = new vrc::PlayerImplClient( _loadedPlayerEntity );
 
         _p_playerImpl->setPlayerNetworking( this );
         _p_playerImpl->initialize();
@@ -200,7 +201,7 @@ void PlayerNetworking::createPlayer()
     }
 
     // begin initialization of player and its components
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "initializing new player instance ... " << endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "initializing new player instance ... " << std::endl;
     {
         p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
         for ( ; p_beg != p_end; p_beg++ )
@@ -210,7 +211,7 @@ void PlayerNetworking::createPlayer()
     }
 
     // now begin post-initialization of player and its components
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "post-initializing new player ..." << endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "post-initializing new player ..." << std::endl;
     {
         p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
         for ( ; p_beg != p_end; p_beg++ )
@@ -221,40 +222,24 @@ void PlayerNetworking::createPlayer()
     _loadedPlayerEntity->setPlayerName( _p_playerName );
 }
 
-void PlayerNetworking::initialize( const osg::Vec3f& pos, const string& playerName, const string& cfgFile )
+void PlayerNetworking::initialize( const osg::Vec3f& pos, const std::string& playerName, const std::string& cfgFile )
 {
     _positionX = pos._v[ 0 ]; 
     _positionY = pos._v[ 1 ];
     _positionZ = pos._v[ 2 ];
     strcpy( _p_playerName, playerName.c_str() );
     strcpy( _p_configFile, cfgFile.c_str() );
-}
 
-void PlayerNetworking::putChatText( const CEGUI::String& text )
-{
-    static tChatMsg s_textBuffer;
-    memset( s_textBuffer._text, 0, sizeof( tChatMsg ) ); // zero out the text buffer
-    text.copy( s_textBuffer._text );
-    ALL_REPLICAS_FUNCTION_CALL( RPC_AddChatText( s_textBuffer ) );
-}
-
-void PlayerNetworking::RPC_AddChatText( tChatMsg chatMsg )
-{
-    chatMsg._text[ 255 ] = 0; // limit text length
-    // server directs all messages into a log file!
-    if ( CTD::GameState::get()->getMode() == CTD::GameState::Server ) 
-        getChatLog() << chatMsg._text << endl;
-    else
-    {
-        CEGUI::String msg( chatMsg._text );
-        _p_playerImpl->addChatMessage( msg, _p_playerName );
-    }
+    ContinuityBreak( _positionX, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
+    ContinuityBreak( _positionY, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
+    ContinuityBreak( _positionZ, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
+    ContinuityBreak( _yaw, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
 }
 
 void PlayerNetworking::RPC_Initialize( tInitializationData initData )
 {
-    // server directs all messages into a log file!
-    assert( ( CTD::GameState::get()->getMode() == CTD::GameState::Client ) && "this RPC must be called only for clients!" );
+    // server directs all messages into a yaf3d::log file!
+    assert( ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client ) && "this RPC must be called only for clients!" );
 
     // init player position set by server ( it's the job of server to init the player position and rotation )
     _p_playerImpl->setPlayerPosition( osg::Vec3f( initData._posX, initData._posY, initData._posZ ) );
@@ -265,6 +250,11 @@ void PlayerNetworking::RPC_Initialize( tInitializationData initData )
     mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
     mat.setTrans( _p_playerImpl->getPlayerPosition() ); 
     _p_playerImpl->getPlayerPhysics()->setTransformation( mat );
+
+    _positionX = initData._posX;
+    _positionY = initData._posY;
+    _positionZ = initData._posZ;
+    _yaw       = initData._rotZ;
 }
 
 void PlayerNetworking::update()

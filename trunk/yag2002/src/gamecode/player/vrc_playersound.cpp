@@ -30,11 +30,11 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_playersound.h"
-#include "ctd_playerimpl.h"
+#include <vrc_main.h>
+#include "vrc_playersound.h"
+#include "vrc_playerimpl.h"
 
-namespace CTD
+namespace vrc
 {
 
 // internal material names
@@ -43,17 +43,58 @@ namespace CTD
 #define SND_METALL      "met"
 #define SND_GRASS       "grs"
 
+
+class PlayerSoundIH : public yaf3d::GenericInputHandler< EnPlayerSound >
+{
+    public:
+
+        explicit                            PlayerSoundIH( EnPlayerSound* p_sound ) :
+                                             yaf3d::GenericInputHandler< EnPlayerSound >( p_sound )
+                                            {
+                                            }
+                                            
+        virtual                             ~PlayerSoundIH() {}
+
+        //! Handle input events.
+        bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+                                            {
+                                                if ( ea.getEventType() != osgGA::GUIEventAdapter::FRAME )
+                                                    return false;
+
+                                                // calculate the attenuation depending on listener and sound source postion
+                                                float x, y, z;
+                                                osgAL::SoundManager::instance()->getListener()->getPosition( x, y, z );
+                                                osg::Vec3f listenerpos( x, y, z );
+                                                float      distance = ( listenerpos - getUserObject()->getSoundPosition() ).length();
+                                                float      soundradius = getUserObject()->getSoundRadius();
+                                                if ( distance > soundradius )
+                                                {
+                                                    getUserObject()->setDamping( 0.0f );
+                                                }
+                                                else
+                                                {
+                                                    float damping = std::max( 0.0f, 1.0f - ( distance / soundradius ) );
+                                                    getUserObject()->setDamping( damping );
+                                                }
+
+                                                return false;
+                                            }
+};
+
+
 //! Implement and register the player animation entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( PlayerSoundEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( PlayerSoundEntityFactory );
 
 EnPlayerSound::EnPlayerSound() :
 _volume( 0.8f ),
-_referenceDist( 10.0f ),
+_radius( 10.0f ),
+_offset( osg::Vec3f( 0.0f, 0.0f, -1.0f ) ),
 _p_playerImpl( NULL )
 { 
     // register attributes
     getAttributeManager().addAttribute( "resourceDir"         , _soundFileDir  );
-    getAttributeManager().addAttribute( "refDistance"         , _referenceDist );
+    getAttributeManager().addAttribute( "radius"              , _radius        );
+    getAttributeManager().addAttribute( "positionOffset"      , _offset        );
     getAttributeManager().addAttribute( "volume"              , _volume        );
     getAttributeManager().addAttribute( "soundWalkGround"     , _walkGround    );
     getAttributeManager().addAttribute( "soundWalkWood"       , _walkWood      );
@@ -63,6 +104,24 @@ _p_playerImpl( NULL )
 
 EnPlayerSound::~EnPlayerSound()
 {
+    if ( _p_soundUpdater.valid() )
+        _p_soundUpdater->destroyHandler();
+}
+
+void EnPlayerSound::handleNotification( const yaf3d::EntityNotification& notification )
+{
+    // handle attribute changing
+    switch( notification.getId() )
+    {
+        case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
+        {
+            _volume = std::max( std::min( _volume, 1.0f ), 0.0f );
+        }
+        break;
+
+        default:
+            ;
+    }
 }
 
 void EnPlayerSound::setPlayer( BasePlayerImplementation* p_player )
@@ -79,7 +138,7 @@ void EnPlayerSound::postInitialize()
     osgAL::SoundState* p_soundState;
 
     // set file search path for sound resources
-    osgAL::SoundManager::instance()->addFilePath( Application::get()->getMediaPath() + _soundFileDir );
+    osgAL::SoundManager::instance()->addFilePath( yaf3d::Application::get()->getMediaPath() + _soundFileDir );
 
     p_soundState = createSound( _walkGround );
     if ( p_soundState )
@@ -111,6 +170,12 @@ void EnPlayerSound::postInitialize()
 
     // add the sound group into player node
     _p_playerImpl->getPlayerEntity()->appendTransformationNode( _p_soundGroup.get() );
+
+    // create the sound updater instance now
+    _p_soundUpdater = new PlayerSoundIH( this );
+
+    // register entity for getting notifications
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 osgAL::SoundState* EnPlayerSound::createSound( const std::string& filename )
@@ -126,11 +191,11 @@ osgAL::SoundState* EnPlayerSound::createSound( const std::string& filename )
     } 
     catch ( const openalpp::Error& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "error loading sound file '" << filename << "' in '" << getInstanceName() << "'" << std::endl;
-        log << Log::LogLevel( Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "error loading sound file '" << filename << "' in '" << getInstanceName() << "'" << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
         return NULL;
     }
-     
+
     // create a named sound state.
     // note: we have to make the state name unique as otherwise new need unique sound states for every entity instance
     std::stringstream uniquename;
@@ -149,13 +214,13 @@ osgAL::SoundState* EnPlayerSound::createSound( const std::string& filename )
     // Allocate a hardware soundsource to this soundstate (lower priority of 5)
     p_soundState->allocateSource( 5, false );
 
-    p_soundState->setReferenceDistance( _referenceDist );
-    p_soundState->setRolloffFactor( 4.0f );
+    // we need ambient sound, we calculate the attenuation ourself
+    p_soundState->setAmbient( true );
 
     // set stopping method
     p_soundState->setStopMethod( openalpp::Stopped );
-
-    p_soundState->setPosition( osg::Vec3f( 0, 0, 0 ) ); // relative to player
+    
+    p_soundState->apply();
 
     // Create a sound node and attach the soundstate to it.
     p_soundNode = new osgAL::SoundNode;
@@ -218,4 +283,22 @@ void EnPlayerSound::stopOtherSounds( const osgAL::SoundState* p_state )
             p_beg->second->setPlay( false );
 }
 
-} // namespace CTD
+float EnPlayerSound::getSoundRadius() const
+{
+    return _radius;
+}
+
+void EnPlayerSound::setDamping( float damping )
+{
+    assert( damping >= 0.0f && "minimal value is 0.0" );
+    std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_beg = _soundStates.begin(), p_end = _soundStates.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        p_beg->second->setGain( damping * _volume );
+}
+
+osg::Vec3f EnPlayerSound::getSoundPosition() const
+{
+    return _p_playerImpl->getPlayerPosition() + _offset;
+}
+
+} // namespace vrc

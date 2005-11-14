@@ -36,20 +36,21 @@
  #
  ################################################################*/
 
-#ifndef _CTD_PLAYERSOUND_H_
-#define _CTD_PLAYERSOUND_H_
+#ifndef _VRC_PLAYERSOUND_H_
+#define _VRC_PLAYERSOUND_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_PLSOUND   "PlayerSound"
 
+class PlayerSoundIH;
 class BasePlayerImplementation;
 
 //! Entity for player sounds
-class EnPlayerSound  : public BaseEntity
+class EnPlayerSound  : public yaf3d::BaseEntity
 {
 
     public:
@@ -61,15 +62,10 @@ class EnPlayerSound  : public BaseEntity
         //! This entity does not need a transform node, which would be created by level manager on loading
         const bool                                  isTransformable() const { return false; }
 
-        /**
-        * Set player association, player must call this in post-initialize phase
-        * \param p_player                           Player instance
-        */
+        //! Set player association, player must call this in post-initialize phase
         void                                        setPlayer( BasePlayerImplementation* p_player );
 
-        /**
-        * Post-Initializing function
-        */
+        //! Post-Initializing function
         void                                        postInitialize();
 
         //! Play walk on ground sound
@@ -87,7 +83,19 @@ class EnPlayerSound  : public BaseEntity
         //! Stop any sound
         void                                        stopPlayingAll();
 
+        //! Set the volume damping factor
+        void                                        setDamping( float damping );
+
+        //! Get sound radius
+        float                                       getSoundRadius() const;
+
+        //! Get the sound source position
+        osg::Vec3f                                  getSoundPosition() const;
+
     protected:
+
+        // Handler system notifications
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Helper method; stops all other sounds except given one ( p_state )
         void                                        stopOtherSounds( const osgAL::SoundState* p_state );
@@ -98,11 +106,14 @@ class EnPlayerSound  : public BaseEntity
         //! Resource directory for searching for sound files
         std::string                                 _soundFileDir;
 
+        //! Sound's position offset relative to player position
+        osg::Vec3f                                  _offset;
+
         //! Sound volume
         float                                       _volume;
 
-        //! Reference distance
-        float                                       _referenceDist;
+        //! Max distribution radious
+        float                                       _radius;
 
         //! Walk sound file, on ground
         std::string                                 _walkGround;
@@ -128,14 +139,16 @@ class EnPlayerSound  : public BaseEntity
         osg::ref_ptr< osg::Group >                  _p_soundGroup;
 
         BasePlayerImplementation*                   _p_playerImpl;
+
+        osg::ref_ptr< PlayerSoundIH >               _p_soundUpdater;
 };
 
 //! Entity type definition used for type registry
-class PlayerSoundEntityFactory : public BaseEntityFactory
+class PlayerSoundEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     PlayerSoundEntityFactory() :
-                                                     BaseEntityFactory( ENTITY_NAME_PLSOUND, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PLSOUND, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~PlayerSoundEntityFactory() {}
@@ -143,6 +156,6 @@ class PlayerSoundEntityFactory : public BaseEntityFactory
         Macro_CreateEntity( EnPlayerSound );
 };
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_PLAYERSOUND_H_
+#endif // _VRC_PLAYERSOUND_H_

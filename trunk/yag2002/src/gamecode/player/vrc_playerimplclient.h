@@ -34,19 +34,19 @@
  #
  ################################################################*/
 
-#ifndef _CTD_PLAYERIMPLCLIENT_H_
-#define _CTD_PLAYERIMPLCLIENT_H_
+#ifndef _VRC_PLAYERIMPLCLIENT_H_
+#define _VRC_PLAYERIMPLCLIENT_H_
 
-#include <ctd_main.h>
-#include "ctd_playerimpl.h"
+#include <vrc_main.h>
+#include "vrc_playerimpl.h"
 
-namespace CTD
+namespace vrc
 {
 
 template< class PlayerImplT > class PlayerIHCharacterCameraCtrl;
 
-//! Player implementation for game mode Client ( see framework class GameState )
-class PlayerImplClient : public BasePlayerImplementation
+//! Player implementation for game mode Client ( see framework class yaf3d::GameState )
+class PlayerImplClient : public BasePlayerImplementation, public yaf3d::SessionNotifyCallback
 {
     public:
 
@@ -65,12 +65,18 @@ class PlayerImplClient : public BasePlayerImplementation
         void                                        update( float deltaTime );
 
         //! Implementation's notification callback
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
+
+        //! Networking callback for getting notified when server dicsonnection occures because of network problems or server shutdown
+        void                                        onServerDisconnect( int sessionID );
 
     protected:
 
         //! Get the configuration settings
         void                                        getConfiguration();
+
+        //! Indicated remote / local client
+        bool                                        _isRemoteClient;
 
         //! Input handler
         PlayerIHCharacterCameraCtrl< PlayerImplClient >* _p_inputHandler;
@@ -78,6 +84,6 @@ class PlayerImplClient : public BasePlayerImplementation
     friend class PlayerIHCharacterCameraCtrl< PlayerImplClient >;
 };
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_PLAYERIMPLCLIENT_H_
+#endif // _VRC_PLAYERIMPLCLIENT_H_

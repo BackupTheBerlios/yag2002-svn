@@ -28,19 +28,18 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_playerimplstandalone.h"
-#include "ctd_player.h"
-#include "ctd_chatgui.h"
-#include "ctd_playerphysics.h"
-#include "ctd_playeranim.h"
-#include "ctd_playersound.h"
-#include "ctd_inputhandler.h"
-#include "../visuals/ctd_camera.h"
+#include <vrc_main.h>
+#include <vrc_gameutils.h>
+#include "vrc_playerimplstandalone.h"
+#include "vrc_player.h"
+#include "chat/vrc_chatmgr.h"
+#include "vrc_playerphysics.h"
+#include "vrc_playeranim.h"
+#include "vrc_playersound.h"
+#include "vrc_inputhandler.h"
+#include "../visuals/vrc_camera.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 PlayerImplStandalone::PlayerImplStandalone( EnPlayer* player ) :
@@ -53,16 +52,18 @@ PlayerImplStandalone::~PlayerImplStandalone()
 {
     // destroy input handler
     _p_inputHandler->destroyHandler();
+    // destroy the chat manager
+    destroyChatManager();
 }
 
-void PlayerImplStandalone::handleNotification( const EntityNotification& notification )
+void PlayerImplStandalone::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle some notifications
     switch( notification.getId() )
     {
-        case CTD_NOTIFY_MENU_ENTER:
+        case YAF3D_NOTIFY_MENU_ENTER:
 
-            _p_chatGui->show( false );
+            getChatManager()->show( false );
             if ( _p_inputHandler )
                 _p_inputHandler->setMenuEnabled( true );
             
@@ -80,9 +81,9 @@ void PlayerImplStandalone::handleNotification( const EntityNotification& notific
 
             break;
 
-        case CTD_NOTIFY_MENU_LEAVE:
+        case YAF3D_NOTIFY_MENU_LEAVE:
         {
-            _p_chatGui->show( true );
+            getChatManager()->show( true );
 
             if ( _p_inputHandler )
             {
@@ -97,13 +98,7 @@ void PlayerImplStandalone::handleNotification( const EntityNotification& notific
         }
         break;
 
-        case CTD_NOTIFY_UNLOAD_LEVEL:
-        {
-            // deleting the gui object must happen at last as goodby messages must be sent out
-            PlayerChatGui* p_chatGui = PlayerChatGui::get();
-            if ( p_chatGui )
-                delete p_chatGui;
-        }
+        case YAF3D_NOTIFY_UNLOAD_LEVEL:
         break;
 
         default:
@@ -125,43 +120,43 @@ void PlayerImplStandalone::initialize()
 
 void PlayerImplStandalone::postInitialize()
 {
-    log << Log::LogLevel( Log::L_INFO ) << "  setup player implementation Standalone ..." << endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO ) << "  setup player implementation Standalone ..." << std::endl;
 
     // attach camera entity
-    log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for camera entity '" << PLAYER_CAMERA_ENTITIY_NAME << "'..." << endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "   - searching for camera entity '" << PLAYER_CAMERA_ENTITIY_NAME << "'..." << std::endl;
     // get camera entity
-    _p_camera = dynamic_cast< EnCamera* >( EntityManager::get()->findEntity( ENTITY_NAME_CAMERA, PLAYER_CAMERA_ENTITIY_NAME ) );
+    _p_camera = dynamic_cast< EnCamera* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CAMERA, PLAYER_CAMERA_ENTITIY_NAME ) );
     if ( _p_camera )
     {
-        log << Log::LogLevel( Log::L_DEBUG ) << "   -  camera entity successfully attached" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "   -  camera entity successfully attached" << std::endl;
     }
     else
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "   could not attach player camera entity" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "   could not attach player camera entity" << std::endl;
     }
 
     // attach physics entity
-    log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for physics entity '" << _playerAttributes._physicsEntity << "' ..." << endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "   - searching for physics entity '" << _playerAttributes._physicsEntity << "' ..." << std::endl;
     // find and attach physics component
-    _p_playerPhysics = dynamic_cast< EnPlayerPhysics* >( EntityManager::get()->findEntity( ENTITY_NAME_PLPHYS, _playerAttributes._physicsEntity ) );
+    _p_playerPhysics = dynamic_cast< EnPlayerPhysics* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_PLPHYS, _playerAttributes._physicsEntity ) );
     if ( _p_playerPhysics )
     {
         _p_playerPhysics->setPlayer( this );
-        log << Log::LogLevel( Log::L_DEBUG ) << "   -  physics entity successfully attached" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "   -  physics entity successfully attached" << std::endl;
     }
     else
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "   could not attach player physics entity" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "   could not attach player physics entity" << std::endl;
     }
 
     // attach animation entity
-    log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for animation entity '" << _playerAttributes._animationEntity << "' ..." << endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "   - searching for animation entity '" << _playerAttributes._animationEntity << "' ..." << std::endl;
     // find and attach animation component
-    _p_playerAnimation = dynamic_cast< EnPlayerAnimation* >( EntityManager::get()->findEntity( ENTITY_NAME_PLANIM, _playerAttributes._animationEntity ) );
+    _p_playerAnimation = dynamic_cast< EnPlayerAnimation* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_PLANIM, _playerAttributes._animationEntity ) );
     if ( _p_playerAnimation )
     {
         _p_playerAnimation->setPlayer( this );
-        log << Log::LogLevel( Log::L_DEBUG ) << "   -  animation entity successfully attached" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "   -  animation entity successfully attached" << std::endl;
 
         if ( _cameraMode == Ego ) // in ego mode we won't render our character
         {
@@ -169,33 +164,36 @@ void PlayerImplStandalone::postInitialize()
         }
         else // if in spheric mode disable the mouse pointer
         {
-            GuiManager::get()->showMousePointer( false );
+            gameutils::GuiUtils::get()->showMousePointer( false );
         }
     }
     else
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "   could not attach player animation entity" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "   could not attach player animation entity" << std::endl;
     }
 
     // attach sound entity
-    log << Log::LogLevel( Log::L_DEBUG ) << "   - searching for sound entity '" << _playerAttributes._soundEntity << "' ..." << endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "   - searching for sound entity '" << _playerAttributes._soundEntity << "' ..." << std::endl;
     // find and attach sound component, tollerate missing sound for now
-    _p_playerSound = dynamic_cast< EnPlayerSound* >( EntityManager::get()->findEntity( ENTITY_NAME_PLSOUND, _playerAttributes._soundEntity ) );
+    _p_playerSound = dynamic_cast< EnPlayerSound* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_PLSOUND, _playerAttributes._soundEntity ) );
     if ( !_p_playerSound )
-        log << Log::LogLevel( Log::L_ERROR ) << "   could not find sound entity '" << _playerAttributes._soundEntity << "' of type PlayerSound. player sound deactivated" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "   could not find sound entity '" << _playerAttributes._soundEntity << "' of type PlayerSound. player sound deactivated" << std::endl;
     else
     {
         _p_playerSound->setPlayer( this );
-        log << Log::LogLevel( Log::L_DEBUG ) << "   -  sound entity successfully attached" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "   -  sound entity successfully attached" << std::endl;
     }
 
     // setup camera mode
     setCameraMode( _cameraMode );
 
-    log << Log::LogLevel( Log::L_INFO ) << "  player implementation successfully initialized" << endl;
+    // create the chat manager
+    if ( !createChatManager() )
+    {
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "   -  could not create chat system" << std::endl;
+    }
 
-    _p_chatGui = new PlayerChatGui;
-    _p_chatGui->initialize( this, _playerAttributes._chatGuiConfig );
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO ) << "  player implementation successfully initialized" << std::endl;
 
     // create only the input handler when animation and physics are attached
     if ( _p_playerAnimation && _p_playerPhysics )
@@ -212,38 +210,41 @@ void PlayerImplStandalone::postInitialize()
 void PlayerImplStandalone::getConfiguration()
 {
     std::string playername;
-    Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, playername );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, playername );
     _p_player->setPlayerName( playername );
 
     // setup key bindings
     std::string keyname;
-    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_FORWARD, keyname );
-    _p_inputHandler->_keyCodeMoveForward = KeyMap::get()->getCode( keyname );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_MOVE_FORWARD, keyname );
+    _p_inputHandler->_keyCodeMoveForward = yaf3d::KeyMap::get()->getCode( keyname );
 
-    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_BACKWARD, keyname );
-    _p_inputHandler->_keyCodeMoveBackward = KeyMap::get()->getCode( keyname );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_MOVE_BACKWARD, keyname );
+    _p_inputHandler->_keyCodeMoveBackward = yaf3d::KeyMap::get()->getCode( keyname );
 
-    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_LEFT, keyname );
-    _p_inputHandler->_keyCodeMoveLeft = KeyMap::get()->getCode( keyname );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_MOVE_LEFT, keyname );
+    _p_inputHandler->_keyCodeMoveLeft = yaf3d::KeyMap::get()->getCode( keyname );
 
-    Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_RIGHT, keyname );
-    _p_inputHandler->_keyCodeMoveRight = KeyMap::get()->getCode( keyname );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_MOVE_RIGHT, keyname );
+    _p_inputHandler->_keyCodeMoveRight = yaf3d::KeyMap::get()->getCode( keyname );
 
-    Configuration::get()->getSettingValue( CTD_GS_KEY_JUMP, keyname );
-    _p_inputHandler->_keyCodeJump = KeyMap::get()->getCode( keyname );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_JUMP, keyname );
+    _p_inputHandler->_keyCodeJump = yaf3d::KeyMap::get()->getCode( keyname );
 
-    Configuration::get()->getSettingValue( CTD_GS_KEY_CAMERAMODE, keyname );
-    _p_inputHandler->_keyCodeCameraMode = KeyMap::get()->getCode( keyname );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_CAMERAMODE, keyname );
+    _p_inputHandler->_keyCodeCameraMode = yaf3d::KeyMap::get()->getCode( keyname );
 
-    Configuration::get()->getSettingValue( CTD_GS_KEY_CHATMODE, keyname );
-    _p_inputHandler->_keyCodeChatMode = KeyMap::get()->getCode( keyname );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_CHATMODE, keyname );
+    _p_inputHandler->_keyCodeChatMode = yaf3d::KeyMap::get()->getCode( keyname );
 
-    Configuration::get()->getSettingValue( CTD_GS_INVERTMOUSE, _p_inputHandler->_invertedMouse );
-    Configuration::get()->getSettingValue( CTD_GS_MOUSESENS, _p_inputHandler->_mouseSensitivity );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_INVERTMOUSE, _p_inputHandler->_invertedMouse );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_MOUSESENS, _p_inputHandler->_mouseSensitivity );
 }
 
 void PlayerImplStandalone::update( float deltaTime )
 {
+    // first update the physics entity
+    getPlayerPhysics()->updateEntity( deltaTime );
+
     // update player's actual position and rotation once per frame
     getPlayerEntity()->setPosition( _currentPos ); 
     getPlayerEntity()->setRotation( _currentRot ); 
@@ -252,7 +253,7 @@ void PlayerImplStandalone::update( float deltaTime )
     if ( _p_camera )
         _p_camera->setCameraTranslation( getPlayerPosition(), getPlayerRotation() );
 
-    _p_chatGui->update( deltaTime );
+    getChatManager()->update( deltaTime );
 }
 
-} // namespace CTD
+} // namespace vrc

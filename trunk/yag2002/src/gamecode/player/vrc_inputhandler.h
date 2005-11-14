@@ -36,18 +36,17 @@
  #
  ################################################################*/
 
-#ifndef _CTD_INPUTHANDLER_H_
-#define _CTD_INPUTHANDLER_H_
+#ifndef _VRC_INPUTHANDLER_H_
+#define _VRC_INPUTHANDLER_H_
 
-#include <ctd_main.h>
-#include "ctd_player.h"
-#include "ctd_playeranim.h"
-#include "ctd_playersound.h"
-#include "ctd_playerphysics.h"
-#include "ctd_chatgui.h"
-#include "../visuals/ctd_camera.h"
+#include <vrc_main.h>
+#include "vrc_player.h"
+#include "vrc_playeranim.h"
+#include "vrc_playersound.h"
+#include "vrc_playerphysics.h"
+#include "../visuals/vrc_camera.h"
 
-namespace CTD
+namespace vrc
 {
 
 // Pitch limit
@@ -61,7 +60,7 @@ namespace CTD
 
 //! Input handler class for player, it controls player character and camera
 template< class PlayerImplT >
-class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
+class PlayerIHCharacterCameraCtrl : public yaf3d::GenericInputHandler< PlayerImplT >
 {
     public:
 
@@ -111,7 +110,7 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
                                                 {
                                                     // get the current screen size
                                                     unsigned int width, height;
-                                                    Application::get()->getScreenSize( width, height );
+                                                    yaf3d::Application::get()->getScreenSize( width, height );
                                                     _screenSizeX = float( width );
                                                     _screenSizeY = float( height );
 
@@ -125,13 +124,13 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
                                                 }
 
                 //! Stores the current pitch / yaw values, used for camera mode switching
-                void                            pushPitchYaw()
+                void                            pushbackPitchYaw()
                                                 {
                                                     _pyQueue.push( std::make_pair( _pitch, _yaw ) );
                                                 }
 
                 //! Restores pitch / yaw values, used for camera mode switching
-                void                            popPitchYaw()
+                void                            popfrontPitchYaw()
                                                 {
                                                     _pitch = _pyQueue.front().first;
                                                     _yaw   = _pyQueue.front().second;
@@ -190,8 +189,8 @@ class PlayerIHCharacterCameraCtrl : public GenericInputHandler< PlayerImplT >
         float                               _mouseSensitivity;
 };
 
-#include "ctd_inputhandler.inl"
+#include "vrc_inputhandler.inl"
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_INPUTHANDLER_H_
+#endif // _VRC_INPUTHANDLER_H_

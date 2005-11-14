@@ -31,29 +31,26 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_player.h"
-#include "ctd_playerimplstandalone.h"
-#include "ctd_playerimplserver.h"
-#include "ctd_playerimplclient.h"
-#include "ctd_spawnpoint.h"
-#include "ctd_chatgui.h"
+#include <vrc_main.h>
+#include <vrc_gameutils.h>
+#include "vrc_player.h"
+#include "vrc_playerimplstandalone.h"
+#include "vrc_playerimplserver.h"
+#include "vrc_playerimplclient.h"
+#include "vrc_spawnpoint.h"
 
-using namespace osg;
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the player entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( PlayerEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( PlayerEntityFactory );
     
 EnPlayer::EnPlayer() :
-_gameMode( GameState::get()->getMode() ),
+_gameMode( yaf3d::GameState::get()->getMode() ),
 _p_playerImpl( NULL ),
 _deltaTime( 0.03f )
 {
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "creating player entity"  << getInstanceName() << ", time: " << CTD::getTimeStamp() << endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "creating player entity"  << getInstanceName() << ", time: " << yaf3d::getTimeStamp() << std::endl;
 
     // assign some defaults
     _attributeContainer._chatGuiConfig = "gui/chat.xml";
@@ -73,31 +70,40 @@ _deltaTime( 0.03f )
 
 EnPlayer::~EnPlayer()
 {
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "destroying player entity '"  << getInstanceName() << "', time: " << CTD::getTimeStamp() << endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "destroying player entity '"  << getInstanceName() << "', time: " << yaf3d::getTimeStamp() << std::endl;
 
     // send out notification to registered entities
-    std::vector< BaseEntity* >::iterator p_beg = _deletionNotifications.begin(), p_end = _deletionNotifications.end();
-    EntityNotification ennotify( CTD_NOTIFY_PLAYER_DESTRUCTION );
+    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _deletionNotifications.begin(), p_end = _deletionNotifications.end();
+    yaf3d::EntityNotification ennotify( YAF3D_NOTIFY_PLAYER_DESTRUCTION );
     for ( ; p_beg != p_end; p_beg++ )
-        EntityManager::get()->sendNotification( ennotify, *p_beg );
+        yaf3d::EntityManager::get()->sendNotification( ennotify, *p_beg );
     
     if ( _p_playerImpl )
         delete _p_playerImpl;
 }
 
-void EnPlayer::handleNotification( const EntityNotification& notification )
+void EnPlayer::handleNotification( const yaf3d::EntityNotification& notification )
 {
     switch( notification.getId() )
     {
-        case CTD_NOTIFY_SHUTDOWN:
+        case YAF3D_NOTIFY_SHUTDOWN:
         {
             // send out deletion notification to registered entities
-            std::vector< BaseEntity* >::iterator p_beg = _deletionNotifications.begin(), p_end = _deletionNotifications.end();
-            EntityNotification ennotify( CTD_NOTIFY_PLAYER_DESTRUCTION );
+            std::vector< yaf3d::BaseEntity* >::iterator p_beg = _deletionNotifications.begin(), p_end = _deletionNotifications.end();
+            yaf3d::EntityNotification ennotify( YAF3D_NOTIFY_PLAYER_DESTRUCTION );
             for ( ; p_beg != p_end; p_beg++ )
-                EntityManager::get()->sendNotification( ennotify, *p_beg );
+                yaf3d::EntityManager::get()->sendNotification( ennotify, *p_beg );
 
             _deletionNotifications.clear();
+        }
+        break;
+
+        //! Refresh the player name, it has been changed ( e.g. by chat system )
+        case PLAYER_NOTIFY_NAME_CHANGED:
+        {
+            std::string playername;
+            yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, playername );
+            setPlayerName( playername );
         }
         break;
 
@@ -109,10 +115,10 @@ void EnPlayer::handleNotification( const EntityNotification& notification )
         _p_playerImpl->handleNotification( notification );
 }
 
-void EnPlayer::registerNotifyDeletion( BaseEntity* p_entity )
+void EnPlayer::registerNotifyDeletion( yaf3d::BaseEntity* p_entity )
 {
     // check if the entity is already registered
-    std::vector< BaseEntity* >::iterator p_beg = _deletionNotifications.begin(), p_end = _deletionNotifications.end();
+    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _deletionNotifications.begin(), p_end = _deletionNotifications.end();
     for ( ; p_beg != p_end; p_beg++ )
         if ( *p_beg == p_entity )
             break;
@@ -129,7 +135,7 @@ void EnPlayer::initialize()
     // build and init the player implementation
     switch ( _gameMode )
     {
-        case GameState::Standalone:
+        case yaf3d::GameState::Standalone:
         {
             spawn();
             _p_playerImpl = new PlayerImplStandalone( this );
@@ -137,7 +143,7 @@ void EnPlayer::initialize()
         }
         break;
 
-        case GameState::Client:
+        case yaf3d::GameState::Client:
         {
             // the client can be local or remote. if it is remote then the player entity has been created
             //  via player networking component; for remote clients _p_playerImpl ist aready created when we are a this point
@@ -149,7 +155,7 @@ void EnPlayer::initialize()
         }
         break;
 
-        case GameState::Server:
+        case yaf3d::GameState::Server:
             // player entity is created in networking component for server
             spawn();
             break;
@@ -158,20 +164,20 @@ void EnPlayer::initialize()
             assert( NULL && "unsupported game mode" );
     }
 
-    EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
+    yaf3d::EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 }
 
 void EnPlayer::postInitialize()
 {
     if ( !_p_playerImpl )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "player implementation does not exist! are you loading the player entity in right game mode?" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "player implementation does not exist! are you loading the player entity in right game mode?" << std::endl;
         return;
     }
 
     _p_playerImpl->postInitialize();
     // register entity in order to get updated per simulation step.
-    EntityManager::get()->registerUpdate( this, true );
+    yaf3d::EntityManager::get()->registerUpdate( this, true );
 }
 
 void EnPlayer::spawn()
@@ -180,12 +186,12 @@ void EnPlayer::spawn()
     osg::Vec3f position;
 
     // check if the level has spawn points
-    EnSpawnPoint* p_spwanEntity = static_cast< EnSpawnPoint* >( EntityManager::get()->findEntity( ENTITY_NAME_SPAWNPOINT ) );
+    EnSpawnPoint* p_spwanEntity = static_cast< EnSpawnPoint* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_SPAWNPOINT ) );
     if ( p_spwanEntity )
     {
         if ( !EnSpawnPoint::getNextSpawnPoint( position, rotation ) )
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "EnPlayer: all spawn points are occupied, taking default position and rotation!" << endl;
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnPlayer: all spawn points are occupied, taking default position and rotation!" << std::endl;
         }
     }
     else
@@ -204,4 +210,4 @@ void EnPlayer::updateEntity( float deltaTime )
     _p_playerImpl->update( deltaTime );
 }
 
-} // namespace CTD
+} // namespace vrc

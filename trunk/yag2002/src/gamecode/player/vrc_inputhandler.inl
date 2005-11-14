@@ -31,7 +31,7 @@
 
 template< class PlayerImplT >
 PlayerIHCharacterCameraCtrl< PlayerImplT >::PlayerIHCharacterCameraCtrl( PlayerImplT* p_player, EnPlayer* p_playerentity ) : 
-GenericInputHandler< PlayerImplT >( p_player ),
+yaf3d::GenericInputHandler< PlayerImplT >( p_player ),
 _p_mouseData( NULL ),
 _p_playerEntity( p_playerentity ),
 _attributeContainer( p_player->getPlayerAttributes() ),
@@ -54,7 +54,7 @@ _invertedMouse( false ),
 _mouseSensitivity( 1.0f )
 {
     // initialize the mouse data considering initial yaw
-    _p_mouseData = new CTD::PlayerIHCharacterCameraCtrl< PlayerImplT >::MouseData( 0.0f, getPlayerImpl()->_rotZ );
+    _p_mouseData = new vrc::PlayerIHCharacterCameraCtrl< PlayerImplT >::MouseData( 0.0f, getPlayerImpl()->_rotZ );
     getPlayerImpl()->setCameraPitchYaw( 0, getPlayerImpl()->_rotZ );
 }
 
@@ -105,20 +105,10 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 _chatSwitch = true;
 
                 // let the chat control know that we are in edit mode now
-                getPlayerImpl()->_p_chatGui->setEditMode( s_toggleChatMode );
-
-                // show / hide pointer depending on chat mode and camera view mode
-                if ( s_toggleChatMode )
-                        GuiManager::get()->showMousePointer( true );
-                else
-                    if ( getPlayerImpl()->_cameraMode == BasePlayerImplementation::Ego )
-                        GuiManager::get()->showMousePointer( true );
-                    else
-                        GuiManager::get()->showMousePointer( false );
+                getPlayerImpl()->getChatManager()->activateBox( s_toggleChatMode );
 
                 // stop player and sound
                 getPlayerImpl()->getPlayerAnimation()->animIdle();
-                getPlayerImpl()->getPlayerSound()->stopPlayingAll();
                 getPlayerImpl()->getPlayerPhysics()->stopMovement();
             }
         }
@@ -147,8 +137,8 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 _camSwitch = true;
 
                 // store current pitch / yaw and restore the old values
-                _p_mouseData->pushPitchYaw();
-                _p_mouseData->popPitchYaw();
+                _p_mouseData->pushbackPitchYaw();
+                _p_mouseData->popfrontPitchYaw();
                 // after cam mode switching and restoring the pitch / yaw we have also to update the player pitch / yaw
                 updatePlayerPitchYaw( _p_mouseData->_pitch, _p_mouseData->_yaw );
             }
@@ -166,11 +156,11 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         if ( key == _keyCodeMoveLeft )
             _left = true;
 
-        if ( key == _keyCodeJump && !getPlayerImpl()->_p_playerPhysics->isJumping() )
+        if ( ( key == _keyCodeJump ) && ( !getPlayerImpl()->getPlayerPhysics()->isJumping() ) )
         {
-            getPlayerImpl()->_p_playerPhysics->jump();
-            getPlayerImpl()->_p_playerAnimation->animIdle(); // stop any movement animation first
-            getPlayerImpl()->_p_playerAnimation->animJump();
+            getPlayerImpl()->getPlayerPhysics()->jump();
+            getPlayerImpl()->getPlayerAnimation()->animIdle();
+            getPlayerImpl()->getPlayerAnimation()->animJump();
         }
     } 
     else if ( keyUp || mouseButtonRelease )
@@ -186,7 +176,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             if ( key == _keyCodeMoveBackward )
                 _moveBackward = false;
 
-            getPlayerImpl()->_p_playerPhysics->stopMovement();
+            getPlayerImpl()->getPlayerPhysics()->stopMovement();
         }
 
         if ( ( key == _keyCodeMoveRight ) || ( key == _keyCodeMoveLeft ) )
@@ -199,7 +189,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 _left = false;
 
             if ( getPlayerImpl()->_cameraMode == BasePlayerImplementation::Ego )
-                getPlayerImpl()->_p_playerPhysics->stopMovement();
+                getPlayerImpl()->getPlayerPhysics()->stopMovement();
         }
     }
     //--------
@@ -208,16 +198,16 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
 
     if ( _moveForward )
     {
-        getPlayerImpl()->_p_playerPhysics->setDirection( getPlayerImpl()->_moveDir._v[ 0 ], getPlayerImpl()->_moveDir._v[ 1 ] );
-        if ( !getPlayerImpl()->_p_playerPhysics->isJumping() )
-            getPlayerImpl()->_p_playerAnimation->animWalk();
+        getPlayerImpl()->getPlayerPhysics()->setDirection( getPlayerImpl()->_moveDir._v[ 0 ], getPlayerImpl()->_moveDir._v[ 1 ] );
+        if ( !getPlayerImpl()->getPlayerPhysics()->isJumping() )
+            getPlayerImpl()->getPlayerAnimation()->animWalk();
     } 
     
     if ( _moveBackward )
     {
-        getPlayerImpl()->_p_playerPhysics->setDirection( -getPlayerImpl()->_moveDir._v[ 0 ], -getPlayerImpl()->_moveDir._v[ 1 ] );
-        if ( !getPlayerImpl()->_p_playerPhysics->isJumping() )
-            getPlayerImpl()->_p_playerAnimation->animWalk();
+        getPlayerImpl()->getPlayerPhysics()->setDirection( -getPlayerImpl()->_moveDir._v[ 0 ], -getPlayerImpl()->_moveDir._v[ 1 ] );
+        if ( !getPlayerImpl()->getPlayerPhysics()->isJumping() )
+            getPlayerImpl()->getPlayerAnimation()->animWalk();
     }
 
     if ( _right )
@@ -227,11 +217,12 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             case BasePlayerImplementation::Spheric:
             {
                 float& rotZ = getPlayerImpl()->_rotZ;
-                rotZ += getPlayerImpl()->_p_playerPhysics->getAngularSpeed() * deltaTime;
+                rotZ += getPlayerImpl()->getPlayerPhysics()->getAngularSpeed() * deltaTime;
                 getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
                 getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
 
-                getPlayerImpl()->_p_playerAnimation->animTurn();
+                if ( !( _moveForward || _moveBackward ) )
+                    getPlayerImpl()->getPlayerAnimation()->animTurn();
             }
             break;
 
@@ -240,11 +231,12 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 osg::Vec3f side;
                 side = getPlayerImpl()->_moveDir ^ osg::Vec3f( 0.0f, 0.0f, 1.0f );
                 if ( _moveForward || _moveBackward )
-                    getPlayerImpl()->_p_playerPhysics->addDirection( side._v[ 0 ], side._v[ 1 ] );
+                    getPlayerImpl()->getPlayerPhysics()->addDirection( side._v[ 0 ], side._v[ 1 ] );
                 else
-                    getPlayerImpl()->_p_playerPhysics->setDirection( side._v[ 0 ], side._v[ 1 ] );
+                    getPlayerImpl()->getPlayerPhysics()->setDirection( side._v[ 0 ], side._v[ 1 ] );
 
-                getPlayerImpl()->_p_playerAnimation->animTurn();
+                if ( !( _moveForward || _moveBackward ) )
+                    getPlayerImpl()->getPlayerAnimation()->animTurn();
             }
             break;
 
@@ -260,11 +252,12 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             case BasePlayerImplementation::Spheric:
             {
                 float& rotZ = getPlayerImpl()->_rotZ;
-                rotZ -= getPlayerImpl()->_p_playerPhysics->getAngularSpeed() * deltaTime;
+                rotZ -= getPlayerImpl()->getPlayerPhysics()->getAngularSpeed() * deltaTime;
                 getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
                 getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
 
-                getPlayerImpl()->_p_playerAnimation->animTurn();
+                if ( !( _moveForward || _moveBackward ) )
+                    getPlayerImpl()->getPlayerAnimation()->animTurn();
             }
             break;
             
@@ -273,11 +266,12 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 osg::Vec3f side;
                 side = getPlayerImpl()->_moveDir ^ osg::Vec3f( 0.0f, 0.0f, -1.0f );
                 if ( _moveForward || _moveBackward )
-                    getPlayerImpl()->_p_playerPhysics->addDirection( side._v[ 0 ], side._v[ 1 ] );
+                    getPlayerImpl()->getPlayerPhysics()->addDirection( side._v[ 0 ], side._v[ 1 ] );
                 else
-                    getPlayerImpl()->_p_playerPhysics->setDirection( side._v[ 0 ], side._v[ 1 ] );
+                    getPlayerImpl()->getPlayerPhysics()->setDirection( side._v[ 0 ], side._v[ 1 ] );
 
-                getPlayerImpl()->_p_playerAnimation->animTurn();
+                if ( !( _moveForward || _moveBackward ) )
+                    getPlayerImpl()->getPlayerAnimation()->animTurn();
             }
             break;
 
@@ -286,58 +280,10 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         }
     }
 
-    // handle stopping movement
+    // handle stopping animation
     {
-        typedef enum { Idle, Stopped } MovementStates;
-        static MovementStates s_states = Idle;
-        bool movefb = !_moveForward && !_moveBackward;
-        bool movelr = !_right && !_left;
-        switch ( s_states )
-        {
-            case Idle:
-            {
-                if ( getPlayerImpl()->_p_playerPhysics->isJumping() )
-                {
-                    s_states = Stopped;
-                    getPlayerImpl()->_p_playerPhysics->stopMovement();
-                } 
-                else if ( getPlayerImpl()->_cameraMode == BasePlayerImplementation::Spheric )
-                {
-                    if ( movefb )
-                    {
-                        s_states = Stopped;
-                        getPlayerImpl()->_p_playerPhysics->stopMovement();
-                    }
-                } 
-                else
-                {
-                    if ( movelr && movefb )
-                    {
-                        s_states = Stopped;
-                        getPlayerImpl()->_p_playerPhysics->stopMovement();
-                    }
-                }
-
-            }
-            break;
-
-            case Stopped:
-            {
-                if ( !_left && !_right )
-                    getPlayerImpl()->_p_playerAnimation->animIdle();
-
-               if ( getPlayerImpl()->getPlayerSound() )
-                    getPlayerImpl()->getPlayerSound()->stopPlayingAll();
-
-                if ( ( _moveForward || _moveBackward ) && !getPlayerImpl()->_p_playerPhysics->isJumping() )
-                    s_states = Idle;
-            }
-            break;
-
-            default:
-                assert( NULL && "invalid movement state in player's input handler" );
-
-        }
+        if ( !getPlayerImpl()->getPlayerPhysics()->isMoving() && !_right && !_left )
+            getPlayerImpl()->getPlayerAnimation()->animIdle();
     }
 
     // get the SDL event in order to extract mouse button and absolute / relative mouse movement coordinates out of it
@@ -397,7 +343,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         updatePlayerPitchYaw( _p_mouseData->_pitch, _p_mouseData->_yaw );
 
         // reset mouse position in order to avoid leaving the app window
-        Application::get()->getViewer()->requestWarpPointer( _p_mouseData->_screenMiddleX, _p_mouseData->_screenMiddleY );
+        yaf3d::Application::get()->getViewer()->requestWarpPointer( _p_mouseData->_screenMiddleX, _p_mouseData->_screenMiddleY );
     }
 
     return false;
@@ -407,7 +353,7 @@ template< class PlayerImplT >
 void PlayerIHCharacterCameraCtrl< PlayerImplT >::updatePlayerPitchYaw( float& pitch, float& yaw )
 {
     // in ego mode the mouse controls the player rotation
-    if ( getPlayerImpl()->_cameraMode == CTD::BasePlayerImplementation::Ego )
+    if ( getPlayerImpl()->_cameraMode == vrc::BasePlayerImplementation::Ego )
     {
         // limit pitch
         if ( pitch > LIMIT_PITCH_ANGLE )
@@ -420,7 +366,6 @@ void PlayerIHCharacterCameraCtrl< PlayerImplT >::updatePlayerPitchYaw( float& pi
         rotZ = yaw; 
         getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
         getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
-        getPlayerImpl()->_p_playerAnimation->animTurn();
 
         // set pitch
         getPlayerImpl()->setCameraPitchYaw( pitch, 0 );

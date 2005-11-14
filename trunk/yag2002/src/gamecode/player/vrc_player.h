@@ -40,24 +40,24 @@
  #
  ################################################################*/
 
-#ifndef _CTD_PLAYER_H_
-#define _CTD_PLAYER_H_
+#ifndef _VRC_PLAYER_H_
+#define _VRC_PLAYER_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 //! Entity name
 #define ENTITY_NAME_PLAYER              "Player"
 
 //! Notification for player deletion ( all entity specific notification begin with 0xA )
-#define CTD_NOTIFY_PLAYER_DESTRUCTION   0xA0000010
+#define YAF3D_NOTIFY_PLAYER_DESTRUCTION   0xA0000010
 
 class BasePlayerImplementation;
 
 //! Player entity
-class EnPlayer : public BaseEntity
+class EnPlayer : public yaf3d::BaseEntity
 {
     public:
 
@@ -91,7 +91,7 @@ class EnPlayer : public BaseEntity
         inline BasePlayerImplementation*            getPlayerImplementation();
 
         //! Register an entity for getting player deletion notification
-        void                                        registerNotifyDeletion( BaseEntity* p_entity );
+        void                                        registerNotifyDeletion( yaf3d::BaseEntity* p_entity );
 
         //! Get last update time
         inline float                                getDeltaTime() const;
@@ -128,7 +128,7 @@ class EnPlayer : public BaseEntity
                 //! Camera's rotation offset for ego mode ( roll/pitch/yaw in degrees )
                 osg::Vec3f                                  _camRotOffsetEgo;
 
-                //! CEGUI layout file for chat
+                //! CEGUI layout file for built-in chat
                 std::string                                 _chatGuiConfig;
         };
 
@@ -146,8 +146,8 @@ class EnPlayer : public BaseEntity
         //! Update entity
         void                                        updateEntity( float deltaTime );
 
-        //! Override this method of BaseEntity to get notifications (from menu system)
-        void                                        handleNotification( const EntityNotification& notification );
+        //! Override this method of yaf3d::BaseEntity to get notifications (from menu system)
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Spawn player considering spawn points in level
         void                                        spawn();
@@ -165,18 +165,18 @@ class EnPlayer : public BaseEntity
         BasePlayerImplementation*                   _p_playerImpl;
 
         //! List of registered entities for getting deletion notification
-        std::vector< BaseEntity* >                  _deletionNotifications;
+        std::vector< yaf3d::BaseEntity* >           _deletionNotifications;
 
         //! Stored deltaTime needed by some player components
         float                                       _deltaTime;
 };
 
 //! Entity type definition used for type registry
-class PlayerEntityFactory : public BaseEntityFactory
+class PlayerEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     PlayerEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_PLAYER, BaseEntityFactory::Standalone | BaseEntityFactory::Client | BaseEntityFactory::Server )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PLAYER, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client | yaf3d::BaseEntityFactory::Server )
                                                     {}
 
         virtual                                     ~PlayerEntityFactory() {}
@@ -207,8 +207,6 @@ inline const std::string& EnPlayer::getPlayerName() const
 inline void EnPlayer::setPlayerName( const std::string& name )
 {
     _playerName = name;
-    // update the instance name
-    setInstanceName( name );
 }
 
 inline void EnPlayer::setPlayerImplementation( BasePlayerImplementation* p_impl )
@@ -227,6 +225,6 @@ inline float EnPlayer::getDeltaTime() const
     return _deltaTime;
 }
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_PLAYER_H_
+#endif // _VRC_PLAYER_H_
