@@ -28,15 +28,14 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_platform.h"
+#include <vrc_main.h>
+#include "vrc_platform.h"
 
-using namespace std;
-using namespace CTD; 
-
+namespace vrc
+{
 
 //! Implement and register the platform entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( PlatformEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( PlatformEntityFactory );
 
 
 EnPlatform::EnPlatform():
@@ -56,10 +55,10 @@ EnPlatform::~EnPlatform()
 
 void EnPlatform::initialize()
 {
-    osg::Node* p_mesh = LevelManager::get()->loadMesh( _meshFile );
+    osg::Node* p_mesh = yaf3d::LevelManager::get()->loadMesh( _meshFile );
     if ( !p_mesh ) 
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** error loading mesh file" << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error loading mesh file" << std::endl;
         return;
     }
     // now we add the new mesh into our transformable scene group
@@ -67,7 +66,7 @@ void EnPlatform::initialize()
     setPosition( _position );
 
     // register entity in order to get updated per simulation step
-    EntityManager::get()->registerUpdate( this );   
+    yaf3d::EntityManager::get()->registerUpdate( this );   
 }
 
 void EnPlatform::updateEntity( float deltaTime )
@@ -83,3 +82,5 @@ void EnPlatform::updateEntity( float deltaTime )
     quat.makeRotate( x, y, 0, 1 );
     setRotation( quat );
 }
+
+} // namespace vrc

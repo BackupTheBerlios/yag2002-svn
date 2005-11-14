@@ -28,18 +28,18 @@
  #
  ################################################################*/
 
-#ifndef _CTD_PLATFORM_H_
-#define _CTD_PLATFORM_H_
+#ifndef _VRC_PLATFORM_H_
+#define _VRC_PLATFORM_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 #define ENTITY_NAME_PLATFORM    "Platform"
 
 //! Platform Entity
-class EnPlatform : public BaseEntity
+class EnPlatform : public yaf3d::BaseEntity
 {
     public:
                                                     EnPlatform();
@@ -65,11 +65,11 @@ class EnPlatform : public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class PlatformEntityFactory : public BaseEntityFactory
+class PlatformEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     PlatformEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_PLATFORM, BaseEntityFactory::Server )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PLATFORM, yaf3d::BaseEntityFactory::Server )
                                                     {}
 
         virtual                                     ~PlatformEntityFactory() {}
@@ -79,4 +79,4 @@ class PlatformEntityFactory : public BaseEntityFactory
 
 }
 
-#endif // _CTD_PLATFORM_H_
+#endif // _VRC_PLATFORM_H_
