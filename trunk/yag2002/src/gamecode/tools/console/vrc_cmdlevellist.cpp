@@ -28,11 +28,11 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdlevellist.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdlevellist.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -55,9 +55,9 @@ const std::string& CmdLevelList::execute( const std::vector< std::string >& argu
 
     // show the content of the folders for server, client and standalone modes
     std::vector< std::string > dirs;
-    dirs.push_back( CTD_LEVEL_SALONE_DIR );
-    dirs.push_back( CTD_LEVEL_SERVER_DIR );
-    dirs.push_back( CTD_LEVEL_CLIENT_DIR );
+    dirs.push_back( YAF3D_LEVEL_SALONE_DIR );
+    dirs.push_back( YAF3D_LEVEL_SERVER_DIR );
+    dirs.push_back( YAF3D_LEVEL_CLIENT_DIR );
     std::vector< std::string > filelisting;
     std::vector< std::string >::iterator p_dir = dirs.begin(), p_dirend = dirs.end();
     for ( ; p_dir != p_dirend; p_dir++ )
@@ -65,7 +65,7 @@ const std::string& CmdLevelList::execute( const std::vector< std::string >& argu
         filelisting.clear();
         _cmdResult += "# levels availabe in '" + *p_dir + "':\n";
         // get a directory listing
-        getDirectoryListing( filelisting, Application::get()->getMediaPath() + *p_dir, "lvl" );
+        yaf3d::getDirectoryListing( filelisting, yaf3d::Application::get()->getMediaPath() + *p_dir, "lvl" );
         std::vector< std::string >::iterator p_beg = filelisting.begin(), p_end = filelisting.end();
         for ( ; p_beg != p_end; p_beg++ )
             _cmdResult += *p_beg + "\n";
@@ -74,4 +74,4 @@ const std::string& CmdLevelList::execute( const std::vector< std::string >& argu
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

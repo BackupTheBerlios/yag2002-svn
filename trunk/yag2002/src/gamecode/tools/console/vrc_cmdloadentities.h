@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDLOADENTITIES_H_
-#define _CTD_CMDLOADENTITIES_H_
+#ifndef _VRC_CMDLOADENTITIES_H_
+#define _VRC_CMDLOADENTITIES_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_LOADENTITIES    "load.entities"
@@ -56,6 +56,6 @@ class CmdLoadEntities : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDLOADENTITIES_H_
+#endif // _VRC_CMDLOADENTITIES_H_

@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDLOADFINALIZE_H_
-#define _CTD_CMDLOADFINALIZE_H_
+#ifndef _VRC_CMDLOADFINALIZE_H_
+#define _VRC_CMDLOADFINALIZE_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_LOADFINALIZE    "load.finalize"
@@ -55,6 +55,6 @@ class CmdLoadFinalize : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDLOADFINALIZE_H_
+#endif // _VRC_CMDLOADFINALIZE_H_

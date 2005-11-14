@@ -28,13 +28,11 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdsetconfig.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdsetconfig.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -60,7 +58,7 @@ const std::string& CmdSetConfig::execute( const std::vector< std::string >& argu
         _cmdResult += "\n";
         return _cmdResult;
     }
-    if ( !Configuration::get()->setSettingValueAsString( arguments[ 0 ], arguments[ 1 ] ) )
+    if ( !yaf3d::Configuration::get()->setSettingValueAsString( arguments[ 0 ], arguments[ 1 ] ) )
     {
         _cmdResult += "could not find requested setting name '" + arguments[ 0 ] + "'. check for right spelling!\n";
     }
@@ -68,4 +66,4 @@ const std::string& CmdSetConfig::execute( const std::vector< std::string >& argu
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

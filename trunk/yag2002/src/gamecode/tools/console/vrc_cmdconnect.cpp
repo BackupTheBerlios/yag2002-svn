@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdconnect.h"
-#include <ctd_gameutils.h>
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdconnect.h"
+#include <vrc_gameutils.h>
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -57,15 +57,15 @@ const std::string& CmdConnect::execute( const std::vector< std::string >& argume
     unsigned int channel;
     std::string serverip;
     std::string clientname;
-    Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, clientname );
-    NodeInfo nodeinfo( "", clientname );
-    Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, clientname );
+    yaf3d::NodeInfo nodeinfo( "", clientname );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
     // parse the argument for ip and channel information
     if ( arguments.size() > 0 )
     {
         std::string addr = arguments[ 0 ];
         std::vector< std::string > ip;
-        explode( addr, ":", &ip );
+        yaf3d::explode( addr, ":", &ip );
         if ( ip.size() > 1 )
         {
             std::stringstream chan;
@@ -74,7 +74,7 @@ const std::string& CmdConnect::execute( const std::vector< std::string >& argume
             addr = ip[ 0 ];
             ip.clear();
         }
-        explode( addr, ".", &ip );
+        yaf3d::explode( addr, ".", &ip );
         if ( ip.size() < 4 )
         {
             _cmdResult = "the ip address must have the format 'X.X.X.X'";
@@ -84,17 +84,17 @@ const std::string& CmdConnect::execute( const std::vector< std::string >& argume
     }
 
     // try to join
-    if ( !NetworkDevice::get()->setupClient( serverip, channel, nodeinfo ) )
+    if ( !yaf3d::NetworkDevice::get()->setupClient( serverip, channel, nodeinfo ) )
     {
         _cmdResult = "* cannot connect to server: '" + serverip + "'";
         return _cmdResult;
     }
 
     // set the game mode to Client before loading the level
-    GameState::get()->setMode( GameState::Client );
+    yaf3d::GameState::get()->setMode( yaf3d::GameState::Client );
     std::string playerCfgFile;
     // load local client's config ( .lvl file ) 
-    if ( !gameutils::getPlayerConfig( GameState::Client, false, playerCfgFile ) )
+    if ( !vrc::gameutils::PlayerUtils::get()->getPlayerConfig( yaf3d::GameState::Client, false, playerCfgFile ) )
     {
         _cmdResult = "* error: cannot determine player configuration file";
         return _cmdResult;
@@ -102,19 +102,19 @@ const std::string& CmdConnect::execute( const std::vector< std::string >& argume
 
     // now prepare loading level
     _cmdResult += "unload level ...\n";
-    LevelManager::get()->unloadLevel( true, true );
-    _cmdResult += "loading level '" + NetworkDevice::get()->getNodeInfo()->getLevelName() + "' ...\n";
-    LevelManager::get()->loadLevel( CTD_LEVEL_CLIENT_DIR + NetworkDevice::get()->getNodeInfo()->getLevelName() );
+    yaf3d::LevelManager::get()->unloadLevel( true, true );
+    _cmdResult += "loading level '" + yaf3d::NetworkDevice::get()->getNodeInfo()->getLevelName() + "' ...\n";
+    yaf3d::LevelManager::get()->loadLevel( YAF3D_LEVEL_CLIENT_DIR + yaf3d::NetworkDevice::get()->getNodeInfo()->getLevelName() );
     // now load the player
-    std::vector< BaseEntity* > entities;
+    std::vector< yaf3d::BaseEntity* > entities;
     _cmdResult += "loading player '" + playerCfgFile + "' ...\n";
-    LevelManager::get()->loadEntities( playerCfgFile );
+    yaf3d::LevelManager::get()->loadEntities( playerCfgFile );
     // complete level loading
     _cmdResult += "finalizing level loading ...\n";
-    LevelManager::get()->finalizeLoading();
+    yaf3d::LevelManager::get()->finalizeLoading();
 
     _cmdResult += "starting client ...\n";
-    if ( !NetworkDevice::get()->startClient() )
+    if ( !yaf3d::NetworkDevice::get()->startClient() )
     {
         _cmdResult = "* cannot start client";
         return _cmdResult;
@@ -124,4 +124,4 @@ const std::string& CmdConnect::execute( const std::vector< std::string >& argume
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

@@ -29,12 +29,12 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdls.h"
-#include "ctd_console.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdls.h"
+#include "vrc_console.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -58,7 +58,7 @@ const std::string& CmdLs::execute( const std::vector< std::string >& arguments )
 
     if ( !_p_console )
     {
-        _p_console = static_cast< EnConsole* >( EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
+        _p_console = static_cast< EnConsole* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
         assert( _p_console && "CmdExec::execute: console entity could not be found!" );
     }
 
@@ -100,7 +100,7 @@ const std::string& CmdLs::execute( const std::vector< std::string >& arguments )
     // show the content of the directory
     std::vector< std::string > filelisting;
     // get a directory listing
-    getDirectoryListing( filelisting, Application::get()->getMediaPath() + dir, "", appenddetails );
+    yaf3d::getDirectoryListing( filelisting, yaf3d::Application::get()->getMediaPath() + dir, "", appenddetails );
     std::vector< std::string >::iterator p_beg = filelisting.begin(), p_end = filelisting.end();
     for ( ; p_beg != p_end; p_beg++ )
         _cmdResult += *p_beg + "\n";
@@ -108,4 +108,4 @@ const std::string& CmdLs::execute( const std::vector< std::string >& arguments )
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

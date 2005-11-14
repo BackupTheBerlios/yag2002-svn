@@ -28,14 +28,12 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdunloadlevel.h"
-#include <gui/ctd_menu.h>
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdunloadlevel.h"
+#include <gui/vrc_menu.h>
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -57,19 +55,19 @@ const std::string& CmdUnloadLevel::execute( const std::vector< std::string >& ar
     _cmdResult = "unloading level ...\n";
 
     // if the menu entity exists so let it do the job, otherwiese we unload the level outselves
-    EnMenu* p_menu = static_cast< EnMenu* >( EntityManager::get()->findEntity( ENTITY_NAME_MENU ) );
+    EnMenu* p_menu = static_cast< EnMenu* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_MENU ) );
     if ( p_menu )
     {
-        EntityNotification ennotify( CTD_NOTIFY_UNLOAD_LEVEL );
-        EntityManager::get()->sendNotification( ennotify, p_menu );
+        yaf3d::EntityNotification ennotify( YAF3D_NOTIFY_UNLOAD_LEVEL );
+        yaf3d::EntityManager::get()->sendNotification( ennotify, p_menu );
     }
     else
     {
-        LevelManager::get()->unloadLevel( true, true );
+        yaf3d::LevelManager::get()->unloadLevel( true, true );
     }
 
     _cmdResult += "unloading completed";
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

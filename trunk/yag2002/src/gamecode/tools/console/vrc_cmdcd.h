@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDCD_H_
-#define _CTD_CMDCD_H_
+#ifndef _VRC_CMDCD_H_
+#define _VRC_CMDCD_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_CD    "cd"
@@ -60,6 +60,6 @@ class CmdCd : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDCD_H_
+#endif // _VRC_CMDCD_H_

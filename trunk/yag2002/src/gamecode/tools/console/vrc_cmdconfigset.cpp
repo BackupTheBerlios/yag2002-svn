@@ -28,13 +28,11 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdconfigset.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdconfigset.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -61,12 +59,12 @@ const std::string& CmdConfigSet::execute( const std::vector< std::string >& argu
     }
 
     // set the token using value string
-    Configuration::get()->setSettingValue( arguments[ 0 ], arguments[ 1 ] );
+    yaf3d::Configuration::get()->setSettingValue( arguments[ 0 ], arguments[ 1 ] );
     
     // store changes
-    Configuration::get()->store();
+    yaf3d::Configuration::get()->store();
 
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

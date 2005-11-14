@@ -28,14 +28,12 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdhelp.h"
-#include "ctd_cmdregistry.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdhelp.h"
+#include "vrc_cmdregistry.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -98,4 +96,4 @@ const std::string& CmdHelp::execute( const std::vector< std::string >& arguments
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

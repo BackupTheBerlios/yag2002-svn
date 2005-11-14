@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdcd.h"
-#include "ctd_console.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdcd.h"
+#include "vrc_console.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -56,7 +56,7 @@ const std::string& CmdCd::execute( const std::vector< std::string >& arguments )
     _cmdResult = "";
     if ( !_p_console )
     {
-        _p_console = static_cast< EnConsole* >( EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
+        _p_console = static_cast< EnConsole* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
         assert( _p_console && "CmdExec::execute: console entity could not be found!" );
     }
 
@@ -66,7 +66,25 @@ const std::string& CmdCd::execute( const std::vector< std::string >& arguments )
     }
     else
     {
-        if ( !_p_console->setCWD( arguments[ 0 ] ) )
+        std::string dir = arguments[ 0 ];
+        if ( !dir.length() )
+            dir = yaf3d::Application::get()->getMediaPath();
+        else if ( dir == ".." )
+        {
+            dir = _p_console->getCWD();
+            dir.erase( dir.rfind( "/" ) );
+        }
+        else if ( dir == "." )
+            dir = _p_console->getCWD();
+        else if ( dir[ 0 ] != '/' )
+        {
+            if ( _p_console->getCWD() != "/" )
+                dir = _p_console->getCWD() + "/" + dir;
+            else
+                dir = "/" + dir;
+        }
+
+        if ( !_p_console->setCWD( dir ) )
         {
             _cmdResult = "* invalid path";
             return _cmdResult;
@@ -75,4 +93,4 @@ const std::string& CmdCd::execute( const std::vector< std::string >& arguments )
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

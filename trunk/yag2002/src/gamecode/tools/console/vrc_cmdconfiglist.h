@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDCONFIGLIST_H_
-#define _CTD_CMDCONFIGLIST_H_
+#ifndef _VRC_CMDCONFIGLIST_H_
+#define _VRC_CMDCONFIGLIST_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_CONFIGLIST   "configuration.list"
@@ -55,6 +55,6 @@ class CmdConfigList : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDCONFIGLIST_H_
+#endif // _VRC_CMDCONFIGLIST_H_

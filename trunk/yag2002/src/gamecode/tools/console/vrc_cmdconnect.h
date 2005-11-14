@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDCONNECT_H_
-#define _CTD_CMDCONNECT_H_
+#ifndef _VRC_CMDCONNECT_H_
+#define _VRC_CMDCONNECT_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_CONNECT    "connect"
@@ -56,6 +56,6 @@ class CmdConnect : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDCONNECT_H_
+#endif // _VRC_CMDCONNECT_H_

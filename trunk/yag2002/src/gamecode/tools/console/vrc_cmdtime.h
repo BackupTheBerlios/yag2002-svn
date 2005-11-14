@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDTIME_H_
-#define _CTD_CMDTIME_H_
+#ifndef _VRC_CMDTIME_H_
+#define _VRC_CMDTIME_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_TIME    "time"
@@ -55,6 +55,6 @@ class CmdTime : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDTIME_H_
+#endif // _VRC_CMDTIME_H_

@@ -28,13 +28,11 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdloadfinalize.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdloadfinalize.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -53,10 +51,10 @@ CmdLoadFinalize::~CmdLoadFinalize()
 
 const std::string& CmdLoadFinalize::execute( const std::vector< std::string >& arguments )
 {
-    LevelManager::get()->finalizeLoading();
+    yaf3d::LevelManager::get()->finalizeLoading();
     _cmdResult = "level finalized";
 
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

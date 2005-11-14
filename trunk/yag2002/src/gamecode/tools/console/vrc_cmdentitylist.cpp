@@ -28,13 +28,11 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdentitylist.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdentitylist.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -55,18 +53,18 @@ const std::string& CmdEntityList::execute( const std::vector< std::string >& arg
 {
     _cmdResult  = "";
 
-    string info;
+    std::string info;
     std::string flags;
-    std::vector< BaseEntity* > entities;
-    EntityManager::get()->getAllEntities( entities );
-    std::vector< BaseEntity* >::iterator p_beg = entities.begin(), p_end = entities.end();
+    std::vector< yaf3d::BaseEntity* > entities;
+    yaf3d::EntityManager::get()->getAllEntities( entities );
+    std::vector< yaf3d::BaseEntity* >::iterator p_beg = entities.begin(), p_end = entities.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
         flags = "----";
         if ( ( *p_beg )->isPersistent() ) flags[ 0 ] = 'P';
         if ( ( *p_beg )->isTransformable() ) flags[ 1 ] = 'T';
-        if ( EntityManager::get()->isRegisteredUpdate( *p_beg ) ) flags[ 2 ] = 'U';
-        if ( EntityManager::get()->isRegisteredNotification( *p_beg ) ) flags[ 3 ] = 'N';
+        if ( yaf3d::EntityManager::get()->isRegisteredUpdate( *p_beg ) ) flags[ 2 ] = 'U';
+        if ( yaf3d::EntityManager::get()->isRegisteredNotification( *p_beg ) ) flags[ 3 ] = 'N';
 
         info += ( *p_beg )->getInstanceName() + "(" + ( *p_beg )->getTypeName() + ", " + flags + ")\n";
     }
@@ -74,4 +72,4 @@ const std::string& CmdEntityList::execute( const std::vector< std::string >& arg
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

@@ -30,12 +30,12 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdentitydump.h"
-#include "ctd_console.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdentitydump.h"
+#include "vrc_console.h"
 
-namespace CTD
+namespace vrc
 {
 // maximal character spacing between parameter name and type
 #define MAX_TYPE_SPACING  30
@@ -58,7 +58,7 @@ CmdEntityDump::~CmdEntityDump()
 const std::string& CmdEntityDump::execute( const std::vector< std::string >& arguments )
 {
     bool        dumpall = false;
-    std::string dumpfile = Application::get()->getMediaPath();
+    std::string dumpfile = yaf3d::Application::get()->getMediaPath();
     std::string dumpcontent;
     
     _cmdResult = "";
@@ -76,9 +76,9 @@ const std::string& CmdEntityDump::execute( const std::vector< std::string >& arg
     dumpfile += arguments[ 1 ];
 
     dumpcontent = "<!-- entity dump file containing entity type and parameter information -->\n";
-    std::string timestamp = getTimeStamp();
+    std::string timestamp = yaf3d::getTimeStamp();
     timestamp.erase( timestamp.size() - 1 ); // remove line-feed at end of timestamp string
-    dumpcontent += "<!-- created by CTD console: " + timestamp + " -->\n\n";
+    dumpcontent += "<!-- created by vrc console: " + timestamp + " -->\n\n";
 
     // we get the parameters out of entities after we have constructed them. 
     // we shutdown the application if the option -all is used. the shutdown is necessary as some entities are meant to be singletons or perform 
@@ -89,7 +89,7 @@ const std::string& CmdEntityDump::execute( const std::vector< std::string >& arg
 
     if ( !dumpall )
     {
-        BaseEntity* p_entity = EntityManager::get()->findInstance( arguments[ 0 ] );
+        yaf3d::BaseEntity* p_entity = yaf3d::EntityManager::get()->findInstance( arguments[ 0 ] );
         if ( !p_entity )
         {
             _cmdResult = " entity '" + arguments[ 0 ] + "' cannot be found\n";
@@ -99,30 +99,30 @@ const std::string& CmdEntityDump::execute( const std::vector< std::string >& arg
 
         _cmdResult = "dumping entity '" +  arguments[ 0 ] + "' to file: " + dumpfile;
         
-        BaseEntityFactory* p_factory = EntityManager::get()->getEntityFactory( p_entity->getTypeName() );
+        yaf3d::BaseEntityFactory* p_factory = yaf3d::EntityManager::get()->getEntityFactory( p_entity->getTypeName() );
         dumpcontent += dumpEntity( p_entity, p_factory->getCreationPolicy() );
     }
     else
     {
-        std::vector< BaseEntityFactory* > factories;
-        EntityManager::get()->getAllEntityFactories( factories );
+        std::vector< yaf3d::BaseEntityFactory* > factories;
+        yaf3d::EntityManager::get()->getAllEntityFactories( factories );
         
         std::stringstream totcount;
         totcount << factories.size();
         dumpcontent += "<!-- total count of available entities: " + totcount.str() + " -->\n\n";
         
-        std::vector< BaseEntityFactory* >::iterator p_beg = factories.begin(), p_end = factories.end();
+        std::vector< yaf3d::BaseEntityFactory* >::iterator p_beg = factories.begin(), p_end = factories.end();
 
         for ( ; p_beg != p_end; p_beg++ )
         {
-            BaseEntity* p_entity = EntityManager::get()->createEntity( ( *p_beg )->getType() );
+            yaf3d::BaseEntity* p_entity = yaf3d::EntityManager::get()->createEntity( ( *p_beg )->getType() );
             dumpcontent += dumpEntity( p_entity, ( *p_beg )->getCreationPolicy() );
             dumpcontent += "\n";
-            EntityManager::get()->deleteEntity( p_entity );
+            yaf3d::EntityManager::get()->deleteEntity( p_entity );
         }
 
         // shutdown application now
-        Application::get()->stop();
+        yaf3d::Application::get()->stop();
     }
 
     // write out the dump file
@@ -140,25 +140,25 @@ const std::string& CmdEntityDump::execute( const std::vector< std::string >& arg
     return _cmdResult;
 }
 
-std::string CmdEntityDump::dumpEntity( BaseEntity* p_entity, unsigned int creationPolicy )
+std::string CmdEntityDump::dumpEntity( yaf3d::BaseEntity* p_entity, unsigned int creationPolicy )
 {
     std::string dump;
 
     dump = "<Entity Type=\"" + p_entity->getTypeName() + "\" CreationPolicy=\"";
 
     std::string cpolicy;
-    if ( creationPolicy & BaseEntityFactory::Standalone )
+    if ( creationPolicy & yaf3d::BaseEntityFactory::Standalone )
         cpolicy += " Standalone ";
-    if ( creationPolicy & BaseEntityFactory::Server )
+    if ( creationPolicy & yaf3d::BaseEntityFactory::Server )
         cpolicy += " Server ";
-    if ( creationPolicy & BaseEntityFactory::Client )
+    if ( creationPolicy & yaf3d::BaseEntityFactory::Client )
         cpolicy += " Client ";
 
     dump += cpolicy + "\" />\n\n";
 
-    AttributeManager& attrmgr = p_entity->getAttributeManager();
-    std::vector< EntityAttributeBase* >& attributes = attrmgr.getAttributes();
-    std::vector< EntityAttributeBase* >::iterator p_beg = attributes.begin(), p_end = attributes.end();
+    yaf3d::AttributeManager& attrmgr = p_entity->getAttributeManager();
+    std::vector< yaf3d::EntityAttributeBase* >& attributes = attrmgr.getAttributes();
+    std::vector< yaf3d::EntityAttributeBase* >::iterator p_beg = attributes.begin(), p_end = attributes.end();
 
     for ( ; p_beg != p_end; p_beg++ )
     {
@@ -166,31 +166,31 @@ std::string CmdEntityDump::dumpEntity( BaseEntity* p_entity, unsigned int creati
         std::string  stype;
         switch ( type ) 
         {
-            case EntityAttributeType::FLOAT:
+            case yaf3d::EntityAttributeType::FLOAT:
             {
                 stype = "float\"  ";
             }
             break;
 
-            case EntityAttributeType::BOOL:
+            case yaf3d::EntityAttributeType::BOOL:
             {
                 stype = "bool\"   ";
             }
             break;
 
-            case EntityAttributeType::INTEGER:
+            case yaf3d::EntityAttributeType::INTEGER:
             {
                 stype = "integer\"";
             }
             break;
 
-            case EntityAttributeType::VECTOR3:
+            case yaf3d::EntityAttributeType::VECTOR3:
             {
                 stype = "vector3\"";
             }
             break;
 
-            case EntityAttributeType::STRING:
+            case yaf3d::EntityAttributeType::STRING:
             {
                 stype = "string\" ";
             }
@@ -212,4 +212,4 @@ std::string CmdEntityDump::dumpEntity( BaseEntity* p_entity, unsigned int creati
     return dump;
 }
 
-} // namespace CTD
+} // namespace vrc

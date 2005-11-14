@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDVERSION_H_
-#define _CTD_CMDVERSION_H_
+#ifndef _VRC_CMDVERSION_H_
+#define _VRC_CMDVERSION_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_VERSION    "version"
@@ -55,6 +55,6 @@ class CmdVersion : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDVERSION_H_
+#endif // _VRC_CMDVERSION_H_

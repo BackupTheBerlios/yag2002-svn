@@ -28,11 +28,11 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdtime.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdtime.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -51,8 +51,8 @@ CmdTime::~CmdTime()
 
 const std::string& CmdTime::execute( const std::vector< std::string >& arguments )
 {
-    _cmdResult =  getTimeStamp();
+    _cmdResult = yaf3d::getTimeStamp();
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

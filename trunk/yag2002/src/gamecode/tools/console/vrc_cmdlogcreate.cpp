@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdlogcreate.h"
-#include "ctd_console.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdlogcreate.h"
+#include "vrc_console.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -80,7 +80,7 @@ const std::string& CmdLogCreate::execute( const std::vector< std::string >& argu
             logfile = arguments[ 0 ];
     }
 
-    EnConsole* p_console = static_cast< EnConsole* >( EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
+    EnConsole* p_console = static_cast< EnConsole* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
     if ( !p_console->createLog( logfile, append ) )
     {
         _cmdResult = "* cannot create log file '" + logfile + "', check the file path!";
@@ -90,4 +90,4 @@ const std::string& CmdLogCreate::execute( const std::vector< std::string >& argu
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

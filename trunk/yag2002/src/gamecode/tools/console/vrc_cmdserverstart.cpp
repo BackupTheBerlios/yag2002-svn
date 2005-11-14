@@ -28,13 +28,11 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdserverstart.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdserverstart.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -61,15 +59,15 @@ const std::string& CmdServerStart::execute( const std::vector< std::string >& ar
     }
 
     // get the full binary path
-    string cmd = Application::get()->getFullBinPath();
+    std::string cmd = yaf3d::Application::get()->getFullBinPath();
     std::string levelfile = arguments[ 0 ];
-    string arg1( "-server" );
-    string arg2( "-level" );
-    string arg3( levelfile );
+    std::string arg1( "-server" );
+    std::string arg2( "-level" );
+    std::string arg3( levelfile );
 
     // use utility function to start the server
-    string args = arg1 + "  " + arg2 + "  " + arg3;
-    SPAWN_PROC_ID serverProcHandle = spawnApplication( cmd, args );
+    std::string args = arg1 + "  " + arg2 + "  " + arg3;
+    SPAWN_PROC_ID serverProcHandle = yaf3d::spawnApplication( cmd, args );
 
     if ( serverProcHandle )
         _cmdResult = "trying to start server with level file '" + levelfile + "'.";
@@ -79,4 +77,4 @@ const std::string& CmdServerStart::execute( const std::vector< std::string >& ar
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

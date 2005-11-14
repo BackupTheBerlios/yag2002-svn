@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDGETCONFIG_H_
-#define _CTD_CMDGETCONFIG_H_
+#ifndef _VRC_CMDGETCONFIG_H_
+#define _VRC_CMDGETCONFIG_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_GETCONFIG   "get.configuration"
@@ -54,6 +54,6 @@ class CmdGetConfig : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDGETCONFIG_H_
+#endif // _VRC_CMDGETCONFIG_H_

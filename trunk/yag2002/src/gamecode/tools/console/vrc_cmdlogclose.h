@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDLOGCLOSE_H_
-#define _CTD_CMDLOGCLOSE_H_
+#ifndef _VRC_CMDLOGCLOSE_H_
+#define _VRC_CMDLOGCLOSE_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_LOGCLOSE    "log.close"
@@ -55,6 +55,6 @@ class CmdLogClose : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDLOGCLOSE_H_
+#endif // _VRC_CMDLOGCLOSE_H_

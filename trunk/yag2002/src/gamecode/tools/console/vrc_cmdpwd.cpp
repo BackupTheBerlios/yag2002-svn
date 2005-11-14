@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdpwd.h"
-#include "ctd_console.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdpwd.h"
+#include "vrc_console.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -55,7 +55,7 @@ const std::string& CmdPwd::execute( const std::vector< std::string >& arguments 
 {
     if ( !_p_console )
     {
-        _p_console = static_cast< EnConsole* >( EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
+        _p_console = static_cast< EnConsole* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
         assert( _p_console && "CmdExec::execute: console entity could not be found!" );
     }
 
@@ -63,4 +63,4 @@ const std::string& CmdPwd::execute( const std::vector< std::string >& arguments 
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

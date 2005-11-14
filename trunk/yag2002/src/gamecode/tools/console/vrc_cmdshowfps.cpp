@@ -28,14 +28,12 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdshowfps.h"
-#include "../ctd_fpsdisplay.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdshowfps.h"
+#include "../vrc_fpsdisplay.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -58,7 +56,7 @@ const std::string& CmdShowFps::execute( const std::vector< std::string >& argume
 
     if ( !arguments.size() )
     {
-        _cmdResult = "* error executing command '" + string( CMD_NAME_SHOWFPS ) + "'\n ";
+        _cmdResult = "* error executing command '" + std::string( CMD_NAME_SHOWFPS ) + "'\n ";
         _cmdResult += getUsage();
         return _cmdResult;
     }
@@ -70,13 +68,13 @@ const std::string& CmdShowFps::execute( const std::vector< std::string >& argume
         enable = false;
     else 
     {
-        _cmdResult = "* error executing command '" + string( CMD_NAME_SHOWFPS ) + "'\n ";
+        _cmdResult = "* error executing command '" + std::string( CMD_NAME_SHOWFPS ) + "'\n ";
         _cmdResult += getUsage();
         return _cmdResult;
     }
 
     // first check if the fps entity already exists
-    EnFPSDisplay* p_fps = static_cast< EnFPSDisplay* >( EntityManager::get()->findEntity( ENTITY_NAME_FPSDISPLAY ) );
+    EnFPSDisplay* p_fps = static_cast< EnFPSDisplay* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_FPSDISPLAY ) );
     if ( p_fps )
     {
         p_fps->enable( enable );
@@ -85,7 +83,7 @@ const std::string& CmdShowFps::execute( const std::vector< std::string >& argume
     {
         if ( enable )
         {
-            p_fps = static_cast< EnFPSDisplay* >( EntityManager::get()->createEntity( ENTITY_NAME_FPSDISPLAY, "_fps_" ) );
+            p_fps = static_cast< EnFPSDisplay* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_FPSDISPLAY, "_fps_" ) );
             p_fps->initialize();
             p_fps->postInitialize();
             p_fps->enable( enable );    
@@ -95,4 +93,4 @@ const std::string& CmdShowFps::execute( const std::vector< std::string >& argume
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

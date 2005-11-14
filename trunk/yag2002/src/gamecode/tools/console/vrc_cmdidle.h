@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDIDLE_H_
-#define _CTD_CMDIDLE_H_
+#ifndef _VRC_CMDIDLE_H_
+#define _VRC_CMDIDLE_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_IDLE    "idle"
@@ -60,6 +60,6 @@ class CmdIdle : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDIDLE_H_
+#endif // _VRC_CMDIDLE_H_

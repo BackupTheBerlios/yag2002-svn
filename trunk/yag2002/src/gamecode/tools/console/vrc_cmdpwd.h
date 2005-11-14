@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDPWD_H_
-#define _CTD_CMDPWD_H_
+#ifndef _VRC_CMDPWD_H_
+#define _VRC_CMDPWD_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_PWD    "pwd"
@@ -60,6 +60,6 @@ class CmdPwd : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDPWD_H_
+#endif // _VRC_CMDPWD_H_

@@ -30,12 +30,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDENTITYDUMP_H_
-#define _CTD_CMDENTITYDUMP_H_
+#ifndef _VRC_CMDENTITYDUMP_H_
+#define _VRC_CMDENTITYDUMP_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_ENTITYDUMP    "entity.dump"
@@ -58,9 +58,9 @@ class CmdEntityDump : public BaseConsoleCommand
 
     protected:
 
-        std::string                                 dumpEntity( BaseEntity* p_entity, unsigned int creationPolicy );
+        std::string                                 dumpEntity( yaf3d::BaseEntity* p_entity, unsigned int creationPolicy );
 };
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDENTITYDUMP_H_
+#endif // _VRC_CMDENTITYDUMP_H_

@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDENTITYATTRSET_H_
-#define _CTD_CMDENTITYATTRSET_H_
+#ifndef _VRC_CMDENTITYATTRSET_H_
+#define _VRC_CMDENTITYATTRSET_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_ENTITYATTRSET   "entity.attribute.set"
@@ -55,6 +55,6 @@ class CmdEntityAttributeSet : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDENTITYATTRSET_H_
+#endif // _VRC_CMDENTITYATTRSET_H_

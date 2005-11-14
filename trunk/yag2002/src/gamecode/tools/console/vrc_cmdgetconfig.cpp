@@ -28,13 +28,11 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdgetconfig.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdgetconfig.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -53,11 +51,11 @@ CmdGetConfig::~CmdGetConfig()
 
 const std::string& CmdGetConfig::execute( const std::vector< std::string >& arguments )
 {
-    _cmdResult =  "setting file: " + string( CTD_GAMESETTING_FILENAME ) + "\n";
+    _cmdResult =  "setting file: " + std::string( YAF3D_GAMESETTING_FILENAME ) + "\n";
     _cmdResult += "-----------------\n";
 
     std::vector< std::pair< std::string, std::string > > settings;
-    Configuration::get()->getConfigurationAsString( settings );
+    yaf3d::Configuration::get()->getConfigurationAsString( settings );
     std::vector< std::pair< std::string, std::string > >::iterator p_beg = settings.begin(), p_end = settings.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
@@ -68,4 +66,4 @@ const std::string& CmdGetConfig::execute( const std::vector< std::string >& argu
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

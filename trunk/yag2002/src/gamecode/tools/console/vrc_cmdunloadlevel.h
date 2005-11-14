@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDUNLOADLEVEL_H_
-#define _CTD_CMDUNLOADLEVEL_H_
+#ifndef _VRC_CMDUNLOADLEVEL_H_
+#define _VRC_CMDUNLOADLEVEL_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_UNLOADLEVEL    "unload.level"
@@ -55,6 +55,6 @@ class CmdUnloadLevel : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDUNLOADLEVEL_H_
+#endif // _VRC_CMDUNLOADLEVEL_H_

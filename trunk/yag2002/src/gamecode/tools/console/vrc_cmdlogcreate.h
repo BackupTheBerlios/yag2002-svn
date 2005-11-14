@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDLOGCREATE_H_
-#define _CTD_CMDLOGCREATE_H_
+#ifndef _VRC_CMDLOGCREATE_H_
+#define _VRC_CMDLOGCREATE_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_LOGCREATE    "log.create"
@@ -55,6 +55,6 @@ class CmdLogCreate : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDLOGCREATE_H_
+#endif // _VRC_CMDLOGCREATE_H_

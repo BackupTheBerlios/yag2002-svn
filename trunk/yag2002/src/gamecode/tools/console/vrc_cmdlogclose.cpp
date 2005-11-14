@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdlogclose.h"
-#include "ctd_console.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdlogclose.h"
+#include "vrc_console.h"
 
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -52,7 +52,7 @@ CmdLogClose::~CmdLogClose()
 
 const std::string& CmdLogClose::execute( const std::vector< std::string >& arguments )
 {
-    EnConsole* p_console = static_cast< EnConsole* >( EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
+    EnConsole* p_console = static_cast< EnConsole* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
     if ( !p_console->closeLog() )
         _cmdResult = "* there is no open log channel";
     else
@@ -61,4 +61,4 @@ const std::string& CmdLogClose::execute( const std::vector< std::string >& argum
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

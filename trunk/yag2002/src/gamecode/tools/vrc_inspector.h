@@ -29,12 +29,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_INSPECTOR_H_
-#define _CTD_INSPECTOR_H_
+#ifndef _VRC_INSPECTOR_H_
+#define _VRC_INSPECTOR_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 //! Entity type name
 #define ENTITY_NAME_INSPECTOR    "Inspector"
@@ -43,7 +43,7 @@ class EnCamera;
 class InspectorIH;
 
 //! Inspector entity
-class EnInspector :  public BaseEntity
+class EnInspector :  public yaf3d::BaseEntity
 {
     public:
                                                     EnInspector();
@@ -72,7 +72,7 @@ class EnInspector :  public BaseEntity
         void                                        updateEntity( float deltaTime );
 
         //! If this entity is persistent so we have to handle entity's update registration on every level loading and destruction ourselves.
-        void                                        handleNotification( const EntityNotification& notification );
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Enable / disable info window rendering
         void                                        enableInfoWindow( bool en );
@@ -147,11 +147,11 @@ class EnInspector :  public BaseEntity
 };
 
 //! Entity type definition used for type registry
-class InspectorEntityFactory : public BaseEntityFactory
+class InspectorEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     InspectorEntityFactory() : 
-                                                     BaseEntityFactory( ENTITY_NAME_INSPECTOR, BaseEntityFactory::Standalone | BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_INSPECTOR, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~InspectorEntityFactory() {}
@@ -161,4 +161,4 @@ class InspectorEntityFactory : public BaseEntityFactory
 
 }
 
-#endif // _CTD_INSPECTOR_H_
+#endif // _VRC_INSPECTOR_H_

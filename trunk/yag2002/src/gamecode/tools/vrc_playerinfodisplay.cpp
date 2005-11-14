@@ -28,17 +28,17 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_playerinfodisplay.h"
-#include "../player/ctd_player.h"
+#include <vrc_main.h>
+#include "vrc_playerinfodisplay.h"
+#include "../player/vrc_player.h"
 
-namespace CTD
+namespace vrc
 {
 
 #define PLAYERINFO_WND    "_playerinfo_"
 
 //! Implement and register the player ingo entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( PlayerInfoDisplayEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( PlayerInfoDisplayEntityFactory );
 
 EnPlayerInfoDisplay::EnPlayerInfoDisplay() :
 _position( osg::Vec3f( 0.001f, 0.1f, 0 ) ),
@@ -57,30 +57,30 @@ EnPlayerInfoDisplay::~EnPlayerInfoDisplay()
     CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
 }
 
-void EnPlayerInfoDisplay::handleNotification( const EntityNotification& notification )
+void EnPlayerInfoDisplay::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle some notifications
     switch( notification.getId() )
     {
-        case CTD_NOTIFY_MENU_ENTER:
+        case YAF3D_NOTIFY_MENU_ENTER:
             break;
 
-        case CTD_NOTIFY_MENU_LEAVE:
+        case YAF3D_NOTIFY_MENU_LEAVE:
             break;
 
-        case CTD_NOTIFY_SHUTDOWN:
+        case YAF3D_NOTIFY_SHUTDOWN:
 
-            EntityManager::get()->deleteEntity( this );
+            yaf3d::EntityManager::get()->deleteEntity( this );
             break;
 
-        case CTD_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
+        case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
         {
             enable( _enable );
             _p_wnd->setPosition( CEGUI::Point( _position.x(), _position.y() ) );
         }
         break;
 
-        case CTD_NOTIFY_PLAYER_DESTRUCTION:
+        case YAF3D_NOTIFY_PLAYER_DESTRUCTION:
         {
             // reset entity reference
             _p_playerEntity = NULL;
@@ -106,21 +106,21 @@ void EnPlayerInfoDisplay::initialize()
         _p_outputText = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", PLAYERINFO_WND "output" ) );
         _p_outputText->setSize( CEGUI::Size( 1.0f, 1.0f ) );
         _p_outputText->setPosition( CEGUI::Point( 0.0f, 0.0f ) );
-        _p_outputText->setFont( CTD_GUI_CONSOLE );
+        _p_outputText->setFont( YAF3D_GUI_CONSOLE );
         _p_wnd->addChildWindow( _p_outputText );
 
-        GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
+        yaf3d::GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     // register entity in order to get updated per simulation step
-    EntityManager::get()->registerUpdate( this, true );
+    yaf3d::EntityManager::get()->registerUpdate( this, true );
     // register entity in order to get notifications
-    EntityManager::get()->registerNotification( this, true );
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 
     getPlayerEntity();
 }
@@ -152,11 +152,11 @@ void EnPlayerInfoDisplay::enable( bool en )
     if ( en )
     {
         getPlayerEntity(); // upate the entity reference
-        GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
+        yaf3d::GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
     }
     else
     {
-        GuiManager::get()->getRootWindow()->removeChildWindow( _p_wnd );
+        yaf3d::GuiManager::get()->getRootWindow()->removeChildWindow( _p_wnd );
     }
 
     _enable = en;
@@ -166,16 +166,16 @@ bool EnPlayerInfoDisplay::getPlayerEntity()
 {
     // try to get local player's entity considering that in a networked session several player entities can exist
     std::string playername;
-    Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, playername );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, playername );
 
-    _p_playerEntity = static_cast< EnPlayer* >( EntityManager::get()->findEntity( ENTITY_NAME_PLAYER, playername ) );
+    _p_playerEntity = static_cast< EnPlayer* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_PLAYER, playername ) );
     if ( !_p_playerEntity )
     {
         // now try to get any player entity
-        _p_playerEntity = static_cast< EnPlayer* >( EntityManager::get()->findEntity( ENTITY_NAME_PLAYER ) );
+        _p_playerEntity = static_cast< EnPlayer* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_PLAYER ) );
         if ( !_p_playerEntity )
         {
-            log << Log::LogLevel( Log::L_WARNING ) << "EnPlayerInfoDisplay: there is no player to get info from!" << std::endl;
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "EnPlayerInfoDisplay: there is no player to get info from!" << std::endl;
             CEGUI::String text( "there is no player entity" );
             _p_outputText->setText( text );
             return false;
@@ -188,4 +188,4 @@ bool EnPlayerInfoDisplay::getPlayerEntity()
 
     return true;
 }
-} // namespace CTD
+} // namespace vrc

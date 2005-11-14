@@ -28,13 +28,12 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdversion.h"
+#include <vrc_main.h>
+#include <vrc_gameutils.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdversion.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -54,11 +53,11 @@ CmdVersion::~CmdVersion()
 const std::string& CmdVersion::execute( const std::vector< std::string >& arguments )
 {
     _cmdResult =  "Virtual Reality Chat (VRC)\n";     
-    _cmdResult += "version: '" + string( VRC_VERSION ) + "'\n";
-    _cmdResult += "project: Yag2002\n";
+    _cmdResult += "VRC version:   '" + std::string( VRC_VERSION ) + "'\n";
+    _cmdResult += "YAF3D version: '" + std::string( YAF3D_VERSION ) + "'\n";
     _cmdResult += "site: http://yag2002.sourceforge.net\n";
-    _cmdResult += "contact: info@botorabi.de\n";
+    _cmdResult += "contact: botorabi@gmx.net\n";
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

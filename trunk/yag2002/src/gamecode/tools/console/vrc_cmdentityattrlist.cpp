@@ -28,13 +28,11 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdentityattrlist.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdentityattrlist.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -61,7 +59,7 @@ const std::string& CmdEntityAttributeList::execute( const std::vector< std::stri
 
     _cmdResult = "list of entity attributes:\n";
 
-    BaseEntity* p_entity = EntityManager::get()->findInstance( arguments[ 0 ] );
+    yaf3d::BaseEntity* p_entity = yaf3d::EntityManager::get()->findInstance( arguments[ 0 ] );
     if ( ! p_entity )
     {
         _cmdResult = "* entity instance '" + arguments[ 0 ] + "' does not exist";
@@ -71,7 +69,7 @@ const std::string& CmdEntityAttributeList::execute( const std::vector< std::stri
     std::vector< std::pair< std::string, std::string > > attributes;
     p_entity->getAttributeManager().getAttributesAsString( attributes );
 
-    string info;
+    std::string info;
     std::vector< std::pair< std::string, std::string > >::iterator p_beg = attributes.begin(), p_end = attributes.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
@@ -82,4 +80,4 @@ const std::string& CmdEntityAttributeList::execute( const std::vector< std::stri
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

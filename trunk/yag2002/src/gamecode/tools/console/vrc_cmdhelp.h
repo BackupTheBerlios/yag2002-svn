@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDHELP_H_
-#define _CTD_CMDHELP_H_
+#ifndef _VRC_CMDHELP_H_
+#define _VRC_CMDHELP_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_HELP    "help"
@@ -56,6 +56,6 @@ class CmdHelp : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDHELP_H_
+#endif // _VRC_CMDHELP_H_

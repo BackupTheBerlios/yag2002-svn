@@ -28,16 +28,16 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_fpsdisplay.h"
+#include <vrc_main.h>
+#include "vrc_fpsdisplay.h"
 
-namespace CTD
+namespace vrc
 {
 
 #define STAT_WND    "_statistics_"
 
 //! Implement and register the statistics entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( FPSDisplayEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( FPSDisplayEntityFactory );
 
 EnFPSDisplay::EnFPSDisplay() :
 _position( osg::Vec3f( 0.001f, 0.001f, 0 ) ),
@@ -60,28 +60,28 @@ EnFPSDisplay::~EnFPSDisplay()
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "EnFPSDisplay: problem cleaning up entity." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnFPSDisplay: problem cleaning up entity." << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
-void EnFPSDisplay::handleNotification( const EntityNotification& notification )
+void EnFPSDisplay::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle some notifications
     switch( notification.getId() )
     {
-        case CTD_NOTIFY_MENU_ENTER:
+        case YAF3D_NOTIFY_MENU_ENTER:
             break;
 
-        case CTD_NOTIFY_MENU_LEAVE:
+        case YAF3D_NOTIFY_MENU_LEAVE:
             break;
 
-        case CTD_NOTIFY_SHUTDOWN:
+        case YAF3D_NOTIFY_SHUTDOWN:
 
-            EntityManager::get()->deleteEntity( this );
+            yaf3d::EntityManager::get()->deleteEntity( this );
             break;
 
-        case CTD_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
+        case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
         {
             enable( _enable );
             _p_wnd->setPosition( CEGUI::Point( _position.x(), _position.y() ) );
@@ -109,18 +109,18 @@ void EnFPSDisplay::initialize()
         _p_outputText->setHorizontalFormatting( CEGUI::StaticText::HorzCentred );
         _p_wnd->addChildWindow( _p_outputText );
 
-        GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
+        yaf3d::GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     // register entity in order to get updated per simulation step
-    EntityManager::get()->registerUpdate( this, true );
+    yaf3d::EntityManager::get()->registerUpdate( this, true );
     // register entity in order to get notifications
-    EntityManager::get()->registerNotification( this, true );
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 void EnFPSDisplay::updateEntity( float deltaTime )
@@ -147,14 +147,14 @@ void EnFPSDisplay::enable( bool en )
 {
     if ( en )
     {
-        GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
+        yaf3d::GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
     }
     else
     {
-        GuiManager::get()->getRootWindow()->removeChildWindow( _p_wnd );
+        yaf3d::GuiManager::get()->getRootWindow()->removeChildWindow( _p_wnd );
     }
 
     _enable = en;
 }
 
-} // namespace CTD
+} // namespace vrc

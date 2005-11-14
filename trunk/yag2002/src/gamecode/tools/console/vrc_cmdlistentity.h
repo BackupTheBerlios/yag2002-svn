@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDLISTENTITY_H_
-#define _CTD_CMDLISTENTITY_H_
+#ifndef _VRC_CMDLISTENTITY_H_
+#define _VRC_CMDLISTENTITY_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_LISTENTITY   "list.entity"
@@ -54,6 +54,6 @@ class CmdListEntity : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDLISTENTITY_H_
+#endif // _VRC_CMDLISTENTITY_H_

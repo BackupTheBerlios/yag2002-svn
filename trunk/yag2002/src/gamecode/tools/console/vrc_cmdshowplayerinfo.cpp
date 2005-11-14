@@ -28,14 +28,12 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_basecmd.h"
-#include "ctd_cmdshowplayerinfo.h"
-#include "../ctd_playerinfodisplay.h"
+#include <vrc_main.h>
+#include "vrc_basecmd.h"
+#include "vrc_cmdshowplayerinfo.h"
+#include "../vrc_playerinfodisplay.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 //! Implement and register the command
@@ -59,7 +57,7 @@ const std::string& CmdShowPlayerInfo::execute( const std::vector< std::string >&
 
     if ( !arguments.size() )
     {
-        _cmdResult = "* error executing command '" + string( CMD_NAME_SHOWPLAYERINFO ) + "'\n ";
+        _cmdResult = "* error executing command '" + std::string( CMD_NAME_SHOWPLAYERINFO ) + "'\n ";
         _cmdResult += getUsage();
         return _cmdResult;
     }
@@ -71,7 +69,7 @@ const std::string& CmdShowPlayerInfo::execute( const std::vector< std::string >&
         enable = false;
     else 
     {
-        _cmdResult = "* error executing command '" + string( CMD_NAME_SHOWPLAYERINFO ) + "'\n ";
+        _cmdResult = "* error executing command '" + std::string( CMD_NAME_SHOWPLAYERINFO ) + "'\n ";
         _cmdResult += getUsage();
         return _cmdResult;
     }
@@ -79,10 +77,10 @@ const std::string& CmdShowPlayerInfo::execute( const std::vector< std::string >&
     if ( !_p_playerInfo )
     {
         // first check if the entity entity already exists
-        _p_playerInfo = static_cast< EnPlayerInfoDisplay* >( EntityManager::get()->findEntity( ENTITY_NAME_PLAYERINFODISPLAY ) );
+        _p_playerInfo = static_cast< EnPlayerInfoDisplay* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_PLAYERINFODISPLAY ) );
         if ( !_p_playerInfo ) // now we create one
         {
-            _p_playerInfo = static_cast< EnPlayerInfoDisplay* >( EntityManager::get()->createEntity( ENTITY_NAME_PLAYERINFODISPLAY, "_playerinfo_" ) );
+            _p_playerInfo = static_cast< EnPlayerInfoDisplay* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_PLAYERINFODISPLAY, "_playerinfo_" ) );
             assert( _p_playerInfo && "error creating EnPlayerInfo entity!" );
             _p_playerInfo->initialize();
             _p_playerInfo->postInitialize();
@@ -95,4 +93,4 @@ const std::string& CmdShowPlayerInfo::execute( const std::vector< std::string >&
     return _cmdResult;
 }
 
-} // namespace CTD
+} // namespace vrc

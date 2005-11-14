@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDSHOWPLAYERINFO_H_
-#define _CTD_CMDSHOWPLAYERINFO_H_
+#ifndef _VRC_CMDSHOWPLAYERINFO_H_
+#define _VRC_CMDSHOWPLAYERINFO_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_SHOWPLAYERINFO    "show.playerinfo"
@@ -59,6 +59,6 @@ class CmdShowPlayerInfo : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDSHOWPLAYERINFO_H_
+#endif // _VRC_CMDSHOWPLAYERINFO_H_

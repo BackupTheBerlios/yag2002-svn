@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDSERVERSTART_H_
-#define _CTD_CMDSERVERSTART_H_
+#ifndef _VRC_CMDSERVERSTART_H_
+#define _VRC_CMDSERVERSTART_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_SERVERSTART    "server.start"
@@ -56,6 +56,6 @@ class CmdServerStart : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDSERVERSTART_H_
+#endif // _VRC_CMDSERVERSTART_H_

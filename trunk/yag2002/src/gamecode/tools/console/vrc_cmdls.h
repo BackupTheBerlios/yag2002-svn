@@ -29,12 +29,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDLS_H_
-#define _CTD_CMDLS_H_
+#ifndef _VRC_CMDLS_H_
+#define _VRC_CMDLS_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_LEVELLIST    "ls"
@@ -61,6 +61,6 @@ class CmdLs : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDLS_H_
+#endif // _VRC_CMDLS_H_

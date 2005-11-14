@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDSHUTDOWN_H_
-#define _CTD_CMDSHUTDOWN_H_
+#ifndef _VRC_CMDSHUTDOWN_H_
+#define _VRC_CMDSHUTDOWN_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_SHUTDOWN    "shutdown"
@@ -55,6 +55,6 @@ class CmdShutdown : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDSHUTDOWN_H_
+#endif // _VRC_CMDSHUTDOWN_H_

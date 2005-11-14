@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_CMDLEVELLIST_H_
-#define _CTD_CMDLEVELLIST_H_
+#ifndef _VRC_CMDLEVELLIST_H_
+#define _VRC_CMDLEVELLIST_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 // console command name
 #define CMD_NAME_LEVELLIST    "level.list"
@@ -55,6 +55,6 @@ class CmdLevelList : public BaseConsoleCommand
 
 
 
-} // namespace CTD
+} // namespace vrc
 
-#endif // _CTD_CMDLEVELLIST_H_
+#endif // _VRC_CMDLEVELLIST_H_

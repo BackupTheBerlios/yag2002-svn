@@ -28,91 +28,25 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_console.h"
-#include "ctd_cmdregistry.h"
-#include "ctd_basecmd.h"
+#include <vrc_main.h>
+#include "vrc_console.h"
+#include "vrc_consoleiobase.h"
+#include "vrc_consoleiogui.h"
+#include "vrc_consoleiocin.h"
+#include "vrc_cmdregistry.h"
+#include "vrc_basecmd.h"
 
-using namespace std;
+#include <conio.h>
 
-namespace CTD
+namespace vrc
 {
-
-#define CON_WND    "_console_"
-
-// Input handler for toggling console window
-class ConsoleIH : public GenericInputHandler< EnConsole >
-{
-    public:
-
-        explicit                            ConsoleIH( EnConsole* p_console ) : 
-                                             GenericInputHandler< EnConsole >( p_console ),
-                                             _toggleEnable( false )
-                                            {
-                                                _retCode = static_cast< int >( KeyMap::get()->getKeyCode( "Return" ) );
-                                                _autoCompleteCode = static_cast< int >( KeyMap::get()->getKeyCode( "Tab" ) );
-                                            }
-                                
-        virtual                             ~ConsoleIH() {}
-
-        //! Handle input events.
-        bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
-                                            {
-                                                const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
-                                                assert( p_eventAdapter && "invalid event adapter received" );
-                                                SDLKey key = p_eventAdapter->getSDLKey();
-
-                                                if ( p_eventAdapter->getEventType() == osgGA::GUIEventAdapter::KEYDOWN ) 
-                                                {
-                                                    if ( key == SDLK_F10 )
-                                                    {
-                                                        _toggleEnable = !_toggleEnable;
-                                                        getUserObject()->enable( _toggleEnable );
-                                                    }
-                                                    else if ( _toggleEnable && key == _retCode )
-                                                    {
-                                                        getUserObject()->issueCmd( _p_userObject->_p_inputWindow->getText().c_str() );
-                                                    }
-                                                    else if ( key == _autoCompleteCode )
-                                                    {
-                                                        getUserObject()->autoCompleteCmd( _p_userObject->_p_inputWindow->getText().c_str() );
-                                                    }
-                                                    else if ( key == SDLK_UP )
-                                                    {
-                                                        getUserObject()->cmdHistory( true );
-                                                    }
-                                                    else if ( key == SDLK_DOWN )
-                                                    {
-                                                        getUserObject()->cmdHistory( false );
-                                                    }
-                                                }
-
-                                                return false;
-                                            }
-
-        void                                resetToggle( bool en ) 
-                                            {
-                                                _toggleEnable = en;
-                                            }
-
-    protected:
-
-        int                                 _retCode;
-        
-        int                                 _autoCompleteCode;
-
-        bool                                _toggleEnable;
-};
 
 //! Implement and register the statistics entity factory
-CTD_IMPL_ENTITYFACTORY_AUTO( ConsoleEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( ConsoleEntityFactory );
 
 EnConsole::EnConsole() :
-_p_wnd( NULL ),
-_p_inputWindow( NULL ),
-_p_outputWindow( NULL ),
 _enable( false ),
-_p_inputHandler( NULL ),
+_p_ioHandler( NULL ),
 _cmdHistoryIndex( 0 ),
 _shutdownInProgress( false ),
 _shutdownCounter( 0 ),
@@ -124,11 +58,10 @@ _cwd( "/" )
 }
 
 EnConsole::~EnConsole()
-{        
-    CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
+{    
 
-    if ( _p_inputHandler )
-        _p_inputHandler->destroyHandler();
+    if ( _p_ioHandler )
+        _p_ioHandler->shutdown();
 
     // destroy the cmd registry singleton
     ConsoleCommandRegistry::get()->destroy();
@@ -137,20 +70,30 @@ EnConsole::~EnConsole()
         closeLog();
 }
 
-void EnConsole::handleNotification( const EntityNotification& notification )
+void EnConsole::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle some notifications
     switch( notification.getId() )
     {
-        case CTD_NOTIFY_MENU_ENTER:
+        case YAF3D_NOTIFY_MENU_ENTER:
             break;
 
-        case CTD_NOTIFY_MENU_LEAVE:
+        case YAF3D_NOTIFY_MENU_LEAVE:
             break;
 
-        case CTD_NOTIFY_SHUTDOWN:
+        case YAF3D_NOTIFY_SHUTDOWN:
 
-            EntityManager::get()->deleteEntity( this );
+            yaf3d::EntityManager::get()->deleteEntity( this );
+            break;
+
+        case YAF3D_NOTIFY_NEW_LEVEL_INITIALIZED:
+
+            if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
+            {
+                std::cout << std::endl;
+                std::cout << "starting VRC server console version " << YAF3D_VERSION << std::endl;
+                std::cout << std::endl;
+            }
             break;
 
         default:
@@ -163,57 +106,24 @@ void EnConsole::initialize()
     static bool alreadycreated = false;
     if ( alreadycreated )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "the console entity can be created only once for entire application run-time."
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "the console entity can be created only once for entire application run-time."
                                              << "you are trying to create a second instance!" << std::endl;
     }
     alreadycreated = true;
 
-    try
+    if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
     {
-        _p_wnd = CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", CON_WND "mainWnd" );
-        _p_wnd->setSize( CEGUI::Size( 0.75f, 0.4f ) );
-        _p_wnd->setPosition( CEGUI::Point( 0.125f, 0.2f ) );
-        _p_wnd->setAlpha( 0.7f );
-        _p_wnd->setFont( CTD_GUI_CONSOLE );
-        _p_wnd->setAlwaysOnTop( true );
-        _p_wnd->setText( "command console" );
-        _p_wnd->setMinimumSize( CEGUI::Size( 0.2f, 0.2f ) );
-        _p_wnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::EnConsole::onCloseFrame, this ) );
-
-        _p_outputWindow = static_cast< CEGUI::MultiLineEditbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/MultiLineEditbox", CON_WND "output" ) );
-        _p_outputWindow->setReadOnly( true );
-        _p_outputWindow->setSize( CEGUI::Size( 0.96f, 0.7f ) );
-        _p_outputWindow->setPosition( CEGUI::Point( 0.02f, 0.1f ) );
-        _p_outputWindow->setFont( CTD_GUI_CONSOLE );
-        _p_outputWindow->setAlpha( 0.7f );
-        _p_wnd->addChildWindow( _p_outputWindow );
-
-        _p_inputWindow = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", CON_WND "input" ) );
-        _p_inputWindow->setSize( CEGUI::Size( 0.96f, 0.1f ) );
-        _p_inputWindow->setPosition( CEGUI::Point( 0.02f, 0.8f ) );
-        _p_inputWindow->setAlpha( 0.7f );
-        _p_inputWindow->setFont( CTD_GUI_CONSOLE );
-        _p_wnd->addChildWindow( _p_inputWindow );
+        _p_ioHandler = new ConsoleIOCin( this );
     }
-    catch ( const CEGUI::Exception& e )
+    else
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** Console: cannot setup dialog layout." << endl;
-        log << "      reason: " << e.getMessage().c_str() << endl;
+        _p_ioHandler = new ConsoleIOGui( this );
     }
 
     // register entity in order to get updated per simulation step
-    EntityManager::get()->registerUpdate( this, true );
+    yaf3d::EntityManager::get()->registerUpdate( this, true );
     // register entity in order to get notifications
-    EntityManager::get()->registerNotification( this, true );
-
-    _p_inputHandler = new ConsoleIH( this );
-}
-
-bool EnConsole::onCloseFrame( const CEGUI::EventArgs& arg )
-{
-    enable( false );
-    _p_inputHandler->resetToggle( false );
-    return true;
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 void EnConsole::enable( bool en )
@@ -221,17 +131,7 @@ void EnConsole::enable( bool en )
     if ( _enable == en )
         return;
 
-    if ( en )
-    {
-        GuiManager::get()->getRootWindow()->addChildWindow( _p_wnd );
-        _p_inputWindow->activate();
-    }
-    else
-    {
-        GuiManager::get()->getRootWindow()->removeChildWindow( _p_wnd );
-        _p_inputWindow->deactivate();
-    }
-
+    _p_ioHandler->enable( en );
     _enable = en;
 }
 
@@ -257,7 +157,7 @@ bool EnConsole::createLog( const std::string& filename, bool append )
     if ( append )
         mode |= std::ios_base::app;
 
-    _p_log->open( ( Application::get()->getMediaPath() + filename ).c_str(), mode );
+    _p_log->open( ( yaf3d::Application::get()->getMediaPath() + filename ).c_str(), mode );
     if ( !*_p_log )
     {
         delete _p_log;
@@ -266,7 +166,7 @@ bool EnConsole::createLog( const std::string& filename, bool append )
     }
 
     std::string text = ( append ? "' appended on " : "' created on " );
-    *_p_log << "# log file '" << filename << text << getTimeStamp() << std::endl;
+    *_p_log << "# log file '" << filename << text << yaf3d::getTimeStamp() << std::endl;
 
     return true;
 }
@@ -328,7 +228,7 @@ bool EnConsole::setCWD( const std::string& cwd )
     }
 
     // now check if the new directory exists in file system
-    if ( !checkDirectory( Application::get()->getMediaPath() + newcwd ) )
+    if ( !yaf3d::checkDirectory( yaf3d::Application::get()->getMediaPath() + newcwd ) )
         return false;
  
     _cwd = newcwd;
@@ -343,14 +243,12 @@ const std::string& EnConsole::getCWD()
 
 // some methods for shell functionality 
 //-------------------------------------
-void EnConsole::cmdHistory( bool prev )
+std::string EnConsole::cmdHistory( bool prev )
 {
     if ( !_cmdHistory.size() )
-        return;
+        return "";
 
-    CEGUI::String text( _cmdHistory[ _cmdHistoryIndex ] );
-    _p_inputWindow->setText( text );
-    _p_inputWindow->setCaratIndex( text.length() );
+    std::string cmd = _cmdHistory[ _cmdHistoryIndex ];
 
     // update cmd index
     if ( prev )
@@ -364,37 +262,31 @@ void EnConsole::cmdHistory( bool prev )
     else if ( _cmdHistoryIndex > ( _cmdHistory.size() - 1 ) )
         _cmdHistoryIndex = _cmdHistory.size() - 1;
 
+    return cmd;
 }
 
 void EnConsole::autoCompleteCmd( const std::string& cmd )
 {
-    CEGUI::String text;
-
     // get matching candidates
     std::vector< std::string > candidates;
     unsigned int matchcnt = ConsoleCommandRegistry::get()->getCmdCandidates( cmd, candidates );
 
     if ( !matchcnt ) // we have no match and no candidates
     {
-        text = _p_outputWindow->getText();
-        text += "> type 'help' in order to get a complete list of possible commands.\n";
-        _p_outputWindow->setText( text );
-        _p_outputWindow->setCaratIndex( text.length() );
+        _p_ioHandler->output( "> type 'help' in order to get a complete list of possible commands.\n" );
         return;
     }
 
     std::vector< std::string >::iterator p_beg = candidates.begin(), p_end = candidates.end();
     if ( matchcnt > 1 ) // we have several candidates
     {
-        text = _p_outputWindow->getText();
-        text += "> possible commands: ";
+        std::string text( "> possible commands: " );
         for ( ; p_beg != p_end; p_beg++ )
         {
             text += ( *p_beg ) + "  ";
         }
         text += "\n";
-        _p_outputWindow->setText( text );
-        _p_outputWindow->setCaratIndex( text.length() );
+        _p_ioHandler->output( text );
 
         // now auto-complete up to next unmatching character in candidates
         bool dobreak = false;
@@ -420,14 +312,11 @@ void EnConsole::autoCompleteCmd( const std::string& cmd )
 
         std::string cmdc = *candidates.begin();
         cmdc = cmdc.substr( 0, cnt - 1 );
-        _p_inputWindow->setText( cmdc );
-        _p_inputWindow->setCaratIndex( cmdc.length() );
+        _p_ioHandler->setCmdLine( cmdc );
     }
     else // we have one single match
     {
-        text = *p_beg;
-        _p_inputWindow->setText( text );
-        _p_inputWindow->setCaratIndex( text.length() );
+        _p_ioHandler->setCmdLine( *p_beg );        
     }
 }
 
@@ -445,14 +334,11 @@ void EnConsole::issueCmd( std::string cmd )
 
 void EnConsole::applyCmd( const std::string& cmd, bool hashcmd )
 {
-    CEGUI::String text = _p_outputWindow->getText();
-    text += "> " + cmd + "\n";
+    std::string text( "> " + cmd + "\n" );
     // dispatch the command
     text += dispatchCmdLine( cmd );
-    _p_outputWindow->setText( text );
-    _p_inputWindow->setText( "" );
-    // set carat position in order to trigger text scrolling after a new line has been added
-    _p_outputWindow->setCaratIndex( text.length() - 1 );
+    _p_ioHandler->output( text );
+    _p_ioHandler->setCmdLine( "" );
 
     // store the command in history if it is not the exact same as before
     if ( hashcmd && cmd.length() )
@@ -475,16 +361,16 @@ void EnConsole::applyCmd( const std::string& cmd, bool hashcmd )
 
 const std::string& EnConsole::dispatchCmdLine( const std::string& cmdline )
 {
-    static string result;
+    static std::string result;
     result = "";
 
-    vector< string > cmds;
-    explode( cmdline, ";", &cmds ); // multiple commands can be given separated by semicolon 
-    vector< string >::iterator p_beg = cmds.begin(), p_end = cmds.end();
+    std::vector< std::string > cmds;
+    yaf3d::explode( cmdline, ";", &cmds ); // multiple commands can be given separated by semicolon 
+    std::vector< std::string >::iterator p_beg = cmds.begin(), p_end = cmds.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
         // clean up cmd from leading whitespaces
-        string cmd = *p_beg;
+        std::string cmd = *p_beg;
         cmd.erase( 0, cmd.find_first_not_of( " " ) );
 
         // append to log if log is created
@@ -493,7 +379,7 @@ const std::string& EnConsole::dispatchCmdLine( const std::string& cmdline )
 
         result += executeCmd( cmd );
 
-        // append to log if log is created
+        // append to log if yaf3d::log is created
         if ( _p_log )
         {
             *_p_log << result << std::endl;
@@ -506,11 +392,11 @@ const std::string& EnConsole::dispatchCmdLine( const std::string& cmdline )
 
 const std::string& EnConsole::executeCmd( const std::string& cmd )
 {
-    static string result;
+    static std::string result;
     result = "";
-    string lcmd = cmd + ";"; // append a semicolon for easiert parsing
-    string command;
-    string arguments;
+    std::string lcmd = cmd + ";"; // append a semicolon for easiert parsing
+    std::string command;
+    std::string arguments;
 
     // parse and extract the command and its arguments
     size_t pos = lcmd.find_first_of( " " );
@@ -541,7 +427,7 @@ void EnConsole::parseArguments( const std::string& cmdline, std::vector< std::st
     // arguments are white space separated, except they are placed in "" like: "my server name"
     size_t strsize = cmdline.size();
     int  marker = -1;
-    string curstr;
+    std::string curstr;
     for ( size_t cnt = 0; cnt <= strsize; cnt++ ) // merge string areas noted by ""
     {
         if ( ( marker == -1 ) && ( cmdline[ cnt ] == '\"' ) )
@@ -550,7 +436,7 @@ void EnConsole::parseArguments( const std::string& cmdline, std::vector< std::st
         }
         else if ( cmdline[ cnt ] == '\"' )
         {
-            string mergeit = cmdline.substr( marker + 1, cnt - marker - 1 ); // cut the "" from string
+            std::string mergeit = cmdline.substr( marker + 1, cnt - marker - 1 ); // cut the "" from string
             args.push_back( mergeit );
             marker = -1;
             // skip white spaces until next argument
@@ -623,10 +509,10 @@ void EnConsole::updateEntity( float deltaTime )
     if ( _shutdownInProgress )
     {
         if ( _shutdownCounter < 0 )
-            Application::get()->stop();
+            yaf3d::Application::get()->stop();
         else
             _shutdownCounter -= deltaTime;
     }
 }
 
-} // namespace CTD
+} // namespace vrc
