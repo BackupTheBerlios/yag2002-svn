@@ -28,15 +28,13 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_menu.h"
-#include "ctd_dialogsettings.h"
-#include "ctd_dialogplayercfg.h"
-#include "../sound/ctd_ambientsound.h"
+#include <vrc_main.h>
+#include "vrc_menu.h"
+#include "vrc_dialogsettings.h"
+#include "vrc_dialogplayercfg.h"
+#include "../sound/vrc_ambientsound.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 // some defines
@@ -79,12 +77,12 @@ DialogGameSettings::~DialogGameSettings()
     assert( !_busy && "this object must not be destroyed before the message box has been closed! see method onClickedOk" );
 }
 
-bool DialogGameSettings::initialize( const string& layoutfile )
+bool DialogGameSettings::initialize( const std::string& layoutfile )
 {    
-    _p_settingsDialog = GuiManager::get()->loadLayout( layoutfile, NULL, SDLG_PREFIX );
+    _p_settingsDialog = yaf3d::GuiManager::get()->loadLayout( layoutfile, NULL, SDLG_PREFIX );
     if ( !_p_settingsDialog )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** DialogGameSettings: cannot find layout: " << layoutfile << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** DialogGameSettings: cannot find layout: " << layoutfile << std::endl;
         return false;
     }
 
@@ -93,19 +91,19 @@ bool DialogGameSettings::initialize( const string& layoutfile )
     try
     {
         // setup dialog
-        _p_settingsDialog->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedCancel, this ) );
+        _p_settingsDialog->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedCancel, this ) );
 
         // setup ok button
         CEGUI::PushButton* p_btnok = static_cast< CEGUI::PushButton* >( _p_settingsDialog->getChild( SDLG_PREFIX "btn_ok" ) );
-        p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedOk, this ) );
+        p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedOk, this ) );
 
         // setup ok button
         CEGUI::PushButton* p_btnplayercfg = static_cast< CEGUI::PushButton* >( _p_settingsDialog->getChild( SDLG_PREFIX "btn_playercfg" ) );
-        p_btnplayercfg->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedPlayerConfig, this ) );
+        p_btnplayercfg->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedPlayerConfig, this ) );
 
         // setup cancel button
         CEGUI::PushButton* p_btncancel = static_cast< CEGUI::PushButton* >( _p_settingsDialog->getChild( SDLG_PREFIX "btn_cancel" ) );
-        p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedCancel, this ) );
+        p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedCancel, this ) );
 
         // get player name text box
         _p_playerName = static_cast< CEGUI::Editbox* >( _p_settingsDialog->getChild( SDLG_PREFIX "text_playername" ) );
@@ -113,7 +111,7 @@ bool DialogGameSettings::initialize( const string& layoutfile )
         // get tab control contents
         //-------------------------
         CEGUI::TabControl* p_tabctrl = static_cast< CEGUI::TabControl* >( _p_settingsDialog->getChild( SDLG_PREFIX "tab_ctrl" ) );
-        p_tabctrl->subscribeEvent( CEGUI::TabControl::EventSelectionChanged, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onTabChanged, this ) );
+        p_tabctrl->subscribeEvent( CEGUI::TabControl::EventSelectionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onTabChanged, this ) );
 
         // get contents of pane Network
         //#############################
@@ -129,25 +127,25 @@ bool DialogGameSettings::initialize( const string& layoutfile )
         // key bindings
         //-------------
         _p_keyMoveForward  = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_forward" ) );
-        _p_keyMoveForward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedForward, this ) );
+        _p_keyMoveForward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedForward, this ) );
 
         _p_keyMoveBackward = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_backward" ) );
-        _p_keyMoveBackward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedBackward, this ) );
+        _p_keyMoveBackward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedBackward, this ) );
 
         _p_keyMoveLeft     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_left" ) );
-        _p_keyMoveLeft->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedLeft, this ) );
+        _p_keyMoveLeft->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedLeft, this ) );
 
         _p_keyMoveRight    = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_right" ) );
-        _p_keyMoveRight->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedRight, this ) );
+        _p_keyMoveRight->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedRight, this ) );
 
         _p_keyJump         = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_jump" ) );
-        _p_keyJump->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedJump, this ) );
+        _p_keyJump->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedJump, this ) );
 
         _p_keyCameraMode   = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_camera" ) );
-        _p_keyCameraMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedCameraMode, this ) );
+        _p_keyCameraMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedCameraMode, this ) );
 
         _p_keyChatMode     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_chatmode" ) );
-        _p_keyChatMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onClickedChatMode, this ) );
+        _p_keyChatMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedChatMode, this ) );
         //-------------
 
         // get contents of pane Keyboard
@@ -155,15 +153,15 @@ bool DialogGameSettings::initialize( const string& layoutfile )
         CEGUI::TabPane*    p_paneKeyboard = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_keyboard" ) );
 
         _p_keyKeybEnglish = static_cast< CEGUI::Checkbox* >( p_paneKeyboard->getChild( SDLG_PREFIX "cb_english" ) );
-        _p_keyKeybEnglish->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onKeyboardEnglishChanged, this ) );
+        _p_keyKeybEnglish->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onKeyboardEnglishChanged, this ) );
 
         _p_keyKeybGerman  = static_cast< CEGUI::Checkbox* >( p_paneKeyboard->getChild( SDLG_PREFIX "cb_german" ) );
-        _p_keyKeybGerman->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onKeyboardGermanChanged, this ) );
+        _p_keyKeybGerman->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onKeyboardGermanChanged, this ) );
 
         //-------------
         // set callback for mouse sensivity scrollbar
         _p_mouseSensivity = static_cast< CEGUI::Scrollbar* >( p_paneControl->getChild( SDLG_PREFIX "sb_mousesensivity" ) );
-        _p_mouseSensivity->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onMouseSensitivityChanged, this ) );
+        _p_mouseSensivity->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onMouseSensitivityChanged, this ) );
 
         // setup invert mouse callback
         _p_mouseInvert = static_cast< CEGUI::Checkbox* >( p_paneControl->getChild( SDLG_PREFIX "cbx_mouseinvert" ) );
@@ -175,13 +173,13 @@ bool DialogGameSettings::initialize( const string& layoutfile )
 
         // get fullscreen and windowed checkboxes
         _p_fullscreen = static_cast< CEGUI::RadioButton* >( p_paneDisplay->getChild( SDLG_PREFIX "rb_fullscreen" ) );
-        _p_fullscreen->subscribeEvent( CEGUI::RadioButton::EventSelectStateChanged, CEGUI::Event::Subscriber( &CTD::DialogGameSettings::onFullscreenChanged, this ) );
+        _p_fullscreen->subscribeEvent( CEGUI::RadioButton::EventSelectStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onFullscreenChanged, this ) );
         _p_wndscreen = static_cast< CEGUI::RadioButton* >( p_paneDisplay->getChild( SDLG_PREFIX "rb_windowed" ) );
         // get resolution combobox
         _p_resolution = static_cast< CEGUI::Combobox* >( p_paneDisplay->getChild( SDLG_PREFIX "cbox_resolution" ) );
         // enumerate possible screen resolutions
         std::vector< std::string > settings;
-        enumerateDisplaySettings( settings, 16 ); // we take settings including above 16 color bits
+        yaf3d::enumerateDisplaySettings( settings, 16 ); // we take settings including above 16 color bits
         for ( size_t cnt = 0; cnt < settings.size(); cnt++ )
         {
             CEGUI::ListboxTextItem* p_item = new CEGUI::ListboxTextItem( settings[ cnt ].c_str() );
@@ -190,8 +188,8 @@ bool DialogGameSettings::initialize( const string& layoutfile )
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** DialogGameSettings: cannot setup dialog layout." << endl;
-        log << "      reason: " << e.getMessage().c_str() << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** DialogGameSettings: cannot setup dialog layout." << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     // create player config dialog
@@ -221,24 +219,24 @@ void DialogGameSettings::setupControls()
     // get current configuration settings
     //-----------------------------------
     {
-        string cfg_playername;
-        Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, cfg_playername );
+        std::string cfg_playername;
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, cfg_playername );
         // set player name
         _p_playerName->setText( cfg_playername );
     }
 
     // get network settings
     {
-        string cfg_servername;
-        Configuration::get()->getSettingValue( CTD_GS_SERVER_NAME, cfg_servername );
-        string cfg_serverip;
-        Configuration::get()->getSettingValue( CTD_GS_SERVER_IP, cfg_serverip );
+        std::string cfg_servername;
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_NAME, cfg_servername );
+        std::string cfg_serverip;
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_IP, cfg_serverip );
         unsigned int cfg_serverport;
-        Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, cfg_serverport );
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, cfg_serverport );
 
         _p_serverName->setText( cfg_servername );
         _p_serverIP->setText( cfg_serverip );
-        stringstream portasstring;
+        std::stringstream portasstring;
         portasstring << cfg_serverport;
         _p_serverPort->setText( portasstring.str() );
     }
@@ -246,42 +244,42 @@ void DialogGameSettings::setupControls()
     // get key bindings
     {
         _keyBindingLookup.clear();
-        string cfg_movecmd;
-        Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_FORWARD, cfg_movecmd );
+        std::string cfg_movecmd;
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_MOVE_FORWARD, cfg_movecmd );
         _p_keyMoveForward->setText( cfg_movecmd.c_str() );
-        _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyMoveForward ) );
+        _keyBindingLookup.push_back( std::make_pair( cfg_movecmd, _p_keyMoveForward ) );
 
-        Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_BACKWARD, cfg_movecmd );
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_MOVE_BACKWARD, cfg_movecmd );
         _p_keyMoveBackward->setText( cfg_movecmd.c_str() );
-        _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyMoveBackward ) );
+        _keyBindingLookup.push_back( std::make_pair( cfg_movecmd, _p_keyMoveBackward ) );
 
-        Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_LEFT, cfg_movecmd );
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_MOVE_LEFT, cfg_movecmd );
         _p_keyMoveLeft->setText( cfg_movecmd.c_str() );
-        _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyMoveLeft ) );
+        _keyBindingLookup.push_back( std::make_pair( cfg_movecmd, _p_keyMoveLeft ) );
 
-        Configuration::get()->getSettingValue( CTD_GS_KEY_MOVE_RIGHT, cfg_movecmd );
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_MOVE_RIGHT, cfg_movecmd );
         _p_keyMoveRight->setText( cfg_movecmd.c_str() );
-        _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyMoveRight ) );
+        _keyBindingLookup.push_back( std::make_pair( cfg_movecmd, _p_keyMoveRight ) );
 
-        Configuration::get()->getSettingValue( CTD_GS_KEY_JUMP, cfg_movecmd );
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_JUMP, cfg_movecmd );
         _p_keyJump->setText( cfg_movecmd.c_str() );
-        _keyBindingLookup.push_back( make_pair( cfg_movecmd, _p_keyJump ) );
+        _keyBindingLookup.push_back( std::make_pair( cfg_movecmd, _p_keyJump ) );
 
-        string cfg_mode;
-        Configuration::get()->getSettingValue( CTD_GS_KEY_CAMERAMODE, cfg_mode );
+        std::string cfg_mode;
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_CAMERAMODE, cfg_mode );
         _p_keyCameraMode->setText( cfg_mode.c_str() );
-        _keyBindingLookup.push_back( make_pair( cfg_mode, _p_keyCameraMode ) );
+        _keyBindingLookup.push_back( std::make_pair( cfg_mode, _p_keyCameraMode ) );
 
-        Configuration::get()->getSettingValue( CTD_GS_KEY_CHATMODE, cfg_mode );
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_CHATMODE, cfg_mode );
         _p_keyChatMode->setText( cfg_mode.c_str() );
-        _keyBindingLookup.push_back( make_pair( cfg_mode, _p_keyChatMode ) );
+        _keyBindingLookup.push_back( std::make_pair( cfg_mode, _p_keyChatMode ) );
 
         float  cfg_mousesensitivity;
-        Configuration::get()->getSettingValue( CTD_GS_MOUSESENS, cfg_mousesensitivity );
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_MOUSESENS, cfg_mousesensitivity );
         bool   cfg_mouseInverted;
-        Configuration::get()->getSettingValue( CTD_GS_INVERTMOUSE, cfg_mouseInverted );
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_INVERTMOUSE, cfg_mouseInverted );
         // setup scrollbar position
-        _p_mouseSensivity->setDocumentSize( CTD_GS_MAX_MOUSESENS );
+        _p_mouseSensivity->setDocumentSize( YAF3D_GS_MAX_MOUSESENS );
         _p_mouseSensivity->setScrollPosition( cfg_mousesensitivity );
         // setup chekbox
         _p_mouseInvert->setSelected( cfg_mouseInverted );
@@ -289,27 +287,27 @@ void DialogGameSettings::setupControls()
 
     // get keyboard settings
     {
-        string cfg_keyboard;
-        Configuration::get()->getSettingValue( CTD_GS_KEYBOARD, cfg_keyboard );
+        std::string cfg_keyboard;
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEYBOARD, cfg_keyboard );
 
-        if ( cfg_keyboard == CTD_GS_KEYBOARD_ENGLISH )
+        if ( cfg_keyboard == YAF3D_GS_KEYBOARD_ENGLISH )
         {
             _p_keyKeybEnglish->setSelected( true );
             _p_keyKeybGerman->setSelected( false );
         }
-        else if ( cfg_keyboard == CTD_GS_KEYBOARD_GERMAN )
+        else if ( cfg_keyboard == YAF3D_GS_KEYBOARD_GERMAN )
         {
             _p_keyKeybEnglish->setSelected( false );
             _p_keyKeybGerman->setSelected( true );
         }
         else
-            log << Log::LogLevel( Log::L_ERROR ) << "*** DialogGameSettings: invalid keyboard type: " << cfg_keyboard << endl;
+            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** DialogGameSettings: invalid keyboard type: " << cfg_keyboard << std::endl;
     }
 
     // get display settings
     {
         bool fullscreen;
-        Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN, fullscreen );
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_FULLSCREEN, fullscreen );
         if ( fullscreen )
         {
             _p_fullscreen->setSelected( true );
@@ -321,10 +319,10 @@ void DialogGameSettings::setupControls()
         }
 
         unsigned int width, height, colorbits;
-        stringstream resolution;
-        Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH, width );
-        Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, height );
-        Configuration::get()->getSettingValue( CTD_GS_COLORBITS, colorbits );
+        std::stringstream resolution;
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SCREENWIDTH, width );
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SCREENHEIGHT, height );
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_COLORBITS, colorbits );
         resolution << width << "x" << height << "@" << colorbits;
         _p_resolution->setText( resolution.str().c_str() );
     }
@@ -336,94 +334,94 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
 {
     // set player name
     {
-        string playername = _p_playerName->getText().c_str();
-        Configuration::get()->setSettingValue( CTD_GS_PLAYER_NAME, playername );
+        std::string playername = _p_playerName->getText().c_str();
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_PLAYER_NAME, playername );
     }
 
     // set key bindings
     {
-        string cfg_key;
+        std::string cfg_key;
         cfg_key = _p_keyMoveForward->getText().c_str();
-        Configuration::get()->setSettingValue( CTD_GS_KEY_MOVE_FORWARD, cfg_key );
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_KEY_MOVE_FORWARD, cfg_key );
 
         cfg_key = _p_keyMoveBackward->getText().c_str();
-        Configuration::get()->setSettingValue( CTD_GS_KEY_MOVE_BACKWARD, cfg_key );
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_KEY_MOVE_BACKWARD, cfg_key );
 
         cfg_key = _p_keyMoveLeft->getText().c_str();
-        Configuration::get()->setSettingValue( CTD_GS_KEY_MOVE_LEFT, cfg_key );
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_KEY_MOVE_LEFT, cfg_key );
 
         cfg_key = _p_keyMoveRight->getText().c_str();
-        Configuration::get()->setSettingValue( CTD_GS_KEY_MOVE_RIGHT, cfg_key );
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_KEY_MOVE_RIGHT, cfg_key );
 
         cfg_key = _p_keyJump->getText().c_str();
-        Configuration::get()->setSettingValue( CTD_GS_KEY_JUMP, cfg_key );
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_KEY_JUMP, cfg_key );
 
         cfg_key = _p_keyCameraMode->getText().c_str();
-        Configuration::get()->setSettingValue( CTD_GS_KEY_CAMERAMODE, cfg_key );
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_KEY_CAMERAMODE, cfg_key );
 
         cfg_key = _p_keyChatMode->getText().c_str();
-        Configuration::get()->setSettingValue( CTD_GS_KEY_CHATMODE, cfg_key );
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_KEY_CHATMODE, cfg_key );
     }
 
     // set mouse settings
     {
-        Configuration::get()->setSettingValue( CTD_GS_MOUSESENS, _mouseSensitivity );    
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_MOUSESENS, _mouseSensitivity );    
         bool mouseInvert  = _p_mouseInvert->isSelected();
-        Configuration::get()->setSettingValue( CTD_GS_INVERTMOUSE, mouseInvert );
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_INVERTMOUSE, mouseInvert );
     }
 
     // set server settings
     {
-        string servername = _p_serverName->getText().c_str();
-        Configuration::get()->setSettingValue( CTD_GS_SERVER_NAME, servername );
+        std::string servername = _p_serverName->getText().c_str();
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SERVER_NAME, servername );
 
-        string serverip   = _p_serverIP->getText().c_str();
-        Configuration::get()->setSettingValue( CTD_GS_SERVER_IP, serverip );
+        std::string serverip   = _p_serverIP->getText().c_str();
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SERVER_IP, serverip );
 
-        stringstream portasstring;
+        std::stringstream portasstring;
         portasstring << _p_serverPort->getText().c_str();
         unsigned int serverport = 0;
         portasstring >> serverport;
-        Configuration::get()->setSettingValue( CTD_GS_SERVER_PORT, serverport );
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SERVER_PORT, serverport );
     }
 
     // set keyboard type
     {
-        string cfg_keyboard;
+        std::string cfg_keyboard;
         if ( _p_keyKeybEnglish->isSelected() )
         {
-            KeyMap::get()->setup( KeyMap::English ); // re-init keyboard
-            cfg_keyboard = CTD_GS_KEYBOARD_ENGLISH;
+            yaf3d::KeyMap::get()->setup( yaf3d::KeyMap::English ); // re-init keyboard
+            cfg_keyboard = YAF3D_GS_KEYBOARD_ENGLISH;
         }
         else
         {
-            KeyMap::get()->setup( KeyMap::German ); // re-init keyboard
-            cfg_keyboard = CTD_GS_KEYBOARD_GERMAN;
+            yaf3d::KeyMap::get()->setup( yaf3d::KeyMap::German ); // re-init keyboard
+            cfg_keyboard = YAF3D_GS_KEYBOARD_GERMAN;
         }
-        Configuration::get()->setSettingValue( CTD_GS_KEYBOARD, cfg_keyboard );
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_KEYBOARD, cfg_keyboard );
     }
 
     // set the display setting
     {
         bool fullscreen = _p_fullscreen->isSelected();
-        Configuration::get()->setSettingValue( CTD_GS_FULLSCREEN, fullscreen );
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_FULLSCREEN, fullscreen );
         if ( !fullscreen )
         {
             unsigned int width, height, colorbits;
             // get the resolution out of the combobox string
-            string       resstring( _p_resolution->getText().c_str() );
+            std::string  resstring( _p_resolution->getText().c_str() );
             resstring.replace( resstring.find( "x", 0 ), 1, " " ); // replace x by space so that the stream operator below can work
             resstring.replace( resstring.find( "@", 0 ), 1, " " ); // replace @ by space so that the stream operator below can work
-            stringstream resolution( resstring );
+            std::stringstream resolution( resstring );
             resolution >> width >> height >> colorbits;
-            Configuration::get()->setSettingValue( CTD_GS_SCREENWIDTH, width );
-            Configuration::get()->setSettingValue( CTD_GS_SCREENHEIGHT, height );
-            Configuration::get()->setSettingValue( CTD_GS_COLORBITS, colorbits );
+            yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SCREENWIDTH, width );
+            yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SCREENHEIGHT, height );
+            yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_COLORBITS, colorbits );
         }
     }
 
     // store all settings into file
-    Configuration::get()->store();
+    yaf3d::Configuration::get()->store();
 
     // play click sound
     if ( _p_clickSound )
@@ -438,9 +436,9 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
 bool DialogGameSettings::onClickedPlayerConfig( const CEGUI::EventArgs& arg )
 {
     // store the settings changes ( in particular the player name, as the player dialog also can change the player name )
-    string playername = _p_playerName->getText().c_str();
-    Configuration::get()->setSettingValue( CTD_GS_PLAYER_NAME, playername );
-    Configuration::get()->store();
+    std::string playername = _p_playerName->getText().c_str();
+    yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_PLAYER_NAME, playername );
+    yaf3d::Configuration::get()->store();
 
     _p_settingsDialog->hide();
     _playerConfigDialog->show( true );
@@ -453,8 +451,8 @@ void DialogGameSettings::onPlayerConfigDialogClose()
     _p_settingsDialog->show();
     _playerConfigDialog->show( false );
     // update player name
-    string playername;
-    Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, playername );
+    std::string playername;
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, playername );
     _p_playerName->setText( playername.c_str() );
 }
 
@@ -471,12 +469,12 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
 
     // ask user for saving changes using a messagebox
     {
-        MessageBoxDialog* p_msg = new MessageBoxDialog( "Attention", "You have changed the settings.\nDo you want to save changes?", MessageBoxDialog::YES_NO, true );
+        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", "You have changed the settings.\nDo you want to save changes?", yaf3d::MessageBoxDialog::YES_NO, true );
         // set busy flag for our object ( DialogGameSettings ). the busy flag is removed then when the message box is terminated
         //  by clicking any button. the object must not be destroyed before that! this flag helps to catch such programming pittfall.
         _busy = true;
         // create a call back for yes/no buttons of messagebox
-        class MsgYesNoClick: public MessageBoxDialog::ClickCallback
+        class MsgYesNoClick: public yaf3d::MessageBoxDialog::ClickCallback
         {
         public:
 
@@ -487,7 +485,7 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
             void                    onClicked( unsigned int btnId )
                                     {
                                         // did the user clicked yes? if so then store settings
-                                        if ( btnId == MessageBoxDialog::BTN_YES )
+                                        if ( btnId == yaf3d::MessageBoxDialog::BTN_YES )
                                         {
                                             // store the changes
                                             CEGUI::EventArgs earg;
@@ -626,7 +624,7 @@ void DialogGameSettings::senseKeybinding( CEGUI::PushButton* p_btn )
     new BtnInputHandler( p_btn, this );
 }
 
-void BtnInputHandler::updateBindings( const string newkey )
+void BtnInputHandler::updateBindings( const std::string newkey )
 {
     // look for overriding key binding
     //--------------------------------
@@ -667,9 +665,9 @@ bool BtnInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAction
     // dispatch key activity
     if ( eventType == osgGA::GUIEventAdapter::KEYDOWN )
     {
-        if ( key != KeyMap::get()->getKeyCode( "Esc" ) )
+        if ( key != yaf3d::KeyMap::get()->getKeyCode( "Esc" ) )
         {            
-            string curkey = KeyMap::get()->getKeyName( key );
+            std::string curkey = yaf3d::KeyMap::get()->getKeyName( key );
             updateBindings( curkey ); // update all bindings, handle overriding exsiting binding
             _p_dlg->_p_settingsDialog->enable();
             _lockInput = true;
@@ -689,7 +687,7 @@ bool BtnInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAction
         ) )
 
     {
-        string curkey( KeyMap::get()->getMouseButtonName( buttonMask ) );
+        std::string curkey( yaf3d::KeyMap::get()->getMouseButtonName( buttonMask ) );
         updateBindings( curkey ); // update all bindings, handle overriding exsiting binding
         _p_dlg->_p_settingsDialog->enable();
         _lockInput = true;

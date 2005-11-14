@@ -28,14 +28,12 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_dialogplayercfg.h"
-#include "ctd_dialogsettings.h"
-#include "../sound/ctd_ambientsound.h"
+#include <vrc_main.h>
+#include "vrc_dialogplayercfg.h"
+#include "vrc_dialogsettings.h"
+#include "../sound/vrc_ambientsound.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 // some defines
@@ -53,13 +51,13 @@ _p_lastListSelection( NULL ),
 _p_settingsDialog( p_menuEntity )
 {
     // get the player config folder
-    string playercfgdir;
-    Configuration::get()->getSettingValue( CTD_GS_PLAYER_CONFIG_DIR, playercfgdir );
+    std::string playercfgdir;
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_CONFIG_DIR, playercfgdir );
 
     // get player file names
-    string searchdir = Application::get()->getMediaPath() + playercfgdir + "/";
+    std::string searchdir = yaf3d::Application::get()->getMediaPath() + playercfgdir + "/";
     std::vector< std::string > filelisting;
-    getDirectoryListing( filelisting, searchdir, PLAYER_CFG_POSTFIX );
+    yaf3d::getDirectoryListing( filelisting, searchdir, PLAYER_CFG_POSTFIX );
 
     // setup the preview pics for StaticImage field
     if ( filelisting.size() > 0 )
@@ -68,22 +66,22 @@ _p_settingsDialog( p_menuEntity )
         {
             // get the preview pic and player name out of player config file
             //! Note: all player types must have unique names!
-            string profile( filelisting[ cnt ] );
-            Settings* p_settings = SettingsManager::get()->createProfile( profile, searchdir + filelisting[ cnt ] );
+            std::string profile( filelisting[ cnt ] );
+            yaf3d::Settings* p_settings = yaf3d::SettingsManager::get()->createProfile( profile, searchdir + filelisting[ cnt ] );
             if ( !p_settings )
             {
-                log << Log::LogLevel( Log::L_ERROR ) << "DialogPlayerConfig: cannot find player settings: " << searchdir + filelisting[ cnt ] << endl;
+                yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "DialogPlayerConfig: cannot find player settings: " << searchdir + filelisting[ cnt ] << std::endl;
                 continue;
             }
-            string playertype;
-            string previewPic;
+            std::string playertype;
+            std::string previewPic;
             p_settings->registerSetting( "previewPic", previewPic );
             p_settings->registerSetting( "name", playertype );
 
-            SettingsManager::get()->loadProfile( profile );
+            yaf3d::SettingsManager::get()->loadProfile( profile );
             p_settings->getValue( "previewPic", previewPic );
             p_settings->getValue( "name", playertype );
-            SettingsManager::get()->destroyProfile( profile );
+            yaf3d::SettingsManager::get()->destroyProfile( profile );
             //-----------------------------------
 
             // store the player type name and its associated config file name
@@ -92,7 +90,7 @@ _p_settingsDialog( p_menuEntity )
             try
             {
                 // create a new imageset
-                CEGUI::Texture*  p_texture = GuiManager::get()->getGuiRenderer()->createTexture( previewPic, "MenuResources" );
+                CEGUI::Texture*  p_texture = yaf3d::GuiManager::get()->getGuiRenderer()->createTexture( previewPic, "MenuResources" );
                 CEGUI::Imageset* p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( playertype, p_texture );
              
                 if ( !p_imageSet->isImageDefined( previewPic ) )
@@ -128,12 +126,12 @@ DialogPlayerConfig::~DialogPlayerConfig()
         CEGUI::WindowManager::getSingleton().destroyWindow( _p_playerConfigDialog );
 }
 
-bool DialogPlayerConfig::initialize( const string& layoutfile )
+bool DialogPlayerConfig::initialize( const std::string& layoutfile )
 {    
-    _p_playerConfigDialog = GuiManager::get()->loadLayout( layoutfile, NULL, ADLG_PREFIX );
+    _p_playerConfigDialog = yaf3d::GuiManager::get()->loadLayout( layoutfile, NULL, ADLG_PREFIX );
     if ( !_p_playerConfigDialog )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** DialogPlayerConfig: cannot find layout: " << layoutfile << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** DialogPlayerConfig: cannot find layout: " << layoutfile << std::endl;
         return false;
     }
 
@@ -141,25 +139,25 @@ bool DialogPlayerConfig::initialize( const string& layoutfile )
     {
         // setup ok button
         CEGUI::PushButton* p_btnok = static_cast< CEGUI::PushButton* >( _p_playerConfigDialog->getChild( ADLG_PREFIX "btn_ok" ) );
-        p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogPlayerConfig::onClickedOk, this ) );
+        p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogPlayerConfig::onClickedOk, this ) );
 
         // setup cancel button
         CEGUI::PushButton* p_btncancel = static_cast< CEGUI::PushButton* >( _p_playerConfigDialog->getChild( ADLG_PREFIX "btn_cancel" ) );
-        p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CTD::DialogPlayerConfig::onClickedCancel, this ) );
+        p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogPlayerConfig::onClickedCancel, this ) );
 
         // setup editbox for player name
         _p_playerName = static_cast< CEGUI::Editbox* >( _p_playerConfigDialog->getChild( ADLG_PREFIX "eb_playername" ) );
 
         // get list box
         _p_listbox = static_cast< CEGUI::Listbox* >( _p_playerConfigDialog->getChild( ADLG_PREFIX "lst_players" ) );
-        _p_listbox->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &CTD::DialogPlayerConfig::onListItemSelChanged, this ) );
+        _p_listbox->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &vrc::DialogPlayerConfig::onListItemSelChanged, this ) );
 
         _p_image = static_cast< CEGUI::StaticImage* >( _p_playerConfigDialog->getChild( ADLG_PREFIX "img_player" ) );
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** DialogPlayerConfig: cannot setup dialog layout." << endl;
-        log << "      reason: " << e.getMessage().c_str() << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** DialogPlayerConfig: cannot setup dialog layout." << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     return true;
@@ -210,16 +208,16 @@ void DialogPlayerConfig::setupControls()
     }
     // get settings
     {
-        string playername;
-        Configuration::get()->getSettingValue( CTD_GS_PLAYER_NAME, playername );
+        std::string playername;
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, playername );
         _p_playerName->setText( playername.c_str() );
 
-        string playercfg;
-        Configuration::get()->getSettingValue( CTD_GS_PLAYER_CONFIG, playercfg );
+        std::string playercfg;
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_CONFIG, playercfg );
 
         // get the player type out of file list lookup table
         std::map< std::string, std::string >::iterator p_beg = _cfgFiles.begin(), p_end = _cfgFiles.end();
-        string playertype;
+        std::string playertype;
         for ( ; p_beg != p_end; p_beg++ )
         {
             if ( p_beg->second == playercfg )
@@ -244,7 +242,7 @@ void DialogPlayerConfig::setupControls()
 
 void DialogPlayerConfig::setPreviewPic( const CEGUI::ListboxItem* p_item )
 {
-    string* p_texname = static_cast< string* >( p_item->getUserData() );
+    std::string* p_texname = static_cast< std::string* >( p_item->getUserData() );
     CEGUI::Image*  p_image = _players[ *p_texname ];
     if ( !p_image )
     {
@@ -267,16 +265,16 @@ bool DialogPlayerConfig::onClickedOk( const CEGUI::EventArgs& arg )
 
     // write back the settings to configuration
     {
-        string playername = _p_playerName->getText().c_str();
-        Configuration::get()->setSettingValue( CTD_GS_PLAYER_NAME, playername );
-        string playercfg = _cfgFiles[ _currentSelection ];
-        Configuration::get()->setSettingValue( CTD_GS_PLAYER_CONFIG, playercfg );
+        std::string playername = _p_playerName->getText().c_str();
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_PLAYER_NAME, playername );
+        std::string playercfg = _cfgFiles[ _currentSelection ];
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_PLAYER_CONFIG, playercfg );
     }
 
     _currentSelection = "";
 
     // store the settings changes
-    Configuration::get()->store();
+    yaf3d::Configuration::get()->store();
 
     // let the parent dialog know that we are done configuring the player
     _p_settingsDialog->onPlayerConfigDialogClose();

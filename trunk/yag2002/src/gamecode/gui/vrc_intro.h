@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_INTRO_H_
-#define _CTD_INTRO_H_
+#ifndef _VRC_INTRO_H_
+#define _VRC_INTRO_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 class EnAmbientSound;
@@ -90,4 +90,4 @@ class IntroControl
 
 }
 
-#endif // _CTD_INTRO_H_
+#endif // _VRC_INTRO_H_

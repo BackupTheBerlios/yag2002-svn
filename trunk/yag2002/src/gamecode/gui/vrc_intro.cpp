@@ -28,13 +28,12 @@
  #
  ################################################################*/
 
-#include <ctd_main.h>
-#include "ctd_intro.h"
-#include "../sound/ctd_ambientsound.h"
+#include <vrc_main.h>
+#include <vrc_gameutils.h>
+#include "vrc_intro.h"
+#include "../sound/vrc_ambientsound.h"
 
-using namespace std;
-
-namespace CTD
+namespace vrc
 {
 
 // prefix for intro layout resources
@@ -65,12 +64,12 @@ IntroControl::~IntroControl()
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "IntroControl: problem cleaning up gui resources." << endl;
-        log << "      reason: " << e.getMessage().c_str() << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "IntroControl: problem cleaning up gui resources." << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
-bool IntroControl::initialize( const string& intoImage )
+bool IntroControl::initialize( const std::string& intoImage )
 {    
     try
     {
@@ -81,8 +80,8 @@ bool IntroControl::initialize( const string& intoImage )
         _p_wndIntro->setPosition( CEGUI::Point( 0.5f, 0.5f ) ); // centeric zoom
 
         // create a new imageset for intro
-        string imagename = "intro";
-        CEGUI::Texture*  p_texture   = GuiManager::get()->getGuiRenderer()->createTexture( intoImage, "MenuResourcesIntro" );
+        std::string imagename = "intro";
+        CEGUI::Texture*  p_texture   = yaf3d::GuiManager::get()->getGuiRenderer()->createTexture( intoImage, "MenuResourcesIntro" );
         _p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( imagename, p_texture );
         if ( !_p_imageSet->isImageDefined( intoImage ) )
         {
@@ -97,8 +96,8 @@ bool IntroControl::initialize( const string& intoImage )
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** Intro: cannot setup layout!" << endl;
-        log << "      reason: " << e.getMessage().c_str() << endl;
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** Intro: cannot setup layout!" << std::endl;
+        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
         return false;
     }
 
@@ -130,7 +129,7 @@ void IntroControl::update( float deltaTime )
     _p_wndIntro->setPosition( pos );
     _intoImageSize = CEGUI::Size( imgSize, imgSize );
     _p_wndIntro->setSize( _intoImageSize );
-    _p_wndIntro->setAlpha( max( 0.2f, imgSize ) );
+    _p_wndIntro->setAlpha( std::max( 0.2f, imgSize ) );
 }
 
 void IntroControl::start()
@@ -144,11 +143,11 @@ void IntroControl::start()
     _p_wndIntro->setAlpha( 0.2f );
 
     // append the intro window to root
-    GuiManager::get()->getRootWindow()->addChildWindow( _p_wndIntro );
+    yaf3d::GuiManager::get()->getRootWindow()->addChildWindow( _p_wndIntro );
     _introState = Running;
     _introTimer = 0;
 
-    GuiManager::get()->showMousePointer( false ); // let the mouse disappear 
+    gameutils::GuiUtils::get()->showMousePointer( false ); // let the mouse disappear 
 }
 
 void IntroControl::stop()
@@ -160,14 +159,14 @@ void IntroControl::stop()
         _p_introSound->stopPlaying();
 
     // append the intro window to root
-    GuiManager::get()->getRootWindow()->removeChildWindow( _p_wndIntro );
+    yaf3d::GuiManager::get()->getRootWindow()->removeChildWindow( _p_wndIntro );
 
     if ( _p_clickSound )
         _p_clickSound->startPlaying();
 
     _introState = Stopped;
 
-    GuiManager::get()->showMousePointer( true ); // let the mouse appear 
+    gameutils::GuiUtils::get()->showMousePointer( true ); // let the mouse appear 
 }
 
-} // namespace CTD
+} // namespace vrc

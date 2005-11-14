@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_DIALOGLEVELSELECT_H_
-#define _CTD_DIALOGLEVELSELECT_H_
+#ifndef _VRC_DIALOGLEVELSELECT_H_
+#define _VRC_DIALOGLEVELSELECT_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 class DialogGameSettings;
@@ -107,4 +107,4 @@ class DialogLevelSelect
 
 }
 
-#endif // _CTD_DIALOGLEVELSELECT_H_
+#endif // _VRC_DIALOGLEVELSELECT_H_

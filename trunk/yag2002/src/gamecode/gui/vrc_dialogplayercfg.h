@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_DIALOGPLAYERCFG_H_
-#define _CTD_DIALOGPLAYERCFG_H_
+#ifndef _VRC_DIALOGPLAYERCFG_H_
+#define _VRC_DIALOGPLAYERCFG_H_
 
-#include <ctd_main.h>
+#include <vrc_main.h>
 
-namespace CTD
+namespace vrc
 {
 
 class EnAmbientSound;
@@ -102,4 +102,4 @@ class DialogPlayerConfig
 
 }
 
-#endif // _CTD_DIALOGPLAYERCFG_H_
+#endif // _VRC_DIALOGPLAYERCFG_H_
