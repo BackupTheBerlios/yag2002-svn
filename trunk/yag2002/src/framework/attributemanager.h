@@ -35,13 +35,13 @@
  ################################################################*/
 
 
-#ifndef _CTD_ATTRIBUTEMANAGER_H_
-#define _CTD_ATTRIBUTEMANAGER_H_
+#ifndef _ATTRIBUTEMANAGER_H_
+#define _ATTRIBUTEMANAGER_H_
 
-#include <ctd_base.h>
-#include <ctd_log.h>
+#include <base.h>
+#include <log.h>
 
-namespace CTD 
+namespace yaf3d 
 {
 
 //! Attribute types for entities
@@ -65,27 +65,27 @@ class EntityAttributeBase
 
     public:
 
-                                            EntityAttributeBase() {}
-                                            
-        virtual                             ~EntityAttributeBase() {}
+                                                    EntityAttributeBase() {}
+                                                    
+        virtual                                     ~EntityAttributeBase() {}
 
         /**
         * Get attribute name
-        * \return                           Attribute name
+        * \return                                   Attribute name
         */
-        virtual const std::string&          getName() const = 0;
+        virtual const std::string&                  getName() const = 0;
 
         /**
         * Get attribute type
-        * \retrun                           Attribute type
+        * \retrun                                   Attribute type
         */
-        virtual unsigned int                getType() const = 0;
+        virtual unsigned int                        getType() const = 0;
 
         /**
         * Get type info of this attribute
-        * \return                           Type info
+        * \return                                   Type info
         */
-        virtual const std::type_info&       getTypeInfo() const = 0;
+        virtual const std::type_info&               getTypeInfo() const = 0;
  
 };
 
@@ -99,59 +99,59 @@ class EntityAttribute : public EntityAttributeBase
     
         /**
         * Construct an attribute
-        * \param strName                    Attribute name
-        * \param ref                        Reference to an existing variable
+        * \param strName                            Attribute name
+        * \param ref                                Reference to an existing variable
         */
-                                            EntityAttribute( const std::string& name, TypeT &ref );
+                                                    EntityAttribute( const std::string& name, TypeT &ref );
 
-        virtual                             ~EntityAttribute() {}
-
-        /**
-        * Get attribute value
-        * \return                           Attribute reference
-        */
-        TypeT                               getValue() const;
+        virtual                                     ~EntityAttribute() {}
 
         /**
         * Get attribute value
-        * \return                           Attribute reference
+        * \return                                   Attribute reference
         */
-        void                                setValue( TypeT value );
+        TypeT                                       getValue() const;
+
+        /**
+        * Get attribute value
+        * \return                                   Attribute reference
+        */
+        void                                        setValue( TypeT value );
 
         /**
         * Get attribute name
-        * \return                           Attribute name
+        * \return                                   Attribute name
         */
-        const std::string&                  getName() const;
+        const std::string&                          getName() const;
 
         /**
         * Get attribute type
-        * \retrun                           Attribute type
+        * \retrun                                   Attribute type
         */
-        unsigned int                        getType() const;
+        unsigned int                                getType() const;
 
         /**
         * Get type info of this attribute
-        * \return                           Type info
+        * \return                                   Type info
         */
-        const std::type_info&               getTypeInfo() const;
+        const std::type_info&                       getTypeInfo() const;
 
     protected:
 
         //! Reference to entity's attribute
-        TypeT&                              _reference;
+        TypeT&                                      _reference;
 
         //! Attribute name
-        std::string                         _name;
+        std::string                                 _name;
 
         //! Attribute type
-        unsigned int                        _type;
+        unsigned int                                _type;
 
     private:
 
-        EntityAttribute&                    operator = ( const EntityAttribute& );
+        EntityAttribute&                            operator = ( const EntityAttribute& );
 
-                                            EntityAttribute( const EntityAttribute& );
+                                                    EntityAttribute( const EntityAttribute& );
 };
 
 //! Attribute manager
@@ -160,94 +160,94 @@ class AttributeManager
 
     public:
 
-                                            AttributeManager() {} 
+                                                    AttributeManager() {} 
 
-        virtual                             ~AttributeManager() {}
+        virtual                                     ~AttributeManager() {}
 
 
         /**
         * Add an attribute
-        * \param name                       Attribute name
-        * \param reference                  Reference to the member variable in entity
+        * \param name                               Attribute name
+        * \param reference                          Reference to the member variable in entity
         */
         template< class TypeT >
-        void                                addAttribute( const std::string &name, TypeT &reference );
+        void                                        addAttribute( const std::string &name, TypeT &reference );
 
         /**
         * Get attribute list
-        * \return                           List of attributes
+        * \return                                   List of attributes
         */
-        std::vector< EntityAttributeBase* >& getAttributes();
+        std::vector< EntityAttributeBase* >&        getAttributes();
 
         /**
         * Get all attribute names and values as string.
-        * \param attributes                 The result will be stored in this list.
+        * \param attributes                         The result will be stored in this list.
         */
-        void                                getAttributesAsString( std::vector< std::pair< std::string, std::string > >& attributes );
+        void                                        getAttributesAsString( std::vector< std::pair< std::string, std::string > >& attributes );
 
         /**
         * Get attribute value given its name. This method does a type check.
-        * \param name                       Attribute name
-        * \param value                      Requested Value
-        * \return                           true if the value has been found, otherwise false
+        * \param name                               Attribute name
+        * \param value                              Requested Value
+        * \return                                   true if the value has been found, otherwise false
         */
         template< class TypeT >
-        bool                                getAttributeValue( const std::string& name, TypeT& value );
+        bool                                        getAttributeValue( const std::string& name, TypeT& value );
 
         /**
         * Set attribute value. This method does a type check.
-        * \param name                       Attribute name
-        * \param value                      New Value to be set
-        * \return                           true if the value has been found, otherwise false
+        * \param name                               Attribute name
+        * \param value                              New Value to be set
+        * \return                                   true if the value has been found, otherwise false
         */
         template< class TypeT >
-        bool                                setAttributeValue( const std::string& name, TypeT value );
+        bool                                        setAttributeValue( const std::string& name, TypeT value );
 
         /**
         * Set attribute value given an existing attribute.
-        * \param name                       Attribute name
-        * \param attribute                  The value of this Attribute is set to named local attribute.
-        * \return                           true if the value has been found, otherwise false
+        * \param name                               Attribute name
+        * \param attribute                          The value of this Attribute is set to named local attribute.
+        * \return                                   true if the value has been found, otherwise false
         */
-        bool                                setAttributeValue( const std::string& name, const EntityAttributeBase& attribute );
+        bool                                        setAttributeValue( const std::string& name, const EntityAttributeBase& attribute );
 
         /**
         * Set attribute value given its name, type ( see EntityAttributeType ) and value, all as strings
-        * \param name                       Attribute name
-        * \param type                       Attribute type
-        * \param value                      Attribute value
-        * \return                           false if attribute could not be found
+        * \param name                               Attribute name
+        * \param type                               Attribute type
+        * \param value                              Attribute value
+        * \return                                   false if attribute could not be found
         */
-        bool                                setAttributeValue( const std::string &name, const std::string &type, const std::string &value );
+        bool                                        setAttributeValue( const std::string &name, const std::string &type, const std::string &value );
 
         /**
         * Set attribute value using a string. This method does only a format check, not type check ( e.g. the value of an attribute with type boolean can be only "true" or "false" ).
-        * \param name                       Attribute name
-        * \param valuestring                New Value to be set
-        * \return                           true if the value has been found and the value string had a proper format, otherwise false
+        * \param name                               Attribute name
+        * \param valuestring                        New Value to be set
+        * \return                                   true if the value has been found and the value string had a proper format, otherwise false
         */
-        bool                                setAttributeValueByString( const std::string& name, const std::string& valuestring );
+        bool                                        setAttributeValueByString( const std::string& name, const std::string& valuestring );
 
         /**
         * Remove all attributes.
         */
-        void                                removeAllAttributes();
+        void                                        removeAllAttributes();
 
         /**
         * Assignment operator.
         * It updates all own attribute values from a given attribute manager.
         * Note: it is assumed that both managers possess the same attributes in name and value!
         */
-        AttributeManager&                   operator = ( AttributeManager& attr );
+        AttributeManager&                           operator = ( AttributeManager& attr );
 
     protected:
 
         //! Attributes
-        std::vector< EntityAttributeBase* > _attributes;
+        std::vector< EntityAttributeBase* >         _attributes;
 };
 
-#include "ctd_attributemanager.inl"
+#include "attributemanager.inl"
 
-}; // namespace CTD
+}; // namespace yaf3d
 
-#endif //_CTD_ATTRIBUTEMANAGER_H_
+#endif //_ATTRIBUTEMANAGER_H_

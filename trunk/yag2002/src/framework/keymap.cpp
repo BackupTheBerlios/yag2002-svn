@@ -28,13 +28,13 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_keymap.h"
+#include <base.h>
+#include "keymap.h"
 
-namespace CTD
+namespace yaf3d
 {
 
-CTD_SINGLETON_IMPL( KeyMap );
+YAF3D_SINGLETON_IMPL( KeyMap );
 
 //! Implementation of KeyMap
 KeyMap::KeyMap() :
@@ -333,4 +333,4 @@ unsigned int KeyMap::getCode( const std::string& name )
     return getKeyCode( name );
 }
 
-} // namespace CTD
+} // namespace yaf3d

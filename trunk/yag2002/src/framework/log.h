@@ -28,12 +28,12 @@
  #
  ################################################################*/
 
-#ifndef _CTD_LOG_H_
-#define _CTD_LOG_H_
+#ifndef _LOG_H_
+#define _LOG_H_
 
-#include <ctd_base.h>
+#include <base.h>
 
-namespace CTD
+namespace yaf3d
 {
 
 class Log;
@@ -154,6 +154,6 @@ class Log : public std::basic_ostream< char >
 
 };
 
-} // namespace CTD
+} // namespace yaf3d
 
-#endif //_CTD_LOG_H_
+#endif //_LOG_H_

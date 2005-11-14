@@ -37,7 +37,7 @@ distribution.
 
 #include <assert.h>
 
-namespace CTDTinyXML
+namespace yaf3dTinyXml
 {
 
 /*
@@ -249,7 +249,7 @@ public :
 #pragma warning( default : 4786 )
 #endif
 
-} // namespace CTDTinyXML
+} // namespace yaf3dTinyXml
 
 #endif	// TIXML_STRING_INCLUDED
 #endif	// TIXML_USE_STL

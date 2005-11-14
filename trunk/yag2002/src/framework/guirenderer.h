@@ -30,15 +30,15 @@
  #
  ################################################################*/
 
-#ifndef _CTD_GUIRENDERER_H_
-#define _CTD_GUIRENDERER_H_
+#ifndef _GUIRENDERER_H_
+#define _GUIRENDERER_H_
 
 #include <list>
 #include <set>
 
 #define OGLRENDERER_VBUFF_CAPACITY  4096
 
-namespace CTD
+namespace yaf3d
 {
 
 class CTDGuiTexture;
@@ -187,6 +187,6 @@ class CTDGuiRenderer : public CEGUI::Renderer
         int                                     _maxTextureSize;    //!< Holds maximum supported texture size (in pixels).
 };
 
-} // namespace CTD
+} // namespace yaf3d
 
-#endif // _CTD_GUIRENDERER_H_
+#endif // _GUIRENDERER_H_

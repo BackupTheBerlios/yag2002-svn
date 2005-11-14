@@ -29,12 +29,18 @@
  #
  ################################################################*/
 
-#ifndef _CTD_LEVELMANAGER_H_
-#define _CTD_LEVELMANAGER_H_
+#ifndef _LEVELMANAGER_H_
+#define _LEVELMANAGER_H_
 
-#include "ctd_singleton.h"
+#include "singleton.h"
 
-namespace CTD
+
+//! Location of level file directory for Server, Client, and Standalone level
+#define YAF3D_LEVEL_SERVER_DIR    "level/server/"
+#define YAF3D_LEVEL_CLIENT_DIR    "level/client/"
+#define YAF3D_LEVEL_SALONE_DIR    "level/standalone/"
+
+namespace yaf3d
 {
 
 class Application;
@@ -105,7 +111,7 @@ class LevelManager : public Singleton< LevelManager >
         void                                        initializeFirstTime();
 
         //! Build the physics's static collision geometry
-        void                                        buildPhysicsStaticGeometry();
+        void                                        buildPhysicsStaticGeometry( const std::string& levelFile );
 
         //! Static level mesh
         osg::Node*                                  _staticMesh;
@@ -130,6 +136,9 @@ class LevelManager : public Singleton< LevelManager >
 
         //! A queue for all entities which have been loaded before calling filanlizeLoading
         std::vector< BaseEntity* >                  _setupQueue;
+
+        //! Level name which is loaded, this is used for physics serialization
+        std::string                                 _levelFile;
 
     friend class Singleton< LevelManager >;
     friend class Application;
@@ -168,4 +177,4 @@ inline osg::Node* LevelManager::setStaticMesh( osg::Node* p_newnode )
 
 }
 
-#endif // _CTD_LEVELMANAGER_H_
+#endif // _LEVELMANAGER_H_

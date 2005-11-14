@@ -1,5 +1,5 @@
 /****************************************************************
- *  YAG2002 (http://yag2002.sourceforge.net)
+ *  Project YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2007, A. Botorabi
  *
  *  This program is free software; you can redistribute it and/or 
@@ -28,42 +28,42 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_levelmanager.h"
-#include "ctd_entitymanager.h"
-#include "ctd_physics.h"
-#include "ctd_guimanager.h"
-#include "ctd_configuration.h"
-#include "ctd_keymap.h"
-#include "ctd_gamestate.h"
-#include "ctd_network.h"
-#include "ctd_log.h"
-#include "ctd_utils.h"
-#include "ctd_application.h"
+#include <base.h>
+#include "levelmanager.h"
+#include "entitymanager.h"
+#include "physics.h"
+#include "guimanager.h"
+#include "configuration.h"
+#include "keymap.h"
+#include "gamestate.h"
+#include "network.h"
+#include "log.h"
+#include "utils.h"
+#include "application.h"
 
-
-using namespace std;
-using namespace CTD; 
-using namespace osg; 
 
 // app icon and tile
-#define CTD_APP_TITLE           "VRC"
-#define CTD_APP_ICON            "icon.bmp"
+#define YAF3D_APP_TITLE           "VRC"
+#define YAF3D_APP_ICON            "icon.bmp"
+
+// environment variable for media directory
+//  if not existing then the relative path '../../media' of executable is assumed
+#define YAF3D_ENV_MEDIA_DIR	"YAF3D_ENV_MEDIA_DIR"
 
 // log file names
-#define LOG_FILE_NAME           "vrc.log"
-#define LOG_FILE_NAME_SERVER    "vrc-server.log"
+#define LOG_FILE_NAME             "vrc.log"
+#define LOG_FILE_NAME_SERVER      "vrc-server.log"
 
 // media path relative to inst dir
-#define CTD_MEDIA_PATH          "/media/"
+#define YAF3D_MEDIA_PATH          "/media/"
 // default level
-#define CTD_DEFAULT_LEVEL       "gui/loader"
+#define YAF3D_DEFAULT_LEVEL       "gui/loader"
 
 
-// #define CTD_CHECK_HEAP()	
+namespace yaf3d
+{
 
-CTD_SINGLETON_IMPL( Application );
-
+YAF3D_SINGLETON_IMPL( Application );
 
 Application::Application():
 _p_networkDevice( NULL ),
@@ -84,8 +84,9 @@ Application::~Application()
 
 void Application::shutdown()
 {
-    log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------" << endl;
-    log << Log::LogLevel( Log::L_INFO ) << "shutting down, time: " << CTD::getTimeStamp() << endl;
+    log << Log::LogLevel( Log::L_INFO ) << std::endl;
+    log << "---------------------------------------" << std::endl;
+    log << "shutting down, time: " << yaf3d::getTimeStamp() << std::endl;
 
     NetworkDevice::get()->shutdown();
     LevelManager::get()->shutdown();
@@ -101,61 +102,23 @@ void Application::shutdown()
     destroy();
 }
 
-#ifdef WIN32
-// console handler for catching Ctrl+C events on WIN32 platform
-BOOL WINAPI consoleHandler( DWORD ctrlType )
-{
-    switch ( ctrlType )
-    {
-        case CTRL_CLOSE_EVENT:
-        case CTRL_C_EVENT:
-            Application::get()->stop();
-            break;
-
-        default:
-            ;
-    }
-    return TRUE;
-}
-#endif
-
 bool Application::initialize( int argc, char **argv )
 {
-#ifdef CTD_ENABLE_HEAPCHECK
+#ifdef YAF3D_ENABLE_HEAPCHECK
     // trigger debugger
-//    __asm int 3;
-#endif
-
-    // set console handler in order to catch Ctrl+C and close events
-#ifdef WIN32
-    SetConsoleCtrlHandler( consoleHandler, TRUE );
+    //__asm int 3;
 #endif
 
     // set game state
     _p_gameState->setState( GameState::Initializing );
 
-    string arg_levelname;
+    std::string arg_levelname;
     // use an ArgumentParser object to manage the program arguments.
     osg::ArgumentParser arguments( &argc,argv );
-    ArgumentParser::Parameter levelparam( arg_levelname );
+    osg::ArgumentParser::Parameter levelparam( arg_levelname );
     arguments.read( "-level", arg_levelname ); // read the level file if one given
 
-    // fetch argument for using osgviewer instead of own camera and scene updating
     int   argpos;
-    bool  useOsgViewer = false;
-    if ( ( argpos = arguments.find( "-useosgviewer" ) ) != 0 )
-    {
-        useOsgViewer = true;
-        arguments.remove( argpos );
-    }
-    // enable physics debug rendering?
-    bool  enablePhysicsDebugRendering = false;
-    if ( ( argpos = arguments.find( "-physicsdebug" ) ) != 0 )
-    {
-        enablePhysicsDebugRendering = true;
-        arguments.remove( argpos );
-    }
-
     // set proper game mode
     GameState::get()->setMode( GameState::Standalone );
     if ( ( argpos = arguments.find( "-server" ) ) != 0 )
@@ -175,33 +138,41 @@ bool Application::initialize( int argc, char **argv )
     // report any errors if they have occured when parsing the program aguments.
     if (arguments.errors())
     {
-        arguments.writeErrorMessages( cout );
+        arguments.writeErrorMessages( std::cout );
     }
 
     // set the media path as first step, other modules need it for loading resources etc.
     //-------------------
     std::vector< std::string > path;
+    std::string dir;
     {
-        std::string dir = getCurrentWorkingDirectory();
-        dir = cleanPath( dir );
-        dir += "/";
-        path.clear();
-        explode( dir, "/", &path );
-
-#ifdef WIN32
-        dir = "";
-#endif
+        char* p_env = getenv( YAF3D_ENV_MEDIA_DIR );
+        if ( p_env )
+        {
+            _mediaPath = p_env;
+        }
+        else
+        {
+            dir = getCurrentWorkingDirectory();
+            dir = cleanPath( dir );
+            dir += "/";
+            path.clear();
+            explode( dir, "/", &path );
 #ifdef LINUX
-        dir = "/";
+            dir = "/";
 #endif
+#ifdef WIN32
+            dir = "";
+#endif
+            for ( size_t cnt = 0; cnt < path.size() - 2; cnt++ )
+                dir += path[ cnt ] + "/";
 
-        for ( size_t cnt = 0; cnt < path.size() - 2; cnt++ )
-            dir += path[ cnt ] + "/";
-
-        dir.erase( dir.size() -1 );
-        _mediaPath = dir;
+            dir.erase( dir.size() -1 );
+            _mediaPath = dir;
+            _mediaPath += YAF3D_MEDIA_PATH;
+        }
     }
-    _mediaPath += CTD_MEDIA_PATH;
+
     //-------------------
     // set the ful binary path of application
     _fulBinaryPath = arguments.getApplicationName();
@@ -216,37 +187,39 @@ bool Application::initialize( int argc, char **argv )
     else
         log.addSink( "file", getMediaPath() + std::string( LOG_FILE_NAME_SERVER ), Log::L_ERROR );
 
-    log.addSink( "stdout", cout, Log::L_ERROR );
+    log.addSink( "stdout", std::cout, Log::L_ERROR );
 
     log.enableSeverityLevelPrinting( false );
-    log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------" << endl;
-    log << Log::LogLevel( Log::L_INFO ) << "Virtual Reality Chat (VRC)"              << endl;
-    log << Log::LogLevel( Log::L_INFO ) << "version: " << string( VRC_VERSION )      << endl;
-    log << Log::LogLevel( Log::L_INFO ) << "project: Yag2002"                        << endl;
-    log << Log::LogLevel( Log::L_INFO ) << "site:    http://yag2002.sourceforge.net" << endl;
-    log << Log::LogLevel( Log::L_INFO ) << "contact: info@botorabi.de"               << endl;
-    log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------" << endl;
-    log << Log::LogLevel( Log::L_INFO ) << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------"    << std::endl;
+    log << Log::LogLevel( Log::L_INFO ) << "yaf3d -- Yet another Framework 3D      "    << std::endl;
+    log << Log::LogLevel( Log::L_INFO ) << "version: " << std::string( YAF3D_VERSION )  << std::endl;
+    log << Log::LogLevel( Log::L_INFO ) << "project: Yag2002"                           << std::endl;
+    log << Log::LogLevel( Log::L_INFO ) << "site:    http://yag2002.sourceforge.net"    << std::endl;
+    log << Log::LogLevel( Log::L_INFO ) << "contact: botorabi@gmx.net"                  << std::endl;
+    log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------"    << std::endl;
+    log << Log::LogLevel( Log::L_INFO ) << std::endl;
     log.enableSeverityLevelPrinting( true );
 
-    log << Log::LogLevel( Log::L_INFO ) << "time: " << CTD::getTimeStamp() << endl;
-    log << Log::LogLevel( Log::L_INFO ) << "initializing viewer" << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "time: " << yaf3d::getTimeStamp() << std::endl;
+    log << Log::LogLevel( Log::L_INFO ) << "initializing viewer" << std::endl;
+
+    log << Log::LogLevel( Log::L_INFO ) << "using media path: " << _mediaPath << std::endl;
 
     // setup the viewer
     //----------
     
     // load the display settings
-    Configuration::get()->getSettingValue( CTD_GS_SCREENWIDTH,  _screenWidth );
-    Configuration::get()->getSettingValue( CTD_GS_SCREENHEIGHT, _screenHeight );
-    Configuration::get()->getSettingValue( CTD_GS_FULLSCREEN, _fullScreen );
+    Configuration::get()->getSettingValue( YAF3D_GS_SCREENWIDTH,  _screenWidth  );
+    Configuration::get()->getSettingValue( YAF3D_GS_SCREENHEIGHT, _screenHeight );
+    Configuration::get()->getSettingValue( YAF3D_GS_FULLSCREEN,   _fullScreen   );
     unsigned int colorBits = 24;
-    Configuration::get()->getSettingValue( CTD_GS_COLORBITS, colorBits );
+    Configuration::get()->getSettingValue( YAF3D_GS_COLORBITS, colorBits );
 
     // init SDL
     SDL_Init( SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE );
     // set the icon and caption title
-    SDL_WM_SetCaption( CTD_APP_TITLE, NULL );
-    SDL_Surface* p_bmpsurface = SDL_LoadBMP( CTD_APP_ICON );
+    SDL_WM_SetCaption( YAF3D_APP_TITLE, NULL );
+    SDL_Surface* p_bmpsurface = SDL_LoadBMP( YAF3D_APP_ICON );
     if ( p_bmpsurface )
     {
         Uint32 col = SDL_MapRGB( p_bmpsurface->format, 255, 255, 255 );
@@ -270,17 +243,17 @@ bool Application::initialize( int argc, char **argv )
         flags |= SDL_FULLSCREEN;
     if ( GameState::get()->getMode() == GameState::Server )
     {
-        SDL_WM_SetCaption( CTD_APP_TITLE "-server", NULL );
+        SDL_WM_SetCaption( YAF3D_APP_TITLE "-server", NULL );
     }
   	_p_viewer->setDisplayMode( _screenWidth, _screenHeight, colorBits, flags );
     _p_viewer->setCursorEnabled( false );    
     //------------
 
     // setup keyboard map
-    string keybType;
-    Configuration::get()->getSettingValue( CTD_GS_KEYBOARD, keybType );
-    log << Log::LogLevel( Log::L_INFO ) << "setup keyboard map to: " << keybType << endl;
-    if ( keybType == CTD_GS_KEYBOARD_ENGLISH )
+    std::string keybType;
+    Configuration::get()->getSettingValue( YAF3D_GS_KEYBOARD, keybType );
+    log << Log::LogLevel( Log::L_INFO ) << "setup keyboard map to: " << keybType << std::endl;
+    if ( keybType == YAF3D_GS_KEYBOARD_ENGLISH )
         KeyMap::get()->setup( KeyMap::English );
     else
         KeyMap::get()->setup( KeyMap::German );
@@ -293,39 +266,44 @@ bool Application::initialize( int argc, char **argv )
     _p_networkDevice->lockObjects();
     if ( GameState::get()->getMode() == GameState::Server )
     {
-        log << Log::LogLevel( Log::L_INFO ) << "loading level '" << arg_levelname << "'" << endl;
+        log << Log::LogLevel( Log::L_INFO ) << "loading level '" << arg_levelname << "'" << std::endl;
         // load the level and setup things
-        osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( CTD_LEVEL_SERVER_DIR + arg_levelname );
+        osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( YAF3D_LEVEL_SERVER_DIR + arg_levelname );
         if ( !sceneroot.valid() )
             return false;
+
+        // start networking before setting up entities
+        std::string servername;
+        Configuration::get()->getSettingValue( YAF3D_GS_SERVER_NAME, servername );
+        NodeInfo nodeinfo( arg_levelname, servername );
+        unsigned int channel;
+        Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
+        _p_networkDevice->setupServer( channel, nodeinfo );
+
         // complete level loading
         LevelManager::get()->finalizeLoading();
 
-        string servername;
-        Configuration::get()->getSettingValue( CTD_GS_SERVER_NAME, servername );
-        NodeInfo nodeinfo( arg_levelname, servername );
-        unsigned int channel;
-        Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
-        _p_networkDevice->setupServer( channel, nodeinfo );
+        // the server needs no drawing
+        _p_viewer->setUpdateAllViewports( false );
     }
     else if ( GameState::get()->getMode() == GameState::Client )
     {
-        string url;
-        Configuration::get()->getSettingValue( CTD_GS_SERVER_IP, url );
-        string clientname( "vrc-client" );
+        std::string url;
+        Configuration::get()->getSettingValue( YAF3D_GS_SERVER_IP, url );
+        std::string clientname( "vrc-client" );
         NodeInfo nodeinfo( "", clientname );
         unsigned int channel;
-        Configuration::get()->getSettingValue( CTD_GS_SERVER_PORT, channel );
+        Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
 
         if ( !_p_networkDevice->setupClient( url, channel, nodeinfo ) )
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "cannot setup client networking, exiting ..." << endl;
+            log << Log::LogLevel( Log::L_ERROR ) << "cannot setup client networking, exiting ..." << std::endl;
             return false;
         }
 
         // now load level
-        string levelname = CTD_LEVEL_CLIENT_DIR + _p_networkDevice->getNodeInfo()->getLevelName();
-        log << Log::LogLevel( Log::L_INFO ) << "loading level '" << levelname << "'" << endl;
+        std::string levelname = YAF3D_LEVEL_CLIENT_DIR + _p_networkDevice->getNodeInfo()->getLevelName();
+        log << Log::LogLevel( Log::L_INFO ) << "loading level '" << levelname << "'" << std::endl;
         // load the level and setup things
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( levelname );
         if ( !sceneroot.valid() )
@@ -335,16 +313,16 @@ bool Application::initialize( int argc, char **argv )
 
         // if we directly start a client with cmd line option then we must send a leave-menu notification to entities
         //  as many entities do special steps when leaving the menu
-        EntityNotification notification( CTD_NOTIFY_MENU_LEAVE );
+        EntityNotification notification( YAF3D_NOTIFY_MENU_LEAVE );
         EntityManager::get()->sendNotification( notification );
     }
     else // check for any level file name, so we try to start in Standalone mode
     {
-        log << Log::LogLevel( Log::L_INFO ) << "loading level '" << arg_levelname << "'" << endl;
+        log << Log::LogLevel( Log::L_INFO ) << "loading level '" << arg_levelname << "'" << std::endl;
         // set game mode
         GameState::get()->setMode( GameState::Standalone );
         // load the level and setup things
-        string defaultlevel = arg_levelname.length() ? ( string( CTD_LEVEL_SALONE_DIR ) + arg_levelname ) : string( CTD_DEFAULT_LEVEL );
+        std::string defaultlevel = arg_levelname.length() ? ( std::string( YAF3D_LEVEL_SALONE_DIR ) + arg_levelname ) : std::string( YAF3D_DEFAULT_LEVEL );
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( defaultlevel );
         if ( !sceneroot.valid() )
             return false;
@@ -353,13 +331,9 @@ bool Application::initialize( int argc, char **argv )
 
         // if we directly start a client with cmd line option then we must send a leave-menu notification to entities
         //  as many entities do special steps when leaving the menu
-        EntityNotification notification( CTD_NOTIFY_MENU_LEAVE );
+        EntityNotification notification( YAF3D_NOTIFY_MENU_LEAVE );
         EntityManager::get()->sendNotification( notification );
     }
-
-    // enable physics debug rendering
-    if ( enablePhysicsDebugRendering )
-        _p_physics->enableDebugRender();
 
     return true;
 }
@@ -386,10 +360,10 @@ void Application::run()
     }
 
     // check heap if enabled ( used for detecting heap corruptions )
-    CTD_CHECK_HEAP();
+    YAF3D_CHECK_HEAP();
 
     // begin game loop
-    while( ( _p_gameState->getState() != GameState::Quitting ) && !_p_viewer->isTerminated() )
+    while( _p_gameState->getState() != GameState::Quitting )
     {
         lastTick  = curTick;
         curTick   = timer.tick();
@@ -409,8 +383,32 @@ void Application::run()
         else updateStandalone( deltaTime );
 
         // check heap if enabled ( used for detecting heap corruptions )
-        CTD_CHECK_HEAP();
-    }   
+        YAF3D_CHECK_HEAP();
+    }
+}
+
+void Application::updateStandalone( float deltaTime )
+{
+    // update entities
+    _p_entityManager->update( deltaTime  );
+
+    // update physics
+    _p_physics->update( deltaTime );
+
+    // update gui manager
+    _p_guiManager->update( deltaTime );
+
+    // update viewer and draw scene
+    _p_viewer->update();
+    _p_viewer->draw();
+
+    // check for termination
+    if ( _p_viewer->isTerminated() )
+        stop();
+
+    // yield a little processor time for other tasks on system
+    if ( !_fullScreen )
+        OpenThreads::Thread::microSleep( 1000 );
 }
 
 void Application::updateClient( float deltaTime )
@@ -427,8 +425,13 @@ void Application::updateClient( float deltaTime )
     // update gui manager
     _p_guiManager->update( deltaTime );
 
-    // fire off the cull and draw traversals of the scene.
-    _p_viewer->runOnce();
+    // update viewer and draw scene
+    _p_viewer->update();
+    _p_viewer->draw();
+
+    // check for termination
+    if ( _p_viewer->isTerminated() )
+        stop();
 
     // yield a little processor time for other tasks on system
     if ( !_fullScreen )
@@ -443,39 +446,23 @@ void Application::updateServer( float deltaTime )
     // update entities
     _p_entityManager->update( deltaTime  );
 
-    // update physics
+    // update physics on server? once we may need it, but not now
     //_p_physics->update( deltaTime );
 
-    // update gui manager
-    _p_guiManager->update( deltaTime );
+    // update viewer, no draw on server
+    _p_viewer->update();
 
-     // fire off the cull and draw traversals of the scene.
-    _p_viewer->runOnce();
+    // check for termination
+    if ( _p_viewer->isTerminated() )
+        stop();
 
     // yield a little processor time for other tasks on system
     OpenThreads::Thread::microSleep( 1000 );
-}
-
-void Application::updateStandalone( float deltaTime )
-{
-    // update entities
-    _p_entityManager->update( deltaTime  );
-
-    // update physics
-    _p_physics->update( deltaTime );
-
-    // update gui manager
-    _p_guiManager->update( deltaTime );
-
-    // fire off the cull and draw traversals of the scene.
-    _p_viewer->runOnce();
-
-    // yield a little processor time for other tasks on system
-    if ( !_fullScreen )
-        OpenThreads::Thread::microSleep( 1000 );
 }
 
 void Application::stop()
 {
     _p_gameState->setState( GameState::Quitting );
 }
+
+} // namespace yaf3d

@@ -28,13 +28,13 @@
  #
  ################################################################*/
 
-#ifndef	_CTD_GUIMSGBOX_H_
-#define	_CTD_GUIMSGBOX_H_
+#ifndef	_GUIMSGBOX_H_
+#define	_GUIMSGBOX_H_
 
 #include <CEGUIBase.h>
-#include <ctd_guimanager.h>
+#include <guimanager.h>
 
-namespace CTD
+namespace yaf3d
 {
 //! Message box dialog
 /** 
@@ -135,7 +135,7 @@ class MessageBoxDialog
         bool                                    _autodel;
 };
 
-} // namespace CTD
+} // namespace yaf3d
 
 
-#endif	// _CTD_GUIMSGBOX_H_
+#endif	// _GUIMSGBOX_H_

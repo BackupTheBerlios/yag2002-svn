@@ -28,13 +28,13 @@
  #
  ################################################################*/
 
-#ifndef _CTD_APPLICATION_H_
-#define _CTD_APPLICATION_H_
+#ifndef _APPLICATION_H_
+#define _APPLICATION_H_
 
-#include <ctd_base.h>
-#include <ctd_singleton.h>
+#include <base.h>
+#include <singleton.h>
 
-namespace CTD
+namespace yaf3d
 {
 
 class LevelManager;
@@ -161,4 +161,4 @@ inline void Application::getScreenSize( unsigned int& x, unsigned int& y ) const
 }
 
 }
-#endif // _CTD_APPLICATION_H_
+#endif // _APPLICATION_H_

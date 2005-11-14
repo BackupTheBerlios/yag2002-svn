@@ -26,7 +26,7 @@ distribution.
 #include <ctype.h>
 #include <stddef.h>
 
-namespace CTDTinyXML
+namespace yaf3dTinyXml
 {
 
 //#define DEBUG_PARSER
@@ -1509,4 +1509,4 @@ bool TiXmlText::Blank() const
 	return true;
 }
 
-} // namespace CTDTinyXML
+} // namespace yaf3dTinyXml

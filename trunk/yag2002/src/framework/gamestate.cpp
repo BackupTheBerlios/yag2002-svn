@@ -29,13 +29,13 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_gamestate.h"
+#include <base.h>
+#include "gamestate.h"
 
-namespace CTD
+namespace yaf3d
 {
 
-CTD_SINGLETON_IMPL( GameState );
+YAF3D_SINGLETON_IMPL( GameState );
 
 //! Implementation of GameState
 GameState::GameState() :
@@ -61,6 +61,7 @@ void GameState::setState( unsigned int state )
             ( state == GameState::Menu         ) ||
             ( state == GameState::Running      ) ||
             ( state == GameState::Pausing      ) ||
+            ( state == GameState::Leaving      ) ||
             ( state == GameState::Quitting     ) &&
             "GameState: trying to set an invalid game state!" 
           );
@@ -91,4 +92,4 @@ void GameState::setMode( unsigned int mode )
     _gameMode = mode;
 }
 
-}
+} // namespace yaf3d

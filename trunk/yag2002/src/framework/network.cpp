@@ -28,19 +28,111 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include "ctd_network.h"
-#include "ctd_log.h"
-#include "ctd_utils.h"
-#include "ctd_configuration.h"
+#include <base.h>
+#include "network.h"
+#include "log.h"
+#include "utils.h"
+#include "configuration.h"
 #include <RNPlatform/Inc/FreewareCode.h>
 
-using namespace std;
-using namespace CTD;
-using namespace RNReplicaNet;
 
-CTD_SINGLETON_IMPL( NetworkDevice );
+namespace yaf3d
+{
 
+YAF3D_SINGLETON_IMPL( NetworkDevice );
+
+CTDReplicaNet::CTDReplicaNet() :
+_numSessions( 0 )
+{
+}
+
+CTDReplicaNet::~CTDReplicaNet()
+{
+}
+
+void CTDReplicaNet::registerSessionNotify( SessionNotifyCallback* p_cb )
+{
+    std::vector< SessionNotifyCallback* >::iterator p_beg = _sessionCallbacks.begin(), p_end = _sessionCallbacks.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        if ( *p_beg == p_cb )
+            break;
+
+    assert( ( p_beg == p_end ) && "session callback already exists!" );
+
+    _sessionCallbacks.push_back( p_cb );
+}
+
+void CTDReplicaNet::deregisterSessionNotify( SessionNotifyCallback* p_cb )
+{
+    std::vector< SessionNotifyCallback* >::iterator p_beg = _sessionCallbacks.begin(), p_end = _sessionCallbacks.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        if ( *p_beg == p_cb )
+            break;
+
+    assert( ( p_beg != p_end ) && "session callback does not exist!" );
+
+    _sessionCallbacks.erase( p_beg );
+}
+
+void CTDReplicaNet::getSessionIDs( std::vector< int >& ids )
+{
+    ids = _sessionIDs;
+}
+
+void CTDReplicaNet::JoinerSessionIDPost( const int sessionID )
+{
+    THREADSAFELOCKCLASS( _mutex );
+    _sessionIDs.push_back( sessionID );
+    _numSessions++;
+
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "NetworkDevice: client with session ID " << sessionID << " joined" << std::endl;
+
+    // notify registered callback objects
+    std::vector< SessionNotifyCallback* >::iterator p_beg = _sessionCallbacks.begin(), p_end = _sessionCallbacks.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        ( *p_beg )->onSessionJoined( sessionID );
+}
+
+void CTDReplicaNet::LeaverSessionIDPost( const int sessionID )
+{
+    THREADSAFELOCKCLASS( _mutex );
+
+    // check if we have been disconnected from server ( because of server shutdown or network disturbance )
+    if ( sessionID == GetMasterSessionID() )
+    {
+        _numSessions = 0;
+        std::vector< SessionNotifyCallback* >::iterator p_cbbeg = _sessionCallbacks.begin(), p_cbend = _sessionCallbacks.end();
+        for ( ; p_cbbeg != p_cbend; p_cbbeg++ )
+            ( *p_cbbeg )->onServerDisconnect( sessionID );
+
+        _sessionIDs.clear();
+        return;
+    }
+
+    std::vector< int >::iterator p_beg = _sessionIDs.begin(), p_end = _sessionIDs.end();
+    for ( ; p_beg != p_end; p_beg++ )
+        if ( *p_beg == sessionID )
+            break;
+
+    if ( p_beg == p_end )
+    {
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "NetworkDevice: a session is leaving which has an unregistered ID: " << sessionID << std::endl;
+        return;
+    }
+    else
+    {
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "NetworkDevice: leaving network session (" << sessionID << ")" << std::endl;
+    }
+
+    _sessionIDs.erase( p_beg );
+    _numSessions--;
+
+    // notify registered callback objects
+    std::vector< SessionNotifyCallback* >::iterator p_cbbeg = _sessionCallbacks.begin(), p_cbend = _sessionCallbacks.end();
+    for ( ; p_cbbeg != p_cbend; p_cbbeg++ )
+        ( *p_cbbeg )->onSessionLeft( sessionID );
+
+}
 
 NetworkDevice::NetworkDevice() :
 _mode( NONE ),
@@ -68,6 +160,8 @@ void NetworkDevice::disconnect()
     _mode = NetworkDevice::NONE;
     _nodeInfo._levelName = "";
     _nodeInfo._nodeName  = "";
+
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "NetworkDevice: successfully disconnected from network session" << std::endl;
 }
 
 void NetworkDevice::shutdown()
@@ -95,12 +189,12 @@ bool NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
     // do we already have a session created?
     assert( _p_session == NULL && "there is already a running session!" );
 
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "starting server, time: " << CTD::getTimeStamp() << endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "starting server, time: " << yaf3d::getTimeStamp() << std::endl;
 
     _nodeInfo  = nodeInfo;
-    _p_session = new ReplicaNet;
+    _p_session = new CTDReplicaNet;
 
-    log << Log::LogLevel( Log::L_INFO ) << "nw server: starting network session: " << nodeInfo._nodeName << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "nw server: starting network session: " << nodeInfo._nodeName << std::endl;
 
     _p_session->SetManualPoll();
     _p_session->SetLoadBalancing( true );
@@ -114,7 +208,7 @@ bool NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
     unsigned int tryCounter = 0;
 	while ( !_p_session->IsStable() )
 	{
-        CurrentThread::Sleep( 500 );
+        RNReplicaNet::CurrentThread::Sleep( 500 );
         tryCounter++;
 
         // try up to 10 seconds
@@ -130,17 +224,17 @@ bool NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
     _serverSessionStable  = true;
     _mode = NetworkDevice::SERVER;
 
-    string url = _p_session->SessionExportURL();
-    log << Log::LogLevel( Log::L_INFO ) << "nw server: session established: " << url << endl;
+    std::string url = _p_session->SessionExportURL();
+    log << Log::LogLevel( Log::L_INFO ) << "nw server: session established: " << url << std::endl;
     return true;
 }
 
-bool NetworkDevice::setupClient( const string& serverIp, int channel, const NodeInfo& nodeInfo )
+bool NetworkDevice::setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo )
 {
     // do we already have a session created?
     assert( _p_session == NULL && "there is already a running session!" );
     _nodeInfo  = nodeInfo;
-    _p_session = new ReplicaNet;
+    _p_session = new CTDReplicaNet;
 
     _p_session->SetManualPoll();
     //_p_session->SetGameChannel( channel );
@@ -151,37 +245,21 @@ bool NetworkDevice::setupClient( const string& serverIp, int channel, const Node
     _p_session->SetDataRetention( true );
     _p_session->SetPreConnect( true );
 
-    //! if the URL is empty then auto-search for sessions in loacal net
-    string Url;
-    if ( !serverIp.length() )
-    {
-        log << Log::LogLevel( Log::L_INFO ) << "nw client: trying to find sessions ..." << endl;
-        _p_session->SessionFind();
-	OpenThreads::Thread::microSleep( 500 );
-        Url = _p_session->SessionEnumerateFound();
-        if ( Url.length() > 0 ) {
-            log << Log::LogLevel( Log::L_INFO ) << "nw client: session found, url: '" + Url + "'" << endl;
-        } 
-        else 
-        {
-            log << Log::LogLevel( Log::L_WARNING ) << "nw client:   could not find any session!" << endl;
-            _p_session->Disconnect();
-            delete _p_session;
-            _p_session = NULL;   
-            return false;
-        }
-    }
+    //! if the URL is empty or "localhost" then set it to "127.0.0.1"
+    std::string Url, ip;
+    if ( !serverIp.length() || ( serverIp == "localhost" ) )
+        ip = "127.0.0.1";
     else
-    {	
-        //example url: "SESSION://UDP@127.0.0.1:32001/gameserver"}
-        string servername;
-        Configuration::get()->getSettingValue( CTD_GS_SERVER_NAME, servername );
-        stringstream assembledUrl;
-        assembledUrl << "SESSION://UDP@" << serverIp << ":" << channel << "/" << servername;
-        Url = assembledUrl.str();
-    }
+        ip = serverIp;
 
-    log << Log::LogLevel( Log::L_INFO ) << "nw client: try to join to session: " << Url << endl;
+    //assemble the url; example url: "SESSION://UDP@127.0.0.1:32001/gameserver"}
+    std::string servername;
+    Configuration::get()->getSettingValue( YAF3D_GS_SERVER_NAME, servername );
+    std::stringstream assembledUrl;
+    assembledUrl << "SESSION://UDP@" << ip << ":" << channel << "/" << servername;
+    Url = assembledUrl.str();
+
+    log << Log::LogLevel( Log::L_INFO ) << "nw client: try to join to session: " << Url << std::endl;
     _p_session->SessionJoin( Url );
 
     unsigned int tryCounter = 0;
@@ -189,12 +267,12 @@ bool NetworkDevice::setupClient( const string& serverIp, int channel, const Node
     while ( !_p_session->GetPreConnectStatus() && tryCounter < 100 ) 
     {
         _p_session->Poll();
-        CurrentThread::Sleep( 100 );
+        RNReplicaNet::CurrentThread::Sleep( 100 );
         tryCounter++;
     }
     if ( tryCounter == 100 )
     {
-        log << Log::LogLevel( Log::L_WARNING ) << "nw client: cannot connect to server: " << Url << endl;
+        log << Log::LogLevel( Log::L_WARNING ) << "nw client: cannot connect to server: " << Url << std::endl;
 
         _p_session->Disconnect();
         delete _p_session;
@@ -203,15 +281,15 @@ bool NetworkDevice::setupClient( const string& serverIp, int channel, const Node
         return false;
     }
 
-    log << Log::LogLevel( Log::L_INFO ) << "nw client: negotiating with server ..." << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "nw client: negotiating with server ..." << std::endl;
 
     // begin to negotiate with server
     //-----------------------------//
-    log << Log::LogLevel( Log::L_INFO ) << "nw client:  exchanging pre-connect data ..." << endl;
+    log << Log::LogLevel( Log::L_INFO ) << "nw client:  exchanging pre-connect data ..." << std::endl;
 
     PreconnectDataClient preconnectData;
-    preconnectData._typeId = ( unsigned char )CTD_NW_PRECON_DATA_CLIENT;
-    _p_session->DataSend( kReplicaNetUnknownUniqueID, &preconnectData, sizeof( PreconnectDataClient ), ReplicaNet::kPacket_Reliable );
+    preconnectData._typeId = ( unsigned char )YAF3DNW_PRECON_DATA_CLIENT;
+    _p_session->DataSend( RNReplicaNet::kReplicaNetUnknownUniqueID, &preconnectData, sizeof( PreconnectDataClient ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
 
     int          sessionId;
     void*        p_buffer[ 512 ];
@@ -221,24 +299,26 @@ bool NetworkDevice::setupClient( const string& serverIp, int channel, const Node
     while ( !gotServerInfo ) 
     {        
         _p_session->Poll();
-        CurrentThread::Sleep( 100 );
+        RNReplicaNet::CurrentThread::Sleep( 100 );
         while ( _p_session->DataReceive( &sessionId, p_buffer, &bufferLength ) ) 
         {
             PreconnectDataServer* p_data = ( PreconnectDataServer* )p_buffer;
-            if ( p_data->_typeId == ( unsigned char )CTD_NW_PRECON_DATA_SERVER ) 
+            if ( p_data->_typeId == ( unsigned char )YAF3DNW_PRECON_DATA_SERVER ) 
             {
                 p_data->_p_levelName[ 63 ]  = 0;
                 p_data->_p_serverName[ 63 ] = 0;
                 _nodeInfo._levelName = p_data->_p_levelName;
                 _nodeInfo._nodeName  = p_data->_p_serverName;
                 gotServerInfo = true;
+
+                log << Log::LogLevel( Log::L_DEBUG ) << "nw client:  got preconnect data from server" << std::endl;
             }
         }
 
         // try up to 10 seconds
         if ( tryCounter > 100 ) 
         {
-            log << Log::LogLevel( Log::L_WARNING ) << "*** nw client: problems negotiating with server" << endl;
+            log << Log::LogLevel( Log::L_WARNING ) << "*** nw client: problems negotiating with server" << std::endl;
 
             _p_session->Disconnect();
             delete _p_session;
@@ -259,38 +339,40 @@ bool NetworkDevice::startClient()
 {
     if ( !_clientSessionStable )
     {
-        log << Log::LogLevel( Log::L_WARNING ) << "nw client: starting client without a stable session, cannot start client!" << endl;
+        log << Log::LogLevel( Log::L_WARNING ) << "nw client: starting client without a stable session, cannot start client!" << std::endl;
         return false;
     }
 
-    CTD::log << CTD::Log::LogLevel( CTD::Log::L_DEBUG ) << "starting client, time: " << CTD::getTimeStamp() << endl;
+    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "starting client, time: " << yaf3d::getTimeStamp() << std::endl;
 
     _p_session->PreConnectHasFinished();
 
-    log << Log::LogLevel( Log::L_INFO ) << "nw client: successfully integrated to network" << endl;
-    stringstream msg;
+    log << Log::LogLevel( Log::L_INFO ) << "nw client: successfully integrated to network" << std::endl;
+    std::stringstream msg;
     msg << "nw client: server name: '" << 
         _nodeInfo._nodeName  << 
         "', level name: '"   << 
         _nodeInfo._levelName << 
-        "'" << endl;
-    log << Log::LogLevel( Log::L_INFO ) << msg.str() << endl;
+        "'" << std::endl;
+    log << Log::LogLevel( Log::L_INFO ) << msg.str() << std::endl;
     //-----------------------------//
 
     unsigned int tryCounter = 0;
-    log.enableSeverityLevelPrinting( false );
 	while ( !_p_session->IsStable() )
 	{
         _p_session->Poll();    // during this time we have to poll the session instance as we disabled the automatic poll!
 
-        CurrentThread::Sleep( 200 );
+        RNReplicaNet::CurrentThread::Sleep( 200 );
         tryCounter++;
-        log << Log::LogLevel( Log::L_DEBUG ) << ".";
+
+        log.enableSeverityLevelPrinting( false );
+        log << ".";
+        log.enableSeverityLevelPrinting( true );
 
         // try up to 10 seconds
         if ( tryCounter > 50 ) 
         {
-            log << Log::LogLevel( Log::L_WARNING ) << "*** nw client: problems connecting to server" << endl;
+            log << Log::LogLevel( Log::L_WARNING ) << "*** nw client: problems connecting to server" << std::endl;
 
             _p_session->Disconnect();
             delete _p_session;
@@ -299,13 +381,30 @@ bool NetworkDevice::startClient()
             return false;
         }
     }    
-    log << Log::LogLevel( Log::L_DEBUG ) << endl;
-    log.enableSeverityLevelPrinting( true );
+    log << Log::LogLevel( Log::L_DEBUG ) << std::endl;
 
-    string sessionurl = _p_session->SessionExportURL();
-    log << Log::LogLevel( Log::L_INFO ) << "nw client: successfully joined to session: " << sessionurl << endl;
+    std::string sessionurl = _p_session->SessionExportURL();
+    log << Log::LogLevel( Log::L_INFO ) << "nw client: successfully joined to session: " << sessionurl << std::endl;
 
     return true;
+}
+
+void NetworkDevice::registerSessionNotify( SessionNotifyCallback* p_cb )
+{
+    assert( _p_session && "no valid session exists!" );
+    _p_session->registerSessionNotify( p_cb );
+}
+
+void NetworkDevice::deregisterSessionNotify( SessionNotifyCallback* p_cb )
+{
+    assert( _p_session && "no valid session exists!" );
+    _p_session->deregisterSessionNotify( p_cb );
+}
+
+void NetworkDevice::getSessionIDs( std::vector< int >& ids )
+{
+    assert( _p_session && "no valid session exists!" );
+    _p_session->getSessionIDs( ids );
 }
 
 NodeInfo* NetworkDevice::getNodeInfo()
@@ -314,6 +413,29 @@ NodeInfo* NetworkDevice::getNodeInfo()
         return &_nodeInfo;
 
     return NULL;
+}
+
+int NetworkDevice::getSessionID()
+{
+    assert( _p_session && "no valid session exists!" );
+    return _p_session->GetSessionID();
+}
+
+void NetworkDevice::getObjects( std::vector< RNReplicaNet::ReplicaObject* >& objs )
+{
+    assert( _p_session && "there is no valid session!" );
+    _p_session->ObjectListBeginIterate();
+
+    RNReplicaNet::ReplicaObject* p_obj = NULL;
+    do 
+    {
+        p_obj = _p_session->ObjectListIterate();
+        if ( !p_obj )
+            objs.push_back( p_obj );
+
+    } while( p_obj );
+
+    _p_session->ObjectListFinishIterate();
 }
 
 void NetworkDevice::updateServer( float deltaTime ) 
@@ -328,15 +450,15 @@ void NetworkDevice::updateServer( float deltaTime )
     while ( _p_session->DataReceive( &sessionId, p_buffer, &bufferLength ) ) 
     {
         PreconnectDataClient* p_data = ( PreconnectDataClient* )p_buffer;
-        if ( p_data->_typeId == ( unsigned char )CTD_NW_PRECON_DATA_CLIENT ) 
+        if ( p_data->_typeId == ( unsigned char )YAF3DNW_PRECON_DATA_CLIENT ) 
         {
-            log << Log::LogLevel( Log::L_INFO ) << "server: new client connecting ... " << endl;
+            log << Log::LogLevel( Log::L_INFO ) << "server: new client connecting ... " << std::endl;
             // send server node
             PreconnectDataServer sendData;
-            sendData._typeId = ( unsigned char )CTD_NW_PRECON_DATA_SERVER;
+            sendData._typeId = ( unsigned char )YAF3DNW_PRECON_DATA_SERVER;
             strcpy( sendData._p_levelName, _nodeInfo._levelName.c_str() );
             strcpy( sendData._p_serverName, _nodeInfo._nodeName.c_str() );        
-            _p_session->DataSend( sessionId, ( void* )&sendData, sizeof( PreconnectDataServer ), ReplicaNet::kPacket_Reliable );        
+            _p_session->DataSend( sessionId, ( void* )&sendData, sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );        
         }
     }
 }
@@ -358,3 +480,5 @@ void NetworkDevice::unlockObjects()
     if ( _p_session )
         _p_session->UnLockObjects();
 }
+
+} // namespace yaf3d

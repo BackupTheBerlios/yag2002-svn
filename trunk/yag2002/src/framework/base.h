@@ -30,11 +30,15 @@
  ################################################################*/
 
 
-#ifndef _CTD_BASE_H_
-#define _CTD_BASE_H_
+#ifndef _BASE_H_
+#define _BASE_H_
 
-// VRC version
-#define VRC_VERSION     "0.5"
+#ifdef HAVE_CONFIG_H 
+  #include <config.h>
+#endif
+
+// YAF3D version
+#define YAF3D_VERSION     "1.0.0"
 
 // STL headers
 #include <string>
@@ -98,4 +102,4 @@
 // CEGUI headers
 #include <CEGUI.h>
 
-#endif // _CTD_BASE_H_
+#endif // _BASE_H_

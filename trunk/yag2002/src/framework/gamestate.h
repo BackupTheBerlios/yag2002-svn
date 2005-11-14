@@ -29,14 +29,14 @@
  #
  ################################################################*/
 
-#ifndef _CTD_GAMESTATE_H_
-#define _CTD_GAMESTATE_H_
+#ifndef _GAMESTATE_H_
+#define _GAMESTATE_H_
 
-#include <ctd_base.h>
-#include <ctd_singleton.h>
-#include <ctd_application.h>
+#include <base.h>
+#include <singleton.h>
+#include <application.h>
 
-namespace CTD
+namespace yaf3d
 {
 //! Game state
 /**
@@ -63,11 +63,15 @@ class GameState : public Singleton< GameState >
             Menu,                   // user is in menu
             Running,                // running game
             Pausing,                // game pausing
+            Leaving,                // leaving a level
             Quitting                // quitting application
         };
 
         //! Set game mode to Server, Client, or Standalone
         void                                    setMode( unsigned int mode );
+
+        //! Get game mode
+        unsigned int                            getMode();
 
         //! Set new state
         void                                    setState( unsigned int state );
@@ -75,9 +79,6 @@ class GameState : public Singleton< GameState >
         //! Get state state
         unsigned int                            getState();
  
-        //! Get game mode
-        unsigned int                            getMode();
-
     protected:
 
                                                 GameState();
@@ -97,6 +98,6 @@ class GameState : public Singleton< GameState >
     friend class Application;
 };
 
-} // namespace CTD
+} // namespace yaf3d
 
-#endif //_CTD_GAMESTATE_H_
+#endif //_GAMESTATE_H_

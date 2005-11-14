@@ -28,14 +28,14 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
+#include <base.h>
 #include <osg/Transform>
 #include <Newton.h>
 
 #ifndef _PHYSICS_HELPERS_H_
 #define _PHYSICS_HELPERS_H_
 
-namespace CTD
+namespace yaf3d
 {
 
 //! Class used for rendering physics debug info 

@@ -29,19 +29,22 @@
  #
  ################################################################*/
 
-#ifndef _CTD_ENTITYMANAGER_H_
-#define _CTD_ENTITYMANAGER_H_
+#ifndef __ENTITYMANAGER_H_
+#define __ENTITYMANAGER_H_
 
-#include <ctd_baseentity.h>
-#include <ctd_singleton.h>
+#include <baseentity.h>
+#include <singleton.h>
 
-namespace CTD
+//! Helper macro for implementing a new entity type factory
+#define YAF3D_IMPL_ENTITYFACTORY( factory )   static std::auto_ptr< factory > factory##_impl_auto( new factory );
+
+namespace yaf3d
 {
 
 //! Entity manager
 /**
 * This manager provides dynamic creation and deletion of game entities, searching for entities by type and instance name,
-*  and entity updating in game loop.
+*  entity updating in game loop, and more.
 */
 class EntityManager : public Singleton< EntityManager >
 {
@@ -253,45 +256,37 @@ class BaseEntityFactory
         unsigned int                                _creationPolicy;
 };
 
+} // namespace yaf3d
+
 //! Use this convenient macro in your derived entity factories
 #define Macro_CreateEntity( EntityClass )\
-BaseEntity* createEntity() \
+yaf3d::BaseEntity* createEntity() \
 { \
     EntityClass* p_entity =  new EntityClass; \
     setEntityType( p_entity );\
     return p_entity;\
 }
 
-
-//! Helper macro for implementing a new entity type factory with automatic deletion
-//  Use this if you don't intent to remove the entity type factory during the lifetime of the application
-#define CTD_IMPL_ENTITYFACTORY_AUTO( factory )   static std::auto_ptr< factory > factory##_impl_auto( new factory );
-
-//! Helper macro for implementing a new entity type factory
-#define CTD_IMPL_ENTITYFACTORY( factory )        static factory* factory##_impl = new factory;
-
 // inlines
 //--------
-inline const std::string& BaseEntityFactory::getType() const
+inline const std::string& yaf3d::BaseEntityFactory::getType() const
 {
     return _typeTypeName;
 }
 
-inline bool BaseEntityFactory::operator == ( const BaseEntityFactory& factory ) const
+inline bool yaf3d::BaseEntityFactory::operator == ( const yaf3d::BaseEntityFactory& factory ) const
 {
     return ( _typeTypeName == factory.getType() );
 }
 
-inline unsigned int BaseEntityFactory::getCreationPolicy() const
+inline unsigned int yaf3d::BaseEntityFactory::getCreationPolicy() const
 {
     return _creationPolicy;
 }
 
-inline void BaseEntityFactory::setEntityType( BaseEntity* p_entity ) const
+inline void yaf3d::BaseEntityFactory::setEntityType( yaf3d::BaseEntity* p_entity ) const
 { 
     p_entity->_typeName = _typeTypeName;
 }
 
-}
-
-#endif // _CTD_ENTITYMANAGER_H_
+#endif // __ENTITYMANAGER_H_

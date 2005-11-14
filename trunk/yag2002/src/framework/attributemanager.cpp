@@ -28,20 +28,19 @@
  #
  ################################################################*/
 
-#include <ctd_base.h>
-#include <ctd_attributemanager.h>
+#include <base.h>
+#include <attributemanager.h>
 
-using namespace std;
-namespace CTD
+namespace yaf3d
 {
 
-void AttributeManager::getAttributesAsString( vector< pair< string, string > >& attributes )
+void AttributeManager::getAttributesAsString( std::vector< std::pair< std::string, std::string > >& attributes )
 {
-    vector< EntityAttributeBase* >::iterator p_beg = _attributes.begin(), p_end = _attributes.end();
+    std::vector< EntityAttributeBase* >::iterator p_beg = _attributes.begin(), p_end = _attributes.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
         EntityAttributeBase* p_attribute = *p_beg;
-        stringstream strvalue;
+        std::stringstream strvalue;
         unsigned int type = p_attribute->getType();
         switch ( type ) 
         {
@@ -87,18 +86,18 @@ void AttributeManager::getAttributesAsString( vector< pair< string, string > >& 
     }
 }
 
-bool AttributeManager::setAttributeValue( const string &name, const string &type, const string &value )
+bool AttributeManager::setAttributeValue( const std::string &name, const std::string &type, const std::string &value )
 {
     bool bRet = false;
-    stringstream strBuffer( value );
+    std::stringstream strBuffer( value );
 
     // the type information is case-insensitve
-    string citype;    
+    std::string citype;    
     for ( size_t i = 0; i < type.size(); i++ ) citype += toupper( type[ i ] );
 
     if ( ( citype == "BOOLEAN" ) || ( citype == "BOOL" ) ) 
     {
-        string bVal;
+        std::string bVal;
         strBuffer >> bVal;
         bool   bValue = ( bVal == "true" ) ? true : false;
         bRet = setAttributeValue( name, bValue );
@@ -129,9 +128,9 @@ bool AttributeManager::setAttributeValue( const string &name, const string &type
     return bRet;
 }
 
-bool AttributeManager::setAttributeValueByString( const string& name, const string& valuestring )
+bool AttributeManager::setAttributeValueByString( const std::string& name, const std::string& valuestring )
 {        
-    vector< EntityAttributeBase* >::iterator p_beg = _attributes.begin(), p_end = _attributes.end();
+    std::vector< EntityAttributeBase* >::iterator p_beg = _attributes.begin(), p_end = _attributes.end();
     for ( ; p_beg != p_end; p_beg++ )
     {
         if ( ( *p_beg )->getName() == name )
@@ -141,7 +140,7 @@ bool AttributeManager::setAttributeValueByString( const string& name, const stri
         return false;
 
     EntityAttributeBase* p_attribute = *p_beg;
-    stringstream strvalue;
+    std::stringstream strvalue;
     strvalue << valuestring;
     unsigned int type = p_attribute->getType();
     switch ( type ) 
@@ -190,7 +189,7 @@ bool AttributeManager::setAttributeValueByString( const string& name, const stri
     return true;
 }
 
-bool AttributeManager::setAttributeValue( const string& name, const EntityAttributeBase& attribute )
+bool AttributeManager::setAttributeValue( const std::string& name, const EntityAttributeBase& attribute )
 {
     unsigned int type = attribute.getType();
     switch ( type ) 
@@ -263,4 +262,4 @@ AttributeManager& AttributeManager::operator = ( AttributeManager& attr )
     return *this;
 }
 
-} // namespace CTD
+} // namespace yaf3d

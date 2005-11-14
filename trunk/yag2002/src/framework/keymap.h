@@ -28,14 +28,14 @@
  #
  ################################################################*/
 
-#ifndef _CTD_KEYMAP_H_
-#define _CTD_KEYMAP_H_
+#ifndef _KEYMAP_H_
+#define _KEYMAP_H_
 
-#include <ctd_base.h>
-#include <ctd_singleton.h>
-#include <ctd_application.h>
+#include <base.h>
+#include <singleton.h>
+#include <application.h>
 
-namespace CTD
+namespace yaf3d
 {
 //! Key mapper
 /**
@@ -106,6 +106,6 @@ class KeyMap : public Singleton< KeyMap >
 };
 
 
-} // namespace CTD
+} // namespace yaf3d
 
-#endif //_CTD_KEYMAP_H_
+#endif //_KEYMAP_H_
