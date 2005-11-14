@@ -33,9 +33,9 @@
  ################################################################*/
 
 
-#include "ctd_main.h"
-#include <ctd_utils.h>
-#include "ctd_exceptionlogger.h"
+#include "vrc_main.h"
+#include <utils.h>
+#include "vrc_exceptionlogger.h"
 
 #ifdef WIN32
 

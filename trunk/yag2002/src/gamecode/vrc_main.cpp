@@ -29,8 +29,8 @@
  ################################################################*/
 
 
-#include "ctd_main.h"
-#include <ctd_application.h>
+#include "vrc_main.h"
+#include <vrc_application.h>
 
 int main( int argc, char *argv[] )
 {
