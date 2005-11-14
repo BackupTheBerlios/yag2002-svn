@@ -1,16 +1,24 @@
 
-Project: YAG2002
-Site:    http://yag2002.sourceforge.net
-Contact: boto (botorabi AT gmx DOT net)
-Date:    April 27th 2005
+Project:      Yag2002
+Site:         http://yag2002.sourceforge.net
+Contact:      boto (botorabi AT gmx DOT net)
+Date:         september 5th 2005
+Last Update:  november 11th 2005
 
 
-The project YAG2002 has two aims in focus: 1. software technology monitoring and evaluation in the area 
-of digital content creation and simulation, 2. transfering appropriate technologies to the development 
-of a multi-player 3D jump&run / action game "Capture The Diamond" (CTD).
+The project has started in 2002 and 'Yag' stands for 'Yet another game'. The missions in this project are 
 
-This package contains all C++ sources for YAG2002's framework and game code. The framework is built 
-around existing software packages such as 
+1. technology monitoring and evaluation in the area of 3D and multimedia software technologies, 
+
+2. applying appropriate technologies for development of a platform for interactive 3D based multimedia 
+   applications, e.g. games.
+
+Currently we develop a framework (Yaf3d) and a Virtual Reality Chat application (VRC) using that framework.
+VRC supports an own chat protocol and IRC. During you chat with others you can walk in a 3D world and enjoy 
+the environment. Every chat member is has an own avatar.
+
+Yaf3D is a framework around several software libraries. As you may guess, Yaf stands for 'Yet another framework'.
+It is built around existing software packages such as 
 
  - OpenSceneGraph (scene graph management and rendering)
  - Cal3D (character animation)
@@ -21,17 +29,17 @@ around existing software packages such as
  - and more ...
 
 The framework can be used for developing every kind of 3D games and scientific simulations which need 3D 
-content. During the development of CTD the framework is refined and revisited permanently. It offers useful 
+content. During the development of VRC the framework is refined and revisited permanently. It offers useful 
 services and a convenient way to access all wrapped packages (see above) in order to develop a 3D game-like
 application.
 
-Currently the souces are developed with vc7.1 under MS Windows XP. Most packages are multi-platform though
-so it would be not very hard to port the whole project to linux or MacOS (Contact me if you are interested in
+Currently the souces are developed with vc7.1 on MS Windows XP and gcc on Linux. Most packages are multi-platform though
+so it would be not very hard to port the whole project to MacOS (Contact me if you are interested in
 porting the sources, I could help you). 
 
 You find more technical information about the project at 
 
-  http://yag2002.sourceforge.net/dsec
+  http://yag2002.berlios.de/dsec
 
 
 Cheers
