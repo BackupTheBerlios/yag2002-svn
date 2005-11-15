@@ -37,7 +37,7 @@ namespace vrc
 {
 
 //! Implement and register the command
-CTD_IMPL_CONSOLE_CMD( CmdUnloadLevel );
+VRC_IMPL_CONSOLE_CMD( CmdUnloadLevel );
 
 
 CmdUnloadLevel::CmdUnloadLevel() :

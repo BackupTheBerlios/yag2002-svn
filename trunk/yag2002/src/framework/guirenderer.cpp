@@ -39,11 +39,11 @@
 namespace yaf3d
 {
 
-const int CTDGuiRenderer::VERTEX_PER_QUAD           = 6;
-const int CTDGuiRenderer::VERTEX_PER_TRIANGLE       = 3;
-const int CTDGuiRenderer::VERTEXBUFFER_CAPACITY     = OGLRENDERER_VBUFF_CAPACITY;
+const int GuiRenderer::VERTEX_PER_QUAD           = 6;
+const int GuiRenderer::VERTEX_PER_TRIANGLE       = 3;
+const int GuiRenderer::VERTEXBUFFER_CAPACITY     = OGLRENDERER_VBUFF_CAPACITY;
 
-CTDGuiRenderer::CTDGuiRenderer( CEGUI::uint max_quads ) :
+GuiRenderer::GuiRenderer( CEGUI::uint max_quads ) :
 _queueing( true ),
 _currTexture( 0 ),
 _bufferPos( 0 ),
@@ -60,7 +60,7 @@ _maxTextureSize( 0 )
     _display_area.d_bottom  = (float)vp[3];
 }
 
-CTDGuiRenderer::CTDGuiRenderer( CEGUI::uint max_quads, int width, int height ) :
+GuiRenderer::GuiRenderer( CEGUI::uint max_quads, int width, int height ) :
 _queueing(true),
 _currTexture(0),
 _bufferPos(0)
@@ -72,18 +72,18 @@ _bufferPos(0)
     _display_area.d_bottom  = static_cast<float>( height );
 }
 
-CTDGuiRenderer::~CTDGuiRenderer()
+GuiRenderer::~GuiRenderer()
 {
     this->destroyAllTextures();
 }
 
-void CTDGuiRenderer::changeDisplayResolution( float width, float height )
+void GuiRenderer::changeDisplayResolution( float width, float height )
 {
     _display_area.d_right   = width;
     _display_area.d_bottom  = height;
 }
 
-void CTDGuiRenderer::addQuad( const CEGUI::Rect& dest_rect, float z, const CEGUI::Texture* tex, const CEGUI::Rect& texture_rect, const CEGUI::ColourRect& colours, CEGUI::QuadSplitMode quad_split_mode )
+void GuiRenderer::addQuad( const CEGUI::Rect& dest_rect, float z, const CEGUI::Texture* tex, const CEGUI::Rect& texture_rect, const CEGUI::ColourRect& colours, CEGUI::QuadSplitMode quad_split_mode )
 {
     // if not queuing, render directly (as in, right now!)
     if (!_queueing)
@@ -97,7 +97,7 @@ void CTDGuiRenderer::addQuad( const CEGUI::Rect& dest_rect, float z, const CEGUI
         quad.position.d_bottom  = _display_area.d_bottom - dest_rect.d_bottom;
         quad.position.d_top     = _display_area.d_bottom - dest_rect.d_top;
         quad.z                  = z;
-        quad.texid              = ((CTDGuiTexture*)tex)->getOGLTexid();
+        quad.texid              = ((GuiTexture*)tex)->getOGLTexid();
         quad.texPosition        = texture_rect;
         quad.topLeftCol         = colourToOGL(colours.d_top_left);
         quad.topRightCol        = colourToOGL(colours.d_top_right);
@@ -111,7 +111,7 @@ void CTDGuiRenderer::addQuad( const CEGUI::Rect& dest_rect, float z, const CEGUI
     }
 }
 
-void CTDGuiRenderer::doRender()
+void GuiRenderer::doRender()
 {
     initPerFrameStates();
     glInterleavedArrays( GL_T2F_C4UB_V3F , 0, _buff );
@@ -225,51 +225,51 @@ void CTDGuiRenderer::doRender()
     exitPerFrameStates();
 }
 
-void CTDGuiRenderer::clearRenderList()
+void GuiRenderer::clearRenderList()
 {
     _quadlist.clear();  
 }
 
-CEGUI::Texture* CTDGuiRenderer::createTexture()
+CEGUI::Texture* GuiRenderer::createTexture()
 {
-    CTDGuiTexture* p_tex = new CTDGuiTexture( this );
+    GuiTexture* p_tex = new GuiTexture( this );
     _texturelist.push_back( p_tex );
     return p_tex;
 }
 
-CEGUI::Texture* CTDGuiRenderer::createTexture( const CEGUI::String& filename, const CEGUI::String& resourceGroup )
+CEGUI::Texture* GuiRenderer::createTexture( const CEGUI::String& filename, const CEGUI::String& resourceGroup )
 {
-    CTDGuiTexture* p_tex = static_cast< CTDGuiTexture* >( this->createTexture() );
+    GuiTexture* p_tex = static_cast< GuiTexture* >( this->createTexture() );
     p_tex->loadFromFile( filename, resourceGroup );
 
     return p_tex;
 }
 
-CEGUI::Texture* CTDGuiRenderer::createTexture( float size )
+CEGUI::Texture* GuiRenderer::createTexture( float size )
 {
-    CTDGuiTexture* p_tex = static_cast< CTDGuiTexture* >( this->createTexture() );
+    GuiTexture* p_tex = static_cast< GuiTexture* >( this->createTexture() );
     p_tex->setOGLTextureSize( ( CEGUI::uint )size );
 
     return p_tex;
 }
 
-void CTDGuiRenderer::destroyTexture( CEGUI::Texture* p_texture )
+void GuiRenderer::destroyTexture( CEGUI::Texture* p_texture )
 {
     if ( p_texture )
     {
-        CTDGuiTexture* p_tex = static_cast< CTDGuiTexture* >( p_texture );
+        GuiTexture* p_tex = static_cast< GuiTexture* >( p_texture );
         _texturelist.remove( p_tex );
         delete p_tex;
     }
 }
 
-void CTDGuiRenderer::destroyAllTextures()
+void GuiRenderer::destroyAllTextures()
 {
     while ( !_texturelist.empty() )
         this->destroyTexture(*(_texturelist.begin()));
 }
 
-void CTDGuiRenderer::initPerFrameStates()
+void GuiRenderer::initPerFrameStates()
 {
     //save current attributes
     glPushClientAttrib( GL_CLIENT_ALL_ATTRIB_BITS );
@@ -318,7 +318,7 @@ void CTDGuiRenderer::initPerFrameStates()
     glDisable( GL_DEPTH_TEST );
 }
 
-void CTDGuiRenderer::exitPerFrameStates()
+void GuiRenderer::exitPerFrameStates()
 {
     glDisable( GL_TEXTURE_2D );
     glPopMatrix(); 
@@ -331,7 +331,7 @@ void CTDGuiRenderer::exitPerFrameStates()
     glPopAttrib();
 }
 
-void CTDGuiRenderer::renderVBuffer()
+void GuiRenderer::renderVBuffer()
 {
     // if bufferPos is 0 there is no data in the buffer and nothing to render
     if (_bufferPos == 0)
@@ -350,12 +350,12 @@ void CTDGuiRenderer::renderVBuffer()
 /*************************************************************************
     sort quads list according to texture
 *************************************************************************/
-void CTDGuiRenderer::sortQuads()
+void GuiRenderer::sortQuads()
 {
     // no need to do anything here.
 }
 
-void CTDGuiRenderer::renderQuadDirect(const CEGUI::Rect& dest_rect, float z, const CEGUI::Texture* tex, const CEGUI::Rect& texture_rect, const CEGUI::ColourRect& colours, CEGUI::QuadSplitMode quad_split_mode)
+void GuiRenderer::renderQuadDirect(const CEGUI::Rect& dest_rect, float z, const CEGUI::Texture* tex, const CEGUI::Rect& texture_rect, const CEGUI::ColourRect& colours, CEGUI::QuadSplitMode quad_split_mode)
 {
     QuadInfo quad;
     quad.position.d_left    = dest_rect.d_left;
@@ -373,7 +373,7 @@ void CTDGuiRenderer::renderQuadDirect(const CEGUI::Rect& dest_rect, float z, con
 
     initPerFrameStates();
     glInterleavedArrays(GL_T2F_C4UB_V3F , 0, myquad);
-    glBindTexture(GL_TEXTURE_2D, ((CTDGuiTexture*)tex)->getOGLTexid());
+    glBindTexture(GL_TEXTURE_2D, ((GuiTexture*)tex)->getOGLTexid());
 
     //vert0
     myquad[0].vertex[0] = quad.position.d_left;
@@ -458,7 +458,7 @@ void CTDGuiRenderer::renderQuadDirect(const CEGUI::Rect& dest_rect, float z, con
     exitPerFrameStates();
 }
 
-long CTDGuiRenderer::colourToOGL(const CEGUI::colour& col) const
+long GuiRenderer::colourToOGL(const CEGUI::colour& col) const
 {
     CEGUI::ulong cval;
     cval =  (static_cast<CEGUI::ulong>(255 * col.getAlpha())) << 24;

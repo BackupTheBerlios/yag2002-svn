@@ -113,13 +113,13 @@ class SessionNotifyCallback
 };
 
 //! Derived class from RNReplicaNet::ReplicaNet, this class allows tracking of joining / leaving sessions
-class CTDReplicaNet: public RNReplicaNet::ReplicaNet
+class Networking: public RNReplicaNet::ReplicaNet
 {
     public:
 
-                                                    CTDReplicaNet();
+                                                    Networking();
         
-        virtual                                     ~CTDReplicaNet();
+        virtual                                     ~Networking();
 
         //! Use this method in order to register a callback object in order to get notification when a client joins to or leaves the network
         void                                        registerSessionNotify( SessionNotifyCallback* p_cb );
@@ -269,7 +269,7 @@ class NetworkDevice : public Singleton< NetworkDevice >
         NetworkingMode                              _mode;
 
         //! Session instance
-        CTDReplicaNet*                              _p_session;
+        Networking*                                 _p_session;
 
         //! Server's / client's node information
         NodeInfo                                    _nodeInfo;

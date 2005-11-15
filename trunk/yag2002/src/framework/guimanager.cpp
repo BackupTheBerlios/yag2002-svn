@@ -73,12 +73,12 @@ class GuiPostDrawCallback : public osgSDL::Viewer::DrawCallback
 };
 
 //! Resource loader for gui resource loading
-class CTDResourceProvider : public CEGUI::ResourceProvider
+class GuiResourceProvider : public CEGUI::ResourceProvider
 {
     public:
-                                                    CTDResourceProvider() : ResourceProvider() {}
+                                                    GuiResourceProvider() : ResourceProvider() {}
 
-                                                    ~CTDResourceProvider() {}
+                                                    ~GuiResourceProvider() {}
 
         void                                        loadRawDataContainer( const CEGUI::String& filename, CEGUI::RawDataContainer& output, const CEGUI::String& resourceGroup );
 
@@ -88,7 +88,7 @@ GenericInputHandler< GuiManager >( p_guimgr )
 {
 }
 
-void CTDResourceProvider::loadRawDataContainer( const CEGUI::String& filename, CEGUI::RawDataContainer& output, const CEGUI::String& resourceGroup )
+void GuiResourceProvider::loadRawDataContainer( const CEGUI::String& filename, CEGUI::RawDataContainer& output, const CEGUI::String& resourceGroup )
 {
     std::auto_ptr< std::fstream > p_stream( new std::fstream );
 
@@ -97,8 +97,8 @@ void CTDResourceProvider::loadRawDataContainer( const CEGUI::String& filename, C
     // if the file does not exist then return
     if ( !( *p_stream ) )
     {   
-        log << Log::LogLevel( Log::L_WARNING ) << " CTDResourceProvider: file '" << fullpath << "' does not exist." << std::endl;
-        throw CEGUI::Exception( "CTDResourceProvider cannot find file '" + fullpath + "'" );
+        log << Log::LogLevel( Log::L_WARNING ) << " GuiResourceProvider: file '" << fullpath << "' does not exist." << std::endl;
+        throw CEGUI::Exception( "GuiResourceProvider cannot find file '" + fullpath + "'" );
     }
 
     // get file size
@@ -168,9 +168,9 @@ void GuiManager::doInitialize()
     _windowHeight = float( height );
 
     // create a renderer
-    _p_renderer = new CTDGuiRenderer( 0, int( _windowWidth ), int( _windowHeight ) );    
+    _p_renderer = new GuiRenderer( 0, int( _windowWidth ), int( _windowHeight ) );    
     // create the gui
-    CTDResourceProvider* p_resourceLoader = new CTDResourceProvider;
+    GuiResourceProvider* p_resourceLoader = new GuiResourceProvider;
     new CEGUI::System( _p_renderer, p_resourceLoader );
 
     // set logging level
@@ -350,7 +350,7 @@ bool GuiManager::isActive() const
     return _active;
 }
 
-CTDGuiRenderer* GuiManager::getGuiRenderer()
+GuiRenderer* GuiManager::getGuiRenderer()
 {
     return _p_renderer;
 }

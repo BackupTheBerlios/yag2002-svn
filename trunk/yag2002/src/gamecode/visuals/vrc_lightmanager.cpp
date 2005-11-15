@@ -61,24 +61,24 @@ void LightManager::addLight( BaseLight* p_light )
     _lights.push_back( p_light );
     // assign an available light id to light object
     p_light->_lightSource->getLight()->setLightNum( _currId );
-    if ( _currId < CTD_MAX_GL_LIGHTS - 1 ) 
+    if ( _currId < VRC_MAX_GL_LIGHTS - 1 ) 
         _currId++;
 }
 
 void LightManager::flush()
 {
-    unsigned int numlights = std::min( ( int )_lights.size(), CTD_MAX_GL_LIGHTS - 1 );
+    unsigned int numlights = std::min( ( int )_lights.size(), VRC_MAX_GL_LIGHTS - 1 );
     
     osg::StateSet*  p_stateset = yaf3d::Application::get()->getSceneView()->getGlobalStateSet();
     // first turn off all lights
-    for ( unsigned int l = 0; l < CTD_MAX_GL_LIGHTS - 1; l++ )
+    for ( unsigned int l = 0; l < VRC_MAX_GL_LIGHTS - 1; l++ )
         p_stateset->setMode( GL_LIGHT0 + l, osg::StateAttribute::OFF );
 
     // now turn on lights which are not culled
     std::vector< BaseLight* >::iterator p_beg = _lights.begin();
     for ( unsigned int cnt = 0; cnt < numlights; p_beg++, cnt++ )
     {
-        if ( cnt < CTD_MAX_GL_LIGHTS )
+        if ( cnt < VRC_MAX_GL_LIGHTS )
         {
             ( *p_beg )->_lightId = cnt;
             p_stateset->setMode( GL_LIGHT0 + cnt, osg::StateAttribute::ON );
@@ -86,8 +86,8 @@ void LightManager::flush()
     }
 
     // check if we can see more than maximal allowed count of lights
-    if ( _lights.size() > CTD_MAX_GL_LIGHTS )
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << " *** LightManager: more than " << CTD_MAX_GL_LIGHTS <<
+    if ( _lights.size() > VRC_MAX_GL_LIGHTS )
+        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << " *** LightManager: more than " << VRC_MAX_GL_LIGHTS <<
         " lights can be seen by camera! ( total count: " << _lights.size() << " )" << std::endl;
 
     // clear the list for next frame

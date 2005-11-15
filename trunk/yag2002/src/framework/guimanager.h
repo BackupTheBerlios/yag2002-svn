@@ -41,7 +41,7 @@ namespace yaf3d
 
 class Application;
 class LevelManager;
-class CTDGuiRenderer;
+class GuiRenderer;
 class GuiPostDrawCallback;
 class GuiViewerInitCallback;
 
@@ -83,7 +83,7 @@ class GuiManager : public Singleton< GuiManager >
         bool                                    isActive() const;
 
         //! Retrieve the gui renderer. One can used it e.g. to create textures for StaticImage elements.
-        CTDGuiRenderer*                         getGuiRenderer();
+        GuiRenderer*                         getGuiRenderer();
 
         //! Retrieve a pre-loaded font resource given its name ( e.g. yaf3d-8 or yaf3d-10 )
         /**
@@ -154,7 +154,7 @@ class GuiManager : public Singleton< GuiManager >
                 bool                            handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
         };
 
-        CTDGuiRenderer*                         _p_renderer;
+        GuiRenderer*                            _p_renderer;
 
         CEGUI::Image*                           _p_mouseImg;
 

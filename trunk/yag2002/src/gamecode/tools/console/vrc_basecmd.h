@@ -36,7 +36,7 @@
 namespace vrc
 {
 //! Helper macro for implementing and registering a command
-#define CTD_IMPL_CONSOLE_CMD( cmd )   std::auto_ptr< cmd > cmd##_impl( new cmd );
+#define VRC_IMPL_CONSOLE_CMD( cmd )   std::auto_ptr< cmd > cmd##_impl( new cmd );
 
 class ConsoleCommandRegistry;
 

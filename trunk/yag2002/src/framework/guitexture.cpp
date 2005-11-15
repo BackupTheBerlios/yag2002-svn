@@ -39,7 +39,7 @@
 namespace yaf3d
 {
 
-CTDGuiTexture::CTDGuiTexture( CEGUI::Renderer* p_owner ) :
+GuiTexture::GuiTexture( CEGUI::Renderer* p_owner ) :
 CEGUI::Texture( p_owner ),
 _width( 0 ),
 _height( 0 )
@@ -55,13 +55,13 @@ _height( 0 )
     glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 }
 
-CTDGuiTexture::~CTDGuiTexture()
+GuiTexture::~GuiTexture()
 {
     // delete OGL texture associated with this object.
     glDeleteTextures( 1, &_ogltexture );
 }
 
-void CTDGuiTexture::loadFromFile( const CEGUI::String& filename, const CEGUI::String& resourceGroup )
+void GuiTexture::loadFromFile( const CEGUI::String& filename, const CEGUI::String& resourceGroup )
 {
     glBindTexture( GL_TEXTURE_2D, _ogltexture );        
 
@@ -94,11 +94,11 @@ void CTDGuiTexture::loadFromFile( const CEGUI::String& filename, const CEGUI::St
     }
     else
     {
-        throw CEGUI::RendererException("CTDGuiTexture::loadFromFile - internal Targa loader failed to load image '" + filename + "'.");
+        throw CEGUI::RendererException("GuiTexture::loadFromFile - internal Targa loader failed to load image '" + filename + "'.");
     }
 }
 
-void CTDGuiTexture::loadFromMemory(const void* buffPtr, CEGUI::uint buffWidth, CEGUI::uint buffHeight)
+void GuiTexture::loadFromMemory(const void* buffPtr, CEGUI::uint buffWidth, CEGUI::uint buffHeight)
 {
 	glBindTexture(GL_TEXTURE_2D, _ogltexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, buffWidth, buffHeight, 0, GL_RGBA ,GL_UNSIGNED_BYTE, buffPtr);
@@ -107,7 +107,7 @@ void CTDGuiTexture::loadFromMemory(const void* buffPtr, CEGUI::uint buffWidth, C
     _height = static_cast<CEGUI::ushort>(buffHeight);
 }
 
-void CTDGuiTexture::setOGLTextureSize(CEGUI::uint size)
+void GuiTexture::setOGLTextureSize(CEGUI::uint size)
 {
     // if not power of 2
     if ((size & (size - 1)) || !size)
@@ -137,7 +137,7 @@ void CTDGuiTexture::setOGLTextureSize(CEGUI::uint size)
     _height = _width = static_cast<CEGUI::ushort>(size);
 }
 
-void CTDGuiTexture::flipImageTGA(CTDGuiTexture::tImageTGA* img)
+void GuiTexture::flipImageTGA(GuiTexture::tImageTGA* img)
 {
     int pitch = img->sizeX * img->channels;
 
@@ -156,7 +156,7 @@ void CTDGuiTexture::flipImageTGA(CTDGuiTexture::tImageTGA* img)
     }
 }
 
-CTDGuiTexture::tImageTGA* CTDGuiTexture::LoadTGA( const unsigned char* buffer, size_t buffer_size )
+GuiTexture::tImageTGA* GuiTexture::LoadTGA( const unsigned char* buffer, size_t buffer_size )
 {
     tImageTGA *pImageData = NULL;       // This stores our important image data
     short width = 0, height = 0;        // The dimensions of the image

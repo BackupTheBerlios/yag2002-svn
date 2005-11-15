@@ -39,7 +39,7 @@ namespace vrc
 {
 
 //! Implement and register the command
-CTD_IMPL_CONSOLE_CMD( CmdWriteOSGFile );
+VRC_IMPL_CONSOLE_CMD( CmdWriteOSGFile );
 
 
 CmdWriteOSGFile::CmdWriteOSGFile() :

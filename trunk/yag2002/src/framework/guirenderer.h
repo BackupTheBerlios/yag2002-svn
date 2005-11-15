@@ -41,18 +41,18 @@
 namespace yaf3d
 {
 
-class CTDGuiTexture;
+class GuiTexture;
 
 //! Rendering adapter for CEGUI
-class CTDGuiRenderer : public CEGUI::Renderer
+class GuiRenderer : public CEGUI::Renderer
 {
     public:
 
-        explicit                                CTDGuiRenderer( unsigned int max_quads );
+        explicit                                GuiRenderer( unsigned int max_quads );
 
-                                                CTDGuiRenderer( unsigned int max_quads, int width, int height );
+                                                GuiRenderer( unsigned int max_quads, int width, int height );
 
-        virtual                                 ~CTDGuiRenderer(void);
+        virtual                                 ~GuiRenderer(void);
 
         //! Change the client area, use this e.g. when the main app windows shape changed
         void                                    changeDisplayResolution( float width, float height );
@@ -182,7 +182,7 @@ class CTDGuiRenderer : public CEGUI::Renderer
 
         int                                     _bufferPos;         //!< index into buffer where next vertex should be put.
 
-        std::list< CTDGuiTexture* >             _texturelist;       //!< List used to track textures.
+        std::list< GuiTexture* >                _texturelist;       //!< List used to track textures.
         
         int                                     _maxTextureSize;    //!< Holds maximum supported texture size (in pixels).
 };

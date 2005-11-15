@@ -36,8 +36,8 @@
 namespace vrc
 {
 // specific imageset
-#define CTD_IMAGE_SET           "CTDImageSet"
-#define CTD_IMAGE_SET_FILE      "gui/imagesets/CTDImageSet.imageset"
+#define VRC_IMAGE_SET           "VRCImageSet"
+#define VRC_IMAGE_SET_FILE      "gui/imagesets/VRCImageSet.imageset"
 
 #define CHATLAYOUT_PREFIX       "chatctrl_"
 #define FOOT_IMAGE_NAME         "FootNormal"
@@ -75,13 +75,13 @@ void ChatGuiCtrl::initialize( ChatManager* p_chatMgr )
 
         // load our custom imageset
         CEGUI::Imageset* p_imageSet = NULL;
-        if ( CEGUI::ImagesetManager::getSingleton().isImagesetPresent( CTD_IMAGE_SET ) )
+        if ( CEGUI::ImagesetManager::getSingleton().isImagesetPresent( VRC_IMAGE_SET ) )
         {
-            p_imageSet = CEGUI::ImagesetManager::getSingleton().getImageset( CTD_IMAGE_SET );
+            p_imageSet = CEGUI::ImagesetManager::getSingleton().getImageset( VRC_IMAGE_SET );
         }
         else
         {
-            p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( CTD_IMAGE_SET_FILE );
+            p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( VRC_IMAGE_SET_FILE );
         }
 
         // create walk/edit mode button

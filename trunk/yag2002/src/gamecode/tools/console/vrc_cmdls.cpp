@@ -38,7 +38,7 @@ namespace vrc
 {
 
 //! Implement and register the command
-CTD_IMPL_CONSOLE_CMD( CmdLs );
+VRC_IMPL_CONSOLE_CMD( CmdLs );
 
 
 CmdLs::CmdLs() :

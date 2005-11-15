@@ -43,13 +43,13 @@ namespace yaf3d
     This class is used by our CEGUI's renderer backend.
     In normal case you may not need to use it!
 */
-class CTDGuiTexture	: public CEGUI::Texture
+class GuiTexture	: public CEGUI::Texture
 {
     public:
 
-        explicit                                CTDGuiTexture( CEGUI::Renderer* p_owner );
+        explicit                                GuiTexture( CEGUI::Renderer* p_owner );
 
-	    virtual	                                ~CTDGuiTexture();
+	    virtual	                                ~GuiTexture();
 
 	    virtual	CEGUI::ushort	                getWidth() const  { return _width; }
 
@@ -94,13 +94,13 @@ class CTDGuiTexture	: public CEGUI::Texture
 	    
         CEGUI::ushort		                    _height;			//!< cached	height of the texture
 
-        friend	CEGUI::Texture*	                CTDGuiRenderer::createTexture();
+        friend	CEGUI::Texture*	                GuiRenderer::createTexture();
     	
-        friend	CEGUI::Texture*	                CTDGuiRenderer::createTexture( const CEGUI::String& filename, const CEGUI::String& resourceGroup );
+        friend	CEGUI::Texture*	                GuiRenderer::createTexture( const CEGUI::String& filename, const CEGUI::String& resourceGroup );
 
-    	friend	CEGUI::Texture*	                CTDGuiRenderer::createTexture( float size );
+    	friend	CEGUI::Texture*	                GuiRenderer::createTexture( float size );
 
-	    friend	void	                        CTDGuiRenderer::destroyTexture( CEGUI::Texture* texture );
+	    friend	void	                        GuiRenderer::destroyTexture( CEGUI::Texture* texture );
 
 };
 

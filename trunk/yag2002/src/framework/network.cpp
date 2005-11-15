@@ -41,16 +41,16 @@ namespace yaf3d
 
 YAF3D_SINGLETON_IMPL( NetworkDevice );
 
-CTDReplicaNet::CTDReplicaNet() :
+Networking::Networking() :
 _numSessions( 0 )
 {
 }
 
-CTDReplicaNet::~CTDReplicaNet()
+Networking::~Networking()
 {
 }
 
-void CTDReplicaNet::registerSessionNotify( SessionNotifyCallback* p_cb )
+void Networking::registerSessionNotify( SessionNotifyCallback* p_cb )
 {
     std::vector< SessionNotifyCallback* >::iterator p_beg = _sessionCallbacks.begin(), p_end = _sessionCallbacks.end();
     for ( ; p_beg != p_end; p_beg++ )
@@ -62,7 +62,7 @@ void CTDReplicaNet::registerSessionNotify( SessionNotifyCallback* p_cb )
     _sessionCallbacks.push_back( p_cb );
 }
 
-void CTDReplicaNet::deregisterSessionNotify( SessionNotifyCallback* p_cb )
+void Networking::deregisterSessionNotify( SessionNotifyCallback* p_cb )
 {
     std::vector< SessionNotifyCallback* >::iterator p_beg = _sessionCallbacks.begin(), p_end = _sessionCallbacks.end();
     for ( ; p_beg != p_end; p_beg++ )
@@ -74,12 +74,12 @@ void CTDReplicaNet::deregisterSessionNotify( SessionNotifyCallback* p_cb )
     _sessionCallbacks.erase( p_beg );
 }
 
-void CTDReplicaNet::getSessionIDs( std::vector< int >& ids )
+void Networking::getSessionIDs( std::vector< int >& ids )
 {
     ids = _sessionIDs;
 }
 
-void CTDReplicaNet::JoinerSessionIDPost( const int sessionID )
+void Networking::JoinerSessionIDPost( const int sessionID )
 {
     THREADSAFELOCKCLASS( _mutex );
     _sessionIDs.push_back( sessionID );
@@ -93,7 +93,7 @@ void CTDReplicaNet::JoinerSessionIDPost( const int sessionID )
         ( *p_beg )->onSessionJoined( sessionID );
 }
 
-void CTDReplicaNet::LeaverSessionIDPost( const int sessionID )
+void Networking::LeaverSessionIDPost( const int sessionID )
 {
     THREADSAFELOCKCLASS( _mutex );
 
@@ -192,7 +192,7 @@ bool NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
     yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "starting server, time: " << yaf3d::getTimeStamp() << std::endl;
 
     _nodeInfo  = nodeInfo;
-    _p_session = new CTDReplicaNet;
+    _p_session = new Networking;
 
     log << Log::LogLevel( Log::L_INFO ) << "nw server: starting network session: " << nodeInfo._nodeName << std::endl;
 
@@ -234,7 +234,7 @@ bool NetworkDevice::setupClient( const std::string& serverIp, int channel, const
     // do we already have a session created?
     assert( _p_session == NULL && "there is already a running session!" );
     _nodeInfo  = nodeInfo;
-    _p_session = new CTDReplicaNet;
+    _p_session = new Networking;
 
     _p_session->SetManualPoll();
     //_p_session->SetGameChannel( channel );

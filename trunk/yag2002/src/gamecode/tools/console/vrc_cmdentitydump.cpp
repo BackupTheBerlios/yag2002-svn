@@ -42,7 +42,7 @@ namespace vrc
 
 
 //! Implement and register the command
-CTD_IMPL_CONSOLE_CMD( CmdEntityDump );
+VRC_IMPL_CONSOLE_CMD( CmdEntityDump );
 
 
 CmdEntityDump::CmdEntityDump() :

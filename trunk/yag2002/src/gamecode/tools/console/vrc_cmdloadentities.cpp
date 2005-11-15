@@ -36,7 +36,7 @@ namespace vrc
 {
 
 //! Implement and register the command
-CTD_IMPL_CONSOLE_CMD( CmdLoadEntities );
+VRC_IMPL_CONSOLE_CMD( CmdLoadEntities );
 
 
 CmdLoadEntities::CmdLoadEntities() :

@@ -36,7 +36,7 @@ namespace vrc
 {
 
 //! Implement and register the command
-CTD_IMPL_CONSOLE_CMD( CmdGetConfig );
+VRC_IMPL_CONSOLE_CMD( CmdGetConfig );
 
 
 CmdGetConfig::CmdGetConfig() :

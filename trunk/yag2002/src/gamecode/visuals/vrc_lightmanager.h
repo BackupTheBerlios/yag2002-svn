@@ -37,7 +37,7 @@ namespace vrc
 {
 
 //! Maximal lights enabled during one frame
-#define CTD_MAX_GL_LIGHTS       8
+#define VRC_MAX_GL_LIGHTS       8
 
 class LightManager;
 
@@ -103,7 +103,7 @@ class BaseLight
 };
 
 class LightCallback;
-//! Class for enabling up to CTD_MAX_GL_LIGHTS gl lights per frame considering light source culling
+//! Class for enabling up to VRC_MAX_GL_LIGHTS gl lights per frame considering light source culling
 class LightManager : public yaf3d::Singleton< LightManager >, public osgSDL::Viewer::DrawCallback
 {
     public:
