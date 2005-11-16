@@ -108,8 +108,8 @@ _p_listbox( NULL )
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "ChannelTabPane: problem creating a new tab pane" << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "ChannelTabPane: problem creating a new tab pane" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -122,8 +122,8 @@ ChatGuiBox::ChannelTabPane::~ChannelTabPane()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "~ChannelTabPane: problem cleaning up gui resources" << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "~ChannelTabPane: problem cleaning up gui resources" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -139,7 +139,7 @@ void ChatGuiBox::ChannelTabPane::updateMemberList( std::vector< std::string >& l
     // fill up the list
     _p_listbox->resetList();
     std::vector< std::string >::iterator p_beg = list.begin(), p_end = list.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         CEGUI::ListboxTextItem * p_item = new CEGUI::ListboxTextItem( p_beg->c_str() );
         p_item->setSelectionColours( col );
@@ -278,7 +278,7 @@ void ChatGuiBox::ChannelTabPane::onNicknameChanged( const std::string& newname, 
         {
             // change nick name in internal list
             size_t numnicks = _nickNames.size();
-            for ( size_t cnt = 0; cnt < numnicks; cnt ++ )
+            for ( size_t cnt = 0; cnt < numnicks; ++cnt )
             {
                 if ( _nickNames[ cnt ] == _configuration._nickname )
                 {
@@ -296,7 +296,7 @@ void ChatGuiBox::ChannelTabPane::onNicknameChanged( const std::string& newname, 
         // change nick name in internal list
         size_t numnicks = _nickNames.size();
         bool nickfound = false;
-        for ( size_t cnt = 0; cnt < numnicks; cnt ++ )
+        for ( size_t cnt = 0; cnt < numnicks; ++cnt )
         {
             std::string realnick = _nickNames[ cnt ];
             if ( realnick[ 0 ] == '@' )
@@ -392,7 +392,7 @@ ChatGuiBox::~ChatGuiBox()
 
         // delete all tab panes
         ChatGuiBox::TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
-        for ( ; p_beg != p_end; p_beg++ )
+        for ( ; p_beg != p_end; ++p_beg )
             delete p_beg->second;
 
         CEGUI::WindowManager::getSingleton().destroyWindow( _p_btnOpen );
@@ -402,8 +402,8 @@ ChatGuiBox::~ChatGuiBox()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "ChatGuiBox: problem cleaning up gui resources" << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "ChatGuiBox: problem cleaning up gui resources" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -462,8 +462,8 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error setting up chat box gui" << std::endl;
-        yaf3d::log << "   reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "*** error setting up chat box gui" << std::endl;
+        log << "   reason: " << e.getMessage().c_str() << std::endl;
         return;
     }
 
@@ -527,8 +527,8 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error setting up chat box frame" << std::endl;
-        yaf3d::log << "   reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "*** error setting up chat box frame" << std::endl;
+        log << "   reason: " << e.getMessage().c_str() << std::endl;
         return;
     }
 }
@@ -544,7 +544,7 @@ void ChatGuiBox::showMsgArrived( bool show )
 ChatGuiBox::ChannelTabPane* ChatGuiBox::getTabPane( const ChatConnectionConfig& cfg )
 {
     ChatGuiBox::TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         if ( p_beg->first == cfg )
             return p_beg->second;
 
@@ -555,7 +555,7 @@ void ChatGuiBox::destroyChannelPane( const ChatConnectionConfig& cfg )
 {
     // close all tab panes
     ChatGuiBox::TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         if ( cfg._channel == p_beg->first._channel )
             break;
 
@@ -605,7 +605,7 @@ void ChatGuiBox::setEditBoxFocus( bool en )
     //if ( ( _p_tabCtrl->getTabCount() > 0 ) && ( _tabpanes.size() > 0 ) )
     //{
     //    TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
-    //    for ( ; p_beg != p_end; p_beg++ )
+    //    for ( ; p_beg != p_end; ++p_beg )
     //    {
     //        if ( p_beg->second->isSelected() )
     //        {
@@ -720,7 +720,7 @@ bool ChatGuiBox::onClickedCloseChannelPane( const CEGUI::EventArgs& arg )
 {
     // search for currently active pane
     ChatGuiBox::TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         if ( p_beg->second->isSelected() )
             break;
 
@@ -787,8 +787,8 @@ void ChatGuiBox::onConnectionDialogClickedConnect( const ChatConnectionConfig& c
         yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Connection error", "Could not connect to server.\n" + e.what(), yaf3d::MessageBoxDialog::OK, true );
         p_msg->show();                
 
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "exception occured trying to connect to a chat server" << std::endl;
-        yaf3d::log << "   reason: " << e.what() << std::endl;
+        log_error << "exception occured trying to connect to a chat server" << std::endl;
+        log << "   reason: " << e.what() << std::endl;
     }
         
     _connectionState = ConnectionIdle;
@@ -863,7 +863,7 @@ void ChatGuiBox::outputText( const std::string& channel, const std::string& msg 
 {
     // output the system message to currently selected pane
     ChatGuiBox::TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         if ( p_beg->second->isSelected() )
         {

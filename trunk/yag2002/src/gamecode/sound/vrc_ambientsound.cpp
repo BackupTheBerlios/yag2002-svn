@@ -99,15 +99,15 @@ void EnAmbientSound::initialize()
         p_sample = osgAL::SoundManager::instance()->getSample( _soundFile );
         if ( !p_sample )
         {
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "*** cannot create sampler for '" << _soundFileDir + _soundFile << "'" << std::endl;
+            log_warning << "*** cannot create sampler for '" << _soundFileDir + _soundFile << "'" << std::endl;
             return;
         }
 
     } 
     catch ( const openalpp::Error& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error loading sound file" << std::endl;
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
+        log_error << "*** error loading sound file" << std::endl;
+        log_error << "  reason: " << e.what() << std::endl;
         return;
     }
 
@@ -117,7 +117,7 @@ void EnAmbientSound::initialize()
     static unsigned int uniqueId = 0;
     uniquename << getInstanceName();
     uniquename << uniqueId;
-    uniqueId++;
+    ++uniqueId;
     _soundState = new osgAL::SoundState( uniquename.str() );
     // let the soundstate use the sample we just created
     _soundState->setSample( p_sample );

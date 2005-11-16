@@ -102,7 +102,7 @@ const std::string& CmdLs::execute( const std::vector< std::string >& arguments )
     // get a directory listing
     yaf3d::getDirectoryListing( filelisting, yaf3d::Application::get()->getMediaPath() + dir, "", appenddetails );
     std::vector< std::string >::iterator p_beg = filelisting.begin(), p_end = filelisting.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         _cmdResult += *p_beg + "\n";
 
     return _cmdResult;

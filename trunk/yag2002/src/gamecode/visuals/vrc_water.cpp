@@ -324,8 +324,8 @@ osg::Node* EnWater::setupWater()
         p_node = yaf3d::LevelManager::get()->loadMesh( _meshFile );
         if ( !p_node )
         {
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "could not load water mesh file: " << _meshFile << ", in '" << getInstanceName() << "'" << std::endl;
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << " creating a simple plane for water mesh." << std::endl;
+            log_warning << "could not load water mesh file: " << _meshFile << ", in '" << getInstanceName() << "'" << std::endl;
+            log_warning << " creating a simple plane for water mesh." << std::endl;
         }
 
         setPosition( _position );

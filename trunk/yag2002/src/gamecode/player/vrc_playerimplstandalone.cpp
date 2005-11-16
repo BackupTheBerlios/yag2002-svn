@@ -120,43 +120,43 @@ void PlayerImplStandalone::initialize()
 
 void PlayerImplStandalone::postInitialize()
 {
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO ) << "  setup player implementation Standalone ..." << std::endl;
+    log_info << "  setup player implementation Standalone ..." << std::endl;
 
     // attach camera entity
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "   - searching for camera entity '" << PLAYER_CAMERA_ENTITIY_NAME << "'..." << std::endl;
+    log_debug << "   - searching for camera entity '" << PLAYER_CAMERA_ENTITIY_NAME << "'..." << std::endl;
     // get camera entity
     _p_camera = dynamic_cast< EnCamera* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CAMERA, PLAYER_CAMERA_ENTITIY_NAME ) );
     if ( _p_camera )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "   -  camera entity successfully attached" << std::endl;
+        log_debug << "   -  camera entity successfully attached" << std::endl;
     }
     else
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "   could not attach player camera entity" << std::endl;
+        log_error << "   could not attach player camera entity" << std::endl;
     }
 
     // attach physics entity
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "   - searching for physics entity '" << _playerAttributes._physicsEntity << "' ..." << std::endl;
+    log_debug << "   - searching for physics entity '" << _playerAttributes._physicsEntity << "' ..." << std::endl;
     // find and attach physics component
     _p_playerPhysics = dynamic_cast< EnPlayerPhysics* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_PLPHYS, _playerAttributes._physicsEntity ) );
     if ( _p_playerPhysics )
     {
         _p_playerPhysics->setPlayer( this );
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "   -  physics entity successfully attached" << std::endl;
+        log_debug << "   -  physics entity successfully attached" << std::endl;
     }
     else
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "   could not attach player physics entity" << std::endl;
+        log_error << "   could not attach player physics entity" << std::endl;
     }
 
     // attach animation entity
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "   - searching for animation entity '" << _playerAttributes._animationEntity << "' ..." << std::endl;
+    log_debug << "   - searching for animation entity '" << _playerAttributes._animationEntity << "' ..." << std::endl;
     // find and attach animation component
     _p_playerAnimation = dynamic_cast< EnPlayerAnimation* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_PLANIM, _playerAttributes._animationEntity ) );
     if ( _p_playerAnimation )
     {
         _p_playerAnimation->setPlayer( this );
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "   -  animation entity successfully attached" << std::endl;
+        log_debug << "   -  animation entity successfully attached" << std::endl;
 
         if ( _cameraMode == Ego ) // in ego mode we won't render our character
         {
@@ -169,19 +169,19 @@ void PlayerImplStandalone::postInitialize()
     }
     else
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "   could not attach player animation entity" << std::endl;
+        log_error << "   could not attach player animation entity" << std::endl;
     }
 
     // attach sound entity
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "   - searching for sound entity '" << _playerAttributes._soundEntity << "' ..." << std::endl;
+    log_debug << "   - searching for sound entity '" << _playerAttributes._soundEntity << "' ..." << std::endl;
     // find and attach sound component, tollerate missing sound for now
     _p_playerSound = dynamic_cast< EnPlayerSound* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_PLSOUND, _playerAttributes._soundEntity ) );
     if ( !_p_playerSound )
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "   could not find sound entity '" << _playerAttributes._soundEntity << "' of type PlayerSound. player sound deactivated" << std::endl;
+        log_error << "   could not find sound entity '" << _playerAttributes._soundEntity << "' of type PlayerSound. player sound deactivated" << std::endl;
     else
     {
         _p_playerSound->setPlayer( this );
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "   -  sound entity successfully attached" << std::endl;
+        log_debug << "   -  sound entity successfully attached" << std::endl;
     }
 
     // setup camera mode
@@ -190,10 +190,10 @@ void PlayerImplStandalone::postInitialize()
     // create the chat manager
     if ( !createChatManager() )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "   -  could not create chat system" << std::endl;
+        log_error << "   -  could not create chat system" << std::endl;
     }
 
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO ) << "  player implementation successfully initialized" << std::endl;
+    log_info << "  player implementation successfully initialized" << std::endl;
 
     // create only the input handler when animation and physics are attached
     if ( _p_playerAnimation && _p_playerPhysics )

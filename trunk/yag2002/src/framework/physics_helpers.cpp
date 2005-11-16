@@ -47,7 +47,7 @@ void DebugShowGeometryCollision( const NewtonBody* p_body, int vertexCount, cons
 {
 	int i = vertexCount - 1;
 	osg::Vec3f p0( p_faceVertec[ i * 3 + 0 ], p_faceVertec[ i * 3 + 1 ], p_faceVertec[ i * 3 + 2 ] );
-	for ( i = 0; i < vertexCount; i ++ ) 
+	for ( i = 0; i < vertexCount; ++i ) 
     {
 		osg::Vec3f p1( p_faceVertec[ i * 3 + 0 ], p_faceVertec[ i * 3 + 1 ], p_faceVertec[ i * 3 + 2 ] );
 		glVertex3f( p0._v[ 0 ], p0._v[ 1 ], p0._v[ 2 ] );
@@ -98,7 +98,7 @@ void PhysicsVisitor::apply( osg::Geode& node )
     // get the accumulated world matrix for this node
     osg::Matrixf  mat = computeLocalToWorld( getNodePath() );
     unsigned int numDrawables = node.getNumDrawables();
-    for ( unsigned int cnt = 0; cnt < numDrawables; cnt++ )
+    for ( unsigned int cnt = 0; cnt < numDrawables; ++cnt )
     {
         osg::Drawable* p_drawable = node.getDrawable( cnt );
         osg::Geometry* p_geom     = p_drawable->asGeometry();
@@ -109,7 +109,7 @@ void PhysicsVisitor::apply( osg::Geode& node )
             osg::IndexArray* p_indices  = p_geom->getVertexIndices();
             unsigned int numPrims = p_geom->getNumPrimitiveSets();
             {
-                for ( unsigned int primcnt = 0; primcnt < numPrims; primcnt++ )
+                for ( unsigned int primcnt = 0; primcnt < numPrims; ++primcnt )
                 {
                     osg::PrimitiveSet* p_set = p_geom->getPrimitiveSet( primcnt );
                     switch( p_set->getMode() )
@@ -169,7 +169,7 @@ void PhysicsVisitor::buildTrianlges( const osg::PrimitiveSet* p_set, osg::Array*
         NewtonTreeCollisionAddFace( _p_collision, 3, ( float* )triVert, 12, _attribute );
     }
 
-    _numPrimitives++;
+    ++_numPrimitives;
     _numVertices += 3 * numIndices;
 }
 
@@ -186,7 +186,7 @@ void PhysicsVisitor::buildTrianlgeStrip( const osg::PrimitiveSet* p_set, osg::Ar
     osg::Vec3f        triVerts[ 3 ];
     unsigned int odd, even;
     // destripify the mesh and build triangle faces
-    for( unsigned int vindex = 0; vindex < numIndices - 2; vindex++ )
+    for( unsigned int vindex = 0; vindex < numIndices - 2; ++vindex )
     {
         if ( vindex % 2 )
         {
@@ -210,7 +210,7 @@ void PhysicsVisitor::buildTrianlgeStrip( const osg::PrimitiveSet* p_set, osg::Ar
         NewtonTreeCollisionAddFace( _p_collision, 3, ( float* )triVerts, 12, _attribute );
     }
 
-    _numPrimitives++;
+    ++_numPrimitives;
     _numVertices += numIndices;
 }
 

@@ -113,7 +113,7 @@ const std::string& CmdEntityDump::execute( const std::vector< std::string >& arg
         
         std::vector< yaf3d::BaseEntityFactory* >::iterator p_beg = factories.begin(), p_end = factories.end();
 
-        for ( ; p_beg != p_end; p_beg++ )
+        for ( ; p_beg != p_end; ++p_beg )
         {
             yaf3d::BaseEntity* p_entity = yaf3d::EntityManager::get()->createEntity( ( *p_beg )->getType() );
             dumpcontent += dumpEntity( p_entity, ( *p_beg )->getCreationPolicy() );
@@ -160,7 +160,7 @@ std::string CmdEntityDump::dumpEntity( yaf3d::BaseEntity* p_entity, unsigned int
     std::vector< yaf3d::EntityAttributeBase* >& attributes = attrmgr.getAttributes();
     std::vector< yaf3d::EntityAttributeBase* >::iterator p_beg = attributes.begin(), p_end = attributes.end();
 
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         unsigned int type = ( *p_beg )->getType();
         std::string  stype;
@@ -201,7 +201,7 @@ std::string CmdEntityDump::dumpEntity( yaf3d::BaseEntity* p_entity, unsigned int
         }
 
         dump += "    <Parameter Name=\"" + ( *p_beg )->getName() + "\" ";
-        for ( unsigned int i = ( *p_beg )->getName().length(); i < MAX_TYPE_SPACING; i++ )
+        for ( unsigned int i = ( *p_beg )->getName().length(); i < MAX_TYPE_SPACING; ++i )
             dump += " ";
 
         dump += "Type=\"" + stype + " />\n";

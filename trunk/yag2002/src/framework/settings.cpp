@@ -174,7 +174,7 @@ bool Settings::load( const std::string& filename )
 
     // format the intput
     size_t tokens = _settings.size();
-    for( size_t cnt = 0; cnt < tokens; cnt++ ) 
+    for( size_t cnt = 0; cnt < tokens; ++cnt ) 
     {
         SettingBase* p_setting = _settings[ cnt ];
         const type_info& settings_typeinfo = p_setting->getTypeInfo();
@@ -238,7 +238,7 @@ bool Settings::store( const std::string& filename )
     
     // format the output
     size_t tokens = _settings.size();
-    for( size_t cnt = 0; cnt < tokens; cnt++ ) {
+    for( size_t cnt = 0; cnt < tokens; ++cnt ) {
 
         SettingBase* p_setting = _settings[ cnt ];
         const type_info& settings_typeinfo = p_setting->getTypeInfo();
@@ -277,7 +277,7 @@ bool Settings::read( const std::string& token, std::string& value )
     // search the exact match of the token std::string
     do {
 
-        curpos++;
+        ++curpos;
         curpos = _fileBuffer.find( token.c_str(), curpos, token.length() );
         if ( curpos == std::basic_string< char >::npos ) 
         {
@@ -293,7 +293,7 @@ bool Settings::read( const std::string& token, std::string& value )
     while ( _fileBuffer[ curpos ] != 13 ) 
     {
         value += _fileBuffer[ curpos ];
-        curpos++;
+        ++curpos;
     }
 
     return true;

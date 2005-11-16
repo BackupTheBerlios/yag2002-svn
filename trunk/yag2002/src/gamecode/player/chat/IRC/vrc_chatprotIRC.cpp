@@ -145,7 +145,7 @@ void event_numeric( irc_session_t * session, unsigned int event, const char * or
         yaf3d::explode( namestring, " ", &names );
         // fill the list
         p_ctx->_p_handler->_nickNames.clear();
-        for ( size_t cnt = 0; cnt < names.size(); cnt++ )
+        for ( size_t cnt = 0; cnt < names.size(); ++cnt )
             p_ctx->_p_handler->_nickNames.push_back( names[ cnt ] );
     }
     // this signalized the end of name list transmission
@@ -309,14 +309,14 @@ void ChatNetworkingIRC::getMemberList( const std::string& channel, std::vector< 
 {
     // currently 'channel' is unused in VRC protocol!
     std::vector< std::string >::iterator p_beg = _nickNames.begin(), p_end = _nickNames.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         list.push_back( *p_beg );
 }
 
 void ChatNetworkingIRC::connected()
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         p_beg->second->onConnection( *_p_config );
 }
 
@@ -326,7 +326,7 @@ void ChatNetworkingIRC::left( const std::string& channel, const std::string& nam
     cfg._nickname = name;
     cfg._channel  = channel;
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         if ( ( p_beg->first == channel ) || ( p_beg->first == "*" ) )
             p_beg->second->onLeftChannel( cfg );
 }
@@ -336,7 +336,7 @@ void ChatNetworkingIRC::recvKicked( const std::string& channel, const std::strin
     ProtocolCallbackList localcopy = _protocolCallbacks;
     ProtocolCallbackList::iterator p_beg = localcopy.begin(), p_end = localcopy.end();
     // send the kick notification unfiltered
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         p_beg->second->onKicked( channel, kicker, kicked );
 }
 
@@ -348,7 +348,7 @@ void ChatNetworkingIRC::joined( const std::string& channel, const std::string& n
     // work on local copy of callback list, as during callbacks new registrations can follow
     ProtocolCallbackList localcopy = _protocolCallbacks;
     ProtocolCallbackList::iterator p_beg = localcopy.begin(), p_end = localcopy.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         if ( ( p_beg->first == channel ) || ( p_beg->first == "*" ) )
             p_beg->second->onJoinedChannel( cfg );
 
@@ -358,7 +358,7 @@ void ChatNetworkingIRC::joined( const std::string& channel, const std::string& n
 void ChatNetworkingIRC::recvMessage( const std::string& channel, const std::string& sender, const std::string& msg )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         // check also for unfiltered callbacks ( '*' )
         if ( ( channel == p_beg->first ) || ( p_beg->first == "*" ) )
@@ -369,7 +369,7 @@ void ChatNetworkingIRC::recvMessage( const std::string& channel, const std::stri
 void ChatNetworkingIRC::recvMemberList( const std::string& channel )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         // check also for unfiltered callbacks ( '*' )
         if ( ( channel == p_beg->first ) || ( p_beg->first == "*" ) )
             p_beg->second->onReceiveMemberList( channel );
@@ -378,14 +378,14 @@ void ChatNetworkingIRC::recvMemberList( const std::string& channel )
 void ChatNetworkingIRC::recvSystemMessage( const std::string& msg )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )            
+    for ( ; p_beg != p_end; ++p_beg )            
         p_beg->second->onReceiveSystemMessage( msg );
 }
 
 void ChatNetworkingIRC::recvNicknameChange( const std::string& channel, const std::string& newname, const std::string& oldname )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ ) 
+    for ( ; p_beg != p_end; ++p_beg ) 
         p_beg->second->onNicknameChanged( newname, oldname );
 }
 
@@ -478,7 +478,7 @@ void ChatNetworkingIRC::run()
     }
     catch ( ... )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** internal error occured in ChatNetworkingIRC::run" << std::endl;
+        log_error << "*** internal error occured in ChatNetworkingIRC::run" << std::endl;
         irc_destroy_session( _p_session );
     }
     delete p_ctx;

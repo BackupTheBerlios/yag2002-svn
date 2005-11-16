@@ -159,7 +159,7 @@ void serializationCallback( void* p_serializeHandle, const void* p_buffer, size_
 {
     std::ofstream* p_stream  = static_cast< std::ofstream* >( p_serializeHandle );
     const char*    p_charbuf = static_cast< const char* >( p_buffer );
-    for ( size_t cnt = 0; cnt < size; cnt++ )
+    for ( size_t cnt = 0; cnt < size; ++cnt )
         p_stream->put( p_charbuf[ cnt ] );
 }
 
@@ -167,7 +167,7 @@ void deserializationCallback( void* p_serializeHandle, void* p_buffer, size_t si
 {
     std::ifstream* p_stream  = static_cast< std::ifstream* >( p_serializeHandle );
     char*          p_charbuf = static_cast< char* >( p_buffer );
-    for ( size_t cnt = 0; cnt < size; cnt++ )
+    for ( size_t cnt = 0; cnt < size; ++cnt )
         p_stream->get( p_charbuf[ cnt ] );
 }
 
@@ -472,7 +472,7 @@ void levelCollisionCallback (
                                 const int*          p_indexArray 
                             )
 {
-    //! TODO
+    //! currently we do not need this funtionality!
 
     //int i;
     //int j;
@@ -484,13 +484,13 @@ void levelCollisionCallback (
     //    {
     //        j = p_indexArray[ indexCount - 1 ];
     //        Vec3f p0( p_vertex[ j * stride + 0 ], p_vertex[ j * stride + 1 ] , p_vertex[ j * stride + 2 ] );
-    //        for ( i = 0; i < indexCount; i ++ ) 
+    //        for ( i = 0; i < indexCount; ++i ) 
     //        {
     //            j = p_indexArray[i];
     //            Vec3f p1( p_vertex[ j * stride + 0 ], p_vertex[ j * stride + 1 ] , p_vertex[ j * stride + 2 ] );
     //            debugFace[ debugCount ][ 0 ] = p0;
     //            debugFace[ debugCount ][ 1 ] = p1;
-    //            debugCount ++;
+    //            ++debugCount;
     //            p0 = p1;
     //        }
     //    }

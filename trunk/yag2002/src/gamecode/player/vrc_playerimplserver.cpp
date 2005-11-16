@@ -61,11 +61,11 @@ void PlayerImplServer::postInitialize()
     _currentPos = getPlayerEntity()->getPosition();
     _currentRot = getPlayerEntity()->getRotation();
 
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO ) << "  setup player implementation Server ..." << std::endl;
+    log_info << "  setup player implementation Server ..." << std::endl;
 
     //! TODO: check if we need physics on server
 
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO ) << "  player implementation successfully initialized" << std::endl;
+    log_info << "  player implementation successfully initialized" << std::endl;
 }
 
 void PlayerImplServer::update( float deltaTime )

@@ -123,7 +123,7 @@ En3DSound* EnPhysicsBase::getSoundEntity( const std::string& name )
     _p_sndEntity = dynamic_cast< En3DSound* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_3DSOUND, name ) );
     if ( !_p_sndEntity )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "*** entity '" << name << "' is not of type 3DSound or does not exist!" << std::endl;
+        log_warning << "*** entity '" << name << "' is not of type 3DSound or does not exist!" << std::endl;
     }
     return _p_sndEntity;
 }

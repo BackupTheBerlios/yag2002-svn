@@ -57,7 +57,7 @@ const std::string& CmdGetConfig::execute( const std::vector< std::string >& argu
     std::vector< std::pair< std::string, std::string > > settings;
     yaf3d::Configuration::get()->getConfigurationAsString( settings );
     std::vector< std::pair< std::string, std::string > >::iterator p_beg = settings.begin(), p_end = settings.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
 
         _cmdResult += p_beg->first + " [" + p_beg->second + "]\n";

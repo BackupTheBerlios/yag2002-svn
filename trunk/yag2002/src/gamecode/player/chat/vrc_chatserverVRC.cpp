@@ -41,7 +41,7 @@ YAF3D_IMPL_ENTITYFACTORY( ChatServerVRCEntityFactory );
 
 
 EnChatServerVRC::EnChatServerVRC():
-_logFile( "chatsrvVRC.yaf3d::log" ),
+_logFile( "chatsrvVRC.log" ),
 _p_chatMgr( NULL )
 {
     // register entity attributes

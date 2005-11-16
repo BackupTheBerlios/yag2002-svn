@@ -91,7 +91,7 @@ bool EnSpawnPoint::getNextSpawnPoint( osg::Vec3f& pos, osg::Quat& rot )
 {
     if ( !_allSpawnPoints.size() )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "no SpawnPoint entities found in level, cannot select one!" << std::endl;
+        log_error << "no SpawnPoint entities found in level, cannot select one!" << std::endl;
         return false;
     }
 
@@ -101,11 +101,11 @@ bool EnSpawnPoint::getNextSpawnPoint( osg::Vec3f& pos, osg::Quat& rot )
     // get all existing player entities
     {
         yaf3d::EntityManager::get()->getAllEntities( entities );
-        std::vector< yaf3d::BaseEntity* >::iterator pp_beg = entities.begin(), pp_end = entities.end();
-        for ( ; pp_beg != pp_end; pp_beg++ )
+        std::vector< yaf3d::BaseEntity* >::iterator p_beg = entities.begin(), p_end = entities.end();
+        for ( ; p_beg != p_end; ++p_beg )
         {
-            if ( ( *pp_beg )->getTypeName() == ENTITY_NAME_PLAYER )
-                players.push_back( static_cast< EnPlayer* >( *pp_beg ) );
+            if ( ( *p_beg )->getTypeName() == ENTITY_NAME_PLAYER )
+                players.push_back( static_cast< EnPlayer* >( *p_beg ) );
         }
         if ( !players.size() )
             return false;
@@ -121,20 +121,20 @@ bool EnSpawnPoint::getNextSpawnPoint( osg::Vec3f& pos, osg::Quat& rot )
         EnSpawnPoint* p_spawn  = _allSpawnPoints[ randspawn ];
 
         // check the randomly choosen spawn point against all players
-        std::vector< EnPlayer* >::iterator pp_beg = players.begin(), pp_end = players.end();
-        for ( ; pp_beg != pp_end; pp_beg++ )
+        std::vector< EnPlayer* >::iterator p_beg = players.begin(), p_end = players.end();
+        for ( ; p_beg != p_end; ++p_beg )
         {
-            if ( ( p_spawn->getSpawnPosition() - ( *pp_beg )->getPosition() ).length2() > ( SPAWN_MIN_FREE_RADIUS * SPAWN_MIN_FREE_RADIUS ) )
+            if ( ( p_spawn->getSpawnPosition() - ( *p_beg )->getPosition() ).length2() > ( SPAWN_MIN_FREE_RADIUS * SPAWN_MIN_FREE_RADIUS ) )
                 break;
         }
         // if none of players occupy the spawn point then we are done
-        if ( pp_beg != pp_end )
+        if ( p_beg != p_end )
         {
             p_spawnentity = p_spawn;
             dobreak = true;
         }
 
-        cnt++;
+        ++cnt;
     } 
     while ( !dobreak && ( cnt < 10 ) );
 
@@ -146,7 +146,7 @@ bool EnSpawnPoint::getNextSpawnPoint( osg::Vec3f& pos, osg::Quat& rot )
     pos = p_spawnentity->getSpawnPosition();
     rot = p_spawnentity->getSpawnRotation();
 
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "player takes SpawnPoint '" 
+    log_debug << "player takes SpawnPoint '" 
         << p_spawnentity->getInstanceName() 
         << "' at position '" << pos.x() <<  " " <<  pos.y() << " " << pos.z() << std::endl;
 

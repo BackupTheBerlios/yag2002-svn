@@ -63,12 +63,12 @@ void EnGeomEmitter::postInitialize()
     std::vector< std::string > tokens;
     yaf3d::BaseEntity*      p_entity = NULL;
     yaf3d::explode( _geomTypes, " ", &tokens );
-    for ( size_t cnt = 0; cnt < tokens.size(); cnt++ )
+    for ( size_t cnt = 0; cnt < tokens.size(); ++cnt )
     {
         p_entity = yaf3d::EntityManager::get()->findInstance( tokens[ cnt ] );
         if ( !p_entity )
         {
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***EnGeomEmitter: entity type not found : '" << tokens[ cnt ] << "'" << std::endl;
+            log_error << "***EnGeomEmitter: entity type not found : '" << tokens[ cnt ] << "'" << std::endl;
             continue;
         }
 
@@ -110,7 +110,7 @@ void EnGeomEmitter::updateEntity( float deltaTime )
 
     // update geoms
     std::vector< std::pair< yaf3d::BaseEntity*, float > >::iterator geom = _geoms.begin(), geomEnd = _geoms.end();
-    for ( ; geom != geomEnd; geom++ )
+    for ( ; geom != geomEnd; ++geom )
     {
         if ( ( geom->second -= deltaTime ) < 0 )
         {

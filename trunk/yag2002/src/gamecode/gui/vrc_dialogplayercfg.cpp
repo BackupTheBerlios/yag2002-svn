@@ -62,7 +62,7 @@ _p_settingsDialog( p_menuEntity )
     // setup the preview pics for StaticImage field
     if ( filelisting.size() > 0 )
     {
-        for ( size_t cnt = 0; cnt < filelisting.size(); cnt++ )
+        for ( size_t cnt = 0; cnt < filelisting.size(); ++cnt )
         {
             // get the preview pic and player name out of player config file
             //! Note: all player types must have unique names!
@@ -70,7 +70,7 @@ _p_settingsDialog( p_menuEntity )
             yaf3d::Settings* p_settings = yaf3d::SettingsManager::get()->createProfile( profile, searchdir + filelisting[ cnt ] );
             if ( !p_settings )
             {
-                yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "DialogPlayerConfig: cannot find player settings: " << searchdir + filelisting[ cnt ] << std::endl;
+                log_error << "DialogPlayerConfig: cannot find player settings: " << searchdir + filelisting[ cnt ] << std::endl;
                 continue;
             }
             std::string playertype;
@@ -117,7 +117,7 @@ DialogPlayerConfig::~DialogPlayerConfig()
 {
     // free up the imagesets
     std::map< std::string, CEGUI::Image* >::iterator p_beg = _players.begin(), p_end = _players.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         CEGUI::ImagesetManager::getSingleton().destroyImageset( p_beg->first );
     }
@@ -131,7 +131,7 @@ bool DialogPlayerConfig::initialize( const std::string& layoutfile )
     _p_playerConfigDialog = yaf3d::GuiManager::get()->loadLayout( layoutfile, NULL, ADLG_PREFIX );
     if ( !_p_playerConfigDialog )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** DialogPlayerConfig: cannot find layout: " << layoutfile << std::endl;
+        log_error << "*** DialogPlayerConfig: cannot find layout: " << layoutfile << std::endl;
         return false;
     }
 
@@ -156,8 +156,8 @@ bool DialogPlayerConfig::initialize( const std::string& layoutfile )
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** DialogPlayerConfig: cannot setup dialog layout." << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "*** DialogPlayerConfig: cannot setup dialog layout." << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     return true;
@@ -197,7 +197,7 @@ void DialogPlayerConfig::setupControls()
     _p_listbox->resetList();
     {
         std::map< std::string, CEGUI::Image* >::iterator p_beg = _players.begin(), p_end = _players.end();
-        for ( ; p_beg != p_end; p_beg++ )
+        for ( ; p_beg != p_end; ++p_beg )
         {
             CEGUI::ListboxTextItem * p_item = new CEGUI::ListboxTextItem( p_beg->first.c_str() );
             p_item->setSelectionColours( col );
@@ -218,7 +218,7 @@ void DialogPlayerConfig::setupControls()
         // get the player type out of file list lookup table
         std::map< std::string, std::string >::iterator p_beg = _cfgFiles.begin(), p_end = _cfgFiles.end();
         std::string playertype;
-        for ( ; p_beg != p_end; p_beg++ )
+        for ( ; p_beg != p_end; ++p_beg )
         {
             if ( p_beg->second == playercfg )
             {

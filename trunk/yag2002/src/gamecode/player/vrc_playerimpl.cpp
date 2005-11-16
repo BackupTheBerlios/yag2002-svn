@@ -82,7 +82,7 @@ void BasePlayerImplementation::destroyChatManager()
         // delete all chat protocol implementations
         ChatManager::ProtocolMap& prots = s_chatMgr->getRegisteredProtocols();
         ChatManager::ProtocolMap::iterator p_beg = prots.begin(), p_end = prots.end();
-        for( ; p_beg != p_end; p_beg++ )
+        for( ; p_beg != p_end; ++p_beg )
             delete p_beg->second;
 
         // delete chat manager

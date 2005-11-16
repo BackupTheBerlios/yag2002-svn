@@ -56,7 +56,7 @@ _enable( true )
     getAttributeManager().addAttribute( "color"      , _fogColor        );
     getAttributeManager().addAttribute( "enable"     , _enable          );
 
-    _instCount++;
+    ++_instCount;
 }
 
 EnFog::~EnFog()

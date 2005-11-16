@@ -204,8 +204,8 @@ _p_parent( p_parent )
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "ChatGuiCtrl::ConnectionDialog: problem creating connection dialog" << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "ChatGuiCtrl::ConnectionDialog: problem creating connection dialog" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -219,8 +219,8 @@ ConnectionDialog< TypeT >::~ConnectionDialog()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "~ConnectionDialog: problem cleaning up gui resources" << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "~ConnectionDialog: problem cleaning up gui resources" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 

@@ -82,7 +82,7 @@ _loadedPlayerEntity( NULL )
         s_chatLog->addSink( "chatlog", yaf3d::Application::get()->getMediaPath() + filename, yaf3d::Log::L_ERROR );
         s_chatLog->enableSeverityLevelPrinting( false );
         *s_chatLog << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO );
-        *s_chatLog << "yaf3d::log file created on " << yaf3d::getTimeStamp() << std::endl;
+        *s_chatLog << "log file created on " << yaf3d::getTimeStamp() << std::endl;
         *s_chatLog << "-----------" << std::endl;
     }
 
@@ -94,7 +94,7 @@ PlayerNetworking::~PlayerNetworking()
     // we have to lock creation / deletion of network objects during destruction
     yaf3d::NetworkDevice::get()->lockObjects();
 
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO ) << "player left: " << _p_playerName << std::endl;
+    log_info << "player left: " << _p_playerName << std::endl;
 
     // remove ghost from simulation ( server and client )
 
@@ -111,7 +111,7 @@ PlayerNetworking::~PlayerNetworking()
 
             // remove all associated entities
             std::vector< yaf3d::BaseEntity* >::iterator p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
-            for ( ; p_beg != p_end; p_beg++ )
+            for ( ; p_beg != p_end; ++p_beg )
                 yaf3d::EntityManager::get()->deleteEntity( *p_beg );
         }
     }
@@ -152,37 +152,37 @@ void PlayerNetworking::PostObjectCreate()
     }
 
     *s_chatLog << yaf3d::getTimeStamp() << ": [" << _p_playerName << "] entered the chat room " << std::endl;
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO ) << " player created: " << _p_playerName << std::endl;
+    log_info << " player created: " << _p_playerName << std::endl;
 }
 
 void PlayerNetworking::createPlayer()
 {
     std::string playerconfig = _p_configFile;
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO ) << "player '" <<  _p_playerName << "' connected" << std::endl;
+    log_info << "player '" <<  _p_playerName << "' connected" << std::endl;
 
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "loading player configuration file: " << playerconfig << std::endl;
+    log_debug << "loading player configuration file: " << playerconfig << std::endl;
     std::stringstream postfix;
     static unsigned int postcnt = 0;
     postfix << "_" << postcnt;
-    postcnt++;
+    ++postcnt;
     // load player related entities
     if ( !yaf3d::LevelManager::get()->loadEntities( playerconfig, &_loadedEntities, postfix.str() ) )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "cannot find player configuration file: " << playerconfig << std::endl;            
+        log_error << "cannot find player configuration file: " << playerconfig << std::endl;            
         return;
     }
 
     // search for player entity and set it up
     std::vector< yaf3d::BaseEntity* >::iterator p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
     {
-        for ( ; p_beg != p_end; p_beg++ )
+        for ( ; p_beg != p_end; ++p_beg )
         {
             if ( ( *p_beg )->getTypeName() == ENTITY_NAME_PLAYER )
                 break;
         }
         if ( p_beg == p_end )
         {
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "cannot find player entity in file: " << playerconfig << std::endl;            
+            log_error << "cannot find player entity in file: " << playerconfig << std::endl;            
             return;
         }
         _loadedPlayerEntity = static_cast< vrc::EnPlayer* >( *p_beg );
@@ -201,20 +201,20 @@ void PlayerNetworking::createPlayer()
     }
 
     // begin initialization of player and its components
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "initializing new player instance ... " << std::endl;
+    log_debug << "initializing new player instance ... " << std::endl;
     {
         p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
-        for ( ; p_beg != p_end; p_beg++ )
+        for ( ; p_beg != p_end; ++p_beg )
         {
             ( *p_beg )->initialize();
         }
     }
 
     // now begin post-initialization of player and its components
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "post-initializing new player ..." << std::endl;
+    log_debug << "post-initializing new player ..." << std::endl;
     {
         p_beg = _loadedEntities.begin(), p_end = _loadedEntities.end();
-        for ( ; p_beg != p_end; p_beg++ )
+        for ( ; p_beg != p_end; ++p_beg )
         {
             ( *p_beg )->postInitialize();
         }
@@ -238,7 +238,7 @@ void PlayerNetworking::initialize( const osg::Vec3f& pos, const std::string& pla
 
 void PlayerNetworking::RPC_Initialize( tInitializationData initData )
 {
-    // server directs all messages into a yaf3d::log file!
+    // server directs all messages into a log file!
     assert( ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client ) && "this RPC must be called only for clients!" );
 
     // init player position set by server ( it's the job of server to init the player position and rotation )

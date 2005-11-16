@@ -49,7 +49,7 @@ _viewAngle( 0.0f ),
 _updateTimer( 0.0f ),
 _nameBox( NULL )
 {
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "creating player name display entity"  << std::endl;
+    log_debug << "creating player name display entity"  << std::endl;
 
     getAttributeManager().addAttribute( "position",       _position       );
     getAttributeManager().addAttribute( "detectionAngle", _detectionAngle );
@@ -64,8 +64,8 @@ EnPlayerNameDisplay::~EnPlayerNameDisplay()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnPlayerNameDisplay: problem cleaning up gui resources" << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "EnPlayerNameDisplay: problem cleaning up gui resources" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -111,8 +111,8 @@ void EnPlayerNameDisplay::initialize()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnPlayerNameDisplay: problem creating gui" << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "EnPlayerNameDisplay: problem creating gui" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     // register for getting system notifications
@@ -169,7 +169,7 @@ void EnPlayerNameDisplay::updateName()
     yaf3d::BaseEntity* p_playerinfront = NULL;
     std::vector< yaf3d::BaseEntity* >& remoteplayers = vrc::gameutils::PlayerUtils::get()->getRemotePlayers();
     std::vector< yaf3d::BaseEntity* >::iterator p_beg = remoteplayers.begin(), p_end = remoteplayers.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         line = ( *p_beg )->getPosition() - campos;
         osg::Vec3f  dir( line );

@@ -110,7 +110,7 @@ void Configuration::getConfigurationAsString( std::vector< std::pair< std::strin
 {
     const std::vector< Settings::SettingBase* >& settingStorages = _p_settings->getAllSettingStorages();
     std::vector< Settings::SettingBase* >::const_iterator p_beg = settingStorages.begin(), p_end = settingStorages.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for( ; p_beg != p_end; ++p_beg )
     {
         // get the setting value
         std::string token = ( *p_beg )->getTokenName();
@@ -160,7 +160,7 @@ bool Configuration::setSettingValueAsString( const std::string& name, const std:
 {
     const std::vector< Settings::SettingBase* >& settingStorages = _p_settings->getAllSettingStorages();
     std::vector< Settings::SettingBase* >::const_iterator p_beg = settingStorages.begin(), p_end = settingStorages.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         std::string token = ( *p_beg )->getTokenName();
         if ( token != name ) // search for given token

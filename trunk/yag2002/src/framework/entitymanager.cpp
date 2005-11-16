@@ -66,7 +66,7 @@ void EntityManager::shutdown()
     if ( _entityPool.size() > 0 )
     {
         log << Log::LogLevel( Log::L_ERROR ) << "EntityManager::shutdown: attention, there are '" <<  _entityPool.size() << "' remaining entities after shutdown!" << std::endl;
-        for ( size_t cnt = 0; cnt < _entityPool.size(); cnt ++ )
+        for ( size_t cnt = 0; cnt < _entityPool.size(); ++cnt )
             log << Log::LogLevel( Log::L_ERROR ) << "  - " << _entityPool[ cnt ]->getInstanceName() << "(" << _entityPool[ cnt ]->getTypeName() << ")" << std::endl;
     }
 
@@ -92,23 +92,23 @@ void EntityManager::updateEntityLists()
     _internalState = UpdatingEntities;
 
     // delete queued entities for deletion
-    std::vector< BaseEntity* >::iterator pp_delentity = _queueDeletedEntities.begin(), pp_delentityEnd = _queueDeletedEntities.end();
-    for( ; pp_delentity != pp_delentityEnd; pp_delentity++ )
+    std::vector< BaseEntity* >::iterator p_delentity = _queueDeletedEntities.begin(), p_delentityEnd = _queueDeletedEntities.end();
+    for ( ; p_delentity != p_delentityEnd; ++p_delentity )
     {
-        BaseEntity* p_rementity = *pp_delentity;
+        BaseEntity* p_rementity = *p_delentity;
         // remove entity from pool and delete it
         removeFromEntityPool( p_rementity, true );
     }
     _queueDeletedEntities.clear();
 
     // add new to be updated entities into update entity list, or remove those which are deregistered
-    std::vector< std::pair< BaseEntity*, bool > >::iterator pp_entity = _queueUpdateEntities.begin(), pp_entityEnd = _queueUpdateEntities.end();
-    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    std::vector< std::pair< BaseEntity*, bool > >::iterator p_beg = _queueUpdateEntities.begin(), p_end = _queueUpdateEntities.end();
+    for ( ; p_beg != p_end; ++p_beg )
     {
-        if ( pp_entity->second )
-            _updateEntities.push_back( pp_entity->first );
+        if ( p_beg->second )
+            _updateEntities.push_back( p_beg->first );
         else
-            deregisterUpdate( pp_entity->first );
+            deregisterUpdate( p_beg->first );
     }
     _queueUpdateEntities.clear();
 
@@ -118,12 +118,12 @@ void EntityManager::updateEntityLists()
 
 bool EntityManager::registerFactory( BaseEntityFactory* p_entityFactory, bool reg )
 {
-    std::vector< BaseEntityFactory* >::iterator pp_entity = _entityFactories.begin(), pp_entityEnd = _entityFactories.end();
+    std::vector< BaseEntityFactory* >::iterator p_beg = _entityFactories.begin(), p_end = _entityFactories.end();
     if ( reg )
     {
-        for( ; pp_entity != pp_entityEnd; pp_entity++ )
+        for ( ; p_beg != p_end; ++p_beg )
         {
-            if ( **pp_entity == *p_entityFactory )
+            if ( **p_beg == *p_entityFactory )
                 return false;
         }
         _entityFactories.push_back( p_entityFactory );
@@ -131,11 +131,11 @@ bool EntityManager::registerFactory( BaseEntityFactory* p_entityFactory, bool re
     }
     else
     {
-        for(; pp_entity != pp_entityEnd; pp_entity++ )
+        for ( ; p_beg != p_end; ++p_beg )
         {
-            if ( **pp_entity == *p_entityFactory )
+            if ( **p_beg == *p_entityFactory )
             {
-                _entityFactories.erase( pp_entity );
+                _entityFactories.erase( p_beg );
                 return true;
             }
         }
@@ -145,11 +145,11 @@ bool EntityManager::registerFactory( BaseEntityFactory* p_entityFactory, bool re
 
 BaseEntityFactory* EntityManager::getEntityFactory( const std::string& type )
 {
-    std::vector< BaseEntityFactory* >::iterator pp_entity = _entityFactories.begin(), pp_entityEnd = _entityFactories.end();
-    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    std::vector< BaseEntityFactory* >::iterator p_beg = _entityFactories.begin(), p_end = _entityFactories.end();
+    for ( ; p_beg != p_end; ++p_beg )
     {
-        if ( ( *pp_entity )->getType() == type )
-            return *pp_entity;
+        if ( ( *p_beg )->getType() == type )
+            return *p_beg;
     }
 
     return NULL;
@@ -157,9 +157,9 @@ BaseEntityFactory* EntityManager::getEntityFactory( const std::string& type )
  
 void EntityManager::getAllEntityFactories( std::vector< BaseEntityFactory* >& factories )
 {
-    std::vector< BaseEntityFactory* >::iterator pp_fac = _entityFactories.begin(), pp_facEnd = _entityFactories.end();
-    for( ; pp_fac != pp_facEnd; pp_fac++ )
-        factories.push_back( *pp_fac );
+    std::vector< BaseEntityFactory* >::iterator p_fac = _entityFactories.begin(), p_facEnd = _entityFactories.end();
+    for ( ; p_fac != p_facEnd; ++p_fac )
+        factories.push_back( *p_fac );
 }
 
 BaseEntity* EntityManager::createEntity( const std::string& type, const std::string& instanceName, bool addToPool )
@@ -187,19 +187,19 @@ BaseEntity* EntityManager::createEntity( const std::string& type, const std::str
 
 BaseEntity* EntityManager::findEntity( const std::string& type, const std::string& instanceName )
 {
-    std::vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
-    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    std::vector< BaseEntity* >::iterator p_beg = _entityPool.begin(), p_end = _entityPool.end();
+    for ( ; p_beg != p_end; ++p_beg )
     {
-        if ( ( *pp_entity )->getTypeName() == type )
+        if ( ( *p_beg )->getTypeName() == type )
         {
             if ( instanceName.empty() )
             {
-                return *pp_entity;
+                return *p_beg;
             }
             else
             {
-                if ( ( *pp_entity )->getInstanceName() == instanceName )
-                    return *pp_entity;
+                if ( ( *p_beg )->getInstanceName() == instanceName )
+                    return *p_beg;
             }
         }
     }
@@ -210,12 +210,12 @@ BaseEntity* EntityManager::findEntity( const std::string& type, const std::strin
 BaseEntity* EntityManager::findInstance( const std::string& instanceName )
 {
     assert ( instanceName.length() && "instance name is empty!" );
-    std::vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
-    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    std::vector< BaseEntity* >::iterator p_beg = _entityPool.begin(), p_end = _entityPool.end();
+    for ( ; p_beg != p_end; ++p_beg )
     {
-        if ( ( *pp_entity )->getInstanceName() == instanceName )
+        if ( ( *p_beg )->getInstanceName() == instanceName )
         {
-            return *pp_entity;
+            return *p_beg;
         }
     }
 
@@ -224,27 +224,27 @@ BaseEntity* EntityManager::findInstance( const std::string& instanceName )
 
 void EntityManager::getAllEntities( std::vector< BaseEntity* >& entities )
 {
-    std::vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
-    for( ; pp_entity != pp_entityEnd; pp_entity++ )
-        entities.push_back( *pp_entity );
+    std::vector< BaseEntity* >::iterator p_beg = _entityPool.begin(), p_end = _entityPool.end();
+    for ( ; p_beg != p_end; ++p_beg )
+        entities.push_back( *p_beg );
 }
 
 bool EntityManager::registerUpdate( yaf3d::BaseEntity* p_entity, bool reg )
 {
     // check whether the entity is registered for updates
-    std::vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
-    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    std::vector< BaseEntity* >::iterator p_beg = _updateEntities.begin(), p_end = _updateEntities.end();
+    for ( ; p_beg != p_end; ++p_beg )
     {
-        if ( *pp_entity == p_entity )
+        if ( *p_beg == p_entity )
             break;
     }
-    if ( !reg && ( pp_entity == pp_entityEnd ) )
+    if ( !reg && ( p_beg == p_end ) )
     {
         log << Log::LogLevel( Log::L_WARNING ) << "*** EntityManager: the entity was previousely not registered for updating!, ignoring deregister request" << std::endl;
         log << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << std::endl;
         return false;
     }
-    else if ( reg && ( pp_entity != pp_entityEnd ) )
+    else if ( reg && ( p_beg != p_end ) )
     {
         log << Log::LogLevel( Log::L_WARNING ) << "*** EntityManager: the entity is already registered for updating!, ignoring register request" << std::endl;
         log << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << std::endl;
@@ -258,10 +258,10 @@ bool EntityManager::registerUpdate( yaf3d::BaseEntity* p_entity, bool reg )
 bool EntityManager::isRegisteredUpdate( const BaseEntity* p_entity )
 {
     // check whether the entity is registered for updates
-    std::vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
-    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    std::vector< BaseEntity* >::iterator p_beg = _updateEntities.begin(), p_end = _updateEntities.end();
+    for ( ; p_beg != p_end; ++p_beg )
     {
-        if ( *pp_entity == p_entity ) 
+        if ( *p_beg == p_entity ) 
             return true;
     }
     return false;
@@ -270,19 +270,19 @@ bool EntityManager::isRegisteredUpdate( const BaseEntity* p_entity )
 bool EntityManager::registerNotification( BaseEntity* p_entity, bool reg )
 {
     // check whether the entity is registered for notifications
-    std::vector< BaseEntity* >::iterator pp_entity = _entityNotification.begin(), pp_entityEnd = _entityNotification.end();
-    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    std::vector< BaseEntity* >::iterator p_beg = _entityNotification.begin(), p_end = _entityNotification.end();
+    for ( ; p_beg != p_end; ++p_beg )
     {
-        if ( *pp_entity == p_entity )
+        if ( *p_beg == p_entity )
             break;
     }
-    if ( !reg && ( pp_entity == pp_entityEnd ) )
+    if ( !reg && ( p_beg == p_end ) )
     {
         log << Log::LogLevel( Log::L_WARNING ) << "*** EntityManager: the entity was previousely not registered for getting notification!, ignoring deregister request" << std::endl;
         log << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << std::endl;
         return false;
     }
-    else if ( reg && ( pp_entity != pp_entityEnd ) )
+    else if ( reg && ( p_beg != p_end ) )
     {
         log << Log::LogLevel( Log::L_WARNING ) << "*** EntityManager: the entity is already registered for getting notification!, ignoring register request" << std::endl;
         log << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << std::endl;
@@ -292,7 +292,7 @@ bool EntityManager::registerNotification( BaseEntity* p_entity, bool reg )
     if ( reg )
         _entityNotification.push_back( p_entity );
     else
-        _entityNotification.erase( pp_entity );
+        _entityNotification.erase( p_beg );
 
     return true;
 }
@@ -300,10 +300,10 @@ bool EntityManager::registerNotification( BaseEntity* p_entity, bool reg )
 bool EntityManager::isRegisteredNotification( const BaseEntity* p_entity )
 {
     // check whether the entity is registered for notifications
-    std::vector< BaseEntity* >::iterator pp_entity = _entityNotification.begin(), pp_entityEnd = _entityNotification.end();
-    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    std::vector< BaseEntity* >::iterator p_beg = _entityNotification.begin(), p_end = _entityNotification.end();
+    for ( ; p_beg != p_end; ++p_beg )
     {
-        if ( *pp_entity == p_entity )
+        if ( *p_beg == p_entity )
             return true;
     }
     return false;
@@ -322,12 +322,12 @@ void EntityManager::sendNotification( const EntityNotification& notification, Ba
 void EntityManager::flushNotificationQueue()
 {
     std::vector< EntityNotification >::iterator p_notify = _queueNotifications.begin(), p_notifyEnd = _queueNotifications.end();
-    std::vector< BaseEntity* >::iterator pp_entity, pp_entityEnd = _entityNotification.end();
-    for ( ; p_notify != p_notifyEnd; p_notify++ )
+    std::vector< BaseEntity* >::iterator p_beg, p_end    = _entityNotification.end();
+    for ( ; p_notify != p_notifyEnd; ++p_notify )
     {
-        for( pp_entity = _entityNotification.begin(); pp_entity != pp_entityEnd; pp_entity++ )
+        for ( p_beg = _entityNotification.begin(); p_beg != p_end; ++p_beg )
         {
-            ( *pp_entity )->handleNotification( *p_notify );
+            ( *p_beg )->handleNotification( *p_notify );
         }
     }
     _queueNotifications.clear();
@@ -335,12 +335,12 @@ void EntityManager::flushNotificationQueue()
 
 void EntityManager::deregisterUpdate( BaseEntity* p_entity )
 {
-    std::vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
-    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    std::vector< BaseEntity* >::iterator p_beg = _updateEntities.begin(), p_end = _updateEntities.end();
+    for ( ; p_beg != p_end; ++p_beg )
     {
-        if ( *pp_entity == p_entity )
+        if ( *p_beg == p_entity )
         {
-            _updateEntities.erase( pp_entity );
+            _updateEntities.erase( p_beg );
             return;
         }
     }
@@ -369,12 +369,12 @@ void EntityManager::removeFromEntityPool( BaseEntity* p_entity, bool del )
 {
     assert ( ( _internalState == UpdatingEntities ) && "internal error: this method can be called only during updating phase" );
 
-    std::vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
-    for(; pp_entity != pp_entityEnd; pp_entity++ )
-        if ( ( *pp_entity ) == p_entity )
+    std::vector< BaseEntity* >::iterator p_beg = _entityPool.begin(), p_end = _entityPool.end();
+    for (; p_beg != p_end; ++p_beg )
+        if ( ( *p_beg ) == p_entity )
             break;
 
-    if ( pp_entity != pp_entityEnd )
+    if ( p_beg != p_end )
     {
         // if the entity must be deleted so we have to remove it also from update and notification list
         if ( del )
@@ -387,10 +387,10 @@ void EntityManager::removeFromEntityPool( BaseEntity* p_entity, bool del )
             if ( isRegisteredUpdate( p_entity ) )
                 deregisterUpdate( p_entity );
 
-            delete ( *pp_entity );
+            delete ( *p_beg );
         }
 
-        _entityPool.erase( pp_entity );
+        _entityPool.erase( p_beg );
     } 
     else
     {
@@ -408,7 +408,7 @@ void EntityManager::setupEntities( std::vector< BaseEntity* >& entities )
 
     log << Log::LogLevel( Log::L_INFO ) << "starting entity setup ..." << std::endl;
 
-    std::vector< BaseEntity* >::iterator pp_beg = entities.begin(), pp_end = entities.end();
+    std::vector< BaseEntity* >::iterator p_beg = entities.begin(), p_end = entities.end();
     BaseEntity* p_entity = NULL;
     log << Log::LogLevel( Log::L_INFO ) << "initializing entities ..." << std::endl;
     // setup entities
@@ -418,9 +418,9 @@ void EntityManager::setupEntities( std::vector< BaseEntity* >& entities )
 
         startTick  = timer.tick();
         // consider persistence and avoid re-initialization of persistent entities
-        for( ; pp_beg != pp_end; pp_beg++ )
+        for ( ; p_beg != p_end; ++p_beg )
         {
-            p_entity = *pp_beg;
+            p_entity = *p_beg;
             log << Log::LogLevel( Log::L_DEBUG ) << "# " << p_entity->getInstanceName() + "[ " + p_entity->getTypeName() + " ]" << std::endl;
 
             if ( p_entity->isPersistent() )
@@ -441,7 +441,7 @@ void EntityManager::setupEntities( std::vector< BaseEntity* >& entities )
         time4Init  = timer.delta_s( startTick, curTick );
     }
 
-    pp_beg = entities.begin(); pp_end = entities.end();
+    p_beg = entities.begin(); p_end = entities.end();
     log << Log::LogLevel( Log::L_INFO ) << "post-initializing entities ..." << std::endl;
     {
         // set internal state
@@ -449,9 +449,9 @@ void EntityManager::setupEntities( std::vector< BaseEntity* >& entities )
 
         startTick  = timer.tick();
         // consider persistence and avoid re-initialization of persistent entities
-        for( ; pp_beg != pp_end; pp_beg++ )
+        for ( ; p_beg != p_end; ++p_beg )
         {
-            p_entity = *pp_beg;
+            p_entity = *p_beg;
             log << Log::LogLevel( Log::L_DEBUG ) << "# " << p_entity->getInstanceName() + "[ " + p_entity->getTypeName() + " ]" << std::endl;
 
             if ( p_entity->isPersistent() )
@@ -473,9 +473,9 @@ void EntityManager::setupEntities( std::vector< BaseEntity* >& entities )
     }
     {
         // add new entities to pool if the request came in during initialization or post-initialization
-        std::vector< BaseEntity* >::iterator pp_addtopoolentity = _queueAddToPoolEntities.begin(), pp_addtopoolentitiyEnd = _queueAddToPoolEntities.end();
-        for ( ; pp_addtopoolentity != pp_addtopoolentitiyEnd; pp_addtopoolentity++ )
-            _entityPool.push_back( *pp_addtopoolentity );
+        std::vector< BaseEntity* >::iterator p_addtopoolentity = _queueAddToPoolEntities.begin(), p_addtopoolentitiyEnd = _queueAddToPoolEntities.end();
+        for ( ; p_addtopoolentity != p_addtopoolentitiyEnd; ++p_addtopoolentity )
+            _entityPool.push_back( *p_addtopoolentity );
 
         _queueAddToPoolEntities.clear();
 
@@ -493,10 +493,10 @@ void EntityManager::setupEntities( std::vector< BaseEntity* >& entities )
 
 void EntityManager::updateEntities( float deltaTime  )
 {
-    std::vector< BaseEntity* >::iterator pp_entity = _updateEntities.begin(), pp_entityEnd = _updateEntities.end();
-    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    std::vector< BaseEntity* >::iterator p_beg = _updateEntities.begin(), p_end = _updateEntities.end();
+    for ( ; p_beg != p_end; ++p_beg )
     {
-        BaseEntity* p_ent = ( *pp_entity );
+        BaseEntity* p_ent = ( *p_beg );
         p_ent->updateEntity( deltaTime );
 
         // check heap if enabled ( used for detecting heap corruptions )
@@ -520,13 +520,13 @@ void EntityManager::deleteEntity( BaseEntity* p_entity )
 
 void EntityManager::deleteAllEntities()
 {
-    std::vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
-    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    std::vector< BaseEntity* >::iterator p_beg = _entityPool.begin(), p_end = _entityPool.end();
+    for ( ; p_beg != p_end; ++p_beg )
     {
         // delete only if entity is not persistent
-        if ( !( ( *pp_entity )->isPersistent() ) )
+        if ( !( ( *p_beg )->isPersistent() ) )
         {
-            _queueDeletedEntities.push_back( *pp_entity );
+            _queueDeletedEntities.push_back( *p_beg );
         }
     }
 
@@ -535,17 +535,17 @@ void EntityManager::deleteAllEntities()
 
     // reset update list, re-add persistent entities which are in current update list
     std::vector< BaseEntity* > newupdatelist;
-    std::vector< BaseEntity* >::iterator pp_uentity = _entityPool.begin(), pp_uentityEnd = _entityPool.end();
-    for( ; pp_uentity != pp_uentityEnd; pp_uentity++ )
+    std::vector< BaseEntity* >::iterator p_uentity = _entityPool.begin(), p_uentityEnd = _entityPool.end();
+    for ( ; p_uentity != p_uentityEnd; ++p_uentity )
     {
-        if ( ( *pp_uentity )->isPersistent() )
+        if ( ( *p_uentity )->isPersistent() )
         {            
-            std::vector< BaseEntity* >::iterator pp_pentity = _updateEntities.begin(), pp_pentityEnd = _updateEntities.end();
-            for( ; pp_pentity != pp_pentityEnd; pp_pentity++ )
-                if ( *pp_uentity == *pp_pentity )
+            std::vector< BaseEntity* >::iterator p_pentity = _updateEntities.begin(), p_pentityEnd = _updateEntities.end();
+            for ( ; p_pentity != p_pentityEnd; ++p_pentity )
+                if ( *p_uentity == *p_pentity )
                     break;
-            if ( pp_pentity != pp_pentityEnd )
-                newupdatelist.push_back( *pp_uentity );
+            if ( p_pentity != p_pentityEnd )
+                newupdatelist.push_back( *p_uentity );
         }
     }
     _updateEntities.clear();
@@ -557,11 +557,11 @@ void EntityManager::deleteAllEntities()
 
 void EntityManager::getPersistentEntities( std::vector< BaseEntity* >& entities )
 {
-    std::vector< BaseEntity* >::iterator pp_entity = _entityPool.begin(), pp_entityEnd = _entityPool.end();
-    for( ; pp_entity != pp_entityEnd; pp_entity++ )
+    std::vector< BaseEntity* >::iterator p_beg = _entityPool.begin(), p_end = _entityPool.end();
+    for ( ; p_beg != p_end; ++p_beg )
     {
-        if ( ( *pp_entity )->isPersistent() )
-            entities.push_back( *pp_entity );
+        if ( ( *p_beg )->isPersistent() )
+            entities.push_back( *p_beg );
     }
 }
 

@@ -131,12 +131,12 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
         // save the persistent entities which need transformation. they must be copied into new created entity group.
         std::vector< BaseEntity* > perentities;
         EntityManager::get()->getPersistentEntities( perentities );
-        std::vector< BaseEntity* >::iterator pp_entity = perentities.begin(), pp_entityEnd = perentities.end();
-        for( ; pp_entity != pp_entityEnd; pp_entity++ )
+        std::vector< BaseEntity* >::iterator p_entity = perentities.begin(), p_entityEnd = perentities.end();
+        for ( ; p_entity != p_entityEnd; ++p_entity )
         {
-            if ( ( *pp_entity )->isTransformable() )
+            if ( ( *p_entity )->isTransformable() )
             {
-                _entityGroup->addChild( ( *pp_entity )->getTransformationNode() );
+                _entityGroup->addChild( ( *p_entity )->getTransformationNode() );
             }
         }
     }
@@ -350,7 +350,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
             log << Log::LogLevel( Log::L_DEBUG ) << "instance name: '" << instancename << "'" << std::endl;
         }
 
-        entityCounter++;
+        ++entityCounter;
 
         yaf3dTinyXml::TiXmlElement* p_entityParam = NULL;
         yaf3dTinyXml::TiXmlNode*    p_entityNode  = NULL;
@@ -514,9 +514,9 @@ osg::Node* LevelManager::loadMesh( const std::string& fileName, bool useCache )
     // first lookup in cache
     if ( useCache )
     {
-        std::map< std::string, osg::ref_ptr< osg::Node > >::iterator pp_mesh = _meshCache.find( fileName );
-        if ( pp_mesh != _meshCache.end() )
-            return pp_mesh->second.get();
+        std::map< std::string, osg::ref_ptr< osg::Node > >::iterator p_mesh = _meshCache.find( fileName );
+        if ( p_mesh != _meshCache.end() )
+            return p_mesh->second.get();
     }
 
     // read given file

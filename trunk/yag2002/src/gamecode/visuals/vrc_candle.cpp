@@ -81,7 +81,7 @@ void EnCandle::postInitialize()
     _p_pointLightEntity = dynamic_cast< EnPointLight* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_POINTLIGHT, _lightEntity ) );
     if ( !_p_pointLightEntity )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "Canlde: cannot find PointLight entity '" << _lightEntity << "', animation disabled!" << std::endl;
+        log_error << "Canlde: cannot find PointLight entity '" << _lightEntity << "', animation disabled!" << std::endl;
         return;
     }
 

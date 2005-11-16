@@ -37,7 +37,7 @@ namespace yaf3d
 void AttributeManager::getAttributesAsString( std::vector< std::pair< std::string, std::string > >& attributes )
 {
     std::vector< EntityAttributeBase* >::iterator p_beg = _attributes.begin(), p_end = _attributes.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         EntityAttributeBase* p_attribute = *p_beg;
         std::stringstream strvalue;
@@ -93,7 +93,7 @@ bool AttributeManager::setAttributeValue( const std::string &name, const std::st
 
     // the type information is case-insensitve
     std::string citype;    
-    for ( size_t i = 0; i < type.size(); i++ ) citype += toupper( type[ i ] );
+    for ( size_t i = 0; i < type.size(); ++i ) citype += toupper( type[ i ] );
 
     if ( ( citype == "BOOLEAN" ) || ( citype == "BOOL" ) ) 
     {
@@ -131,7 +131,7 @@ bool AttributeManager::setAttributeValue( const std::string &name, const std::st
 bool AttributeManager::setAttributeValueByString( const std::string& name, const std::string& valuestring )
 {        
     std::vector< EntityAttributeBase* >::iterator p_beg = _attributes.begin(), p_end = _attributes.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         if ( ( *p_beg )->getName() == name )
             break;
@@ -238,8 +238,8 @@ bool AttributeManager::setAttributeValue( const std::string& name, const EntityA
 
 void AttributeManager::removeAllAttributes()
 {
-    std::vector< EntityAttributeBase* >::iterator pp_attr = _attributes.begin(), pp_end = _attributes.end();
-    while ( pp_attr != pp_end ) 
+    std::vector< EntityAttributeBase* >::iterator pp_attr = _attributes.begin(), p_end = _attributes.end();
+    while ( pp_attr != p_end ) 
     {
         delete *pp_attr;
         pp_attr++;
@@ -254,7 +254,7 @@ AttributeManager& AttributeManager::operator = ( AttributeManager& attr )
 
     // copy attribute values
     std::vector< EntityAttributeBase* >::iterator p_beg = attr.getAttributes().begin(), p_end = attr.getAttributes().end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         setAttributeValue( ( *p_beg )->getName(), **p_beg );
     }

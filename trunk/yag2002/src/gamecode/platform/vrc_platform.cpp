@@ -58,7 +58,7 @@ void EnPlatform::initialize()
     osg::Node* p_mesh = yaf3d::LevelManager::get()->loadMesh( _meshFile );
     if ( !p_mesh ) 
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error loading mesh file" << std::endl;
+        log_error << "*** error loading mesh file" << std::endl;
         return;
     }
     // now we add the new mesh into our transformable scene group

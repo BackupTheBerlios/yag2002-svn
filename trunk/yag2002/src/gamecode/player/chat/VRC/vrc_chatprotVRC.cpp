@@ -91,7 +91,7 @@ void ImplChatNetworkingVRC::PostObjectCreate()
     _p_protVRC->connected();
 
     // do an RPC on server object
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "requesting VRC server to join ..." << std::endl;
+    log_debug << "requesting VRC server to join ..." << std::endl;
     NOMINATED_REPLICAS_FUNCTION_CALL( 1, &_serverSID, RPC_RequestJoin( _config ) );
 }
 
@@ -113,7 +113,7 @@ void ImplChatNetworkingVRC::getMemberList( const std::string& channel, std::vect
 {
     // currently 'channel' is unused in VRC protocol!
     std::map< int, std::string >::iterator p_beg = _nickNames.begin(), p_end = _nickNames.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         list.push_back( p_beg->second );
 }
 
@@ -125,7 +125,7 @@ std::string ImplChatNetworkingVRC::makeUniqueNickname( const std::string& reqnic
     do
     {
         std::map< int, std::string >::iterator p_beg = _nickNames.begin(), p_end = _nickNames.end();
-        for ( ; p_beg != p_end; p_beg++ )
+        for ( ; p_beg != p_end; ++p_beg )
             if ( p_beg->second == newnick )
                 break;
 
@@ -138,7 +138,7 @@ std::string ImplChatNetworkingVRC::makeUniqueNickname( const std::string& reqnic
             std::stringstream postf;
             postf << postfix;
             newnick = reqnick + postf.str();
-            postfix++;
+            ++postfix;
         }
         
     } while ( !found );
@@ -149,7 +149,7 @@ std::string ImplChatNetworkingVRC::makeUniqueNickname( const std::string& reqnic
 void ImplChatNetworkingVRC::RPC_InitializeClient( tChatData chatdata )
 {
     chatdata._nickname[ sizeof( chatdata._nickname ) - 1 ] = '\0';
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "successfully joined to VRC chat server, our nickname: " << chatdata._nickname << std::endl;
+    log_debug << "successfully joined to VRC chat server, our nickname: " << chatdata._nickname << std::endl;
     // store the server given nick name
     std::string channel;
     _p_protVRC->recvNicknameChange( chatdata._nickname, _config._nickname );
@@ -158,8 +158,8 @@ void ImplChatNetworkingVRC::RPC_InitializeClient( tChatData chatdata )
 
 void ImplChatNetworkingVRC::RPC_RequestJoin( tChatData chatdata )
 {
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "VRC chat server got joining request" << std::endl;
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "nickname: " << chatdata._nickname << ", sid: " << chatdata._sessionID << std::endl;
+    log_debug << "VRC chat server got joining request" << std::endl;
+    log_debug << "nickname: " << chatdata._nickname << ", sid: " << chatdata._sessionID << std::endl;
 
     chatdata._nickname[ sizeof( chatdata._nickname ) - 1 ] = '\0';
     // create a unique nickname
@@ -198,7 +198,7 @@ void ImplChatNetworkingVRC::RPC_ClientJoined( tChatData chatdata )
 void ImplChatNetworkingVRC::RPC_RequestLeave( tChatData chatdata )
 { // this is called only on server
 
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "request leaving: " << chatdata._nickname << " " << chatdata._sessionID << std::endl;
+    log_debug << "request leaving: " << chatdata._nickname << " " << chatdata._sessionID << std::endl;
 
     // remove client form nickname lookup
     std::map< int, std::string >::iterator p_it = _nickNames.find( chatdata._sessionID );
@@ -263,7 +263,7 @@ void ImplChatNetworkingVRC::RPC_ChangedNickname( tChatData chatdata )
 void ImplChatNetworkingVRC::RPC_RequestMemberList( tChatData chatdata )
 { // this is called only on server
     std::map< int, std::string >::iterator p_beg = _nickNames.begin(), p_end = _nickNames.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         tChatData data;
         strcpy( data._nickname, p_beg->second.c_str() );
@@ -426,7 +426,7 @@ void ChatNetworkingVRC::connected()
 
     // send this notification unfiltered
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         p_beg->second->onConnection( *_p_config );
 }
 
@@ -434,7 +434,7 @@ void ChatNetworkingVRC::disconnected()
 {
     // send this notification unfiltered
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         p_beg->second->onDisconnection( *_p_config );
 }
 
@@ -449,7 +449,7 @@ void ChatNetworkingVRC::joined( const std::string& channel, const std::string& n
     vrc::ChatConnectionConfig cfg( *_p_config );
     cfg._nickname = name;
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         if ( ( p_beg->first == channel ) || ( p_beg->first == "*" ) )
             p_beg->second->onJoinedChannel( cfg );
 }
@@ -459,7 +459,7 @@ void ChatNetworkingVRC::left( const std::string& channel, const std::string& nam
     vrc::ChatConnectionConfig cfg( *_p_config );
     cfg._nickname = name;
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         if ( ( p_beg->first == channel ) || ( p_beg->first == "*" ) )
             p_beg->second->onLeftChannel( cfg );
 }
@@ -467,7 +467,7 @@ void ChatNetworkingVRC::left( const std::string& channel, const std::string& nam
 void ChatNetworkingVRC::recvNicknameChange( const std::string& newname, const std::string& oldname )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         if ( ( p_beg->first == _p_config->_channel ) || ( p_beg->first == "*" ) )
             p_beg->second->onNicknameChanged( newname, oldname );
 
@@ -478,7 +478,7 @@ void ChatNetworkingVRC::recvNicknameChange( const std::string& newname, const st
 void ChatNetworkingVRC::recvMessage( const std::string& channel, const std::string& sender, const std::string& msg )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         // check also for unfiltered callbacks ( '*' )
         if ( ( channel == p_beg->first ) || ( p_beg->first == "*" ) )
             p_beg->second->onReceive( channel, sender, msg );
@@ -494,7 +494,7 @@ void ChatNetworkingVRC::requestMemberList( const std::string& channel )
 void ChatNetworkingVRC::recvMemberList( const std::string& channel )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         // check also for unfiltered callbacks ( '*' )
         if ( ( channel == p_beg->first ) || ( p_beg->first == "*" ) )
             p_beg->second->onReceiveMemberList( channel );

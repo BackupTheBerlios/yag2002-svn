@@ -53,7 +53,7 @@ Networking::~Networking()
 void Networking::registerSessionNotify( SessionNotifyCallback* p_cb )
 {
     std::vector< SessionNotifyCallback* >::iterator p_beg = _sessionCallbacks.begin(), p_end = _sessionCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         if ( *p_beg == p_cb )
             break;
 
@@ -65,7 +65,7 @@ void Networking::registerSessionNotify( SessionNotifyCallback* p_cb )
 void Networking::deregisterSessionNotify( SessionNotifyCallback* p_cb )
 {
     std::vector< SessionNotifyCallback* >::iterator p_beg = _sessionCallbacks.begin(), p_end = _sessionCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         if ( *p_beg == p_cb )
             break;
 
@@ -83,13 +83,13 @@ void Networking::JoinerSessionIDPost( const int sessionID )
 {
     THREADSAFELOCKCLASS( _mutex );
     _sessionIDs.push_back( sessionID );
-    _numSessions++;
+    ++_numSessions;
 
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "NetworkDevice: client with session ID " << sessionID << " joined" << std::endl;
+    log_debug << "NetworkDevice: client with session ID " << sessionID << " joined" << std::endl;
 
     // notify registered callback objects
     std::vector< SessionNotifyCallback* >::iterator p_beg = _sessionCallbacks.begin(), p_end = _sessionCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         ( *p_beg )->onSessionJoined( sessionID );
 }
 
@@ -102,7 +102,7 @@ void Networking::LeaverSessionIDPost( const int sessionID )
     {
         _numSessions = 0;
         std::vector< SessionNotifyCallback* >::iterator p_cbbeg = _sessionCallbacks.begin(), p_cbend = _sessionCallbacks.end();
-        for ( ; p_cbbeg != p_cbend; p_cbbeg++ )
+        for ( ; p_cbbeg != p_cbend; ++p_cbbeg )
             ( *p_cbbeg )->onServerDisconnect( sessionID );
 
         _sessionIDs.clear();
@@ -110,18 +110,18 @@ void Networking::LeaverSessionIDPost( const int sessionID )
     }
 
     std::vector< int >::iterator p_beg = _sessionIDs.begin(), p_end = _sessionIDs.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         if ( *p_beg == sessionID )
             break;
 
     if ( p_beg == p_end )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "NetworkDevice: a session is leaving which has an unregistered ID: " << sessionID << std::endl;
+        log_warning << "NetworkDevice: a session is leaving which has an unregistered ID: " << sessionID << std::endl;
         return;
     }
     else
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "NetworkDevice: leaving network session (" << sessionID << ")" << std::endl;
+        log_debug << "NetworkDevice: leaving network session (" << sessionID << ")" << std::endl;
     }
 
     _sessionIDs.erase( p_beg );
@@ -129,7 +129,7 @@ void Networking::LeaverSessionIDPost( const int sessionID )
 
     // notify registered callback objects
     std::vector< SessionNotifyCallback* >::iterator p_cbbeg = _sessionCallbacks.begin(), p_cbend = _sessionCallbacks.end();
-    for ( ; p_cbbeg != p_cbend; p_cbbeg++ )
+    for ( ; p_cbbeg != p_cbend; ++p_cbbeg )
         ( *p_cbbeg )->onSessionLeft( sessionID );
 
 }
@@ -161,7 +161,7 @@ void NetworkDevice::disconnect()
     _nodeInfo._levelName = "";
     _nodeInfo._nodeName  = "";
 
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "NetworkDevice: successfully disconnected from network session" << std::endl;
+    log_debug << "NetworkDevice: successfully disconnected from network session" << std::endl;
 }
 
 void NetworkDevice::shutdown()
@@ -189,7 +189,7 @@ bool NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
     // do we already have a session created?
     assert( _p_session == NULL && "there is already a running session!" );
 
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "starting server, time: " << yaf3d::getTimeStamp() << std::endl;
+    log_debug << "starting server, time: " << yaf3d::getTimeStamp() << std::endl;
 
     _nodeInfo  = nodeInfo;
     _p_session = new Networking;
@@ -209,7 +209,7 @@ bool NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
 	while ( !_p_session->IsStable() )
 	{
         RNReplicaNet::CurrentThread::Sleep( 500 );
-        tryCounter++;
+        ++tryCounter;
 
         // try up to 10 seconds
         if ( tryCounter > 20 ) 
@@ -268,7 +268,7 @@ bool NetworkDevice::setupClient( const std::string& serverIp, int channel, const
     {
         _p_session->Poll();
         RNReplicaNet::CurrentThread::Sleep( 100 );
-        tryCounter++;
+        ++tryCounter;
     }
     if ( tryCounter == 100 )
     {
@@ -327,7 +327,7 @@ bool NetworkDevice::setupClient( const std::string& serverIp, int channel, const
             return false;
         }
 
-        tryCounter++;
+        ++tryCounter;
     }
     _clientSessionStable = true;
     _mode = NetworkDevice::CLIENT;
@@ -343,7 +343,7 @@ bool NetworkDevice::startClient()
         return false;
     }
 
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "starting client, time: " << yaf3d::getTimeStamp() << std::endl;
+    log_debug << "starting client, time: " << yaf3d::getTimeStamp() << std::endl;
 
     _p_session->PreConnectHasFinished();
 
@@ -363,7 +363,7 @@ bool NetworkDevice::startClient()
         _p_session->Poll();    // during this time we have to poll the session instance as we disabled the automatic poll!
 
         RNReplicaNet::CurrentThread::Sleep( 200 );
-        tryCounter++;
+        ++tryCounter;
 
         log.enableSeverityLevelPrinting( false );
         log << ".";

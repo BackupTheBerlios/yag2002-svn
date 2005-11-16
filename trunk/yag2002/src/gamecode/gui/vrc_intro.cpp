@@ -64,8 +64,8 @@ IntroControl::~IntroControl()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "IntroControl: problem cleaning up gui resources." << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "IntroControl: problem cleaning up gui resources." << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -96,8 +96,8 @@ bool IntroControl::initialize( const std::string& intoImage )
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** Intro: cannot setup layout!" << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "*** Intro: cannot setup layout!" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
         return false;
     }
 

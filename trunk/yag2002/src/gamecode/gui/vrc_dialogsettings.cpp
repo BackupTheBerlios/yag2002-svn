@@ -82,7 +82,7 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
     _p_settingsDialog = yaf3d::GuiManager::get()->loadLayout( layoutfile, NULL, SDLG_PREFIX );
     if ( !_p_settingsDialog )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** DialogGameSettings: cannot find layout: " << layoutfile << std::endl;
+        log_error << "*** DialogGameSettings: cannot find layout: " << layoutfile << std::endl;
         return false;
     }
 
@@ -180,7 +180,7 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
         // enumerate possible screen resolutions
         std::vector< std::string > settings;
         yaf3d::enumerateDisplaySettings( settings, 16 ); // we take settings including above 16 color bits
-        for ( size_t cnt = 0; cnt < settings.size(); cnt++ )
+        for ( size_t cnt = 0; cnt < settings.size(); ++cnt )
         {
             CEGUI::ListboxTextItem* p_item = new CEGUI::ListboxTextItem( settings[ cnt ].c_str() );
             _p_resolution->addItem( p_item );
@@ -188,8 +188,8 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** DialogGameSettings: cannot setup dialog layout." << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "*** DialogGameSettings: cannot setup dialog layout." << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     // create player config dialog
@@ -301,7 +301,7 @@ void DialogGameSettings::setupControls()
             _p_keyKeybGerman->setSelected( true );
         }
         else
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** DialogGameSettings: invalid keyboard type: " << cfg_keyboard << std::endl;
+            log_error << "*** DialogGameSettings: invalid keyboard type: " << cfg_keyboard << std::endl;
     }
 
     // get display settings
@@ -633,7 +633,7 @@ void BtnInputHandler::updateBindings( const std::string newkey )
         p_end = _p_dlg->_keyBindingLookup.end(),
         p_we;
 
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         if ( p_beg->second == _p_userObject )
         {

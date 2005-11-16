@@ -255,8 +255,8 @@ EnObserver::~EnObserver()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnObserver: problem cleaning up entity." << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "EnObserver: problem cleaning up entity." << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -326,8 +326,8 @@ void EnObserver::initialize()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
 
@@ -340,7 +340,7 @@ void EnObserver::postInitialize()
     _p_cameraEntity = dynamic_cast< EnCamera* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CAMERA ) );
     if ( _p_cameraEntity )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "observer entity cannot be set up as there is already a camera instance in level!" << std::endl;
+        log_warning << "observer entity cannot be set up as there is already a camera instance in level!" << std::endl;
         return;
     }
 

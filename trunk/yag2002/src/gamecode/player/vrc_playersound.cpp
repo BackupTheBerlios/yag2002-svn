@@ -191,8 +191,8 @@ osgAL::SoundState* EnPlayerSound::createSound( const std::string& filename )
     } 
     catch ( const openalpp::Error& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "error loading sound file '" << filename << "' in '" << getInstanceName() << "'" << std::endl;
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
+        log_error << "error loading sound file '" << filename << "' in '" << getInstanceName() << "'" << std::endl;
+        log_error << "  reason: " << e.what() << std::endl;
         return NULL;
     }
 
@@ -202,7 +202,7 @@ osgAL::SoundState* EnPlayerSound::createSound( const std::string& filename )
     static unsigned int uniqueId = 0;
     uniquename << getInstanceName();
     uniquename << uniqueId;
-    uniqueId++;
+    ++uniqueId;
     osgAL::SoundState* p_soundState = new osgAL::SoundState( uniquename.str() );
 
     // Let the soundstate use the sample we just created
@@ -271,14 +271,14 @@ void EnPlayerSound::playWalkGrass()
 void EnPlayerSound::stopPlayingAll()
 {
     std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_beg = _soundStates.begin(), p_end = _soundStates.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         p_beg->second->setPlay( false );
 }
 
 void EnPlayerSound::stopOtherSounds( const osgAL::SoundState* p_state )
 {
     std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_beg = _soundStates.begin(), p_end = _soundStates.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         if ( p_beg->second.get() != p_state ) 
             p_beg->second->setPlay( false );
 }
@@ -292,7 +292,7 @@ void EnPlayerSound::setDamping( float damping )
 {
     assert( damping >= 0.0f && "minimal value is 0.0" );
     std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_beg = _soundStates.begin(), p_end = _soundStates.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         p_beg->second->setGain( damping * _volume );
 }
 

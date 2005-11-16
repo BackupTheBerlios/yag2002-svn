@@ -86,7 +86,7 @@ std::string extractPath( const std::string& fullpath )
 {
     std::string res = fullpath;
     // first clean the path
-    for ( std::string::iterator i = res.begin(), e = res.end(); i != e; i++ ) if ( *i == '\\') *i = '/';
+    for ( std::string::iterator i = res.begin(), e = res.end(); i != e; ++i ) if ( *i == '\\') *i = '/';
     res = res.substr( 0, res.rfind( "/" ) );
     if ( !res.empty() )
         return res;
@@ -98,7 +98,7 @@ std::string extractFileName( const std::string& fullpath )
 {
     std::string res = fullpath;
     // first clean the path
-    for ( std::string::iterator i = res.begin(), e = res.end(); i != e; i++ ) if ( *i == '\\') *i = '/';
+    for ( std::string::iterator i = res.begin(), e = res.end(); i != e; ++i ) if ( *i == '\\') *i = '/';
     res = res.substr( res.rfind( "/" ) );
     if ( res[ 0 ] == '/' ) res.erase( 0, 1 ); // cut leading slash
     if ( !res.empty() )
@@ -110,7 +110,7 @@ std::string extractFileName( const std::string& fullpath )
 std::string cleanPath( const std::string& path )
 {
     std::string cleanpath = path;
-    for ( std::string::iterator i = cleanpath.begin(), e = cleanpath.end(); i != e; i++ )
+    for ( std::string::iterator i = cleanpath.begin(), e = cleanpath.end(); i != e; ++i )
         if ( *i == '\\') *i = '/';
 
     return cleanpath;
@@ -209,7 +209,7 @@ void getDirectoryListing( std::vector< std::string >& listing, const std::string
         return;
 
     glob( search.c_str(), 0, NULL, &ff_glob );
-    for ( size_t cnt = 0; cnt < ff_glob.gl_pathc; cnt++ )
+    for ( size_t cnt = 0; cnt < ff_glob.gl_pathc; ++cnt )
     {
         std::string filename( ff_glob.gl_pathv[ cnt ] );
         filename.erase( 0, directory.size() ); 
@@ -234,7 +234,7 @@ void getDirectoryListing( std::vector< std::string >& listing, const std::string
     // sort and copy files into listing
     files.sort();
     std::list< std::pair< std::string, std::string > >::iterator p_beg = files.begin(), p_end = files.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         if ( appenddetails )
             listing.push_back( p_beg->second + "   " + p_beg->first );
@@ -349,7 +349,7 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
 
     while ( EnumDisplaySettings( NULL, modenum, &devmode ) )
     {
-        modenum++;
+        ++modenum;
         DispSettings ds;
         ds.width     = devmode.dmPelsWidth;
         ds.height    = devmode.dmPelsHeight;
@@ -381,7 +381,7 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
     }
     else
     {  
-        for( int i = 0; pp_modes[ i ]; i++ )
+        for( int i = 0; pp_modes[ i ]; ++i )
         {
 
             DispSettings ds;
@@ -402,7 +402,7 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
     sortedsettings.unique();
 
     std::list< DispSettings >::iterator p_beg = sortedsettings.begin(), p_end = sortedsettings.end();
-    for ( ; p_beg != p_end; p_beg++ ) 
+    for ( ; p_beg != p_end; ++p_beg ) 
     {
         std::stringstream resstring;
         resstring << p_beg->width << "x" << p_beg->height << "@" << p_beg->colorbits;
@@ -417,7 +417,7 @@ void checkHeap()
     // go through all heaps and validate them, trigger a user breakpoint if one of the heaps is corrupt
     HANDLE heaps[ 20 ];  // a max size of 20 heaps should suffice
     DWORD numHeaps = GetProcessHeaps( 20, heaps );
-    for ( DWORD i = 0; i < numHeaps; i ++ )
+    for ( DWORD i = 0; i < numHeaps; ++i )
     {
         if ( HeapValidate( heaps[ i ], 0, NULL ) == FALSE )
         {

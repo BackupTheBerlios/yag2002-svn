@@ -35,7 +35,7 @@ namespace yaf3d
 {
 
 //! This is the default system log instance
-Log log;
+Log yaf3dlog;
 
 
 //! Implementation of logging system
@@ -50,9 +50,9 @@ _printSeverityLevel( true )
 Log::~Log()
 {
     // delete all allocated streams, except the std streams
-    std::vector< Sink* >::iterator pp_sink = _sinks.begin(), pp_sinkEnd = _sinks.end();
-    for ( ; pp_sink != pp_sinkEnd; pp_sink++ )
-        delete *pp_sink;
+    std::vector< Sink* >::iterator p_sink = _sinks.begin(), p_sinkEnd = _sinks.end();
+    for ( ; p_sink != p_sinkEnd; p_sink++ )
+        delete *p_sink;
 }
 
 bool Log::addSink( const std::string& sinkname, const std::string& filename, unsigned int loglevel )
@@ -64,10 +64,10 @@ bool Log::addSink( const std::string& sinkname, const std::string& filename, uns
     }
 
     // check if there is already a sink with requested sink name
-    std::vector< Sink* >::iterator pp_sink = _sinks.begin(), pp_sinkEnd = _sinks.end();
-    for ( ; pp_sink != pp_sinkEnd; pp_sink++ )
+    std::vector< Sink* >::iterator p_sink = _sinks.begin(), p_sinkEnd = _sinks.end();
+    for ( ; p_sink != p_sinkEnd; p_sink++ )
     {
-        if ( ( *pp_sink )->_name == sinkname )
+        if ( ( *p_sink )->_name == sinkname )
         {
             log << Log::LogLevel( Log::L_ERROR ) << "sink name '" << sinkname << "' already exists!" << std::endl;
             return false;
@@ -101,17 +101,17 @@ bool Log::addSink( const std::string& sinkname, std::ostream& sink, unsigned int
     }
     
     // check if there is already a sink with requested sink name
-    std::vector< Sink* >::iterator pp_sink = _sinks.begin(), pp_sinkEnd = _sinks.end();
-    for ( ; pp_sink != pp_sinkEnd; pp_sink++ )
+    std::vector< Sink* >::iterator p_beg = _sinks.begin(), p_end = _sinks.end();
+    for ( ; p_beg != p_end; ++p_beg )
     {
-        if ( ( *pp_sink )->_name == sinkname )
+        if ( ( *p_beg )->_name == sinkname )
         {
             log << Log::LogLevel( Log::L_ERROR ) << "sink name '" << sinkname << "' already exists!"  << std::endl;
             return false;
         }
     }
 
-    Sink *p_sink = new Sink( sinkname, &sink, loglevel, true );
+    Sink* p_sink = new Sink( sinkname, &sink, loglevel, true );
     _sinks.push_back( p_sink );
 
     return true;
@@ -119,12 +119,12 @@ bool Log::addSink( const std::string& sinkname, std::ostream& sink, unsigned int
 
 void Log::removeSink( const std::string& sinkname )
 {
-    std::vector< Sink* >::iterator pp_sink = _sinks.begin(), pp_sinkEnd = _sinks.end();
-    for ( ; pp_sink != pp_sinkEnd; pp_sink++ )
+    std::vector< Sink* >::iterator p_sink = _sinks.begin(), p_sinkEnd = _sinks.end();
+    for ( ; p_sink != p_sinkEnd; p_sink++ )
     {
-        if ( ( *pp_sink )->_name == sinkname )
+        if ( ( *p_sink )->_name == sinkname )
         {
-            delete *pp_sink;
+            delete *p_sink;
             return;
         }
     }
@@ -139,13 +139,13 @@ void Log::enableSeverityLevelPrinting( bool en )
 
 void Log::out( const std::string& msg )
 {
-    std::vector< Sink* >::iterator pp_sink = _sinks.begin(), pp_sinkEnd = _sinks.end();
-    for ( ; pp_sink != pp_sinkEnd; pp_sink++ )
+    std::vector< Sink* >::iterator p_sink = _sinks.begin(), p_sinkEnd = _sinks.end();
+    for ( ; p_sink != p_sinkEnd; p_sink++ )
     {
-        if ( ( *pp_sink )->_logLevel <= _severity )
+        if ( ( *p_sink )->_logLevel <= _severity )
         {
-            *( ( *pp_sink )->_p_stream ) << msg;
-            ( ( *pp_sink )->_p_stream )->flush();
+            *( ( *p_sink )->_p_stream ) << msg;
+            ( ( *p_sink )->_p_stream )->flush();
         }
     }
 }

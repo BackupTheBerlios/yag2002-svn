@@ -50,7 +50,7 @@ _gameMode( yaf3d::GameState::get()->getMode() ),
 _p_playerImpl( NULL ),
 _deltaTime( 0.03f )
 {
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "creating player entity"  << getInstanceName() << ", time: " << yaf3d::getTimeStamp() << std::endl;
+    log_debug << "creating player entity"  << getInstanceName() << ", time: " << yaf3d::getTimeStamp() << std::endl;
 
     // assign some defaults
     _attributeContainer._chatGuiConfig = "gui/chat.xml";
@@ -70,12 +70,12 @@ _deltaTime( 0.03f )
 
 EnPlayer::~EnPlayer()
 {
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "destroying player entity '"  << getInstanceName() << "', time: " << yaf3d::getTimeStamp() << std::endl;
+    log_debug << "destroying player entity '"  << getInstanceName() << "', time: " << yaf3d::getTimeStamp() << std::endl;
 
     // send out notification to registered entities
     std::vector< yaf3d::BaseEntity* >::iterator p_beg = _deletionNotifications.begin(), p_end = _deletionNotifications.end();
     yaf3d::EntityNotification ennotify( YAF3D_NOTIFY_PLAYER_DESTRUCTION );
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         yaf3d::EntityManager::get()->sendNotification( ennotify, *p_beg );
     
     if ( _p_playerImpl )
@@ -91,7 +91,7 @@ void EnPlayer::handleNotification( const yaf3d::EntityNotification& notification
             // send out deletion notification to registered entities
             std::vector< yaf3d::BaseEntity* >::iterator p_beg = _deletionNotifications.begin(), p_end = _deletionNotifications.end();
             yaf3d::EntityNotification ennotify( YAF3D_NOTIFY_PLAYER_DESTRUCTION );
-            for ( ; p_beg != p_end; p_beg++ )
+            for ( ; p_beg != p_end; ++p_beg )
                 yaf3d::EntityManager::get()->sendNotification( ennotify, *p_beg );
 
             _deletionNotifications.clear();
@@ -119,7 +119,7 @@ void EnPlayer::registerNotifyDeletion( yaf3d::BaseEntity* p_entity )
 {
     // check if the entity is already registered
     std::vector< yaf3d::BaseEntity* >::iterator p_beg = _deletionNotifications.begin(), p_end = _deletionNotifications.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         if ( *p_beg == p_entity )
             break;
 
@@ -171,7 +171,7 @@ void EnPlayer::postInitialize()
 {
     if ( !_p_playerImpl )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "player implementation does not exist! are you loading the player entity in right game mode?" << std::endl;
+        log_error << "player implementation does not exist! are you loading the player entity in right game mode?" << std::endl;
         return;
     }
 
@@ -191,7 +191,7 @@ void EnPlayer::spawn()
     {
         if ( !EnSpawnPoint::getNextSpawnPoint( position, rotation ) )
         {
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnPlayer: all spawn points are occupied, taking default position and rotation!" << std::endl;
+            log_error << "EnPlayer: all spawn points are occupied, taking default position and rotation!" << std::endl;
         }
     }
     else

@@ -53,7 +53,7 @@ bool ConsoleCommandRegistry::registerCmd( BaseConsoleCommand* p_cmd )
 {
     if ( _cmdRegistry.find( p_cmd->getCmdName() ) != _cmdRegistry.end() )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "ConsoleCommandRegistry: the command '" << p_cmd->getCmdName() << "' is already registered, ignoring it!" << std::endl;
+        log_error << "ConsoleCommandRegistry: the command '" << p_cmd->getCmdName() << "' is already registered, ignoring it!" << std::endl;
         return false;
     }
 
@@ -73,10 +73,10 @@ unsigned int ConsoleCommandRegistry::getAllCmds( std::vector< BaseConsoleCommand
 {
     unsigned int cnt = 0;
     std::map< std::string, BaseConsoleCommand* >::iterator p_beg = _cmdRegistry.begin(), p_end = _cmdRegistry.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         commands.push_back( p_beg->second );
-        cnt++;
+        ++cnt;
     }
 
     return cnt;
@@ -86,12 +86,12 @@ unsigned int ConsoleCommandRegistry::getCmdCandidates( const std::string& text, 
 {
     unsigned int matchfound = 0;
     std::map< std::string, BaseConsoleCommand* >::iterator p_beg = _cmdRegistry.begin(), p_end = _cmdRegistry.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {        
         if ( p_beg->first.find( text ) == 0 )
         {
             candidates.push_back( p_beg->first );
-            matchfound++;
+            ++matchfound;
         }
     }
 

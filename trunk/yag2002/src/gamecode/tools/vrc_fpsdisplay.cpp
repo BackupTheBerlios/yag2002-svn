@@ -60,8 +60,8 @@ EnFPSDisplay::~EnFPSDisplay()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnFPSDisplay: problem cleaning up entity." << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "EnFPSDisplay: problem cleaning up entity." << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -113,8 +113,8 @@ void EnFPSDisplay::initialize()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     // register entity in order to get updated per simulation step
@@ -139,7 +139,7 @@ void EnFPSDisplay::updateEntity( float deltaTime )
     }
     else
     {
-        _fps++;
+        ++_fps;
     }
 }
 

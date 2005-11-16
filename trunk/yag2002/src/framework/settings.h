@@ -266,7 +266,7 @@ Usage example:
 
     // modify the settings
     value_bool = value_bool ? false : true;
-    value_int++;
+    ++value_int;
     value_float  += 1.5f;
     value_string = value_string == "hello world" ? "bye bye world" : "hello world";
     value_vec    += Vec3f( 1.0f, 1.0f, 1.0f );

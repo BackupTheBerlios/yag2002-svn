@@ -67,11 +67,11 @@ EnPlayerAnimation::~EnPlayerAnimation()
 
 void EnPlayerAnimation::initialize()
 {
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO ) << "  initializing player animation instance '" << getInstanceName() << "' ..." << std::endl;
+    log_info << "  initializing player animation instance '" << getInstanceName() << "' ..." << std::endl;
 
     if ( !_animCfgFile.length() )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** missing animation config file parameter" << std::endl;
+        log_error << "*** missing animation config file parameter" << std::endl;
         return;
     }
     
@@ -101,7 +101,7 @@ void EnPlayerAnimation::initialize()
     _animNode->setAttitude( quat );
     _animNode->addChild( _model.get() );
 
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO ) << "  initializing player animation instance completed" << std::endl;
+    log << "  initializing player animation instance completed" << std::endl;
 
     // register entity in order to get updated per simulation step
     yaf3d::EntityManager::get()->registerUpdate( this, true );
@@ -147,7 +147,7 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
     file.open( cfgFileName.c_str(), std::ios::in | std::ios::binary );
     if( !file )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***  failed to open model configuration file: " << file << std::endl;
+        log_error << "***  failed to open model configuration file: " << file << std::endl;
         return false;
     }
 
@@ -162,7 +162,7 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
 
     // parse all lines from the model configuration file
     int line;
-    for( line = 1; ; line++ )
+    for( line = 1; ; ++line )
     {
         // read the next model configuration line
         std::string textBuffer;
@@ -174,7 +174,7 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
         // check if an error happend while reading from the file
         if( !file )
         {
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***  error reading config file: " << configfilename << std::endl;
+            log_error << "***  error reading config file: " << configfilename << std::endl;
             return false;
         }
 
@@ -200,8 +200,8 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
         pos = textBuffer.find_first_not_of( " \t", pos );
         if( (pos == std::string::npos ) || ( textBuffer[ pos ] != '=' ) )
         {
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***  invalid syntax in config file: '" << configfilename;
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "' at line" << line << std::endl;
+            log_error << "***  invalid syntax in config file: '" << configfilename;
+            log_error << "' at line" << line << std::endl;
             return false;
         }
 
@@ -217,20 +217,20 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
         if( strKey == "skeleton" )
         {
             if ( !p_calCoreModel->loadCoreSkeleton( destFileName ) )
-                yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***  line " << line << ", problem loading skeleton: " << destFileName << std::endl;                      
+                log_error << "***  line " << line << ", problem loading skeleton: " << destFileName << std::endl;                      
         }
         else if( strKey == "mesh" )
         {
             if ( p_calCoreModel->loadCoreMesh( destFileName ) < 0 )
-                yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***  line " << line << ", problem loading mesh: " << destFileName << std::endl;                      
+                log_error << "***  line " << line << ", problem loading mesh: " << destFileName << std::endl;                      
         }
         else if( strKey == "material" )
         {
             int materialId = p_calCoreModel->loadCoreMaterial( destFileName );
             if( materialId < 0 ) 
             {                
-                yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***  line " << line << ", problem loading material: " << destFileName;                      
-                yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "   reason: " << CalError::getLastErrorDescription() << std::endl;
+                log_error << "***  line " << line << ", problem loading material: " << destFileName;                      
+                log_error << "   reason: " << CalError::getLastErrorDescription() << std::endl;
             } 
             else 
             {
@@ -239,11 +239,9 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
 
                 CalCoreMaterial* p_material = p_calCoreModel->getCoreMaterial( materialId );
                 // the texture file path is relative to the CRF data directory
-                for( std::vector< CalCoreMaterial::Map >::iterator beg = p_material->getVectorMap().begin(), 
-                    end = p_material->getVectorMap().end(); beg != end; beg++ )
-                {
-                    beg->strFilename = beg->strFilename;
-                }
+                std::vector< CalCoreMaterial::Map >::iterator p_beg = p_material->getVectorMap().begin(), p_end = p_material->getVectorMap().end();
+                for( ; p_beg != p_end; ++p_beg )
+                    p_material->setFilename( p_beg->strFilename );
 
             }
 
@@ -254,52 +252,52 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
         {
             _IdAnimIdle = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimIdle < 0 )
-                yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << std::endl; 
+                log_error << "***  line " << line << ", problem loading animation: " << destFileName << std::endl; 
         }
         else if( strKey == "animation_walk" )
         {
             _IdAnimWalk = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimWalk < 0 )
-                yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << std::endl; 
+                log_error << "***  line " << line << ", problem loading animation: " << destFileName << std::endl; 
         }
         else if( strKey == "animation_run" )
         {
             _IdAnimRun = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimRun < 0 )
-                yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << std::endl; 
+                log_error << "***  line " << line << ", problem loading animation: " << destFileName << std::endl; 
         }
         else if( strKey == "animation_turn" )
         {
             _IdAnimTurn = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimTurn < 0 )
-                yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***  line"  << line << ", problem loading animation: " << destFileName << std::endl; 
+                log_error << "***  line"  << line << ", problem loading animation: " << destFileName << std::endl; 
         }
         else if( strKey == "animation_jump" )
         {
             _IdAnimJump = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimJump < 0 )
-                yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***  line"  << line << ", problem loading animation: " << destFileName << std::endl; 
+                log_error << "***  line"  << line << ", problem loading animation: " << destFileName << std::endl; 
         }        else if( strKey == "animation_landing" )
         {
             _IdAnimLand = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimLand < 0 )
-                yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***  line " << line << ", problem loading animation: " << destFileName << std::endl; 
+                log_error << "***  line " << line << ", problem loading animation: " << destFileName << std::endl; 
         }
         else if( strKey == "animation" )
         {
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***  token 'animation' is not valid, line: " << line << std::endl;
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***  use one of following animation tokens instead: " << std::endl;;
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***    animation_idle" << std::endl;;
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***    animation_walk" << std::endl;;
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***    animation_run" << std::endl;;
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***    animation_jump" << std::endl;;
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***    animation_land" << std::endl;;
+            log_error << "***  token 'animation' is not valid, line: " << line << std::endl;
+            log_error << "***  use one of following animation tokens instead: " << std::endl;;
+            log_error << "***    animation_idle" << std::endl;;
+            log_error << "***    animation_walk" << std::endl;;
+            log_error << "***    animation_run" << std::endl;;
+            log_error << "***    animation_jump" << std::endl;;
+            log_error << "***    animation_land" << std::endl;;
         }
         else
         {
             // everything else triggers an error message
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "***  invalid syntax in config file: '" << configfilename;
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "' at line: " << line << std::endl;
+            log_error << "***  invalid syntax in config file: '" << configfilename;
+            log_error << "' at line: " << line << std::endl;
             return false;
         }
     }

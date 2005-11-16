@@ -33,6 +33,14 @@
 
 #include <base.h>
 
+// convenient macros for logging
+#define log             yaf3d::yaf3dlog
+#define log_error       yaf3d::yaf3dlog << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR )
+#define log_warning     yaf3d::yaf3dlog << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING )
+#define log_debug       yaf3d::yaf3dlog << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG )
+#define log_info        yaf3d::yaf3dlog << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO )
+
+
 namespace yaf3d
 {
 
@@ -43,7 +51,7 @@ class Log;
 *            log << Log::LogLevel( Log::L_INFO ) << " this is an info log" << endl;
 *            log << " number: " << mynum << " string: " << mystring << endl;
 */
-extern Log log;
+extern Log yaf3dlog;
 
 //! Class for logging messages to defined sinks
 class Log : public std::basic_ostream< char >
@@ -94,7 +102,7 @@ class Log : public std::basic_ostream< char >
     protected:
 
         //! Avoid assignment operator
-        Log&                                        operator = ( const Log& log );
+        Log&                                        operator = ( const Log& l );
 
         //! Avoid copy constructor
                                                     Log( const Log& );

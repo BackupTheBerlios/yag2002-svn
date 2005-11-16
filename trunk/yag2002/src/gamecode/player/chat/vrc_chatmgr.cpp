@@ -132,7 +132,7 @@ void ChatManager::createConnection( const ChatConnectionConfig& config )
 
     // first check if there is already a connection to requested server
     ChatConnections::iterator p_beg = _connections.begin(), p_end = _connections.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         if ( p_beg->first._serverURL == config._serverURL )
         {
@@ -160,7 +160,7 @@ void ChatManager::closeConnections()
 {
     // freeup all connections
     ChatConnections::iterator p_beg = _connections.begin(), p_end = _connections.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         _p_chatGuiBox->outputText( "*", "*** we have been disconnected from server: " + p_beg->first._serverURL );
         p_beg->second->destroyConnection();
@@ -186,7 +186,7 @@ void ChatManager::onDisconnection( const ChatConnectionConfig& config )
 {
     // remove connection
     ChatConnections::iterator p_beg = _connections.begin(), p_end = _connections.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         if ( config._p_protocolHandler == p_beg->second )
             break;

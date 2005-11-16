@@ -101,7 +101,7 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         //! Initialization function called on a new connected client and its ghosts
         void                                        RPC_Initialize( tInitializationData initData );
 
-        //! Return chat's yaf3d::log
+        //! Return chat's log
         static yaf3d::Log&                          getChatLog() { return *s_chatLog; }
 
     protected:

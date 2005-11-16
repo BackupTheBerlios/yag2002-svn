@@ -171,7 +171,7 @@ void EnPhysicsCylinder::initialize()
     osg::Node* p_mesh = yaf3d::LevelManager::get()->loadMesh( _meshFile );
     if ( !p_mesh ) 
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error loading mesh file '" << _meshFile << "'" << std::endl;
+        log_error << "*** error loading mesh file '" << _meshFile << "'" << std::endl;
         yaf3d::EntityManager::get()->registerUpdate( this, false );   // deregister entity
         return;
     }
@@ -218,25 +218,25 @@ void EnPhysicsCylinder::postInitialize()
     if ( _soundEntities[ 0 ].length() )
         _pp_sounds[ 0 ] = getSoundEntity( _soundEntities[ 0 ] );
     else
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "* wood sound is not defined. it will be disabled " << std::endl;
+        log_warning << "* wood sound is not defined. it will be disabled " << std::endl;
 
     _pp_sounds[ 1 ] = NULL;
     if ( _soundEntities[ 1 ].length() )
         _pp_sounds[ 1 ] = getSoundEntity( _soundEntities[ 1 ] );
     else
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "* metal sound is not defined. it will be disabled " << std::endl;
+        log_warning << "* metal sound is not defined. it will be disabled " << std::endl;
 
     _pp_sounds[ 2 ] = NULL;
     if ( _soundEntities[ 2 ].length() )
         _pp_sounds[ 2 ] = getSoundEntity( _soundEntities[ 2 ] );
     else
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "* stone sound is not defined. it will be disabled " << std::endl;
+        log_warning << "* stone sound is not defined. it will be disabled " << std::endl;
 
     _pp_sounds[ 3 ] = NULL;
     if ( _soundEntities[ 3 ].length() )
         _pp_sounds[ 3 ] = getSoundEntity( _soundEntities[ 3 ] );
     else
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "* grass sound is not defined. it will be disabled " << std::endl;
+        log_warning << "* grass sound is not defined. it will be disabled " << std::endl;
 
     // register entity in order to get updated per simulation step
     yaf3d::EntityManager::get()->registerUpdate( this ); 

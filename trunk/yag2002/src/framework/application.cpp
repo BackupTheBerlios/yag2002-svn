@@ -164,7 +164,7 @@ bool Application::initialize( int argc, char **argv )
 #ifdef WIN32
             dir = "";
 #endif
-            for ( size_t cnt = 0; cnt < path.size() - 2; cnt++ )
+            for ( size_t cnt = 0; cnt < path.size() - 2; ++cnt )
                 dir += path[ cnt ] + "/";
 
             dir.erase( dir.size() -1 );

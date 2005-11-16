@@ -295,14 +295,14 @@ bool InspectorIH::pick( float x, float y )
     osgUtil::Hit* p_pickedHit = NULL;
 
     // collect all picked drawables
-    for( ; p_beg != p_end; p_beg++ )
+    for( ; p_beg != p_end; ++p_beg )
     {
         // check for intersection with drawables
         if ( p_beg->_drawable.valid() )
         {
             // we want every geom only once in the list; note: geoms can intersect several times with a ray
             std::vector< std::pair< osg::Drawable*, osgUtil::Hit* > >::iterator p_dbeg = pickeddrawables.begin(), p_dend = pickeddrawables.end();
-            for ( ; p_dbeg != p_dend; p_dbeg++ )
+            for ( ; p_dbeg != p_dend; ++p_dbeg )
             {
                 if ( p_dbeg->first == p_beg->_drawable.get() )
                     break;
@@ -314,7 +314,7 @@ bool InspectorIH::pick( float x, float y )
 
     // set the picking click count, it is used for selecting occluded drawables
     if ( !resetMultiClick )
-        _pickClickCount++;
+        ++_pickClickCount;
     else
         _pickClickCount = 0;
 
@@ -636,8 +636,8 @@ EnInspector::~EnInspector()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnInspector: problem cleaning up entity." << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "EnInspector: problem cleaning up entity." << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -730,8 +730,8 @@ void EnInspector::initialize()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     yaf3d::EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
@@ -743,7 +743,7 @@ void EnInspector::postInitialize()
     _p_cameraEntity = dynamic_cast< EnCamera* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CAMERA ) );
     if ( _p_cameraEntity )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "inspector entity's camera disabled as there is already a camera instance in level!" << std::endl;
+        log_warning << "inspector entity's camera disabled as there is already a camera instance in level!" << std::endl;
         return;
     }
 
@@ -820,7 +820,7 @@ void EnInspector::updateEntity( float deltaTime )
         }
         else
         {
-            _fpsCounter++;
+            ++_fpsCounter;
         }
 
         osg::Vec3f pos( _p_cameraEntity->getCameraPosition() );

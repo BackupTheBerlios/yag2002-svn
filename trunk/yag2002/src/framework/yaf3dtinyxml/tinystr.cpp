@@ -256,7 +256,7 @@ unsigned TiXmlString::find (char tofind, unsigned offset) const
 
     if (offset >= length ())
         return (unsigned) notfound;
-    for (lookup = cstring + offset; * lookup; lookup++)
+    for (lookup = cstring + offset; * lookup; ++lookup)
         if (* lookup == tofind)
             return (unsigned)(lookup - cstring);
     return (unsigned) notfound;

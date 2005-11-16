@@ -214,8 +214,8 @@ EnMenu::~EnMenu()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnMenu: problem cleaning up entity." << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "EnMenu: problem cleaning up entity." << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     // destroy self-created entities
@@ -351,8 +351,8 @@ void EnMenu::initialize()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** Menu: cannot find layout: " << _menuConfig << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "*** Menu: cannot find layout: " << _menuConfig << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
         return;
     }
 
@@ -404,7 +404,7 @@ void EnMenu::createMenuScene()
     }
     else
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "*** EnMenu: cannot setup scene; either menu scene or camera animation is missing" << std::endl;
+        log_warning << "*** EnMenu: cannot setup scene; either menu scene or camera animation is missing" << std::endl;
         return;
     }
     _menuScene = new osg::Group;
@@ -414,7 +414,7 @@ void EnMenu::createMenuScene()
     _menuScene->addChild( _menuAnimationPath.get() );
 
     // create and setup camera
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "creating menu camera entity '_menuCam_'" << std::endl;
+    log_debug << "creating menu camera entity '_menuCam_'" << std::endl;
     EnCamera* p_camEntity = static_cast< EnCamera* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_CAMERA, "_menuCam_" ) );
     assert( p_camEntity && "cannot create camera entity!" );
     _p_cameraControl = p_camEntity;
@@ -431,7 +431,7 @@ void EnMenu::createMenuScene()
     p_camEntity->postInitialize();
 
     // create and setup skybox
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "creating menu skybox entity '_menuSkybox_'" << std::endl;
+    log_debug << "creating menu skybox entity '_menuSkybox_'" << std::endl;
     EnSkyBox* p_skyboxEntity = dynamic_cast< EnSkyBox* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_SKYBOX, "_menuSkybox_" ) );
     assert( p_skyboxEntity && "cannot create skybox entity!" );
     _p_skyBox = p_skyboxEntity;
@@ -448,7 +448,7 @@ void EnMenu::createMenuScene()
     p_skyboxEntity->postInitialize();
 
     // create and setup fog
-    yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG ) << "creating menu fog entity '_menuFog_'" << std::endl;
+    log_debug << "creating menu fog entity '_menuFog_'" << std::endl;
     EnFog* p_fogEntity = dynamic_cast< EnFog* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_FOG, "_menuFog_" ) );
     assert( p_fogEntity && "cannot create fog entity!" );
     _p_menuFog = p_fogEntity;
@@ -469,7 +469,7 @@ EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume ) 
     EnAmbientSound* p_ent = dynamic_cast< EnAmbientSound* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_AMBIENTSOUND, filename, false ) );
     if ( !p_ent )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** EnMenu: cannot create sound entity of type '" << ENTITY_NAME_AMBIENTSOUND << "'" << std::endl;
+        log_error << "*** EnMenu: cannot create sound entity of type '" << ENTITY_NAME_AMBIENTSOUND << "'" << std::endl;
         return NULL;
     }
 
@@ -584,7 +584,7 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
     // try to join
     if ( !yaf3d::NetworkDevice::get()->setupClient( url, channel, nodeinfo ) )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "cannot setup client networking" << std::endl;
+        log_warning << "cannot setup client networking" << std::endl;
 
         yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", "Cannot connect to server!", yaf3d::MessageBoxDialog::OK, true );
         // create a call back for Ok button of messagebox
@@ -755,7 +755,7 @@ void EnMenu::updateEntity( float deltaTime )
                 std::vector< yaf3d::BaseEntity* > sceneentities;
                 yaf3d::EntityManager::get()->getAllEntities( sceneentities );
                 std::vector< yaf3d::BaseEntity* >::iterator p_beg = sceneentities.begin(), p_end = sceneentities.end();
-                for ( ; p_beg != p_end; p_beg++ )
+                for ( ; p_beg != p_end; ++p_beg )
                 {
                     if ( ( *p_beg )->getTypeName() == ENTITY_NAME_FOG )
                     {

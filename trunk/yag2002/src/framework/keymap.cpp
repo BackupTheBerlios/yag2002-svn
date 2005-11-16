@@ -208,7 +208,7 @@ void KeyMap::setup( KeyMap::KeyboardType type )
 
     // create the key code / key name map
     std::map< std::string, unsigned int >::iterator p_key = _keyNames.begin(), p_end =  _keyNames.end();
-    for ( ; p_key != p_end; p_key++ )
+    for ( ; p_key != p_end; ++p_key )
         _keyCodes.insert( std::make_pair( p_key->second, p_key->first ) );
 
     // fill in the translation table

@@ -226,7 +226,7 @@ GuiTexture::tImageTGA* GuiTexture::LoadTGA( const unsigned char* buffer, size_t 
             pImageData->data = new unsigned char[stride * height];
 
             // Load in all the pixel data line by line
-            for(int y = 0; y < height; y++)
+            for(int y = 0; y < height; ++y)
             {
                 // Store a pointer to the current line of pixels
                 unsigned char *pLine = &(pImageData->data[stride * y]);
@@ -258,7 +258,7 @@ GuiTexture::tImageTGA* GuiTexture::LoadTGA( const unsigned char* buffer, size_t 
             pImageData->data = new unsigned char[stride * height];
 
             // Load in all the pixel data pixel by pixel
-            for(i = 0; i < width*height; i++)
+            for(i = 0; i < width*height; ++i)
             {
                 // Read in the current pixel
                 memcpy(&pixels, buffer, sizeof(unsigned short));
@@ -329,7 +329,7 @@ GuiTexture::tImageTGA* GuiTexture::LoadTGA( const unsigned char* buffer, size_t 
             if(rleID < 128)
             {
                 // Increase the count by 1
-                rleID++;
+                ++rleID;
 
                 // Go through and read all the unique colors found
                 while(rleID)
@@ -349,7 +349,7 @@ GuiTexture::tImageTGA* GuiTexture::LoadTGA( const unsigned char* buffer, size_t 
 
                     // Increase the current pixels read, decrease the amount
                     // of pixels left, and increase the starting index for the next pixel.
-                    i++;
+                    ++i;
                     rleID--;
                     colorsRead += channels;
                 }
@@ -378,7 +378,7 @@ GuiTexture::tImageTGA* GuiTexture::LoadTGA( const unsigned char* buffer, size_t 
 
                     // Increase the current pixels read, decrease the amount
                     // of pixels left, and increase the starting index for the next pixel.
-                    i++;
+                    ++i;
                     rleID--;
                     colorsRead += channels;
                 }

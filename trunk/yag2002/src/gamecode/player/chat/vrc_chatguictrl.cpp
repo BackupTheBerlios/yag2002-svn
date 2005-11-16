@@ -58,8 +58,8 @@ ChatGuiCtrl::~ChatGuiCtrl()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "ChatGuiCtrl: problem cleaning up gui resources" << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "ChatGuiCtrl: problem cleaning up gui resources" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -99,8 +99,8 @@ void ChatGuiCtrl::initialize( ChatManager* p_chatMgr )
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error setting up chat ctrl gui" << std::endl;
-        yaf3d::log << "   reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "*** error setting up chat ctrl gui" << std::endl;
+        log << "   reason: " << e.getMessage().c_str() << std::endl;
         return;
     }
 

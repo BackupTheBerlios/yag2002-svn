@@ -78,7 +78,7 @@ const std::string& CmdHelp::execute( const std::vector< std::string >& arguments
     std::vector< BaseConsoleCommand* > cmds;
     ConsoleCommandRegistry::get()->getAllCmds( cmds );
     std::vector< BaseConsoleCommand* >::iterator p_beg = cmds.begin(), p_end = cmds.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         if ( !detail )
         {

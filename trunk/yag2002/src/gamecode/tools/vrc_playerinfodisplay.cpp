@@ -113,8 +113,8 @@ void EnPlayerInfoDisplay::initialize()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     // register entity in order to get updated per simulation step
@@ -175,7 +175,7 @@ bool EnPlayerInfoDisplay::getPlayerEntity()
         _p_playerEntity = static_cast< EnPlayer* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_PLAYER ) );
         if ( !_p_playerEntity )
         {
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << "EnPlayerInfoDisplay: there is no player to get info from!" << std::endl;
+            log_warning << "EnPlayerInfoDisplay: there is no player to get info from!" << std::endl;
             CEGUI::String text( "there is no player entity" );
             _p_outputText->setText( text );
             return false;

@@ -80,7 +80,7 @@ void EnMesh::initialize()
     osg::Node* p_node = yaf3d::LevelManager::get()->loadMesh( _meshFile );
     if ( !p_node )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** could not load mesh file: " << _meshFile << ", in '" << getInstanceName() << "'" << std::endl;
+        log_error << "*** could not load mesh file: " << _meshFile << ", in '" << getInstanceName() << "'" << std::endl;
         return;
     }
 

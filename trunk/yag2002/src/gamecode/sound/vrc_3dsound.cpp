@@ -110,8 +110,8 @@ void En3DSound::initialize()
     } 
     catch ( const openalpp::Error& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error loading sound file in '" << getInstanceName() << "'" << std::endl;
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "  reason: " << e.what() << std::endl;
+        log_error << "*** error loading sound file in '" << getInstanceName() << "'" << std::endl;
+        log_error << "  reason: " << e.what() << std::endl;
         return;
     }
  
@@ -121,7 +121,7 @@ void En3DSound::initialize()
     static unsigned int uniqueId = 0;
     uniquename << getInstanceName();
     uniquename << uniqueId;
-    uniqueId++;
+    ++uniqueId;
     _soundState = new osgAL::SoundState( uniquename.str() );
 
     // let the soundstate use the sample we just created
@@ -163,7 +163,7 @@ void En3DSound::initialize()
         }
         else
         {
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error loading mesh file for sound source 'sound/soundsrc.osg'" << std::endl;
+            log_error << "*** error loading mesh file for sound source 'sound/soundsrc.osg'" << std::endl;
         }
     }
 

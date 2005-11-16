@@ -125,7 +125,7 @@ void EnPointLight::initialize()
     {
         osg::ref_ptr< osg::Node > mesh = yaf3d::LevelManager::get()->loadMesh( _meshFile );
         if ( !mesh.valid() ) 
-            yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING ) << " cannot find mesh file" << _meshFile << std::endl;
+            log_warning << " cannot find mesh file" << _meshFile << std::endl;
         else
             addToTransformationNode( mesh.get() );
     }

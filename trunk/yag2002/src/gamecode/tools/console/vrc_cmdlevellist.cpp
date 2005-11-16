@@ -67,7 +67,7 @@ const std::string& CmdLevelList::execute( const std::vector< std::string >& argu
         // get a directory listing
         yaf3d::getDirectoryListing( filelisting, yaf3d::Application::get()->getMediaPath() + *p_dir, "lvl" );
         std::vector< std::string >::iterator p_beg = filelisting.begin(), p_end = filelisting.end();
-        for ( ; p_beg != p_end; p_beg++ )
+        for ( ; p_beg != p_end; ++p_beg )
             _cmdResult += *p_beg + "\n";
     }
 

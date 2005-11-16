@@ -106,16 +106,16 @@ const std::string& CmdLoadEntities::execute( const std::vector< std::string >& a
     _cmdResult = "setting up entities ...\n";
 
     // setup entities
-    std::vector< yaf3d::BaseEntity* >::iterator pp_beg = entities.begin(), pp_end = entities.end();
-    for ( ; pp_beg != pp_end; pp_beg++ )
+    std::vector< yaf3d::BaseEntity* >::iterator p_beg = entities.begin(), p_end = entities.end();
+    for ( ; p_beg != p_end; ++p_beg )
     {
-        _cmdResult += ( *pp_beg )->getInstanceName() + "(" + ( *pp_beg )->getTypeName() + ")   ";
-        ( *pp_beg )->initialize();
+        _cmdResult += ( *p_beg )->getInstanceName() + "(" + ( *p_beg )->getTypeName() + ")   ";
+        ( *p_beg )->initialize();
     }
 
-    pp_beg = entities.begin();
-    for ( ; pp_beg != pp_end; pp_beg++ )
-        ( *pp_beg )->postInitialize();
+    p_beg = entities.begin();
+    for ( ; p_beg != p_end; ++p_beg )
+        ( *p_beg )->postInitialize();
 
     _cmdResult += "setup completed";
     _cmdResult += statistics.str();

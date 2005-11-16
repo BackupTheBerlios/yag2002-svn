@@ -57,7 +57,7 @@ const std::string& CmdListEntity::execute( const std::vector< std::string >& arg
     std::vector< yaf3d::BaseEntity* > entities;
     yaf3d::EntityManager::get()->getAllEntities( entities );
     std::vector< yaf3d::BaseEntity* >::iterator p_beg = entities.begin(), p_end = entities.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         info += ( *p_beg )->getInstanceName() + "(" + ( *p_beg )->getTypeName() + ")    ";
     }

@@ -306,7 +306,7 @@ CEGUI::Window* GuiManager::loadLayout( const std::string& filename, CEGUI::Windo
         // create an auto-incremented prefix, so we can load several layouts
         static int prefix = 0;
         pref << "l" << prefix << "_";
-        prefix++;
+        ++prefix;
     }
     else
         pref << handle;

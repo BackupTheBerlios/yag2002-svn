@@ -39,7 +39,7 @@ namespace vrc
 void BaseChatProtocol::registerProtocolCallback( ChatProtocolCallback* p_cb, const std::string& channelname )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         if ( ( p_beg->second == p_cb ) &&( p_beg->first == channelname ) )
         {
@@ -52,7 +52,7 @@ void BaseChatProtocol::registerProtocolCallback( ChatProtocolCallback* p_cb, con
 void BaseChatProtocol::deregisterProtocolCallback( const std::string& channelname )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         if ( p_beg->first == channelname )
         {
@@ -67,7 +67,7 @@ void BaseChatProtocol::deregisterProtocolCallback( const std::string& channelnam
 void BaseChatProtocol::deregisterProtocolCallback( const ChatProtocolCallback* p_cb )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         if ( p_beg->second == p_cb )
         {

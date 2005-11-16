@@ -112,7 +112,7 @@ const std::string& CmdExec::execute( const std::vector< std::string >& arguments
     }
     // execute the batch file lines
     std::vector< std::string >::iterator p_beg = commandlines.begin(), p_end = commandlines.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         _cmdResult += "executing command line: " + *p_beg + "\n";
         _p_console->enqueueCmd( *p_beg );

@@ -170,28 +170,28 @@ osg::Node* EnSkyBox::makeBox()
         osg::Vec2(1.0f,1.0f),
         osg::Vec2(0.0f,1.0f)
     };
-    osg::Geometry *polyGeom[6];
+    osg::Geometry *polyGeom[ 6 ];
 
-    osg::Image *image[6];
-    osg::Texture2D *texture[6];
+    osg::Image *image[ 6 ];
+    osg::Texture2D *texture[ 6 ];
 
-    osg::Vec3Array *vArray[6];
-    vArray[0] = new osg::Vec3Array(4, coords0);
-    vArray[1] = new osg::Vec3Array(4, coords1);
-    vArray[2] = new osg::Vec3Array(4, coords2);
-    vArray[3] = new osg::Vec3Array(4, coords3);
-    vArray[4] = new osg::Vec3Array(4, coords4);
-    vArray[5] = new osg::Vec3Array(4, coords5);
+    osg::Vec3Array *vArray[ 6 ];
+    vArray[ 0 ] = new osg::Vec3Array( 4, coords0 );
+    vArray[ 1 ] = new osg::Vec3Array( 4, coords1 );
+    vArray[ 2 ] = new osg::Vec3Array( 4, coords2 );
+    vArray[ 3 ] = new osg::Vec3Array( 4, coords3 );
+    vArray[ 4 ] = new osg::Vec3Array( 4, coords4 );
+    vArray[ 5 ] = new osg::Vec3Array( 4, coords5 );
 
-    for (int side=0; side<6; side++)
+    for ( int side = 0; side < 6; ++side )
     {
-        polyGeom[side] = new osg::Geometry();
+        polyGeom[ side ] = new osg::Geometry();
 
-        polyGeom[side]->setVertexArray(vArray[side]);
-        osg::ref_ptr< osg::Vec2Array > tcoords = new osg::Vec2Array(4, tCoords);
-        polyGeom[side]->setTexCoordArray(0, tcoords.get() );
+        polyGeom[ side ]->setVertexArray( vArray[ side ] );
+        osg::ref_ptr< osg::Vec2Array > tcoords = new osg::Vec2Array( 4, tCoords );
+        polyGeom[ side ]->setTexCoordArray( 0, tcoords.get() );
         osg::ref_ptr< osg::DrawArrays > drawarray = new osg::DrawArrays( osg::PrimitiveSet::QUADS, 0, 4 );        
-        polyGeom[side]->addPrimitiveSet( drawarray.get() );
+        polyGeom[ side ]->addPrimitiveSet( drawarray.get() );
 
         osg::StateSet *dstate = new osg::StateSet;
         dstate->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
@@ -199,33 +199,33 @@ osg::Node* EnSkyBox::makeBox()
 
         // clear the depth to the far plane.
         osg::Depth* depth = new osg::Depth;
-        depth->setFunction(osg::Depth::ALWAYS);
-        depth->setRange(1.0,1.0);   
-        dstate->setAttributeAndModes(depth,osg::StateAttribute::ON );
+        depth->setFunction( osg::Depth::ALWAYS );
+        depth->setRange( 1.0f, 1.0f );   
+        dstate->setAttributeAndModes( depth,osg::StateAttribute::ON );
         dstate->setMode( GL_FOG, osg::StateAttribute::OFF );
-        dstate->setRenderBinDetails(-2,"RenderBin");
+        dstate->setRenderBinDetails( -2, "RenderBin" );
 
         //for wireframe rendering
         //   osg::PolygonMode *polymode = new osg::PolygonMode;
         //   polymode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
         //   dstate->setAttributeAndModes(polymode, osg::StateAttribute::OVERRIDE|osg::StateAttribute::ON);
-        if (!_textureFilenameMap[side].empty())
+        if ( !_textureFilenameMap[ side ].empty() )
         {
-            std::string filename = yaf3d::Application::get()->getMediaPath() + _textureFilenameMap[side].c_str();
-            image[side] = osgDB::readImageFile(filename);
+            std::string filename = yaf3d::Application::get()->getMediaPath() + _textureFilenameMap[ side ].c_str();
+            image[ side ] = osgDB::readImageFile( filename );
 
-            if (image[side])
+            if ( image[ side ])
             {
-                texture[side] = new osg::Texture2D;
-                texture[side]->setImage(image[side]);
-                texture[side]->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
-                texture[side]->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
-                dstate->setTextureAttributeAndModes(0, texture[side], osg::StateAttribute::ON);
+                texture[ side ] = new osg::Texture2D;
+                texture[ side ]->setImage( image[ side ] );
+                texture[ side ]->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
+                texture[ side ]->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
+                dstate->setTextureAttributeAndModes( 0, texture[ side ], osg::StateAttribute::ON );
             }
         }
 
         polyGeom[side]->setStateSet( dstate );
-        _geode->addDrawable(polyGeom[side]);
+        _geode->addDrawable( polyGeom[ side ] );
     }
     return _geode.get();
 }

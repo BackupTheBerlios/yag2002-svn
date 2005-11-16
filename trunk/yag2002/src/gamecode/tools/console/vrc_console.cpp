@@ -106,7 +106,7 @@ void EnConsole::initialize()
     static bool alreadycreated = false;
     if ( alreadycreated )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "the console entity can be created only once for entire application run-time."
+        log_error << "the console entity can be created only once for entire application run-time."
                                              << "you are trying to create a second instance!" << std::endl;
     }
     alreadycreated = true;
@@ -252,9 +252,9 @@ std::string EnConsole::cmdHistory( bool prev )
 
     // update cmd index
     if ( prev )
-        _cmdHistoryIndex--;
+        --_cmdHistoryIndex;
     else
-        _cmdHistoryIndex++;
+        ++_cmdHistoryIndex;
 
     // clamp index
     if ( int( _cmdHistoryIndex ) < 0 )
@@ -281,7 +281,7 @@ void EnConsole::autoCompleteCmd( const std::string& cmd )
     if ( matchcnt > 1 ) // we have several candidates
     {
         std::string text( "> possible commands: " );
-        for ( ; p_beg != p_end; p_beg++ )
+        for ( ; p_beg != p_end; ++p_beg )
         {
             text += ( *p_beg ) + "  ";
         }
@@ -295,8 +295,8 @@ void EnConsole::autoCompleteCmd( const std::string& cmd )
         {
             p_beg = candidates.begin(), p_end = candidates.end();
             char matchc = ( *p_beg )[ cnt ];
-            p_beg++;
-            for ( ; p_beg != p_end; p_beg++ )
+            ++p_beg;
+            for ( ; p_beg != p_end; ++p_beg )
             {
                 std::string curcmd = *p_beg;
                 if ( ( cnt >= curcmd.length() ) || ( matchc != curcmd[ cnt ] ) )
@@ -306,7 +306,7 @@ void EnConsole::autoCompleteCmd( const std::string& cmd )
                 }
             }
 
-            cnt++;
+            ++cnt;
 
         } while ( !dobreak );
 
@@ -367,7 +367,7 @@ const std::string& EnConsole::dispatchCmdLine( const std::string& cmdline )
     std::vector< std::string > cmds;
     yaf3d::explode( cmdline, ";", &cmds ); // multiple commands can be given separated by semicolon 
     std::vector< std::string >::iterator p_beg = cmds.begin(), p_end = cmds.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         // clean up cmd from leading whitespaces
         std::string cmd = *p_beg;
@@ -379,7 +379,7 @@ const std::string& EnConsole::dispatchCmdLine( const std::string& cmdline )
 
         result += executeCmd( cmd );
 
-        // append to log if yaf3d::log is created
+        // append to log if log is created
         if ( _p_log )
         {
             *_p_log << result << std::endl;
@@ -399,9 +399,9 @@ const std::string& EnConsole::executeCmd( const std::string& cmd )
     std::string arguments;
 
     // parse and extract the command and its arguments
-    size_t pos = lcmd.find_first_of( " " );
+    std::size_t pos = lcmd.find_first_of( " " );
     command = ( pos == ( size_t )-1 ) ? cmd : lcmd.substr( 0, pos );
-    pos++;
+    ++pos;
     size_t posend = lcmd.find_first_of( ";", pos );
     if ( command.length() < ( posend - 1 ) )
         arguments = lcmd.substr( pos, posend - pos );
@@ -425,10 +425,10 @@ const std::string& EnConsole::executeCmd( const std::string& cmd )
 void EnConsole::parseArguments( const std::string& cmdline, std::vector< std::string >& args )
 {
     // arguments are white space separated, except they are placed in "" like: "my server name"
-    size_t strsize = cmdline.size();
+    std::size_t strsize = cmdline.size();
     int  marker = -1;
     std::string curstr;
-    for ( size_t cnt = 0; cnt <= strsize; cnt++ ) // merge string areas noted by ""
+    for ( std::size_t cnt = 0; cnt <= strsize; ++cnt ) // merge string areas noted by ""
     {
         if ( ( marker == -1 ) && ( cmdline[ cnt ] == '\"' ) )
         {

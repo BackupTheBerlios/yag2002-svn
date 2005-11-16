@@ -307,7 +307,7 @@ static void libirc_process_incoming_data (irc_session_t * session, int process_l
 		// right here
 		if ( session->options & LIBIRC_OPTION_STRIPNICKS )
 		{
-			for ( s = buf + 1; *s; s++ )
+			for ( s = buf + 1; *s; ++s )
 			{
 				if ( *s == '@' || *s == '!' )
 				{
@@ -330,7 +330,7 @@ static void libirc_process_incoming_data (irc_session_t * session, int process_l
 		s = p;
 
 		while ( *p && *p != ' ')
-			p++;
+			++p;
 
 		*p++ = '\0';
 
@@ -348,7 +348,7 @@ static void libirc_process_incoming_data (irc_session_t * session, int process_l
 		}
 
 		// Just a param
-		for ( s = p; *p && *p != ' '; p++ )
+		for ( s = p; *p && *p != ' '; ++p )
 			;
 
 		params[paramindex++] = s;

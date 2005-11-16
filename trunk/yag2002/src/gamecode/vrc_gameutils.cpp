@@ -68,8 +68,8 @@ CEGUI::Window* GuiUtils::getMainGuiWindow()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** error setting up main gui window" << std::endl;
-        yaf3d::log << "   reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "*** error setting up main gui window" << std::endl;
+        log << "   reason: " << e.getMessage().c_str() << std::endl;
         return NULL;
     }
 
@@ -99,8 +99,8 @@ void GuiUtils::destroyMainWindow()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "guiutils: problem cleaning up gui resources" << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "guiutils: problem cleaning up gui resources" << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
     _p_mainWindow = NULL;
     _p_rootWindow = NULL;
@@ -133,7 +133,7 @@ bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& 
     yaf3d::Settings* p_settings = yaf3d::SettingsManager::get()->createProfile( profile, cfg );
     if ( !p_settings )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "Menu: cannot find player settings: " << cfg << std::endl;
+        log_error << "Menu: cannot find player settings: " << cfg << std::endl;
         return false;
     }
     std::string key, value;
@@ -192,7 +192,7 @@ void PlayerUtils::addRemotePlayer( yaf3d::BaseEntity* p_entity )
 {
     // first check whether the entity is already in list
     std::vector< yaf3d::BaseEntity* >::iterator p_beg = _remotePlayers.begin(), p_end = _remotePlayers.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         if ( *p_beg == p_entity )
             break;
    
@@ -205,7 +205,7 @@ void PlayerUtils::removeRemotePlayer( yaf3d::BaseEntity* p_entity )
 {
     // first check whether the entity is in list
     std::vector< yaf3d::BaseEntity* >::iterator p_beg = _remotePlayers.begin(), p_end = _remotePlayers.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
         if ( *p_beg == p_entity )
             break;
 
@@ -225,11 +225,11 @@ LevelFiles::LevelFiles( const std::string& dir )
     static unsigned int s_postfix = 0;
     std::stringstream   postfix;
     postfix << s_postfix;
-    s_postfix++;
+    ++s_postfix;
     // setup the preview pics for StaticImage field
     if ( files.size() > 0 )
     {
-        for ( size_t cnt = 0; cnt < files.size(); cnt++ )
+        for ( size_t cnt = 0; cnt < files.size(); ++cnt )
         {
             std::string textureFile  = dir + files[ cnt ] + ".tga";
             std::string materialName = files[ cnt ];
@@ -265,15 +265,15 @@ LevelFiles::~LevelFiles()
     try
     {
         std::map< std::string, CEGUI::Image* >::iterator p_beg = _files.begin(), p_end = _files.end();
-        for ( ; p_beg != p_end; p_beg++ )
+        for ( ; p_beg != p_end; ++p_beg )
         {
             CEGUI::ImagesetManager::getSingleton().destroyImageset( p_beg->first );
         }
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "DialogLevelSelect: problem cleaning up entity." << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "DialogLevelSelect: problem cleaning up entity." << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 

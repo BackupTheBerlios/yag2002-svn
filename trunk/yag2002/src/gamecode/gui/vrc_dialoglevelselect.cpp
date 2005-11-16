@@ -64,8 +64,8 @@ DialogLevelSelect::~DialogLevelSelect()
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "DialogLevelSelect: problem cleaning up entity." << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "DialogLevelSelect: problem cleaning up entity." << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -74,7 +74,7 @@ bool DialogLevelSelect::initialize( const std::string& layoutfile )
     _p_levelSelectDialog = yaf3d::GuiManager::get()->loadLayout( layoutfile, NULL, LDLG_PREFIX );
     if ( !_p_levelSelectDialog )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** DialogLevelSelect: cannot find layout: " << layoutfile << std::endl;
+        log_error << "*** DialogLevelSelect: cannot find layout: " << layoutfile << std::endl;
         return false;
     }
 
@@ -98,8 +98,8 @@ bool DialogLevelSelect::initialize( const std::string& layoutfile )
     }
     catch ( const CEGUI::Exception& e )
     {
-        yaf3d::log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "*** DialogLevelSelect: cannot setup dialog layout." << std::endl;
-        yaf3d::log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_error << "*** DialogLevelSelect: cannot setup dialog layout." << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     return true;
@@ -135,7 +135,7 @@ void DialogLevelSelect::setupControls()
     // fill up the list
     _p_listbox->resetList();
     std::map< std::string, CEGUI::Image* >::iterator p_beg = _p_levelFiles->getAllFiles().begin(), p_end = _p_levelFiles->getAllFiles().end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         CEGUI::ListboxTextItem * p_item = new CEGUI::ListboxTextItem( p_beg->first.c_str() );
         p_item->setSelectionColours( col );

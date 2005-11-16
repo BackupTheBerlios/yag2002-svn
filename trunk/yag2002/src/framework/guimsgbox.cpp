@@ -61,7 +61,7 @@ _autodel( autodelete )
     explode( text, "\n", &lines );
     float textwidth  = 0;
     // get maximal line width
-    for ( size_t cnt = 0; cnt < lines.size(); cnt++ )
+    for ( size_t cnt = 0; cnt < lines.size(); ++cnt )
     {
         float lineextend = p_font->getTextExtent( lines[ cnt ] );
         if ( textwidth < lineextend )
@@ -105,7 +105,7 @@ _autodel( autodelete )
     static int s_pf = 0;
     std::stringstream postfix;
     postfix << s_pf;
-    s_pf++;
+    ++s_pf;
     
     try
     {

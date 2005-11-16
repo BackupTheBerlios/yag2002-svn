@@ -89,14 +89,14 @@ inline void AttributeManager::addAttribute( const std::string& name, TypeT& _ref
 template< class TypeT >
 bool AttributeManager::getAttributeValue( const std::string& name, TypeT& value ) 
 {
-    std::vector< EntityAttributeBase* >::iterator pp_attr = _attributes.begin(), pp_end = _attributes.end();
-    while ( pp_attr != pp_end ) {
-        if ( ( *pp_attr )->getName() == name ) {
-            assert( typeid( TypeT ) == ( *pp_attr )->getTypeInfo() && "*** wrong type for requested attribute!" );
-            value = ( dynamic_cast< EntityAttribute< TypeT >* >( *pp_attr ) )->getValue();
+    std::vector< EntityAttributeBase* >::iterator p_attr = _attributes.begin(), p_end = _attributes.end();
+    while ( p_attr != p_end ) {
+        if ( ( *p_attr )->getName() == name ) {
+            assert( typeid( TypeT ) == ( *p_attr )->getTypeInfo() && "*** wrong type for requested attribute!" );
+            value = ( dynamic_cast< EntityAttribute< TypeT >* >( *p_attr ) )->getValue();
             return true;
         }
-        pp_attr++;
+        p_attr++;
     }
     return false;
 }
@@ -105,19 +105,19 @@ bool AttributeManager::getAttributeValue( const std::string& name, TypeT& value 
 template< class TypeT >
 bool AttributeManager::setAttributeValue( const std::string& name, TypeT value ) 
 {
-    std::vector< EntityAttributeBase* >::iterator pp_attr = _attributes.begin(), pp_end = _attributes.end();
-    while ( pp_attr != pp_end ) {
-        if ( ( *pp_attr )->getName() == name ) {
-            if ( typeid( TypeT ) != ( *pp_attr )->getTypeInfo() )
+    std::vector< EntityAttributeBase* >::iterator p_attr = _attributes.begin(), p_end = _attributes.end();
+    while ( p_attr != p_end ) {
+        if ( ( *p_attr )->getName() == name ) {
+            if ( typeid( TypeT ) != ( *p_attr )->getTypeInfo() )
             {
                 log << Log::LogLevel( Log::L_ERROR ) << "*** wrong type for requested attribute '" << name << "', skipping!" << std::endl;
-                pp_attr++;
+                p_attr++;
                 continue;
             }
-            ( dynamic_cast< EntityAttribute< TypeT >* >( *pp_attr ) )->setValue( value );
+            ( dynamic_cast< EntityAttribute< TypeT >* >( *p_attr ) )->setValue( value );
             return true;
         }
-        pp_attr++;
+        p_attr++;
     }
     return false;
 }

@@ -42,7 +42,7 @@ inline bool Settings::registerSetting( const std::string& token, const TypeT& va
 {
     // check for existing token name, no duplicates are allowed
     size_t tokens = _settings.size();
-    for ( size_t cnt = 0; cnt < tokens; cnt++ ) 
+    for ( size_t cnt = 0; cnt < tokens; ++cnt ) 
         if ( _settings[ cnt ]->getTokenName() == token ) 
             return false;
 
@@ -80,10 +80,10 @@ inline const std::vector< Settings::SettingBase* >& Settings::getAllSettingStora
 
 inline Settings::SettingBase* Settings::findSetting( const std::string& token )
 {
-    std::vector< SettingBase* >::iterator pp_setting = _settings.begin(), pp_settingEnd = _settings.end();
-    for ( ; pp_setting != pp_settingEnd; pp_setting++ )
-        if ( ( *pp_setting )->getTokenName() == token )
-            return *pp_setting;
+    std::vector< SettingBase* >::iterator p_setting = _settings.begin(), p_settingEnd = _settings.end();
+    for ( ; p_setting != p_settingEnd; ++p_setting )
+        if ( ( *p_setting )->getTokenName() == token )
+            return *p_setting;
 
     return NULL;
 }

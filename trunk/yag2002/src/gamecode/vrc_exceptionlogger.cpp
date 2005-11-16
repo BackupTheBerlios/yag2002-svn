@@ -61,7 +61,7 @@ MSJExceptionHandler::MSJExceptionHandler( )
     PTSTR pszDot = _tcsrchr( _p_logFileName, _T('.') );
     if ( pszDot )
     {
-        pszDot++;   // Advance past the '.'
+        ++pszDot;   // Advance past the '.'
         if ( _tcslen( pszDot ) >= 3 )
             _tcscpy( pszDot, _T( "crashreport" ) );
     }
@@ -218,7 +218,7 @@ BOOL MSJExceptionHandler::getLogicalAddress( PVOID p_addr, PTSTR p_module, DWORD
 
     // Iterate through the section table, looking for the one that encompasses
     // the linear address.
-    for (   unsigned i = 0; i < pNtHdr->FileHeader.NumberOfSections; i++, pSection++ )
+    for (   unsigned i = 0; i < pNtHdr->FileHeader.NumberOfSections; ++i, ++pSection )
     {
         DWORD sectionStart = pSection->VirtualAddress;
         DWORD sectionEnd = sectionStart

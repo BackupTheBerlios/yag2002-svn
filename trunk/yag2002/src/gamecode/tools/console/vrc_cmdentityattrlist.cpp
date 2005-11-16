@@ -71,7 +71,7 @@ const std::string& CmdEntityAttributeList::execute( const std::vector< std::stri
 
     std::string info;
     std::vector< std::pair< std::string, std::string > >::iterator p_beg = attributes.begin(), p_end = attributes.end();
-    for ( ; p_beg != p_end; p_beg++ )
+    for ( ; p_beg != p_end; ++p_beg )
     {
         info += p_beg->first + "  [  " + p_beg->second + "  ] \n";
     }
