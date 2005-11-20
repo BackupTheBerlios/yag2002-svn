@@ -29,6 +29,7 @@
  ################################################################*/
 
 #include <vrc_main.h>
+#include <vrc_gameutils.h>
 #include "vrc_playerinfodisplay.h"
 #include "../player/vrc_player.h"
 
@@ -166,7 +167,7 @@ bool EnPlayerInfoDisplay::getPlayerEntity()
 {
     // try to get local player's entity considering that in a networked session several player entities can exist
     std::string playername;
-    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, playername );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, playername );
 
     _p_playerEntity = static_cast< EnPlayer* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_PLAYER, playername ) );
     if ( !_p_playerEntity )

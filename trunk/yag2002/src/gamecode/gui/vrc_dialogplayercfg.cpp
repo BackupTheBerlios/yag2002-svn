@@ -29,6 +29,7 @@
  ################################################################*/
 
 #include <vrc_main.h>
+#include <vrc_gameutils.h>
 #include "vrc_dialogplayercfg.h"
 #include "vrc_dialogsettings.h"
 #include "../sound/vrc_ambientsound.h"
@@ -52,7 +53,7 @@ _p_settingsDialog( p_menuEntity )
 {
     // get the player config folder
     std::string playercfgdir;
-    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_CONFIG_DIR, playercfgdir );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_CONFIG_DIR, playercfgdir );
 
     // get player file names
     std::string searchdir = yaf3d::Application::get()->getMediaPath() + playercfgdir + "/";
@@ -209,11 +210,11 @@ void DialogPlayerConfig::setupControls()
     // get settings
     {
         std::string playername;
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, playername );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, playername );
         _p_playerName->setText( playername.c_str() );
 
         std::string playercfg;
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_CONFIG, playercfg );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_CONFIG, playercfg );
 
         // get the player type out of file list lookup table
         std::map< std::string, std::string >::iterator p_beg = _cfgFiles.begin(), p_end = _cfgFiles.end();
@@ -266,9 +267,9 @@ bool DialogPlayerConfig::onClickedOk( const CEGUI::EventArgs& arg )
     // write back the settings to configuration
     {
         std::string playername = _p_playerName->getText().c_str();
-        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_PLAYER_NAME, playername );
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_PLAYER_NAME, playername );
         std::string playercfg = _cfgFiles[ _currentSelection ];
-        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_PLAYER_CONFIG, playercfg );
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_PLAYER_CONFIG, playercfg );
     }
 
     _currentSelection = "";

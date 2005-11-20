@@ -177,9 +177,6 @@ void ChatManager::onConnection( const ChatConnectionConfig& config )
         // store the new created connection for internal housekeeping
         _connections.push_back( std::make_pair( config, config._p_protocolHandler ) );
     }
-
-    // pop up the chat box
-    activateBox( true );
 }
 
 void ChatManager::onDisconnection( const ChatConnectionConfig& config )

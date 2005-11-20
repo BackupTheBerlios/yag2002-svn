@@ -68,7 +68,7 @@ _p_protVRC( p_nw )
 
         // use player name as default nickname
         std::string playername;
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, playername );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, playername );
         strcpy( _config._nickname, playername.c_str() );
     }
     else
@@ -254,7 +254,11 @@ void ImplChatNetworkingVRC::RPC_ChangedNickname( tChatData chatdata )
 
     // store new or changed nickname
     _nickNames[ chatdata._sessionID ] = newname;
-    _p_protVRC->recvNicknameChange( newname, oldname );
+
+    if ( chatdata._sessionID == _clientSID )
+        _p_protVRC->recvNicknameChange( newname, newname );
+    else
+        _p_protVRC->recvNicknameChange( newname, oldname );
 
     // notify for updating member list
     _p_protVRC->recvMemberList( "" );

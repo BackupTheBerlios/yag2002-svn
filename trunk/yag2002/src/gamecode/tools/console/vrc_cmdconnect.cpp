@@ -57,7 +57,7 @@ const std::string& CmdConnect::execute( const std::vector< std::string >& argume
     unsigned int channel;
     std::string serverip;
     std::string clientname;
-    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, clientname );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, clientname );
     yaf3d::NodeInfo nodeinfo( "", clientname );
     yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
     // parse the argument for ip and channel information

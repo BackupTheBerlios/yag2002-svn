@@ -102,7 +102,7 @@ void EnPlayer::handleNotification( const yaf3d::EntityNotification& notification
         case PLAYER_NOTIFY_NAME_CHANGED:
         {
             std::string playername;
-            yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, playername );
+            yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, playername );
             setPlayerName( playername );
         }
         break;

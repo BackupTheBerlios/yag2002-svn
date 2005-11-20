@@ -77,6 +77,7 @@ _p_listbox( NULL )
         _p_tabPane = static_cast< CEGUI::Window* >( CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", std::string( CHATLAYOUT_PREFIX "tabpane" ) + postfix ) );
         _p_tabPane->setMetricsMode( CEGUI::Relative );
         _p_tabCtrl->addTab( _p_tabPane );
+
         // we must also set a unique id for later removal from tab control
         _p_tabPane->setID( instnum );
         _p_tabPane->subscribeEvent( CEGUI::Window::EventParentSized, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::ChannelTabPane::onSizeChanged, this ) );
@@ -102,7 +103,6 @@ _p_listbox( NULL )
         _p_listbox->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::ChannelTabPane::onListItemSelChanged, this ) );
         _p_listbox->setSortingEnabled( true );
         _p_listbox->setMetricsMode( CEGUI::Absolute );
-        _p_listbox->setAlpha( 0.8f );
         _p_listbox->setFont( YAF3D_GUI_FONT8 );
         _p_tabPane->addChildWindow( _p_listbox );
     }
@@ -411,7 +411,7 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
 {
     _p_chatMgr = p_chatMgr;
     // init nickname with player name
-    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, _nickname );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, _nickname );
 
     // as this class can be instatiated several times it is important to generated unique prefix for every instance
     std::string prefix( CHATLAYOUT_PREFIX );
@@ -426,7 +426,7 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
         _p_frame = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", CHATLAYOUT_PREFIX "_charboxframe_" ) );
 		_p_frame->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onCloseFrame, this ) );
         // note: a minimum size must exist, otherwise cegui may hang during some internal calculations!
-        _p_frame->setMinimumSize( CEGUI::Size( 0.2f, 0.15f ) );
+        _p_frame->setMinimumSize( CEGUI::Size( 0.2f, 0.2f ) );
         _p_frame->hide();
         _p_frame->setText( "chatbox" );
         _p_frame->setAlpha( 0.8f );
@@ -587,8 +587,8 @@ ChatGuiBox::ChannelTabPane* ChatGuiBox::getOrCreateChannelPane( const ChatConnec
     p_pane->setConfiguration( cfg );
     cfg._p_protocolHandler->registerProtocolCallback( p_pane, cfg._channel );
 
-    // open the chat box
-    fadeChatbox( false );
+    // set tab selection to new created or exsiting pane
+    p_pane->setSelection();
 
     return p_pane;
 }
@@ -598,23 +598,20 @@ void ChatGuiBox::setEditBoxFocus( bool en )
     if ( !_p_tabCtrl )
         return;
 
-    //! TODO: sometimes, determining the selected pane makes problems
-    //        temporarily we disable this feature
-
-    //// search active pane and set selection to its edit box field
-    //if ( ( _p_tabCtrl->getTabCount() > 0 ) && ( _tabpanes.size() > 0 ) )
-    //{
-    //    TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
-    //    for ( ; p_beg != p_end; ++p_beg )
-    //    {
-    //        if ( p_beg->second->isSelected() )
-    //        {
-    //            // set focus to edit field of active pane
-    //            p_beg->second->setEditBoxFocus( en );
-    //            break;
-    //        }
-    //    }
-    //}
+    // search active pane and set selection to its edit box field
+    if ( ( _p_tabCtrl->getTabCount() > 0 ) && ( _tabpanes.size() > 0 ) )
+    {
+        TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
+        for ( ; p_beg != p_end; ++p_beg )
+        {
+            if ( p_beg->second->isSelected() )
+            {
+                // set focus to edit field of active pane
+                p_beg->second->setEditBoxFocus( en );
+                break;
+            }
+        }
+    }
 }
 
 void ChatGuiBox::update( float deltaTime )
@@ -853,10 +850,7 @@ void ChatGuiBox::fadeChatbox( bool fadeout )
 void ChatGuiBox::setupChatIO( const ChatConnectionConfig& config )
 {
     ChannelTabPane* p_pane = getOrCreateChannelPane( config );
-    // set tab selection to new created or exsiting pane
-    p_pane->setSelection();
-    // set focus
-    p_pane->setEditBoxFocus( true );
+    assert( p_pane && "could not create new pane for chat io!" );
 }
 
 void ChatGuiBox::outputText( const std::string& channel, const std::string& msg )

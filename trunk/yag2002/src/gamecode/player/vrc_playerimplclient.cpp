@@ -283,36 +283,36 @@ void PlayerImplClient::postInitialize()
 void PlayerImplClient::getConfiguration()
 {
     std::string playername;
-    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, playername );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, playername );
     _p_player->setPlayerName( playername );
 
     // setup key bindings if the handler is already created (e.g. remote clients have no handler)
     if ( _p_inputHandler )
     {
         std::string keyname;
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_MOVE_FORWARD, keyname );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_KEY_MOVE_FORWARD, keyname );
         _p_inputHandler->_keyCodeMoveForward = yaf3d::KeyMap::get()->getCode( keyname );
 
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_MOVE_BACKWARD, keyname );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_KEY_MOVE_BACKWARD, keyname );
         _p_inputHandler->_keyCodeMoveBackward = yaf3d::KeyMap::get()->getCode( keyname );
 
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_MOVE_LEFT, keyname );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_KEY_MOVE_LEFT, keyname );
         _p_inputHandler->_keyCodeMoveLeft = yaf3d::KeyMap::get()->getCode( keyname );
 
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_MOVE_RIGHT, keyname );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_KEY_MOVE_RIGHT, keyname );
         _p_inputHandler->_keyCodeMoveRight = yaf3d::KeyMap::get()->getCode( keyname );
 
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_JUMP, keyname );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_KEY_JUMP, keyname );
         _p_inputHandler->_keyCodeJump = yaf3d::KeyMap::get()->getCode( keyname );
 
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_CAMERAMODE, keyname );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_KEY_CAMERAMODE, keyname );
         _p_inputHandler->_keyCodeCameraMode = yaf3d::KeyMap::get()->getCode( keyname );
 
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_CHATMODE, keyname );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_KEY_CHATMODE, keyname );
         _p_inputHandler->_keyCodeChatMode = yaf3d::KeyMap::get()->getCode( keyname );
 
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_INVERTMOUSE, _p_inputHandler->_invertedMouse );
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_MOUSESENS, _p_inputHandler->_mouseSensitivity );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_INVERTMOUSE, _p_inputHandler->_invertedMouse );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_MOUSESENS, _p_inputHandler->_mouseSensitivity );
     }
 }
 

@@ -576,7 +576,7 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
     std::string url;
     yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_IP, url );
     std::string clientname;
-    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, clientname );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, clientname );
     yaf3d::NodeInfo nodeinfo( "", clientname );
     unsigned int channel;
     yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
@@ -1090,7 +1090,7 @@ void EnMenu::leaveLevel()
         yaf3d::NetworkDevice::get()->disconnect();
 
     // reset the game state
-    yaf3d::GameState::get()->setMode( yaf3d::GameState::None );
+    yaf3d::GameState::get()->setMode( yaf3d::GameState::UnknownMode );
 }
 
 } // namespace vrc

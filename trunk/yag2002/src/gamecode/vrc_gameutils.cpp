@@ -40,6 +40,56 @@ namespace vrc
 namespace gameutils
 {
 
+//! Auto-instance for registering game code config settings at startup
+std::auto_ptr< VRCConfigRegistry > _autoptr_VRCConfigRegistry = std::auto_ptr< VRCConfigRegistry >( new VRCConfigRegistry );
+
+// Implementation of configuration settings registry
+VRCConfigRegistry::VRCConfigRegistry() :
+_playerName( "NoName" ),
+_playerConfig( "player.cfg" ),
+_playerConfigDir( "player" ),
+_mouseSensitivity( 1.0f ),
+_mouseInverted( false ),
+_moveForward( "W" ),
+_moveBackward( "S" ),
+_moveLeft( "A" ),
+_moveRight( "D" ),
+_jump( "Space" ),
+_cameramode( "F1" ),
+_chatmode( "RMB" )
+{
+    // register this instance for getting game state changes
+    yaf3d::GameState::get()->registerCallbackStateChange( this );
+}
+
+VRCConfigRegistry::~VRCConfigRegistry()
+{
+}
+
+void VRCConfigRegistry::onStateChange( unsigned int state )
+{
+    // we register the settings only once during application 'Initializing'
+    if ( state != yaf3d::GameState::Initializing )
+        return;
+
+    // register settings
+    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_NAME,         _playerName       );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_CONFIG_DIR,   _playerConfigDir  );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_CONFIG,       _playerConfig     );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_FORWARD,    _moveForward      );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_BACKWARD,   _moveBackward     );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_LEFT,       _moveLeft         );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_RIGHT,      _moveRight        );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_JUMP,            _jump             );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CAMERAMODE,      _cameramode       );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CHATMODE,        _chatmode         );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_MOUSESENS,           _mouseSensitivity );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_INVERTMOUSE,         _mouseInverted    );
+
+    // now load the setting values from config file
+    yaf3d::Configuration::get()->load();
+}
+
 // Implementation of player utils
 GuiUtils::GuiUtils() :
 _p_mainWindow( NULL ),
@@ -124,8 +174,8 @@ bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& 
 {
     std::string playercfgdir;
     std::string playercfgfile;
-    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_CONFIG_DIR, playercfgdir );
-    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_CONFIG, playercfgfile );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_CONFIG_DIR, playercfgdir );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_CONFIG, playercfgfile );
     // assemble full path of player cfg file
     std::string cfg = yaf3d::Application::get()->getMediaPath() + playercfgdir + "/" + playercfgfile;
     // load player config
@@ -181,7 +231,7 @@ void PlayerUtils::changeLocalPlayerName( const std::string& name )
         return;
 
     // change the player name in configuration
-    yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_PLAYER_NAME, name );
+    yaf3d::Configuration::get()->setSettingValue( VRC_GS_PLAYER_NAME, name );
 
     // send a notification that the player name has been changed
     yaf3d::EntityNotification ennotify( PLAYER_NOTIFY_NAME_CHANGED );

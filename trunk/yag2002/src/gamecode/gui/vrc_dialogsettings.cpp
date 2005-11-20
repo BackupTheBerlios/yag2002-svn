@@ -29,6 +29,7 @@
  ################################################################*/
 
 #include <vrc_main.h>
+#include <vrc_gameutils.h>
 #include "vrc_menu.h"
 #include "vrc_dialogsettings.h"
 #include "vrc_dialogplayercfg.h"
@@ -220,7 +221,7 @@ void DialogGameSettings::setupControls()
     //-----------------------------------
     {
         std::string cfg_playername;
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, cfg_playername );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, cfg_playername );
         // set player name
         _p_playerName->setText( cfg_playername );
     }
@@ -245,41 +246,41 @@ void DialogGameSettings::setupControls()
     {
         _keyBindingLookup.clear();
         std::string cfg_movecmd;
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_MOVE_FORWARD, cfg_movecmd );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_KEY_MOVE_FORWARD, cfg_movecmd );
         _p_keyMoveForward->setText( cfg_movecmd.c_str() );
         _keyBindingLookup.push_back( std::make_pair( cfg_movecmd, _p_keyMoveForward ) );
 
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_MOVE_BACKWARD, cfg_movecmd );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_KEY_MOVE_BACKWARD, cfg_movecmd );
         _p_keyMoveBackward->setText( cfg_movecmd.c_str() );
         _keyBindingLookup.push_back( std::make_pair( cfg_movecmd, _p_keyMoveBackward ) );
 
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_MOVE_LEFT, cfg_movecmd );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_KEY_MOVE_LEFT, cfg_movecmd );
         _p_keyMoveLeft->setText( cfg_movecmd.c_str() );
         _keyBindingLookup.push_back( std::make_pair( cfg_movecmd, _p_keyMoveLeft ) );
 
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_MOVE_RIGHT, cfg_movecmd );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_KEY_MOVE_RIGHT, cfg_movecmd );
         _p_keyMoveRight->setText( cfg_movecmd.c_str() );
         _keyBindingLookup.push_back( std::make_pair( cfg_movecmd, _p_keyMoveRight ) );
 
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_JUMP, cfg_movecmd );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_KEY_JUMP, cfg_movecmd );
         _p_keyJump->setText( cfg_movecmd.c_str() );
         _keyBindingLookup.push_back( std::make_pair( cfg_movecmd, _p_keyJump ) );
 
         std::string cfg_mode;
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_CAMERAMODE, cfg_mode );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_KEY_CAMERAMODE, cfg_mode );
         _p_keyCameraMode->setText( cfg_mode.c_str() );
         _keyBindingLookup.push_back( std::make_pair( cfg_mode, _p_keyCameraMode ) );
 
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEY_CHATMODE, cfg_mode );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_KEY_CHATMODE, cfg_mode );
         _p_keyChatMode->setText( cfg_mode.c_str() );
         _keyBindingLookup.push_back( std::make_pair( cfg_mode, _p_keyChatMode ) );
 
         float  cfg_mousesensitivity;
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_MOUSESENS, cfg_mousesensitivity );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_MOUSESENS, cfg_mousesensitivity );
         bool   cfg_mouseInverted;
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_INVERTMOUSE, cfg_mouseInverted );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_INVERTMOUSE, cfg_mouseInverted );
         // setup scrollbar position
-        _p_mouseSensivity->setDocumentSize( YAF3D_GS_MAX_MOUSESENS );
+        _p_mouseSensivity->setDocumentSize( VRC_GS_MAX_MOUSESENS );
         _p_mouseSensivity->setScrollPosition( cfg_mousesensitivity );
         // setup chekbox
         _p_mouseInvert->setSelected( cfg_mouseInverted );
@@ -335,39 +336,39 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
     // set player name
     {
         std::string playername = _p_playerName->getText().c_str();
-        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_PLAYER_NAME, playername );
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_PLAYER_NAME, playername );
     }
 
     // set key bindings
     {
         std::string cfg_key;
         cfg_key = _p_keyMoveForward->getText().c_str();
-        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_KEY_MOVE_FORWARD, cfg_key );
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_KEY_MOVE_FORWARD, cfg_key );
 
         cfg_key = _p_keyMoveBackward->getText().c_str();
-        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_KEY_MOVE_BACKWARD, cfg_key );
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_KEY_MOVE_BACKWARD, cfg_key );
 
         cfg_key = _p_keyMoveLeft->getText().c_str();
-        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_KEY_MOVE_LEFT, cfg_key );
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_KEY_MOVE_LEFT, cfg_key );
 
         cfg_key = _p_keyMoveRight->getText().c_str();
-        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_KEY_MOVE_RIGHT, cfg_key );
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_KEY_MOVE_RIGHT, cfg_key );
 
         cfg_key = _p_keyJump->getText().c_str();
-        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_KEY_JUMP, cfg_key );
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_KEY_JUMP, cfg_key );
 
         cfg_key = _p_keyCameraMode->getText().c_str();
-        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_KEY_CAMERAMODE, cfg_key );
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_KEY_CAMERAMODE, cfg_key );
 
         cfg_key = _p_keyChatMode->getText().c_str();
-        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_KEY_CHATMODE, cfg_key );
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_KEY_CHATMODE, cfg_key );
     }
 
     // set mouse settings
     {
-        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_MOUSESENS, _mouseSensitivity );    
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_MOUSESENS, _mouseSensitivity );    
         bool mouseInvert  = _p_mouseInvert->isSelected();
-        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_INVERTMOUSE, mouseInvert );
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_INVERTMOUSE, mouseInvert );
     }
 
     // set server settings
@@ -437,7 +438,7 @@ bool DialogGameSettings::onClickedPlayerConfig( const CEGUI::EventArgs& arg )
 {
     // store the settings changes ( in particular the player name, as the player dialog also can change the player name )
     std::string playername = _p_playerName->getText().c_str();
-    yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_PLAYER_NAME, playername );
+    yaf3d::Configuration::get()->setSettingValue( VRC_GS_PLAYER_NAME, playername );
     yaf3d::Configuration::get()->store();
 
     _p_settingsDialog->hide();
@@ -452,7 +453,7 @@ void DialogGameSettings::onPlayerConfigDialogClose()
     _playerConfigDialog->show( false );
     // update player name
     std::string playername;
-    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PLAYER_NAME, playername );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, playername );
     _p_playerName->setText( playername.c_str() );
 }
 

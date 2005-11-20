@@ -39,11 +39,66 @@ namespace gameutils
 {
 
 //! VRC version
-#define VRC_VERSION                 "0.5.0"
+#define VRC_VERSION                         "0.5.0"
+
 
 //! Game code specific notifications ( all begining with 0xA )
-#define PLAYER_NOTIFY_NAME_CHANGED  0xA0000001      // notification for player name change
+#define PLAYER_NOTIFY_NAME_CHANGED          0xA0000001          // notification for player name change
 
+//! Game code's configuration setting names
+#define VRC_GS_PLAYER_NAME                  "playerName"
+#define VRC_GS_PLAYER_CONFIG_DIR            "playerConfigDir"
+#define VRC_GS_PLAYER_CONFIG                "playerConfig"
+#define VRC_GS_KEY_MOVE_FORWARD             "moveForward"
+#define VRC_GS_KEY_MOVE_BACKWARD            "moveBackward"
+#define VRC_GS_KEY_MOVE_LEFT                "moveLeft"
+#define VRC_GS_KEY_MOVE_RIGHT               "moveRight"
+#define VRC_GS_KEY_JUMP                     "jump"
+#define VRC_GS_KEY_CAMERAMODE               "cameraMode"
+#define VRC_GS_KEY_CHATMODE                 "chatMode"
+#define VRC_GS_MOUSESENS                    "mouseSensitivity"
+#define VRC_GS_INVERTMOUSE                  "mouseInverted"
+//! Game code settings' defaults
+#define VRC_GS_MAX_MOUSESENS                3.0f                // maximal mouse sensitivity
+
+
+//! This class is responsible for registration of all game code (VRC) related configuration settings
+class VRCConfigRegistry : public yaf3d::GameState::CallbackStateChange
+{
+    public:
+                                                    VRCConfigRegistry();
+
+        virtual                                     ~VRCConfigRegistry();
+
+        //! Callback method ( we register the settings during 'Initializing' state )
+        void                                        onStateChange( unsigned int state );
+
+    protected:
+
+        std::string                                 _playerName;
+
+        std::string                                 _playerConfig;
+
+        std::string                                 _playerConfigDir;
+
+        float                                       _mouseSensitivity;
+
+        bool                                        _mouseInverted;
+
+        std::string                                 _moveForward;
+
+        std::string                                 _moveBackward;
+        
+        std::string                                 _moveLeft;
+        
+        std::string                                 _moveRight;
+
+        std::string                                 _jump;
+
+        std::string                                 _cameramode;
+
+        std::string                                 _chatmode;
+};
 
 //! Single instance providing player-related utility services
 class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
