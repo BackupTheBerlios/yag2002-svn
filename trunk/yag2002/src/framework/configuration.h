@@ -32,8 +32,8 @@
  #
  ################################################################*/
 
-#ifndef __CONFIGURATION_H_
-#define __CONFIGURATION_H_
+#ifndef _CONFIGURATION_H_
+#define _CONFIGURATION_H_
 
 #include <base.h>
 #include <singleton.h>
@@ -60,24 +60,7 @@ namespace yaf3d
 
 // gui
 #define YAF3D_GS_GUISCHEME                "guiScheme"
-// player
-#define YAF3D_GS_PLAYER_NAME              "playerName"
-//   folder in media directory for player configuration files
-#define YAF3D_GS_PLAYER_CONFIG_DIR        "playerConfigDir"
-//   player configuration
-#define YAF3D_GS_PLAYER_CONFIG            "playerConfig"
-//   player key bindings
-#define YAF3D_GS_KEY_MOVE_FORWARD         "moveForward"
-#define YAF3D_GS_KEY_MOVE_BACKWARD        "moveBackward"
-#define YAF3D_GS_KEY_MOVE_LEFT            "moveLeft"
-#define YAF3D_GS_KEY_MOVE_RIGHT           "moveRight"
-#define YAF3D_GS_KEY_JUMP                 "jump"
-#define YAF3D_GS_KEY_CAMERAMODE           "cameraMode"
-#define YAF3D_GS_KEY_CHATMODE             "chatMode"
-// mouse settings
-#define YAF3D_GS_MOUSESENS                "mouseSensitivity"
-#define YAF3D_GS_MAX_MOUSESENS            3.0f                /* maximal mouse sensitivity */
-#define YAF3D_GS_INVERTMOUSE              "mouseInverted"
+
 // networking
 #define YAF3D_GS_SERVER_NAME              "serverName"
 #define YAF3D_GS_SERVER_IP                "serverIP"
@@ -90,7 +73,17 @@ class Configuration : public Singleton< Configuration >
 {
     public:
 
-        //! Given a setting name ( e.g. screen width YAF3D_GS_SCREENWIDTH ) return its value in 'value'
+        //! Load settings from file to all registered settings. Returns false on file io errors.
+        bool                                    load();
+
+        //! Store the settings to file. Returns false on file io errors.
+        bool                                    store();
+
+        //! Add a new setting name to configuration. Returns false if setting already exists.
+        template< typename TypeT >
+        inline bool                             addSetting( const std::string& name, TypeT& value );
+
+        //! Given a setting name ( e.g. screen width YAF3D_GS_SCREENWIDTH ) return its value in 'value'. Returns false if setting does not exist.
         template< typename TypeT >
         inline bool                             getSettingValue( const std::string& name, TypeT& value );
 
@@ -104,9 +97,6 @@ class Configuration : public Singleton< Configuration >
         //! Get the configuration settings as string pair < setting name, setting value >
         void                                    getConfigurationAsString( std::vector< std::pair< std::string, std::string > >& settings );
 
-        //! Store the settings to file
-        void                                    store();
-
     protected:
 
                                                 Configuration();
@@ -119,7 +109,7 @@ class Configuration : public Singleton< Configuration >
         //! Configuration settings
         Settings*                               _p_settings;
 
-        //! Game settings
+        //! Standard settings
         unsigned int                            _screenWidth;
 
         unsigned int                            _screenHeight;
@@ -132,41 +122,23 @@ class Configuration : public Singleton< Configuration >
 
         std::string                             _guiScheme;
 
-        std::string                             _playerName;
-
-        std::string                             _playerConfig;
-
-        std::string                             _playerConfigDir;
-
-        float                                   _mouseSensitivity;
-
-        bool                                    _mouseInverted;
-
         std::string                             _serverName;
 
         std::string                             _serverIP;
         
         unsigned int                            _serverPort;
 
-        std::string                             _moveForward;
-
-        std::string                             _moveBackward;
-        
-        std::string                             _moveLeft;
-        
-        std::string                             _moveRight;
-
-        std::string                             _jump;
-
-        std::string                             _cameramode;
-
-        std::string                             _chatmode;
-    
     friend class Singleton< Configuration >;
     friend class Application;
 };                                             
 
 // inline methods
+
+template< typename TypeT >
+inline bool Configuration::addSetting( const std::string& name, TypeT& value )
+{
+    return _p_settings->registerSetting( name, value );
+}
 
 template< typename TypeT >
 inline bool Configuration::getSettingValue( const std::string& name, TypeT& value )
@@ -182,4 +154,4 @@ inline bool Configuration::setSettingValue( const std::string& name, const TypeT
 
 } // namespace yaf3d
 
-#endif //__CONFIGURATION_H_
+#endif // _CONFIGURATION_H_
