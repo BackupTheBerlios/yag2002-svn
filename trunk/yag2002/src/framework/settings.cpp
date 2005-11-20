@@ -134,12 +134,6 @@ Settings::~Settings()
 
 bool Settings::load( const std::string& filename )
 {
-    if ( _loaded )
-    {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** there is already an open settings file '" << filename << "'." << std::endl;
-        return false;
-    }
-
     std::string openfile = filename;
     if ( !filename.length() )
         openfile = _settingsFile;
@@ -159,6 +153,13 @@ bool Settings::load( const std::string& filename )
     // get file size
     p_stream->seekg( 0, std::ios_base::end );
     int filesize = ( int )p_stream->tellg();
+    // check for empty file
+    if ( filesize == 0 )
+    {
+        p_stream->close();
+        return false;
+    }
+
     p_stream->seekg( 0, std::ios_base::beg );
 
     // load the settings into the file buffer
