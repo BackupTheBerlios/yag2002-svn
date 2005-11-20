@@ -109,9 +109,6 @@ bool Application::initialize( int argc, char **argv )
     //__asm int 3;
 #endif
 
-    // set game state
-    _p_gameState->setState( GameState::Initializing );
-
     std::string arg_levelname;
     // use an ArgumentParser object to manage the program arguments.
     osg::ArgumentParser arguments( &argc,argv );
@@ -141,7 +138,8 @@ bool Application::initialize( int argc, char **argv )
         arguments.writeErrorMessages( std::cout );
     }
 
-    // set the media path as first step, other modules need it for loading resources etc.
+    // note: before beginning to initialize the framework modules the media path must be set, 
+    //  other modules need it for loading resources etc.
     //-------------------
     std::vector< std::string > path;
     std::string dir;
@@ -178,6 +176,12 @@ bool Application::initialize( int argc, char **argv )
     _fulBinaryPath = arguments.getApplicationName();
 
     //-------------------
+
+    // load the standard configuration before changing to 'Initializing' state
+    Configuration::get()->load();
+
+    // set game state
+    _p_gameState->setState( GameState::Initializing );
 
     // setup log system
     //-----------------
