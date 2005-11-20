@@ -50,7 +50,7 @@ class GameState : public Singleton< GameState >
         //! Game mode
         enum GameMode
         {
-            None        = 0x10,
+            UnknownMode  = 0x10,
             Standalone,
             Server,
             Client
@@ -59,12 +59,35 @@ class GameState : public Singleton< GameState >
         //! Game state
         enum State
         {
-            Initializing = 0x20,    // set at startup
+            UnknownState = 0x20,
+            Initializing,           // set at startup
             Menu,                   // user is in menu
             Running,                // running game
             Pausing,                // game pausing
             Leaving,                // leaving a level
             Quitting                // quitting application
+        };
+
+        //! Class for getting callback whenever mode change occured
+        class CallbackModeChange
+        {
+            public:
+                                                    CallbackModeChange() {}
+
+                virtual                             ~CallbackModeChange() {}
+
+                virtual void                        onModeChange( unsigned int mode ) = 0;
+        };
+
+        //! Class for getting callback whenever state change occured
+        class CallbackStateChange
+        {
+            public:
+                                                    CallbackStateChange() {}
+
+                virtual                             ~CallbackStateChange() {}
+
+                virtual void                        onStateChange( unsigned int state ) = 0;
         };
 
         //! Set game mode to Server, Client, or Standalone
@@ -73,12 +96,20 @@ class GameState : public Singleton< GameState >
         //! Get game mode
         unsigned int                            getMode();
 
+        //! Register / deregister a callback for mode change ( pass reg = true for registering, otherwiese deregistering )
+        //! Note, this action is not queued, so don't call this method inside a mode change callback.
+        void                                    registerCallbackModeChange( CallbackModeChange* p_cb, bool reg = true );
+
         //! Set new state
         void                                    setState( unsigned int state );
 
         //! Get state state
         unsigned int                            getState();
  
+        //! Register / deregister a callback for state change ( pass reg = true for registering, otherwiese deregistering )
+        //! Note, this action is not queued, so don't call this method inside a state change callback.
+        void                                    registerCallbackStateChange( CallbackStateChange* p_cb, bool reg = true );
+
     protected:
 
                                                 GameState();
@@ -93,6 +124,12 @@ class GameState : public Singleton< GameState >
 
         //! Game mode (server or client)
         unsigned int                            _gameMode;
+
+        //! Registered callbacks for mode change
+        std::vector< CallbackModeChange* >      _cbsModeChange;
+
+        //! Registered callbacks for state change
+        std::vector< CallbackStateChange* >     _cbsStateChange;
 
     friend class Singleton< GameState >;
     friend class Application;
