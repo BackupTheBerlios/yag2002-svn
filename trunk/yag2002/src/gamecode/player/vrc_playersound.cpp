@@ -182,12 +182,14 @@ osgAL::SoundState* EnPlayerSound::createSound( const std::string& filename )
 {
     openalpp::Sample* p_sample    = NULL;
     osgAL::SoundNode* p_soundNode = NULL;
-    try {
-
+    try 
+    {
         p_sample = osgAL::SoundManager::instance()->getSample( filename );
         if ( !p_sample )
+        {
+            log_error << "cannot find sound file '" << filename << "' in '" << getInstanceName() << "'" << std::endl;
             return NULL;
-
+        }
     } 
     catch ( const openalpp::Error& e )
     {
@@ -205,13 +207,13 @@ osgAL::SoundState* EnPlayerSound::createSound( const std::string& filename )
     ++uniqueId;
     osgAL::SoundState* p_soundState = new osgAL::SoundState( uniquename.str() );
 
-    // Let the soundstate use the sample we just created
+    // let the soundstate use the sample we just created
     p_soundState->setSample( p_sample );
-    // Set its pitch to 1 (normal speed)
+    // set its pitch to 1 (normal speed)
     p_soundState->setPitch( 1.0f );
     p_soundState->setPlay( false );
     p_soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
-    // Allocate a hardware soundsource to this soundstate (lower priority of 5)
+    // allocate a hardware soundsource to this soundstate (lower priority of 5)
     p_soundState->allocateSource( 5, false );
 
     // we need ambient sound, we calculate the attenuation ourself
@@ -222,7 +224,7 @@ osgAL::SoundState* EnPlayerSound::createSound( const std::string& filename )
     
     p_soundState->apply();
 
-    // Create a sound node and attach the soundstate to it.
+    // create a sound node and attach the soundstate to it.
     p_soundNode = new osgAL::SoundNode;
     p_soundNode->setSoundState( p_soundState );
 
@@ -235,7 +237,9 @@ osgAL::SoundState* EnPlayerSound::createSound( const std::string& filename )
 void EnPlayerSound::playWalkGround()
 {
     std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_state = _soundStates.find( SND_GROUND );
-    assert( p_state != _soundStates.end() );
+    if ( p_state == _soundStates.end() )
+       return;
+
     stopOtherSounds( p_state->second.get() );
     if ( !p_state->second->isPlaying() )
         p_state->second->setPlay( true );
@@ -244,7 +248,9 @@ void EnPlayerSound::playWalkGround()
 void EnPlayerSound::playWalkWood()
 {
     std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_state = _soundStates.find( SND_WOOD );
-    assert( p_state != _soundStates.end() );
+    if ( p_state == _soundStates.end() )
+       return;
+
     stopOtherSounds( p_state->second.get() );
     if ( !p_state->second->isPlaying() )
         p_state->second->setPlay( true );
@@ -253,7 +259,9 @@ void EnPlayerSound::playWalkWood()
 void EnPlayerSound::playWalkMetal()
 {
     std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_state = _soundStates.find( SND_METALL );
-    assert( p_state != _soundStates.end() );
+    if ( p_state == _soundStates.end() )
+       return;
+
     stopOtherSounds( p_state->second.get() );
     if ( !p_state->second->isPlaying() )
         p_state->second->setPlay( true );
@@ -262,7 +270,9 @@ void EnPlayerSound::playWalkMetal()
 void EnPlayerSound::playWalkGrass()
 {
     std::map< std::string, osg::ref_ptr< osgAL::SoundState > >::iterator p_state = _soundStates.find( SND_GRASS );
-    assert( p_state != _soundStates.end() );
+    if ( p_state == _soundStates.end() )
+       return;
+
     stopOtherSounds( p_state->second.get() );
     if ( !p_state->second->isPlaying() )
         p_state->second->setPlay( true );
