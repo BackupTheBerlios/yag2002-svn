@@ -207,6 +207,8 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
 void DialogGameSettings::setClickSound( EnAmbientSound* p_sound )
 {
     _p_clickSound = p_sound;
+    assert( _playerConfigDialog.get() && "game settings dialog is not initialized!" );
+    _playerConfigDialog->setClickSound( _p_clickSound );
 }
 
 bool DialogGameSettings::isDirty()
