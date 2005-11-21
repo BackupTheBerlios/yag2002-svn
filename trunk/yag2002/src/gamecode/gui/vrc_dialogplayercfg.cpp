@@ -206,6 +206,9 @@ void DialogPlayerConfig::setupControls()
             p_item->setUserData( ( void* )( &p_beg->first ) );  // set texture name as item data
             _p_listbox->insertItem( p_item, NULL );
         }
+        // select the first item in list as initial selection
+        if ( _players.size() )
+            _currentSelection = _players.begin()->first.c_str();
     }
     // get settings
     {
@@ -299,6 +302,10 @@ bool DialogPlayerConfig::onClickedCancel( const CEGUI::EventArgs& arg )
 
 bool DialogPlayerConfig::onListItemSelChanged( const CEGUI::EventArgs& arg )
 {
+    // play click sound
+    if ( _p_clickSound )
+        _p_clickSound->startPlaying();
+
     // get selection
     CEGUI::ListboxItem* p_sel = _p_listbox->getFirstSelectedItem();
     if ( !p_sel )
