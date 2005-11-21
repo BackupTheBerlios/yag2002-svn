@@ -207,6 +207,10 @@ bool DialogLevelSelect::onClickedReturn( const CEGUI::EventArgs& arg )
 
 bool DialogLevelSelect::onListItemSelChanged( const CEGUI::EventArgs& arg )
 {
+    // play click sound
+    if ( _p_clickSound )
+        _p_clickSound->startPlaying();
+
     // get selection
     CEGUI::ListboxItem* p_sel = _p_listbox->getFirstSelectedItem();
     if ( !p_sel )
