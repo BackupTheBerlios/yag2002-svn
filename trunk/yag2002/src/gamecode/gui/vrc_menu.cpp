@@ -141,9 +141,13 @@ _levelSelectDialogConfig( "gui/levelselect.xml" ),
 _introTexture( "gui/intro.tga" ),
 _loadingOverlayTexture( "gui/loading.tga" ),
 _buttonClickSound( "gui/sound/click.wav" ),
+_buttonClickSoundVolume( 0.2f ),
 _buttonHoverSound( "gui/sound/hover.wav" ),
+_buttonHoverSoundVolume( 0.2f ),
 _introductionSound( "gui/sound/intro.wav" ),
+_introductionSoundVolume( 1.0f ),
 _backgroundSound( "gui/sound/background.wav" ),
+_backgroundSoundVolume( 0.6f ),
 _menuSceneFile( MENU_SCENE ),
 _menuCameraPathFile( MENU_CAMERAPATH ),
 _menuState( None ),
@@ -177,10 +181,15 @@ _levelLoaded( false )
     getAttributeManager().addAttribute( "levelSelectDialogConfig"   , _levelSelectDialogConfig  );
     getAttributeManager().addAttribute( "intoTexture"               , _introTexture             );
     getAttributeManager().addAttribute( "loadingOverlayTexture"     , _loadingOverlayTexture    );
+
     getAttributeManager().addAttribute( "buttonClickSound"          , _buttonClickSound         );
+    getAttributeManager().addAttribute( "buttonClickSoundVolume"    , _buttonClickSoundVolume   );
     getAttributeManager().addAttribute( "buttonHoverSound"          , _buttonHoverSound         );
+    getAttributeManager().addAttribute( "buttonHoverSoundVolume"    , _buttonHoverSoundVolume   );
     getAttributeManager().addAttribute( "introductionSound"         , _introductionSound        );
+    getAttributeManager().addAttribute( "introductionSoundVolume"   , _introductionSoundVolume  );
     getAttributeManager().addAttribute( "backgroundSound"           , _backgroundSound          );
+    getAttributeManager().addAttribute( "backgroundSoundVolume"     , _backgroundSoundVolume    );
 
     getAttributeManager().addAttribute( "menuScene"                 , _menuSceneFile            );
     getAttributeManager().addAttribute( "cameraPath"                , _menuCameraPathFile       );
@@ -266,16 +275,16 @@ void EnMenu::initialize()
 {
     // setup sounds
     if ( _buttonClickSound.length() )
-        _p_clickSound = setupSound( _buttonClickSound, 0.1f );
+        _p_clickSound = setupSound( _buttonClickSound, _buttonClickSoundVolume, false );
 
     if ( _buttonHoverSound.length() )
-        _p_hoverSound = setupSound( _buttonHoverSound, 0.1f );
+        _p_hoverSound = setupSound( _buttonHoverSound, _buttonHoverSoundVolume, false );
 
     if ( _introductionSound.length() )
-        _p_introSound = setupSound( _introductionSound, 1.0f );
+        _p_introSound = setupSound( _introductionSound, _introductionSoundVolume, true );
 
     if ( _backgroundSound.length() )
-        _p_backgrdSound = setupSound( _backgroundSound, 0.6f );
+        _p_backgrdSound = setupSound( _backgroundSound, _backgroundSoundVolume, true );
 
     // create a scene with camera path animation and world geometry
     createMenuScene();
@@ -290,30 +299,37 @@ void EnMenu::initialize()
         _p_btnStartJoin = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_startjoin" ) );
         _p_btnStartJoin->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedJoin, this ) );
         _p_btnStartJoin->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMenu::onButtonHover, this ) );
+        _p_btnStartJoin->setFont( YAF3D_GUI_FONT8 );
 
         _p_btnStartServer = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_startserver" ) );
         _p_btnStartServer->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedServer, this ) );
         _p_btnStartServer->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMenu::onButtonHover, this ) );
+        _p_btnStartServer->setFont( YAF3D_GUI_FONT8 );
 
         _p_btnStartWT = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_startwt" ) );
         _p_btnStartWT->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedWT, this ) );
         _p_btnStartWT->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMenu::onButtonHover, this ) );
+        _p_btnStartWT->setFont( YAF3D_GUI_FONT8 );
 
         CEGUI::PushButton* p_btnGS = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_game_settings" ) );
         p_btnGS->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedGameSettings, this ) );
         p_btnGS->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMenu::onButtonHover, this ) );
+        p_btnGS->setFont( YAF3D_GUI_FONT8 );
 
         CEGUI::PushButton* p_btnQuit = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_quit" ) );
         p_btnQuit->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedQuit, this ) );
         p_btnQuit->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMenu::onButtonHover, this ) );
+        p_btnQuit->setFont( YAF3D_GUI_FONT8 );
 
         _p_btnReturn = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_return" ) );
         _p_btnReturn->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedReturnToLevel, this ) );
         _p_btnReturn->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMenu::onButtonHover, this ) );
+        _p_btnReturn->setFont( YAF3D_GUI_FONT8 );
 
         _p_btnLeave = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_leave" ) );
         _p_btnLeave->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedLeave, this ) );
         _p_btnLeave->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMenu::onButtonHover, this ) );
+        _p_btnLeave->setFont( YAF3D_GUI_FONT8 );
 
         // setup loading window
         _p_loadingWindow = static_cast< CEGUI::Window* >( CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", ( MENU_PREFIX "wnd_loading" ) ) );
@@ -462,7 +478,7 @@ void EnMenu::createMenuScene()
     p_fogEntity->postInitialize();
 }
    
-EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume ) const
+EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume, bool loop ) const
 {
     // manually create an entity of type AmbientSound without adding it to pool as we use the entity locally
     //  and do not need managed destruction or searchable ability for the entity
@@ -478,7 +494,7 @@ EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume ) 
     std::string file = yaf3d::extractFileName( filename );
     p_ent->getAttributeManager().setAttributeValue( "resourceDir", dir      );
     p_ent->getAttributeManager().setAttributeValue( "soundFile",   file     );
-    p_ent->getAttributeManager().setAttributeValue( "loop",        false    );
+    p_ent->getAttributeManager().setAttributeValue( "loop",        loop     );
     p_ent->getAttributeManager().setAttributeValue( "autoPlay",    false    );
     p_ent->getAttributeManager().setAttributeValue( "volume",      volume   );
     

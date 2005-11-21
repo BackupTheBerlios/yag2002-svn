@@ -113,11 +113,19 @@ class EnMenu :  public yaf3d::BaseEntity
 
         std::string                                 _buttonClickSound;
 
+        float                                       _buttonClickSoundVolume;
+
         std::string                                 _buttonHoverSound;
+
+        float                                       _buttonHoverSoundVolume;
 
         std::string                                 _introductionSound;
 
+        float                                       _introductionSoundVolume;
+
         std::string                                 _backgroundSound;
+
+        float                                       _backgroundSoundVolume;
 
         std::string                                 _skyboxImages[ 6 ];
 
@@ -169,7 +177,7 @@ class EnMenu :  public yaf3d::BaseEntity
         bool                                        onButtonHover( const CEGUI::EventArgs& arg );
 
         //! Creates a sound entity with given filename
-        EnAmbientSound*                             setupSound( const std::string& filename, float volume ) const;
+        EnAmbientSound*                             setupSound( const std::string& filename, float volume, bool loop ) const;
 
         //! Create a scene for menu
         void                                        createMenuScene();
