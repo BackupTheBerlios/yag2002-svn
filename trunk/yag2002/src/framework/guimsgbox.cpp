@@ -199,7 +199,7 @@ _autodel( autodelete )
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "error creating messagebox" << std::endl;
+        log_error << "error creating messagebox" << std::endl;
         log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }

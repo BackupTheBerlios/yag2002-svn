@@ -40,6 +40,15 @@ namespace yaf3d
 //! Returns a string with current date and time
 std::string getTimeStamp();
 
+//! Returns a string with current date
+std::string getFormatedDate();
+
+//! Returns a string with current time
+std::string getFormatedTime();
+
+//! Returns a string with current date and time ( the string is formated different than by getTimeStamp )
+std::string getFormatedDateAndTime();
+
 //! Emplode a given std string into vector elements, borrowed from evoluioN engine
 std::string::size_type explode( const std::string& str, const std::string& separators, std::vector< std::string >* p_result );
 

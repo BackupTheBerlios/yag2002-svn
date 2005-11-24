@@ -52,7 +52,7 @@ BaseEntity::~BaseEntity()
             size_t parents = _p_transformNode->getParents().size();
             if ( parents == 0 )
             {
-                log << Log::LogLevel( Log::L_WARNING ) << "the transformation node of entity '" << getInstanceName() << "' has no parent!" << std::endl;
+                log_warning << "the transformation node of entity '" << getInstanceName() << "' has no parent!" << std::endl;
             }
             else
             {
@@ -65,7 +65,7 @@ BaseEntity::~BaseEntity()
     }
     catch( ... )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "exception occured in destructor of '" << getInstanceName() << "'" << std::endl;
+        log_error << "exception occured in destructor of '" << getInstanceName() << "'" << std::endl;
     }
 
     // remove all attributes

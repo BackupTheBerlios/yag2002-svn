@@ -97,7 +97,7 @@ void GuiResourceProvider::loadRawDataContainer( const CEGUI::String& filename, C
     // if the file does not exist then return
     if ( !( *p_stream ) )
     {   
-        log << Log::LogLevel( Log::L_WARNING ) << " GuiResourceProvider: file '" << fullpath << "' does not exist." << std::endl;
+        log_warning << " GuiResourceProvider: file '" << fullpath << "' does not exist." << std::endl;
         throw CEGUI::Exception( "GuiResourceProvider cannot find file '" + fullpath + "'" );
     }
 
@@ -231,8 +231,8 @@ CEGUI::Font* GuiManager::createFont( const std::string& fontname )
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "GuiManager: cannot create font: '" << fontname << "'" << std::endl;
-        log << Log::LogLevel( Log::L_ERROR ) << " reason: " << e.getMessage().c_str() << "'" << std::endl;
+        log_error << "GuiManager: cannot create font: '" << fontname << "'" << std::endl;
+        log_error << " reason: " << e.getMessage().c_str() << "'" << std::endl;
         return NULL;
     }
 
@@ -248,7 +248,7 @@ CEGUI::Font* GuiManager::getFont( const std::string& fontname )
     if ( p_font != p_end )
         return p_font->second;
 
-    log << Log::LogLevel( Log::L_ERROR ) << " GuiManager: no font with name '" << fontname << "' exists!" << std::endl;
+    log_error << " GuiManager: no font with name '" << fontname << "' exists!" << std::endl;
     return NULL;
 }
 
@@ -324,8 +324,8 @@ CEGUI::Window* GuiManager::loadLayout( const std::string& filename, CEGUI::Windo
     }
     catch ( const CEGUI::Exception& e )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "GuiManager: cannot load layout: '" << filename << "'" << std::endl;
-        log << Log::LogLevel( Log::L_ERROR ) << " reason: " << e.getMessage().c_str() << "'" << std::endl;
+        log_error << "GuiManager: cannot load layout: '" << filename << "'" << std::endl;
+        log_error << " reason: " << e.getMessage().c_str() << "'" << std::endl;
         return NULL;
     }
 

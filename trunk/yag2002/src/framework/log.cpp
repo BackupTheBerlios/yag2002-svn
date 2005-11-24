@@ -59,7 +59,7 @@ bool Log::addSink( const std::string& sinkname, const std::string& filename, uns
 {
     if( loglevel > L_INFO || loglevel < L_ERROR )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "invalid log level for given sink '"  << sinkname <<  "'" << std::endl;
+        log_error << "invalid log level for given sink '"  << sinkname <<  "'" << std::endl;
         return false;
     }
 
@@ -69,7 +69,7 @@ bool Log::addSink( const std::string& sinkname, const std::string& filename, uns
     {
         if ( ( *p_sink )->_name == sinkname )
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "sink name '" << sinkname << "' already exists!" << std::endl;
+            log_error << "sink name '" << sinkname << "' already exists!" << std::endl;
             return false;
         }
     }
@@ -79,7 +79,7 @@ bool Log::addSink( const std::string& sinkname, const std::string& filename, uns
     if ( !*p_stream )
     {   
         delete p_stream;
-        log << Log::LogLevel( Log::L_ERROR ) << "cannot open log file '" << filename << "' for sink '" << sinkname << "'" << std::endl;
+        log_error << "cannot open log file '" << filename << "' for sink '" << sinkname << "'" << std::endl;
         return false;
 
     }
@@ -96,7 +96,7 @@ bool Log::addSink( const std::string& sinkname, std::ostream& sink, unsigned int
 {
     if( loglevel > L_INFO || loglevel < L_ERROR )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "invalid log level for given sink '" << sinkname <<  "'" << std::endl;
+        log_error << "invalid log level for given sink '" << sinkname <<  "'" << std::endl;
         return false;
     }
     
@@ -106,7 +106,7 @@ bool Log::addSink( const std::string& sinkname, std::ostream& sink, unsigned int
     {
         if ( ( *p_beg )->_name == sinkname )
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "sink name '" << sinkname << "' already exists!"  << std::endl;
+            log_error << "sink name '" << sinkname << "' already exists!"  << std::endl;
             return false;
         }
     }

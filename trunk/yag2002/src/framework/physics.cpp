@@ -131,7 +131,7 @@ bool Physics::reinitialize()
     // clear the material cache
     _materials.clear();
 
-    log << Log::LogLevel( Log::L_DEBUG ) << "-Physics: remaining non-freed bytes: " <<  allocBytesSum - freedBytesSum << std::endl;
+    log_debug << "-Physics: remaining non-freed bytes: " <<  allocBytesSum - freedBytesSum << std::endl;
 
     return initialize();
 }
@@ -149,7 +149,7 @@ void Physics::shutdown()
         _p_world = NULL;
     }
 
-    log << Log::LogLevel( Log::L_DEBUG ) << "-Physics: remaining non-freed bytes: " <<  allocBytesSum - freedBytesSum << std::endl;
+    log_debug << "-Physics: remaining non-freed bytes: " <<  allocBytesSum - freedBytesSum << std::endl;
 
     // destroy singleton
     destroy();
@@ -173,8 +173,8 @@ void deserializationCallback( void* p_serializeHandle, void* p_buffer, size_t si
 
 bool Physics::serialize( const std::string& meshFile, const std::string& outputFile )
 {
-    log << Log::LogLevel( Log::L_DEBUG ) << "serializing physics static geometry '" << meshFile << "'" << std::endl;
-    log << Log::LogLevel( Log::L_DEBUG ) << " unloading existing level" << std::endl;
+    log_debug << "serializing physics static geometry '" << meshFile << "'" << std::endl;
+    log_debug << " unloading existing level" << std::endl;
     // first unload existing level
     LevelManager::get()->unloadLevel( true, true );
 
@@ -199,9 +199,9 @@ bool Physics::serialize( const std::string& meshFile, const std::string& outputF
     root->accept( physVisitor );
     // stop timer and give out the time messure
     osg::Timer_t end_tick = osg::Timer::instance()->tick();
-    log << Log::LogLevel( Log::L_DEBUG ) << " elapsed time for building physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << std::endl;
-    log << Log::LogLevel( Log::L_DEBUG ) << "  total num of evaluated primitives: " << PhysicsVisitor::getNumPrimitives() << std::endl;
-    log << Log::LogLevel( Log::L_DEBUG ) << "  total num of vertices: " << PhysicsVisitor::getNumVertices() << std::endl;
+    log_debug << " elapsed time for building physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << std::endl;
+    log_debug << "  total num of evaluated primitives: " << PhysicsVisitor::getNumPrimitives() << std::endl;
+    log_debug << "  total num of vertices: " << PhysicsVisitor::getNumVertices() << std::endl;
 
     //--------------------------
     // finalize tree building 
@@ -209,12 +209,12 @@ bool Physics::serialize( const std::string& meshFile, const std::string& outputF
 
     // write out the serialization data
     std::string file( yaf3d::Application::get()->getMediaPath() + outputFile + YAF3DPHYSICS_SERIALIZE_POSTFIX );
-    log << Log::LogLevel( Log::L_DEBUG ) << " write to serialization file '" << file << "'" << std::endl;
+    log_debug << " write to serialization file '" << file << "'" << std::endl;
     std::ofstream serializationoutput;
     serializationoutput.open( file.c_str(), std::ios_base::binary | std::ios_base::out );
     if ( !serializationoutput )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << " cannot write to serialization file '" << file << "'" << std::endl;        
+        log_error << " cannot write to serialization file '" << file << "'" << std::endl;        
         serializationoutput.close();
         return false;
     }
@@ -238,7 +238,7 @@ bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelF
     serializationfile.open( file.c_str(), std::ios_base::binary | std::ios_base::in );
     if ( !serializationfile )
     {
-        log << Log::LogLevel( Log::L_WARNING ) << "no serialization file for physics static geometry exists. building ..." << std::endl;
+        log_warning << "no serialization file for physics static geometry exists. building ..." << std::endl;
 
         p_collision = NewtonCreateTreeCollision( _p_world, levelCollisionCallback );
         NewtonTreeCollisionBeginBuild( p_collision );
@@ -252,9 +252,9 @@ bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelF
         p_root->accept( physVisitor );
         // stop timer and give out the time messure
         osg::Timer_t end_tick = osg::Timer::instance()->tick();
-        log << Log::LogLevel( Log::L_DEBUG ) << "elapsed time for building physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << std::endl;
-        log << Log::LogLevel( Log::L_DEBUG ) << " total num of evaluated primitives: " << PhysicsVisitor::getNumPrimitives() << std::endl;
-        log << Log::LogLevel( Log::L_DEBUG ) << " total num of vertices: " << PhysicsVisitor::getNumVertices() << std::endl;
+        log_debug << "elapsed time for building physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << std::endl;
+        log_debug << " total num of evaluated primitives: " << PhysicsVisitor::getNumPrimitives() << std::endl;
+        log_debug << " total num of vertices: " << PhysicsVisitor::getNumVertices() << std::endl;
 
         //--------------------------
         // finalize tree building with optimization off ( because the meshes are already optimized by 
@@ -263,7 +263,7 @@ bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelF
     }
     else
     {
-        log << Log::LogLevel( Log::L_DEBUG ) << "found serialization file for physics static geometry. reading '" << file << "' ..." << std::endl;
+        log_debug << "found serialization file for physics static geometry. reading '" << file << "' ..." << std::endl;
 
         // start timer
         osg::Timer_t start_tick = osg::Timer::instance()->tick();
@@ -273,7 +273,7 @@ bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelF
 
         // stop timer and give out the time messure
         osg::Timer_t end_tick = osg::Timer::instance()->tick();
-        log << Log::LogLevel( Log::L_DEBUG ) << "elapsed time for deserializing physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << std::endl;
+        log_debug << "elapsed time for deserializing physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << std::endl;
 
         serializationfile.close();
     }

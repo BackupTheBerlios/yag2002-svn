@@ -62,7 +62,7 @@ Settings* SettingsManager::createProfile( const std::string& profilename, const 
     std::map< std::string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile != pp_profileEnd )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** requested profile '" << profilename << "' already exists!" << std::endl;
+        log_error << "*** requested profile '" << profilename << "' already exists!" << std::endl;
         return NULL;
     }
 
@@ -77,7 +77,7 @@ void SettingsManager::destroyProfile( const std::string& profilename )
     std::map< std::string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile == pp_profileEnd )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** profile '" << profilename << "' does not exist!" << std::endl;
+        log_error << "*** profile '" << profilename << "' does not exist!" << std::endl;
         return;
     }
 
@@ -90,7 +90,7 @@ bool SettingsManager::loadProfile( const std::string& profilename )
     std::map< std::string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile == pp_profileEnd )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** profile '" << profilename << "' does not exist!" << std::endl;
+        log_error << "*** profile '" << profilename << "' does not exist!" << std::endl;
         return false;
     }
 
@@ -102,7 +102,7 @@ bool SettingsManager::storeProfile( const std::string& profilename )
     std::map< std::string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile == pp_profileEnd )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** profile '" << profilename << "' does not exist!" << std::endl;
+        log_error << "*** profile '" << profilename << "' does not exist!" << std::endl;
         return false;
     }
 
@@ -145,7 +145,7 @@ bool Settings::load( const std::string& filename )
     if ( !*p_stream )
     {   
         p_stream->open( openfile.c_str(), std::ios_base::binary | std::ios_base::out );
-        log << Log::LogLevel( Log::L_WARNING ) << "*** settings file '" << openfile << "' does not exist. one has been created." << std::endl;
+        log_warning << "*** settings file '" << openfile << "' does not exist. one has been created." << std::endl;
         _loaded   = true;
         return false;
     }
@@ -214,13 +214,13 @@ bool Settings::store( const std::string& filename )
     {
         if ( !_loaded ) 
         {
-            log << Log::LogLevel( Log::L_WARNING ) << "*** no settings file was previously loaded" << std::endl;
+            log_warning << "*** no settings file was previously loaded" << std::endl;
             return false;
         }
         p_stream->open( _settingsFile.c_str(), std::ios_base::binary | std::ios_base::out );
         if ( !*p_stream )
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "*** cannot open settings file '" << filename << "'" << std::endl;
+            log_error << "*** cannot open settings file '" << filename << "'" << std::endl;
             assert( NULL && " internal error, cannot open settings file for writing" );
         }
     } 
@@ -229,7 +229,7 @@ bool Settings::store( const std::string& filename )
         p_stream->open( filename.c_str(), std::ios_base::binary | std::ios_base::out );
         if ( !*p_stream )
         {   
-            log << Log::LogLevel( Log::L_ERROR ) << "*** cannot open settings file '" << filename << "'" << std::endl;
+            log_error << "*** cannot open settings file '" << filename << "'" << std::endl;
             return false;
         }
     }
@@ -282,7 +282,7 @@ bool Settings::read( const std::string& token, std::string& value )
         curpos = _fileBuffer.find( token.c_str(), curpos, token.length() );
         if ( curpos == std::basic_string< char >::npos ) 
         {
-            log << Log::LogLevel( Log::L_DEBUG ) << "*** settings manager could not read requested token '" << token << "', skipping..." << std::endl;
+            log_debug << "*** settings manager could not read requested token '" << token << "', skipping..." << std::endl;
             return false;
 
         }

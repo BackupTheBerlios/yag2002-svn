@@ -146,7 +146,7 @@ void PhysicsVisitor::buildTrianlges( const osg::PrimitiveSet* p_set, osg::Array*
 {
     if( p_verts->getType() != osg::Array::Vec3ArrayType ) 
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "*** cannot build trimesh collision data as the vertexarray has not a Vec3 format!" << std::endl;
+        log_error << "*** cannot build trimesh collision data as the vertexarray has not a Vec3 format!" << std::endl;
         return;
     }
 
@@ -177,7 +177,7 @@ void PhysicsVisitor::buildTrianlgeStrip( const osg::PrimitiveSet* p_set, osg::Ar
 {
     if( p_verts->getType() != osg::Array::Vec3ArrayType ) 
     {
-        log << Log::LogLevel( Log::L_ERROR ) <<  "*** cannot build trimesh collision data as the vertexarray has not a Vec3 format!" << std::endl;
+        log_error <<  "*** cannot build trimesh collision data as the vertexarray has not a Vec3 format!" << std::endl;
         return;
     }
 

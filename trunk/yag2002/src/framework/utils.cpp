@@ -54,6 +54,33 @@ std::string getTimeStamp()
     return std::string( asctime( localtime( &t ) ) );
 }
 
+std::string getFormatedDate()
+{
+    char p_buf[ 128 ];
+    _strdate( p_buf );
+    std::string datestamp( p_buf );
+    return datestamp;
+}
+ 
+std::string getFormatedTime()
+{
+    char p_buf[ 128 ];
+    _strtime( p_buf );
+    std::string timestamp( p_buf );
+    return timestamp;
+}
+
+std::string getFormatedDateAndTime()
+{
+    char p_buf[ 128 ];
+    _strtime( p_buf );
+    std::string timestamp( p_buf );
+    _strdate( p_buf );
+    std::string datestamp( p_buf );
+
+    return datestamp + " " + timestamp;
+}
+
 std::string::size_type explode( const std::string& str, const std::string& separators, std::vector< std::string >* p_result )
 {
     std::string::size_type len = str.length();
@@ -370,7 +397,7 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
     // check is there are any modes available
     if( pp_modes == ( SDL_Rect ** )0 )
     {
-       log << Log::LogLevel( Log::L_ERROR ) << "no video modes available!\n" << std::endl;
+       log_error << "no video modes available!\n" << std::endl;
        return;
     }
 
@@ -433,7 +460,7 @@ osg::ref_ptr< osg::TextureCubeMap > readCubeMap( const std::vector< std::string 
 {
     if ( texfiles.size() < 6 )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "readCubeMap: 6 tex files are needed, but only " << texfiles.size() << " given!" << std::endl;
+        log_error << "readCubeMap: 6 tex files are needed, but only " << texfiles.size() << " given!" << std::endl;
         return NULL;
     }
 
@@ -464,7 +491,7 @@ osg::ref_ptr< osg::TextureCubeMap > readCubeMap( const std::vector< std::string 
     }
     else
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "readCubeMap: could not setup all cubemap images" << std::endl;
+        log_error << "readCubeMap: could not setup all cubemap images" << std::endl;
     }
 
     return p_cubemap;

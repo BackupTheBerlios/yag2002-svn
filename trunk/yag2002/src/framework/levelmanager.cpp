@@ -160,7 +160,7 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
 
 osg::ref_ptr< osg::Group > LevelManager::loadLevel( const std::string& levelFile )
 {
-    log << Log::LogLevel( Log::L_INFO ) << "start loading level: " << levelFile << std::endl;
+    log_info << "start loading level: " << levelFile << std::endl;
 
     // store the level file name, we will use it for physics serialization
     _levelFile = levelFile;
@@ -179,7 +179,7 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const std::string& levelFile
     std::vector< BaseEntity* > entities; // list of all entities which are created during loading
     if ( !loadEntities( levelFile, &entities ) )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "error loading entities" << std::endl;
+        log_error << "error loading entities" << std::endl;
         return NULL;
     }
 
@@ -188,7 +188,7 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const std::string& levelFile
 
 bool LevelManager::loadEntities( const std::string& levelFile, std::vector< BaseEntity* >* p_entities, const std::string& instPostfix )
 {
-    log << Log::LogLevel( Log::L_INFO ) << "loading entities ..." << std::endl;
+    log_info << "loading entities ..." << std::endl;
     
     // use tiny xml to parser lvl file
     //  parse in the level configuration
@@ -196,7 +196,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
     doc.SetCondenseWhiteSpace( false );
     if ( !doc.LoadFile( std::string( Application::get()->getMediaPath() + levelFile ).c_str() ) )
     {
-        log << Log::LogLevel( Log::L_DEBUG ) << "cannot load level file: '" << levelFile << "'" << std::endl;
+        log_debug << "cannot load level file: '" << levelFile << "'" << std::endl;
         log << "  reason: " << doc.ErrorDesc() << std::endl;
         return false;
     }
@@ -217,7 +217,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         p_levelElement = p_node->ToElement();
         if ( !p_levelElement ) 
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "could not find level element" << std::endl;
+            log_error << "could not find level element" << std::endl;
             return false;
         }
 
@@ -229,7 +229,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
     }
     else
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "empty level file" << std::endl;
+        log_error << "empty level file" << std::endl;
         return false;
     }
 
@@ -247,12 +247,12 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         p_bufName    = ( char* )p_mapElement->Attribute( YAF3D_LVL_ELEM_NAME );
         if ( p_bufName == NULL ) 
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "missing map name in MAP entry" << std::endl;
+            log_error << "missing map name in MAP entry" << std::endl;
             return false;
         } 
         else 
         {
-            log << Log::LogLevel( Log::L_INFO ) << "loading static geometry: " << p_bufName << std::endl;
+            log_info << "loading static geometry: " << p_bufName << std::endl;
             osg::Node *p_staticnode = loadStaticWorld( p_bufName );
             if ( p_staticnode )
             {
@@ -272,7 +272,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
 
     // read entity definitions
     //------------------------
-    log << Log::LogLevel( Log::L_INFO ) << "creating entities ..." << std::endl;
+    log_info << "creating entities ..." << std::endl;
 
     unsigned int entityCounter = 0;
     p_node = p_levelElement;
@@ -285,7 +285,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         std::string enttype;
         if ( !p_bufName ) 
         {
-            log << Log::LogLevel( Log::L_DEBUG ) << "entity has no type, skipping" << std::endl;
+            log_debug << "entity has no type, skipping" << std::endl;
             continue;       
         }
         else
@@ -302,7 +302,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         BaseEntityFactory* p_entfac = EntityManager::get()->getEntityFactory( entitytype );
         if ( !p_entfac )
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "unknown entity type '" << entitytype << "', skipping" << std::endl;
+            log_error << "unknown entity type '" << entitytype << "', skipping" << std::endl;
             continue;       
         }
         unsigned int creationpolicy = p_entfac->getCreationPolicy();
@@ -334,20 +334,20 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         // could we find entity type
         if ( !p_entity ) 
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "could not find entity type '" << entitytype << "', skipping entity!" << std::endl;
+            log_error << "could not find entity type '" << entitytype << "', skipping entity!" << std::endl;
             continue;
         }
         // add to given list if it was desired
         if ( p_entities )
             p_entities->push_back( p_entity );
 
-        log << Log::LogLevel( Log::L_DEBUG ) << "entity created, type: '" << enttype << "'" << std::endl;
+        log_debug << "entity created, type: '" << enttype << "'" << std::endl;
         // get instance name if one provided
         p_bufName = ( char* )p_entityElement->Attribute( YAF3D_LVL_ENTITY_INST_NAME );
         if ( p_bufName ) {
             // set entity's instance name
             p_entity->setInstanceName( instancename );
-            log << Log::LogLevel( Log::L_DEBUG ) << "instance name: '" << instancename << "'" << std::endl;
+            log_debug << "instance name: '" << instancename << "'" << std::endl;
         }
 
         ++entityCounter;
@@ -364,14 +364,14 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
 
             if ( !p_paramName || !p_paramType || !p_paramValue )
             {
-                log << Log::LogLevel( Log::L_ERROR ) << "****  incomplete entity parameter entry, skipping" << std::endl;
+                log_error << "****  incomplete entity parameter entry, skipping" << std::endl;
                 continue;   
             }
 
             AttributeManager& attrMgr = p_entity->getAttributeManager();
             if ( !attrMgr.setAttributeValue( p_paramName, p_paramType, p_paramValue ) )
             {
-                log << Log::LogLevel( Log::L_DEBUG ) << "cannot find entity parameter '" << p_paramName << "'" << std::endl;
+                log_debug << "cannot find entity parameter '" << p_paramName << "'" << std::endl;
             }
         }
 
@@ -383,9 +383,9 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         _setupQueue.push_back( p_entity );
     }
 
-    log << Log::LogLevel( Log::L_INFO ) << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "total number of created entities: '" << entityCounter << "'" << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "entity loading completed" << std::endl;
+    log_info << std::endl;
+    log_info << "total number of created entities: '" << entityCounter << "'" << std::endl;
+    log_info << "entity loading completed" << std::endl;
 
     return true;
 }
@@ -432,7 +432,7 @@ void LevelManager::initializeFirstTime()
     if ( GameState::get()->getMode() != GameState::Server )
     {
         // initialize sound manager
-        log << Log::LogLevel( Log::L_INFO ) << "initializing sound system..." << std::endl;
+        log_info << "initializing sound system..." << std::endl;
         osgAL::SoundManager* p_soundManager = osgAL::SoundManager::instance();
         try 
         {
@@ -444,17 +444,17 @@ void LevelManager::initializeFirstTime()
         }
         catch( const openalpp::InitError& e )
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "cannot initialize sound device openAL. reason: '" << e.what() << "'" << std::endl;
-            log << Log::LogLevel( Log::L_ERROR ) << " reason: " << e.what() << std::endl;
-            log << Log::LogLevel( Log::L_ERROR ) << " have you already installed the openAL drivers?" << std::endl;
+            log_error << "cannot initialize sound device openAL. reason: '" << e.what() << "'" << std::endl;
+            log_error << " reason: " << e.what() << std::endl;
+            log_error << " have you already installed the openAL drivers?" << std::endl;
         }
 
-        log << Log::LogLevel( Log::L_INFO ) << "initializing gui system..." << std::endl;
+        log_info << "initializing gui system..." << std::endl;
         // initialize the gui system
         GuiManager::get()->initialize();
 
         // for first time we realize the viewer
-        log << Log::LogLevel( Log::L_INFO ) << "starting viewer ..." << std::endl;
+        log_info << "starting viewer ..." << std::endl;
         // start viewer
         Application::get()->getViewer()->open();
         Application::get()->getViewer()->init();
@@ -465,7 +465,7 @@ void LevelManager::buildPhysicsStaticGeometry( const std::string& levelFile )
 {
     // continue setting up physics
     //----------------------------
-    log << Log::LogLevel( Log::L_INFO ) << "building pyhsics collision geometries ..." << std::endl;
+    log_info << "building pyhsics collision geometries ..." << std::endl;
 
     // send the notification about building static world, here physics related stuff such as
     //  definition of own physics materials can take place
@@ -488,7 +488,7 @@ void LevelManager::buildPhysicsStaticGeometry( const std::string& levelFile )
 
     curTick    = timer.tick();
     time4Init  = timer.delta_s( startTick, curTick );
-    log << Log::LogLevel( Log::L_INFO ) << "needed time for building pyhsics geometries: " << time4Init << " seconds" << std::endl;
+    log_info << "needed time for building pyhsics geometries: " << time4Init << " seconds" << std::endl;
 }
 
 osg::Node* LevelManager::loadStaticWorld( const std::string& fileName )
@@ -505,7 +505,7 @@ osg::Node* LevelManager::loadStaticWorld( const std::string& fileName )
     }
     // stop timer and give out the time messure
     osg::Timer_t end_tick = osg::Timer::instance()->tick();
-    log << Log::LogLevel( Log::L_DEBUG ) << "  - elapsed time for loading '" << fileName << "' : " << osg::Timer::instance()->delta_s( start_tick, end_tick ) << std::endl;
+    log_debug << "  - elapsed time for loading '" << fileName << "' : " << osg::Timer::instance()->delta_s( start_tick, end_tick ) << std::endl;
     return p_loadedModel;
 }
 
@@ -525,7 +525,7 @@ osg::Node* LevelManager::loadMesh( const std::string& fileName, bool useCache )
     // if no model has been successfully loaded report failure.
     if ( !p_loadedModel ) 
     {
-        log << Log::LogLevel( Log::L_WARNING ) << "*** could not load mesh: " << fileName << std::endl;
+        log_warning << "*** could not load mesh: " << fileName << std::endl;
         return NULL;
     }
 

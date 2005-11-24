@@ -65,9 +65,9 @@ void EntityManager::shutdown()
     // check if some entities have been forgotten by game code to delete
     if ( _entityPool.size() > 0 )
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "EntityManager::shutdown: attention, there are '" <<  _entityPool.size() << "' remaining entities after shutdown!" << std::endl;
+        log_error << "EntityManager::shutdown: attention, there are '" <<  _entityPool.size() << "' remaining entities after shutdown!" << std::endl;
         for ( size_t cnt = 0; cnt < _entityPool.size(); ++cnt )
-            log << Log::LogLevel( Log::L_ERROR ) << "  - " << _entityPool[ cnt ]->getInstanceName() << "(" << _entityPool[ cnt ]->getTypeName() << ")" << std::endl;
+            log_error << "  - " << _entityPool[ cnt ]->getInstanceName() << "(" << _entityPool[ cnt ]->getTypeName() << ")" << std::endl;
     }
 
     // destroy singleton
@@ -240,13 +240,13 @@ bool EntityManager::registerUpdate( yaf3d::BaseEntity* p_entity, bool reg )
     }
     if ( !reg && ( p_beg == p_end ) )
     {
-        log << Log::LogLevel( Log::L_WARNING ) << "*** EntityManager: the entity was previousely not registered for updating!, ignoring deregister request" << std::endl;
+        log_warning << "*** EntityManager: the entity was previousely not registered for updating!, ignoring deregister request" << std::endl;
         log << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << std::endl;
         return false;
     }
     else if ( reg && ( p_beg != p_end ) )
     {
-        log << Log::LogLevel( Log::L_WARNING ) << "*** EntityManager: the entity is already registered for updating!, ignoring register request" << std::endl;
+        log_warning << "*** EntityManager: the entity is already registered for updating!, ignoring register request" << std::endl;
         log << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << std::endl;
         return false;
     }
@@ -278,13 +278,13 @@ bool EntityManager::registerNotification( BaseEntity* p_entity, bool reg )
     }
     if ( !reg && ( p_beg == p_end ) )
     {
-        log << Log::LogLevel( Log::L_WARNING ) << "*** EntityManager: the entity was previousely not registered for getting notification!, ignoring deregister request" << std::endl;
+        log_warning << "*** EntityManager: the entity was previousely not registered for getting notification!, ignoring deregister request" << std::endl;
         log << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << std::endl;
         return false;
     }
     else if ( reg && ( p_beg != p_end ) )
     {
-        log << Log::LogLevel( Log::L_WARNING ) << "*** EntityManager: the entity is already registered for getting notification!, ignoring register request" << std::endl;
+        log_warning << "*** EntityManager: the entity is already registered for getting notification!, ignoring register request" << std::endl;
         log << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << std::endl;
         return false;
     }
@@ -394,7 +394,7 @@ void EntityManager::removeFromEntityPool( BaseEntity* p_entity, bool del )
     } 
     else
     {
-        log << Log::LogLevel( Log::L_ERROR ) << "EntityManager::removeFromEntityPool: request for entity removal which does not exist!" << std::endl;
+        log_error << "EntityManager::removeFromEntityPool: request for entity removal which does not exist!" << std::endl;
     }
 }
 
@@ -406,11 +406,11 @@ void EntityManager::setupEntities( std::vector< BaseEntity* >& entities )
     float           time4Init       = 0;
     float           time4PostInit   = 0;
 
-    log << Log::LogLevel( Log::L_INFO ) << "starting entity setup ..." << std::endl;
+    log_info << "starting entity setup ..." << std::endl;
 
     std::vector< BaseEntity* >::iterator p_beg = entities.begin(), p_end = entities.end();
     BaseEntity* p_entity = NULL;
-    log << Log::LogLevel( Log::L_INFO ) << "initializing entities ..." << std::endl;
+    log_info << "initializing entities ..." << std::endl;
     // setup entities
     {
         // set internal state
@@ -421,7 +421,7 @@ void EntityManager::setupEntities( std::vector< BaseEntity* >& entities )
         for ( ; p_beg != p_end; ++p_beg )
         {
             p_entity = *p_beg;
-            log << Log::LogLevel( Log::L_DEBUG ) << "# " << p_entity->getInstanceName() + "[ " + p_entity->getTypeName() + " ]" << std::endl;
+            log_debug << "# " << p_entity->getInstanceName() + "[ " + p_entity->getTypeName() + " ]" << std::endl;
 
             if ( p_entity->isPersistent() )
             {
@@ -442,7 +442,7 @@ void EntityManager::setupEntities( std::vector< BaseEntity* >& entities )
     }
 
     p_beg = entities.begin(); p_end = entities.end();
-    log << Log::LogLevel( Log::L_INFO ) << "post-initializing entities ..." << std::endl;
+    log_info << "post-initializing entities ..." << std::endl;
     {
         // set internal state
         _internalState = PostInitializingEntities;
@@ -452,7 +452,7 @@ void EntityManager::setupEntities( std::vector< BaseEntity* >& entities )
         for ( ; p_beg != p_end; ++p_beg )
         {
             p_entity = *p_beg;
-            log << Log::LogLevel( Log::L_DEBUG ) << "# " << p_entity->getInstanceName() + "[ " + p_entity->getTypeName() + " ]" << std::endl;
+            log_debug << "# " << p_entity->getInstanceName() + "[ " + p_entity->getTypeName() + " ]" << std::endl;
 
             if ( p_entity->isPersistent() )
             {
@@ -483,11 +483,11 @@ void EntityManager::setupEntities( std::vector< BaseEntity* >& entities )
         _internalState = None;
     }
 
-    log << Log::LogLevel( Log::L_INFO ) << "--------------------------------------------" << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "needed time for initialization: " << time4Init << " seconds" << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "needed time for post-initialization: " << time4PostInit << " seconds" <<  std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "total time for setting up: " << time4Init + time4PostInit << " seconds" <<  std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "--------------------------------------------" << std::endl;
+    log_info << "--------------------------------------------" << std::endl;
+    log_info << "needed time for initialization: " << time4Init << " seconds" << std::endl;
+    log_info << "needed time for post-initialization: " << time4PostInit << " seconds" <<  std::endl;
+    log_info << "total time for setting up: " << time4Init + time4PostInit << " seconds" <<  std::endl;
+    log_info << "--------------------------------------------" << std::endl;
 
 }
 
