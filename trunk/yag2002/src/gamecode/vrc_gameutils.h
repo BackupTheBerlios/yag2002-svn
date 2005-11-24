@@ -61,6 +61,11 @@ namespace gameutils
 //! Game code settings' defaults
 #define VRC_GS_MAX_MOUSESENS                3.0f                // maximal mouse sensitivity
 
+//! GUI's standard sounds
+#define GUI_SND_NAME_CLICK                  "cgui_cli"
+#define GUI_SND_NAME_HOVER                  "cgui_hov"
+#define GUI_SND_NAME_ATTENTION              "cgui_att"
+
 
 //! This class is responsible for registration of all game code (VRC) related configuration settings
 class VRCConfigRegistry : public yaf3d::GameState::CallbackStateChange
@@ -169,6 +174,15 @@ class GuiUtils : public yaf3d::Singleton< vrc::gameutils::GuiUtils >
         //! Show mouse pointer. Pass 'true' in order to show, otherwise hide the pointer.
         void                                        showMousePointer( bool show );
 
+        //! Create a non-looped sound given a sound file (wave). Later the sound can be accessed via its 'name'.
+        osg::ref_ptr< osgAL::SoundState >           createSound( const std::string& name, const std::string& filename, float volume = 0.2f );
+
+        //! Given a sound name return its sound object. Returns an empty ret_ptr if sound name does not exist.
+        osg::ref_ptr< osgAL::SoundState >           getSound( const std::string& name );
+
+        //! Play a previousely created sound.
+        void                                        playSound( const std::string& name );
+
     protected:
 
         //! The main window instance
@@ -176,6 +190,11 @@ class GuiUtils : public yaf3d::Singleton< vrc::gameutils::GuiUtils >
         
         //! yaf3d::Application's root window
         CEGUI::Window*                              _p_rootWindow;
+
+        typedef std::map< std::string, osg::ref_ptr< osgAL::SoundState > > MapSound;
+
+        //! A map of sound object and its associated name
+        MapSound                                    _soundMap;
 
     friend public yaf3d::Singleton< vrc::gameutils::GuiUtils >;
 };

@@ -35,6 +35,13 @@
 YAF3D_SINGLETON_IMPL( vrc::gameutils::PlayerUtils );
 YAF3D_SINGLETON_IMPL( vrc::gameutils::GuiUtils );
 
+#define GUI_SND_FILE_CLICK                  "gui/click.wav"
+#define GUI_SND_VOL_CLICK                   0.2f
+#define GUI_SND_FILE_HOVER                  "gui/hover.wav"
+#define GUI_SND_VOL_HOVER                   0.2f
+#define GUI_SND_FILE_ATTENTION              "gui/attention.wav"
+#define GUI_SND_VOL_ATTENTION               0.2f
+
 namespace vrc
 {
 namespace gameutils
@@ -95,7 +102,10 @@ GuiUtils::GuiUtils() :
 _p_mainWindow( NULL ),
 _p_rootWindow( NULL )
 {
-
+    // setup standard gui sounds
+    createSound( GUI_SND_NAME_CLICK, GUI_SND_FILE_CLICK, GUI_SND_VOL_CLICK );
+    createSound( GUI_SND_NAME_HOVER, GUI_SND_FILE_HOVER, GUI_SND_VOL_HOVER );
+    createSound( GUI_SND_NAME_ATTENTION, GUI_SND_FILE_ATTENTION, GUI_SND_VOL_ATTENTION );
 }
 
 GuiUtils::~GuiUtils()
@@ -163,6 +173,87 @@ void GuiUtils::showMousePointer( bool show )
     else
         yaf3d::GuiManager::get()->showMousePointer( false );
 }
+
+osg::ref_ptr< osgAL::SoundState > GuiUtils::createSound( const std::string& name, const std::string& filename, float volume )
+{
+    // check if there is already a sound with given name
+    if ( _soundMap.find( name ) != _soundMap.end() )
+    {
+        log_error << "GuiUtils::createSound sound source with name '" << name << "' already exists." << std::endl;
+        return NULL;
+    }
+
+    std::string dir  = yaf3d::extractPath( filename );
+    std::string file = yaf3d::extractFileName( filename );
+    osgAL::SoundManager::instance()->addFilePath( yaf3d::Application::get()->getMediaPath() + dir );
+
+    openalpp::Sample* p_sample = NULL;
+    try {
+
+        p_sample = osgAL::SoundManager::instance()->getSample( file );
+        if ( !p_sample )
+        {
+            log_warning << "*** cannot create sampler for '" << filename << "'" << std::endl;
+            return NULL;
+        }
+
+    } 
+    catch ( const openalpp::Error& e )
+    {
+        log_error << "*** error loading sound file" << std::endl;
+        log_error << "  reason: " << e.what() << std::endl;
+        return NULL;
+    }
+
+    // create a named sound state.
+    // note: we have to make the state name unique as otherwise new sound states with already defined names make problems
+    std::stringstream uniquename;
+    static unsigned int uniqueId = 0;
+    uniquename << name;
+    uniquename << uniqueId;
+    ++uniqueId;
+    osg::ref_ptr< osgAL::SoundState > soundState = new osgAL::SoundState( uniquename.str() );
+    // let the soundstate use the sample we just created
+    soundState->setSample( p_sample );
+    float vol = std::max( std::min( volume, 1.0f ), 0.0f );
+    soundState->setGain( vol );
+    // set its pitch to 1 (normal speed)
+    soundState->setPitch( 1.0f );
+
+    soundState->setPlay( false );
+    soundState->setLooping( false );
+    soundState->setAmbient( true );
+    // allocate a hardware soundsource to this soundstate (priority 10)
+    soundState->allocateSource( 10, false );
+    soundState->apply();
+
+    _soundMap[ name ] = soundState;
+
+    return soundState;
+ }
+
+osg::ref_ptr< osgAL::SoundState > GuiUtils::getSound( const std::string& name )
+{
+    // try to find the sound
+    MapSound::iterator soundState = _soundMap.find( name );
+    if ( soundState == _soundMap.end() )
+        return NULL;
+
+    return soundState->second;
+}
+
+void GuiUtils::playSound( const std::string& name )
+{
+    MapSound::iterator soundState = _soundMap.find( name );
+    if ( soundState == _soundMap.end() )
+    {
+        log_error << " sound source with name '" << name << "' does not exist." << std::endl;
+        return;
+    }
+
+    soundState->second->setPlay( true );
+}
+
 
 // Implementation of player utils
 PlayerUtils::PlayerUtils() :
