@@ -75,6 +75,9 @@ class ChatGuiBox
         //! Callback for button 'open'
         bool                                        onClickedOpen( const CEGUI::EventArgs& arg );
 
+        //! Callback for mouse over button 'open'
+        bool                                        onHoverOpen( const CEGUI::EventArgs& arg );
+
         //! Fade in / fade out the chat box
         void                                        fadeChatbox( bool fadeout );
 
@@ -193,6 +196,9 @@ class ChatGuiBox
 
         //! Callback for resizing the chat box frame
         bool                                        onSizeChanged( const CEGUI::EventArgs& arg );
+
+        //! Callback for changing channel tab
+        bool                                        onChannelTabChanged( const CEGUI::EventArgs& arg );
 
         //! Callback for clicking channel close button
         bool                                        onClickedCloseChannelPane( const CEGUI::EventArgs& arg );

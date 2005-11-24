@@ -140,10 +140,6 @@ _settingsDialogConfig( "gui/settings.xml" ),
 _levelSelectDialogConfig( "gui/levelselect.xml" ),
 _introTexture( "gui/intro.tga" ),
 _loadingOverlayTexture( "gui/loading.tga" ),
-_buttonClickSound( "gui/sound/click.wav" ),
-_buttonClickSoundVolume( 0.2f ),
-_buttonHoverSound( "gui/sound/hover.wav" ),
-_buttonHoverSoundVolume( 0.2f ),
 _introductionSound( "gui/sound/intro.wav" ),
 _introductionSoundVolume( 1.0f ),
 _backgroundSound( "gui/sound/background.wav" ),
@@ -157,8 +153,6 @@ _p_cameraControl( NULL ),
 _p_skyBox( NULL ),
 _p_menuFog( NULL ),
 _p_sceneFog( NULL ),
-_p_clickSound( NULL ),
-_p_hoverSound( NULL ),
 _p_introSound( NULL ),
 _p_backgrdSound( NULL ),
 _p_menuWindow( NULL ),
@@ -182,10 +176,6 @@ _levelLoaded( false )
     getAttributeManager().addAttribute( "intoTexture"               , _introTexture             );
     getAttributeManager().addAttribute( "loadingOverlayTexture"     , _loadingOverlayTexture    );
 
-    getAttributeManager().addAttribute( "buttonClickSound"          , _buttonClickSound         );
-    getAttributeManager().addAttribute( "buttonClickSoundVolume"    , _buttonClickSoundVolume   );
-    getAttributeManager().addAttribute( "buttonHoverSound"          , _buttonHoverSound         );
-    getAttributeManager().addAttribute( "buttonHoverSoundVolume"    , _buttonHoverSoundVolume   );
     getAttributeManager().addAttribute( "introductionSound"         , _introductionSound        );
     getAttributeManager().addAttribute( "introductionSoundVolume"   , _introductionSoundVolume  );
     getAttributeManager().addAttribute( "backgroundSound"           , _backgroundSound          );
@@ -230,12 +220,6 @@ EnMenu::~EnMenu()
     // destroy self-created entities
     // note: these entities are created via yaf3d::EntityManager with "no add to pool" option,
     //       thus we must not use yaf3d::EntityManager's detroyEntity method to destroy them, we have to delete them manually instead!
-    if ( _p_hoverSound )
-        delete _p_hoverSound;
-
-    if ( _p_clickSound )
-        delete _p_clickSound;
-
     if ( _p_introSound )
         delete _p_introSound;
 
@@ -274,12 +258,6 @@ void EnMenu::handleNotification( const yaf3d::EntityNotification& notification )
 void EnMenu::initialize()
 {
     // setup sounds
-    if ( _buttonClickSound.length() )
-        _p_clickSound = setupSound( _buttonClickSound, _buttonClickSoundVolume, false );
-
-    if ( _buttonHoverSound.length() )
-        _p_hoverSound = setupSound( _buttonHoverSound, _buttonHoverSoundVolume, false );
-
     if ( _introductionSound.length() )
         _p_introSound = setupSound( _introductionSound, _introductionSoundVolume, true );
 
@@ -376,22 +354,17 @@ void EnMenu::initialize()
     _settingsDialog = std::auto_ptr< DialogGameSettings >( new DialogGameSettings( this ) );
     if ( !_settingsDialog->initialize( _settingsDialogConfig ) )
         return;
-    // set the click sound object
-    _settingsDialog->setClickSound( _p_clickSound );
 
     // setup dialog for selecting a level
     _levelSelectDialog = std::auto_ptr< DialogLevelSelect >( new DialogLevelSelect( this ) );
     if ( !_levelSelectDialog->initialize( _levelSelectDialogConfig ) )
         return;
-    // set the click sound object
-    _levelSelectDialog->setClickSound( _p_clickSound );
 
     // setup intro layout
     _intro = std::auto_ptr< IntroControl >( new IntroControl );
     if ( !_intro->initialize( _introTexture ) )
         return;
     // set the click and intro sound objects
-    _intro->setClickSound( _p_clickSound );
     _intro->setIntroSound( _p_introSound );
 
     // create input handler
@@ -507,16 +480,15 @@ EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume, b
 
 bool EnMenu::onButtonHover( const CEGUI::EventArgs& arg )
 {
-    if ( _p_hoverSound )
-        _p_hoverSound->startPlaying();
-    
+    // play mouse over sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_HOVER );    
     return true;
 }
 
 bool EnMenu::onClickedGameSettings( const CEGUI::EventArgs& arg )
 {
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     _settingsDialog->show( true );
     _p_menuWindow->disable();
@@ -526,8 +498,8 @@ bool EnMenu::onClickedGameSettings( const CEGUI::EventArgs& arg )
 
 bool EnMenu::onClickedQuit( const CEGUI::EventArgs& arg )
 {
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     yaf3d::Application::get()->stop();
 
@@ -536,8 +508,8 @@ bool EnMenu::onClickedQuit( const CEGUI::EventArgs& arg )
 
 bool EnMenu::onClickedReturnToLevel( const CEGUI::EventArgs& arg )
 {
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     leave();
 
@@ -546,8 +518,8 @@ bool EnMenu::onClickedReturnToLevel( const CEGUI::EventArgs& arg )
 
 bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
 {
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     // ask user before leaving
     {
@@ -586,8 +558,8 @@ bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
 //! TODO: show a dialog with all found servers and let the user choose one
 bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
 {
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     std::string url;
     yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_IP, url );
@@ -598,11 +570,15 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
     yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
 
     // try to join
-    if ( !yaf3d::NetworkDevice::get()->setupClient( url, channel, nodeinfo ) )
+    try
+    {
+        yaf3d::NetworkDevice::get()->setupClient( url, channel, nodeinfo );
+    }
+    catch ( yaf3d::NetworkExpection& e )
     {
         log_warning << "cannot setup client networking" << std::endl;
 
-        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", "Cannot connect to server!", yaf3d::MessageBoxDialog::OK, true );
+        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", e.what(), yaf3d::MessageBoxDialog::OK, true );
         // create a call back for Ok button of messagebox
         class MsgOkClick: public yaf3d::MessageBoxDialog::ClickCallback
         {
@@ -616,16 +592,17 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
                                         {
                                             _p_menu->_p_menuWindow->enable();
 
-                                            // play click sound
-                                            if ( _p_menu->_p_clickSound )
-                                                _p_menu->_p_clickSound->startPlaying();
-
+                                            // play mouse click sound
+                                            vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
                                         }
 
                 EnMenu*                 _p_menu;
         };    
         p_msg->setClickCallback( new MsgOkClick( this ) );    
         p_msg->show();
+
+        // play attention sound
+        vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_ATTENTION );    
 
         return true;
     }
@@ -638,6 +615,7 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
     // get preview pic for level
     if ( _p_clientLevelFiles )
         delete _p_clientLevelFiles;
+
     _p_clientLevelFiles = new gameutils::LevelFiles( YAF3D_LEVEL_CLIENT_DIR );
     CEGUI::Image* p_img = _p_clientLevelFiles->getImage( levelfilename );
 
@@ -652,8 +630,8 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
 
 bool EnMenu::onClickedServer( const CEGUI::EventArgs& arg )
 {
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     _levelSelectDialog->changeSearchDirectory( YAF3D_LEVEL_SERVER_DIR );
     _p_menuWindow->disable();
@@ -667,8 +645,8 @@ bool EnMenu::onClickedServer( const CEGUI::EventArgs& arg )
 
 bool EnMenu::onClickedWT( const CEGUI::EventArgs& arg )
 {
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     yaf3d::GameState::get()->setMode( yaf3d::GameState::Standalone );
     _levelSelectDialog->changeSearchDirectory( YAF3D_LEVEL_SALONE_DIR );
@@ -752,12 +730,21 @@ void EnMenu::updateEntity( float deltaTime )
             // now start client networking when we joined to a session
             if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client )
             {
-                if ( !yaf3d::NetworkDevice::get()->startClient() )
+                // try to start client
+                try
                 {
-                    yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", "Problem starting client!", yaf3d::MessageBoxDialog::OK, true );
+                    yaf3d::NetworkDevice::get()->startClient();
+                }
+                catch ( yaf3d::NetworkExpection& e )
+                {
+
+                    yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", e.what(), yaf3d::MessageBoxDialog::OK, true );
                     p_msg->show();
 
                     _menuState = UnloadLevel;
+
+                    // play attention sound
+                    vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_ATTENTION );    
 
                     return;
                 }

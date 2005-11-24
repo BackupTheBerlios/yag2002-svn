@@ -41,7 +41,6 @@ namespace vrc
 #define LDLG_PREFIX             "ls_"
 
 DialogLevelSelect::DialogLevelSelect( EnMenu* p_menuEntity ) :
-_p_clickSound( NULL ),
 _p_levelSelectDialog( NULL ),
 _p_listbox( NULL ),
 _p_image( NULL ),
@@ -113,11 +112,6 @@ void DialogLevelSelect::changeSearchDirectory( const std::string& dir )
     _p_levelFiles = new gameutils::LevelFiles( dir );
 }
 
-void DialogLevelSelect::setClickSound( EnAmbientSound* p_sound )
-{
-    _p_clickSound = p_sound;
-}
-
 void DialogLevelSelect::setupControls()
 {
     assert( _p_levelFiles && "level files not created" );
@@ -172,9 +166,8 @@ void DialogLevelSelect::setPreviewPic( CEGUI::ListboxItem* p_item )
 //-----------------
 bool DialogLevelSelect::onClickedStart( const CEGUI::EventArgs& arg )
 {
-    // play click sound
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     if ( _currentSelection == "" )
         return true;
@@ -192,9 +185,8 @@ bool DialogLevelSelect::onClickedStart( const CEGUI::EventArgs& arg )
 
 bool DialogLevelSelect::onClickedReturn( const CEGUI::EventArgs& arg )
 {
-    // play click sound
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     _p_levelSelectDialog->hide();
 
@@ -207,9 +199,8 @@ bool DialogLevelSelect::onClickedReturn( const CEGUI::EventArgs& arg )
 
 bool DialogLevelSelect::onListItemSelChanged( const CEGUI::EventArgs& arg )
 {
-    // play click sound
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     // get selection
     CEGUI::ListboxItem* p_sel = _p_listbox->getFirstSelectedItem();

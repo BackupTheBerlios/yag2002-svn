@@ -30,38 +30,46 @@
 
 #include <vrc_main.h>
 #include "vrc_basecmd.h"
-#include "vrc_cmdgetconfig.h"
+#include "vrc_cmdconfigget.h"
 
 namespace vrc
 {
 
 //! Implement and register the command
-VRC_IMPL_CONSOLE_CMD( CmdGetConfig );
+VRC_IMPL_CONSOLE_CMD( CmdConfigGet );
 
 
-CmdGetConfig::CmdGetConfig() :
- BaseConsoleCommand( CMD_NAME_GETCONFIG )
+CmdConfigGet::CmdConfigGet() :
+ BaseConsoleCommand( CMD_NAME_CONFIGGET )
 {
-    setUsage( CMD_USAGE_GETCONFIG );
+    setUsage( CMD_USAGE_CONFIGGET );
 }
 
-CmdGetConfig::~CmdGetConfig()
+CmdConfigGet::~CmdConfigGet()
 {
 }
 
-const std::string& CmdGetConfig::execute( const std::vector< std::string >& arguments )
+const std::string& CmdConfigGet::execute( const std::vector< std::string >& arguments )
 {
-    _cmdResult =  "setting file: " + std::string( YAF3D_GAMESETTING_FILENAME ) + "\n";
-    _cmdResult += "-----------------\n";
+    if ( arguments.size() != 1 )
+    {
+        _cmdResult += getUsage();
+        return _cmdResult;
+    }
 
     std::vector< std::pair< std::string, std::string > > settings;
     yaf3d::Configuration::get()->getConfigurationAsString( settings );
     std::vector< std::pair< std::string, std::string > >::iterator p_beg = settings.begin(), p_end = settings.end();
     for ( ; p_beg != p_end; ++p_beg )
     {
-
-        _cmdResult += p_beg->first + " [" + p_beg->second + "]\n";
+        if ( p_beg->first == arguments[ 0 ] )
+        {
+            _cmdResult += p_beg->first + " [" + p_beg->second + "]\n";
+            break;
+        }
     }
+    if ( p_beg == p_end )
+        _cmdResult = "configuration setting '" + arguments[ 0 ] +  "' does not exist";
 
     return _cmdResult;
 }

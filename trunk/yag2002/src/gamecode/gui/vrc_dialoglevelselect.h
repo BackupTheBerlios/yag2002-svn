@@ -62,9 +62,6 @@ class DialogLevelSelect
         //! Show/hide the dialog
         void                                        show( bool visible );
 
-        //! Set click sound object
-        void                                        setClickSound( EnAmbientSound* p_sound );
-
         //! Changes the search directory for finding level files
         void                                        changeSearchDirectory( const std::string& dir );
 
@@ -85,8 +82,6 @@ class DialogLevelSelect
         //! Dialog callback for changed list item selection        
         bool                                        onListItemSelChanged( const CEGUI::EventArgs& arg );
         //  internal variables
-
-        EnAmbientSound*                             _p_clickSound;
 
         CEGUI::Window*                              _p_levelSelectDialog;
 

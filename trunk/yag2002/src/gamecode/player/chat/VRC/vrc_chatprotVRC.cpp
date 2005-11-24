@@ -175,6 +175,8 @@ void ImplChatNetworkingVRC::RPC_RequestJoin( tChatData chatdata )
 
     // notify all clients about new chat memeber
     ALL_REPLICAS_FUNCTION_CALL( RPC_ClientJoined( chatdata ) );
+
+    _p_protVRC->joined( "", newnick );
 }
 
 void ImplChatNetworkingVRC::RPC_ClientJoined( tChatData chatdata )
@@ -206,6 +208,8 @@ void ImplChatNetworkingVRC::RPC_RequestLeave( tChatData chatdata )
         _nickNames.erase( p_it );
 
     ALL_REPLICAS_FUNCTION_CALL( RPC_ClientLeft( chatdata ) );
+
+    _p_protVRC->left( "", chatdata._nickname );
 }
 
 void ImplChatNetworkingVRC::RPC_ClientLeft( tChatData chatdata )
@@ -233,6 +237,7 @@ void ImplChatNetworkingVRC::RPC_RequestChangeNickname( tChatData chatdata )
 { // this is called only on server
     chatdata._nickname[ sizeof( chatdata._nickname ) - 1 ] = '\0';
     // create a unique nickname
+    std::string  oldname = _nickNames[ chatdata._sessionID ];
     std::string  reqnick( chatdata._nickname );
     std::string  newnick = makeUniqueNickname( reqnick );
 
@@ -242,6 +247,8 @@ void ImplChatNetworkingVRC::RPC_RequestChangeNickname( tChatData chatdata )
 
     // notify all clients about changed nickname
     ALL_REPLICAS_FUNCTION_CALL( RPC_ChangedNickname( chatdata ) );
+
+    _p_protVRC->recvNicknameChange( newnick, oldname );
 }
 
 void ImplChatNetworkingVRC::RPC_ChangedNickname( tChatData chatdata )
@@ -300,6 +307,8 @@ void ImplChatNetworkingVRC::RPC_PostChatText( tChatMsg chatMsg )
     chatMsg._text[ 250 ] = 0; // limit text length
     // here some text filtering can be done before distributing new post to all clients
     ALL_REPLICAS_FUNCTION_CALL( RPC_RecvChatText( chatMsg ) );
+
+    _p_protVRC->recvMessage( "", _nickNames[ chatMsg._sessionID ], reinterpret_cast< char* >( chatMsg._text ) );
 }
 
 void ImplChatNetworkingVRC::leave()
@@ -376,6 +385,10 @@ ChatNetworkingVRC::ChatNetworkingVRC() :
 _p_nwImpl( NULL ),
 _p_config( NULL )
 {
+    _p_config  = new vrc::ChatConnectionConfig;
+    _p_config->_nickname = "NOT-SET";
+    _p_config->_protocol = "VRC";
+    _p_config->_p_protocolHandler = this;
 }
 
 ChatNetworkingVRC::~ChatNetworkingVRC()
@@ -392,11 +405,11 @@ ChatNetworkingVRC* ChatNetworkingVRC::createInstance()
     // create and setup VRC protocol handler, this is used on server
     // on clients the instance is created by ReplicaNet
     _p_nwImpl = new ImplChatNetworkingVRC( this );
-    ChatNetworkingVRC* p_inst = new ChatNetworkingVRC;
-    p_inst->setNetworkingImpl( _p_nwImpl );
+    setNetworkingImpl( _p_nwImpl );
     // publish the chat networking agent in net
     _p_nwImpl->Publish();
-    return p_inst;
+
+    return this;
 }
 
 void ChatNetworkingVRC::createConnection( const vrc::ChatConnectionConfig& conf )
@@ -420,14 +433,6 @@ void ChatNetworkingVRC::send( const std::string& msg, const std::string& channel
 
 void ChatNetworkingVRC::connected()
 {
-    if ( !_p_config )
-    {
-        _p_config  = new vrc::ChatConnectionConfig;
-        _p_config->_nickname = "NOT-SET";
-        _p_config->_protocol = "VRC";
-        _p_config->_p_protocolHandler = this;
-    }
-
     // send this notification unfiltered
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
     for ( ; p_beg != p_end; ++p_beg )

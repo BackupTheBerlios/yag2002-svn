@@ -43,7 +43,6 @@ namespace vrc
 
 IntroControl::IntroControl() :
 _introState( None ),
-_p_clickSound( NULL ),
 _p_introSound( NULL ),
 _p_wndIntro( NULL ),
 _p_introImage( NULL ),
@@ -104,11 +103,6 @@ bool IntroControl::initialize( const std::string& intoImage )
     return true;
 }
 
-void IntroControl::setClickSound( EnAmbientSound* p_sound )
-{
-    _p_clickSound = p_sound;
-}
-
 void IntroControl::setIntroSound( EnAmbientSound* p_sound )
 {
     _p_introSound = p_sound;
@@ -161,8 +155,8 @@ void IntroControl::stop()
     // append the intro window to root
     yaf3d::GuiManager::get()->getRootWindow()->removeChildWindow( _p_wndIntro );
 
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     _introState = Stopped;
 

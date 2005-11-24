@@ -28,26 +28,26 @@
  #
  ################################################################*/
 
-#ifndef _VRC_CMDGETCONFIG_H_
-#define _VRC_CMDGETCONFIG_H_
+#ifndef _VRC_CMDCONFIGGET_H_
+#define _VRC_CMDCONFIGGET_H_
 
 #include <vrc_main.h>
 
 namespace vrc
 {
 // console command name
-#define CMD_NAME_GETCONFIG   "get.configuration"
-#define CMD_USAGE_GETCONFIG  "get current game configuration\n" "use: get.configuration"
+#define CMD_NAME_CONFIGGET   "configuration.get"
+#define CMD_USAGE_CONFIGGET  "get value of given configuration setting\n" "use: configuration.get <setting name>"
 
 class BaseConsoleCommand;
 
-//! Class for command 'get.configuration'
-class CmdGetConfig : public BaseConsoleCommand
+//! Class for command 'configuration.get'
+class CmdConfigGet : public BaseConsoleCommand
 {
     public:
-                                                    CmdGetConfig();
+                                                    CmdConfigGet();
 
-        virtual                                     ~CmdGetConfig();
+        virtual                                     ~CmdConfigGet();
 
         const std::string&                          execute( const std::vector< std::string >& arguments );
 };
@@ -56,4 +56,4 @@ class CmdGetConfig : public BaseConsoleCommand
 
 } // namespace vrc
 
-#endif // _VRC_CMDGETCONFIG_H_
+#endif // _VRC_CMDCONFIGGET_H_

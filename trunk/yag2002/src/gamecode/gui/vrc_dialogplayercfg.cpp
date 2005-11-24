@@ -43,7 +43,6 @@ namespace vrc
 #define PLAYER_CFG_POSTFIX      "cfg"
 
 DialogPlayerConfig::DialogPlayerConfig( DialogGameSettings* p_menuEntity ) :
-_p_clickSound( NULL ),
 _p_playerConfigDialog( NULL ),
 _p_listbox( NULL ),
 _p_playerName( NULL ),
@@ -164,11 +163,6 @@ bool DialogPlayerConfig::initialize( const std::string& layoutfile )
     return true;
 }
 
-void DialogPlayerConfig::setClickSound( EnAmbientSound* p_sound )
-{
-    _p_clickSound = p_sound;
-}
-
 void DialogPlayerConfig::show( bool visible )
 {
     if ( visible )
@@ -260,9 +254,8 @@ void DialogPlayerConfig::setPreviewPic( const CEGUI::ListboxItem* p_item )
 //-----------------
 bool DialogPlayerConfig::onClickedOk( const CEGUI::EventArgs& arg )
 {
-    // play click sound
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     if ( _currentSelection == "" )
         return true;
@@ -288,9 +281,8 @@ bool DialogPlayerConfig::onClickedOk( const CEGUI::EventArgs& arg )
 
 bool DialogPlayerConfig::onClickedCancel( const CEGUI::EventArgs& arg )
 {
-    // play click sound
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     _currentSelection = "";
 
@@ -302,9 +294,8 @@ bool DialogPlayerConfig::onClickedCancel( const CEGUI::EventArgs& arg )
 
 bool DialogPlayerConfig::onListItemSelChanged( const CEGUI::EventArgs& arg )
 {
-    // play click sound
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     // get selection
     CEGUI::ListboxItem* p_sel = _p_listbox->getFirstSelectedItem();

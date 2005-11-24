@@ -101,9 +101,6 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         //! Initialization function called on a new connected client and its ghosts
         void                                        RPC_Initialize( tInitializationData initData );
 
-        //! Return chat's log
-        static yaf3d::Log&                          getChatLog() { return *s_chatLog; }
-
     protected:
 
         //! Create all player related entities
@@ -128,8 +125,6 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         bool                                        _remoteClient;
 
         vrc::BasePlayerImplementation*              _p_playerImpl;
-
-        static yaf3d::Log*                          s_chatLog;
 
         std::vector< yaf3d::BaseEntity* >           _loadedEntities;
 

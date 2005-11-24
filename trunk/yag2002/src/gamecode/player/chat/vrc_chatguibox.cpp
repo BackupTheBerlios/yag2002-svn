@@ -31,6 +31,7 @@
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
 #include "vrc_chatguibox.h"
+#include "../../sound/vrc_ambientsound.h"
 
 namespace vrc
 {
@@ -56,6 +57,17 @@ namespace vrc
 
 #define GUI_IRCCONNECT_BTN_WIDTH    110.0f
 #define GUI_IRCCONNECT_BTN_HEIGHT   20.0f
+
+// sound stuff
+#define SND_CLOSE_CHANNEL           "sound/chatgui/closechannel.wav"
+#define SND_CONNECT                 "sound/chatgui/connect.wav"
+#define SND_TYPING                  "sound/chatgui/typing.wav"
+#define SND_VOL_CLOSE_CHANNEL       0.2f
+#define SND_VOL_CONNECT             0.2f
+#define SND_VOL_TYPING              0.5f
+#define SND_NAME_CLOSE_CHANNEL      "cgui_clc"
+#define SND_NAME_CONNECT            "cgui_con"
+#define SND_NAME_TYPING             "cgui_typ"
 
 ChatGuiBox::ChannelTabPane::ChannelTabPane( CEGUI::TabControl* p_tabcontrol, ChatGuiBox* p_guibox ) :
 _p_tabCtrl( p_tabcontrol ),
@@ -166,7 +178,7 @@ void ChatGuiBox::ChannelTabPane::addMessage( const CEGUI::String& msg, const CEG
         _p_tabPane->setText( _title + " *" );
 
     CEGUI::String buffer = _p_messagebox->getText();
-    buffer += author + "> " + msg;
+    buffer += "[" + yaf3d::getFormatedTime() + "] " + author + ": " + msg;
     _p_messagebox->setText( buffer );
     // set carat position in order to trigger text scrolling after a new line has been added
     _p_messagebox->setCaratIndex( buffer.length() - 1 );
@@ -182,7 +194,8 @@ bool ChatGuiBox::ChannelTabPane::onSelected( const CEGUI::EventArgs& arg )
 
 bool ChatGuiBox::ChannelTabPane::onListItemSelChanged( const CEGUI::EventArgs& arg )
 {
-    // currently nothing to do
+    // play click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
     return true;
 }
 
@@ -206,6 +219,9 @@ bool ChatGuiBox::ChannelTabPane::onSizeChanged( const CEGUI::EventArgs& arg )
 
 bool ChatGuiBox::ChannelTabPane::onEditboxTextChanged( const CEGUI::EventArgs& arg )
 {
+    // play sound
+    gameutils::GuiUtils::get()->playSound( SND_NAME_TYPING );
+
     // check for 'Return' key
     CEGUI::KeyEventArgs& ke = static_cast< CEGUI::KeyEventArgs& >( const_cast< CEGUI::EventArgs& >( arg ) );
     if ( ke.codepoint == SDLK_RETURN )
@@ -472,6 +488,7 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
         // setup chat box hide button with ctd specific image set
         _p_btnOpen = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", CHATLAYOUT_PREFIX "_btn_openbox_" ) );
         _p_btnOpen->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onClickedOpen, this ) );
+        _p_btnOpen->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onHoverOpen, this ) );
         _p_btnOpen->setStandardImageryEnabled( false );
         _p_btnOpen->setPosition( CEGUI::Point( 0.0f, 0.7f ) );
         _p_btnOpen->setSize( CEGUI::Size( 0.08f, 0.1f ) );
@@ -523,6 +540,8 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
         _p_tabCtrl->setSize( CEGUI::Size( 200.0f, 200.0f ) );
         _p_tabCtrl->setTabHeight( GUI_TABCTRL_TAB_HEIGHT );
         _p_tabCtrl->subscribeEvent( CEGUI::Window::EventParentSized, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onSizeChanged, this ) );
+        _p_tabCtrl->subscribeEvent( CEGUI::TabControl::EventSelectionChanged, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onChannelTabChanged, this ) );
+
         _p_frame->addChildWindow( _p_tabCtrl );
     }
     catch ( const CEGUI::Exception& e )
@@ -531,6 +550,21 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
         log << "   reason: " << e.getMessage().c_str() << std::endl;
         return;
     }
+
+    // setup sounds
+    osg::ref_ptr< osgAL::SoundState > snd;
+    
+    snd = gameutils::GuiUtils::get()->getSound( SND_NAME_CLOSE_CHANNEL );
+    if ( !snd.valid() )
+        gameutils::GuiUtils::get()->createSound( SND_NAME_CLOSE_CHANNEL, SND_CLOSE_CHANNEL, SND_VOL_CLOSE_CHANNEL );
+
+    snd = gameutils::GuiUtils::get()->getSound( SND_NAME_CONNECT );
+    if ( !snd.valid() )
+        gameutils::GuiUtils::get()->createSound( SND_NAME_CONNECT, SND_CONNECT, SND_VOL_CONNECT );
+
+    snd = gameutils::GuiUtils::get()->getSound( SND_NAME_TYPING );
+    if ( !snd.valid() )
+        gameutils::GuiUtils::get()->createSound( SND_NAME_TYPING, SND_TYPING, SND_VOL_TYPING );
 }
 
 void ChatGuiBox::showMsgArrived( bool show )
@@ -709,12 +743,18 @@ void ChatGuiBox::show( bool visible )
 
 bool ChatGuiBox::onCloseFrame( const CEGUI::EventArgs& arg )
 {
+    // play click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
     fadeChatbox( true );
     return true;
 }
 
 bool ChatGuiBox::onClickedCloseChannelPane( const CEGUI::EventArgs& arg )
 {
+    // play sound
+    gameutils::GuiUtils::get()->playSound( SND_NAME_CLOSE_CHANNEL );
+
     // search for currently active pane
     ChatGuiBox::TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
     for ( ; p_beg != p_end; ++p_beg )
@@ -738,6 +778,9 @@ bool ChatGuiBox::onClickedCloseChannelPane( const CEGUI::EventArgs& arg )
 // this is called when clicking on connection button
 bool ChatGuiBox::onClickedConnectIRC( const CEGUI::EventArgs& arg )
 {
+    // play sound
+    gameutils::GuiUtils::get()->playSound( SND_NAME_CONNECT );
+
     // check if we are already connecting
     if ( _connectionState == Connecting )
     {
@@ -772,6 +815,9 @@ bool ChatGuiBox::onClickedConnectIRC( const CEGUI::EventArgs& arg )
 // this is called by connection dialog instance
 void ChatGuiBox::onConnectionDialogClickedConnect( const ChatConnectionConfig& conf )
 {
+    // play click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
     _p_connectionDialog->show( false );
 
     // try to connect
@@ -793,6 +839,9 @@ void ChatGuiBox::onConnectionDialogClickedConnect( const ChatConnectionConfig& c
 
 void ChatGuiBox::onConnectionDialogClickedCancel()
 {
+    // play click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
     // set connection state
     _connectionState = ConnectionIdle;
     _p_connectionDialog->show( false );
@@ -815,11 +864,28 @@ bool ChatGuiBox::onSizeChanged( const CEGUI::EventArgs& arg )
     return true;
 }
 
+bool ChatGuiBox::onChannelTabChanged( const CEGUI::EventArgs& arg )
+{
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    return true;
+}
+
+bool ChatGuiBox::onHoverOpen( const CEGUI::EventArgs& arg )
+{
+    // play mouse over sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_HOVER );    
+    return true;
+}
+
 bool ChatGuiBox::onClickedOpen( const CEGUI::EventArgs& arg )
 {
     // are we already in fading action?
     if ( ( _boxState == BoxFadeIn ) || ( _boxState == BoxFadeOut ) )
         return true;
+
+    // play click sound
+    gameutils::GuiUtils::get()->playSound( SND_NAME_CLOSE_CHANNEL );
 
     fadeChatbox( false );
 

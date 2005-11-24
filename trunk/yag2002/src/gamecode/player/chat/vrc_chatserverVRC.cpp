@@ -41,7 +41,7 @@ YAF3D_IMPL_ENTITYFACTORY( ChatServerVRCEntityFactory );
 
 
 EnChatServerVRC::EnChatServerVRC():
-_logFile( "chatsrvVRC.log" ),
+_logFile( "chatsrvVRC" ),
 _p_chatMgr( NULL )
 {
     // register entity attributes
@@ -50,6 +50,7 @@ _p_chatMgr( NULL )
 
 EnChatServerVRC::~EnChatServerVRC()
 {
+    _chatLog << yaf3d::getTimeStamp() << "shutting down chat server" << std::endl;
 }
 
 void EnChatServerVRC::initialize()
@@ -66,21 +67,47 @@ void EnChatServerVRC::initialize()
     ChatNetworkingVRC* p_inst = p_protVRC->createInstance();
     p_inst->registerProtocolCallback( this, "*" );
 
-
-    // register entity in order to get updated per simulation step
-    yaf3d::EntityManager::get()->registerUpdate( this );   
-}
-
-void EnChatServerVRC::onConnection( const ChatConnectionConfig& config )
-{
+    // create a timestamp for log file name    
+    std::string tmp( yaf3d::getFormatedDate() );
+    std::string datestamp;
+    for ( std::size_t cnt = 0; cnt < tmp.length(); ++cnt )
+    {
+        if ( ( tmp[ cnt ] != '\\' ) && ( tmp[ cnt ] != ':' ) && ( tmp[ cnt ] != '/' ) )
+            datestamp += tmp[ cnt ];
+    }
+    
+    // setup chat log
+    _chatLog.addSink( "chatlog", yaf3d::Application::get()->getMediaPath() + datestamp + "-" + _logFile + ".log", yaf3d::Log::L_ERROR );
+    _chatLog.enableSeverityLevelPrinting( false );
+    _chatLog.enableSeverityLevelPrinting( false );
+    _chatLog << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO );
+    _chatLog << "log file created on " << yaf3d::getTimeStamp() << std::endl;
+    _chatLog << "-----------" << std::endl;
 }
 
 void EnChatServerVRC::onJoinedChannel( const ChatConnectionConfig& config )
 {
+    _chatLog << yaf3d::getFormatedDateAndTime() << " " << config._nickname << " joined to VRC chat" << std::endl;
 }
 
-void EnChatServerVRC::updateEntity( float deltaTime )
+void EnChatServerVRC::onLeftChannel( const ChatConnectionConfig& config )
 {
+    _chatLog << yaf3d::getFormatedDateAndTime() << " " << config._nickname << " left chat channel" << std::endl;
 }
 
+void EnChatServerVRC::onReceive( const std::string& channel, const std::string& sender, const std::string& msg )
+{
+    _chatLog << "[" + yaf3d::getFormatedTime() + "] " + sender << ": " << msg << std::endl;
 }
+
+void EnChatServerVRC::onNicknameChanged( const std::string& newname, const std::string& oldname )
+{
+    _chatLog << yaf3d::getFormatedDateAndTime() << " " <<  oldname << " changed nickname to " << newname << std::endl;
+}
+
+void EnChatServerVRC::onKicked( const std::string& channel, const std::string& kicker, const std::string& kicked )
+{
+    _chatLog << yaf3d::getFormatedDateAndTime() << " " << kicker << " kicked " << kicked << " from channel " << std::endl;
+}
+
+} // namespace vrc

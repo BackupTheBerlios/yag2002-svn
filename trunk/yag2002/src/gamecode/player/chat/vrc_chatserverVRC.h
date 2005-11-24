@@ -52,18 +52,26 @@ class EnChatServerVRC : public yaf3d::BaseEntity, public ChatProtocolCallback
         //! Initialize 
         void                                        initialize();
 
-        //! This entity needs updating
-        void                                        updateEntity( float deltaTime );
-
-        //! Overriden protocol handler callback method for getting connection notification
-        void                                        onConnection( const ChatConnectionConfig& config );
-
         //! Overriden protocol handler callback method for getting notification when joined to a new channel
         void                                        onJoinedChannel( const ChatConnectionConfig& config );
+
+        //! Overridden method for getting notified when someone left the channel.
+        void                                        onLeftChannel( const ChatConnectionConfig& config );
+
+        //! Overriden method for receiving the chat traffic.
+        void                                        onReceive( const std::string& channel, const std::string& sender, const std::string& msg );
+
+        //! Overriden method for getting nickname changes in channel.
+        void                                        onNicknameChanged( const std::string& newname, const std::string& oldname );
+
+        //! Overridden method for getting notified when someone has been kicked from a channel.
+        void                                        onKicked( const std::string& channel, const std::string& kicker, const std::string& kicked );
 
     protected:
 
         std::string                                 _logFile;
+
+        yaf3d::Log                                  _chatLog;
 
         ChatManager*                                _p_chatMgr;
 };

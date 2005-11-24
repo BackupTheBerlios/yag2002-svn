@@ -40,8 +40,6 @@
 #include "vrc_player.h"
 #include "chat/vrc_chatmgr.h"
 
-yaf3d::Log* PlayerNetworking::s_chatLog = NULL;
-
 PlayerNetworking::PlayerNetworking( vrc::BasePlayerImplementation* p_playerImpl ) :
 _positionX( 0 ),
 _positionY( 0 ),
@@ -68,23 +66,6 @@ _loadedPlayerEntity( NULL )
     }
     _p_configFile[ 0 ] = 0;
     _cmdAnimFlags      = 0;
-
-    // setup chat log
-    if ( !s_chatLog )
-    {
-        std::string filename;
-        if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
-            filename = "server-chat.log";
-        else
-            filename = "client-chat.log";
-
-        s_chatLog = new yaf3d::Log();
-        s_chatLog->addSink( "chatlog", yaf3d::Application::get()->getMediaPath() + filename, yaf3d::Log::L_ERROR );
-        s_chatLog->enableSeverityLevelPrinting( false );
-        *s_chatLog << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO );
-        *s_chatLog << "log file created on " << yaf3d::getTimeStamp() << std::endl;
-        *s_chatLog << "-----------" << std::endl;
-    }
 
     yaf3d::NetworkDevice::get()->unlockObjects();
 }
@@ -115,7 +96,6 @@ PlayerNetworking::~PlayerNetworking()
                 yaf3d::EntityManager::get()->deleteEntity( *p_beg );
         }
     }
-    *s_chatLog << yaf3d::getTimeStamp() << ": [" << _p_playerName << "] left" << std::endl;
 
     yaf3d::NetworkDevice::get()->unlockObjects();
 }
@@ -151,7 +131,6 @@ void PlayerNetworking::PostObjectCreate()
         }
     }
 
-    *s_chatLog << yaf3d::getTimeStamp() << ": [" << _p_playerName << "] entered the chat room " << std::endl;
     log_info << " player created: " << _p_playerName << std::endl;
 }
 

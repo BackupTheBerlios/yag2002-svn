@@ -55,9 +55,6 @@ class DialogPlayerConfig
         //! Show/hide the dialog
         void                                        show( bool visible );
 
-        //! Set click sound object
-        void                                        setClickSound( EnAmbientSound* p_sound );
-
     protected:
 
         //! Setup all controls when the dialog is opening ( show( true ) )
@@ -74,10 +71,8 @@ class DialogPlayerConfig
     
         //! Dialog callback for changed list item selection        
         bool                                        onListItemSelChanged( const CEGUI::EventArgs& arg );
+       
         //  internal variables
-
-        EnAmbientSound*                             _p_clickSound;
-
         CEGUI::Window*                              _p_playerConfigDialog;
 
         CEGUI::Listbox*                             _p_listbox;

@@ -44,7 +44,6 @@ namespace vrc
 
 DialogGameSettings::DialogGameSettings( EnMenu* p_menuEntity ) :
 _busy( false ),
-_p_clickSound( NULL ),
 _p_settingsDialog( NULL ),
 _p_playerName( NULL ),
 _p_serverName( NULL ),
@@ -202,13 +201,6 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
     setupControls();
 
     return true;
-}
-
-void DialogGameSettings::setClickSound( EnAmbientSound* p_sound )
-{
-    _p_clickSound = p_sound;
-    assert( _playerConfigDialog.get() && "game settings dialog is not initialized!" );
-    _playerConfigDialog->setClickSound( _p_clickSound );
 }
 
 bool DialogGameSettings::isDirty()
@@ -426,9 +418,8 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
     // store all settings into file
     yaf3d::Configuration::get()->store();
 
-    // play click sound
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     // let the menu know that we are finish
     _p_menuEntity->onSettingsDialogClose();
@@ -461,9 +452,8 @@ void DialogGameSettings::onPlayerConfigDialogClose()
 
 bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
 {
-    // play click sound
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     if ( !isDirty() )
         return true;
@@ -507,9 +497,8 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
                                         // enable the dialog again
                                         _p_dialogSettings->_p_settingsDialog->enable();
 
-                                        // play click sound
-                                        if ( _p_dialogSettings->_p_clickSound )
-                                            _p_dialogSettings->_p_clickSound->startPlaying();
+                                        // play mouse click sound
+                                        vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
                                     }
 
@@ -517,6 +506,9 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
         };    
         p_msg->setClickCallback( new MsgYesNoClick( this ) );    
         p_msg->show();
+
+        // play attention sound
+        vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_ATTENTION );    
     }
 
     return true;
@@ -524,10 +516,8 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
 
 bool DialogGameSettings::onTabChanged( const CEGUI::EventArgs& arg )
 {
-    // play click sound
-    if ( _p_clickSound )
-        _p_clickSound->startPlaying();
-
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
     return true;
 }
 

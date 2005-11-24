@@ -57,9 +57,6 @@ class IntroControl
         //! Stop intro
         void                                        stop();
 
-        //! Set click sound object
-        void                                        setClickSound( EnAmbientSound* p_sound );
-
         //! Set intro sound object, this sound is played on intro start
         void                                        setIntroSound( EnAmbientSound* p_sound );
 
@@ -72,8 +69,6 @@ class IntroControl
             Running,
             Stopped
         }                                           _introState;
-
-        EnAmbientSound*                             _p_clickSound;
 
         EnAmbientSound*                             _p_introSound;
 

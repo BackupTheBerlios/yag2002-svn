@@ -111,14 +111,6 @@ class EnMenu :  public yaf3d::BaseEntity
 
         std::string                                 _loadingOverlayTexture;
 
-        std::string                                 _buttonClickSound;
-
-        float                                       _buttonClickSoundVolume;
-
-        std::string                                 _buttonHoverSound;
-
-        float                                       _buttonHoverSoundVolume;
-
         std::string                                 _introductionSound;
 
         float                                       _introductionSoundVolume;
@@ -228,10 +220,6 @@ class EnMenu :  public yaf3d::BaseEntity
         EnFog*                                      _p_menuFog;
 
         EnFog*                                      _p_sceneFog;
-
-        EnAmbientSound*                             _p_clickSound;
-
-        EnAmbientSound*                             _p_hoverSound;
 
         EnAmbientSound*                             _p_introSound;
 

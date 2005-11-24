@@ -84,9 +84,6 @@ class DialogGameSettings
         //! Show/hide the dialog
         void                                        show( bool visible );
 
-        //! Set click sound object
-        void                                        setClickSound( EnAmbientSound* p_sound );
-
     protected:
 
         // Interface method for player configuration dialog
@@ -154,8 +151,6 @@ class DialogGameSettings
 
         //! Busy flag ( see method onClickedOk for more details )
         bool                                        _busy;
-    
-        EnAmbientSound*                             _p_clickSound;
 
         CEGUI::Window*                              _p_settingsDialog;
 
