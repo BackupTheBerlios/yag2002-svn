@@ -39,7 +39,22 @@
 namespace yaf3d
 {
 
+// Implement the singleton NetworkDevice
 YAF3D_SINGLETON_IMPL( NetworkDevice );
+
+
+// helper function for converting the protocol version to a string
+std::string getProtocolVersionAsString( unsigned int version )
+{
+    std::stringstream str;
+    str << ( ( version & 0x00FF0000 ) >> 16 );
+    str << ".";
+    str << ( ( version & 0x0000FF00 ) >> 8 );
+    str << ".";
+    str << ( version & 0x000000FF );
+
+    return str.str();
+}
 
 Networking::Networking() :
 _numSessions( 0 )
@@ -184,17 +199,18 @@ void NetworkDevice::shutdown()
     destroy();
 }
 
-bool NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
+void NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
 {
     // do we already have a session created?
     assert( _p_session == NULL && "there is already a running session!" );
 
-    log_debug << "starting server, time: " << yaf3d::getTimeStamp() << std::endl;
+    log_info << "starting server, time: " << yaf3d::getTimeStamp() << std::endl;
+    log_info << "networking protocol version: " << getProtocolVersionAsString( YAF3D_NETWORK_PROT_VERSION ) << std::endl;
 
     _nodeInfo  = nodeInfo;
     _p_session = new Networking;
 
-    log << Log::LogLevel( Log::L_INFO ) << "nw server: starting network session: " << nodeInfo._nodeName << std::endl;
+    log_info << "nw server: starting network session: " << nodeInfo._nodeName << std::endl;
 
     _p_session->SetManualPoll();
     _p_session->SetLoadBalancing( true );
@@ -218,19 +234,21 @@ bool NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
             delete _p_session;
             _p_session = NULL;   
 
-            return false;
+            throw NetworkExpection( "Problems starting server" );
         }
 	}
     _serverSessionStable  = true;
     _mode = NetworkDevice::SERVER;
 
     std::string url = _p_session->SessionExportURL();
-    log << Log::LogLevel( Log::L_INFO ) << "nw server: session established: " << url << std::endl;
-    return true;
+    log_info << "nw server: session established: " << url << std::endl;
 }
 
-bool NetworkDevice::setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo )
+void NetworkDevice::setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo )
 {
+    log_info << "starting client, time: " << yaf3d::getTimeStamp() << std::endl;
+    log_info << "networking protocol version: " << getProtocolVersionAsString( YAF3D_NETWORK_PROT_VERSION ) << std::endl;
+
     // do we already have a session created?
     assert( _p_session == NULL && "there is already a running session!" );
     _nodeInfo  = nodeInfo;
@@ -259,7 +277,7 @@ bool NetworkDevice::setupClient( const std::string& serverIp, int channel, const
     assembledUrl << "SESSION://UDP@" << ip << ":" << channel << "/" << servername;
     Url = assembledUrl.str();
 
-    log << Log::LogLevel( Log::L_INFO ) << "nw client: try to join to session: " << Url << std::endl;
+    log_info << "nw client: try to join to session: " << Url << std::endl;
     _p_session->SessionJoin( Url );
 
     unsigned int tryCounter = 0;
@@ -272,20 +290,20 @@ bool NetworkDevice::setupClient( const std::string& serverIp, int channel, const
     }
     if ( tryCounter == 100 )
     {
-        log << Log::LogLevel( Log::L_WARNING ) << "nw client: cannot connect to server: " << Url << std::endl;
+        log_warning << "nw client: cannot connect to server: " << Url << std::endl;
 
         _p_session->Disconnect();
         delete _p_session;
         _p_session = NULL;   
 
-        return false;
+        throw NetworkExpection( "Problems connecting to server" );
     }
 
-    log << Log::LogLevel( Log::L_INFO ) << "nw client: negotiating with server ..." << std::endl;
+    log_info << "nw client: negotiating with server ..." << std::endl;
 
     // begin to negotiate with server
     //-----------------------------//
-    log << Log::LogLevel( Log::L_INFO ) << "nw client:  exchanging pre-connect data ..." << std::endl;
+    log_info << "nw client:  exchanging pre-connect data ..." << std::endl;
 
     PreconnectDataClient preconnectData;
     preconnectData._typeId = ( unsigned char )YAF3DNW_PRECON_DATA_CLIENT;
@@ -305,56 +323,73 @@ bool NetworkDevice::setupClient( const std::string& serverIp, int channel, const
             PreconnectDataServer* p_data = ( PreconnectDataServer* )p_buffer;
             if ( p_data->_typeId == ( unsigned char )YAF3DNW_PRECON_DATA_SERVER ) 
             {
+                // check network protocol versions
+                if ( p_data->_protocolVersion != YAF3D_NETWORK_PROT_VERSION )
+                {
+                    log_warning << "*** nw client: network protocol mismatch" << std::endl;
+                    log << " version server: " << getProtocolVersionAsString( p_data->_protocolVersion ) << std::endl;
+                    log << " version client: " << getProtocolVersionAsString( YAF3D_NETWORK_PROT_VERSION ) << std::endl;
+
+                    _p_session->Disconnect();
+                    delete _p_session;
+                    _p_session = NULL;   
+
+                    std::string msg;
+                    msg = "Network protocol version mismatch.\n";
+                    msg += "Server's version: " + getProtocolVersionAsString( p_data->_protocolVersion ) + "\n";
+                    msg += "Client's version: " + getProtocolVersionAsString( YAF3D_NETWORK_PROT_VERSION );
+                    throw NetworkExpection( msg );
+                }
+
                 p_data->_p_levelName[ 63 ]  = 0;
                 p_data->_p_serverName[ 63 ] = 0;
                 _nodeInfo._levelName = p_data->_p_levelName;
                 _nodeInfo._nodeName  = p_data->_p_serverName;
                 gotServerInfo = true;
 
-                log << Log::LogLevel( Log::L_DEBUG ) << "nw client:  got preconnect data from server" << std::endl;
+                log_debug << "nw client:  got preconnect data from server" << std::endl;
             }
         }
 
         // try up to 10 seconds
         if ( tryCounter > 100 ) 
         {
-            log << Log::LogLevel( Log::L_WARNING ) << "*** nw client: problems negotiating with server" << std::endl;
+            log_warning << "*** nw client: problems negotiating with server" << std::endl;
 
             _p_session->Disconnect();
             delete _p_session;
             _p_session = NULL;   
 
-            return false;
+            throw NetworkExpection( "Problems exchanging pre-connect data with server." );
         }
 
         ++tryCounter;
     }
     _clientSessionStable = true;
     _mode = NetworkDevice::CLIENT;
-
-    return true;
 }
 
-bool NetworkDevice::startClient()
+void NetworkDevice::startClient()
 {
     if ( !_clientSessionStable )
     {
-        log << Log::LogLevel( Log::L_WARNING ) << "nw client: starting client without a stable session, cannot start client!" << std::endl;
-        return false;
+        log_warning << "nw client: starting client without a stable session, cannot start client!" << std::endl;
+                    
+        throw NetworkExpection( "Internal error: starting client without a stable session." );
     }
 
     log_debug << "starting client, time: " << yaf3d::getTimeStamp() << std::endl;
 
     _p_session->PreConnectHasFinished();
 
-    log << Log::LogLevel( Log::L_INFO ) << "nw client: successfully integrated to network" << std::endl;
+    log_info << "nw client: successfully integrated to network" << std::endl;
     std::stringstream msg;
     msg << "nw client: server name: '" << 
         _nodeInfo._nodeName  << 
         "', level name: '"   << 
         _nodeInfo._levelName << 
         "'" << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << msg.str() << std::endl;
+    log_info << msg.str() << std::endl;
     //-----------------------------//
 
     unsigned int tryCounter = 0;
@@ -372,21 +407,19 @@ bool NetworkDevice::startClient()
         // try up to 10 seconds
         if ( tryCounter > 50 ) 
         {
-            log << Log::LogLevel( Log::L_WARNING ) << "*** nw client: problems connecting to server" << std::endl;
+            log_warning << "*** nw client: problems connecting to server" << std::endl;
 
             _p_session->Disconnect();
             delete _p_session;
             _p_session = NULL;   
 
-            return false;
+            throw NetworkExpection( "Problems connecting to server" );
         }
     }    
-    log << Log::LogLevel( Log::L_DEBUG ) << std::endl;
+    log_debug << std::endl;
 
     std::string sessionurl = _p_session->SessionExportURL();
-    log << Log::LogLevel( Log::L_INFO ) << "nw client: successfully joined to session: " << sessionurl << std::endl;
-
-    return true;
+    log_info << "nw client: successfully joined to session: " << sessionurl << std::endl;
 }
 
 void NetworkDevice::registerSessionNotify( SessionNotifyCallback* p_cb )
@@ -452,12 +485,13 @@ void NetworkDevice::updateServer( float deltaTime )
         PreconnectDataClient* p_data = ( PreconnectDataClient* )p_buffer;
         if ( p_data->_typeId == ( unsigned char )YAF3DNW_PRECON_DATA_CLIENT ) 
         {
-            log << Log::LogLevel( Log::L_INFO ) << "server: new client connecting ... " << std::endl;
+            log_info << "server: new client connecting ... " << std::endl;
             // send server node
             PreconnectDataServer sendData;
             sendData._typeId = ( unsigned char )YAF3DNW_PRECON_DATA_SERVER;
             strcpy( sendData._p_levelName, _nodeInfo._levelName.c_str() );
-            strcpy( sendData._p_serverName, _nodeInfo._nodeName.c_str() );        
+            strcpy( sendData._p_serverName, _nodeInfo._nodeName.c_str() );
+            sendData._protocolVersion = YAF3D_NETWORK_PROT_VERSION;
             _p_session->DataSend( sessionId, ( void* )&sendData, sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );        
         }
     }

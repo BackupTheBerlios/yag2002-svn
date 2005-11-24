@@ -55,6 +55,7 @@ struct PreconnectDataServer
     unsigned char  _typeId;  // set this to YAF3DNW_PRECON_DATA_SERVER    
     char           _p_levelName[ 64 ];
     char           _p_serverName[ 64 ];
+    unsigned int   _protocolVersion;
 };
 
 } // namespace yaf3d

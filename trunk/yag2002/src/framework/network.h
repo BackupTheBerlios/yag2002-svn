@@ -52,6 +52,12 @@
 #include "singleton.h"
 #include "network_defs.h"
 
+//! Network protocol version, use getProtocolVersionAsString to convert it to a string
+// Format: 0 x 00 - Release - Major - Minor
+#define YAF3D_NETWORK_PROT_VERSION      0x00010000
+//! Helper function for converting the protocol version to a string
+std::string getProtocolVersionAsString( unsigned int version );
+
 namespace yaf3d
 {
 
@@ -62,11 +68,14 @@ class NetworkDevice;
 class NodeInfo
 {
     public:
-                                                    NodeInfo() {}
+                                                    NodeInfo() :
+                                                     _protocolVersion( YAF3D_NETWORK_PROT_VERSION )
+                                                    {}
 
                                                     NodeInfo( const std::string& levelname, const std::string& nodename ) :
                                                      _levelName( levelname ),
-                                                     _nodeName( nodename )
+                                                     _nodeName( nodename ),
+                                                     _protocolVersion( YAF3D_NETWORK_PROT_VERSION )
                                                     {}
 
         /**
@@ -86,8 +95,11 @@ class NodeInfo
         //! Level name
         std::string                                 _levelName;
 
-        // Node name
+        //! Node name
         std::string                                 _nodeName;
+
+        //! Network protocol version
+        unsigned int                                _protocolVersion;
 
     friend  class NetworkDevice;
     friend  class Application;
@@ -149,6 +161,36 @@ class Networking: public RNReplicaNet::ReplicaNet
 	    RNReplicaNet::MutexClass                    _mutex;
 };
 
+//! Class for network related exceptions
+class NetworkExpection
+{
+    public:                                     
+                                                    NetworkExpection( const std::string& reason )
+                                                    {
+                                                        _reason = reason;
+                                                    }
+
+                                                    ~NetworkExpection() {}
+
+                                                    NetworkExpection( const NetworkExpection& e )
+                                                    {
+                                                        _reason = e._reason;
+                                                    }
+
+        const std::string&                          what() const
+                                                    {
+                                                        return _reason;
+                                                    }
+
+    protected:
+
+                                                    NetworkExpection();
+
+        NetworkExpection&                           operator = ( const NetworkExpection& );
+
+        std::string                                 _reason;
+};
+
 //! Networking device
 class NetworkDevice : public Singleton< NetworkDevice >
 {
@@ -163,27 +205,24 @@ class NetworkDevice : public Singleton< NetworkDevice >
         };
 
         /**
-        * Setup a server session
+        * Setup a server session ( throws exception )
         * \param channel                            Channel
         * \param nodeInfo                           Server information such as server and level name
-        * \return                                   true if successful
         */
-        bool                                        setupServer( int channel, const NodeInfo& nodeInfo );
+        void                                        setupServer( int channel, const NodeInfo& nodeInfo );
 
         /**
-        * Setup a client session joining to a server
+        * Setup a client session joining to a server ( throws exception )
         * \param ServerIp                           Server IP address
         * \param channel                            Channel
         * \param nodeInfo                           Client information
-        * \return                                   true if successful
         */
-        bool                                        setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo );
+        void                                        setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo );
 
         /**
-        * Start the client processing. Call this after SetupClient.
-        * \return                                   true if successfully started.
+        * Start the client processing. Call this after SetupClient ( throws exception ).
         */
-        bool                                        startClient();
+        void                                        startClient();
 
         /**
         * Use this method in order to register a callback object in order to get notification when a client joins to or leaves the network.
