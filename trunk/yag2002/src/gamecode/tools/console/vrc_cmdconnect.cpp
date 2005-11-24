@@ -83,10 +83,14 @@ const std::string& CmdConnect::execute( const std::vector< std::string >& argume
         serverip = addr;
     }
 
-    // try to join
-    if ( !yaf3d::NetworkDevice::get()->setupClient( serverip, channel, nodeinfo ) )
+    // try to setup client
+    try
     {
-        _cmdResult = "* cannot connect to server: '" + serverip + "'";
+        yaf3d::NetworkDevice::get()->setupClient( serverip, channel, nodeinfo );
+    }
+    catch ( yaf3d::NetworkExpection& e )
+    {
+        _cmdResult = "* cannot connect to server: '" + serverip + "', reason: " + e.what();
         return _cmdResult;
     }
 
@@ -114,9 +118,15 @@ const std::string& CmdConnect::execute( const std::vector< std::string >& argume
     yaf3d::LevelManager::get()->finalizeLoading();
 
     _cmdResult += "starting client ...\n";
-    if ( !yaf3d::NetworkDevice::get()->startClient() )
+
+    // try to start the networking
+    try
     {
-        _cmdResult = "* cannot start client";
+        yaf3d::NetworkDevice::get()->startClient();
+    }
+    catch ( yaf3d::NetworkExpection& e )
+    {
+        _cmdResult = "* cannot start client, reason: " + e.what();
         return _cmdResult;
     }
 
