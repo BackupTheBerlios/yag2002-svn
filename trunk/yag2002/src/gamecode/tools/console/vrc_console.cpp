@@ -29,6 +29,7 @@
  ################################################################*/
 
 #include <vrc_main.h>
+#include <vrc_gameutils.h>
 #include "vrc_console.h"
 #include "vrc_consoleiobase.h"
 #include "vrc_consoleiogui.h"
@@ -91,7 +92,9 @@ void EnConsole::handleNotification( const yaf3d::EntityNotification& notificatio
             if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
             {
                 std::cout << std::endl;
-                std::cout << "starting VRC server console version " << YAF3D_VERSION << std::endl;
+                std::cout << "================================" << std::endl;
+                std::cout << "=== VRC server console ready ===" << std::endl;
+                std::cout << "================================" << std::endl;
                 std::cout << std::endl;
             }
             break;
