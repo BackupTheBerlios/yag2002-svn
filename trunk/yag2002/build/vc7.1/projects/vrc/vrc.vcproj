@@ -577,6 +577,12 @@
 							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdcd.h">
 						</File>
 						<File
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdconfigget.cpp">
+						</File>
+						<File
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdconfigget.h">
+						</File>
+						<File
 							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdconfiglist.cpp">
 						</File>
 						<File
@@ -623,12 +629,6 @@
 						</File>
 						<File
 							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdexec.h">
-						</File>
-						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdgetconfig.cpp">
-						</File>
-						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdgetconfig.h">
 						</File>
 						<File
 							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdhelp.cpp">
@@ -713,12 +713,6 @@
 						</File>
 						<File
 							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdserverstart.h">
-						</File>
-						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdsetconfig.cpp">
-						</File>
-						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdsetconfig.h">
 						</File>
 						<File
 							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdshowfps.cpp">
@@ -810,6 +804,9 @@
 			</Filter>
 		</Filter>
 		<File
+			RelativePath=".\VRC.rc">
+		</File>
+		<File
 			RelativePath="..\..\..\..\src\gamecode\vrc_exceptionlogger.cpp">
 		</File>
 		<File
@@ -839,9 +836,6 @@
 		</File>
 		<File
 			RelativePath="..\..\..\..\src\gamecode\vrc_main.h">
-		</File>
-		<File
-			RelativePath=".\VRC.rc">
 		</File>
 	</Files>
 	<Globals>
