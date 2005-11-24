@@ -84,7 +84,7 @@ Application::~Application()
 
 void Application::shutdown()
 {
-    log << Log::LogLevel( Log::L_INFO ) << std::endl;
+    log_info << std::endl;
     log << "---------------------------------------" << std::endl;
     log << "shutting down, time: " << yaf3d::getTimeStamp() << std::endl;
 
@@ -194,20 +194,20 @@ bool Application::initialize( int argc, char **argv )
     log.addSink( "stdout", std::cout, Log::L_ERROR );
 
     log.enableSeverityLevelPrinting( false );
-    log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------"    << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "yaf3d -- Yet another Framework 3D      "    << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "version: " << std::string( YAF3D_VERSION )  << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "project: Yag2002"                           << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "site:    http://yag2002.sourceforge.net"    << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "contact: botorabi@gmx.net"                  << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "---------------------------------------"    << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << std::endl;
+    log_info << "---------------------------------------"    << std::endl;
+    log_info << "yaf3d -- Yet another Framework 3D      "    << std::endl;
+    log_info << "version: " << std::string( YAF3D_VERSION )  << std::endl;
+    log_info << "project: Yag2002"                           << std::endl;
+    log_info << "site:    http://yag2002.sourceforge.net"    << std::endl;
+    log_info << "contact: botorabi@gmx.net"                  << std::endl;
+    log_info << "---------------------------------------"    << std::endl;
+    log_info << std::endl;
     log.enableSeverityLevelPrinting( true );
 
-    log << Log::LogLevel( Log::L_INFO ) << "time: " << yaf3d::getTimeStamp() << std::endl;
-    log << Log::LogLevel( Log::L_INFO ) << "initializing viewer" << std::endl;
+    log_info << "time: " << yaf3d::getTimeStamp() << std::endl;
+    log_info << "initializing viewer" << std::endl;
 
-    log << Log::LogLevel( Log::L_INFO ) << "using media path: " << _mediaPath << std::endl;
+    log_info << "using media path: " << _mediaPath << std::endl;
 
     // setup the viewer
     //----------
@@ -256,7 +256,7 @@ bool Application::initialize( int argc, char **argv )
     // setup keyboard map
     std::string keybType;
     Configuration::get()->getSettingValue( YAF3D_GS_KEYBOARD, keybType );
-    log << Log::LogLevel( Log::L_INFO ) << "setup keyboard map to: " << keybType << std::endl;
+    log_info << "setup keyboard map to: " << keybType << std::endl;
     if ( keybType == YAF3D_GS_KEYBOARD_ENGLISH )
         KeyMap::get()->setup( KeyMap::English );
     else
@@ -270,7 +270,7 @@ bool Application::initialize( int argc, char **argv )
     _p_networkDevice->lockObjects();
     if ( GameState::get()->getMode() == GameState::Server )
     {
-        log << Log::LogLevel( Log::L_INFO ) << "loading level '" << arg_levelname << "'" << std::endl;
+        log_info << "loading level '" << arg_levelname << "'" << std::endl;
         // load the level and setup things
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( YAF3D_LEVEL_SERVER_DIR + arg_levelname );
         if ( !sceneroot.valid() )
@@ -282,7 +282,17 @@ bool Application::initialize( int argc, char **argv )
         NodeInfo nodeinfo( arg_levelname, servername );
         unsigned int channel;
         Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
-        _p_networkDevice->setupServer( channel, nodeinfo );
+
+        // try to setup server
+        try
+        {
+            _p_networkDevice->setupServer( channel, nodeinfo );
+        }
+        catch ( NetworkExpection& e )
+        {
+            log_error << "*** error starting server, reason: " << e.what() << std::endl;
+            return false;
+        }
 
         // complete level loading
         LevelManager::get()->finalizeLoading();
@@ -299,15 +309,20 @@ bool Application::initialize( int argc, char **argv )
         unsigned int channel;
         Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
 
-        if ( !_p_networkDevice->setupClient( url, channel, nodeinfo ) )
+        // try to setup client networking
+        try
         {
-            log << Log::LogLevel( Log::L_ERROR ) << "cannot setup client networking, exiting ..." << std::endl;
+            _p_networkDevice->setupClient( url, channel, nodeinfo );
+        }
+        catch ( NetworkExpection& e )
+        {
+            log_error << "*** error setting up client networking, reason: " << e.what() << std::endl;
             return false;
         }
 
         // now load level
         std::string levelname = YAF3D_LEVEL_CLIENT_DIR + _p_networkDevice->getNodeInfo()->getLevelName();
-        log << Log::LogLevel( Log::L_INFO ) << "loading level '" << levelname << "'" << std::endl;
+        log_info << "loading level '" << levelname << "'" << std::endl;
         // load the level and setup things
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( levelname );
         if ( !sceneroot.valid() )
@@ -322,7 +337,7 @@ bool Application::initialize( int argc, char **argv )
     }
     else // check for any level file name, so we try to start in Standalone mode
     {
-        log << Log::LogLevel( Log::L_INFO ) << "loading level '" << arg_levelname << "'" << std::endl;
+        log_info << "loading level '" << arg_levelname << "'" << std::endl;
         // set game mode
         GameState::get()->setMode( GameState::Standalone );
         // load the level and setup things
@@ -355,7 +370,17 @@ void Application::run()
     // now the network can start
     if ( GameState::get()->getMode() == GameState::Client )
     {
-        _p_networkDevice->startClient();
+        // try to start client networking
+        try
+        {
+            _p_networkDevice->startClient();
+        }
+        catch ( NetworkExpection& e )
+        {
+            log_error << "*** error starting client networking, reason: " << e.what() << std::endl;
+            _p_gameState->setState( GameState::Quitting );
+        }
+
         _p_networkDevice->unlockObjects();
     }
     else if ( GameState::get()->getMode() == GameState::Server )
