@@ -209,7 +209,7 @@ class NetworkDevice : public Singleton< NetworkDevice >
         * \param channel                            Channel
         * \param nodeInfo                           Server information such as server and level name
         */
-        void                                        setupServer( int channel, const NodeInfo& nodeInfo );
+        void                                        setupServer( int channel, const NodeInfo& nodeInfo ) throw ( NetworkExpection );
 
         /**
         * Setup a client session joining to a server ( throws exception )
@@ -217,12 +217,12 @@ class NetworkDevice : public Singleton< NetworkDevice >
         * \param channel                            Channel
         * \param nodeInfo                           Client information
         */
-        void                                        setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo );
+        void                                        setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo ) throw ( NetworkExpection );
 
         /**
         * Start the client processing. Call this after SetupClient ( throws exception ).
         */
-        void                                        startClient();
+        void                                        startClient() throw ( NetworkExpection );
 
         /**
         * Use this method in order to register a callback object in order to get notification when a client joins to or leaves the network.

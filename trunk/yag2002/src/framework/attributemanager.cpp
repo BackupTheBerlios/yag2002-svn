@@ -124,6 +124,8 @@ bool AttributeManager::setAttributeValue( const std::string &name, const std::st
     {
         bRet = setAttributeValue( name, value );
     }
+    else
+        log_error << "trying to set unsupported attribute type '" << citype << "'" << std::endl;
 
     return bRet;
 }
@@ -137,7 +139,10 @@ bool AttributeManager::setAttributeValueByString( const std::string& name, const
             break;
     }
     if ( p_beg == p_end )
+    {
+        log_error << "cannot find attribute '" << name << "'" << std::endl;
         return false;
+    }
 
     EntityAttributeBase* p_attribute = *p_beg;
     std::stringstream strvalue;
@@ -255,9 +260,7 @@ AttributeManager& AttributeManager::operator = ( AttributeManager& attr )
     // copy attribute values
     std::vector< EntityAttributeBase* >::iterator p_beg = attr.getAttributes().begin(), p_end = attr.getAttributes().end();
     for ( ; p_beg != p_end; ++p_beg )
-    {
         setAttributeValue( ( *p_beg )->getName(), **p_beg );
-    }
 
     return *this;
 }

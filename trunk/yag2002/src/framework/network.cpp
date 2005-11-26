@@ -199,7 +199,7 @@ void NetworkDevice::shutdown()
     destroy();
 }
 
-void NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
+void NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  ) throw ( NetworkExpection )
 {
     // do we already have a session created?
     assert( _p_session == NULL && "there is already a running session!" );
@@ -244,7 +244,7 @@ void NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  )
     log_info << "nw server: session established: " << url << std::endl;
 }
 
-void NetworkDevice::setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo )
+void NetworkDevice::setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo ) throw ( NetworkExpection )
 {
     log_info << "starting client, time: " << yaf3d::getTimeStamp() << std::endl;
     log_info << "networking protocol version: " << getProtocolVersionAsString( YAF3D_NETWORK_PROT_VERSION ) << std::endl;
@@ -369,7 +369,7 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
     _mode = NetworkDevice::CLIENT;
 }
 
-void NetworkDevice::startClient()
+void NetworkDevice::startClient() throw ( NetworkExpection )
 {
     if ( !_clientSessionStable )
     {
