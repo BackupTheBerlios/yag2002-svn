@@ -1,22 +1,9 @@
 
-Project Yag2002
+project Yag2002
 
-http://yag2002.sourceforge.net
-
-03/15/2005
-
-Contact: botorabi@gmx.net
+contact:  botorabi At gmx DOt net
 
 
-In order to build the project following external libs are needed:
 
+visit http://yag2002.sourceforge.net for information on getting the dev pack for this project.
 
-- OpenSceneGraph            http://www.openscenegraph.org
-
-- TinyXML                   http://sourceforge.net/projects/tinyxml
-
-- Newton (Phyiscs)          http://www.physicsengine.com
-
-- ReplicaNet (Networking)   http://www.replicanet.com
-
-- openAL and its c++ wrapper
