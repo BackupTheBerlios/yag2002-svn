@@ -371,7 +371,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
             AttributeManager& attrMgr = p_entity->getAttributeManager();
             if ( !attrMgr.setAttributeValue( p_paramName, p_paramType, p_paramValue ) )
             {
-                log_debug << "cannot find entity parameter '" << p_paramName << "'" << std::endl;
+                log_error << "cannot find entity parameter '" << p_paramName << "'" << std::endl;
             }
         }
 
@@ -436,7 +436,7 @@ void LevelManager::initializeFirstTime()
         osgAL::SoundManager* p_soundManager = osgAL::SoundManager::instance();
         try 
         {
-            p_soundManager->init( 16 );
+            p_soundManager->init( 32 );
             p_soundManager->getEnvironment()->setDistanceModel( openalpp::InverseDistance );
             p_soundManager->getEnvironment()->setDopplerFactor( 1.0f );
             osg::ref_ptr< osgAL::SoundRoot > soundRoot = new osgAL::SoundRoot;
