@@ -187,13 +187,20 @@
 </node>
 </node>
 <node TEXT="networking">
-<node TEXT="80%">
+<node TEXT="90%">
 <icon BUILTIN="messagebox_warning"/>
 </node>
 </node>
 <node TEXT="chat functionality">
-<node TEXT="90%">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="VRC">
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
+</node>
+</node>
+<node TEXT="IRC">
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
+</node>
 </node>
 </node>
 <node TEXT="hud">
@@ -329,8 +336,8 @@
 </node>
 </node>
 <node TEXT="console">
-<node TEXT="70%">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 </node>
