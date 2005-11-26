@@ -1,8 +1,9 @@
 
-download the latest media package at:
+project Yag2002
 
- http://developer.berlios.de/project/showfiles.php?group_id=2373&release_id=5639
+contact:  botorabi At gmx DOt net
 
 
-cheers
-boto
+
+visit http://yag2002.sourceforge.net for information on getting sample media for this project.
+
