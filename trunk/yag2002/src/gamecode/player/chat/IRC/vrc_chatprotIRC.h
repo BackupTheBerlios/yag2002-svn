@@ -59,7 +59,7 @@ class ChatNetworkingIRC : public OpenThreads::Thread, public BaseChatProtocol
         ChatNetworkingIRC*                          createInstance();
 
         //! Connect to an IRC server
-        void                                        createConnection( const ChatConnectionConfig& conf );
+        void                                        createConnection( const ChatConnectionConfig& conf ) throw ( ChatExpection );
 
         //! Destroy connection to server
         void                                        destroyConnection();

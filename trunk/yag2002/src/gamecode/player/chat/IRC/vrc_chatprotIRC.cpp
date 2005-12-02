@@ -389,7 +389,7 @@ void ChatNetworkingIRC::recvNicknameChange( const std::string& channel, const st
         p_beg->second->onNicknameChanged( newname, oldname );
 }
 
-void ChatNetworkingIRC::createConnection( const ChatConnectionConfig& conf )
+void ChatNetworkingIRC::createConnection( const ChatConnectionConfig& conf ) throw ( ChatExpection )
 {
     if ( conf._port == 0 )
     {
