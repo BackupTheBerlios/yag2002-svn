@@ -262,10 +262,18 @@ void ImplChatNetworkingVRC::RPC_ChangedNickname( tChatData chatdata )
     // store new or changed nickname
     _nickNames[ chatdata._sessionID ] = newname;
 
-    if ( chatdata._sessionID == _clientSID )
+    if ( chatdata._sessionID == _clientSID ) // this means _we_ have changed our nick name
+    {
         _p_protVRC->recvNicknameChange( newname, newname );
-    else
+
+        // if _we_ changed our nick name then change also the player name ( only on client )
+        vrc::EnPlayer* p_player = dynamic_cast< vrc::EnPlayer* >( vrc::gameutils::PlayerUtils::get()->getLocalPlayer() );
+        p_player->setPlayerName( newname );
+    }
+    else // another one has changed nickname
+    {
         _p_protVRC->recvNicknameChange( newname, oldname );
+    }
 
     // notify for updating member list
     _p_protVRC->recvMemberList( "" );
@@ -412,7 +420,7 @@ ChatNetworkingVRC* ChatNetworkingVRC::createInstance()
     return this;
 }
 
-void ChatNetworkingVRC::createConnection( const vrc::ChatConnectionConfig& conf )
+void ChatNetworkingVRC::createConnection( const vrc::ChatConnectionConfig& conf ) throw ( vrc::ChatExpection )
 {
 }
 
@@ -479,9 +487,6 @@ void ChatNetworkingVRC::recvNicknameChange( const std::string& newname, const st
     for ( ; p_beg != p_end; ++p_beg )
         if ( ( p_beg->first == _p_config->_channel ) || ( p_beg->first == "*" ) )
             p_beg->second->onNicknameChanged( newname, oldname );
-
-    // we change the player name too
-    vrc::gameutils::PlayerUtils::get()->changeLocalPlayerName( newname );
 }
 
 void ChatNetworkingVRC::recvMessage( const std::string& channel, const std::string& sender, const std::string& msg )

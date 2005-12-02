@@ -39,6 +39,7 @@
 
 class ChatNetworkingVRC;
 class vrc::ChatConnectionConfig;
+class vrc::ChatExpection;
 
 //!  Networking implementation for VRC protocol
 class ImplChatNetworkingVRC : _RO_DO_PUBLIC_RO( ImplChatNetworkingVRC ), public yaf3d::SessionNotifyCallback
@@ -147,7 +148,7 @@ class ChatNetworkingVRC : public vrc::BaseChatProtocol
         ChatNetworkingVRC*                          createInstance();
 
         //! Create a new connection to a chat server
-        void                                        createConnection( const vrc::ChatConnectionConfig& conf );
+        void                                        createConnection( const vrc::ChatConnectionConfig& conf ) throw ( vrc::ChatExpection );
 
         //! This method is called uppon establishing the connection
         void                                        connected();
