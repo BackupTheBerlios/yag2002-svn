@@ -32,16 +32,49 @@
 #include "vrc_main.h"
 #include <application.h>
 
+void errormsg();
+
 int main( int argc, char *argv[] )
 {
-    yaf3d::Application* p_app = yaf3d::Application::get();
-    
-    if ( !p_app->initialize( argc, argv ) )
-        return -1;
+    yaf3d::Application* p_app = NULL;
+    try
+    {
+        p_app = yaf3d::Application::get();
 
-    p_app->run();
-    p_app->shutdown();
+        if ( !p_app->initialize( argc, argv ) )
+            return -1;
+
+        p_app->run();
+        p_app->shutdown();
+    }
+    catch ( std::exception& e )
+    {
+        log_error << "unhandled std exception occured: " << e.what() << std::endl;
+        errormsg();
+
+        p_app->shutdown();
+
+        return -1;
+    }
+
+#ifndef WIN32
+    catch ( ... )
+    {
+        log_error << "unhandled exception occured" << std::endl;
+        errormsg();
+
+        p_app->shutdown();
+
+        return -2;
+    }
+#endif
 
     return 0;
+}
+
+void errormsg()
+{
+    log_error << "please report this bug to project admin ( http://yag2002.sf.net )" << std::endl;
+    log_error << "please send also the vrc.crashreport and all log files in media directory" << std::endl;
 }
 
