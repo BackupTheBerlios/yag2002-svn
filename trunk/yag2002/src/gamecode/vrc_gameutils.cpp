@@ -35,11 +35,13 @@
 YAF3D_SINGLETON_IMPL( vrc::gameutils::PlayerUtils );
 YAF3D_SINGLETON_IMPL( vrc::gameutils::GuiUtils );
 
-#define GUI_SND_FILE_CLICK                  "gui/click.wav"
+#define GUI_SND_FILE_CLICK                  "gui/sound/click.wav"
 #define GUI_SND_VOL_CLICK                   0.2f
-#define GUI_SND_FILE_HOVER                  "gui/hover.wav"
+#define GUI_SND_FILE_HOVER                  "gui/sound/hover.wav"
 #define GUI_SND_VOL_HOVER                   0.2f
-#define GUI_SND_FILE_ATTENTION              "gui/attention.wav"
+#define GUI_SND_FILE_SCROLLBAR              "gui/sound/scrollbar.wav"
+#define GUI_SND_VOL_SCROLLBAR               0.2f
+#define GUI_SND_FILE_ATTENTION              "gui/sound/attention.wav"
 #define GUI_SND_VOL_ATTENTION               0.2f
 
 namespace vrc
@@ -105,6 +107,7 @@ _p_rootWindow( NULL )
     // setup standard gui sounds
     createSound( GUI_SND_NAME_CLICK, GUI_SND_FILE_CLICK, GUI_SND_VOL_CLICK );
     createSound( GUI_SND_NAME_HOVER, GUI_SND_FILE_HOVER, GUI_SND_VOL_HOVER );
+    createSound( GUI_SND_NAME_SCROLLBAR, GUI_SND_FILE_SCROLLBAR, GUI_SND_VOL_SCROLLBAR );
     createSound( GUI_SND_NAME_ATTENTION, GUI_SND_FILE_ATTENTION, GUI_SND_VOL_ATTENTION );
 }
 
@@ -183,14 +186,11 @@ osg::ref_ptr< osgAL::SoundState > GuiUtils::createSound( const std::string& name
         return NULL;
     }
 
-    std::string dir  = yaf3d::extractPath( filename );
-    std::string file = yaf3d::extractFileName( filename );
-    osgAL::SoundManager::instance()->addFilePath( yaf3d::Application::get()->getMediaPath() + dir );
-
     openalpp::Sample* p_sample = NULL;
-    try {
-
-        p_sample = osgAL::SoundManager::instance()->getSample( file );
+    try 
+    {
+        std::string soundfile( yaf3d::Application::get()->getMediaPath() + filename );
+        p_sample = osgAL::SoundManager::instance()->getSample( soundfile );
         if ( !p_sample )
         {
             log_warning << "*** cannot create sampler for '" << filename << "'" << std::endl;
@@ -212,24 +212,35 @@ osg::ref_ptr< osgAL::SoundState > GuiUtils::createSound( const std::string& name
     uniquename << name;
     uniquename << uniqueId;
     ++uniqueId;
-    osg::ref_ptr< osgAL::SoundState > soundState = new osgAL::SoundState( uniquename.str() );
-    // let the soundstate use the sample we just created
-    soundState->setSample( p_sample );
-    float vol = std::max( std::min( volume, 1.0f ), 0.0f );
-    soundState->setGain( vol );
-    // set its pitch to 1 (normal speed)
-    soundState->setPitch( 1.0f );
+    
+    try
+    {
+        osg::ref_ptr< osgAL::SoundState > soundState = new osgAL::SoundState( uniquename.str() );
+        // let the soundstate use the sample we just created
+        soundState->setSample( p_sample );
+        float vol = std::max( std::min( volume, 1.0f ), 0.0f );
+        soundState->setGain( vol );
+        // set its pitch to 1 (normal speed)
+        soundState->setPitch( 1.0f );
 
-    soundState->setPlay( false );
-    soundState->setLooping( false );
-    soundState->setAmbient( true );
-    // allocate a hardware soundsource to this soundstate (priority 10)
-    soundState->allocateSource( 10, false );
-    soundState->apply();
+        soundState->setPlay( false );
+        soundState->setLooping( false );
+        soundState->setAmbient( true );
+        // allocate a hardware soundsource to this soundstate ( middle priority 5 )
+        soundState->allocateSource( 5, false );
+        soundState->apply();
 
-    _soundMap[ name ] = soundState;
+        _soundMap[ name ] = soundState;
 
-    return soundState;
+        return soundState;
+    }
+    catch ( std::runtime_error& e )
+    {
+        log_error << "problem creating sound '" << filename << "'" << std::endl;
+        log_error << " reason: " << e.what() << std::endl;
+    }
+
+    return NULL;
  }
 
 osg::ref_ptr< osgAL::SoundState > GuiUtils::getSound( const std::string& name )
@@ -314,19 +325,6 @@ yaf3d::BaseEntity* PlayerUtils::getLocalPlayer()
 void PlayerUtils::setLocalPlayer( yaf3d::BaseEntity* p_entity )
 {
     _p_localPlayer = p_entity;
-}
-
-void PlayerUtils::changeLocalPlayerName( const std::string& name )
-{
-    if ( !_p_localPlayer )
-        return;
-
-    // change the player name in configuration
-    yaf3d::Configuration::get()->setSettingValue( VRC_GS_PLAYER_NAME, name );
-
-    // send a notification that the player name has been changed
-    yaf3d::EntityNotification ennotify( PLAYER_NOTIFY_NAME_CHANGED );
-    yaf3d::EntityManager::get()->sendNotification( ennotify );
 }
 
 void PlayerUtils::addRemotePlayer( yaf3d::BaseEntity* p_entity )

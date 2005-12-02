@@ -41,10 +41,6 @@ namespace gameutils
 //! VRC version
 #define VRC_VERSION                         "0.5.0"
 
-
-//! Game code specific notifications ( all begining with 0xA )
-#define PLAYER_NOTIFY_NAME_CHANGED          0xA0000001          // notification for player name change
-
 //! Game code's configuration setting names
 #define VRC_GS_PLAYER_NAME                  "playerName"
 #define VRC_GS_PLAYER_CONFIG_DIR            "playerConfigDir"
@@ -64,6 +60,7 @@ namespace gameutils
 //! GUI's standard sounds
 #define GUI_SND_NAME_CLICK                  "cgui_cli"
 #define GUI_SND_NAME_HOVER                  "cgui_hov"
+#define GUI_SND_NAME_SCROLLBAR              "cgui_scr"
 #define GUI_SND_NAME_ATTENTION              "cgui_att"
 
 
@@ -119,9 +116,6 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
 
         //! Stores a pointer to local player entity
         void                                        setLocalPlayer( yaf3d::BaseEntity* p_entity );
-
-        //! Change the name of local player
-        void                                        changeLocalPlayerName( const std::string& name );
 
         //! Return the previousely set local player entity
         yaf3d::BaseEntity*                          getLocalPlayer();
