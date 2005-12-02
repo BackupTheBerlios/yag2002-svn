@@ -49,7 +49,6 @@ _wasPlaying( false ),
 _p_soundNode( NULL )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "resourceDir" , _soundFileDir   );
     getAttributeManager().addAttribute( "soundFile",    _soundFile      );
     getAttributeManager().addAttribute( "position",     _position       );
     getAttributeManager().addAttribute( "loop",         _loop           );
@@ -97,13 +96,10 @@ void En3DSound::handleNotification( const yaf3d::EntityNotification& notificatio
 
 void En3DSound::initialize()
 {
-    // set file search path for sound resources
-    osgAL::SoundManager::instance()->addFilePath( yaf3d::Application::get()->getMediaPath() + _soundFileDir );
-
     openalpp::Sample* p_sample = NULL;
     try {
 
-        p_sample = osgAL::SoundManager::instance()->getSample( _soundFile );
+        p_sample = osgAL::SoundManager::instance()->getSample( yaf3d::Application::get()->getMediaPath() + _soundFile );
         if ( !p_sample )
             return;
 
@@ -122,33 +118,42 @@ void En3DSound::initialize()
     uniquename << getInstanceName();
     uniquename << uniqueId;
     ++uniqueId;
-    _soundState = new osgAL::SoundState( uniquename.str() );
 
-    // let the soundstate use the sample we just created
-    _soundState->setSample( p_sample );
-    _soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
-    // set its pitch to 1 (normal speed)
-    _soundState->setPitch( 1 );
-    
-    // automatically start playing?
-    _soundState->setPlay( _autoPlay );
-    _isPlaying = _autoPlay;
+    try
+    {
+        _soundState = new osgAL::SoundState( uniquename.str() );
 
-    // the sound should loop over and over again
-    _soundState->setLooping( _loop );
-    // allocate a hardware soundsource to this soundstate (priority 10)
-    _soundState->allocateSource( 10, false );
+        // let the soundstate use the sample we just created
+        _soundState->setSample( p_sample );
+        _soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
+        // set its pitch to 1 (normal speed)
+        _soundState->setPitch( 1 );
 
-    // to make a radial 3d sound source we first have to make the source ambient then add rolloff
-    _soundState->setAmbient( true );
-    _soundState->setRolloffFactor( _rolloffFac );
-    _soundState->setReferenceDistance( _referenceDist );
+        // automatically start playing?
+        _soundState->setPlay( _autoPlay );
+        _isPlaying = _autoPlay;
 
-    _soundState->setPosition( _position );
+        // the sound should loop over and over again
+        _soundState->setLooping( _loop );
+        // allocate a hardware soundsource to this soundstate (priority 10)
+        _soundState->allocateSource( 10, false );
 
-    // create a sound node and attach the soundstate to it.
-    _p_soundNode = new osgAL::SoundNode;
-    _p_soundNode->setSoundState( _soundState.get() );
+        // to make a radial 3d sound source we first have to make the source ambient then add rolloff
+        _soundState->setAmbient( true );
+        _soundState->setRolloffFactor( _rolloffFac );
+        _soundState->setReferenceDistance( _referenceDist );
+
+        _soundState->setPosition( _position );
+
+        // create a sound node and attach the soundstate to it.
+        _p_soundNode = new osgAL::SoundNode;
+        _p_soundNode->setSoundState( _soundState.get() );
+    }
+    catch ( std::runtime_error& e )
+    {
+        log_error << "problem creating sound '" << _soundFile << "'" << std::endl;
+        log_error << " reason: " << e.what() << std::endl;
+    }
 
     // this is for debugging
     if ( _sourceMesh.length() )

@@ -69,9 +69,6 @@ class EnAmbientSound : public yaf3d::BaseEntity
         // Handler system notifications
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
-        //! Resource directory for searching for sound files
-        std::string                                 _soundFileDir;
-
         //! Sound file name
         std::string                                 _soundFile;
 

@@ -69,9 +69,6 @@ class En3DSound : public yaf3d::BaseEntity
         //! This entity needs updating
         void                                        updateEntity( float deltaTime );
 
-        //! Resource directory for searching for sound files
-        std::string                                 _soundFileDir;
-
         //! Sound file name
         std::string                                 _soundFile;
 
