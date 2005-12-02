@@ -39,6 +39,9 @@ namespace vrc
 #define CHATLAYOUT_PREFIX           "chatbox_"
 #define FADE_TIME                   1.0f
 
+// delay in seconds for editbox activation
+#define EDITBOX_ACTIVATION_DELAY    0.7f
+
 #define VRC_IMAGE_SET               "VRCImageSet"
 #define VRC_IMAGE_SET_FILE          "gui/imagesets/VRCImageSet.imageset"
 
@@ -274,9 +277,13 @@ bool ChatGuiBox::ChannelTabPane::isSelected()
 void ChatGuiBox::ChannelTabPane::setEditBoxFocus( bool en )
 {
     if ( en )
+    {
         _p_editbox->activate();
+    }
     else
+    {
         _p_editbox->deactivate();
+    }
 }
 
 void ChatGuiBox::ChannelTabPane::onReceive( const std::string& channel, const std::string& sender, const std::string& msg )
@@ -392,8 +399,9 @@ _p_btnConnectIRC( NULL ),
 _p_btnOpen( NULL ),
 _p_btnMsgArrived( NULL ),
 _p_tabCtrl( NULL ),
-_modeEdit( false ),
-_fadeTimer( 0 ),
+_editBoxActivationCounter( 0.0f ),
+_editBoxActivationTab( NULL ),
+_fadeTimer( 0.0f ),
 _frameAlphaValue( 1.0f ),
 _p_connectionDialog( NULL )
 {
@@ -632,6 +640,10 @@ void ChatGuiBox::setEditBoxFocus( bool en )
     if ( !_p_tabCtrl )
         return;
 
+    // if the chat box is not open so do not activate it
+    if ( en && ( _boxState == BoxHidden ) )
+        return;
+
     // search active pane and set selection to its edit box field
     if ( ( _p_tabCtrl->getTabCount() > 0 ) && ( _tabpanes.size() > 0 ) )
     {
@@ -641,7 +653,17 @@ void ChatGuiBox::setEditBoxFocus( bool en )
             if ( p_beg->second->isSelected() )
             {
                 // set focus to edit field of active pane
-                p_beg->second->setEditBoxFocus( en );
+                if ( !en )
+                {
+                    p_beg->second->setEditBoxFocus( false );
+                    _editBoxActivationCounter = -1.0f;
+                }
+                else
+                {
+                    // activation of edit box is delayed a little bit ( because of continuing of walk state, avoid inappropriate key press sensing )
+                    _editBoxActivationTab     = p_beg->second;
+                    _editBoxActivationCounter = EDITBOX_ACTIVATION_DELAY;
+                }
                 break;
             }
         }
@@ -724,6 +746,17 @@ void ChatGuiBox::update( float deltaTime )
         if ( ( _tabpanes.size() == 0 ) || ( ( _tabpanes.size() == 1 ) && ( _tabpanes[ 0 ].first._protocol == VRC_PROTOCOL_NAME ) ) )
             _p_chatMgr->closeConnections();
     }
+
+    // check for edit box activation counter
+    if ( _editBoxActivationCounter > 0.0f )
+    {
+        _editBoxActivationCounter -= deltaTime;
+        if ( _editBoxActivationCounter < 0.0 )
+        {
+            assert( _editBoxActivationTab && "tab is not set, set it together with tab activation counter!" );
+            _editBoxActivationTab->setEditBoxFocus( true );
+        }
+    }
 }
 
 void ChatGuiBox::show( bool visible )
@@ -799,9 +832,9 @@ bool ChatGuiBox::onClickedConnectIRC( const CEGUI::EventArgs& arg )
     conf._protocol = "IRC";
     //! TODO: read in these settings from a history file
     conf._port     = 6667;
-    conf._serverURL = "localhost";
+    conf._serverURL = "irc.freenode.net";
     conf._channel  = "#vrc";
-    conf._nickname = "boto";
+    conf._nickname = "my-nick";
 
     _p_connectionDialog->setConfiguration( conf );
 

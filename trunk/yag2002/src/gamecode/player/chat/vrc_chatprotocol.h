@@ -33,10 +33,10 @@
 #ifndef _VRC_CHATPROTOCOLS_H_
 #define _VRC_CHATPROTOCOLS_H_
 
-
 namespace vrc
 {
 
+class ChatExpection;
 class BaseChatProtocol;
 class ChatConnectionConfig;
 
@@ -112,13 +112,13 @@ class BaseChatProtocol
 
         //! Register a protocol callback for given channel filter. Use asterix '*' for channel name to get unfiltered callbacks.
         //! It is possible to register the same callback object for several channels.
-        void                                        registerProtocolCallback( ChatProtocolCallback* p_cb, const std::string& channelname = "*" );
+        void                                        registerProtocolCallback( ChatProtocolCallback* p_cb, const std::string& channelname = "*" ) throw ( ChatExpection );
 
         //! Deregister protocol callback for given channel. The callback object is deleted.
-        void                                        deregisterProtocolCallback( const std::string& channelname );
+        void                                        deregisterProtocolCallback( const std::string& channelname ) throw ( ChatExpection );
 
         //! Deregister a protocol callback object and all of its associated channels. The callback objects are deleted.
-        void                                        deregisterProtocolCallback( const ChatProtocolCallback* p_cb );
+        void                                        deregisterProtocolCallback( const ChatProtocolCallback* p_cb ) throw ( ChatExpection );
 
     protected:
 

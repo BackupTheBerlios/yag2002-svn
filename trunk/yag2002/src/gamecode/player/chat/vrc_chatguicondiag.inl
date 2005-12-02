@@ -42,6 +42,7 @@ _p_parent( p_parent )
     try
     {
         _p_frame = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", std::string( CONDIALOGLAYOUT_PREFIX "_connect_dialog_" ) ) );
+        _p_frame->subscribeEvent( CEGUI::PushButton::EventKeyDown, CEGUI::Event::Subscriber( &vrc::ConnectionDialog< TypeT >::onKeyDown, this ) );
         _p_frame->setPosition( CEGUI::Point( 0.35f, 0.1f ) ); 
         _p_frame->setSize( CEGUI::Size( 0.3f, 0.4f ) );
         _p_frame->setAlwaysOnTop( true );
@@ -79,6 +80,7 @@ _p_parent( p_parent )
         _p_frame->addChildWindow( p_stServerUrl );
 
         _p_editServerUrl = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CONDIALOGLAYOUT_PREFIX "_connect_dialog_st_editserverurl_" ) ) );
+        _p_editServerUrl->subscribeEvent( CEGUI::PushButton::EventKeyDown, CEGUI::Event::Subscriber( &vrc::ConnectionDialog< TypeT >::onKeyDown, this ) );
         _p_editServerUrl->setPosition( CEGUI::Point( 0.5f, 0.24f ) ); 
         _p_editServerUrl->setSize( CEGUI::Size( 0.45f, 0.07f ) );
         _p_editServerUrl->setText( "irc.freenode.net" );
@@ -95,6 +97,7 @@ _p_parent( p_parent )
         _p_frame->addChildWindow( p_stChannel );
 
         _p_editChannel = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CONDIALOGLAYOUT_PREFIX "_connect_dialog_st_editchannel_" ) ) );
+        _p_editChannel->subscribeEvent( CEGUI::PushButton::EventKeyDown, CEGUI::Event::Subscriber( &vrc::ConnectionDialog< TypeT >::onKeyDown, this ) );
         _p_editChannel->setPosition( CEGUI::Point( 0.5f, 0.33f ) ); 
         _p_editChannel->setSize( CEGUI::Size( 0.45f, 0.07f ) );
         _p_editChannel->setText( "#" );
@@ -111,6 +114,7 @@ _p_parent( p_parent )
         _p_frame->addChildWindow( p_stNickName );
 
         _p_editNickName = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CONDIALOGLAYOUT_PREFIX "_connect_dialog_st_editnickname_" ) ) );
+        _p_editNickName->subscribeEvent( CEGUI::PushButton::EventKeyDown, CEGUI::Event::Subscriber( &vrc::ConnectionDialog< TypeT >::onKeyDown, this ) );
         _p_editNickName->setPosition( CEGUI::Point( 0.5f, 0.42f ) ); 
         _p_editNickName->setSize( CEGUI::Size( 0.45f, 0.07f ) );
         _p_editNickName->setText( "" );
@@ -127,6 +131,7 @@ _p_parent( p_parent )
         _p_frame->addChildWindow( p_stUserName );
 
         _p_editUserName = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CONDIALOGLAYOUT_PREFIX "_connect_dialog_st_editusername_" ) ) );
+        _p_editUserName->subscribeEvent( CEGUI::PushButton::EventKeyDown, CEGUI::Event::Subscriber( &vrc::ConnectionDialog< TypeT >::onKeyDown, this ) );
         _p_editUserName->setPosition( CEGUI::Point( 0.5f, 0.51f ) ); 
         _p_editUserName->setSize( CEGUI::Size( 0.45f, 0.07f ) );
         _p_editUserName->setText( "" );
@@ -143,6 +148,7 @@ _p_parent( p_parent )
         _p_frame->addChildWindow( p_stRealName );
 
         _p_editRealName = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CONDIALOGLAYOUT_PREFIX "_connect_dialog_st_editrealname_" ) ) );
+        _p_editRealName->subscribeEvent( CEGUI::PushButton::EventKeyDown, CEGUI::Event::Subscriber( &vrc::ConnectionDialog< TypeT >::onKeyDown, this ) );
         _p_editRealName->setPosition( CEGUI::Point( 0.5f, 0.60f ) ); 
         _p_editRealName->setSize( CEGUI::Size( 0.45f, 0.07f ) );
         _p_editRealName->setText( "" );
@@ -159,6 +165,7 @@ _p_parent( p_parent )
         _p_frame->addChildWindow( p_stPassword );
 
         _p_editPassword = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CONDIALOGLAYOUT_PREFIX "_connect_dialog_st_editpassword_" ) ) );
+        _p_editPassword->subscribeEvent( CEGUI::PushButton::EventKeyDown, CEGUI::Event::Subscriber( &vrc::ConnectionDialog< TypeT >::onKeyDown, this ) );
         _p_editPassword->setPosition( CEGUI::Point( 0.5f, 0.69f ) ); 
         _p_editPassword->setSize( CEGUI::Size( 0.45f, 0.07f ) );
         _p_editPassword->setText( "" );
@@ -175,6 +182,7 @@ _p_parent( p_parent )
         _p_frame->addChildWindow( p_stPort );
 
         _p_editPort = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", std::string( CONDIALOGLAYOUT_PREFIX "_connect_dialog_st_editport_" ) ) );
+        _p_editPort->subscribeEvent( CEGUI::PushButton::EventKeyDown, CEGUI::Event::Subscriber( &vrc::ConnectionDialog< TypeT >::onKeyDown, this ) );
         _p_editPort->setPosition( CEGUI::Point( 0.5f, 0.78f ) ); 
         _p_editPort->setSize( CEGUI::Size( 0.45f, 0.07f ) );
         _p_editPort->setText( "0" );
@@ -266,6 +274,19 @@ bool ConnectionDialog< TypeT >::onClickedConnect( const CEGUI::EventArgs& arg )
     port >> _cfg._port;
 
     _p_parent->onConnectionDialogClickedConnect( _cfg );
+
+    return true;
+}
+
+template< class TypeT >
+bool ConnectionDialog< TypeT >::onKeyDown( const CEGUI::EventArgs& arg )
+{
+    // check for 'Return' key
+    CEGUI::KeyEventArgs& ke = static_cast< CEGUI::KeyEventArgs& >( const_cast< CEGUI::EventArgs& >( arg ) );
+    if ( ( ke.codepoint == SDLK_RETURN ) || ( ke.scancode == CEGUI::Key::Return ) )
+    {
+        onClickedConnect( arg );
+    }
 
     return true;
 }

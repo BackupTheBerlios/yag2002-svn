@@ -36,7 +36,7 @@
 namespace vrc
 {
 
-void BaseChatProtocol::registerProtocolCallback( ChatProtocolCallback* p_cb, const std::string& channelname )
+void BaseChatProtocol::registerProtocolCallback( ChatProtocolCallback* p_cb, const std::string& channelname ) throw ( ChatExpection )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
     for ( ; p_beg != p_end; ++p_beg )
@@ -49,7 +49,7 @@ void BaseChatProtocol::registerProtocolCallback( ChatProtocolCallback* p_cb, con
     _protocolCallbacks.push_back( std::make_pair( channelname, p_cb ) );
 }
 
-void BaseChatProtocol::deregisterProtocolCallback( const std::string& channelname )
+void BaseChatProtocol::deregisterProtocolCallback( const std::string& channelname ) throw ( ChatExpection )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
     for ( ; p_beg != p_end; ++p_beg )
@@ -64,7 +64,7 @@ void BaseChatProtocol::deregisterProtocolCallback( const std::string& channelnam
     throw ChatExpection( "Callback for channel '" + channelname + "' does not exist." );
 }
 
-void BaseChatProtocol::deregisterProtocolCallback( const ChatProtocolCallback* p_cb )
+void BaseChatProtocol::deregisterProtocolCallback( const ChatProtocolCallback* p_cb ) throw ( ChatExpection )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
     for ( ; p_beg != p_end; ++p_beg )

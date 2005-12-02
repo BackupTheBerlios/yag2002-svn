@@ -187,7 +187,7 @@ class ChatManager : public ChatProtocolCallback
         bool                                        buildServer();
 
         //! Create a chat setting up a connection ( and joining to a channel if a channel is given )
-        void                                        createConnection( const ChatConnectionConfig& config );
+        void                                        createConnection( const ChatConnectionConfig& config ) throw ( ChatExpection );
 
         //! Close all connections
         void                                        closeConnections();

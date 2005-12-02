@@ -246,9 +246,12 @@ class ChatGuiBox
 
         TabPanePairList                             _tabpanes;
 
-        //! Fading in / out stuff
-        bool                                        _modeEdit;
+        //! Edit box activation stuff
+        float                                       _editBoxActivationCounter;
 
+        ChannelTabPane*                             _editBoxActivationTab;
+
+        //! Fading in / out stuff
         float                                       _fadeTimer;
 
         osg::Vec2f                                  _boxFrameSize;

@@ -124,7 +124,7 @@ void ChatManager::show( bool en )
     _p_chatGuiBox->show( en );
 }
 
-void ChatManager::createConnection( const ChatConnectionConfig& config )
+void ChatManager::createConnection( const ChatConnectionConfig& config ) throw ( ChatExpection )
 {
     // this method has no effect on server
     assert( !_serverMode && "don't call this method in server mode!" );

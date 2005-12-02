@@ -80,6 +80,9 @@ class ConnectionDialog
         //! Callback for clicking 'connect' button
         bool                                        onClickedConnect( const CEGUI::EventArgs& arg );
 
+        //! Callback for key down, checking for "Return" key
+        bool                                        onKeyDown( const CEGUI::EventArgs& arg );
+
         //! Callback for clicking 'cancel' button
         bool                                        onClickedCancel( const CEGUI::EventArgs& arg );
 
