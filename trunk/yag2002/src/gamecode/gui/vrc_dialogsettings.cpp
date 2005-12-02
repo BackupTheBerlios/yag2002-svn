@@ -523,12 +523,18 @@ bool DialogGameSettings::onTabChanged( const CEGUI::EventArgs& arg )
 
 bool DialogGameSettings::onMouseSensitivityChanged( const CEGUI::EventArgs& arg )
 {
+    // play scroll sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_SCROLLBAR );
+
     _mouseSensitivity = _p_mouseSensivity->getScrollPosition();
     return true;
 }
 
 bool DialogGameSettings::onKeyboardEnglishChanged( const CEGUI::EventArgs& arg )
 {    
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
     if ( _p_keyKeybEnglish->isSelected() )
         _p_keyKeybGerman->setSelected( false );
     else
@@ -539,6 +545,9 @@ bool DialogGameSettings::onKeyboardEnglishChanged( const CEGUI::EventArgs& arg )
 
 bool DialogGameSettings::onKeyboardGermanChanged( const CEGUI::EventArgs& arg )
 {    
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
     if ( _p_keyKeybGerman->isSelected() )
         _p_keyKeybEnglish->setSelected( false );
     else
@@ -598,6 +607,9 @@ bool DialogGameSettings::onClickedChatMode( const CEGUI::EventArgs& arg )
 
 bool DialogGameSettings::onFullscreenChanged( const CEGUI::EventArgs& arg )
 {
+    // play sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
     if ( _p_fullscreen->isSelected() ) 
     {
         _p_resolution->disable();
@@ -612,6 +624,9 @@ bool DialogGameSettings::onFullscreenChanged( const CEGUI::EventArgs& arg )
 
 void DialogGameSettings::senseKeybinding( CEGUI::PushButton* p_btn )
 {    
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
     // disable dialog so only the key sensing will be active
     _p_settingsDialog->disable();
     new BtnInputHandler( p_btn, this );

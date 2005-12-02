@@ -463,10 +463,7 @@ EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume, b
     }
 
     // setup entity parameters
-    std::string dir  = yaf3d::extractPath( filename );
-    std::string file = yaf3d::extractFileName( filename );
-    p_ent->getAttributeManager().setAttributeValue( "resourceDir", dir      );
-    p_ent->getAttributeManager().setAttributeValue( "soundFile",   file     );
+    p_ent->getAttributeManager().setAttributeValue( "soundFile",   filename );
     p_ent->getAttributeManager().setAttributeValue( "loop",        loop     );
     p_ent->getAttributeManager().setAttributeValue( "autoPlay",    false    );
     p_ent->getAttributeManager().setAttributeValue( "volume",      volume   );
