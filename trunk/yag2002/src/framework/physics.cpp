@@ -110,6 +110,9 @@ bool Physics::initialize()
     _p_world = NewtonCreate( physicsAlloc, physicsFree );   
     assert( _p_world );
 
+    // set minimum frame rate
+    NewtonSetMinimumFrameRate( _p_world, 1.0f / FIX_PHYSICS_UPDATE_PERIOD );
+
     NewtonSetSolverModel( _p_world, 0 );   // 0: exact, 1 adaptive, n linear. for games linear is ok
     NewtonSetFrictionModel( _p_world, 0 ); // 0: exact, 1 adaptive
 

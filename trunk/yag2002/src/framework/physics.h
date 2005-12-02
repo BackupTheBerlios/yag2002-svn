@@ -184,12 +184,12 @@ inline void Physics::update( float deltaTime )
     if ( !_p_world )
         return;
 
-    // Newton should be fed with fix timesteps
+    // Newton must be updated with fixed timesteps
     static float time_elapsed = 0;
     time_elapsed += deltaTime;
     if ( time_elapsed > FIX_PHYSICS_UPDATE_PERIOD )
     {
-        NewtonUpdate( _p_world, FIX_PHYSICS_UPDATE_PERIOD );
+        NewtonUpdate( _p_world, time_elapsed );
         time_elapsed -= FIX_PHYSICS_UPDATE_PERIOD;
     }
 }
