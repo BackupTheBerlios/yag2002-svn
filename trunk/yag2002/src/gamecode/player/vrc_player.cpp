@@ -98,15 +98,6 @@ void EnPlayer::handleNotification( const yaf3d::EntityNotification& notification
         }
         break;
 
-        //! Refresh the player name, it has been changed ( e.g. by chat system )
-        case PLAYER_NOTIFY_NAME_CHANGED:
-        {
-            std::string playername;
-            yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, playername );
-            setPlayerName( playername );
-        }
-        break;
-
         default:
             ;
     }
@@ -202,6 +193,22 @@ void EnPlayer::spawn()
     // set initial rotation and position
     setPosition( position );
     setRotation( rotation );
+}
+
+const std::string EnPlayer::getPlayerName() const
+{
+    if ( !_p_playerImpl )
+        return std::string( "NOT-SET" );
+
+    return _p_playerImpl->getPlayerName();
+}
+
+void EnPlayer::setPlayerName( const std::string& name )
+{
+    if( !_p_playerImpl )
+        return;
+
+    _p_playerImpl->setPlayerName( name );
 }
 
 void EnPlayer::updateEntity( float deltaTime )

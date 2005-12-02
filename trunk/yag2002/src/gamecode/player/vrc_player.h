@@ -136,10 +136,10 @@ class EnPlayer : public yaf3d::BaseEntity
         inline const PlayerAttributes &             getPlayerAttributes() const;
 
         //! Get player name
-        inline const std::string&                   getPlayerName() const;
+        const std::string                           getPlayerName() const;
 
         //! Set player name
-        inline void                                 setPlayerName( const std::string& name );
+        void                                        setPlayerName( const std::string& name );
 
     protected:
 
@@ -151,9 +151,6 @@ class EnPlayer : public yaf3d::BaseEntity
 
         //! Spawn player considering spawn points in level
         void                                        spawn();
-
-        //! Player name
-        std::string                                 _playerName;
 
         //! Player attributes encapsulated in a container, ready for transfering to player implementation
         PlayerAttributes                            _attributeContainer;
@@ -197,16 +194,6 @@ inline void EnPlayer::appendTransformationNode( osg::Node* p_node )
 inline void EnPlayer::removeTransformationNode( osg::Node* p_node )
 {
     removeFromTransformationNode( p_node );
-}
-
-inline const std::string& EnPlayer::getPlayerName() const
-{
-    return _playerName;
-}
-
-inline void EnPlayer::setPlayerName( const std::string& name )
-{
-    _playerName = name;
 }
 
 inline void EnPlayer::setPlayerImplementation( BasePlayerImplementation* p_impl )

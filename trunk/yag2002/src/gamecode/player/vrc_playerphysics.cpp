@@ -298,8 +298,8 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     NewtonBodyGetMassMatrix( p_body, &mass, &Ixx, &Iyy, &Izz );
     EnPlayerPhysics* p_phys = static_cast< EnPlayerPhysics* >( NewtonBodyGetUserData( p_body ) );
 
-    // get the current world timestep
-    timestep = NewtonGetTimeStep( p_phys->_p_world );
+    // get the current timestep
+    timestep = p_phys->_deltaTime;
     timestepInv = 1.0f / timestep;
 
     // calculate force basing on desired velocity
@@ -421,7 +421,8 @@ _jumpTimer( 0 ),
 _isJumping( false ),
 _highUpGradient( false ),
 _jumpState( BeginJumping ),
-_jumpForce( 5.0f )
+_jumpForce( 5.0f ),
+_deltaTime( 0.001f )
 { 
     // register entity in order to get notifications about physics building
     yaf3d::EntityManager::get()->registerNotification( this, true );   
@@ -605,6 +606,8 @@ void EnPlayerPhysics::updateEntity( float deltaTime )
 {
     _isAirBorne     = true;
     _highUpGradient = false;
+
+    _deltaTime      = deltaTime;
 
     if ( _soundTimer > 0.0f )
         _soundTimer -= deltaTime;

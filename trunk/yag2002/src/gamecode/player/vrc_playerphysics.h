@@ -263,6 +263,8 @@ class EnPlayerPhysics : public yaf3d::BaseEntity
 
         float                                       _jumpForce;
 
+        float                                       _deltaTime;
+
         //! Body matrix
         osg::Matrixf                                _matrix;
 };

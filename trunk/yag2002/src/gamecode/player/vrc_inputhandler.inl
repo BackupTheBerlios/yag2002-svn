@@ -107,9 +107,14 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 // let the chat control know that we are in edit mode now
                 getPlayerImpl()->getChatManager()->activateBox( s_toggleChatMode );
 
-                // stop player and sound
-                getPlayerImpl()->getPlayerAnimation()->animIdle();
-                getPlayerImpl()->getPlayerPhysics()->stopMovement();
+                // continue the current movement when toggling from walk to edit mode
+                //  so allowing chatting during moving ( it was requested by the community )
+                if ( !s_toggleChatMode )
+                {
+                    // stop player and sound
+                    getPlayerImpl()->getPlayerAnimation()->animIdle();
+                    getPlayerImpl()->getPlayerPhysics()->stopMovement();
+                }
             }
         }
     }

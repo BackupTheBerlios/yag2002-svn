@@ -72,6 +72,9 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         //! Returns true if the networking is for local client
         bool                                        isRemoteClient() const { return _remoteClient; }
 
+        //! Change the player name
+        void                                        updatePlayerName( const std::string& name );
+
         //! Update position in network, use this for client
         void                                        updatePosition( float x, float y, float z );
 
@@ -97,6 +100,9 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         //-----------------------------------------------------------------------------------//
         //! Object can now be initialized in scene
         void                                        PostObjectCreate();
+
+        //! Hook into player name changes
+        void                                        DataBlockPacketDataReceived( const RNReplicaNet::DataBlock* p_datablock );
 
         //! Initialization function called on a new connected client and its ghosts
         void                                        RPC_Initialize( tInitializationData initData );

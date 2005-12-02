@@ -86,6 +86,15 @@ class BasePlayerImplementation
         //! Implementation's notification callback
         virtual void                                handleNotification( const yaf3d::EntityNotification& notification ) {}
 
+        //! Get player name
+        const std::string&                          getPlayerName() const;
+
+        //! Set player name considering networked distribution of new name
+        void                                        setPlayerName( const std::string& name );
+
+        //! Call this for directly changing player name ( can be used for remote and local players )
+        void                                        changePlayerName( const std::string& name );
+
         //! Set player's position.
         inline void                                 setPlayerPosition( const osg::Vec3f& pos );
 
@@ -178,6 +187,9 @@ class BasePlayerImplementation
 
         //! Association to player entity
         EnPlayer*                                   _p_player;
+
+        //! Player name
+        std::string                                 _playerName;
 
         //! Physics component
         EnPlayerPhysics*                            _p_playerPhysics;

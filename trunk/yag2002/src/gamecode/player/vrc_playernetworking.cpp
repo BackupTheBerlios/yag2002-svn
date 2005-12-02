@@ -234,10 +234,26 @@ void PlayerNetworking::RPC_Initialize( tInitializationData initData )
     _positionY = initData._posY;
     _positionZ = initData._posZ;
     _yaw       = initData._rotZ;
+
+    ContinuityBreak( _positionX, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
+    ContinuityBreak( _positionY, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
+    ContinuityBreak( _positionZ, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
+    ContinuityBreak( _yaw, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
 }
 
 void PlayerNetworking::update()
 {
+}
+
+void PlayerNetworking::DataBlockPacketDataReceived( const RNReplicaNet::DataBlock* p_datablock )
+{
+    if ( !_p_playerImpl )
+        return;
+
+    // check for changed player name
+	RNReplicaNet::DataBlock* p_plyernameDataBlock = FindDataBlock( _p_playerName );
+    if ( p_plyernameDataBlock )
+        _p_playerImpl->changePlayerName( _p_playerName );
 }
 
 void PlayerNetworking::updateAnimationFlags( unsigned char cmdFlag )
@@ -248,6 +264,14 @@ void PlayerNetworking::updateAnimationFlags( unsigned char cmdFlag )
 unsigned char PlayerNetworking::getAnimationFlags()
 {
     return _cmdAnimFlags;
+}
+
+void PlayerNetworking::updatePlayerName( const std::string& name )
+{
+    // limit the name length to be on safe side
+    std::string cleanedname = name;
+    cleanedname[ 31 ] = '\0';
+    strcpy( _p_playerName, cleanedname.c_str() );
 }
 
 void PlayerNetworking::updatePosition( float x, float y, float z )

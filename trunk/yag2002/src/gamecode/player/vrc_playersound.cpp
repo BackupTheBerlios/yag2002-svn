@@ -92,7 +92,6 @@ _offset( osg::Vec3f( 0.0f, 0.0f, -1.0f ) ),
 _p_playerImpl( NULL )
 { 
     // register attributes
-    getAttributeManager().addAttribute( "resourceDir"         , _soundFileDir  );
     getAttributeManager().addAttribute( "radius"              , _radius        );
     getAttributeManager().addAttribute( "positionOffset"      , _offset        );
     getAttributeManager().addAttribute( "volume"              , _volume        );
@@ -136,9 +135,6 @@ void EnPlayerSound::postInitialize()
     
     _p_soundGroup = new osg::Group;
     osgAL::SoundState* p_soundState;
-
-    // set file search path for sound resources
-    osgAL::SoundManager::instance()->addFilePath( yaf3d::Application::get()->getMediaPath() + _soundFileDir );
 
     p_soundState = createSound( _walkGround );
     if ( p_soundState )
@@ -184,7 +180,7 @@ osgAL::SoundState* EnPlayerSound::createSound( const std::string& filename )
     osgAL::SoundNode* p_soundNode = NULL;
     try 
     {
-        p_sample = osgAL::SoundManager::instance()->getSample( filename );
+        p_sample = osgAL::SoundManager::instance()->getSample( yaf3d::Application::get()->getMediaPath() + filename );
         if ( !p_sample )
         {
             log_error << "cannot find sound file '" << filename << "' in '" << getInstanceName() << "'" << std::endl;
@@ -205,33 +201,46 @@ osgAL::SoundState* EnPlayerSound::createSound( const std::string& filename )
     uniquename << getInstanceName();
     uniquename << uniqueId;
     ++uniqueId;
-    osgAL::SoundState* p_soundState = new osgAL::SoundState( uniquename.str() );
 
-    // let the soundstate use the sample we just created
-    p_soundState->setSample( p_sample );
-    // set its pitch to 1 (normal speed)
-    p_soundState->setPitch( 1.0f );
-    p_soundState->setPlay( false );
-    p_soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
-    // allocate a hardware soundsource to this soundstate (lower priority of 5)
-    p_soundState->allocateSource( 5, false );
+    // try to create the sound
+    try
+    {
+        osgAL::SoundState* p_soundState = new osgAL::SoundState( uniquename.str() );
 
-    // we need ambient sound, we calculate the attenuation ourself
-    p_soundState->setAmbient( true );
+        // let the soundstate use the sample we just created
+        p_soundState->setSample( p_sample );
+        // set its pitch to 1 (normal speed)
+        p_soundState->setPitch( 1.0f );
+        p_soundState->setPlay( false );
+        p_soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
+        // allocate a hardware soundsource to this soundstate (lower priority of 5)
+        p_soundState->allocateSource( 5, false );
 
-    // set stopping method
-    p_soundState->setStopMethod( openalpp::Stopped );
-    
-    p_soundState->apply();
+        // we need ambient sound, we calculate the attenuation ourself
+        p_soundState->setAmbient( true );
 
-    // create a sound node and attach the soundstate to it.
-    p_soundNode = new osgAL::SoundNode;
-    p_soundNode->setSoundState( p_soundState );
+        // set stopping method
+        p_soundState->setStopMethod( openalpp::Stopped );
 
-    // add the sound node into sound group
-    _p_soundGroup->addChild( p_soundNode );
+        p_soundState->apply();
 
-    return p_soundState;
+        // create a sound node and attach the soundstate to it.
+        p_soundNode = new osgAL::SoundNode;
+        p_soundNode->setSoundState( p_soundState );
+
+        // add the sound node into sound group
+        _p_soundGroup->addChild( p_soundNode );
+
+        return p_soundState;
+
+    }
+    catch ( std::runtime_error& e )
+    {
+        log_error << "problem creating player sound '" << filename << "'" << std::endl;
+        log_error << " reason: " << e.what() << std::endl;
+    }
+  
+    return NULL;    
 }
 
 void EnPlayerSound::playWalkGround()

@@ -103,9 +103,6 @@ class EnPlayerSound  : public yaf3d::BaseEntity
         // entity attributes
         //----------------------------------------------------------//
 
-        //! Resource directory for searching for sound files
-        std::string                                 _soundFileDir;
-
         //! Sound's position offset relative to player position
         osg::Vec3f                                  _offset;
 
