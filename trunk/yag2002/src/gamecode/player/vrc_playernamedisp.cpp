@@ -143,14 +143,16 @@ void EnPlayerNameDisplay::updateEntity( float deltaTime )
 
 void EnPlayerNameDisplay::updateName()
 {
-    // do a simple in-sight check for all remote clients
     EnPlayer* p_player = dynamic_cast< EnPlayer* >( vrc::gameutils::PlayerUtils::get()->getLocalPlayer() );
     if ( !p_player )
         return;
 
     // names are only displayed in Ego camera mode
     if ( p_player->getPlayerImplementation()->getCameraMode() != BasePlayerImplementation::Ego )
+    {
+        _nameBox->setText( "" );
         return;
+    }
 
     EnCamera*   p_playercamera    = p_player->getPlayerImplementation()->getPlayerCamera();
     const osg::Vec3f& campos      = p_playercamera->getCameraPosition() + p_playercamera->getCameraOffsetPosition();
@@ -161,11 +163,11 @@ void EnPlayerNameDisplay::updateName()
     osg::Vec3f lookdir( 0.0f, 1.0f, 0.0f );
     lookdir = camrotlocal * camrot * lookdir;
     
-    // a line between a remote and camera
+    // a line between a remote client and camera
     osg::Vec3f  line;
     osg::Vec3f  maxdist( 1000000.0f, 0.0f, 0.0f );
 
-    //! find nearest player in front of us
+    //! find nearest player in front of local player
     yaf3d::BaseEntity* p_playerinfront = NULL;
     std::vector< yaf3d::BaseEntity* >& remoteplayers = vrc::gameutils::PlayerUtils::get()->getRemotePlayers();
     std::vector< yaf3d::BaseEntity* >::iterator p_beg = remoteplayers.begin(), p_end = remoteplayers.end();
@@ -174,10 +176,11 @@ void EnPlayerNameDisplay::updateName()
         line = ( *p_beg )->getPosition() - campos;
         osg::Vec3f  dir( line );
         dir.normalize();
+
         // check if the player is in our view
         if ( ( dir * lookdir ) > _viewAngle )
         {
-            // remark the nearest distance ( sorting )
+            // store the nearest distance ( sorting )
             if ( maxdist.length2() > line.length2() )
             {
                 maxdist = line;
