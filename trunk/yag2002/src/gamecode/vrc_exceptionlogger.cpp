@@ -79,6 +79,10 @@ void MSJExceptionHandler::setLogFileName( PTSTR logFileName )
 
 LONG WINAPI MSJExceptionHandler::unhandledExceptionFilter( PEXCEPTION_POINTERS p_exceptionInfo )
 {
+    // shutdown sound manager as on some machines the sound keeps playing after a crash happened
+    if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Server )
+        osgAL::SoundManager::instance()->shutdown();
+
     _reportFile = CreateFile( _p_logFileName,
         GENERIC_WRITE,
         0,
