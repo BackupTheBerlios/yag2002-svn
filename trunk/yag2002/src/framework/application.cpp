@@ -59,6 +59,9 @@
 // default level
 #define YAF3D_DEFAULT_LEVEL       "gui/loader"
 
+// update period limits ( in seconds )
+#define UPPER_UPDATE_PERIOD_LIMIT   1.0f / 2.0f
+#define LOWER_UPDATE_PERIOD_LIMIT   1.0f / 60.0f
 
 namespace yaf3d
 {
@@ -399,10 +402,22 @@ void Application::run()
         deltaTime = timer.delta_s( lastTick, curTick );
 
         // limit the deltaTime as we have to be carefull with stability of physics calculation etc.
-        if ( deltaTime > 0.06f ) 
-            deltaTime = 0.06f;
-        else if ( deltaTime < 0.001f )
-            deltaTime = 0.001f;
+        if ( deltaTime > UPPER_UPDATE_PERIOD_LIMIT ) 
+        {
+            deltaTime = UPPER_UPDATE_PERIOD_LIMIT;
+        }
+        else if ( deltaTime < LOWER_UPDATE_PERIOD_LIMIT )
+        {
+
+            // limit the upper fps to 60 frames / second ( there are crash problems in some gpu cards when vsynch is disabled )
+            do
+            {
+                OpenThreads::Thread::microSleep( 100 );
+                curTick   = timer.tick();
+                deltaTime = timer.delta_s( lastTick, curTick );
+            } 
+            while ( deltaTime < LOWER_UPDATE_PERIOD_LIMIT );
+        }
 
         // update game
         if ( GameState::get()->getMode() == GameState::Server )
