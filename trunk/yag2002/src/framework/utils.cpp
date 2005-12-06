@@ -29,20 +29,18 @@
  ################################################################*/
 
 #include <base.h>
+#include "utils.h"
 #include "application.h"
 #include "log.h"
-#include "utils.h"
 #include <errno.h>
 
-#ifdef WIN32
- #include <shellapi.h>
-#endif
 #ifdef LINUX
  #include <sys/types.h>
  #include <sys/stat.h>
  #include <glob.h>
  #include <dirent.h>
 #endif
+
 
 namespace yaf3d
 {
@@ -299,7 +297,7 @@ bool checkDirectory( const std::string& dir )
     return false;
 }
 
-SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string& params )
+YAF3D_SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string& params )
 {
 #ifdef WIN32    
 
@@ -326,7 +324,7 @@ SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string& param
 #endif
 
     // platform not supported
-    return ( SPAWN_PROC_ID )0;
+    return ( YAF3D_SPAWN_PROC_ID )0;
 }
 
 // helper class for enumerateDisplaySettings
