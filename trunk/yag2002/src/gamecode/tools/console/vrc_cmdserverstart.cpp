@@ -67,7 +67,7 @@ const std::string& CmdServerStart::execute( const std::vector< std::string >& ar
 
     // use utility function to start the server
     std::string args = arg1 + "  " + arg2 + "  " + arg3;
-    SPAWN_PROC_ID serverProcHandle = yaf3d::spawnApplication( cmd, args );
+    YAF3D_SPAWN_PROC_ID serverProcHandle = yaf3d::spawnApplication( cmd, args );
 
     if ( serverProcHandle )
         _cmdResult = "trying to start server with level file '" + levelfile + "'.";

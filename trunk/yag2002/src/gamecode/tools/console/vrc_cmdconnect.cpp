@@ -126,7 +126,7 @@ const std::string& CmdConnect::execute( const std::vector< std::string >& argume
     }
     catch ( yaf3d::NetworkExpection& e )
     {
-        _cmdResult = "* cannot start client, reason: " + e.what();
+        _cmdResult = std::string( "* cannot start client, reason: " ) + e.what();
         return _cmdResult;
     }
 
