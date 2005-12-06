@@ -40,7 +40,7 @@
 #include "../visuals/vrc_fog.h"
 
 // used for starting server process
-static SPAWN_PROC_ID _serverProcHandle = static_cast< SPAWN_PROC_ID >( 0 );
+static YAF3D_SPAWN_PROC_ID _serverProcHandle = static_cast< YAF3D_SPAWN_PROC_ID >( 0 );
 
 namespace vrc
 {
@@ -552,7 +552,6 @@ bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
     return true;
 }
 
-//! TODO: show a dialog with all found servers and let the user choose one
 bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
 {
     // play mouse click sound
@@ -571,7 +570,7 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
     {
         yaf3d::NetworkDevice::get()->setupClient( url, channel, nodeinfo );
     }
-    catch ( yaf3d::NetworkExpection& e )
+    catch ( const yaf3d::NetworkExpection& e )
     {
         log_warning << "cannot setup client networking" << std::endl;
 
