@@ -84,11 +84,11 @@ class En3DSound : public yaf3d::BaseEntity
         //! Sound volume [ 0..1 ]
         float                                       _volume;
 
-        //! Reference distance
-        float                                       _referenceDist;
+        //! Begin of rolloff ( min distance )
+        float                                       _minDistance;
 
-        //! Rolloff factor
-        float                                       _rolloffFac;
+        //! At this distance the volume will be 0
+        float                                       _maxDistance;
 
         //! Flag indicating whether the sound is currently playing
         bool                                        _isPlaying;
@@ -99,9 +99,11 @@ class En3DSound : public yaf3d::BaseEntity
         //! Mesh file name sound source ( is usually used during level creation for debugging purpose )
         std::string                                 _sourceMesh;
 
-        osgAL::SoundNode*                           _p_soundNode;
+        //! Sound ID
+        unsigned int                                _soundID;
 
-        osg::ref_ptr< osgAL::SoundState >           _soundState;
+        //! Sound channel
+        FMOD::Channel*                              _p_channel;
 };
 
 //! Entity type definition used for type registry

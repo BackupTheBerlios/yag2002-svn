@@ -42,29 +42,37 @@ En3DSound::En3DSound() :
 _loop( true ),
 _autoPlay( true ),
 _volume( 0.8f ),
-_referenceDist( 70.0f ),
-_rolloffFac( 1.0f ),
+_minDistance( 1.0f ),
+_maxDistance( 15.0f ),
 _isPlaying( false ),
 _wasPlaying( false ),
-_p_soundNode( NULL )
+_soundID( 0 ),
+_p_channel( NULL )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "soundFile",    _soundFile      );
-    getAttributeManager().addAttribute( "position",     _position       );
-    getAttributeManager().addAttribute( "loop",         _loop           );
-    getAttributeManager().addAttribute( "autoPlay",     _autoPlay       );
-    getAttributeManager().addAttribute( "volume",       _volume         );
-    getAttributeManager().addAttribute( "rollOff",      _rolloffFac     );
-    getAttributeManager().addAttribute( "refDistance",  _referenceDist  );
-    getAttributeManager().addAttribute( "sourceMesh",   _sourceMesh     );
+    getAttributeManager().addAttribute( "soundFile",        _soundFile   );
+    getAttributeManager().addAttribute( "sourceMesh",       _sourceMesh  );
+    getAttributeManager().addAttribute( "position",         _position    );
+    getAttributeManager().addAttribute( "loop",             _loop        );
+    getAttributeManager().addAttribute( "autoPlay",         _autoPlay    );
+    getAttributeManager().addAttribute( "volume",           _volume      );
+    getAttributeManager().addAttribute( "minDistance",      _minDistance );
+    getAttributeManager().addAttribute( "maxDistance",      _maxDistance );
 }
 
 En3DSound::~En3DSound()
 {
-    if ( _soundState.get() )
+    // release sound
+    if ( _soundID > 0 )
     {
-        _soundState->setPlay( false );
-        _soundState = NULL; // delete the sound object
+        try
+        {
+            yaf3d::SoundManager::get()->releaseSound( _soundID );
+        }
+        catch ( const yaf3d::SoundExpection& e )
+        {
+            log_error << ENTITY_NAME_3DSOUND << ":" << getInstanceName() << " problem releasing sound, reason: " << e.what() << std::endl;
+        }
     }
 }
 
@@ -96,63 +104,29 @@ void En3DSound::handleNotification( const yaf3d::EntityNotification& notificatio
 
 void En3DSound::initialize()
 {
-    openalpp::Sample* p_sample = NULL;
-    try {
+    try 
+    {
+        unsigned int flags = 0;
+        if ( _loop )
+            flags = yaf3d::SoundManager::fmodDefaultCreationFlags3DLoop;
+        else
+            flags = yaf3d::SoundManager::fmodDefaultCreationFlags3D;
 
-        p_sample = osgAL::SoundManager::instance()->getSample( yaf3d::Application::get()->getMediaPath() + _soundFile );
-        if ( !p_sample )
-            return;
+        _soundID   = yaf3d::SoundManager::get()->createSound( _soundFile, _volume, _autoPlay, flags );
+        _p_channel = yaf3d::SoundManager::get()->getSoundChannel( _soundID );
 
+        // set position and velocity
+        FMOD_VECTOR pos;
+        pos.x = _position.x();
+        pos.y = _position.y();
+        pos.z = _position.z();
+        _p_channel->set3DAttributes( &pos, NULL );
+        _p_channel->set3DMinMaxDistance( _minDistance, _maxDistance );
     } 
-    catch ( const openalpp::Error& e )
+    catch ( const yaf3d::SoundExpection& e )
     {
-        log_error << "*** error loading sound file in '" << getInstanceName() << "'" << std::endl;
+        log_error << ENTITY_NAME_3DSOUND << ":" << getInstanceName() << "  error loading sound file " << _soundFile << std::endl;
         log_error << "  reason: " << e.what() << std::endl;
-        return;
-    }
- 
-    // create a named sound state.
-    // note: we have to make the state name unique as otherwise new need unique sound states for every entity instance
-    std::stringstream uniquename;
-    static unsigned int uniqueId = 0;
-    uniquename << getInstanceName();
-    uniquename << uniqueId;
-    ++uniqueId;
-
-    try
-    {
-        _soundState = new osgAL::SoundState( uniquename.str() );
-
-        // let the soundstate use the sample we just created
-        _soundState->setSample( p_sample );
-        _soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
-        // set its pitch to 1 (normal speed)
-        _soundState->setPitch( 1 );
-
-        // automatically start playing?
-        _soundState->setPlay( _autoPlay );
-        _isPlaying = _autoPlay;
-
-        // the sound should loop over and over again
-        _soundState->setLooping( _loop );
-        // allocate a hardware soundsource to this soundstate (priority 10)
-        _soundState->allocateSource( 10, false );
-
-        // to make a radial 3d sound source we first have to make the source ambient then add rolloff
-        _soundState->setAmbient( true );
-        _soundState->setRolloffFactor( _rolloffFac );
-        _soundState->setReferenceDistance( _referenceDist );
-
-        _soundState->setPosition( _position );
-
-        // create a sound node and attach the soundstate to it.
-        _p_soundNode = new osgAL::SoundNode;
-        _p_soundNode->setSoundState( _soundState.get() );
-    }
-    catch ( std::runtime_error& e )
-    {
-        log_error << "problem creating sound '" << _soundFile << "'" << std::endl;
-        log_error << " reason: " << e.what() << std::endl;
     }
 
     // this is for debugging
@@ -187,37 +161,36 @@ void En3DSound::updateEntity( float deltaTime )
 
 void En3DSound::startPlaying()
 {
-    if ( _soundState.valid() )
-        _soundState->setPlay( true );
-
-    _isPlaying = true;
+    if ( !_p_channel )
+        return;
+    
+    yaf3d::SoundManager::get()->playSound( _soundID );
 }
 
 void En3DSound::stopPlaying( bool pause )
 {
-    if ( _soundState.valid() )
+    if ( _soundID > 0 )
     {
-        // first set stop mode
         if ( pause )
         {
-            _soundState->setStopMethod( openalpp::Paused );
+            yaf3d::SoundManager::get()->pauseSound( _soundID );
         }
         else
         {
-            _soundState->setStopMethod( openalpp::Stopped );
+            yaf3d::SoundManager::get()->stopSound( _soundID );
             _isPlaying = false;
         }
-
-        _soundState->setPlay( false );
     }
 }
 
 //! Set sound volume (0..1)
 void En3DSound::setVolume( float volume )
 {
+    if ( !_p_channel )
+        return;
+
     _volume = std::max( std::min( volume, 1.0f ), 0.0f );
-    if ( _soundState.get() )
-        _soundState->setGain( _volume );
+    _p_channel->setVolume( _volume );
 }
 
 float En3DSound::getVolume()

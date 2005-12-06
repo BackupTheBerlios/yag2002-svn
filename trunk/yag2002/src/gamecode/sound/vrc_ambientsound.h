@@ -87,9 +87,11 @@ class EnAmbientSound : public yaf3d::BaseEntity
         //! Flag indicating whether the sound was playing before entering the menu
         bool                                        _wasPlaying;
 
-        osgAL::SoundNode*                           _p_soundNode;
+        //! Sound ID
+        unsigned int                                _soundID;
 
-        osg::ref_ptr< osgAL::SoundState >           _soundState;
+        //! Sound channel
+        FMOD::Channel*                              _p_channel;
 };
 
 //! Entity type definition used for type registry

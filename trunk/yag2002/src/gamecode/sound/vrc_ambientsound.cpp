@@ -44,21 +44,29 @@ _autoPlay( true ),
 _volume( 0.8f ),
 _isPlaying( false ),
 _wasPlaying( false ),
-_p_soundNode( NULL )
+_soundID( 0 ),
+_p_channel( NULL )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "soundFile",    _soundFile      );
-    getAttributeManager().addAttribute( "loop",         _loop           );
-    getAttributeManager().addAttribute( "autoPlay",     _autoPlay       );
-    getAttributeManager().addAttribute( "volume",       _volume         );
+    getAttributeManager().addAttribute( "soundFile",    _soundFile );
+    getAttributeManager().addAttribute( "loop",         _loop      );
+    getAttributeManager().addAttribute( "autoPlay",     _autoPlay  );
+    getAttributeManager().addAttribute( "volume",       _volume    );
 }
 
 EnAmbientSound::~EnAmbientSound()
 {
-    if ( _soundState.get() )
+    // release sound
+    if ( _soundID > 0 )
     {
-        _soundState->setPlay( false );
-        _soundState = NULL; // delete the sound object
+        try
+        {
+            yaf3d::SoundManager::get()->releaseSound( _soundID );
+        }
+        catch ( const yaf3d::SoundExpection& e )
+        {
+            log_error << ENTITY_NAME_AMBIENTSOUND << ":" << getInstanceName() << " problem releasing sound, reason: " << e.what() << std::endl;
+        }
     }
 }
 
@@ -90,102 +98,56 @@ void EnAmbientSound::handleNotification( const yaf3d::EntityNotification& notifi
 
 void EnAmbientSound::initialize()
 {
-    openalpp::Sample* p_sample = NULL;
-    try {
+    try 
+    {
+        unsigned int flags = 0;
+        if ( _loop )
+            flags = yaf3d::SoundManager::fmodDefaultCreationFlags2DLoop;
+        else
+            flags = yaf3d::SoundManager::fmodDefaultCreationFlags2D;
 
-        std::string soundfile( yaf3d::Application::get()->getMediaPath() + _soundFile );
-        p_sample = osgAL::SoundManager::instance()->getSample( soundfile );
-        if ( !p_sample )
-        {
-            log_warning << "*** cannot create sampler for '" << _soundFile << "'" << std::endl;
-            return;
-        }
-
+        _soundID   = yaf3d::SoundManager::get()->createSound( _soundFile, _volume, _autoPlay, flags );
+        _p_channel = yaf3d::SoundManager::get()->getSoundChannel( _soundID );
     } 
-    catch ( const openalpp::Error& e )
+    catch ( const yaf3d::SoundExpection& e )
     {
-        log_error << "*** error loading sound file" << std::endl;
+        log_error << ENTITY_NAME_AMBIENTSOUND << ":" << getInstanceName() << "  error loading sound file " << _soundFile << std::endl;
         log_error << "  reason: " << e.what() << std::endl;
-        return;
-    }
-
-    // create a named sound state.
-    // note: we have to make the state name unique as otherwise new sound states with already defined names make problems
-    std::stringstream uniquename;
-    static unsigned int uniqueId = 0;
-    uniquename << getInstanceName();
-    uniquename << uniqueId;
-    ++uniqueId;
-
-    try
-    {
-        _soundState = new osgAL::SoundState( uniquename.str() );
-        // let the soundstate use the sample we just created
-        _soundState->setSample( p_sample );
-        _soundState->setGain( std::max( std::min( _volume, 1.0f ), 0.0f ) );
-        // set its pitch to 1 (normal speed)
-        _soundState->setPitch( 1.0f );
-
-        // make it play
-        _soundState->setPlay( _autoPlay );
-        _isPlaying = _autoPlay;
-
-        // the sound should loop over and over again
-        _soundState->setLooping( _loop );
-        _soundState->setAmbient( true );
-        // allocate a hardware soundsource to this soundstate (priority 10)
-        _soundState->allocateSource( 10, false );
-
-        _soundState->setReferenceDistance( 50.0f );
-        _soundState->setRolloffFactor( 5.0f );
-
-        _soundState->apply();
-
-        // create a sound node and attach the soundstate to it.
-        _p_soundNode = new osgAL::SoundNode;
-        _p_soundNode->setSoundState( _soundState.get() );
-
-        // register entity in order to get menu notifications
-        yaf3d::EntityManager::get()->registerNotification( this, true );
-    }
-    catch ( std::runtime_error& e )
-    {
-        log_error << "problem creating sound '" << _soundFile << "'" << std::endl;
-        log_error << " reason: " << e.what() << std::endl;
     }
 }
 
 void EnAmbientSound::startPlaying()
 {
-    if ( _soundState.valid() )
-        _soundState->setPlay( true );
+    if ( !_p_channel )
+        return;
+    
+    yaf3d::SoundManager::get()->playSound( _soundID );
 }
 
 void EnAmbientSound::stopPlaying( bool pause )
 {
-    if ( _soundState.valid() )
+    if ( _soundID > 0 )
     {
-        // first set stop mode
         if ( pause )
         {
-            _soundState->setStopMethod( openalpp::Paused );
+            yaf3d::SoundManager::get()->pauseSound( _soundID );
         }
         else
         {
-            _soundState->setStopMethod( openalpp::Stopped );
+            yaf3d::SoundManager::get()->stopSound( _soundID );
             _isPlaying = false;
         }
-
-        _soundState->setPlay( false );
     }
 }
 
 //! Set sound volume (0..1)
 void EnAmbientSound::setVolume( float volume )
 {
+    if ( !_p_channel )
+        return;
+
     _volume = std::max( std::min( volume, 1.0f ), 0.0f );
-    if ( _soundState.get() )
-        _soundState->setGain( _volume );
+    _p_channel->setVolume( _volume );
 }
 
 float EnAmbientSound::getVolume()
