@@ -20,13 +20,14 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\osgAL\include&quot;;../../../../src/framework"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;../../../../src/framework"
 				PreprocessorDefinitions="TIXML_USE_STL;_DEBUG;WIN32;_WINDOWS"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
 				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
+				EnableEnhancedInstructionSet="2"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="base.h"
@@ -67,12 +68,13 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Od"
 				EnableFiberSafeOptimizations="FALSE"
-				OptimizeForProcessor="0"
-				OptimizeForWindowsApplication="FALSE"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\openalpp\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\libvorbis-1.1.0\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\libogg-1.1.2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\OpenAL\Include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\osgAL\include&quot;;../../../../src/framework"
+				OptimizeForProcessor="3"
+				OptimizeForWindowsApplication="TRUE"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;../../../../src/framework"
 				PreprocessorDefinitions="TIXML_USE_STL;WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
+				EnableEnhancedInstructionSet="2"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="base.h"
@@ -247,6 +249,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\src\framework\singleton.inl">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\soundmanager.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\soundmanager.h">
 			</File>
 			<File
 				RelativePath="..\..\..\..\src\framework\utils.cpp">
