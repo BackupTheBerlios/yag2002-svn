@@ -47,13 +47,10 @@ int main( int argc, char *argv[] )
         p_app->run();
         p_app->shutdown();
     }
-    catch ( std::exception& e )
+    catch ( const std::exception& e )
     {
         log_error << "unhandled std exception occured: " << e.what() << std::endl;
         errormsg();
-
-        p_app->shutdown();
-
         return -1;
     }
 
@@ -62,9 +59,6 @@ int main( int argc, char *argv[] )
     {
         log_error << "unhandled exception occured" << std::endl;
         errormsg();
-
-        p_app->shutdown();
-
         return -2;
     }
 #endif
