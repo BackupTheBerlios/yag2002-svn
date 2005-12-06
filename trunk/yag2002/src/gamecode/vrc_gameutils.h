@@ -144,7 +144,7 @@ inline std::vector< yaf3d::BaseEntity* >& PlayerUtils::getRemotePlayers()
 }
 
 //! Single instance providing GUI-related utility services
-class GuiUtils : public yaf3d::Singleton< vrc::gameutils::GuiUtils >
+class GuiUtils : public yaf3d::Singleton< vrc::gameutils::GuiUtils >, public yaf3d::GameState::CallbackStateChange
 {
     public:
 
@@ -159,23 +159,24 @@ class GuiUtils : public yaf3d::Singleton< vrc::gameutils::GuiUtils >
         //! Show / hide main window
         void                                        showMainWindow( bool show );
 
-        //! Destroy main window
-        void                                        destroyMainWindow();
-
         //! Hide mouse pointer
         void                                        hidePointer();
 
         //! Show mouse pointer. Pass 'true' in order to show, otherwise hide the pointer.
         void                                        showMousePointer( bool show );
 
-        //! Create a non-looped sound given a sound file (wave). Later the sound can be accessed via its 'name'.
-        osg::ref_ptr< osgAL::SoundState >           createSound( const std::string& name, const std::string& filename, float volume = 0.2f );
+        //! Create a non-looped sound given a sound file. Later the sound can be accessed via its 'name'.
+        //! Returns 0 if something goes wrong, otherwise the sound ID created by SoundManger.
+        unsigned int                                createSound( const std::string& name, const std::string& filename, float volume = 0.2f );
 
-        //! Given a sound name return its sound object. Returns an empty ret_ptr if sound name does not exist.
-        osg::ref_ptr< osgAL::SoundState >           getSound( const std::string& name );
-
-        //! Play a previousely created sound.
+        //! Play a previousely created sound given its name.
         void                                        playSound( const std::string& name );
+
+        //! Given a sound name return its sound ID. Returns 0 if sound name does not exist.
+        unsigned int                                getSoundID( const std::string& name );
+
+        //! Callback method for auto-shutdown when application is shutting down
+        void                                        onStateChange( unsigned int state );
 
     protected:
 
@@ -185,7 +186,7 @@ class GuiUtils : public yaf3d::Singleton< vrc::gameutils::GuiUtils >
         //! yaf3d::Application's root window
         CEGUI::Window*                              _p_rootWindow;
 
-        typedef std::map< std::string, osg::ref_ptr< osgAL::SoundState > > MapSound;
+        typedef std::map< std::string, unsigned int > MapSound;
 
         //! A map of sound object and its associated name
         MapSound                                    _soundMap;

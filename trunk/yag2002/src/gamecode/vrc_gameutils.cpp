@@ -104,6 +104,9 @@ GuiUtils::GuiUtils() :
 _p_mainWindow( NULL ),
 _p_rootWindow( NULL )
 {
+    // register this instance for getting game state changes, needed for shutdown
+    yaf3d::GameState::get()->registerCallbackStateChange( this );
+
     // setup standard gui sounds
     createSound( GUI_SND_NAME_CLICK, GUI_SND_FILE_CLICK, GUI_SND_VOL_CLICK );
     createSound( GUI_SND_NAME_HOVER, GUI_SND_FILE_HOVER, GUI_SND_VOL_HOVER );
@@ -113,8 +116,24 @@ _p_rootWindow( NULL )
 
 GuiUtils::~GuiUtils()
 {
-    // clean up gui resources
-    destroyMainWindow();
+    // release sounds
+    try
+    {
+        MapSound::iterator p_beg = _soundMap.begin(), p_end = _soundMap.end();
+        for ( ; p_beg != p_end; ++p_beg )
+            yaf3d::SoundManager::get()->releaseSound( p_beg->second );
+    }
+    catch ( const yaf3d::SoundExpection& e )
+    {
+        log_error << "GuiUtils: problem releasing sounds, reason: " << e.what() << std::endl;
+    }
+}
+
+void GuiUtils::onStateChange( unsigned int state )
+{
+    // shutdown the singleton on application shutdown
+    if ( state == yaf3d::GameState::Quitting )
+        destroy();
 }
 
 CEGUI::Window* GuiUtils::getMainGuiWindow()
@@ -150,25 +169,6 @@ void GuiUtils::showMainWindow( bool show )
         _p_rootWindow->removeChildWindow( _p_mainWindow );
 }
 
-void GuiUtils::destroyMainWindow()
-{
-    if ( !_p_mainWindow )
-        return;
-
-    try
-    {
-        _p_rootWindow->removeChildWindow( _p_mainWindow );
-        CEGUI::WindowManager::getSingleton().destroyWindow( _p_mainWindow );
-    }
-    catch ( const CEGUI::Exception& e )
-    {
-        log_error << "guiutils: problem cleaning up gui resources" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
-    }
-    _p_mainWindow = NULL;
-    _p_rootWindow = NULL;
-}
-
 void GuiUtils::showMousePointer( bool show )
 {
     if ( show )
@@ -177,92 +177,53 @@ void GuiUtils::showMousePointer( bool show )
         yaf3d::GuiManager::get()->showMousePointer( false );
 }
 
-osg::ref_ptr< osgAL::SoundState > GuiUtils::createSound( const std::string& name, const std::string& filename, float volume )
+unsigned int GuiUtils::createSound( const std::string& name, const std::string& filename, float volume )
 {
     // check if there is already a sound with given name
     if ( _soundMap.find( name ) != _soundMap.end() )
     {
         log_error << "GuiUtils::createSound sound source with name '" << name << "' already exists." << std::endl;
-        return NULL;
+        return 0;
     }
 
-    openalpp::Sample* p_sample = NULL;
+    unsigned int soundID = 0;
+
     try 
     {
-        std::string soundfile( yaf3d::Application::get()->getMediaPath() + filename );
-        p_sample = osgAL::SoundManager::instance()->getSample( soundfile );
-        if ( !p_sample )
-        {
-            log_warning << "*** cannot create sampler for '" << filename << "'" << std::endl;
-            return NULL;
-        }
-
+        soundID   = yaf3d::SoundManager::get()->createSound( filename, volume, false, yaf3d::SoundManager::fmodDefaultCreationFlags2D );
     } 
-    catch ( const openalpp::Error& e )
+    catch ( const yaf3d::SoundExpection& e )
     {
-        log_error << "*** error loading sound file" << std::endl;
+        log_error << "GuiUtils::createSound" << "  error creating sound: " << filename << std::endl;
         log_error << "  reason: " << e.what() << std::endl;
-        return NULL;
+        return 0;
     }
 
-    // create a named sound state.
-    // note: we have to make the state name unique as otherwise new sound states with already defined names make problems
-    std::stringstream uniquename;
-    static unsigned int uniqueId = 0;
-    uniquename << name;
-    uniquename << uniqueId;
-    ++uniqueId;
-    
-    try
-    {
-        osg::ref_ptr< osgAL::SoundState > soundState = new osgAL::SoundState( uniquename.str() );
-        // let the soundstate use the sample we just created
-        soundState->setSample( p_sample );
-        float vol = std::max( std::min( volume, 1.0f ), 0.0f );
-        soundState->setGain( vol );
-        // set its pitch to 1 (normal speed)
-        soundState->setPitch( 1.0f );
+    // store the sound
+    _soundMap[ name ] = soundID;
 
-        soundState->setPlay( false );
-        soundState->setLooping( false );
-        soundState->setAmbient( true );
-        // allocate a hardware soundsource to this soundstate ( middle priority 5 )
-        soundState->allocateSource( 5, false );
-        soundState->apply();
-
-        _soundMap[ name ] = soundState;
-
-        return soundState;
-    }
-    catch ( std::runtime_error& e )
-    {
-        log_error << "problem creating sound '" << filename << "'" << std::endl;
-        log_error << " reason: " << e.what() << std::endl;
-    }
-
-    return NULL;
+    return soundID;
  }
 
-osg::ref_ptr< osgAL::SoundState > GuiUtils::getSound( const std::string& name )
+unsigned int GuiUtils::getSoundID( const std::string& name )
 {
     // try to find the sound
-    MapSound::iterator soundState = _soundMap.find( name );
-    if ( soundState == _soundMap.end() )
-        return NULL;
+    MapSound::iterator soundID = _soundMap.find( name );
+    if ( soundID == _soundMap.end() )
+        return 0;
 
-    return soundState->second;
+    return soundID->second;
 }
 
 void GuiUtils::playSound( const std::string& name )
 {
-    MapSound::iterator soundState = _soundMap.find( name );
-    if ( soundState == _soundMap.end() )
+    MapSound::iterator soundID = _soundMap.find( name );
+    if ( soundID == _soundMap.end() )
     {
         log_error << " sound source with name '" << name << "' does not exist." << std::endl;
         return;
     }
-
-    soundState->second->setPlay( true );
+    yaf3d::SoundManager::get()->playSound( soundID->second );
 }
 
 
