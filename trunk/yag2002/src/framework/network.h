@@ -162,7 +162,7 @@ class Networking: public RNReplicaNet::ReplicaNet
 };
 
 //! Class for network related exceptions
-class NetworkExpection
+class NetworkExpection : public std::exception
 {
     public:                                     
                                                     NetworkExpection( const std::string& reason )
@@ -175,11 +175,6 @@ class NetworkExpection
                                                     NetworkExpection( const NetworkExpection& e )
                                                     {
                                                         _reason = e._reason;
-                                                    }
-
-        const std::string&                          what() const
-                                                    {
-                                                        return _reason;
                                                     }
 
     protected:
