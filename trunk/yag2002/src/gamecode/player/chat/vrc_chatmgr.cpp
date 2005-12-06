@@ -151,7 +151,7 @@ void ChatManager::createConnection( const ChatConnectionConfig& config ) throw (
     catch( const ChatExpection& e )
     {
         // could not setup connection       
-        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Connection Problem", "Reason: " + e.what(), yaf3d::MessageBoxDialog::OK, true );
+        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Connection Problem", std::string( "Reason: " ) + e.what(), yaf3d::MessageBoxDialog::OK, true );
         p_msg->show();
     }
 }

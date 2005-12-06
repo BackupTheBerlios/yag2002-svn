@@ -125,7 +125,7 @@ class ChatConnectionConfig
 };
 
 //! Class for chat related exceptions
-class ChatExpection
+class ChatExpection : public std::exception
 {
     public:                                     
                                                     ChatExpection( const std::string& reason )
@@ -138,11 +138,6 @@ class ChatExpection
                                                     ChatExpection( const ChatExpection& e )
                                                     {
                                                         _reason = e._reason;
-                                                    }
-
-        const std::string&                          what() const
-                                                    {
-                                                        return _reason;
                                                     }
 
     protected:

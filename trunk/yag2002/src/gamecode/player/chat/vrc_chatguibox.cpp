@@ -560,18 +560,18 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
     }
 
     // setup sounds
-    osg::ref_ptr< osgAL::SoundState > snd;
+    unsigned int sndID = 0;
     
-    snd = gameutils::GuiUtils::get()->getSound( SND_NAME_CLOSE_CHANNEL );
-    if ( !snd.valid() )
+    sndID = gameutils::GuiUtils::get()->getSoundID( SND_NAME_CLOSE_CHANNEL );
+    if ( sndID == 0 )
         gameutils::GuiUtils::get()->createSound( SND_NAME_CLOSE_CHANNEL, SND_CLOSE_CHANNEL, SND_VOL_CLOSE_CHANNEL );
 
-    snd = gameutils::GuiUtils::get()->getSound( SND_NAME_CONNECT );
-    if ( !snd.valid() )
+    sndID = gameutils::GuiUtils::get()->getSoundID( SND_NAME_CONNECT );
+    if ( sndID == 0 )
         gameutils::GuiUtils::get()->createSound( SND_NAME_CONNECT, SND_CONNECT, SND_VOL_CONNECT );
 
-    snd = gameutils::GuiUtils::get()->getSound( SND_NAME_TYPING );
-    if ( !snd.valid() )
+    sndID = gameutils::GuiUtils::get()->getSoundID( SND_NAME_TYPING );
+    if ( sndID == 0 )
         gameutils::GuiUtils::get()->createSound( SND_NAME_TYPING, SND_TYPING, SND_VOL_TYPING );
 }
 
@@ -860,7 +860,7 @@ void ChatGuiBox::onConnectionDialogClickedConnect( const ChatConnectionConfig& c
     }
     catch( const ChatExpection& e )
     {
-        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Connection error", "Could not connect to server.\n" + e.what(), yaf3d::MessageBoxDialog::OK, true );
+        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Connection error", std::string( "Could not connect to server.\n" ) + e.what(), yaf3d::MessageBoxDialog::OK, true );
         p_msg->show();                
 
         log_error << "exception occured trying to connect to a chat server" << std::endl;
