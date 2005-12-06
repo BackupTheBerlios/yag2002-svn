@@ -90,7 +90,7 @@ void SoundManager::update( float deltaTime )
     osg::Vec3 up;
 
     _p_sceneView->getViewMatrixAsLookAt( eye, cforward, up );
-    cforward = cforward - eye;
+    cforward = eye - cforward;
 
     _listenerPosition.x = eye.x();
     _listenerPosition.y = eye.y();
