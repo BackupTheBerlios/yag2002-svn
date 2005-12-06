@@ -215,13 +215,13 @@ bool checkDirectory( const std::string& dir );
 void getDirectoryListing( std::vector< std::string >& listing, const std::string& dir, const std::string& extension, bool appenddetails = false );
 
 #ifdef WIN32
-    #define SPAWN_PROC_ID   HANDLE
+    #define YAF3D_SPAWN_PROC_ID   void*
 #endif
 #ifdef LINUX 
-    #define SPAWN_PROC_ID   int
+    #define YAF3D_SPAWN_PROC_ID   int
 #endif	
 //! Spawn an appication given its executable file name and its parameters in param ( white space separated )
-SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string& params );
+YAF3D_SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string& params );
 
 //! Returns a sorted string list with possible display settings above given colorbits filter value (format: WidthxHeight@ColorBits)
 void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned int colorbitsfilter = 0 );

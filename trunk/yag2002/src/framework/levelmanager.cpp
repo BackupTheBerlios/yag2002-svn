@@ -29,15 +29,16 @@
  #
  ################################################################*/
 
-#include <base.h>
-#include <log.h>
-#include <physics.h>
-#include <levelmanager.h>
-#include <application.h>
-#include <attributemanager.h>
-#include <entitymanager.h>
-#include <guimanager.h>
-#include <gamestate.h>
+#include "base.h"
+#include "log.h"
+#include "physics.h"
+#include "levelmanager.h"
+#include "application.h"
+#include "attributemanager.h"
+#include "entitymanager.h"
+#include "soundmanager.h"
+#include "guimanager.h"
+#include "gamestate.h"
 #include "yaf3dtinyxml/tinyxml.h"
 
 // XML item names
@@ -433,20 +434,13 @@ void LevelManager::initializeFirstTime()
     {
         // initialize sound manager
         log_info << "initializing sound system..." << std::endl;
-        osgAL::SoundManager* p_soundManager = osgAL::SoundManager::instance();
         try 
         {
-            p_soundManager->init( 16 );
-            p_soundManager->getEnvironment()->setDistanceModel( openalpp::InverseDistance );
-            p_soundManager->getEnvironment()->setDopplerFactor( 1.0f );
-            osg::ref_ptr< osgAL::SoundRoot > soundRoot = new osgAL::SoundRoot;
-            _topGroup->addChild( soundRoot.get() );
+            SoundManager::get()->initialize();
         }
-        catch( const openalpp::InitError& e )
+        catch( const SoundExpection& e )
         {
-            log_error << "cannot initialize sound device openAL. reason: '" << e.what() << "'" << std::endl;
-            log_error << " reason: " << e.what() << std::endl;
-            log_error << " have you already installed the openAL drivers?" << std::endl;
+            log_error << "*** error initializing sound system. reason: '" << e.what() << "'" << std::endl;
         }
 
         log_info << "initializing gui system..." << std::endl;
@@ -548,7 +542,7 @@ void LevelManager::shutdown()
     if ( GameState::get()->getMode() != GameState::Server )
     {
         // shutdown all other libs managed by level loader
-        osgAL::SoundManager::instance()->shutdown();
+        SoundManager::get()->shutdown();
         GuiManager::get()->shutdown();
     }
 

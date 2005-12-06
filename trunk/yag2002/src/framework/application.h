@@ -37,12 +37,13 @@
 namespace yaf3d
 {
 
-class LevelManager;
-class EntityManager;
-class GuiManager;
 class NetworkDevice;
-class Physics;
+class EntityManager;
+class LevelManager;
+class SoundManager;
+class GuiManager;
 class GameState;
+class Physics;
 
 //! Application
 class Application : public Singleton< Application >
@@ -100,6 +101,8 @@ class Application : public Singleton< Application >
         EntityManager*                              _p_entityManager;
 
         GuiManager*                                 _p_guiManager;
+
+        SoundManager*                               _p_soundManager;
 
         Physics*                                    _p_physics;
 

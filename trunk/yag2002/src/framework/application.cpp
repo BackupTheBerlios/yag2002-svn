@@ -29,17 +29,18 @@
  ################################################################*/
 
 #include <base.h>
-#include "levelmanager.h"
-#include "entitymanager.h"
-#include "physics.h"
-#include "guimanager.h"
-#include "configuration.h"
-#include "keymap.h"
-#include "gamestate.h"
-#include "network.h"
-#include "log.h"
-#include "utils.h"
 #include "application.h"
+#include "entitymanager.h"
+#include "configuration.h"
+#include "levelmanager.h"
+#include "soundManager.h"
+#include "guimanager.h"
+#include "gamestate.h"
+#include "physics.h"
+#include "network.h"
+#include "keymap.h"
+#include "utils.h"
+#include "log.h"
 
 
 // app icon and tile
@@ -72,6 +73,7 @@ Application::Application():
 _p_networkDevice( NULL ),
 _p_entityManager( EntityManager::get() ),
 _p_guiManager( NULL ),
+_p_soundManager( NULL ),
 _p_physics( Physics::get() ),
 _p_gameState( GameState::get() ),
 _p_viewer( NULL ),
@@ -291,7 +293,7 @@ bool Application::initialize( int argc, char **argv )
         {
             _p_networkDevice->setupServer( channel, nodeinfo );
         }
-        catch ( NetworkExpection& e )
+        catch ( const NetworkExpection& e )
         {
             log_error << "*** error starting server, reason: " << e.what() << std::endl;
             return false;
@@ -317,7 +319,7 @@ bool Application::initialize( int argc, char **argv )
         {
             _p_networkDevice->setupClient( url, channel, nodeinfo );
         }
-        catch ( NetworkExpection& e )
+        catch ( const NetworkExpection& e )
         {
             log_error << "*** error setting up client networking, reason: " << e.what() << std::endl;
             return false;
@@ -365,6 +367,9 @@ void Application::run()
     // set game state
     _p_gameState->setState( GameState::Running );
 
+    // store sound manager reference for faster access in loop
+    _p_soundManager = SoundManager::get();
+
     osg::Timer       timer;
     float            deltaTime = 0;
     osg::Timer_t     curTick   = 0;
@@ -378,7 +383,7 @@ void Application::run()
         {
             _p_networkDevice->startClient();
         }
-        catch ( NetworkExpection& e )
+        catch ( const NetworkExpection& e )
         {
             log_error << "*** error starting client networking, reason: " << e.what() << std::endl;
             _p_gameState->setState( GameState::Quitting );
@@ -442,6 +447,9 @@ void Application::updateStandalone( float deltaTime )
     // update gui manager
     _p_guiManager->update( deltaTime );
 
+    // update sound system
+    _p_soundManager->update( deltaTime );
+
     // update viewer and draw scene
     _p_viewer->update();
     _p_viewer->draw();
@@ -468,6 +476,9 @@ void Application::updateClient( float deltaTime )
 
     // update gui manager
     _p_guiManager->update( deltaTime );
+
+    // update sound system
+    _p_soundManager->update( deltaTime );
 
     // update viewer and draw scene
     _p_viewer->update();

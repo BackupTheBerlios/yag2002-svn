@@ -52,8 +52,11 @@
 #  define NOMINMAX
 #  ifndef WIN32_LEAN_AND_MEAN
 #    define WIN32_LEAN_AND_MEAN
+#    include <windows.h>
+#    include <shellapi.h>
 #  endif
 #endif
+
 
 // SDL header
 #include <SDL.h>
@@ -85,10 +88,6 @@
 #include <osg/Vec3>
 #include <osg/Vec2>
 #include <osg/VertexProgram>
-#include <osgAL/SoundNode>
-#include <osgAL/SoundRoot>
-#include <osgAL/SoundManager>
-#include <osgAL/SoundState>
 #include <osgDB/ReadFile>
 #include <osgGA/GUIActionAdapter>
 #include <osgGA/GUIEventAdapter>
@@ -101,5 +100,8 @@
 
 // CEGUI headers
 #include <CEGUI.h>
+
+// fmod sound headers
+#include <fmod.hpp>
 
 #endif // _BASE_H_
