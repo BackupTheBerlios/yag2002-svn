@@ -193,8 +193,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             if ( key == _keyCodeMoveLeft )
                 _left = false;
 
-            if ( getPlayerImpl()->_cameraMode == BasePlayerImplementation::Ego )
-                getPlayerImpl()->getPlayerPhysics()->stopMovement();
+            getPlayerImpl()->getPlayerPhysics()->stopMovement();
         }
     }
     //--------
