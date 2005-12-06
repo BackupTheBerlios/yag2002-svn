@@ -62,9 +62,6 @@ void PlayerImplServer::postInitialize()
     _currentRot = getPlayerEntity()->getRotation();
 
     log_info << "  setup player implementation Server ..." << std::endl;
-
-    //! TODO: check if we need physics on server
-
     log_info << "  player implementation successfully initialized" << std::endl;
 }
 

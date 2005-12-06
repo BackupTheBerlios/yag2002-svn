@@ -394,6 +394,9 @@ void PlayerImplClient::update( float deltaTime )
         if ( fabs( lastrot - _rotZ ) > 0.01f )
             getPlayerAnimation()->setAnimation( EnPlayerAnimation::eTurn );
     }
+
+    // update sound
+    getPlayerSound()->updatePosition( _currentPos );
 }
 
 } // namespace vrc

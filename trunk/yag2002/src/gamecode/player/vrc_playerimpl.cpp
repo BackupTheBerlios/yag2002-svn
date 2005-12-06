@@ -179,7 +179,7 @@ void BasePlayerImplementation::setCameraMode( unsigned int mode )
             assert( NULL && "requesting for an invalid camera mode" );
 
     }
-    _cameraMode = ( CameraMode )mode;
+    _cameraMode = static_cast< CameraMode >( mode );
 }
 
 const std::string& BasePlayerImplementation::getPlayerName() const

@@ -254,6 +254,9 @@ void PlayerImplStandalone::update( float deltaTime )
         _p_camera->setCameraTranslation( getPlayerPosition(), getPlayerRotation() );
 
     getChatManager()->update( deltaTime );
+
+    // update sound
+    getPlayerSound()->updatePosition( _currentPos );
 }
 
 } // namespace vrc

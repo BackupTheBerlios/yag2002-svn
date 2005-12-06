@@ -46,7 +46,6 @@ namespace vrc
 
 #define ENTITY_NAME_PLSOUND   "PlayerSound"
 
-class PlayerSoundIH;
 class BasePlayerImplementation;
 
 //! Entity for player sounds
@@ -59,7 +58,7 @@ class EnPlayerSound  : public yaf3d::BaseEntity
 
         virtual                                     ~EnPlayerSound();
 
-        //! This entity does not need a transform node, which would be created by level manager on loading
+        //! This entity does not need a transform node.
         const bool                                  isTransformable() const { return false; }
 
         //! Set player association, player must call this in post-initialize phase
@@ -67,6 +66,9 @@ class EnPlayerSound  : public yaf3d::BaseEntity
 
         //! Post-Initializing function
         void                                        postInitialize();
+
+        //! Update the sound location
+        void                                        updatePosition( const osg::Vec3f& pos );
 
         //! Play walk on ground sound
         void                                        playWalkGround();
@@ -83,22 +85,10 @@ class EnPlayerSound  : public yaf3d::BaseEntity
         //! Stop any sound
         void                                        stopPlayingAll();
 
-        //! Set the volume damping factor
-        void                                        setDamping( float damping );
-
-        //! Get sound radius
-        float                                       getSoundRadius() const;
-
-        //! Get the sound source position
-        osg::Vec3f                                  getSoundPosition() const;
-
     protected:
 
         // Handler system notifications
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
-
-        //! Helper method; stops all other sounds except given one ( p_state )
-        void                                        stopOtherSounds( const osgAL::SoundState* p_state );
 
         // entity attributes
         //----------------------------------------------------------//
@@ -109,8 +99,11 @@ class EnPlayerSound  : public yaf3d::BaseEntity
         //! Sound volume
         float                                       _volume;
 
-        //! Max distribution radious
-        float                                       _radius;
+        //! Begin of rolloff ( min distance )
+        float                                       _minDistance;
+
+        //! At this distance the volume will be 0
+        float                                       _maxDistance;
 
         //! Walk sound file, on ground
         std::string                                 _walkGround;
@@ -127,17 +120,15 @@ class EnPlayerSound  : public yaf3d::BaseEntity
         //----------------------------------------------------------//
 
         //! Create a new sound
-        osgAL::SoundState*                          createSound( const std::string& filename );
+        unsigned int                                createSound( const std::string& filename );
 
-        //! All sound name / sound state pairs go here
-        std::map< std::string, osg::ref_ptr< osgAL::SoundState > > _soundStates;
-
-        //! Group where all sound nodes reside
-        osg::ref_ptr< osg::Group >                  _p_soundGroup;
+        //! Type for sound name ( as uint ) / sound id maps
+        typedef std::map< unsigned int, unsigned int > MapPlayerSounds;
+        
+        //! All sound name / sound id pairs go here
+        MapPlayerSounds                             _mapSounds;
 
         BasePlayerImplementation*                   _p_playerImpl;
-
-        osg::ref_ptr< PlayerSoundIH >               _p_soundUpdater;
 };
 
 //! Entity type definition used for type registry
