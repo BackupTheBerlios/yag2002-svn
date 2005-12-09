@@ -38,8 +38,6 @@ namespace yaf3d
 {
 
 NewtonCollision* PhysicsVisitor::_p_collision   = NULL;
-unsigned int PhysicsVisitor::_numPrimitives;
-unsigned int PhysicsVisitor::_numVertices;
 
 // debug display related
 //----------------------------//
@@ -146,7 +144,7 @@ void PhysicsVisitor::buildTrianlges( const osg::PrimitiveSet* p_set, osg::Array*
 {
     if( p_verts->getType() != osg::Array::Vec3ArrayType ) 
     {
-        log_error << "*** cannot build trimesh collision data as the vertexarray has not a Vec3 format!" << std::endl;
+        log_error << "Physics: cannot build trimesh collision data as the vertexarray has not a Vec3 format!" << std::endl;
         return;
     }
 
@@ -177,7 +175,7 @@ void PhysicsVisitor::buildTrianlgeStrip( const osg::PrimitiveSet* p_set, osg::Ar
 {
     if( p_verts->getType() != osg::Array::Vec3ArrayType ) 
     {
-        log_error <<  "*** cannot build trimesh collision data as the vertexarray has not a Vec3 format!" << std::endl;
+        log_error << "Physics: cannot build trimesh collision data as the vertexarray has not a Vec3 format!" << std::endl;
         return;
     }
 

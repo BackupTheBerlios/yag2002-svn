@@ -84,10 +84,10 @@ class PhysicsVisitor : public osg::NodeVisitor
         void                            apply( osg::Geode& node );
 
         //! Statistics methods, use them after traversal
-        static unsigned int             getNumPrimitives() { return _numPrimitives; }
+        unsigned int                    getNumPrimitives() { return _numPrimitives; }
 
         //! Statistics methods, use them after traversal
-        static unsigned int             getNumVertices()   { return _numVertices; }
+        unsigned int                    getNumVertices()   { return _numVertices; }
 
     protected:
 
@@ -101,10 +101,10 @@ class PhysicsVisitor : public osg::NodeVisitor
         unsigned int                    _attribute;
 
         // statistics
-        static unsigned int             _numPrimitives;
+        unsigned int                    _numPrimitives;
 
         // statistics
-        static unsigned int             _numVertices;
+        unsigned int                    _numVertices;
 
 };
 
