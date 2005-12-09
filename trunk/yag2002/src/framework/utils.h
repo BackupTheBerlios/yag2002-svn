@@ -61,9 +61,6 @@ std::string extractFileName( const std::string& fullpath );
 //! Given a path this functions replaces the backslashes by slashes
 std::string cleanPath( const std::string& path );
 
-//! Read the six sides of a cube map and return a texture
-osg::ref_ptr< osg::TextureCubeMap > readCubeMap( const std::vector< std::string >& texfiles );
-
 //! A generic input handler class with automatic adding and removing to / from viewer's event hanlder list
 struct NullType {};
 template< class T = NullType >
@@ -107,101 +104,6 @@ class GenericInputHandler : public osgGA::GUIEventHandler
         bool                                _destroyed;
 };
 
-//! This is a class for adjusting the transforming to eye coordinated.
-/**  In osg examples you find it as class "MoveEarthySkyWithEyePointTransform"
-*    It is used by entities like skybox and water.
-*/
-class EyeTransform : public osg::Transform
-{
-    public:
-
-        /** Get the transformation matrix which moves from local coords to world coords.*/
-        virtual bool                        computeLocalToWorldMatrix( osg::Matrix& matrix, osg::NodeVisitor* p_nv ) const 
-                                            {
-                                                osgUtil::CullVisitor* p_cv = dynamic_cast< osgUtil::CullVisitor* >( p_nv );
-                                                if ( p_cv )
-                                                {
-                                                    const osg::Vec3& eyePointLocal = p_cv->getEyeLocal();
-                                                    matrix.preMult( osg::Matrix::translate( eyePointLocal ) );
-                                                }
-                                                return true;
-                                            }
-
-        /** Get the transformation matrix which moves from world coords to local coords.*/
-        virtual bool                        computeWorldToLocalMatrix( osg::Matrix& matrix, osg::NodeVisitor* p_nv ) const
-                                            {    
-                                                osgUtil::CullVisitor* p_cv = dynamic_cast< osgUtil::CullVisitor* >( p_nv );
-                                                if ( p_cv )
-                                                {
-                                                    const osg::Vec3& eyePointLocal = p_cv->getEyeLocal();
-                                                    matrix.postMult( osg::Matrix::translate( -eyePointLocal ) );
-                                                }
-                                                return true;
-                                            }
-};
-
-//! Visitor for getting the world transformation considering all PositionAttitudeTransform nodes in path
-class TransformationVisitor : public osg::NodeVisitor
-{
-    public:
-                                            TransformationVisitor( osg::NodeVisitor::TraversalMode tmode = osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ) :
-                                                osg::NodeVisitor( tmode )
-                                            {
-                                                // we take all nodes
-                                                setTraversalMask( 0xffffffff );
-                                            }
-
-                                            ~TransformationVisitor() {}
-
-        void                                apply( osg::PositionAttitudeTransform& node )
-                                            {                        
-                                                _matrix *= osg::computeLocalToWorld( getNodePath() );
-                                            }
-
-        const osg::Matrixf&                 getMatrix() const
-                                            {
-                                                return _matrix;
-                                            }
-
-    protected:
-
-        osg::Matrixf                        _matrix;
-};
-
-//! Update texture matrix for cubemaps ( see osg's VertexProgram example )
-class TexMatCallback : public osg::NodeCallback
-{
-    public:
-
-        explicit                            TexMatCallback( osg::TexMat& tex ) : 
-                                             _texMat( tex ),
-                                             _R( 
-                                                osg::Matrix::rotate( osg::DegreesToRadians( 90.0f ), 0.0f, 0.0f, 1.0f ) *
-                                                osg::Matrix::rotate( osg::DegreesToRadians( 90.0f ), 1.0f, 0.0f, 0.0f ) 
-                                               )
-                                            {
-                                            }
-
-        virtual void                        operator()( osg::Node* p_node, osg::NodeVisitor* p_nv )
-                                            {
-                                                osgUtil::CullVisitor* p_cv = dynamic_cast< osgUtil::CullVisitor* >( p_nv );
-                                                if ( p_cv )
-                                                {
-                                                    const osg::Matrixf& MV = p_cv->getModelViewMatrix();
-                                                    osg::Quat q;
-                                                    MV.get( q );
-                                                    const osg::Matrix C = osg::Matrixf::rotate( q.inverse() );
-
-                                                    _texMat.setMatrix( C * _R );
-                                                }
-                                                traverse( p_node, p_nv );
-                                            }
-
-        osg::TexMat&                        _texMat;
-
-        osg::Matrixf                        _R;
-};
-
 // functions with platform dependent implementations
 //--------------------------------------------------
 
@@ -225,7 +127,6 @@ YAF3D_SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string&
 
 //! Returns a sorted string list with possible display settings above given colorbits filter value (format: WidthxHeight@ColorBits)
 void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned int colorbitsfilter = 0 );
-
 
 #ifdef WIN32
 
