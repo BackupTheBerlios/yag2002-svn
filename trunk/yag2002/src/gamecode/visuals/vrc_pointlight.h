@@ -49,10 +49,11 @@ class EnPointLight :  public yaf3d::BaseEntity, public BaseLight
 
         virtual                                     ~EnPointLight();
 
-        /**
-        * Initializing function, this is called after all engine modules are initialized and a map is loaded.
-        */
+        //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
+
+        //! If this entity is used in menu system then we want it to be persistent
+        const bool                                  isPersistent() const { return _usedInMenu; }
 
     protected:
 
@@ -60,6 +61,12 @@ class EnPointLight :  public yaf3d::BaseEntity, public BaseLight
 
         //! Max radius for culling ( deactivating ) light source during rendering
         float                                       _lightRadius;
+
+        //! Set to true if this entity is used in menu system
+        bool                                        _usedInMenu;
+
+        //! Enable / disable light
+        bool                                        _enable;
 };
 
 //! Entity type definition used for type registry

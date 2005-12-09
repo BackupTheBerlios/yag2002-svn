@@ -32,6 +32,7 @@
 #define _VRC_SKYBOX_H_
 
 #include <vrc_main.h>
+#include <vrc_gameutils.h>
 
 namespace vrc
 {
@@ -44,16 +45,12 @@ class EnSkyBox :  public yaf3d::BaseEntity
                                                     EnSkyBox();
 
         virtual                                     ~EnSkyBox();
-
-        //! This entity can be either persistent or not!
-        const bool                                  isPersistent() const { return _isPersistent; }
-
-        //! Set the persistence flag. 
-        //! Note: this flag is checked by framework on destruction of a level.
-        void                                        setPersistent( bool persistence ) { _isPersistent = persistence; }
         
         //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
+
+        //! If this entity is used in menu system then we want it to be persistent
+        const bool                                  isPersistent() const { return _usedInMenu; }
 
         //! Enable / disable skybox rendering
         void                                        enable( bool en );
@@ -66,7 +63,10 @@ class EnSkyBox :  public yaf3d::BaseEntity
         //! This entity is persistent so it has to trigger its destruction on shutdown ifself.
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
-        yaf3d::EyeTransform*                        _p_transformEyePoint;
+        //! Setup skybox
+        osg::ref_ptr< osg::Group >                  setupSkybox();
+
+        vrc::gameutils::EyeTransform*               _p_transformEyePoint;
            
         osg::ref_ptr< osg::Group >                  _p_skyGrp;
 
@@ -78,7 +78,7 @@ class EnSkyBox :  public yaf3d::BaseEntity
 
         std::map< short, std::string >              _textureFilenameMap;
 
-        bool                                        _isPersistent;
+        bool                                        _usedInMenu;
 
         bool                                        _enable;
 };

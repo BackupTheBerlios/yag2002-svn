@@ -53,12 +53,8 @@ class EnFog :  public yaf3d::BaseEntity
         //!  attributes for particular entity.
         void                                        enable( bool en );
 
-        //! Set the persistence flag. 
-        //! Note: this flag is checked by framework on destruction of a level.
-        void                                        setPersistent( bool persistence ) { _isPersistent = persistence; }
-
-        //! This entity can be either persistent or not!
-        const bool                                  isPersistent() const { return _isPersistent; }
+        //! If this entity is used in menu system then we want it to be persistent
+        const bool                                  isPersistent() const { return _usedInMenu; }
 
     protected:
 
@@ -76,7 +72,7 @@ class EnFog :  public yaf3d::BaseEntity
 
         static osg::Fog*                            _p_fog;
 
-        bool                                        _isPersistent;
+        bool                                        _usedInMenu;
 
         bool                                        _enable;
 

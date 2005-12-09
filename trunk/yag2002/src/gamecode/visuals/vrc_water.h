@@ -61,6 +61,9 @@ class EnWater :  public yaf3d::BaseEntity
         //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
 
+        //! If this entity is used in menu system then we want it to be persistent
+        const bool                                  isPersistent() const { return _usedInMenu; }
+
     protected:
 
         // Entity attribbutes
@@ -88,6 +91,8 @@ class EnWater :  public yaf3d::BaseEntity
 
         float                                       _transparency;
 
+        bool                                        _usedInMenu;
+
         //! Reflection cube map textures
         std::string                                 _cubeMapTextures[ 6 ];
 
@@ -104,6 +109,9 @@ class EnWater :  public yaf3d::BaseEntity
         
         //! Water node
         osg::ref_ptr< osg::Node >                   _water;
+
+        //! Enable / disable water
+        bool                                        _enable;
 
     friend class DeltaWaveUpdateCallback;
     friend class DeltaNoiseUpdateCallback;

@@ -46,13 +46,13 @@ class BaseLight
 {
     public:
                                                     BaseLight() : 
-                                                    _lightId( 0 ),
-                                                    _ambientColor( osg::Vec3f( 0.2f, 0.2f, 0.2f ) ),
-                                                    _diffuseColor( osg::Vec3f( 0.7f, 0.7f, 0.7f ) ),
-                                                    _specularColor( osg::Vec3f( 0.9f, 0.9f, 0.9f ) ),
-                                                    _constAttenuation( 0.01f ),
-                                                    _linearAttenuation( 0.001f ),
-                                                    _quadraticAttenuation( 0.0001f )          
+                                                     _lightId( 0 ),
+                                                     _ambientColor( osg::Vec3f( 0.2f, 0.2f, 0.2f ) ),
+                                                     _diffuseColor( osg::Vec3f( 0.7f, 0.7f, 0.7f ) ),
+                                                     _specularColor( osg::Vec3f( 0.9f, 0.9f, 0.9f ) ),
+                                                     _constAttenuation( 0.01f ),
+                                                     _linearAttenuation( 0.001f ),
+                                                     _quadraticAttenuation( 0.0001f )          
                                                     {}
 
         virtual                                     ~BaseLight() 

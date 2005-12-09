@@ -39,9 +39,13 @@ namespace vrc
 YAF3D_IMPL_ENTITYFACTORY( PointLightEntityFactory );
 
 EnPointLight::EnPointLight() :
-_lightRadius( 100.0f )
+_lightRadius( 100.0f ),
+_usedInMenu( false ),
+_enable( true )
 {
     // register entity attributes
+    getAttributeManager().addAttribute( "usedInMenu"           , _usedInMenu           );
+    getAttributeManager().addAttribute( "enable"               , _enable               );
     getAttributeManager().addAttribute( "position"             , _position             );
     getAttributeManager().addAttribute( "radius"               , _lightRadius          );
     getAttributeManager().addAttribute( "meshFile"             , _meshFile             );
@@ -62,22 +66,60 @@ void EnPointLight::handleNotification( const yaf3d::EntityNotification& notifica
     // handle notifications
     switch( notification.getId() )
     {
+        case YAF3D_NOTIFY_MENU_ENTER:
+        {
+            if ( _enable )
+            {
+                if ( _usedInMenu )
+                    addToTransformationNode( _lightSource.get() );
+                else
+                    removeFromTransformationNode( _lightSource.get() );
+            }
+        }
+        break;
+
+        case YAF3D_NOTIFY_MENU_LEAVE:
+        {
+            if ( _enable )
+            {
+                if ( _usedInMenu )
+                    removeFromTransformationNode( _lightSource.get() );
+                else
+                    addToTransformationNode( _lightSource.get() );
+            }
+        }
+        break;
+
         // update the light settings when attributes are changed (e.g. by a level editor)
         case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
         {
-            osg::Light* p_light = _lightSource->getLight();
-            if ( p_light )
+            removeFromTransformationNode( _lightSource.get() );
+            if ( _enable )
             {
-                p_light->setAmbient( osg::Vec4( _ambientColor, 1.0f ) );
-                p_light->setDiffuse( osg::Vec4( _diffuseColor, 1.0f ) );
-                p_light->setSpecular( osg::Vec4( _specularColor, 1.0f ) );
-                p_light->setConstantAttenuation( _constAttenuation );
-                p_light->setLinearAttenuation( _linearAttenuation );
-                p_light->setQuadraticAttenuation( _quadraticAttenuation );
+                osg::Light* p_light = _lightSource->getLight();
+                if ( p_light )
+                {
+                    p_light->setAmbient( osg::Vec4( _ambientColor, 1.0f ) );
+                    p_light->setDiffuse( osg::Vec4( _diffuseColor, 1.0f ) );
+                    p_light->setSpecular( osg::Vec4( _specularColor, 1.0f ) );
+                    p_light->setConstantAttenuation( _constAttenuation );
+                    p_light->setLinearAttenuation( _linearAttenuation );
+                    p_light->setQuadraticAttenuation( _quadraticAttenuation );
 
-                setPosition( _position );
-                _bSphere.set( osg::Vec3f( 0, 0, 0 ), _lightRadius );
+                    setPosition( _position );
+                    _bSphere.set( osg::Vec3f( 0, 0, 0 ), _lightRadius );
+                }
+
+                addToTransformationNode( _lightSource.get() );
             }
+        }
+        break;
+
+        // if used in menu then this entity is persisten, so we have to trigger its deletion on shutdown
+        case YAF3D_NOTIFY_SHUTDOWN:
+        {
+            if ( _usedInMenu )
+                yaf3d::EntityManager::get()->deleteEntity( this );
         }
         break;
 
@@ -118,8 +160,11 @@ void EnPointLight::initialize()
     p_light->setLinearAttenuation( _linearAttenuation );
     p_light->setQuadraticAttenuation( _quadraticAttenuation );
 
-    // add light to entity's transform node
-    addToTransformationNode( _lightSource.get() );
+    // now add light to entity's transform node if this entity is used in menu system, otherwise on "leve menu" event
+    //  the light source is added -- see notification handler
+    if ( _usedInMenu )
+        addToTransformationNode( _lightSource.get() );
+
     // set mesh if one defined
     if ( _meshFile.length() )
     {
@@ -132,6 +177,9 @@ void EnPointLight::initialize()
     
     // set entity position which is also the light source position
     setPosition( _position );
+
+    // register entity in order to get menu notifications
+    yaf3d::EntityManager::get()->registerNotification( this, true );    
 }
 
-}
+} // namespace vrc

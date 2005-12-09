@@ -39,11 +39,11 @@ YAF3D_IMPL_ENTITYFACTORY( SkyBoxEntityFactory );
 
 
 EnSkyBox::EnSkyBox() :
-_isPersistent( false ),
+_usedInMenu( false ),
 _enable( true )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "persistence"   , _isPersistent  );
+    getAttributeManager().addAttribute( "usedInMenu"    , _usedInMenu    );
     getAttributeManager().addAttribute( "enable"        , _enable        );
     getAttributeManager().addAttribute( "right"         , _texNames[ 0 ] );
     getAttributeManager().addAttribute( "left"          , _texNames[ 1 ] );
@@ -62,10 +62,39 @@ void EnSkyBox::handleNotification( const yaf3d::EntityNotification& notification
     // handle notifications
     switch( notification.getId() )
     {
-        // we have to trigger the deletion ourselves! ( this entity can be peristent )
+        case YAF3D_NOTIFY_MENU_ENTER:
+
+            if ( _enable )
+            {
+                if ( !_usedInMenu ) 
+                    removeFromTransformationNode( _p_skyGrp.get() );
+                else
+                    addToTransformationNode( _p_skyGrp.get() );
+            }
+            break;
+
+        case YAF3D_NOTIFY_MENU_LEAVE:
+
+            if ( _enable )
+            {
+                if ( !_usedInMenu )
+                    addToTransformationNode( _p_skyGrp.get() );
+                else
+                    removeFromTransformationNode( _p_skyGrp.get() );
+            }
+            break;
+
+        // re-create the skybox whenever an attribute changed
+        case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
+            removeFromTransformationNode( _p_skyGrp.get() );
+            _p_skyGrp = setupSkybox();
+            if ( _enable )
+                addToTransformationNode( _p_skyGrp.get() );
+
+        // if used in menu then this entity is persisten, so we have to trigger its deletion on shutdown
         case YAF3D_NOTIFY_SHUTDOWN:
 
-            if ( _isPersistent )
+            if ( _usedInMenu )
                 yaf3d::EntityManager::get()->deleteEntity( this );
             break;
 
@@ -79,6 +108,18 @@ void EnSkyBox::initialize()
     // register entity in order to get notifications   
     yaf3d::EntityManager::get()->registerNotification( this, true );   
 
+    // setup the skybox
+    _p_skyGrp = setupSkybox();
+
+    // if this entity is used in menu then add it immediately to trasformation node
+    if ( _usedInMenu )
+        addToTransformationNode( _p_skyGrp.get() );
+}
+
+osg::ref_ptr< osg::Group > EnSkyBox::setupSkybox()
+{
+    _textureFilenameMap.clear();
+
     // setup texture side names
     _textureFilenameMap.insert( make_pair( osg::TextureCubeMap::POSITIVE_X, _texNames[ 0 ] ) );
     _textureFilenameMap.insert( make_pair( osg::TextureCubeMap::NEGATIVE_X, _texNames[ 1 ] ) );
@@ -87,15 +128,14 @@ void EnSkyBox::initialize()
     _textureFilenameMap.insert( make_pair( osg::TextureCubeMap::POSITIVE_Z, _texNames[ 4 ] ) );
     _textureFilenameMap.insert( make_pair( osg::TextureCubeMap::NEGATIVE_Z, _texNames[ 5 ] ) );
 
-    _p_skyGrp = new osg::Group();
-    _p_skyGrp->setName( "_skybox_" );
-    _p_transformEyePoint = new yaf3d::EyeTransform();
+    osg::ref_ptr< osg::Group > skyboxgrp = new osg::Group();
+    skyboxgrp->setName( "_skybox_" );
+    _p_transformEyePoint = new vrc::gameutils::EyeTransform();
     _p_transformEyePoint->setCullingActive( false );
     _p_transformEyePoint->addChild( makeBox() );
-    _p_skyGrp->addChild( _p_transformEyePoint );
+    skyboxgrp->addChild( _p_transformEyePoint );
 
-    if ( _enable )
-        addToTransformationNode( _p_skyGrp.get() );
+    return skyboxgrp;
 }
 
 void EnSkyBox::enable( bool en )

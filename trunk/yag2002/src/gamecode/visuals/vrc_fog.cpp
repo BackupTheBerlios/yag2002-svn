@@ -45,16 +45,16 @@ _density( 0.3f ),
 _start( 300.0f ),
 _end( 1000.0f ),
 _fogColor( osg::Vec3f( 0.2f, 0.2f, 0.2f ) ),
-_isPersistent( false ),
+_usedInMenu( false ),
 _enable( true )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "persistence", _isPersistent    );
-    getAttributeManager().addAttribute( "density"    , _density         );
-    getAttributeManager().addAttribute( "start"      , _start           );
-    getAttributeManager().addAttribute( "end"        , _end             );
-    getAttributeManager().addAttribute( "color"      , _fogColor        );
-    getAttributeManager().addAttribute( "enable"     , _enable          );
+    getAttributeManager().addAttribute( "usedInMenu" , _usedInMenu   );
+    getAttributeManager().addAttribute( "density"    , _density      );
+    getAttributeManager().addAttribute( "start"      , _start        );
+    getAttributeManager().addAttribute( "end"        , _end          );
+    getAttributeManager().addAttribute( "color"      , _fogColor     );
+    getAttributeManager().addAttribute( "enable"     , _enable       );
 
     ++_instCount;
 }
@@ -76,13 +76,42 @@ void EnFog::handleNotification( const yaf3d::EntityNotification& notification )
     // handle notifications
     switch( notification.getId() )
     {
-        // we have to trigger the deletion ourselves! ( this entity can be peristent )
-        case YAF3D_NOTIFY_SHUTDOWN:
 
-            if ( _isPersistent )
-                yaf3d::EntityManager::get()->deleteEntity( this );
+        case YAF3D_NOTIFY_MENU_ENTER:
+
+            if ( _usedInMenu )
+            {
+                if ( _enable )
+                {
+                    enable( false );
+                    enable ( true );
+                }
+            }
+            else
+            {
+                if ( _enable )
+                    enable( false );
+            }
             break;
 
+        case YAF3D_NOTIFY_MENU_LEAVE:
+
+            if ( _usedInMenu )
+            {
+                if ( _enable )
+                    enable( false );
+            }
+            else
+            {
+                if ( _enable )
+                {
+                    enable( false );
+                    enable ( true );
+                }
+            }
+             break;
+
+        // reactivate fog when an attribute changed
         case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
             
             if ( _enable )
@@ -94,6 +123,13 @@ void EnFog::handleNotification( const yaf3d::EntityNotification& notification )
             {
                 enable( false );
             }
+            break;
+
+        // we have to trigger the deletion ourselves! ( this entity is peristent if used in menu system )
+        case YAF3D_NOTIFY_SHUTDOWN:
+
+            if ( _usedInMenu )
+                yaf3d::EntityManager::get()->deleteEntity( this );
             break;
 
         default:

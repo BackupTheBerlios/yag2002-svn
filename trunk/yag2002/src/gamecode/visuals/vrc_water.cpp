@@ -32,6 +32,7 @@
  ################################################################*/
 
 #include <vrc_main.h>
+#include <vrc_gameutils.h>
 #include <osg/Program>
 #include <osg/Shader>
 #include <osg/Uniform>
@@ -201,27 +202,31 @@ _waveSpeed( 0.14f ),
 _fadeExp( 6.0f ),
 _scale( osg::Vec3f( 1.0f, 1.0f, 1.0f ) ),
 _waterColor( osg::Vec3f( 0.2f, 0.25f, 0.6f ) ),
-_transparency( 0.5f )
+_transparency( 0.5f ),
+_usedInMenu( false ),
+_enable( true )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "meshFile"              , _meshFile              );
-    getAttributeManager().addAttribute( "position"              , _position              );
-    getAttributeManager().addAttribute( "sizeX"                 , _sizeX                 );
-    getAttributeManager().addAttribute( "sizeY"                 , _sizeY                 );
-    getAttributeManager().addAttribute( "fadeBias"              , _fadeBias              );
-    getAttributeManager().addAttribute( "noiseSpeed"            , _noiseSpeed            );
-    getAttributeManager().addAttribute( "waveSpeed"             , _waveSpeed             );
-    getAttributeManager().addAttribute( "fadeExp"               , _fadeExp               );
-    getAttributeManager().addAttribute( "waterColor"            , _waterColor            );
-    getAttributeManager().addAttribute( "transparency"          , _transparency          );
-    getAttributeManager().addAttribute( "scale"                 , _scale                 );
+    getAttributeManager().addAttribute( "usedInMenu"    , _usedInMenu           );
+    getAttributeManager().addAttribute( "enable"        , _enable               );
+    getAttributeManager().addAttribute( "meshFile"      , _meshFile             );
+    getAttributeManager().addAttribute( "position"      , _position             );
+    getAttributeManager().addAttribute( "sizeX"         , _sizeX                );
+    getAttributeManager().addAttribute( "sizeY"         , _sizeY                );
+    getAttributeManager().addAttribute( "fadeBias"      , _fadeBias             );
+    getAttributeManager().addAttribute( "noiseSpeed"    , _noiseSpeed           );
+    getAttributeManager().addAttribute( "waveSpeed"     , _waveSpeed            );
+    getAttributeManager().addAttribute( "fadeExp"       , _fadeExp              );
+    getAttributeManager().addAttribute( "waterColor"    , _waterColor           );
+    getAttributeManager().addAttribute( "transparency"  , _transparency         );
+    getAttributeManager().addAttribute( "scale"         , _scale                );
 
-    getAttributeManager().addAttribute( "right"                 , _cubeMapTextures[ 0 ]  );
-    getAttributeManager().addAttribute( "left"                  , _cubeMapTextures[ 1 ]  );
-    getAttributeManager().addAttribute( "front"                 , _cubeMapTextures[ 2 ]  );
-    getAttributeManager().addAttribute( "back"                  , _cubeMapTextures[ 3 ]  );
-    getAttributeManager().addAttribute( "up"                    , _cubeMapTextures[ 4 ]  );
-    getAttributeManager().addAttribute( "down"                  , _cubeMapTextures[ 5 ]  );
+    getAttributeManager().addAttribute( "right"         , _cubeMapTextures[ 0 ] );
+    getAttributeManager().addAttribute( "left"          , _cubeMapTextures[ 1 ] );
+    getAttributeManager().addAttribute( "front"         , _cubeMapTextures[ 2 ] );
+    getAttributeManager().addAttribute( "back"          , _cubeMapTextures[ 3 ] );
+    getAttributeManager().addAttribute( "up"            , _cubeMapTextures[ 4 ] );
+    getAttributeManager().addAttribute( "down"          , _cubeMapTextures[ 5 ] );
 }
 
 EnWater::~EnWater()
@@ -236,20 +241,38 @@ void EnWater::handleNotification( const yaf3d::EntityNotification& notification 
         // disable water rendering when in menu
         case YAF3D_NOTIFY_MENU_ENTER:
 
-            removeFromTransformationNode( _water.get() );
+            if ( _usedInMenu ) 
+                addToTransformationNode( _water.get() );
+            else
+                removeFromTransformationNode( _water.get() );
+
             break;
 
         // enable water entity when get back in game
         case YAF3D_NOTIFY_MENU_LEAVE:
 
-            addToTransformationNode( _water.get() );
+            if ( _usedInMenu )
+                removeFromTransformationNode( _water.get() );
+            else
+                addToTransformationNode( _water.get() );
+
             break;
 
         case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
+
             // re-create the water
             removeFromTransformationNode( _water.get() );
             _water = setupWater();
-            addToTransformationNode( _water.get() );
+            if ( _enable )
+                addToTransformationNode( _water.get() );
+
+            break;
+
+        // if used in menu then this entity is persisten, so we have to trigger its deletion on shutdown
+        case YAF3D_NOTIFY_SHUTDOWN:
+
+            if ( _usedInMenu )
+                yaf3d::EntityManager::get()->deleteEntity( this );
             break;
 
         default:
@@ -264,6 +287,10 @@ void EnWater::initialize()
 
     // the water is added to entity's transform node in notification call-back, when entering game ( leaving menu )!
     _water = setupWater();
+
+    // we may use this entity also in menu loader, so add it to scenegraph in this case during initialization
+    if ( _usedInMenu )
+        addToTransformationNode( _water.get() );
 
     yaf3d::EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 }
@@ -363,15 +390,17 @@ osg::Node* EnWater::setupWater()
         p_node = p_geode;
     }
 
-    // setup the shaders and uniforms
-    osg::StateSet* p_stateSet = new osg::StateSet;
+    // setup the shaders and uniforms, share the stateset
+    static osg::StateSet* s_stateSet = NULL;
+    if ( !s_stateSet )
     {
+        s_stateSet = new osg::StateSet;
         osg::Program* p_program = new osg::Program;
         p_program->setName( "_waterShaderGLSL_" );
 
         p_program->addShader( new osg::Shader( osg::Shader::VERTEX, glsl_vp ) );
         p_program->addShader( new osg::Shader( osg::Shader::FRAGMENT, glsl_fp ) );
-        p_stateSet->setAttributeAndModes( p_program, osg::StateAttribute::ON );
+        s_stateSet->setAttributeAndModes( p_program, osg::StateAttribute::ON );
 
         osg::Uniform* p_fadeBias    = new osg::Uniform( "fadeBias",     _fadeBias                       );
         osg::Uniform* p_waveSpeed   = new osg::Uniform( "waveSpeed",    _waveSpeed                      );
@@ -381,24 +410,24 @@ osg::Node* EnWater::setupWater()
         osg::Uniform* p_scale       = new osg::Uniform( "scale",        osg::Vec4f( _scale, 1.0f )      );
         osg::Uniform* p_trans       = new osg::Uniform( "transparency", _transparency                   );
 
-        p_stateSet->addUniform( p_fadeBias   );
-        p_stateSet->addUniform( p_waveSpeed  );
-        p_stateSet->addUniform( p_fadeExp    );
-        p_stateSet->addUniform( p_scale      );
-        p_stateSet->addUniform( p_noiseSpeed );
-        p_stateSet->addUniform( p_waterColor );
-        p_stateSet->addUniform( p_trans      );
+        s_stateSet->addUniform( p_fadeBias   );
+        s_stateSet->addUniform( p_waveSpeed  );
+        s_stateSet->addUniform( p_fadeExp    );
+        s_stateSet->addUniform( p_scale      );
+        s_stateSet->addUniform( p_noiseSpeed );
+        s_stateSet->addUniform( p_waterColor );
+        s_stateSet->addUniform( p_trans      );
 
         osg::Uniform* p_viewPosition = new osg::Uniform( "viewPosition", osg::Vec4f() );
-        p_stateSet->addUniform( p_viewPosition );
+        s_stateSet->addUniform( p_viewPosition );
         p_viewPosition->setUpdateCallback( new ViewPositionUpdateCallback() ); // set time view position update callback for the shader
 
         osg::Uniform* p_uniformDeltaWave = new osg::Uniform( "deltaWave", 0.0f );
-        p_stateSet->addUniform( p_uniformDeltaWave );
+        s_stateSet->addUniform( p_uniformDeltaWave );
         p_uniformDeltaWave->setUpdateCallback( new DeltaWaveUpdateCallback( this ) ); // set time update callback for the shader
 
         osg::Uniform* p_uniformDeltaNoise = new osg::Uniform( "deltaNoise", 0.0f );
-        p_stateSet->addUniform( p_uniformDeltaNoise );
+        s_stateSet->addUniform( p_uniformDeltaNoise );
         p_uniformDeltaNoise->setUpdateCallback( new DeltaNoiseUpdateCallback( this ) ); // set time update callback for the shader
 
         // create a noise texture
@@ -410,8 +439,8 @@ osg::Node* EnWater::setupWater()
         p_noiseTexture->setWrap( osg::Texture3D::WRAP_R, osg::Texture3D::REPEAT );
         p_noiseTexture->setImage( make3DNoiseImage( 32 ) );
 
-        p_stateSet->setTextureAttribute( LOCATION_NOISE_SAMPLER, p_noiseTexture );
-        p_stateSet->addUniform( new osg::Uniform( "samplerNoise", LOCATION_NOISE_SAMPLER ) );
+        s_stateSet->setTextureAttribute( LOCATION_NOISE_SAMPLER, p_noiseTexture );
+        s_stateSet->addUniform( new osg::Uniform( "samplerNoise", LOCATION_NOISE_SAMPLER ) );
 
         // create skybox texture
         std::vector< std::string > texfiles;
@@ -421,26 +450,24 @@ osg::Node* EnWater::setupWater()
         texfiles.push_back( _cubeMapTextures[ 3 ] );
         texfiles.push_back( _cubeMapTextures[ 4 ] );
         texfiles.push_back( _cubeMapTextures[ 5 ] );
-        osg::ref_ptr< osg::TextureCubeMap > reflectmap = yaf3d::readCubeMap( texfiles );
-
-        p_stateSet->setTextureAttribute( LOCATION_CUBEMAP_SAMPLER, reflectmap.get() );
-        p_stateSet->addUniform( new osg::Uniform( "samplerSkyBox", LOCATION_CUBEMAP_SAMPLER ) );
+        osg::ref_ptr< osg::TextureCubeMap > reflectmap = vrc::gameutils::readCubeMap( texfiles );
+        
+        s_stateSet->setTextureAttribute( LOCATION_CUBEMAP_SAMPLER, reflectmap.get() );
+        s_stateSet->addUniform( new osg::Uniform( "samplerSkyBox", LOCATION_CUBEMAP_SAMPLER ) );
 
         // set lighting and culling
-        p_stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
-        p_stateSet->setMode( GL_CULL_FACE, osg::StateAttribute::OFF );
+        s_stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
+        s_stateSet->setMode( GL_CULL_FACE, osg::StateAttribute::OFF );
 
         // disable depth test
-        p_stateSet->setMode( GL_DEPTH, osg::StateAttribute::OFF );
+        s_stateSet->setMode( GL_DEPTH, osg::StateAttribute::OFF );
 
         // set up transparency
-        p_stateSet->setMode( GL_BLEND, osg::StateAttribute::ON );      
-        p_stateSet->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
-        // make sure that the water is rendered at first than all other transparent primitives
-        p_stateSet->setBinNumber( 0 );
+        s_stateSet->setMode( GL_BLEND, osg::StateAttribute::ON );      
+        s_stateSet->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
 
         // append state set to geode
-        p_node->setStateSet( p_stateSet );
+        p_node->setStateSet( s_stateSet );
     }
 
     osg::Group* p_group = new osg::Group;

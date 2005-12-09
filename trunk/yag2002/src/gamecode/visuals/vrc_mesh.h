@@ -49,6 +49,9 @@ class EnMesh :  public yaf3d::BaseEntity
         //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
 
+        //! If this entity is used in menu system then we want it to be persistent
+        const bool                                  isPersistent() const { return _usedInMenu; }
+
         //! Enable / disable mesh rendering
         void                                        enable( bool en );
 
@@ -62,11 +65,17 @@ class EnMesh :  public yaf3d::BaseEntity
 
     protected:
 
+        //! Handle system notifications
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
+
+        //! Setup the mesh
+        osg::ref_ptr< osg::Node >                   setupMesh();
 
         osg::ref_ptr< osg::Node >                   _mesh;
 
         bool                                        _enable;
+
+        bool                                        _usedInMenu;
 };
 
 //! Entity type definition used for type registry
