@@ -44,8 +44,6 @@ class MenuInputHandler;
 class EnAmbientSound;
 class IntroControl;
 class EnCamera;
-class EnSkyBox;
-class EnFog;
 
 namespace gameutils
 {
@@ -119,10 +117,6 @@ class EnMenu :  public yaf3d::BaseEntity
 
         float                                       _backgroundSoundVolume;
 
-        std::string                                 _skyboxImages[ 6 ];
-
-        std::string                                 _menuSceneFile;
-
         std::string                                 _menuCameraPathFile;
 
     protected:
@@ -138,11 +132,8 @@ class EnMenu :  public yaf3d::BaseEntity
         //! Stop intro
         void                                        stopIntro();
 
-        //! Ued to turn on / off skybox when entering / leaving menu
-        void                                        enableSkybox( bool en );
-
-        //! Ued to turn on / off menu fog when entering / leaving menu
-        void                                        enableFog( bool en );
+        //! Called whenever an user interaction with gui occured, this is used for detecting idling
+        void                                        triggerUserInteraction();
 
         //! Callback for button click "game settings"        
         bool                                        onClickedGameSettings( const CEGUI::EventArgs& arg );
@@ -207,19 +198,9 @@ class EnMenu :  public yaf3d::BaseEntity
             ForStandalone
         }                                           _levelSelectionState;
 
-        osg::ref_ptr< osg::Group >                  _menuScene;
-
-        osg::ref_ptr< osg::Node >                   _levelScene;
-
         osg::ref_ptr< osg::Group >                  _menuAnimationPath;
 
         EnCamera*                                   _p_cameraControl;
-
-        EnSkyBox*                                   _p_skyBox;
-
-        EnFog*                                      _p_menuFog;
-
-        EnFog*                                      _p_sceneFog;
 
         EnAmbientSound*                             _p_introSound;
 
@@ -256,6 +237,8 @@ class EnMenu :  public yaf3d::BaseEntity
         MenuInputHandler*                           _p_inputHandler;
 
         float                                       _soundFadingCnt;
+
+        float                                       _idleCounter;
 
         //! Shows that a level is already loaded
         bool                                        _levelLoaded;

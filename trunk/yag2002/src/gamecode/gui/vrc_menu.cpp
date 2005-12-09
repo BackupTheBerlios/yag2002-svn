@@ -46,17 +46,19 @@ namespace vrc
 {
 
 // prefix for menu layout resources
-#define MENU_PREFIX             "menu_"
-#define OVERLAY_IMAGESET        MENU_PREFIX "loadingoverlay"
+#define MENU_PREFIX                     "menu_"
+#define OVERLAY_IMAGESET                MENU_PREFIX "loadingoverlay"
 
 // some default resources
-#define MENU_SCENE              "gui/scene/menuscene.osg"
-#define MENU_CAMERAPATH         "gui/scene/campath.osg"
+#define MENU_CAMERAPATH                 "gui/scene/campath.osg"
 
 // menu background sound related parameters
 #define BCKRGD_SND_FADEIN_PERIOD        2.0f
 #define BCKRGD_SND_FADEOUT_PERIOD       0.4f
 #define BCKRGD_SND_PLAY_VOLUME          0.5f
+
+// idle timeout in seconds, if during this time no user interaction detected then the menu changes to idle state
+#define MENU_IDLE_TIMEOUT               5.0
 
 //! Input handler class for menu, it handles ESC key press and toggles the menu gui
 class MenuInputHandler : public yaf3d::GenericInputHandler< EnMenu >
@@ -80,6 +82,10 @@ class MenuInputHandler : public yaf3d::GenericInputHandler< EnMenu >
                                                 unsigned int eventType   = p_eventAdapter->getEventType();
                                                 int          key         = p_eventAdapter->getKey();
                                                 unsigned int buttonMask  = p_eventAdapter->getButtonMask();
+
+                                                // check for idling, i.e. no user interaction while in menu
+                                                if ( ( eventType != osgGA::GUIEventAdapter::FRAME ) && ( eventType != 0xffff ) )
+                                                    getUserObject()->triggerUserInteraction();
 
                                                 // during intro we abort it when mouse clicked
                                                 if ( buttonMask == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON )
@@ -144,15 +150,11 @@ _introductionSound( "gui/sound/intro.wav" ),
 _introductionSoundVolume( 1.0f ),
 _backgroundSound( "gui/sound/background.wav" ),
 _backgroundSoundVolume( 0.6f ),
-_menuSceneFile( MENU_SCENE ),
 _menuCameraPathFile( MENU_CAMERAPATH ),
 _menuState( None ),
 _menuSoundState( SoundStopped ),
 _levelSelectionState( ForStandalone ),
 _p_cameraControl( NULL ),
-_p_skyBox( NULL ),
-_p_menuFog( NULL ),
-_p_sceneFog( NULL ),
 _p_introSound( NULL ),
 _p_backgrdSound( NULL ),
 _p_menuWindow( NULL ),
@@ -167,6 +169,7 @@ _p_loadingLevelPic( NULL ),
 _p_clientLevelFiles( NULL ),
 _p_inputHandler( NULL ),
 _soundFadingCnt( 0.0f ),
+_idleCounter( 0.0f ),
 _levelLoaded( false )
 {
     // register entity attributes
@@ -181,16 +184,7 @@ _levelLoaded( false )
     getAttributeManager().addAttribute( "backgroundSound"           , _backgroundSound          );
     getAttributeManager().addAttribute( "backgroundSoundVolume"     , _backgroundSoundVolume    );
 
-    getAttributeManager().addAttribute( "menuScene"                 , _menuSceneFile            );
     getAttributeManager().addAttribute( "cameraPath"                , _menuCameraPathFile       );
-
-    getAttributeManager().addAttribute( "skyboxRight"               , _skyboxImages[ 0 ]        );
-    getAttributeManager().addAttribute( "skyboxLeft"                , _skyboxImages[ 1 ]        );
-    getAttributeManager().addAttribute( "skyboxFront"               , _skyboxImages[ 2 ]        );
-    getAttributeManager().addAttribute( "skyboxBack"                , _skyboxImages[ 3 ]        );
-    getAttributeManager().addAttribute( "skyboxUp"                  , _skyboxImages[ 4 ]        );
-    getAttributeManager().addAttribute( "skyboxDown"                , _skyboxImages[ 5 ]        );
-
 }
 
 EnMenu::~EnMenu()
@@ -384,23 +378,19 @@ void EnMenu::initialize()
 void EnMenu::createMenuScene()
 {
     // load the menu scene and camera path
-    osg::Node* p_scenenode = yaf3d::LevelManager::get()->loadMesh( _menuSceneFile );
     osg::Node* p_animnode  = yaf3d::LevelManager::get()->loadMesh( _menuCameraPathFile );
-    if ( p_scenenode && p_animnode )
+    if ( p_animnode )
     {
         _menuAnimationPath = new osg::Group();
         _menuAnimationPath->addChild( p_animnode );
     }
     else
     {
-        log_warning << "*** EnMenu: cannot setup scene; either menu scene or camera animation is missing" << std::endl;
+        log_error << "*** EnMenu: cannot setup scene as camera animation is missing" << std::endl;
         return;
     }
-    _menuScene = new osg::Group;
-    _menuScene->setName( "_menuScene_" );
-    _menuScene->addChild( p_scenenode );
-    p_scenenode->setName( "_menuSceneNode_" );
-    _menuScene->addChild( _menuAnimationPath.get() );
+    // add the animation node to root scene
+    yaf3d::Application::get()->getSceneRootNode()->addChild( _menuAnimationPath.get() );
 
     // create and setup camera
     log_debug << "creating menu camera entity '_menuCam_'" << std::endl;
@@ -418,39 +408,8 @@ void EnMenu::createMenuScene()
     p_camEntity->setCameraOffsetRotation( rotoffset );    
     p_camEntity->initialize();
     p_camEntity->postInitialize();
-
-    // create and setup skybox
-    log_debug << "creating menu skybox entity '_menuSkybox_'" << std::endl;
-    EnSkyBox* p_skyboxEntity = dynamic_cast< EnSkyBox* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_SKYBOX, "_menuSkybox_" ) );
-    assert( p_skyboxEntity && "cannot create skybox entity!" );
-    _p_skyBox = p_skyboxEntity;
-    p_skyboxEntity->getAttributeManager().setAttributeValue( "persistence", true                );
-    p_skyboxEntity->getAttributeManager().setAttributeValue( "enable",      false               );
-    p_skyboxEntity->getAttributeManager().setAttributeValue( "right",      _skyboxImages[ 0 ]   );
-    p_skyboxEntity->getAttributeManager().setAttributeValue( "left",       _skyboxImages[ 1 ]   );
-    p_skyboxEntity->getAttributeManager().setAttributeValue( "back",       _skyboxImages[ 2 ]   );
-    p_skyboxEntity->getAttributeManager().setAttributeValue( "front",      _skyboxImages[ 3 ]   );
-    p_skyboxEntity->getAttributeManager().setAttributeValue( "up",         _skyboxImages[ 4 ]   );
-    p_skyboxEntity->getAttributeManager().setAttributeValue( "down",       _skyboxImages[ 5 ]   );
-    yaf3d::EntityManager::get()->addToScene( p_skyboxEntity );
-    p_skyboxEntity->initialize();
-    p_skyboxEntity->postInitialize();
-
-    // create and setup fog
-    log_debug << "creating menu fog entity '_menuFog_'" << std::endl;
-    EnFog* p_fogEntity = dynamic_cast< EnFog* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_FOG, "_menuFog_" ) );
-    assert( p_fogEntity && "cannot create fog entity!" );
-    _p_menuFog = p_fogEntity;
-    p_fogEntity->getAttributeManager().setAttributeValue( "persistence",    true                            );
-    p_fogEntity->getAttributeManager().setAttributeValue( "density",        0.5f                            );
-    p_fogEntity->getAttributeManager().setAttributeValue( "start",          200.0f                          );
-    p_fogEntity->getAttributeManager().setAttributeValue( "end",            1000.0f                         );
-    p_fogEntity->getAttributeManager().setAttributeValue( "color",          osg::Vec3f( 0.5f, 0.5f, 0.5f )  );
-    yaf3d::EntityManager::get()->addToScene( p_fogEntity );
-    p_fogEntity->initialize();
-    p_fogEntity->postInitialize();
 }
-   
+
 EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume, bool loop ) const
 {
     // manually create an entity of type AmbientSound without adding it to pool as we use the entity locally
@@ -695,7 +654,6 @@ void EnMenu::updateEntity( float deltaTime )
             // note: the menu entity is persistent anyway, it handles the level switch itself!
             yaf3d::LevelManager::get()->unloadLevel( true, true );
             _menuState  = LoadingLevel;
-            _p_sceneFog = NULL;
         }
         break;
 
@@ -711,9 +669,6 @@ void EnMenu::updateEntity( float deltaTime )
 
             // complete level loading
             yaf3d::LevelManager::get()->finalizeLoading();
-
-            // store level scene's static mesh for later switching
-            _levelScene = yaf3d::LevelManager::get()->getStaticMesh();
 
             // set flag that we have loaded a level; some menu oprions depend on this flag
             _levelLoaded = true;
@@ -748,27 +703,6 @@ void EnMenu::updateEntity( float deltaTime )
 
             // leave the menu system
             leave();
-
-            // check if the new level has a fog entity, the fog must be handled extra on menu switching
-            {
-                std::vector< yaf3d::BaseEntity* > sceneentities;
-                yaf3d::EntityManager::get()->getAllEntities( sceneentities );
-                std::vector< yaf3d::BaseEntity* >::iterator p_beg = sceneentities.begin(), p_end = sceneentities.end();
-                for ( ; p_beg != p_end; ++p_beg )
-                {
-                    if ( ( *p_beg )->getTypeName() == ENTITY_NAME_FOG )
-                    {
-                        if ( *p_beg != _p_menuFog )
-                            break;
-                    }
-                }
-                if ( p_beg != p_end )
-                    _p_sceneFog = static_cast< EnFog* >( *p_beg );
-
-                // turn on scene fog if one exists
-                if ( _p_sceneFog )
-                    enableFog( false );
-            }
             _menuState = Hidden;
         }
         break;
@@ -777,7 +711,6 @@ void EnMenu::updateEntity( float deltaTime )
         {
             yaf3d::LevelManager::get()->unloadLevel();
             _levelLoaded = false;
-            _p_sceneFog  = NULL;
             switchMenuScene( true );
             _menuState   = Visible;
         }
@@ -794,13 +727,29 @@ void EnMenu::updateEntity( float deltaTime )
             if ( _menuAnimationPath.get() )
             {
                 // play the camera animation during the user is in menu            
-                yaf3d::TransformationVisitor tv( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ); // see vrc_utils.h in framework
+                vrc::gameutils::TransformationVisitor tv( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ); // see vrc_utils.h in framework
                 _menuAnimationPath->accept( tv );
                 const osg::Matrixf&  mat = tv.getMatrix();
                 osg::Quat rot;
                 mat.get( rot );
                 osg::Vec3f pos = mat.getTrans();
                 _p_cameraControl->setCameraTranslation( pos, rot );
+            }
+
+
+            // handle menu idling
+            {
+                if ( _idleCounter >= 0.0 )
+                {
+                    _idleCounter -= deltaTime;
+                }
+
+                if ( _idleCounter < 0.0 )
+                {
+                    // start idle mode
+                    _p_menuWindow->hide();
+                    yaf3d::GuiManager::get()->showMousePointer( false );
+                }
             }
         }
         break;
@@ -874,26 +823,14 @@ void EnMenu::stopIntro()
     _intro->stop();
 }
 
-void EnMenu::enableSkybox( bool en )
+void EnMenu::triggerUserInteraction()
 {
-    _p_skyBox->enable( en );
-}
-
-void EnMenu::enableFog( bool en )
-{
-    if ( en )
+    // reset idle counter
+    _idleCounter = MENU_IDLE_TIMEOUT;
+    if ( _menuState == Visible )
     {
-        if ( _p_sceneFog )
-            _p_sceneFog->enable( !en );
-
-        _p_menuFog->enable( en );
-    }
-    else
-    {
-        _p_menuFog->enable( en );
-
-        if ( _p_sceneFog )
-            _p_sceneFog->enable( !en );
+        _p_menuWindow->show();
+        yaf3d::GuiManager::get()->showMousePointer( true );
     }
 }
 
@@ -978,26 +915,14 @@ void EnMenu::switchMenuScene( bool tomenu )
     {
         // set the proper game state
         yaf3d::GameState::get()->setState( yaf3d::GameState::Menu );
-
-        // replace the level scene node by menu scene node
-        yaf3d::LevelManager::get()->setStaticMesh( NULL ); // remove the current mesh node from scene graph
-        yaf3d::LevelManager::get()->setStaticMesh( _menuScene.get() );
         _p_cameraControl->setEnable( true );
-        enableSkybox( true );
-        enableFog( true );
         gameutils::GuiUtils::get()->showMousePointer( true );
     }
     else
     {
         // set the proper game state
         yaf3d::GameState::get()->setState( yaf3d::GameState::Running );
-
-        // replace the menu scene node by level scene node
-        yaf3d::LevelManager::get()->setStaticMesh( NULL ); // remove the current mesh node from scene graph
-        yaf3d::LevelManager::get()->setStaticMesh( _levelScene.get() );
         _p_cameraControl->setEnable( false );
-        enableSkybox( false );
-        enableFog( false );
     }
 }
 
