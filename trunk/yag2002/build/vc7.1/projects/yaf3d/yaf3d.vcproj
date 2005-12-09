@@ -38,7 +38,8 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../../../../lib/framework/frameworkd.lib"/>
+				OutputFile="../../../../lib/framework/frameworkd.lib"
+				IgnoreDefaultLibraryNames="msvcrt"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
