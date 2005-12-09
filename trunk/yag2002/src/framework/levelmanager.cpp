@@ -64,6 +64,67 @@
 namespace yaf3d
 {
 
+//! Visitor for compiling openGL resources after loading a level.
+class GLResourceCompiler : public osg::NodeVisitor
+{
+    public:
+                                        GLResourceCompiler( osg::NodeVisitor::TraversalMode tm, osg::State* p_state ) :
+                                         osg::NodeVisitor( tm ),
+                                         _numVisited( 0 ),
+                                         _p_state( p_state )
+                                        {
+                                            // we take all nodes
+                                            setTraversalMask( 0xffffffff );
+                                        }
+
+                                        ~GLResourceCompiler() {}
+
+        void                            apply( osg::Geode& node )
+                                        {                                            
+                                            node.compileDrawables( *_p_state );
+                                            osg::Geode::DrawableList drawableList = node.getDrawableList();
+                                            int listsize = drawableList.size();
+                                            for ( int cnt = 0; cnt < listsize; ++cnt )
+                                            {
+                                                ++_numVisited;
+                                                osg::Drawable* p_drawable = drawableList[ cnt ].get();
+                                                osg::StateSet* p_stateset = p_drawable->getStateSet();
+                                                compileResource( node.getStateSet() );
+                                            }
+                                            traverse( node );
+                                        }
+
+        void                            apply( osg::MatrixTransform& node )
+                                        {
+                                            ++_numVisited;
+                                            compileResource( node.getStateSet() );
+                                            traverse( node );
+                                        }
+
+        //! Statistics methods, use them after traversal
+        unsigned int                    getNumVisited() { return _numVisited; }
+
+    protected:
+
+        void                            compileResource( osg::StateSet* p_stateset )
+                                        {
+                                            if ( !p_stateset )
+                                                return;
+
+                                            // compile all kind of attributes
+                                            osg::StateSet::AttributeList& attrlist = p_stateset->getAttributeList();
+                                            osg::StateSet::AttributeList::iterator p_beg = attrlist.begin(), p_end = attrlist.end();
+                                            for ( ; p_beg != p_end; ++p_beg )
+                                                p_beg->second.first->compileGLObjects( *_p_state );
+                                        }
+
+        // statistics
+        unsigned int                    _numVisited;
+
+        osg::State*                     _p_state;
+};
+
+//! Implement the level manager singleton
 YAF3D_SINGLETON_IMPL( LevelManager );
 
 LevelManager::LevelManager() :
@@ -161,7 +222,7 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
 
 osg::ref_ptr< osg::Group > LevelManager::loadLevel( const std::string& levelFile )
 {
-    log_info << "start loading level: " << levelFile << std::endl;
+    log_info << "LevelManager: start loading level: " << levelFile << std::endl;
 
     // store the level file name, we will use it for physics serialization
     _levelFile = levelFile;
@@ -180,7 +241,7 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const std::string& levelFile
     std::vector< BaseEntity* > entities; // list of all entities which are created during loading
     if ( !loadEntities( levelFile, &entities ) )
     {
-        log_error << "error loading entities" << std::endl;
+        log_error << "LevelManager: error loading entities" << std::endl;
         return NULL;
     }
 
@@ -189,7 +250,7 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const std::string& levelFile
 
 bool LevelManager::loadEntities( const std::string& levelFile, std::vector< BaseEntity* >* p_entities, const std::string& instPostfix )
 {
-    log_info << "loading entities ..." << std::endl;
+    log_info << "LevelManager: loading entities ..." << std::endl;
     
     // use tiny xml to parser lvl file
     //  parse in the level configuration
@@ -197,8 +258,8 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
     doc.SetCondenseWhiteSpace( false );
     if ( !doc.LoadFile( std::string( Application::get()->getMediaPath() + levelFile ).c_str() ) )
     {
-        log_debug << "cannot load level file: '" << levelFile << "'" << std::endl;
-        log << "  reason: " << doc.ErrorDesc() << std::endl;
+        log_error << "LevelManager: cannot load level file: '" << levelFile << "'" << std::endl;
+        log_error << "              reason: " << doc.ErrorDesc() << std::endl;
         return false;
     }
 
@@ -218,7 +279,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         p_levelElement = p_node->ToElement();
         if ( !p_levelElement ) 
         {
-            log_error << "could not find level element" << std::endl;
+            log_error << "LevelManager: could not find level element" << std::endl;
             return false;
         }
 
@@ -230,7 +291,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
     }
     else
     {
-        log_error << "empty level file" << std::endl;
+        log_error << "LevelManager: empty level file" << std::endl;
         return false;
     }
 
@@ -248,12 +309,12 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         p_bufName    = ( char* )p_mapElement->Attribute( YAF3D_LVL_ELEM_NAME );
         if ( p_bufName == NULL ) 
         {
-            log_error << "missing map name in MAP entry" << std::endl;
+            log_error << "LevelManager: missing map name in MAP entry" << std::endl;
             return false;
         } 
         else 
         {
-            log_info << "loading static geometry: " << p_bufName << std::endl;
+            log_info << "LevelManager: loading static geometry: " << p_bufName << std::endl;
             osg::Node *p_staticnode = loadStaticWorld( p_bufName );
             if ( p_staticnode )
             {
@@ -273,7 +334,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
 
     // read entity definitions
     //------------------------
-    log_info << "creating entities ..." << std::endl;
+    log_info << "LevelManager: creating entities ..." << std::endl;
 
     unsigned int entityCounter = 0;
     p_node = p_levelElement;
@@ -286,7 +347,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         std::string enttype;
         if ( !p_bufName ) 
         {
-            log_debug << "entity has no type, skipping" << std::endl;
+            log_debug << "LevelManager: entity has no type, skipping" << std::endl;
             continue;       
         }
         else
@@ -303,7 +364,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         BaseEntityFactory* p_entfac = EntityManager::get()->getEntityFactory( entitytype );
         if ( !p_entfac )
         {
-            log_error << "unknown entity type '" << entitytype << "', skipping" << std::endl;
+            log_error << "LevelManager: unknown entity type '" << entitytype << "', skipping" << std::endl;
             continue;       
         }
         unsigned int creationpolicy = p_entfac->getCreationPolicy();
@@ -335,20 +396,20 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         // could we find entity type
         if ( !p_entity ) 
         {
-            log_error << "could not find entity type '" << entitytype << "', skipping entity!" << std::endl;
+            log_error << "LevelManager: could not find entity type '" << entitytype << "', skipping entity!" << std::endl;
             continue;
         }
         // add to given list if it was desired
         if ( p_entities )
             p_entities->push_back( p_entity );
 
-        log_debug << "entity created, type: '" << enttype << "'" << std::endl;
+        log_debug << "LevelManager: entity created, type: '" << enttype << "'" << std::endl;
         // get instance name if one provided
         p_bufName = ( char* )p_entityElement->Attribute( YAF3D_LVL_ENTITY_INST_NAME );
         if ( p_bufName ) {
             // set entity's instance name
             p_entity->setInstanceName( instancename );
-            log_debug << "instance name: '" << instancename << "'" << std::endl;
+            log_debug << "LevelManager: instance name: '" << instancename << "'" << std::endl;
         }
 
         ++entityCounter;
@@ -365,14 +426,14 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
 
             if ( !p_paramName || !p_paramType || !p_paramValue )
             {
-                log_error << "****  incomplete entity parameter entry, skipping" << std::endl;
+                log_error << "LevelManager: incomplete entity parameter entry, skipping" << std::endl;
                 continue;   
             }
 
             AttributeManager& attrMgr = p_entity->getAttributeManager();
             if ( !attrMgr.setAttributeValue( p_paramName, p_paramType, p_paramValue ) )
             {
-                log_error << "cannot find entity parameter '" << p_paramName << "'" << std::endl;
+                log_error << "LevelManager: cannot find entity parameter '" << p_paramName << "'" << std::endl;
             }
         }
 
@@ -385,8 +446,8 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
     }
 
     log_info << std::endl;
-    log_info << "total number of created entities: '" << entityCounter << "'" << std::endl;
-    log_info << "entity loading completed" << std::endl;
+    log_info << "LevelManager: total number of created entities: '" << entityCounter << "'" << std::endl;
+    log_info << "LevelManager: entity loading completed" << std::endl;
 
     return true;
 }
@@ -424,6 +485,16 @@ void LevelManager::finalizeLoading()
         EntityManager::get()->flushNotificationQueue();
     }
 
+    // compile all gl textures in loaded level 
+    // this avoids delays when textures are loaded on-the-fly by osg only when they are visible for first time
+    if ( GameState::get()->getMode() != GameState::Server )
+    {
+        GLResourceCompiler rc( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN, Application::get()->getSceneView()->getState() );
+        log_debug << "LevelManager: start compiling textures ..." << std::endl;
+        _topGroup->accept( rc );
+        log_debug << "              total num of evaluated elements: " << rc.getNumVisited() << std::endl;
+    }
+
     // mark that we have done the first level loading
     _firstLoading = false;
 }
@@ -433,22 +504,22 @@ void LevelManager::initializeFirstTime()
     if ( GameState::get()->getMode() != GameState::Server )
     {
         // initialize sound manager
-        log_info << "initializing sound system..." << std::endl;
+        log_info << "LevelManager: initializing sound system..." << std::endl;
         try 
         {
             SoundManager::get()->initialize();
         }
         catch( const SoundExpection& e )
         {
-            log_error << "*** error initializing sound system. reason: '" << e.what() << "'" << std::endl;
+            log_error << "LevelManager: error initializing sound system. reason: '" << e.what() << "'" << std::endl;
         }
 
-        log_info << "initializing gui system..." << std::endl;
+        log_info << "LevelManager: initializing gui system..." << std::endl;
         // initialize the gui system
         GuiManager::get()->initialize();
 
         // for first time we realize the viewer
-        log_info << "starting viewer ..." << std::endl;
+        log_info << "LevelManager: starting viewer ..." << std::endl;
         // start viewer
         Application::get()->getViewer()->open();
         Application::get()->getViewer()->init();
@@ -459,7 +530,7 @@ void LevelManager::buildPhysicsStaticGeometry( const std::string& levelFile )
 {
     // continue setting up physics
     //----------------------------
-    log_info << "building pyhsics collision geometries ..." << std::endl;
+    log_info << "LevelManager: building pyhsics collision geometries ..." << std::endl;
 
     // send the notification about building static world, here physics related stuff such as
     //  definition of own physics materials can take place
@@ -482,7 +553,7 @@ void LevelManager::buildPhysicsStaticGeometry( const std::string& levelFile )
 
     curTick    = timer.tick();
     time4Init  = timer.delta_s( startTick, curTick );
-    log_info << "needed time for building pyhsics geometries: " << time4Init << " seconds" << std::endl;
+    log_info << "LevelManager: needed time for building pyhsics geometries: " << time4Init << " seconds" << std::endl;
 }
 
 osg::Node* LevelManager::loadStaticWorld( const std::string& fileName )
@@ -491,7 +562,7 @@ osg::Node* LevelManager::loadStaticWorld( const std::string& fileName )
     osg::Timer_t start_tick = osg::Timer::instance()->tick();
 
     // load given file
-    osg::Node* p_loadedModel = loadMesh( fileName, false );
+    osg::Node* p_loadedModel = loadMesh( fileName, true );
     // if no model has been successfully loaded report failure.
     if ( !p_loadedModel ) 
     {
@@ -499,7 +570,7 @@ osg::Node* LevelManager::loadStaticWorld( const std::string& fileName )
     }
     // stop timer and give out the time messure
     osg::Timer_t end_tick = osg::Timer::instance()->tick();
-    log_debug << "  - elapsed time for loading '" << fileName << "' : " << osg::Timer::instance()->delta_s( start_tick, end_tick ) << std::endl;
+    log_debug << "LevelManager: LevelManager: elapsed time for loading '" << fileName << "' : " << osg::Timer::instance()->delta_s( start_tick, end_tick ) << std::endl;
     return p_loadedModel;
 }
 
@@ -510,7 +581,10 @@ osg::Node* LevelManager::loadMesh( const std::string& fileName, bool useCache )
     {
         std::map< std::string, osg::ref_ptr< osg::Node > >::iterator p_mesh = _meshCache.find( fileName );
         if ( p_mesh != _meshCache.end() )
+        {
+            log_debug << "LevelManager: using cached mesh '" << fileName << "'" << std::endl;
             return p_mesh->second.get();
+        }
     }
 
     // read given file
@@ -519,7 +593,7 @@ osg::Node* LevelManager::loadMesh( const std::string& fileName, bool useCache )
     // if no model has been successfully loaded report failure.
     if ( !p_loadedModel ) 
     {
-        log_warning << "*** could not load mesh: " << fileName << std::endl;
+        log_error << "LevelManager: could not load mesh: " << fileName << std::endl;
         return NULL;
     }
 
