@@ -119,6 +119,8 @@ class EnMenu :  public yaf3d::BaseEntity
 
         std::string                                 _menuCameraPathFile;
 
+        float                                       _menuIdleTimeout;
+
     protected:
 
         //! Interface method used by settings dialog
@@ -197,6 +199,10 @@ class EnMenu :  public yaf3d::BaseEntity
             ForServer,
             ForStandalone
         }                                           _levelSelectionState;
+
+        osg::ref_ptr< osg::Node >                   _menuScene;
+
+        osg::ref_ptr< osg::Node >                   _levelScene;
 
         osg::ref_ptr< osg::Group >                  _menuAnimationPath;
 

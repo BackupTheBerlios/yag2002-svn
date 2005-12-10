@@ -57,9 +57,6 @@ namespace vrc
 #define BCKRGD_SND_FADEOUT_PERIOD       0.4f
 #define BCKRGD_SND_PLAY_VOLUME          0.5f
 
-// idle timeout in seconds, if during this time no user interaction detected then the menu changes to idle state
-#define MENU_IDLE_TIMEOUT               5.0
-
 //! Input handler class for menu, it handles ESC key press and toggles the menu gui
 class MenuInputHandler : public yaf3d::GenericInputHandler< EnMenu >
 {
@@ -151,6 +148,7 @@ _introductionSoundVolume( 1.0f ),
 _backgroundSound( "gui/sound/background.wav" ),
 _backgroundSoundVolume( 0.6f ),
 _menuCameraPathFile( MENU_CAMERAPATH ),
+_menuIdleTimeout( 15.0f ),
 _menuState( None ),
 _menuSoundState( SoundStopped ),
 _levelSelectionState( ForStandalone ),
@@ -178,13 +176,12 @@ _levelLoaded( false )
     getAttributeManager().addAttribute( "levelSelectDialogConfig"   , _levelSelectDialogConfig  );
     getAttributeManager().addAttribute( "intoTexture"               , _introTexture             );
     getAttributeManager().addAttribute( "loadingOverlayTexture"     , _loadingOverlayTexture    );
-
     getAttributeManager().addAttribute( "introductionSound"         , _introductionSound        );
     getAttributeManager().addAttribute( "introductionSoundVolume"   , _introductionSoundVolume  );
     getAttributeManager().addAttribute( "backgroundSound"           , _backgroundSound          );
     getAttributeManager().addAttribute( "backgroundSoundVolume"     , _backgroundSoundVolume    );
-
     getAttributeManager().addAttribute( "cameraPath"                , _menuCameraPathFile       );
+    getAttributeManager().addAttribute( "idleTimeout"               , _menuIdleTimeout          );
 }
 
 EnMenu::~EnMenu()
@@ -253,7 +250,7 @@ void EnMenu::initialize()
 {
     // setup sounds
     if ( _introductionSound.length() )
-        _p_introSound = setupSound( _introductionSound, _introductionSoundVolume, true );
+        _p_introSound = setupSound( _introductionSound, _introductionSoundVolume, false );
 
     if ( _backgroundSound.length() )
         _p_backgrdSound = setupSound( _backgroundSound, _backgroundSoundVolume, true );
@@ -392,6 +389,9 @@ void EnMenu::createMenuScene()
     // add the animation node to root scene
     yaf3d::Application::get()->getSceneRootNode()->addChild( _menuAnimationPath.get() );
 
+    // get loaded menu scene ( this is the static world specified by MAP element in level file )
+    _menuScene = yaf3d::LevelManager::get()->getStaticMesh();
+
     // create and setup camera
     log_debug << "creating menu camera entity '_menuCam_'" << std::endl;
     EnCamera* p_camEntity = static_cast< EnCamera* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_CAMERA, "_menuCam_" ) );
@@ -401,9 +401,13 @@ void EnMenu::createMenuScene()
     _p_cameraControl->setPersistent( true );
 
     osg::Vec3f bgcolor( 0.0f, 0.0f, 0.0f ); // black background
-    float fov = 60.0f;
-    p_camEntity->getAttributeManager().setAttributeValue( "backgroundColor", bgcolor );
-    p_camEntity->getAttributeManager().setAttributeValue( "fov",             fov     );
+    float fov      = 45.0f;
+    float nearClip = 0.5f;
+    float farClip  = 1000.0f;
+    p_camEntity->getAttributeManager().setAttributeValue( "backgroundColor", bgcolor  );
+    p_camEntity->getAttributeManager().setAttributeValue( "fov",             fov      );
+    p_camEntity->getAttributeManager().setAttributeValue( "nearClip",        nearClip );
+    p_camEntity->getAttributeManager().setAttributeValue( "farClip",         farClip  );
     osg::Quat rotoffset( -osg::PI / 2.0f, osg::Vec3f( 1, 0, 0 ) );
     p_camEntity->setCameraOffsetRotation( rotoffset );    
     p_camEntity->initialize();
@@ -495,8 +499,6 @@ bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
                                             // did the user clicked yes? if so then store settings
                                             if ( btnId == yaf3d::MessageBoxDialog::BTN_YES )                                                    
                                                 _p_menu->leaveLevel();
-                                            else
-                                                _p_menu->leave();
 
                                             _p_menu->_p_menuWindow->enable();
                                         }
@@ -673,6 +675,9 @@ void EnMenu::updateEntity( float deltaTime )
             // set flag that we have loaded a level; some menu oprions depend on this flag
             _levelLoaded = true;
 
+            // store level scene's static mesh for later switching
+            _levelScene = yaf3d::LevelManager::get()->getStaticMesh();
+
             // free up the client level file object which was previously used for getting the loading pic
             if ( _p_clientLevelFiles )
                 delete _p_clientLevelFiles;
@@ -767,7 +772,7 @@ void EnMenu::updateEntity( float deltaTime )
 
         case SoundFadeIn:
         {   
-            _p_backgrdSound->startPlaying();
+            _p_backgrdSound->startPlaying( true );
             _menuSoundState = SoundFadingIn;
         }
         break;
@@ -792,7 +797,7 @@ void EnMenu::updateEntity( float deltaTime )
             _soundFadingCnt += deltaTime;
             if ( _soundFadingCnt > BCKRGD_SND_FADEIN_PERIOD )
             {
-                _p_backgrdSound->stopPlaying();
+                _p_backgrdSound->stopPlaying( true );
                 _soundFadingCnt = 0.0f;
                 _menuSoundState = SoundStopped;
                 break;
@@ -826,7 +831,7 @@ void EnMenu::stopIntro()
 void EnMenu::triggerUserInteraction()
 {
     // reset idle counter
-    _idleCounter = MENU_IDLE_TIMEOUT;
+    _idleCounter = _menuIdleTimeout;
     if ( _menuState == Visible )
     {
         _p_menuWindow->show();
@@ -915,6 +920,11 @@ void EnMenu::switchMenuScene( bool tomenu )
     {
         // set the proper game state
         yaf3d::GameState::get()->setState( yaf3d::GameState::Menu );
+
+        // replace the level scene node by menu scene node
+        yaf3d::LevelManager::get()->setStaticMesh( NULL ); // remove the current mesh node from scene graph
+        yaf3d::LevelManager::get()->setStaticMesh( _menuScene.get() );
+
         _p_cameraControl->setEnable( true );
         gameutils::GuiUtils::get()->showMousePointer( true );
     }
@@ -922,6 +932,11 @@ void EnMenu::switchMenuScene( bool tomenu )
     {
         // set the proper game state
         yaf3d::GameState::get()->setState( yaf3d::GameState::Running );
+
+        // replace the menu scene node by level scene node
+        yaf3d::LevelManager::get()->setStaticMesh( NULL ); // remove the current mesh node from scene graph
+        yaf3d::LevelManager::get()->setStaticMesh( _levelScene.get() );
+
         _p_cameraControl->setEnable( false );
     }
 }
@@ -940,10 +955,6 @@ void EnMenu::onLevelSelectCanceled()
 // called by DialogLevelSelect when a level has been selected by user
 void EnMenu::onLevelSelected( std::string levelfile, CEGUI::Image* p_img )
 {
-    // if we have already started a server then return without starting a new one
-    if ( _serverProcHandle )
-        return;
-
     if ( _levelSelectionState == ForStandalone ) 
     {
         // prepare the level loading; the actual loading is done in update method
