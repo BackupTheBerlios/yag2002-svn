@@ -445,7 +445,6 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         _setupQueue.push_back( p_entity );
     }
 
-    log_info << std::endl;
     log_info << "LevelManager: total number of created entities: '" << entityCounter << "'" << std::endl;
     log_info << "LevelManager: entity loading completed" << std::endl;
 
@@ -490,9 +489,9 @@ void LevelManager::finalizeLoading()
     if ( GameState::get()->getMode() != GameState::Server )
     {
         GLResourceCompiler rc( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN, Application::get()->getSceneView()->getState() );
-        log_debug << "LevelManager: start compiling textures ..." << std::endl;
+        log_debug << "LevelManager: start compiling openGL resources ..." << std::endl;
         _topGroup->accept( rc );
-        log_debug << "              total num of evaluated elements: " << rc.getNumVisited() << std::endl;
+        log_debug << "LevelManager: total num of evaluated elements: " << rc.getNumVisited() << std::endl;
     }
 
     // mark that we have done the first level loading

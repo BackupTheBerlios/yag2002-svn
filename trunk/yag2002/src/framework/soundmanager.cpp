@@ -171,7 +171,7 @@ unsigned int SoundManager::createSound( const std::string& file, float volume, b
 
     float tmpvol = std::max( std::min( volume, 1.0f ), 0.0f );
     if ( fabs( tmpvol - volume ) > 0.01f )
-        log_warning << "*** SoundManager::createSound: volume must be in range [0..1], clamped to " << tmpvol << std::endl;
+        log_warning << "SoundManager, createSound: volume must be in range [0..1], clamped to " << tmpvol << std::endl;
 
     result = p_soundData->_p_channel->setPaused( true );
     if ( result != FMOD_OK )
@@ -260,6 +260,16 @@ void SoundManager::pauseSound( unsigned int soundID )
 
     SoundData* p_data = p_sounddata->second;
     p_data->_p_channel->setPaused( true );
+}
+
+void SoundManager::continueSound( unsigned int soundID )
+{
+    MapSoundData::iterator p_sounddata = _mapSoundData.find( soundID );
+    if ( p_sounddata == _mapSoundData.end() )
+        return;
+
+    SoundData* p_data = p_sounddata->second;
+    p_data->_p_channel->setPaused( false );
 }
 
 void SoundManager::stopSound( unsigned int soundID )

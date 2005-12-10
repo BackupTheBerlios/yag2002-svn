@@ -89,9 +89,8 @@ Application::~Application()
 
 void Application::shutdown()
 {
-    log_info << std::endl;
     log << "---------------------------------------" << std::endl;
-    log << "shutting down, time: " << yaf3d::getTimeStamp() << std::endl;
+    log << "Application: shutting down, time: " << yaf3d::getTimeStamp() << std::endl;
 
     NetworkDevice::get()->shutdown();
     LevelManager::get()->shutdown();
@@ -199,20 +198,21 @@ bool Application::initialize( int argc, char **argv )
     log.addSink( "stdout", std::cout, Log::L_ERROR );
 
     log.enableSeverityLevelPrinting( false );
-    log_info << "---------------------------------------"    << std::endl;
-    log_info << "yaf3d -- Yet another Framework 3D      "    << std::endl;
-    log_info << "version: " << std::string( YAF3D_VERSION )  << std::endl;
-    log_info << "project: Yag2002"                           << std::endl;
-    log_info << "site:    http://yag2002.sourceforge.net"    << std::endl;
-    log_info << "contact: botorabi@gmx.net"                  << std::endl;
-    log_info << "---------------------------------------"    << std::endl;
+    log_info << std::endl;
+    log_info << " *******************************************"    << std::endl;
+    log_info << " * yaf3d -- Yet another Framework 3D       *"    << std::endl;
+    log_info << " * version: " << std::string( YAF3D_VERSION ) << "                          *"  << std::endl;
+    log_info << " * project: Yag2002                        *"    << std::endl;
+    log_info << " * site:    http://yag2002.sourceforge.net *"    << std::endl;
+    log_info << " * contact: botorabi@gmx.net               *"    << std::endl;
+    log_info << " *******************************************"    << std::endl;
     log_info << std::endl;
     log.enableSeverityLevelPrinting( true );
 
-    log_info << "time: " << yaf3d::getTimeStamp() << std::endl;
-    log_info << "initializing viewer" << std::endl;
+    log_info << "Application: time " << yaf3d::getTimeStamp();
+    log_info << "Application: initializing viewer" << std::endl;
 
-    log_info << "using media path: " << _mediaPath << std::endl;
+    log_info << "Application: using media path: " << _mediaPath << std::endl;
 
     // setup the viewer
     //----------
@@ -261,7 +261,7 @@ bool Application::initialize( int argc, char **argv )
     // setup keyboard map
     std::string keybType;
     Configuration::get()->getSettingValue( YAF3D_GS_KEYBOARD, keybType );
-    log_info << "setup keyboard map to: " << keybType << std::endl;
+    log_info << "Application: setup keyboard map to: " << keybType << std::endl;
     if ( keybType == YAF3D_GS_KEYBOARD_ENGLISH )
         KeyMap::get()->setup( KeyMap::English );
     else
@@ -275,7 +275,7 @@ bool Application::initialize( int argc, char **argv )
     _p_networkDevice->lockObjects();
     if ( GameState::get()->getMode() == GameState::Server )
     {
-        log_info << "loading level '" << arg_levelname << "'" << std::endl;
+        log_info << "Application: loading level file '" << arg_levelname << "'" << std::endl;
         // load the level and setup things
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( YAF3D_LEVEL_SERVER_DIR + arg_levelname );
         if ( !sceneroot.valid() )
@@ -295,7 +295,7 @@ bool Application::initialize( int argc, char **argv )
         }
         catch ( const NetworkExpection& e )
         {
-            log_error << "*** error starting server, reason: " << e.what() << std::endl;
+            log_error << "Application: error starting server, reason: " << e.what() << std::endl;
             return false;
         }
 
@@ -321,13 +321,13 @@ bool Application::initialize( int argc, char **argv )
         }
         catch ( const NetworkExpection& e )
         {
-            log_error << "*** error setting up client networking, reason: " << e.what() << std::endl;
+            log_error << "Application: error setting up client networking, reason: " << e.what() << std::endl;
             return false;
         }
 
         // now load level
         std::string levelname = YAF3D_LEVEL_CLIENT_DIR + _p_networkDevice->getNodeInfo()->getLevelName();
-        log_info << "loading level '" << levelname << "'" << std::endl;
+        log_info << "Application: loading level file '" << levelname << "'" << std::endl;
         // load the level and setup things
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( levelname );
         if ( !sceneroot.valid() )
@@ -342,11 +342,11 @@ bool Application::initialize( int argc, char **argv )
     }
     else // check for any level file name, so we try to start in Standalone mode
     {
-        log_info << "loading level '" << arg_levelname << "'" << std::endl;
+        std::string defaultlevel = arg_levelname.length() ? ( std::string( YAF3D_LEVEL_SALONE_DIR ) + arg_levelname ) : std::string( YAF3D_DEFAULT_LEVEL );
+        log_info << "Application: loading level file '" << defaultlevel << "'" << std::endl;
         // set game mode
         GameState::get()->setMode( GameState::Standalone );
         // load the level and setup things
-        std::string defaultlevel = arg_levelname.length() ? ( std::string( YAF3D_LEVEL_SALONE_DIR ) + arg_levelname ) : std::string( YAF3D_DEFAULT_LEVEL );
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( defaultlevel );
         if ( !sceneroot.valid() )
             return false;
@@ -385,7 +385,7 @@ void Application::run()
         }
         catch ( const NetworkExpection& e )
         {
-            log_error << "*** error starting client networking, reason: " << e.what() << std::endl;
+            log_error << "Application: error starting client networking, reason: " << e.what() << std::endl;
             _p_gameState->setState( GameState::Quitting );
         }
 
@@ -460,7 +460,7 @@ void Application::updateStandalone( float deltaTime )
 
     // yield a little processor time for other tasks on system
     if ( !_fullScreen )
-        OpenThreads::Thread::microSleep( 1000 );
+        OpenThreads::Thread::microSleep( 100 );
 }
 
 void Application::updateClient( float deltaTime )
@@ -490,7 +490,7 @@ void Application::updateClient( float deltaTime )
 
     // yield a little processor time for other tasks on system
     if ( !_fullScreen )
-        OpenThreads::Thread::microSleep( 1000 );
+        OpenThreads::Thread::microSleep( 100 );
 }
 
 void Application::updateServer( float deltaTime )

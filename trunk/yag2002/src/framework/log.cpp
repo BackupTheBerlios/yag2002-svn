@@ -184,16 +184,16 @@ std::basic_ios< char >::int_type Log::LogStreamBuf::overflow( int_type c )
                 switch ( _p_log->_severity )
                 {
                 case L_INFO:
-                    severity = "info:    ";
+                    severity = "[info]    ";
                     break;
                 case L_DEBUG:
-                    severity = "debug:   ";
+                    severity = "[debug]   ";
                     break;
                 case L_WARNING:
-                    severity = "warning: ";
+                    severity = "[warning] ";
                     break;
                 case L_ERROR:
-                    severity = "error:   ";
+                    severity = "[error]   ";
                     break;
                 default:
                     assert( NULL && "unknown log severity" );

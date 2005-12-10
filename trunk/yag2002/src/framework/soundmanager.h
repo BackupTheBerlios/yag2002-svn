@@ -99,6 +99,9 @@ class SoundManager : public Singleton< SoundManager >
         //! Pause sound with given ID.
         void                                        pauseSound( unsigned int soundID );
 
+        //! Continue a paused sound with given ID.
+        void                                        continueSound( unsigned int soundID );
+
         //! Stop sound with given ID. Next playSound call will start at begin of sound track.
         void                                        stopSound( unsigned int soundID );
 
