@@ -62,7 +62,7 @@
 
 // update period limits ( in seconds )
 #define UPPER_UPDATE_PERIOD_LIMIT   1.0f / 2.0f
-#define LOWER_UPDATE_PERIOD_LIMIT   1.0f / 60.0f
+#define LOWER_UPDATE_PERIOD_LIMIT   1.0f / 65.0f
 
 namespace yaf3d
 {
@@ -89,8 +89,8 @@ Application::~Application()
 
 void Application::shutdown()
 {
-    log << "---------------------------------------" << std::endl;
-    log << "Application: shutting down, time: " << yaf3d::getTimeStamp() << std::endl;
+    log_info << "---------------------------------------" << std::endl;
+    log_info << "Application: shutting down, time: " << yaf3d::getTimeStamp() << std::endl;
 
     NetworkDevice::get()->shutdown();
     LevelManager::get()->shutdown();
@@ -414,7 +414,7 @@ void Application::run()
         else if ( deltaTime < LOWER_UPDATE_PERIOD_LIMIT )
         {
 
-            // limit the upper fps to 60 frames / second ( there are crash problems in some gpu cards when vsynch is disabled )
+            // limit the upper fps to about 60 frames / second ( there are crash problems in some gpu cards when vsynch is disabled )
             do
             {
                 OpenThreads::Thread::microSleep( 100 );
