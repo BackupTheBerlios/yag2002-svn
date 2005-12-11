@@ -64,6 +64,9 @@ PlayerImplClient::~PlayerImplClient()
 
     if ( _p_playerNetworking )
         delete _p_playerNetworking;
+
+    if ( _p_inputHandler )
+        _p_inputHandler->destroyHandler();
 }
 
 void PlayerImplClient::handleNotification( const yaf3d::EntityNotification& notification )
