@@ -42,8 +42,6 @@ EnAmbientSound::EnAmbientSound() :
 _loop( true ),
 _autoPlay( true ),
 _volume( 0.8f ),
-_isPlaying( false ),
-_wasPlaying( false ),
 _soundID( 0 ),
 _p_channel( NULL )
 {
@@ -76,20 +74,14 @@ void EnAmbientSound::handleNotification( const yaf3d::EntityNotification& notifi
     switch( notification.getId() )
     {
         case YAF3D_NOTIFY_MENU_ENTER:
-        {   
-            if ( _isPlaying )
-                stopPlaying( true );
 
-            _wasPlaying = _isPlaying;
-        }
-        break;
+            stopPlaying( true );
+            break;
 
         case YAF3D_NOTIFY_MENU_LEAVE:
-        {
-            if ( _wasPlaying )
-                startPlaying();
-        }
-        break;
+
+            startPlaying();
+            break;
 
         default:
             ;
@@ -106,8 +98,8 @@ void EnAmbientSound::initialize()
         else
             flags = yaf3d::SoundManager::fmodDefaultCreationFlags2D;
 
-        _soundID   = yaf3d::SoundManager::get()->createSound( _soundFile, _volume, _autoPlay, flags );
-        _p_channel = yaf3d::SoundManager::get()->getSoundChannel( _soundID );
+        _soundID    = yaf3d::SoundManager::get()->createSound( _soundFile, _volume, _autoPlay, flags );
+        _p_channel  = yaf3d::SoundManager::get()->getSoundChannel( _soundID );
     } 
     catch ( const yaf3d::SoundExpection& e )
     {
@@ -116,12 +108,15 @@ void EnAmbientSound::initialize()
     }
 }
 
-void EnAmbientSound::startPlaying()
+void EnAmbientSound::startPlaying( bool cont )
 {
-    if ( !_p_channel )
-        return;
-    
-    yaf3d::SoundManager::get()->playSound( _soundID );
+    if ( _soundID > 0 )
+    {
+        if ( cont )
+            yaf3d::SoundManager::get()->continueSound( _soundID );
+        else
+            yaf3d::SoundManager::get()->playSound( _soundID );
+    }
 }
 
 void EnAmbientSound::stopPlaying( bool pause )
@@ -135,7 +130,6 @@ void EnAmbientSound::stopPlaying( bool pause )
         else
         {
             yaf3d::SoundManager::get()->stopSound( _soundID );
-            _isPlaying = false;
         }
     }
 }
@@ -143,11 +137,11 @@ void EnAmbientSound::stopPlaying( bool pause )
 //! Set sound volume (0..1)
 void EnAmbientSound::setVolume( float volume )
 {
-    if ( !_p_channel )
-        return;
-
-    _volume = std::max( std::min( volume, 1.0f ), 0.0f );
-    _p_channel->setVolume( _volume );
+    if ( _soundID > 0 )
+    {
+        _volume = std::max( std::min( volume, 1.0f ), 0.0f );
+        _p_channel->setVolume( _volume );
+    }    
 }
 
 float EnAmbientSound::getVolume()

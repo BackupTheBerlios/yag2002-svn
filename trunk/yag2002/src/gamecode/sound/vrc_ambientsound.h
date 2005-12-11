@@ -52,8 +52,8 @@ class EnAmbientSound : public yaf3d::BaseEntity
         //! Initialize 
         void                                        initialize();
 
-        //! Start / continue playing sound
-        void                                        startPlaying();
+        //! Start / continue playing sound, set 'cont' to true in order to continue.
+        void                                        startPlaying( bool cont = false );
 
         //! Stop playing sound, pass 'true' in order to pause only, otherwise the sound is stopped
         void                                        stopPlaying( bool pause = false );
@@ -80,12 +80,6 @@ class EnAmbientSound : public yaf3d::BaseEntity
 
         //! Sound volume [ 0..1 ]
         float                                       _volume;
-
-        //! Flag indicating whether the sound is currently playing
-        bool                                        _isPlaying;
-
-        //! Flag indicating whether the sound was playing before entering the menu
-        bool                                        _wasPlaying;
 
         //! Sound ID
         unsigned int                                _soundID;

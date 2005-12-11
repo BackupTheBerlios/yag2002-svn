@@ -44,8 +44,6 @@ _autoPlay( true ),
 _volume( 0.8f ),
 _minDistance( 1.0f ),
 _maxDistance( 15.0f ),
-_isPlaying( false ),
-_wasPlaying( false ),
 _soundID( 0 ),
 _p_channel( NULL )
 {
@@ -83,17 +81,13 @@ void En3DSound::handleNotification( const yaf3d::EntityNotification& notificatio
     {
         case YAF3D_NOTIFY_MENU_ENTER:
         {   
-            if ( _isPlaying )
-                stopPlaying( true );
-
-            _wasPlaying = _isPlaying;
+            stopPlaying( true );
         }
         break;
 
         case YAF3D_NOTIFY_MENU_LEAVE:
         {
-            if ( _wasPlaying )
-                startPlaying();
+            startPlaying( true );
         }
         break;
 
@@ -112,8 +106,8 @@ void En3DSound::initialize()
         else
             flags = yaf3d::SoundManager::fmodDefaultCreationFlags3D;
 
-        _soundID   = yaf3d::SoundManager::get()->createSound( _soundFile, _volume, _autoPlay, flags );
-        _p_channel = yaf3d::SoundManager::get()->getSoundChannel( _soundID );
+        _soundID    = yaf3d::SoundManager::get()->createSound( _soundFile, _volume, _autoPlay, flags );
+        _p_channel  = yaf3d::SoundManager::get()->getSoundChannel( _soundID );
 
         // set position and velocity
         FMOD_VECTOR pos;
@@ -142,7 +136,7 @@ void En3DSound::initialize()
         }
         else
         {
-            log_error << "*** error loading mesh file for sound source 'sound/soundsrc.osg'" << std::endl;
+            log_error << "3DSound: error loading mesh file for sound source 'sound/soundsrc.osg'" << std::endl;
         }
     }
 
@@ -159,12 +153,15 @@ void En3DSound::updateEntity( float deltaTime )
     setRotation( quat );
 }
 
-void En3DSound::startPlaying()
+void En3DSound::startPlaying( bool cont )
 {
-    if ( !_p_channel )
-        return;
-    
-    yaf3d::SoundManager::get()->playSound( _soundID );
+    if ( _soundID > 0 )
+    {
+        if ( cont )
+            yaf3d::SoundManager::get()->continueSound( _soundID );
+        else
+            yaf3d::SoundManager::get()->playSound( _soundID );
+    }
 }
 
 void En3DSound::stopPlaying( bool pause )
@@ -178,7 +175,6 @@ void En3DSound::stopPlaying( bool pause )
         else
         {
             yaf3d::SoundManager::get()->stopSound( _soundID );
-            _isPlaying = false;
         }
     }
 }
@@ -186,11 +182,11 @@ void En3DSound::stopPlaying( bool pause )
 //! Set sound volume (0..1)
 void En3DSound::setVolume( float volume )
 {
-    if ( !_p_channel )
-        return;
-
-    _volume = std::max( std::min( volume, 1.0f ), 0.0f );
-    _p_channel->setVolume( _volume );
+    if ( _soundID > 0 )
+    {
+        _volume = std::max( std::min( volume, 1.0f ), 0.0f );
+        _p_channel->setVolume( _volume );
+    }
 }
 
 float En3DSound::getVolume()
