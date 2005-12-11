@@ -63,7 +63,8 @@ void GameState::setState( unsigned int state )
             ( state == GameState::Running      ) ||
             ( state == GameState::Pausing      ) ||
             ( state == GameState::Leaving      ) ||
-            ( state == GameState::Quitting     ) &&
+            ( state == GameState::Quitting     ) ||
+            ( state == GameState::Shutdown     ) &&
             "GameState: trying to set an invalid game state!" 
           );
 

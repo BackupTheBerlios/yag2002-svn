@@ -65,7 +65,8 @@ class GameState : public Singleton< GameState >
             Running,                // running game
             Pausing,                // game pausing
             Leaving,                // leaving a level
-            Quitting                // quitting application
+            Quitting,               // quitting application
+            Shutdown                // shutdown the application
         };
 
         //! Class for getting callback whenever mode change occured

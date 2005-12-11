@@ -95,6 +95,8 @@ void Application::shutdown()
     NetworkDevice::get()->shutdown();
     LevelManager::get()->shutdown();
     Configuration::get()->shutdown();
+    // set the game state to shutdown so game code specific singletons get the chance for destruction
+    GameState::get()->setState( GameState::Quitting );
     GameState::get()->shutdown();
     SettingsManager::get()->shutdown();
     KeyMap::get()->shutdown();
@@ -195,7 +197,7 @@ bool Application::initialize( int argc, char **argv )
     else
         log.addSink( "file", getMediaPath() + std::string( LOG_FILE_NAME_SERVER ), Log::L_ERROR );
 
-    log.addSink( "stdout", std::cout, Log::L_ERROR );
+    //log.addSink( "stdout", std::cout, Log::L_ERROR );
 
     log.enableSeverityLevelPrinting( false );
     log_info << std::endl;
