@@ -52,8 +52,6 @@ PlayerImplStandalone::~PlayerImplStandalone()
 {
     // destroy input handler
     _p_inputHandler->destroyHandler();
-    // destroy the chat manager
-    destroyChatManager();
 }
 
 void PlayerImplStandalone::handleNotification( const yaf3d::EntityNotification& notification )
@@ -105,7 +103,12 @@ void PlayerImplStandalone::handleNotification( const yaf3d::EntityNotification& 
         }
         break;
 
+        case YAF3D_NOTIFY_SHUTDOWN:
         case YAF3D_NOTIFY_UNLOAD_LEVEL:
+        {
+            // destroy the chat manager
+            destroyChatManager();
+        }
         break;
 
         default:
