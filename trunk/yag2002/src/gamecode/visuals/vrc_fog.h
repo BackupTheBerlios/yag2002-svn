@@ -49,9 +49,8 @@ class EnFog :  public yaf3d::BaseEntity
         //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
 
-        //! As the actual fog object is shared between entities so call this method to set the right 
-        //!  attributes for particular entity.
-        void                                        enable( bool en );
+        //! The actual fog object is shared between entities so call this method to activate fog parameters set in entity.
+        void                                        enable();
 
         //! If this entity is used in menu system then we want it to be persistent
         const bool                                  isPersistent() const { return _usedInMenu; }

@@ -47,12 +47,16 @@ class EnSpotLight :  public yaf3d::BaseEntity, public BaseLight
 
         virtual                                     ~EnSpotLight();
 
-        /**
-        * Initializing function, this is called after all engine modules are initialized and a map is loaded.
-        */
+        
+        //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
 
     protected:
+
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
+
+        //! Setup a light with specified parameters
+        osg::ref_ptr< osg::Light >                  setupLight();
 
         osg::Vec3f                                  _direction;
 
@@ -62,6 +66,12 @@ class EnSpotLight :  public yaf3d::BaseEntity, public BaseLight
 
         //! Max distance used for culling ( deactivating ) light source during rendering
         float                                       _maxDistance;
+
+        //! Set to true if this entity is used in menu system
+        bool                                        _usedInMenu;
+
+        //! Enable / disable light
+        bool                                        _enable;
 };
 
 //! Entity type definition used for type registry

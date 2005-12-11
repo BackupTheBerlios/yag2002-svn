@@ -79,50 +79,24 @@ void EnFog::handleNotification( const yaf3d::EntityNotification& notification )
 
         case YAF3D_NOTIFY_MENU_ENTER:
 
-            if ( _usedInMenu )
-            {
-                if ( _enable )
-                {
-                    enable( false );
-                    enable ( true );
-                }
-            }
-            else
-            {
-                if ( _enable )
-                    enable( false );
-            }
+            if ( _usedInMenu && _enable )
+                enable();
+
             break;
 
         case YAF3D_NOTIFY_MENU_LEAVE:
 
-            if ( _usedInMenu )
-            {
-                if ( _enable )
-                    enable( false );
-            }
-            else
-            {
-                if ( _enable )
-                {
-                    enable( false );
-                    enable ( true );
-                }
-            }
-             break;
+            if ( !_usedInMenu && _enable )
+                enable();
+
+            break;
 
         // reactivate fog when an attribute changed
         case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
             
             if ( _enable )
-            {
-                enable( false );
-                enable ( true );
-            }
-            else
-            {
-                enable( false );
-            }
+                enable();
+
             break;
 
         // we have to trigger the deletion ourselves! ( this entity is peristent if used in menu system )
@@ -141,7 +115,14 @@ void EnFog::initialize()
 {
     // the fog is global and must be shared between all fog entities
     if ( _p_fog )
+    {
+        enable();
+        
+        // register entity in order to get shutdown notification
+        yaf3d::EntityManager::get()->registerNotification( this, true );
+
         return;
+    }
 
     // register entity in order to get shutdown notification
     yaf3d::EntityManager::get()->registerNotification( this, true );   
@@ -158,29 +139,15 @@ void EnFog::initialize()
     p_stateset->setMode( GL_FOG, osg::StateAttribute::ON );
 }
 
-void EnFog::enable( bool en )
+void EnFog::enable()
 {
-    if ( _enable == en )
-        return;
-
-    if ( en )
-    {
-        osg::StateSet* p_stateset = yaf3d::Application::get()->getSceneView()->getGlobalStateSet();
-        _p_fog->setDensity( _density );
-        _p_fog->setStart( _start );
-        _p_fog->setEnd( _end );
-        _p_fog->setColor( osg::Vec4f( _fogColor, 1.0f ) );
-        p_stateset->setAttributeAndModes( _p_fog, osg::StateAttribute::ON );
-        p_stateset->setMode( GL_FOG, osg::StateAttribute::ON );
-    }
-    else
-    {
-        osg::StateSet* p_stateset = yaf3d::Application::get()->getSceneView()->getGlobalStateSet();
-        p_stateset->setAttributeAndModes( _p_fog, osg::StateAttribute::OFF );
-        p_stateset->setMode( GL_FOG, osg::StateAttribute::OFF );
-    }
-
-    _enable = en;
+    osg::StateSet* p_stateset = yaf3d::Application::get()->getSceneView()->getGlobalStateSet();
+    _p_fog->setDensity( _density );
+    _p_fog->setStart( _start );
+    _p_fog->setEnd( _end );
+    _p_fog->setColor( osg::Vec4f( _fogColor, 1.0f ) );
+    p_stateset->setAttributeAndModes( _p_fog, osg::StateAttribute::ON );
+    p_stateset->setMode( GL_FOG, osg::StateAttribute::ON );
 }
 
 } // namespace vrc

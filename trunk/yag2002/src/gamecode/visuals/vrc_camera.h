@@ -130,12 +130,12 @@ class EnCamera :  public yaf3d::BaseEntity
 
     protected:
 
-        //! Update entity
-        void                                        updateEntity( float deltaTime );
-
         //! This entity is persistent so we have to handle entity's update registration on every level loading and
         //  destruction ourselves.
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
+
+        //! Setup the camera
+        void                                        setupCamera();
 
         //! Overriden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraPosition!
         void                                        setPosition( osg::Vec3f& pos );

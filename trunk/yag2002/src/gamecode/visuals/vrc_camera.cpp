@@ -136,10 +136,12 @@ void EnCamera::handleNotification( const yaf3d::EntityNotification& notification
     // handle notifications
     switch( notification.getId() )
     {
-        // for every subsequent level loading we must register outself again for getting updating
-        case YAF3D_NOTIFY_NEW_LEVEL_INITIALIZED:
-            break;
+        // re-setup camera when an attribute changed
+        case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
 
+            setupCamera();
+            break;
+             
         // we have to trigger the deletion ourselves! ( this entity can be peristent )
         case YAF3D_NOTIFY_SHUTDOWN:
 
@@ -153,6 +155,18 @@ void EnCamera::handleNotification( const yaf3d::EntityNotification& notification
 }
 
 void EnCamera::initialize()
+{
+    // setup the camera, fov, near / far plane etc.
+    setupCamera();
+
+    // setup the event handler for handling 'frame' callbacks ( for setting the view matrix )
+    _p_cameraHandler = new CameraFrameHandler( this );
+
+    // register entity in order to get notifications
+    yaf3d::EntityManager::get()->registerNotification( this, true );
+}
+
+void EnCamera::setupCamera()
 {
     unsigned int width, height;
     yaf3d::Application::get()->getScreenSize( width, height );
@@ -169,22 +183,11 @@ void EnCamera::initialize()
                             );
 
     setCameraTranslation( _curPosition, _curRotation );
-
-    // setup the event handler for handling 'frame' callbacks (for setting the view matrix)
-    _p_cameraHandler = new CameraFrameHandler( this );
-
-    yaf3d::EntityManager::get()->registerUpdate( this, true );         // register entity in order to get updated per simulation step
-    yaf3d::EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 }
 
 void EnCamera::setEnable( bool enable )
 {
     _p_cameraHandler->setEnable( enable );
-}
-
-void EnCamera::updateEntity( float deltaTime )
-{
-    // we may add camera fx here later
 }
 
 } // namespace vrc

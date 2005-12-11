@@ -96,20 +96,7 @@ void EnPointLight::handleNotification( const yaf3d::EntityNotification& notifica
             removeFromTransformationNode( _lightSource.get() );
             if ( _enable )
             {
-                osg::Light* p_light = _lightSource->getLight();
-                if ( p_light )
-                {
-                    p_light->setAmbient( osg::Vec4( _ambientColor, 1.0f ) );
-                    p_light->setDiffuse( osg::Vec4( _diffuseColor, 1.0f ) );
-                    p_light->setSpecular( osg::Vec4( _specularColor, 1.0f ) );
-                    p_light->setConstantAttenuation( _constAttenuation );
-                    p_light->setLinearAttenuation( _linearAttenuation );
-                    p_light->setQuadraticAttenuation( _quadraticAttenuation );
-
-                    setPosition( _position );
-                    _bSphere.set( osg::Vec3f( 0, 0, 0 ), _lightRadius );
-                }
-
+                _lightSource->setLight( setupLight().get() );
                 addToTransformationNode( _lightSource.get() );
             }
         }
@@ -135,8 +122,7 @@ void EnPointLight::initialize()
 
     // create a new light
     _lightSource = new osg::LightSource;
-    osg::Light* p_light = new osg::Light;
-    _lightSource->setLight( p_light );
+    _lightSource->setLight( setupLight().get() );
     _lightSource->setLocalStateSetModes( osg::StateAttribute::ON );
     _lightSource->setReferenceFrame( osg::LightSource::RELATIVE_RF );
     // we do culling ourselves
@@ -146,19 +132,6 @@ void EnPointLight::initialize()
     //  frustum and light radius.
     osg::ref_ptr< LightCallback > cullcallback = new LightCallback( this );
     _lightSource->setCullCallback( cullcallback.get() );
-
-    // setup bounding sphere used for culling
-    _bSphere.set( osg::Vec3f( 0, 0, 0 ), _lightRadius );
-    // the actual id will be set by light manager
-    p_light->setLightNum( _lightId );
-
-    p_light->setPosition( osg::Vec4( 0, 0, 0, 1.0f ) );
-    p_light->setAmbient( osg::Vec4( _ambientColor, 1.0f ) );
-    p_light->setDiffuse( osg::Vec4( _diffuseColor, 1.0f ) );
-    p_light->setSpecular( osg::Vec4( _specularColor, 1.0f ) );
-    p_light->setConstantAttenuation( _constAttenuation );
-    p_light->setLinearAttenuation( _linearAttenuation );
-    p_light->setQuadraticAttenuation( _quadraticAttenuation );
 
     // now add light to entity's transform node if this entity is used in menu system, otherwise on "leve menu" event
     //  the light source is added -- see notification handler
@@ -175,11 +148,31 @@ void EnPointLight::initialize()
             addToTransformationNode( mesh.get() );
     }
     
+    // register entity in order to get menu notifications
+    yaf3d::EntityManager::get()->registerNotification( this, true );    
+}
+
+osg::ref_ptr< osg::Light > EnPointLight::setupLight()
+{
+    osg::ref_ptr< osg::Light > light = new osg::Light;
+
+    // setup bounding sphere used for culling
+    _bSphere.set( osg::Vec3f( 0, 0, 0 ), _lightRadius );
+    // the actual id will be set by light manager
+    light->setLightNum( _lightId );
+
+    light->setPosition( osg::Vec4( 0, 0, 0, 1.0f ) );
+    light->setAmbient( osg::Vec4( _ambientColor, 1.0f ) );
+    light->setDiffuse( osg::Vec4( _diffuseColor, 1.0f ) );
+    light->setSpecular( osg::Vec4( _specularColor, 1.0f ) );
+    light->setConstantAttenuation( _constAttenuation );
+    light->setLinearAttenuation( _linearAttenuation );
+    light->setQuadraticAttenuation( _quadraticAttenuation );
+
     // set entity position which is also the light source position
     setPosition( _position );
 
-    // register entity in order to get menu notifications
-    yaf3d::EntityManager::get()->registerNotification( this, true );    
+    return light;
 }
 
 } // namespace vrc

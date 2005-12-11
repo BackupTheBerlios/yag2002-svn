@@ -59,6 +59,9 @@ class EnPointLight :  public yaf3d::BaseEntity, public BaseLight
 
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
+        //! Setup a light with specified parameters
+        osg::ref_ptr< osg::Light >                  setupLight();
+
         //! Max radius for culling ( deactivating ) light source during rendering
         float                                       _lightRadius;
 
