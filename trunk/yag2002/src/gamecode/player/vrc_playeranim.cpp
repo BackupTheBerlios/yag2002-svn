@@ -38,6 +38,11 @@ namespace vrc
 {
 
 static const char glsl_vp[] =
+    "/*                                                                             \n"
+    "* Vertex shader for rendering the player                                       \n"
+    "* http://yag2002.sf.net                                                        \n"
+    "* 11/28/2005                                                                   \n"
+    "*/                                                                             \n"
     "varying vec4 diffuse,ambient;                                                  \n"
     "varying vec3 normal,lightDir,halfVector;                                       \n"
     "                                                                               \n"
@@ -53,6 +58,11 @@ static const char glsl_vp[] =
     "}                                                                              \n"
 ;
 static const char glsl_fp[] =
+    "/*                                                                             \n"
+    "* Fragment shader for rendering the player                                     \n"
+    "* http://yag2002.sf.net                                                        \n"
+    "* 11/28/2005                                                                   \n"
+    "*/                                                                             \n"
     "varying vec4 diffuse,ambient;                                                  \n"
     "varying vec3 normal,lightDir,halfVector;                                       \n"
     "uniform sampler2D tex;                                                         \n"
@@ -146,16 +156,22 @@ void EnPlayerAnimation::initialize()
     _animNode->addChild( _model.get() );
 
     // setup the shaders for ( currently just disable glsl usage )
-    if ( !s_program.valid() )
+        
+    // first check if glsl is supported before setting up the shaders ( gl context 0  is assumed )
+    const osg::GL2Extensions* p_extensions = osg::GL2Extensions::Get( 0, true );
+    if ( p_extensions->isGlslSupported() ) 
     {
-        s_program = new osg::Program;
-        s_program->setName( "_playerAnim_" );
-        s_program->addShader( new osg::Shader( osg::Shader::VERTEX, glsl_vp ) );
-        s_program->addShader( new osg::Shader( osg::Shader::FRAGMENT, glsl_fp ) );
+        if ( !s_program.valid() )
+        {
+            s_program = new osg::Program;
+            s_program->setName( "_playerAnim_" );
+            s_program->addShader( new osg::Shader( osg::Shader::VERTEX, glsl_vp ) );
+            s_program->addShader( new osg::Shader( osg::Shader::FRAGMENT, glsl_fp ) );
+        }
+        osg::StateSet* p_stateSet = _animNode->getOrCreateStateSet();
+        p_stateSet->setAttributeAndModes( s_program.get(), osg::StateAttribute::ON );
+        _animNode->setStateSet( p_stateSet );    
     }
-    osg::StateSet* p_stateSet = _animNode->getOrCreateStateSet();
-    p_stateSet->setAttributeAndModes( s_program.get(), osg::StateAttribute::ON );
-    _animNode->setStateSet( p_stateSet );    
 
     log << "  initializing player animation instance completed" << std::endl;
 
