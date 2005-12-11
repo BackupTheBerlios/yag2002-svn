@@ -91,7 +91,7 @@
 				PrecompiledHeaderThrough="vrc_main.h"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="0"/>
+				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
@@ -101,7 +101,7 @@
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
 				IgnoreAllDefaultLibraries="FALSE"
 				IgnoreDefaultLibraryNames=""
-				GenerateDebugInformation="FALSE"
+				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/$(ProjectName)_release.pdb"
 				SubSystem="1"
 				HeapReserveSize="0"
