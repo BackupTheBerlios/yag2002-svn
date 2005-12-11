@@ -322,6 +322,7 @@ void Physics::setupMaterials()
 
     // create all predefined materials IDs
     int nocolID = NewtonMaterialCreateGroupID( _p_world );
+    int wallID  = NewtonMaterialCreateGroupID( _p_world );
     int levelID = NewtonMaterialCreateGroupID( _p_world );
     int woodID  = NewtonMaterialCreateGroupID( _p_world );
     int metalID = NewtonMaterialCreateGroupID( _p_world );
@@ -329,6 +330,7 @@ void Physics::setupMaterials()
     int grassID = NewtonMaterialCreateGroupID( _p_world );
 
     _materials.insert( std::make_pair( "default", defaultID ) );
+    _materials.insert( std::make_pair( "wall"   , wallID    ) );
     _materials.insert( std::make_pair( "nocol"  , nocolID   ) );
     _materials.insert( std::make_pair( "level"  , levelID   ) );
     _materials.insert( std::make_pair( "wood"   , woodID    ) );
@@ -338,11 +340,12 @@ void Physics::setupMaterials()
 
     // set non-colliding pairs
     NewtonMaterialSetDefaultCollidable( _p_world, nocolID, defaultID, 0 );
-    NewtonMaterialSetDefaultCollidable( _p_world, nocolID, levelID, 0 );
-    NewtonMaterialSetDefaultCollidable( _p_world, nocolID, woodID,  0 );
-    NewtonMaterialSetDefaultCollidable( _p_world, nocolID, metalID, 0 );
-    NewtonMaterialSetDefaultCollidable( _p_world, nocolID, grassID, 0 );
-    NewtonMaterialSetDefaultCollidable( _p_world, nocolID, stoneID, 0 );
+    NewtonMaterialSetDefaultCollidable( _p_world, nocolID, wallID,    0 );
+    NewtonMaterialSetDefaultCollidable( _p_world, nocolID, levelID,   0 );
+    NewtonMaterialSetDefaultCollidable( _p_world, nocolID, woodID,    0 );
+    NewtonMaterialSetDefaultCollidable( _p_world, nocolID, metalID,   0 );
+    NewtonMaterialSetDefaultCollidable( _p_world, nocolID, grassID,   0 );
+    NewtonMaterialSetDefaultCollidable( _p_world, nocolID, stoneID,   0 );
 
     // set the material properties for level on wood
     NewtonMaterialSetDefaultElasticity( _p_world, levelID, woodID, 0.5f );
@@ -562,11 +565,10 @@ void Physics::setCollisionStruct( CollisionStruct* p_colStruct )
     s_colStruct = p_colStruct;
 }
 
-int Physics::levelContactProcess(const NewtonMaterial* p_material, const NewtonContact* p_contact )
+int Physics::levelContactProcess( const NewtonMaterial* p_material, const NewtonContact* p_contact )
 {
     // handle level submaterials
-    unsigned int attribute = ( unsigned int )( NewtonMaterialGetContactFaceAttribute( p_material ) );
-    unsigned int materialType = attribute & 0xFF;
+    unsigned int materialType = static_cast< unsigned int >( NewtonMaterialGetContactFaceAttribute( p_material ) );
     switch ( materialType )
     {
         case Physics::MAT_DEFAULT:
@@ -601,6 +603,13 @@ int Physics::levelContactProcess(const NewtonMaterial* p_material, const NewtonC
             NewtonMaterialSetContactElasticity( p_material, 0.4f );
             NewtonMaterialSetContactStaticFrictionCoef( p_material, 0.8f, 0 );
             NewtonMaterialSetContactKineticFrictionCoef( p_material, 0.6f, 0 );
+            break;
+
+        case Physics::MAT_WALL:
+
+            NewtonMaterialSetContactElasticity( p_material, 0.8f );
+            NewtonMaterialSetContactStaticFrictionCoef( p_material, 0.1f, 0 );
+            NewtonMaterialSetContactKineticFrictionCoef( p_material, 0.1f, 0 );
             break;
 
         // simply return 0 for non-colliding pairs

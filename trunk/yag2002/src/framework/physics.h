@@ -64,6 +64,7 @@ class Physics : public Singleton< Physics >
                 MAT_STONE    = 0x03, // "stone"
                 MAT_METALL   = 0x04, // "metal"
                 MAT_GRASS    = 0x05, // "grass"
+                MAT_WALL     = 0x10, // "wall", used for walls and limiters
                 MAT_NOCOL    = 0x0F, // "nocol", no collision, use this for passable objects which should be detected though (e.g. for playing a sound)
                 //----------------
                 MAT_eof
