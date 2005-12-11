@@ -41,12 +41,6 @@ namespace vrc
 
 // used to avoid playing too short sound 
 #define SND_PLAY_RELAX_TIME     0.2f
-// thereshold for considering the player as stopped for sound playing
-//  the player is always moving a little also when standing on ground ( in particular on uneven terrains )
-#define STOP_THRESHOLD2         0.01f
-
-// threshold for detecting high gradient in up-direction
-#define WALL_DETECTION_THRESHOLD    0.75f
 
 //! Implement and register the player physics entity factory
 YAF3D_IMPL_ENTITYFACTORY( PlayerPhysicsEntityFactory );
@@ -115,9 +109,6 @@ int playerContactBegin( const NewtonMaterial* p_material, const NewtonBody* p_bo
 // player contact process callback function called when the player collides with level
 int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonContact* p_contact )
 {
-    // set right parameters for predfined materials
-    yaf3d::Physics::levelContactProcess( p_material, p_contact );
-
     // determine which body is the player physics's one
     NewtonBody*      p_body     = s_colStruct->_p_body1;
     EnPlayerPhysics* p_phys     = NULL;
@@ -145,12 +136,10 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
                 // reset sound timer
                 p_phys->setSoundTimer( SND_PLAY_RELAX_TIME );
 
-                unsigned int attribute = ( unsigned int )( NewtonMaterialGetContactFaceAttribute( p_material ) );
-                unsigned int materialType = attribute & 0xFF;
+                unsigned int materialType = static_cast< unsigned int >( NewtonMaterialGetContactFaceAttribute( p_material ) );
                 switch ( materialType )
                 {
                 case yaf3d::Physics::MAT_DEFAULT:
-                case yaf3d::Physics::MAT_STONE:
                     p_playerSound->playWalkGround();
                     break;
 
@@ -160,6 +149,10 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
 
                 case yaf3d::Physics::MAT_METALL:
                     p_playerSound->playWalkMetal();
+                    break;
+
+                case yaf3d::Physics::MAT_STONE:
+                    p_playerSound->playWalkStone();
                     break;
 
                 case yaf3d::Physics::MAT_GRASS:
@@ -252,24 +245,23 @@ int EnPlayerPhysics::collideWithLevel( const NewtonMaterial* p_material, const N
     // when we collide with something then set air-borne flag to false
     _isAirBorne = false;
 
-    // get the collision and normal
-    NewtonMaterialGetContactPositionAndNormal( p_material, &point._v[ 0 ], &normal._v[ 0 ] );
+    unsigned int materialType = static_cast< unsigned int >( NewtonMaterialGetContactFaceAttribute( p_material ) );
+    if ( materialType == yaf3d::Physics::MAT_WALL )
+        _wallCollision = true;
 
-    // check for high amount of gradient in up-direcion ( note: this also checks stair steps )
-    if ( normal._v[ 2 ] < WALL_DETECTION_THRESHOLD ) 
-        _highUpGradient = true;
-
-    //! stairs climbing currently disabled
-    // -----------------------------------
-    //Vec3f pos = _p_playerImpl->getPlayerPosition();
-    //// consider the player height
-    //float diff = point._v[ 2 ] - ( pos._v[ 2 ] - _playerHeight * 0.5f );
-    //if ( ( diff > 0.1f ) && ( diff < _stepHeight ) )
-    //{
-    //    // save the elevation of the highest step to take
-    //    if ( diff > _climbHeight )
-    //        _climbHeight = diff;
-    //}
+    // avoid sliding down on slopes ( only when player does not wish to move )
+    if ( _requestForMovement ) 
+    {
+        NewtonMaterialSetContactFrictionState( p_material, 0, 0 );
+        NewtonMaterialSetContactFrictionState( p_material, 0, 1 );
+    } 
+    else 
+    {
+        NewtonMaterialSetContactStaticFrictionCoef( p_material, 2.0f, 0 );
+        NewtonMaterialSetContactKineticFrictionCoef( p_material, 2.0f, 0 );
+        NewtonMaterialSetContactStaticFrictionCoef( p_material, 2.0f, 1 );
+        NewtonMaterialSetContactKineticFrictionCoef( p_material, 2.0f, 1 );
+    }
 
     return 1;
 }
@@ -285,95 +277,73 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     float Ixx;
     float Iyy;
     float Izz;
-    float steerAngle;
-    float timestep;
-    float timestepInv;
-    osg::Vec3f omega;
-    osg::Vec3f alpha;
-    osg::Vec3f heading;
-    osg::Vec3f velocity;
-    osg::Vec3f pos;
-    osg::Matrixf matrix;
 
     NewtonBodyGetMassMatrix( p_body, &mass, &Ixx, &Iyy, &Izz );
     EnPlayerPhysics* p_phys = static_cast< EnPlayerPhysics* >( NewtonBodyGetUserData( p_body ) );
 
+    float timestep;
+    float timestepInv;
     // get the current timestep
     timestep = p_phys->_deltaTime;
     timestepInv = 1.0f / timestep;
 
     // calculate force basing on desired velocity
+    osg::Vec3f velocity;
     const osg::Vec3f& desiredvelocity = p_phys->getVelocity();
     NewtonBodyGetVelocity( p_phys->_p_body, &velocity._v[ 0 ] );
     osg::Vec3f delta = desiredvelocity - velocity;
     osg::Vec3f force = delta * ( timestepInv * mass );
 
-    // set the stopped flag when no movement
-    p_phys->_isStopped = delta.length2() < STOP_THRESHOLD2;
-
+    osg::Matrixf matrix;
     NewtonBodyGetMatrix( p_phys->_p_body, matrix.ptr() );
-    pos = matrix.getTrans();
+    osg::Vec3f pos( matrix.getTrans() );    
+    // set the stopped flag when no movement
+    p_phys->_isStopped = ( p_phys->_lastPosition - pos ).length2() < p_phys->_moveDetectThreshold2;
+    p_phys->_lastPosition = pos;
 
     //const float* matelems = matrix.ptr();
     const float* matelems = matrix.ptr();
     osg::Vec3f front( matelems[ 4 ] , matelems[ 5 ], matelems[ 6 ] );
-    // moveDir must be normalized
+    // move direction must be normalized
+    float steerAngle;
     osg::Vec3f cross( front ^ p_phys->_p_playerImpl->getPlayerMoveDirection() );
     steerAngle = std::min( std::max( cross._v[ 2 ], -1.0f ), 1.0f );
     steerAngle = asinf( steerAngle );
+    osg::Vec3f omega;
     NewtonBodyGetOmega( p_phys->_p_body, &omega._v[ 0 ] );
     osg::Vec3f torque( 0.0f, 0.0f, 0.5f * Izz * ( steerAngle * timestepInv - omega._v[ 2 ] ) * timestepInv );
     NewtonBodySetTorque( p_phys->_p_body, &torque._v[ 0 ] );
 
-    //! stairs climbing currently disabled
-    // -----------------------------------
-    //float zdiff = p_phys->_climbHeight;
-    //if ( zdiff > 0.0f )
-    //{
-    //    // add a small impulse in up direction in order to get a smooth stair climbing
-    //    osg::Vec3f vel;
-    //    vel._v[ 2 ] = ( zdiff + 0.1f ) * mass * timestep * 5.0f;        
-    //    NewtonAddBodyImpulse( p_phys->_p_body, &vel._v [ 0 ], &pos._v[ 0 ] );
-    //    // reset climb contact
-    //    p_phys->_climbHeight = 0.0f;
-    //}
-
     // add gravity to force, when on ground then reduce the applied gravity
-    force._v[ 2 ] = mass * ( p_phys->_isAirBorne ? p_phys->_gravity : p_phys->_gravity * 0.1f ); 
- 
-    if ( p_phys->_isJumping )
+    force._v[ 2 ] = mass * ( p_phys->_isAirBorne ? p_phys->_airGravity : p_phys->_groundGravity );
+
+    switch ( p_phys->_jumpState )
     {
-        switch ( p_phys->_jumpState )
+        case Wait4Jumping:
         {
-            case BeginJumping:
+            if ( p_phys->_isJumping && !p_phys->_wallCollision )
             {
                 osg::Vec3f veloc( 0.0f, 0.0f, p_phys->_jumpForce );
                 NewtonAddBodyImpulse( p_phys->_p_body, &veloc._v [ 0 ], &pos._v[ 0 ] );
                 p_phys->_jumpState = Wait4Landing;
             }
-            break;
+        }
+        break;
 
-            case Wait4Landing:
+        case Wait4Landing:
             {
                 if ( !p_phys->_isAirBorne )
                 {
-                    p_phys->_jumpState = BeginJumping;
+                    p_phys->_jumpState = Wait4Jumping;
                     p_phys->_isJumping = false;
                 }
             }
             break;
 
-            default:
-                assert( NULL && "invalid jump state" );
-        }
+        default:
+            assert( NULL && "invalid jump state" );
     }
     p_phys->_jumpTimer = p_phys->_jumpTimer ? p_phys->_jumpTimer - 1 : 0;
-
-    // if the gradient of colliding poly is too high then don't move in x any y direction    
-    if ( p_phys->_highUpGradient )
-    {
-        force._v[ 0 ] = force._v[ 1 ] = 0.0f;
-    }
 
     // set body force
     NewtonBodySetForce( p_body, &force._v[ 0 ] );
@@ -401,11 +371,12 @@ float EnPlayerPhysics::physicsRayCastPlacement( const NewtonBody* p_body, const 
 //---------------------------------
 EnPlayerPhysics::EnPlayerPhysics() :
 _dimensions( osg::Vec3f( 0.5f, 0.5f, 1.8f ) ),
-_stepHeight( 0.5f ),
 _mass( 50.0f ),
 _speed( 10.0f ),
 _angularSpeed( 90.0f ),
-_gravity( yaf3d::Physics::get()->getWorldGravity() ),
+_groundGravity( yaf3d::Physics::get()->getWorldGravity() ),
+_airGravity( yaf3d::Physics::get()->getWorldGravity() ),
+_moveDetectThreshold2( 0.05f ),
 _linearDamping( 0.2f ),
 _p_playerImpl( NULL ),
 _p_world( NULL ),
@@ -414,28 +385,28 @@ _upVectorJoint( NULL ),
 _playerHeight( 1.8f ),
 _isStopped( true ),
 _isAirBorne( false ),
+_wallCollision( false ),
 _soundTimer( 0.0f ),
-_climbHeight( 0.0f ),
-_climbForce( 30.0f ),
 _jumpTimer( 0 ),
 _isJumping( false ),
-_highUpGradient( false ),
-_jumpState( BeginJumping ),
+_jumpState( Wait4Jumping ),
 _jumpForce( 5.0f ),
-_deltaTime( 0.001f )
+_deltaTime( 0.001f ),
+_requestForMovement( false )
 { 
     // register entity in order to get notifications about physics building
     yaf3d::EntityManager::get()->registerNotification( this, true );   
 
     // add entity attributes
-    getAttributeManager().addAttribute( "dimensions"    , _dimensions    );
-    getAttributeManager().addAttribute( "speed"         , _speed         );
-    getAttributeManager().addAttribute( "angularSpeed"  , _angularSpeed  );
-    getAttributeManager().addAttribute( "stepheight"    , _stepHeight    );
-    getAttributeManager().addAttribute( "jumpforce"     , _jumpForce     );
-    getAttributeManager().addAttribute( "lineardamping" , _linearDamping );
-    getAttributeManager().addAttribute( "mass"          , _mass          );
-    getAttributeManager().addAttribute( "gravity"       , _gravity       );
+    getAttributeManager().addAttribute( "dimensions"           , _dimensions           );
+    getAttributeManager().addAttribute( "speed"                , _speed                );
+    getAttributeManager().addAttribute( "angularSpeed"         , _angularSpeed         );
+    getAttributeManager().addAttribute( "jumpforce"            , _jumpForce            );
+    getAttributeManager().addAttribute( "lineardamping"        , _linearDamping        );
+    getAttributeManager().addAttribute( "mass"                 , _mass                 );
+    getAttributeManager().addAttribute( "groundGravity"        , _groundGravity        );
+    getAttributeManager().addAttribute( "airGravity"           , _airGravity           );
+    getAttributeManager().addAttribute( "moveDetectThreshold2" , _moveDetectThreshold2 );
 }
 
 EnPlayerPhysics::~EnPlayerPhysics()
@@ -476,11 +447,12 @@ void EnPlayerPhysics::initializePhysicsMaterials()
     // setup materials
     int playerID   = yaf3d::Physics::get()->createMaterialID( "player" );
     int defaultID  = yaf3d::Physics::get()->getMaterialId( "default" );
-    int levelID    = yaf3d::Physics::get()->getMaterialId( "level" );
-    int woodID     = yaf3d::Physics::get()->getMaterialId( "wood" );
-    int metalID    = yaf3d::Physics::get()->getMaterialId( "metal" );
-    int grassID    = yaf3d::Physics::get()->getMaterialId( "grass" );
-    int stoneID    = yaf3d::Physics::get()->getMaterialId( "stone" );
+    int wallID     = yaf3d::Physics::get()->getMaterialId( "wall"    );
+    int levelID    = yaf3d::Physics::get()->getMaterialId( "level"   );
+    int woodID     = yaf3d::Physics::get()->getMaterialId( "wood"    );
+    int metalID    = yaf3d::Physics::get()->getMaterialId( "metal"   );
+    int grassID    = yaf3d::Physics::get()->getMaterialId( "grass"   );
+    int stoneID    = yaf3d::Physics::get()->getMaterialId( "stone"   );
 
     // set non-colliding for player-nocol collisions
     NewtonMaterialSetDefaultCollidable( _p_world, yaf3d::Physics::get()->getMaterialId( "nocol" ), playerID, 0 );
@@ -490,6 +462,12 @@ void EnPlayerPhysics::initializePhysicsMaterials()
     NewtonMaterialSetDefaultSoftness( _p_world, playerID, defaultID, 0.5f );
     NewtonMaterialSetDefaultFriction( _p_world, playerID, defaultID, 0.8f, 0.7f );
     NewtonMaterialSetCollisionCallback( _p_world, playerID, defaultID, &player_levelCollStruct, playerContactBegin, playerContactProcessLevel, playerContactEnd ); 
+
+    // set the material properties for player on wall
+    NewtonMaterialSetDefaultElasticity( _p_world, playerID, wallID, 0.01f );
+    NewtonMaterialSetDefaultSoftness( _p_world, playerID, wallID, 0.01f );
+    NewtonMaterialSetDefaultFriction( _p_world, playerID, wallID, 0.01f, 0.01f );
+    NewtonMaterialSetCollisionCallback( _p_world, playerID, wallID, &player_levelCollStruct, playerContactBegin, playerContactProcessLevel, playerContactEnd ); 
 
     // set the material properties for player on level
     NewtonMaterialSetDefaultElasticity( _p_world, playerID, levelID, 0.3f );
@@ -540,7 +518,6 @@ void EnPlayerPhysics::initialize()
 
     // create the collision 
     NewtonCollision* p_col = NewtonCreateSphere( _p_world, _dimensions._v[ 0 ] * 0.5f, _dimensions._v[ 1 ] * 0.5f, _dimensions._v[ 2 ] * 0.5f, NULL );
-    //NewtonCollision* p_col = NewtonCreateBox( _p_world, _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
     NewtonCollision* p_collision = NewtonCreateConvexHullModifier( _p_world, p_col );
     NewtonReleaseCollision( yaf3d::Physics::get()->getWorld(), p_col );
 
@@ -605,7 +582,7 @@ void EnPlayerPhysics::postInitialize()
 void EnPlayerPhysics::updateEntity( float deltaTime )
 {
     _isAirBorne     = true;
-    _highUpGradient = false;
+    _wallCollision  = false;
 
     _deltaTime      = deltaTime;
 

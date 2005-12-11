@@ -200,9 +200,6 @@ class EnPlayerPhysics : public yaf3d::BaseEntity
         //! Dimentions of player: width / length / height
         osg::Vec3f                                  _dimensions;
 
-        //! Step height
-        float                                       _stepHeight;
-
         //! Player's mass
         float                                       _mass;
 
@@ -215,8 +212,15 @@ class EnPlayerPhysics : public yaf3d::BaseEntity
         //! Max speed for rotation
         float                                       _angularSpeed;
 
-        //! Player's gravity, default is the Physics system gravity
-        float                                       _gravity;
+        //! Player's gravity when walking on ground, default is the Physics system gravity
+        float                                       _groundGravity;
+
+        //! Player's gravity when in air, default is the Physics system gravity
+        float                                       _airGravity;
+
+        //! Square of delta-movement for recognizing the palyer is moving.
+        //! The player is always moving a little also when standing on ground ( in particular on uneven terrains )
+        float                                       _moveDetectThreshold2;
 
         //! Linear damping
         float                                       _linearDamping;
@@ -241,23 +245,19 @@ class EnPlayerPhysics : public yaf3d::BaseEntity
         //! Indicates whether we are on ground or in air
         bool                                        _isAirBorne;
 
+        //! Indicates a collision with special material "wall"
+        bool                                        _wallCollision;
+
         //! Sound timer
         float                                       _soundTimer;
-
-        //! Climb height
-        float                                       _climbHeight;
-
-        float                                       _climbForce;
 
         unsigned int                                _jumpTimer;
 
         bool                                        _isJumping;
 
-        bool                                        _highUpGradient;
-
         enum
         {
-            BeginJumping,
+            Wait4Jumping,
             Wait4Landing
         }                                           _jumpState;
 
@@ -267,18 +267,26 @@ class EnPlayerPhysics : public yaf3d::BaseEntity
 
         //! Body matrix
         osg::Matrixf                                _matrix;
+
+        //! Stored last position for detecting player sliding
+        osg::Vec3f                                  _lastPosition;
+
+        //! Internal used flag indicating that the player requests for movement ( by setting velocity etc. )
+        bool                                        _requestForMovement;
 };
 
 inline void EnPlayerPhysics::setDirection( float x, float y )
 {
     _velocity._v[ 0 ] = x * _speed;
     _velocity._v[ 1 ] = y * _speed;
+    _requestForMovement = true;
 }
 
 inline void EnPlayerPhysics::addDirection( float x, float y )
 {
     _velocity._v[ 0 ] += x * _speed;
     _velocity._v[ 1 ] += y * _speed;
+    _requestForMovement = true;
 }
 
 inline const osg::Vec3f& EnPlayerPhysics::getDirection() const
@@ -308,6 +316,7 @@ inline void EnPlayerPhysics::stopMovement()
 {
     _velocity._v[ 0 ] = 0;
     _velocity._v[ 1 ] = 0;
+    _requestForMovement = false;
 }
 
 //! Entity type definition used for type registry
