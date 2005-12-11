@@ -216,6 +216,8 @@ class LevelFiles
     protected:
 
         std::map< std::string, CEGUI::Image* >      _files;
+
+        std::vector< std::string >                  _imageSets;
 };
 
 //! Read the six sides of a cube map and return a texture

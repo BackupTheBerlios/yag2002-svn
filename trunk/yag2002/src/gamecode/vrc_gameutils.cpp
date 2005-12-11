@@ -344,7 +344,7 @@ LevelFiles::LevelFiles( const std::string& dir )
                 // create a new imageset
                 CEGUI::Texture*  p_texture = yaf3d::GuiManager::get()->getGuiRenderer()->createTexture( textureFile, std::string( "_levelPics_" ) + postfix.str() );
                 CEGUI::Imageset* p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( materialName + postfix.str(), p_texture );
-             
+
                 if ( !p_imageSet->isImageDefined( textureFile ) )
                 {
                     p_imageSet->defineImage( materialName + postfix.str(), CEGUI::Point( 0.0f, 0.0f ), CEGUI::Size( p_texture->getWidth(), p_texture->getHeight() ), CEGUI::Point( 0.0f,0.0f ) );
@@ -354,6 +354,9 @@ LevelFiles::LevelFiles( const std::string& dir )
                 
                 // add new preview to map
                 _files.insert( make_pair( materialName, p_image ) );
+
+                // store the imageset name for destruction later
+                _imageSets.push_back( materialName + postfix.str() );
             }
             catch ( const CEGUI::Exception& )
             {
@@ -370,11 +373,10 @@ LevelFiles::~LevelFiles()
     // free up the imagesets
     try
     {
-        std::map< std::string, CEGUI::Image* >::iterator p_beg = _files.begin(), p_end = _files.end();
+        // destroy imagesets
+        std::vector< std::string >::iterator p_beg = _imageSets.begin(), p_end = _imageSets.end();
         for ( ; p_beg != p_end; ++p_beg )
-        {
-            CEGUI::ImagesetManager::getSingleton().destroyImageset( p_beg->first );
-        }
+            CEGUI::ImagesetManager::getSingleton().destroyImageset( *p_beg );
     }
     catch ( const CEGUI::Exception& e )
     {
