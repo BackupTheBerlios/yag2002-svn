@@ -43,14 +43,20 @@
 
 namespace vrc
 {
-
+// shader sampler locations
 #define LOCATION_CUBEMAP_SAMPLER    0
 #define LOCATION_NOISE_SAMPLER      1
-
+// take care that this bin number is the highest in the scene in order to correctly render the water transparency
+#define WATER_RENDERBIN_NUMBER      30
 
 // helper classes and shader code
 //---------------------------------------------------
 static const char glsl_vp[] =
+    "/*                                                                                         \n"
+    "* Vertex shader for ocean water simulation                                                 \n"
+    "* http://yag2002.sf.net                                                                    \n"
+    "* 03/26/2005                                                                               \n"
+    "*/                                                                                         \n"
     "uniform vec4 viewPosition;                                                                 \n"
     "uniform vec4 scale;                                                                        \n"
     "                                                                                           \n"
@@ -75,6 +81,11 @@ static const char glsl_vp[] =
 ;
 
 static const char glsl_fp[] =
+    "/*                                                                                         \n"
+    "* Fragment shader for ocean water simulation                                               \n"
+    "* http://yag2002.sf.net                                                                    \n"
+    "* 03/26/2005                                                                               \n"
+    "*/                                                                                         \n"
     "uniform sampler3D   samplerNoise;                                                          \n"
     "uniform samplerCube samplerSkyBox;                                                         \n"
     "                                                                                           \n"
@@ -188,6 +199,10 @@ class ViewPositionUpdateCallback: public osg::Uniform::Callback
 
 
 // Entity water
+
+// shared water effect state set
+osg::ref_ptr< osg::StateSet > EnWater::s_stateSet;
+
 //---------------------------------------------------
 //! Implement and register the water entity factory
 YAF3D_IMPL_ENTITYFACTORY( WaterEntityFactory );
@@ -262,6 +277,8 @@ void EnWater::handleNotification( const yaf3d::EntityNotification& notification 
 
             // re-create the water
             removeFromTransformationNode( _water.get() );
+            // delete state set before re-setup
+            s_stateSet = NULL;
             _water = setupWater();
             if ( _enable )
                 addToTransformationNode( _water.get() );
@@ -390,9 +407,13 @@ osg::Node* EnWater::setupWater()
         p_node = p_geode;
     }
 
+    // check if glsl is supported before setting up the shaders ( gl context 0  is assumed )
+    const osg::GL2Extensions* p_extensions = osg::GL2Extensions::Get( 0, true );
+    if ( !p_extensions->isGlslSupported() ) 
+        return p_node;
+
     // setup the shaders and uniforms, share the stateset
-    static osg::StateSet* s_stateSet = NULL;
-    if ( !s_stateSet )
+    if ( !s_stateSet.valid() )
     {
         s_stateSet = new osg::StateSet;
         osg::Program* p_program = new osg::Program;
@@ -465,9 +486,11 @@ osg::Node* EnWater::setupWater()
         // set up transparency
         s_stateSet->setMode( GL_BLEND, osg::StateAttribute::ON );      
         s_stateSet->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
+        // make sure that the water is rendered at first, then all other transparent primitives
+        s_stateSet->setBinNumber( WATER_RENDERBIN_NUMBER );
 
         // append state set to geode
-        p_node->setStateSet( s_stateSet );
+        p_node->setStateSet( s_stateSet.get() );
     }
 
     osg::Group* p_group = new osg::Group;

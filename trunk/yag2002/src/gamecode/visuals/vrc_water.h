@@ -113,6 +113,9 @@ class EnWater :  public yaf3d::BaseEntity
         //! Enable / disable water
         bool                                        _enable;
 
+        //! Shared stateset for water effect
+        static osg::ref_ptr< osg::StateSet >        s_stateSet;
+
     friend class DeltaWaveUpdateCallback;
     friend class DeltaNoiseUpdateCallback;
 };
