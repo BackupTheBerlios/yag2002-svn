@@ -149,6 +149,10 @@ _backgroundSound( "gui/sound/background.wav" ),
 _backgroundSoundVolume( 0.6f ),
 _menuCameraPathFile( MENU_CAMERAPATH ),
 _menuIdleTimeout( 15.0f ),
+_cameraBackgroundColor( osg::Vec3f( 0.0f, 0.0f, 0.0f ) ),
+_cameraFov( 45.0f ),
+_cameraNearClip( 0.5f ),  
+_cameraFarClip( 3000.0f ),
 _menuState( None ),
 _menuSoundState( SoundStopped ),
 _levelSelectionState( ForStandalone ),
@@ -180,8 +184,13 @@ _levelLoaded( false )
     getAttributeManager().addAttribute( "introductionSoundVolume"   , _introductionSoundVolume  );
     getAttributeManager().addAttribute( "backgroundSound"           , _backgroundSound          );
     getAttributeManager().addAttribute( "backgroundSoundVolume"     , _backgroundSoundVolume    );
-    getAttributeManager().addAttribute( "cameraPath"                , _menuCameraPathFile       );
     getAttributeManager().addAttribute( "idleTimeout"               , _menuIdleTimeout          );
+
+    getAttributeManager().addAttribute( "cameraPath"                , _menuCameraPathFile       );
+    getAttributeManager().addAttribute( "cameraBackgroundColor"     , _cameraBackgroundColor    );
+    getAttributeManager().addAttribute( "cameraFov"                 , _cameraFov                );
+    getAttributeManager().addAttribute( "cameraNearClip"            , _cameraNearClip           );
+    getAttributeManager().addAttribute( "cameraFarClip"             , _cameraFarClip            );
 }
 
 EnMenu::~EnMenu()
@@ -346,11 +355,6 @@ void EnMenu::initialize()
     if ( !_settingsDialog->initialize( _settingsDialogConfig ) )
         return;
 
-    // setup dialog for selecting a level
-    _levelSelectDialog = std::auto_ptr< DialogLevelSelect >( new DialogLevelSelect( this ) );
-    if ( !_levelSelectDialog->initialize( _levelSelectDialogConfig ) )
-        return;
-
     // setup intro layout
     _intro = std::auto_ptr< IntroControl >( new IntroControl );
     if ( !_intro->initialize( _introTexture ) )
@@ -360,6 +364,14 @@ void EnMenu::initialize()
 
     // create input handler
     _p_inputHandler = new MenuInputHandler( this );
+
+    // setup level select dialog
+    _levelSelectDialog = std::auto_ptr< DialogLevelSelect >( new DialogLevelSelect( this ) );
+    if ( !_levelSelectDialog->initialize( _levelSelectDialogConfig ) )
+    {
+        log_error << "EnMenu: cannot setup level select dialog" << std::endl;
+        return;
+    }
 
     // start intro
     beginIntro();
@@ -400,14 +412,10 @@ void EnMenu::createMenuScene()
     // our camera must be persistent, as it must survive every subsequent level loading
     _p_cameraControl->setPersistent( true );
 
-    osg::Vec3f bgcolor( 0.0f, 0.0f, 0.0f ); // black background
-    float fov      = 45.0f;
-    float nearClip = 0.5f;
-    float farClip  = 1000.0f;
-    p_camEntity->getAttributeManager().setAttributeValue( "backgroundColor", bgcolor  );
-    p_camEntity->getAttributeManager().setAttributeValue( "fov",             fov      );
-    p_camEntity->getAttributeManager().setAttributeValue( "nearClip",        nearClip );
-    p_camEntity->getAttributeManager().setAttributeValue( "farClip",         farClip  );
+    p_camEntity->getAttributeManager().setAttributeValue( "backgroundColor", _cameraBackgroundColor );
+    p_camEntity->getAttributeManager().setAttributeValue( "fov",             _cameraFov             );
+    p_camEntity->getAttributeManager().setAttributeValue( "nearClip",        _cameraNearClip        );
+    p_camEntity->getAttributeManager().setAttributeValue( "farClip",         _cameraFarClip         );
     osg::Quat rotoffset( -osg::PI / 2.0f, osg::Vec3f( 1, 0, 0 ) );
     p_camEntity->setCameraOffsetRotation( rotoffset );    
     p_camEntity->initialize();
@@ -569,7 +577,7 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
     std::string levelfilename = yaf3d::NetworkDevice::get()->getNodeInfo()->getLevelName();
     _queuedLevelFile = YAF3D_LEVEL_CLIENT_DIR + levelfilename;
 
-    // get preview pic for level
+    // release level files object
     if ( _p_clientLevelFiles )
         delete _p_clientLevelFiles;
 
@@ -590,9 +598,11 @@ bool EnMenu::onClickedServer( const CEGUI::EventArgs& arg )
     // play mouse click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
-    _levelSelectDialog->changeSearchDirectory( YAF3D_LEVEL_SERVER_DIR );
     _p_menuWindow->disable();
-    _levelSelectDialog->show( true );
+
+    // change search folder in dialog for selecting a level
+    _levelSelectDialog->setSearchDirectory( YAF3D_LEVEL_SERVER_DIR );
+    _levelSelectDialog->enable( true );
 
     // set level loading state
     _levelSelectionState = ForServer;
@@ -606,9 +616,11 @@ bool EnMenu::onClickedWT( const CEGUI::EventArgs& arg )
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
 
     yaf3d::GameState::get()->setMode( yaf3d::GameState::Standalone );
-    _levelSelectDialog->changeSearchDirectory( YAF3D_LEVEL_SALONE_DIR );
     _p_menuWindow->disable();
-    _levelSelectDialog->show( true );
+
+    // change search folder in dialog for selecting a level
+    _levelSelectDialog->setSearchDirectory( YAF3D_LEVEL_SALONE_DIR );
+    _levelSelectDialog->enable( true );
 
     // set level loading state
     _levelSelectionState = ForStandalone;
@@ -627,8 +639,9 @@ void EnMenu::updateEntity( float deltaTime )
             break;
 
         case BeginIntro:
-        {     
-            _intro->start();
+        {
+            // let the mouse disappear for intro
+            gameutils::GuiUtils::get()->showMousePointer( false ); 
             _menuState = Intro;
         }
         break;
@@ -709,12 +722,17 @@ void EnMenu::updateEntity( float deltaTime )
             // leave the menu system
             leave();
             _menuState = Hidden;
+
+            // disable level select dialog now freeing up the resources ( texures )
+            _levelSelectDialog->enable( false );
         }
         break;
 
         case UnloadLevel:
         {
             yaf3d::LevelManager::get()->unloadLevel();
+            // release the level scene node
+            _levelScene.release();
             _levelLoaded = false;
             switchMenuScene( true );
             _menuState   = Visible;
@@ -740,7 +758,6 @@ void EnMenu::updateEntity( float deltaTime )
                 osg::Vec3f pos = mat.getTrans();
                 _p_cameraControl->setCameraTranslation( pos, rot );
             }
-
 
             // handle menu idling
             {
@@ -818,13 +835,14 @@ void EnMenu::beginIntro()
     _p_menuWindow->hide();
     _p_loadingWindow->hide();
     _settingsDialog->show( false );
-    _levelSelectDialog->show( false );
-    _intro->start();    
+    _intro->start();
     _menuState = Intro;
 }
 
 void EnMenu::stopIntro()
 {
+    // let the mouse appear
+    gameutils::GuiUtils::get()->showMousePointer( false ); 
     _intro->stop();
 }
 
@@ -896,7 +914,6 @@ void EnMenu::leave()
     _p_menuWindow->enable();
 
     _settingsDialog->show( false );
-    _levelSelectDialog->show( false );
 
     // reset the input handler
     _p_inputHandler->reset( true );
@@ -950,6 +967,9 @@ void EnMenu::onSettingsDialogClose()
 void EnMenu::onLevelSelectCanceled()
 {    
     _p_menuWindow->enable();
+
+    // disable dialog, frees up the resources ( texures ) and hides the dialog
+    _levelSelectDialog->enable( false );
 }
 
 // called by DialogLevelSelect when a level has been selected by user

@@ -46,7 +46,8 @@ _p_listbox( NULL ),
 _p_image( NULL ),
 _p_lastListSelection( NULL ),
 _p_levelFiles( NULL ),
-_p_menuEntity( p_menuEntity )
+_p_menuEntity( p_menuEntity ),
+_enable( false )
 {
 }
 
@@ -55,11 +56,27 @@ DialogLevelSelect::~DialogLevelSelect()
     // free up allocated gui elements
     try
     {
+        if ( _p_levelSelectDialog )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_levelSelectDialog );
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log_error << "DialogLevelSelect: problem destroying level select dialog." << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
+    }
+
+    destroyResources();
+}
+
+void DialogLevelSelect::destroyResources()
+{
+    // free up allocated gui elements
+    try
+    {
         if ( _p_levelFiles )
             delete _p_levelFiles;
 
-        if ( _p_levelSelectDialog )
-            CEGUI::WindowManager::getSingleton().destroyWindow( _p_levelSelectDialog );
+        _p_levelFiles = NULL;
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -104,12 +121,21 @@ bool DialogLevelSelect::initialize( const std::string& layoutfile )
     return true;
 }
 
-void DialogLevelSelect::changeSearchDirectory( const std::string& dir )
+void DialogLevelSelect::setSearchDirectory( const std::string& dir )
 {
-    if ( _p_levelFiles )
-        delete _p_levelFiles;
+    _searchDirectory = dir;
+}
 
-    _p_levelFiles = new gameutils::LevelFiles( dir );
+void DialogLevelSelect::changeToSearchDirectory()
+{
+    if ( !_searchDirectory.length() )
+    {
+        log_error << "*** DialogLevelSelect: search directory is unspecified." << std::endl;
+        return;
+    }
+
+    assert( _p_levelFiles && "internal error: level file object already exists!" );
+    _p_levelFiles = new gameutils::LevelFiles( _searchDirectory );
 }
 
 void DialogLevelSelect::setupControls()
@@ -225,10 +251,15 @@ void DialogLevelSelect::update( float deltaTime )
     // nothing to do
 }
 
-void DialogLevelSelect::show( bool visible )
+void DialogLevelSelect::enable( bool en )
 {
-    if ( visible )
+    // just be safe
+    if ( en == _enable )
+        return;
+
+    if ( en )
     {
+        changeToSearchDirectory();
         setupControls();
         _p_levelSelectDialog->show();
     }
@@ -236,7 +267,10 @@ void DialogLevelSelect::show( bool visible )
     {
         _p_listbox->resetList();
         _p_levelSelectDialog->hide();
+        destroyResources();
     }
+
+    _enable = en;
 }
 
-}
+} // namespace vrc

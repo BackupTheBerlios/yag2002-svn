@@ -53,19 +53,6 @@ _introTimer( 0 )
 
 IntroControl::~IntroControl()
 {
-    try
-    {
-        if ( _p_wndIntro )
-            CEGUI::WindowManager::getSingleton().destroyWindow( _p_wndIntro );
-
-        if ( _p_imageSet )
-            CEGUI::ImagesetManager::getSingleton().destroyImageset( _p_imageSet );
-    }
-    catch ( const CEGUI::Exception& e )
-    {
-        log_error << "IntroControl: problem cleaning up gui resources." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
-    }
 }
 
 bool IntroControl::initialize( const std::string& intoImage )
@@ -152,15 +139,22 @@ void IntroControl::stop()
     if ( _p_introSound )
         _p_introSound->stopPlaying();
 
-    // append the intro window to root
-    yaf3d::GuiManager::get()->getRootWindow()->removeChildWindow( _p_wndIntro );
+    // cleanup resources
+    try
+    {
+        if ( _p_wndIntro )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_wndIntro );
 
-    // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+        if ( _p_imageSet )
+            CEGUI::ImagesetManager::getSingleton().destroyImageset( _p_imageSet );
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log_error << "IntroControl: problem cleaning up gui resources." << std::endl;
+        log << "      reason: " << e.getMessage().c_str() << std::endl;
+    }
 
     _introState = Stopped;
-
-    gameutils::GuiUtils::get()->showMousePointer( true ); // let the mouse appear 
 }
 
 } // namespace vrc

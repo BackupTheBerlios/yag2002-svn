@@ -121,6 +121,14 @@ class EnMenu :  public yaf3d::BaseEntity
 
         float                                       _menuIdleTimeout;
 
+        osg::Vec3f                                  _cameraBackgroundColor;
+
+        float                                       _cameraFov;
+        
+        float                                       _cameraNearClip;
+        
+        float                                       _cameraFarClip;
+
     protected:
 
         //! Interface method used by settings dialog

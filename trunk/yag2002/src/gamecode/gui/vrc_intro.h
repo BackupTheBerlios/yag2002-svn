@@ -54,10 +54,10 @@ class IntroControl
         //! Start intro
         void                                        start();
 
-        //! Stop intro
+        //! Stop intro, after stopping call initialize before re-"start"ing.
         void                                        stop();
 
-        //! Set intro sound object, this sound is played on intro start
+        //! Set intro sound object, this sound is played on intro start.
         void                                        setIntroSound( EnAmbientSound* p_sound );
 
     protected:

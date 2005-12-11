@@ -59,16 +59,22 @@ class DialogLevelSelect
         //! Update dialog control
         void                                        update( float deltaTime );
 
-        //! Show/hide the dialog
-        void                                        show( bool visible );
+        //! Set the search directory for finding level files
+        void                                        setSearchDirectory( const std::string& dir );
 
-        //! Changes the search directory for finding level files
-        void                                        changeSearchDirectory( const std::string& dir );
+        //! Enable / disable dialog, call setSearchDirectory before.
+        void                                        enable( bool en );
 
     protected:
 
+        //! Changes the search directory for finding level files
+        void                                        changeToSearchDirectory();
+
         //! Setup all controls when the dialog is opening ( show( true ) )
         void                                        setupControls();
+
+        //! Release gui resources such as preview pics etc.
+        void                                        destroyResources();
 
         //! Set the preview image for given list item ( is used when the user changes the level selection in list )
         void                                        setPreviewPic( CEGUI::ListboxItem* p_item );
@@ -98,6 +104,10 @@ class DialogLevelSelect
         std::string                                 _currentSelection;
 
         EnMenu*                                     _p_menuEntity;
+
+        std::string                                 _searchDirectory;
+
+        bool                                        _enable;
 };
 
 }
