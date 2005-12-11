@@ -65,6 +65,8 @@ class ChatGuiCtrl
         CEGUI::StaticImage*                         _p_btnMode;
 
         ChatManager*                                _p_chatMgr;
+
+        bool                                        _editMode;
 };
 
 } // namespace vrc

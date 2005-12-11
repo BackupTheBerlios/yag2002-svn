@@ -45,7 +45,8 @@ namespace vrc
 
 ChatGuiCtrl::ChatGuiCtrl() :
 _p_wnd( NULL ),
-_p_btnMode( NULL )
+_p_btnMode( NULL ),
+_editMode( false )
 {
 }
 
@@ -112,17 +113,31 @@ void ChatGuiCtrl::initialize( ChatManager* p_chatMgr )
 void ChatGuiCtrl::setEditMode( bool en )
 {
     if ( !en )
+    {
         _p_btnMode->show();
+        gameutils::GuiUtils::get()->showMousePointer( false );
+    }
     else
+    {
         _p_btnMode->hide();
+        gameutils::GuiUtils::get()->showMousePointer( true );
+    }
+
+    _editMode = en;
 }
         
 void ChatGuiCtrl::show( bool en )
 {
     if ( en )
+    {
         _p_wnd->show();
+        // restore the mode
+        setEditMode( _editMode );
+    }
     else
+    {
         _p_wnd->hide();
+    }
 }
 
 } // namespace vrc
