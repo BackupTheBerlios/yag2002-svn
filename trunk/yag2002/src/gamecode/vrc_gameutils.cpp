@@ -104,14 +104,18 @@ GuiUtils::GuiUtils() :
 _p_mainWindow( NULL ),
 _p_rootWindow( NULL )
 {
-    // register this instance for getting game state changes, needed for shutdown
-    yaf3d::GameState::get()->registerCallbackStateChange( this );
+    // take care, this is a phoenix singleton!
+    if ( yaf3d::GameState::get()->getState() != yaf3d::GameState::Quitting )
+    {
+        // register this instance for getting game state changes, needed for shutdown
+        yaf3d::GameState::get()->registerCallbackStateChange( this );
 
-    // setup standard gui sounds
-    createSound( GUI_SND_NAME_CLICK, GUI_SND_FILE_CLICK, GUI_SND_VOL_CLICK );
-    createSound( GUI_SND_NAME_HOVER, GUI_SND_FILE_HOVER, GUI_SND_VOL_HOVER );
-    createSound( GUI_SND_NAME_SCROLLBAR, GUI_SND_FILE_SCROLLBAR, GUI_SND_VOL_SCROLLBAR );
-    createSound( GUI_SND_NAME_ATTENTION, GUI_SND_FILE_ATTENTION, GUI_SND_VOL_ATTENTION );
+        // setup standard gui sounds
+        createSound( GUI_SND_NAME_CLICK, GUI_SND_FILE_CLICK, GUI_SND_VOL_CLICK );
+        createSound( GUI_SND_NAME_HOVER, GUI_SND_FILE_HOVER, GUI_SND_VOL_HOVER );
+        createSound( GUI_SND_NAME_SCROLLBAR, GUI_SND_FILE_SCROLLBAR, GUI_SND_VOL_SCROLLBAR );
+        createSound( GUI_SND_NAME_ATTENTION, GUI_SND_FILE_ATTENTION, GUI_SND_VOL_ATTENTION );
+    }
 }
 
 GuiUtils::~GuiUtils()
@@ -160,7 +164,7 @@ CEGUI::Window* GuiUtils::getMainGuiWindow()
 
 void GuiUtils::showMainWindow( bool show )
 {
-    if ( !_p_mainWindow )
+    if ( !_p_mainWindow || !_p_rootWindow )
         return;
  
     if ( show )
@@ -191,6 +195,8 @@ unsigned int GuiUtils::createSound( const std::string& name, const std::string& 
     try 
     {
         soundID   = yaf3d::SoundManager::get()->createSound( filename, volume, false, yaf3d::SoundManager::fmodDefaultCreationFlags2D );
+        // give the gui sound a high priority
+        yaf3d::SoundManager::get()->getSoundChannel( soundID )->setPriority( 100 );
     } 
     catch ( const yaf3d::SoundExpection& e )
     {
@@ -220,7 +226,7 @@ void GuiUtils::playSound( const std::string& name )
     MapSound::iterator soundID = _soundMap.find( name );
     if ( soundID == _soundMap.end() )
     {
-        log_error << " sound source with name '" << name << "' does not exist." << std::endl;
+        log_error << "GuiUtils: sound source with name '" << name << "' does not exist." << std::endl;
         return;
     }
     yaf3d::SoundManager::get()->playSound( soundID->second );
@@ -246,7 +252,7 @@ bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& 
     yaf3d::Settings* p_settings = yaf3d::SettingsManager::get()->createProfile( profile, cfg );
     if ( !p_settings )
     {
-        log_error << "Menu: cannot find player settings: " << cfg << std::endl;
+        log_error << "GuiUtils: cannot find player settings: " << cfg << std::endl;
         return false;
     }
     std::string key, value;
