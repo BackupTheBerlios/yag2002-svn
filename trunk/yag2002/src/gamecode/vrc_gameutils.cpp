@@ -105,7 +105,7 @@ _p_mainWindow( NULL ),
 _p_rootWindow( NULL )
 {
     // take care, this is a phoenix singleton!
-    if ( yaf3d::GameState::get()->getState() != yaf3d::GameState::Quitting )
+    if ( yaf3d::GameState::get()->getState() != yaf3d::GameState::Shutdown )
     {
         // register this instance for getting game state changes, needed for shutdown
         yaf3d::GameState::get()->registerCallbackStateChange( this );
@@ -120,24 +120,38 @@ _p_rootWindow( NULL )
 
 GuiUtils::~GuiUtils()
 {
-    // release sounds
-    try
-    {
-        MapSound::iterator p_beg = _soundMap.begin(), p_end = _soundMap.end();
-        for ( ; p_beg != p_end; ++p_beg )
-            yaf3d::SoundManager::get()->releaseSound( p_beg->second );
-    }
-    catch ( const yaf3d::SoundExpection& e )
-    {
-        log_error << "GuiUtils: problem releasing sounds, reason: " << e.what() << std::endl;
-    }
 }
 
 void GuiUtils::onStateChange( unsigned int state )
 {
-    // shutdown the singleton on application shutdown
-    if ( state == yaf3d::GameState::Quitting )
-        destroy();
+    switch ( state )
+    {
+        case yaf3d::GameState::Quitting:
+        {
+            // release sounds
+            try
+            {
+                MapSound::iterator p_beg = _soundMap.begin(), p_end = _soundMap.end();
+                for ( ; p_beg != p_end; ++p_beg )
+                    yaf3d::SoundManager::get()->releaseSound( p_beg->second );
+            }
+            catch ( const yaf3d::SoundExpection& e )
+            {
+                log_error << "GuiUtils: problem releasing sounds, reason: " << e.what() << std::endl;
+            }
+        }
+        break;
+
+        // shutdown the singleton on application shutdown
+        case yaf3d::GameState::Shutdown:
+        {
+            destroy();
+        }
+        break;
+
+        default:
+            ;
+    }
 }
 
 CEGUI::Window* GuiUtils::getMainGuiWindow()
@@ -145,7 +159,6 @@ CEGUI::Window* GuiUtils::getMainGuiWindow()
     if ( _p_mainWindow )
         return _p_mainWindow;
 
-    // create main window
     try
     {
         _p_rootWindow = yaf3d::GuiManager::get()->getRootWindow();
