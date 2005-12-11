@@ -875,14 +875,18 @@ bool ChatGuiBox::onClickedConnectIRC( const CEGUI::EventArgs& arg )
     if ( !_p_connectionDialog )
         _p_connectionDialog = new ConnectionDialog< ChatGuiBox >( this );
 
+    // take the player name as nickname
+    std::string nickname;
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, nickname );
+
     // set IRC as protocol
     ChatConnectionConfig& conf = _p_connectionDialog->getConfiguration();
-    conf._protocol = "IRC";
+    conf._protocol  = "IRC";
     //! TODO: read in these settings from a history file
-    conf._port     = 6667;
+    conf._port      = 6667;
     conf._serverURL = "irc.freenode.net";
-    conf._channel  = "#vrc";
-    conf._nickname = "my-nick";
+    conf._channel   = "#vrc";
+    conf._nickname  = nickname;
 
     _p_connectionDialog->setConfiguration( conf );
 
