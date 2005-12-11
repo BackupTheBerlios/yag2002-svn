@@ -89,6 +89,9 @@ void PlayerImplClient::handleNotification( const yaf3d::EntityNotification& noti
 
                 // very important: diable the camera when we enter menu!
                 _p_camera->setEnable( false );
+
+                // players are all rendered in menu, regardless their camera mode
+                _p_playerAnimation->enableRendering( true );
             }
             break;
 
@@ -104,6 +107,10 @@ void PlayerImplClient::handleNotification( const yaf3d::EntityNotification& noti
 
                 // very important: enable the camera when we leave menu!
                 _p_camera->setEnable( true );
+
+                // if we are in ego mode then disable player avatar rendering
+                if ( _cameraMode == Ego )
+                    _p_playerAnimation->enableRendering( false );
             }
         }
         break;
