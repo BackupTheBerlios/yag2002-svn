@@ -174,15 +174,6 @@ void EnPlayerAnimation::initialize()
     }
 
     log << "  initializing player animation instance completed" << std::endl;
-
-    // register entity in order to get updated per simulation step
-    yaf3d::EntityManager::get()->registerUpdate( this, true );
-}
-
-void EnPlayerAnimation::updateEntity( float deltaTime )
-{
-    // calculate lod factor depending on camera distance
-    //_model->getCalModel()->setLodLevel( lod );
 }
 
 void EnPlayerAnimation::enableRendering( bool render )

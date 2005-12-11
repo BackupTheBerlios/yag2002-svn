@@ -110,12 +110,6 @@ class EnPlayerAnimation  : public yaf3d::BaseEntity
 
     protected:
 
-        /**
-        * Update entity
-        * \param deltaTime                          Time passed since last update
-        */
-        void                                        updateEntity( float deltaTime );
-
         //! Read config file and setup animation
         /**
         * \param rootDir                            The relative directory path to media directory which must contain all animation files and textures
