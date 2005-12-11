@@ -42,6 +42,9 @@ namespace vrc
 // delay in seconds for editbox activation
 #define EDITBOX_ACTIVATION_DELAY    0.7f
 
+// delay in seconds for deleting the short messages when chatbox is closed
+#define SHORTMESSAGE_DELETION_DELAY 20.0f
+
 #define VRC_IMAGE_SET               "VRCImageSet"
 #define VRC_IMAGE_SET_FILE          "gui/imagesets/VRCImageSet.imageset"
 
@@ -174,6 +177,7 @@ void ChatGuiBox::ChannelTabPane::addMessage( const CEGUI::String& msg, const CEG
     if ( _p_guibox->isHidden() )
     {
         _p_guibox->showMsgArrived( true );
+        _p_guibox->getShortMsgBox()->setText( author + ": " + msg );
     }
 
     // mark also the pane head
@@ -399,6 +403,8 @@ _p_btnConnectIRC( NULL ),
 _p_btnOpen( NULL ),
 _p_btnMsgArrived( NULL ),
 _p_tabCtrl( NULL ),
+_shortMsgBox( NULL ),
+_shortMsgBoxAcceccCounter( SHORTMESSAGE_DELETION_DELAY ),
 _editBoxActivationCounter( 0.0f ),
 _editBoxActivationTab( NULL ),
 _fadeTimer( 0.0f ),
@@ -423,6 +429,8 @@ ChatGuiBox::~ChatGuiBox()
         CEGUI::WindowManager::getSingleton().destroyWindow( _p_frame );
         CEGUI::ImagesetManager::getSingleton().destroyImageset( VRC_IMAGE_SET );
 
+        if ( _shortMsgBox )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _shortMsgBox );
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -551,6 +559,17 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
         _p_tabCtrl->subscribeEvent( CEGUI::TabControl::EventSelectionChanged, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onChannelTabChanged, this ) );
 
         _p_frame->addChildWindow( _p_tabCtrl );
+
+        // create a message area for posting messages when the box is closed
+        CEGUI::Window* p_rootwnd = yaf3d::GuiManager::get()->getRootWindow();
+        _shortMsgBox = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", "_chatbox_msgbox_" ) );
+        _shortMsgBox->setPosition( CEGUI::Point( 0.0f, 0.9f ) );
+        _shortMsgBox->setSize( CEGUI::Size( 0.9f, 0.1f ) );
+        _shortMsgBox->setFont( YAF3D_GUI_FONT8 );
+        _shortMsgBox->setBackgroundEnabled( false );
+        _shortMsgBox->setFrameEnabled( false );
+        _shortMsgBox->show();
+        p_rootwnd->addChildWindow( _shortMsgBox );
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -591,6 +610,12 @@ ChatGuiBox::ChannelTabPane* ChatGuiBox::getTabPane( const ChatConnectionConfig& 
             return p_beg->second;
 
     return NULL;
+}
+
+CEGUI::StaticText* ChatGuiBox::getShortMsgBox()
+{
+    _shortMsgBoxAcceccCounter = SHORTMESSAGE_DELETION_DELAY;
+    return _shortMsgBox;
 }
 
 void ChatGuiBox::destroyChannelPane( const ChatConnectionConfig& cfg )
@@ -692,6 +717,8 @@ void ChatGuiBox::update( float deltaTime )
                 _p_frame->setSize( size );
                 _p_btnOpen->hide();
                 setEditBoxFocus( true );
+                // let the short message box disappear
+                _shortMsgBox->hide();
                 _boxState = BoxVisible;
                 break;
             }
@@ -716,6 +743,8 @@ void ChatGuiBox::update( float deltaTime )
                 _p_frame->setSize( size );
                 _p_frame->hide();
                 setEditBoxFocus( false );
+                // let the short message box appear
+                _shortMsgBox->show();
                 _boxState = BoxHidden;
                 break;
             }
@@ -757,6 +786,17 @@ void ChatGuiBox::update( float deltaTime )
             _editBoxActivationTab->setEditBoxFocus( true );
         }
     }
+
+    // check for short message box time out and delete the text when time out occured
+    if ( _shortMsgBoxAcceccCounter > 0.0f )
+    {
+        _shortMsgBoxAcceccCounter -= deltaTime;
+        if ( _shortMsgBoxAcceccCounter < 0.0 )
+        {
+            _shortMsgBox->setText( "" );
+        }
+    }
+
 }
 
 void ChatGuiBox::show( bool visible )
@@ -765,12 +805,20 @@ void ChatGuiBox::show( bool visible )
     {
         _p_btnOpen->show();
         if ( _boxState != BoxHidden )
+        {
             _p_frame->show();
+            _shortMsgBox->hide();
+        }
+        else if ( _boxState == BoxHidden )
+        {
+            _shortMsgBox->show();
+        }
     }
     else
     {
         _p_btnOpen->hide();
         _p_frame->hide();
+        _shortMsgBox->hide();
     }
 }
 

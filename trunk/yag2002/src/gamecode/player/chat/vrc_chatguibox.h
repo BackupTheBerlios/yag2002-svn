@@ -191,6 +191,9 @@ class ChatGuiBox
         //! Returns the associated tabpane given a channel configuration
         ChannelTabPane*                             getTabPane( const ChatConnectionConfig& cfg );
 
+        //! Get the short message box gui
+        CEGUI::StaticText*                          getShortMsgBox();
+
         //! A queue for removing tab panes on next update
         std::queue< ChatGuiBox::ChannelTabPane*, std::deque< ChatGuiBox::ChannelTabPane* > >   _queueRemoveTabPane;
 
@@ -240,6 +243,10 @@ class ChatGuiBox
         CEGUI::StaticImage*                         _p_btnMsgArrived;
 
         CEGUI::TabControl*                          _p_tabCtrl;
+
+        CEGUI::StaticText*                          _shortMsgBox;
+
+        float                                       _shortMsgBoxAcceccCounter;
 
         //! Type for listing chat channels and their associated tabpanes ( gui )
         typedef std::vector< std::pair< ChatConnectionConfig, ChannelTabPane* > >  TabPanePairList;
