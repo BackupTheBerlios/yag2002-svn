@@ -31,6 +31,7 @@
  ################################################################*/
 
 #include <base.h>
+#include "log.h"
 #include "guitexture.h"
 #include "guirenderer.h"
 #include <GL/glu.h>
@@ -234,6 +235,8 @@ CEGUI::Texture* GuiRenderer::createTexture()
 {
     GuiTexture* p_tex = new GuiTexture( this );
     _texturelist.push_back( p_tex );
+    //log_debug << "GuiRenderer: creating texture, id " << p_tex->getOGLTexid() << std::endl;
+
     return p_tex;
 }
 
@@ -241,7 +244,7 @@ CEGUI::Texture* GuiRenderer::createTexture( const CEGUI::String& filename, const
 {
     GuiTexture* p_tex = static_cast< GuiTexture* >( this->createTexture() );
     p_tex->loadFromFile( filename, resourceGroup );
-
+    //log_debug << "GuiRenderer: creating texture from file " << filename.c_str() << ", id " << p_tex->getOGLTexid() << std::endl;
     return p_tex;
 }
 
@@ -249,7 +252,7 @@ CEGUI::Texture* GuiRenderer::createTexture( float size )
 {
     GuiTexture* p_tex = static_cast< GuiTexture* >( this->createTexture() );
     p_tex->setOGLTextureSize( ( CEGUI::uint )size );
-
+    //log_debug << "GuiRenderer: creating texture with given size " << size << ", id " << p_tex->getOGLTexid() << std::endl;
     return p_tex;
 }
 
@@ -258,6 +261,7 @@ void GuiRenderer::destroyTexture( CEGUI::Texture* p_texture )
     if ( p_texture )
     {
         GuiTexture* p_tex = static_cast< GuiTexture* >( p_texture );
+        //log_debug << "GuiRenderer: deleting texture, id " << p_tex->getOGLTexid() << std::endl;       
         _texturelist.remove( p_tex );
         delete p_tex;
     }
@@ -266,7 +270,7 @@ void GuiRenderer::destroyTexture( CEGUI::Texture* p_texture )
 void GuiRenderer::destroyAllTextures()
 {
     while ( !_texturelist.empty() )
-        this->destroyTexture(*(_texturelist.begin()));
+        this->destroyTexture( *( _texturelist.begin( )) );
 }
 
 void GuiRenderer::initPerFrameStates()
