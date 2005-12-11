@@ -101,7 +101,7 @@ void EnPlayerNameDisplay::initialize()
 
         _nameBox = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", NAMEDISPLAY_PREFIX ) );
         _nameBox->setPosition( CEGUI::Point( 0.0f, 0.97f ) );
-        _nameBox->setSize( CEGUI::Size( 0.10f, 0.03f ) );
+        _nameBox->setSize( CEGUI::Size( 0.2f, 0.03f ) );
         _nameBox->setFont( YAF3D_GUI_FONT8 );
         _nameBox->setBackgroundEnabled( false );
         _nameBox->setFrameEnabled( false );

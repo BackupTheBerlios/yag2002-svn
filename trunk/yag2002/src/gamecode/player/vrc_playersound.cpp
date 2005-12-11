@@ -40,8 +40,9 @@ namespace vrc
 // internal material names
 #define SND_GROUND      1
 #define SND_WOOD        2
-#define SND_METALL      3
-#define SND_GRASS       4
+#define SND_STONE       3
+#define SND_METAL       4
+#define SND_GRASS       5
 
 //! Implement and register the player animation entity factory
 YAF3D_IMPL_ENTITYFACTORY( PlayerSoundEntityFactory );
@@ -60,6 +61,7 @@ _p_playerImpl( NULL )
     getAttributeManager().addAttribute( "volume"              , _volume      );
     getAttributeManager().addAttribute( "soundWalkGround"     , _walkGround  );
     getAttributeManager().addAttribute( "soundWalkWood"       , _walkWood    );
+    getAttributeManager().addAttribute( "soundWalkStone"      , _walkStone   );
     getAttributeManager().addAttribute( "soundWalkMetal"      , _walkMetal   );
     getAttributeManager().addAttribute( "soundWalkGrass"      , _walkGrass   );
 }
@@ -108,9 +110,13 @@ void EnPlayerSound::postInitialize()
     if ( soundID > 0 )
         _mapSounds.insert( std::make_pair( SND_WOOD, soundID ) );
 
+    soundID = createSound( _walkStone );
+    if ( soundID > 0 )
+        _mapSounds.insert( std::make_pair( SND_STONE, soundID ) );
+
     soundID = createSound( _walkMetal );
     if ( soundID > 0 )
-        _mapSounds.insert( std::make_pair( SND_METALL, soundID ) );
+        _mapSounds.insert( std::make_pair( SND_METAL, soundID ) );
 
     soundID = createSound( _walkGrass );
     if ( soundID > 0 )
@@ -142,38 +148,53 @@ unsigned int EnPlayerSound::createSound( const std::string& filename )
 
 void EnPlayerSound::playWalkGround()
 {
-    MapPlayerSounds::iterator p_soundID = _mapSounds.find( SND_GROUND );
-    if ( p_soundID == _mapSounds.end() )
-       return;
-
-    yaf3d::SoundManager::get()->playSound( p_soundID->second, true );
+    playSoundFx( SND_GROUND );
 }
 
 void EnPlayerSound::playWalkWood()
 {
-    MapPlayerSounds::iterator p_soundID = _mapSounds.find( SND_WOOD );
-    if ( p_soundID == _mapSounds.end() )
-       return;
-
-    yaf3d::SoundManager::get()->playSound( p_soundID->second, true );
+    playSoundFx( SND_WOOD );
 }
 
 void EnPlayerSound::playWalkMetal()
 {
-    MapPlayerSounds::iterator p_soundID = _mapSounds.find( SND_METALL );
-    if ( p_soundID == _mapSounds.end() )
-       return;
+    playSoundFx( SND_METAL );
+}
 
-    yaf3d::SoundManager::get()->playSound( p_soundID->second, true );
+void EnPlayerSound::playWalkStone()
+{
+    playSoundFx( SND_STONE );
 }
 
 void EnPlayerSound::playWalkGrass()
 {
-    MapPlayerSounds::iterator p_soundID = _mapSounds.find( SND_GRASS );
+    playSoundFx( SND_GRASS );
+}
+
+void EnPlayerSound::playSoundFx( unsigned int soundName )
+{
+    // get the sound pair in map
+    MapPlayerSounds::iterator p_soundID = _mapSounds.find( soundName );
     if ( p_soundID == _mapSounds.end() )
        return;
 
-    yaf3d::SoundManager::get()->playSound( p_soundID->second, true );
+    unsigned int soundID = p_soundID->second;
+
+    // first stop all other sounds
+    MapPlayerSounds::iterator p_beg = _mapSounds.begin(), p_end = _mapSounds.end();
+    for ( ; p_beg != p_end; ++p_beg )
+        if ( p_beg->second != soundID )
+            yaf3d::SoundManager::get()->stopSound( p_beg->second );
+
+    // now play the new sound
+    yaf3d::SoundManager::get()->playSound( soundID, true );
+}
+
+void EnPlayerSound::stopPlayingAll()
+{
+    MapPlayerSounds::iterator p_beg = _mapSounds.begin(), p_end = _mapSounds.end();
+    for ( ; p_beg != p_end; ++p_beg )
+        yaf3d::SoundManager::get()->stopSound( p_beg->second );
 }
 
 void EnPlayerSound::updatePosition( const osg::Vec3f& pos )
@@ -191,11 +212,6 @@ void EnPlayerSound::updatePosition( const osg::Vec3f& pos )
         p_channel = yaf3d::SoundManager::get()->getSoundChannel( p_beg->second );
         p_channel->set3DAttributes( &soundpos, NULL );
     }
-}
-
-void EnPlayerSound::stopPlayingAll()
-{
-    // currently nothing to do as we have non-looped sounds
 }
 
 } // namespace vrc

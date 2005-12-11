@@ -76,6 +76,9 @@ class EnPlayerSound  : public yaf3d::BaseEntity
         //! Play walk on wood sound
         void                                        playWalkWood();
 
+        //! Play walk on stone sound
+        void                                        playWalkStone();
+
         //! Play walk on metal sound
         void                                        playWalkMetal();
 
@@ -89,6 +92,12 @@ class EnPlayerSound  : public yaf3d::BaseEntity
 
         // Handler system notifications
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
+
+        //! Create a new sound
+        unsigned int                                createSound( const std::string& filename );
+
+        //! Play sound given its name ( as uint )
+        void                                        playSoundFx( unsigned int soundName );
 
         // entity attributes
         //----------------------------------------------------------//
@@ -111,6 +120,9 @@ class EnPlayerSound  : public yaf3d::BaseEntity
         //! Walk sound file, on wood
         std::string                                 _walkWood;
 
+        //! Walk sound file, on stone
+        std::string                                 _walkStone;
+
         //! Walk sound file, on metal
         std::string                                 _walkMetal;
 
@@ -119,8 +131,6 @@ class EnPlayerSound  : public yaf3d::BaseEntity
 
         //----------------------------------------------------------//
 
-        //! Create a new sound
-        unsigned int                                createSound( const std::string& filename );
 
         //! Type for sound name ( as uint ) / sound id maps
         typedef std::map< unsigned int, unsigned int > MapPlayerSounds;
