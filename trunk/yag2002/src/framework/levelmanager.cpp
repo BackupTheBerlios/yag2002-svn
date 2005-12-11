@@ -522,6 +522,8 @@ void LevelManager::initializeFirstTime()
         // start viewer
         Application::get()->getViewer()->open();
         Application::get()->getViewer()->init();
+        // call draw in order to clear the screen during loading
+        Application::get()->getViewer()->draw();
     }
 }
 
