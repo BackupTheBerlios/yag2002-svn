@@ -136,6 +136,7 @@ _autodel( autodelete )
                 // create 'Yes' button
                 CEGUI::PushButton* p_btnyes = 
                     static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_yes_" + postfix.str() ).c_str() ) );
+                p_btnyes->setAlwaysOnTop( true );
                 p_btnyes->setSize( CEGUI::Size( 0.45f, 0.15f ) );
                 p_btnyes->setPosition( CEGUI::Point( 0.025f, 0.825f ) );
                 p_btnyes->setText( "Yes" );
@@ -146,6 +147,7 @@ _autodel( autodelete )
                 // create 'No' button
                 CEGUI::PushButton* p_btnno = 
                     static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_no_" + postfix.str() ).c_str() ) );
+                p_btnno->setAlwaysOnTop( true );
                 p_btnno->setSize( CEGUI::Size( 0.45f, 0.15f ) );
                 p_btnno->setPosition( CEGUI::Point( 0.525f, 0.825f ) );
                 p_btnno->setText( "No" );
@@ -160,6 +162,7 @@ _autodel( autodelete )
                 // create 'Ok' button
                 CEGUI::PushButton* p_btnok = 
                     static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_ok_" + postfix.str() ).c_str() ) );
+                p_btnok->setAlwaysOnTop( true );
                 p_btnok->setSize( CEGUI::Size( 0.45f, 0.15f ) );
                 p_btnok->setPosition( CEGUI::Point( 0.025f, 0.825f ) );
                 p_btnok->setText( "Ok" );
@@ -170,6 +173,7 @@ _autodel( autodelete )
                 // create 'Cancel' button
                 CEGUI::PushButton* p_btncancel = 
                     static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_cancel_" + postfix.str() ).c_str() ) );
+                p_btncancel->setAlwaysOnTop( true );
                 p_btncancel->setSize( CEGUI::Size( 0.45f, 0.15f ) );
                 p_btncancel->setPosition( CEGUI::Point( 0.525f, 0.825f ) );
                 p_btncancel->setText( "Cancel" );
@@ -184,6 +188,7 @@ _autodel( autodelete )
                 // create 'Ok' button
                 CEGUI::PushButton* p_btnok = 
                     static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_ok_" + postfix.str() ).c_str() ) );
+                p_btnok->setAlwaysOnTop( true );
                 p_btnok->setSize( CEGUI::Size( 0.5f, 0.15f ) );
                 p_btnok->setPosition( CEGUI::Point( 0.25f, 0.75f ) );
                 p_btnok->setText( "Ok" );
