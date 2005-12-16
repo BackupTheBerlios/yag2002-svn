@@ -1,0 +1,79 @@
+/* The chat funtionality object */
+object ImplChatNetworkingVRC
+{
+    
+    datablock Function;
+    extern RPC_RequestJoin(tChatData);
+    extern RPC_ClientJoined(tChatData);
+    extern RPC_RequestLeave(tChatData);
+    extern RPC_ClientLeft(tChatData);
+    extern RPC_InitializeClient(tChatData);
+    
+    extern RPC_RequestChangeNickname(tChatData);
+    extern RPC_ChangedNickname(tChatData);
+    extern RPC_RequestMemberList(tChatData);
+    extern RPC_RecvMemberList(tChatData);
+
+    extern RPC_PostChatText(tChatMsg);
+    extern RPC_RecvChatText(tChatMsg);
+    
+    networking
+    {
+        /* client requests for joining */
+        Function RPC_RequestJoin;
+        { 
+            Reliable();
+        }
+        /* notify all clients about a new chat memeber */
+        Function RPC_ClientJoined;
+        { 
+            Reliable();
+        }
+        /* client requests for leaving */
+        Function RPC_RequestLeave;
+        { 
+            Reliable();
+        }
+        /* notify all clients that a client left */
+        Function RPC_ClientLeft;
+        { 
+            Reliable();
+        }
+        /* server grants joining and updates the nick name */
+        Function RPC_InitializeClient;
+        { 
+            Reliable();
+        }
+        /* request the server for changing nick name */
+        Function RPC_RequestChangeNickname;
+        { 
+            Reliable();
+        }
+        /* some nick name has been changed */
+        Function RPC_ChangedNickname;
+        { 
+            Reliable();
+        }
+        /* requests the server for transmitting the member list */
+        Function RPC_RequestMemberList;
+        { 
+            Reliable();
+        }
+        /* client: receive current chat members on server */
+        Function RPC_RecvMemberList;
+        { 
+            Reliable();
+        }
+
+        /* client trys to post a message via server */
+        Function RPC_PostChatText;
+        { 
+            Reliable();
+        }
+        /* server potentially filters the message and distribute it to all clients in chat room */
+        Function RPC_RecvChatText;
+        { 
+            Reliable();
+        }
+    }    
+}
