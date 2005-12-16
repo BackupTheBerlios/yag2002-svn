@@ -42,23 +42,28 @@
 #include "utils.h"
 #include "log.h"
 
+#include <SDL_cpuinfo.h>
+
+// uncomment if the application should have an console stdout ( is used for server )
+// when using ms compiler you have also to set linker parameter /SUBSYSTEM:CONSOLE
+#define YAF3D_HAS_CONSOLE
 
 // app icon and tile
-#define YAF3D_APP_TITLE           "VRC"
-#define YAF3D_APP_ICON            "icon.bmp"
+#define YAF3D_APP_TITLE             "VRC"
+#define YAF3D_APP_ICON              "icon.bmp"
 
 // environment variable for media directory
 //  if not existing then the relative path '../../media' of executable is assumed
 #define YAF3D_ENV_MEDIA_DIR	"YAF3D_ENV_MEDIA_DIR"
 
 // log file names
-#define LOG_FILE_NAME             "vrc.log"
-#define LOG_FILE_NAME_SERVER      "vrc-server.log"
+#define LOG_FILE_NAME               "vrc.log"
+#define LOG_FILE_NAME_SERVER        "vrc-server.log"
 
-// media path relative to inst dir
-#define YAF3D_MEDIA_PATH          "/media/"
+// media path relative to inst dir  
+#define YAF3D_MEDIA_PATH            "/media/"
 // default level
-#define YAF3D_DEFAULT_LEVEL       "gui/loader"
+#define YAF3D_DEFAULT_LEVEL         "gui/loader"
 
 // update period limits ( in seconds )
 #define UPPER_UPDATE_PERIOD_LIMIT   1.0f / 2.0f
@@ -110,6 +115,7 @@ void Application::shutdown()
 
 bool Application::initialize( int argc, char **argv )
 {
+    // this is used when hunting for memory leaks
 #ifdef YAF3D_ENABLE_HEAPCHECK
     // trigger debugger
     //__asm int 3;
@@ -133,15 +139,6 @@ bool Application::initialize( int argc, char **argv )
     {
         GameState::get()->setMode( GameState::Client );
         arguments.remove( argpos );
-    }
-
-    // any option left unread are converted into errors to write out later.
-    arguments.reportRemainingOptionsAsUnrecognized();
-
-    // report any errors if they have occured when parsing the program aguments.
-    if (arguments.errors())
-    {
-        arguments.writeErrorMessages( std::cout );
     }
 
     // note: before beginning to initialize the framework modules the media path must be set, 
@@ -190,31 +187,81 @@ bool Application::initialize( int argc, char **argv )
     _p_gameState->setState( GameState::Initializing );
 
     // setup log system
-    //-----------------
-    //! TODO: set the loglevel basing on config file
-    if ( GameState::get()->getMode() != GameState::Server )
-        log.addSink( "file", getMediaPath() + std::string( LOG_FILE_NAME ), Log::L_ERROR );
-    else
-        log.addSink( "file", getMediaPath() + std::string( LOG_FILE_NAME_SERVER ), Log::L_ERROR );
+    {
+        std::string loglevel;
+        bool        invalidloglevel = false;
+        Log::Level  level           = Log::L_ERROR;
 
-    //log.addSink( "stdout", std::cout, Log::L_ERROR );
+        // get the log level from configuration
+        Configuration::get()->getSettingValue( YAF3D_GS_LOG_LEVEL, loglevel );
+
+        if ( loglevel == "error" )
+            level = Log::L_ERROR;
+        else if ( loglevel == "warning" )
+            level = Log::L_WARNING;
+        else if ( loglevel == "debug" )
+            level = Log::L_DEBUG;
+        else if ( loglevel == "info" )
+            level = Log::L_INFO;
+        else 
+            invalidloglevel = true;
+
+        // create log sinks with configured log level
+        if ( GameState::get()->getMode() != GameState::Server )
+            log.addSink( "file", getMediaPath() + std::string( LOG_FILE_NAME ), level );
+        else
+            log.addSink( "file", getMediaPath() + std::string( LOG_FILE_NAME_SERVER ), level );
+
+        // only the server needs an console stdout
+#ifdef YAF3D_HAS_CONSOLE
+        log.addSink( "stdout", std::cout, level );
+#endif
+
+        // check if we have to report an invalid log level in configuration
+        if ( invalidloglevel )
+            log_warning << "Application: configuration contains an invalid log level, possible values are: error, warning, debug, info. set to error." << std::endl;
+    }
 
     log.enableSeverityLevelPrinting( false );
     log_info << std::endl;
-    log_info << " *******************************************"    << std::endl;
-    log_info << " * yaf3d -- Yet another Framework 3D       *"    << std::endl;
-    log_info << " * version: " << std::string( YAF3D_VERSION ) << "                          *"  << std::endl;
-    log_info << " * project: Yag2002                        *"    << std::endl;
-    log_info << " * site:    http://yag2002.sourceforge.net *"    << std::endl;
-    log_info << " * contact: botorabi@gmx.net               *"    << std::endl;
-    log_info << " *******************************************"    << std::endl;
-    log_info << std::endl;
+    log << " *******************************************"    << std::endl;
+    log << " * yaf3d -- Yet another Framework 3D       *"    << std::endl;
+    log << " * version: " << std::string( YAF3D_VERSION ) << "                          *"  << std::endl;
+    log << " * project: Yag2002                        *"    << std::endl;
+    log << " * site:    http://yag2002.sourceforge.net *"    << std::endl;
+    log << " * contact: botorabi@gmx.net               *"    << std::endl;
+    log << " *******************************************"    << std::endl;
+    log << "" << std::endl;
     log.enableSeverityLevelPrinting( true );
 
-    log_info << "Application: time " << yaf3d::getTimeStamp();
-    log_info << "Application: initializing viewer" << std::endl;
+    log << "Application: time " << yaf3d::getTimeStamp();
 
-    log_info << "Application: using media path: " << _mediaPath << std::endl;
+    // print cpu info
+    {
+        std::stringstream cpuinfo;
+        cpuinfo << "Application: CPU supports ";
+        if ( SDL_HasRDTSC() ) 
+            cpuinfo << "RDTSC ";
+        if ( SDL_HasMMX() ) 
+            cpuinfo << "MMX ";
+        if ( SDL_HasMMXExt() ) 
+            cpuinfo << "MMXExt ";
+        if ( SDL_Has3DNow() ) 
+            cpuinfo << "3DNow ";
+        if ( SDL_Has3DNowExt() ) 
+            cpuinfo << "3DNowExt ";
+        if ( SDL_HasSSE() ) 
+            cpuinfo << "SSE ";
+        if ( SDL_HasSSE2() ) 
+            cpuinfo << "SSE2 ";
+        if ( SDL_HasAltiVec() ) 
+            cpuinfo << "AltiVec ";
+
+        log << cpuinfo.str() << std::endl;
+    }
+
+    log << "Application: initializing viewer" << std::endl;
+    log << "Application: using media path: " << _mediaPath << std::endl;
 
     // setup the viewer
     //----------
