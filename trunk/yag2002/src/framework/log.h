@@ -59,7 +59,8 @@ class Log : public std::basic_ostream< char >
     public:
 
         //! Logging thresholds
-        enum Level {
+        enum Level 
+        {
             L_ERROR   = 0x1,
             L_WARNING = 0x2,
             L_DEBUG   = 0x3,
