@@ -39,7 +39,7 @@ namespace gameutils
 {
 
 //! VRC version
-#define VRC_VERSION                         "0.5.0"
+#define VRC_VERSION                         "1.0.1"
 
 //! Game code's configuration setting names
 #define VRC_GS_PLAYER_NAME                  "playerName"
