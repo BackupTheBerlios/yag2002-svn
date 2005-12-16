@@ -19,11 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # the overall game configuration is handled here
- #  - loading
- #  - storing
- #  - value retrieval method
- #  - value modificaton method
+ # the framework configuration can be accessed here
  #
  #   date of creation:  04/02/2005
  #
@@ -47,11 +43,16 @@ namespace yaf3d
 //! File name for game settings storage
 #define YAF3D_GAMESETTING_FILENAME        "gamesettings.cfg"
 
-//! Game settings' token names
+//! Settings' token names
+
+// log level
+#define YAF3D_GS_LOG_LEVEL                "logLevel"
+
 //keyboard type
 #define YAF3D_GS_KEYBOARD                 "keyboard"
 #define YAF3D_GS_KEYBOARD_ENGLISH         "english"
 #define YAF3D_GS_KEYBOARD_GERMAN          "german"
+
 // screen
 #define YAF3D_GS_SCREENWIDTH              "screenWidth"
 #define YAF3D_GS_SCREENHEIGHT             "screenHeight"
@@ -110,6 +111,8 @@ class Configuration : public Singleton< Configuration >
         Settings*                               _p_settings;
 
         //! Standard settings
+        std::string                             _logLevel;
+
         unsigned int                            _screenWidth;
 
         unsigned int                            _screenHeight;

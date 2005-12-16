@@ -19,11 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # the overall game configuration is handled here
- #  - loading
- #  - storing
- #  - value retrieval method
- #  - value modificaton method
+ # the framework configuration can be accessed here
  #
  #   date of creation:  04/02/2005
  #
@@ -47,6 +43,7 @@ YAF3D_SINGLETON_IMPL( Configuration );
 
 Configuration::Configuration() :
 _p_settings( SettingsManager::get()->createProfile( YAF3D_GAMESETTING_PROFILENAME, Application::get()->getMediaPath() + YAF3D_GAMESETTING_FILENAME ) ),
+_logLevel( "error" ),
 _screenWidth( 600 ),
 _screenHeight( 400 ),
 _colorBits( 24 ),
@@ -55,6 +52,7 @@ _keyboardType( YAF3D_GS_KEYBOARD_ENGLISH ),
 _guiScheme( YAF3D_GUI_DEFUALT_SCHEME )
 {
     // register standard settings
+    _p_settings->registerSetting( YAF3D_GS_LOG_LEVEL,    _logLevel     );
     _p_settings->registerSetting( YAF3D_GS_KEYBOARD,     _keyboardType );
     _p_settings->registerSetting( YAF3D_GS_SCREENWIDTH,  _screenWidth  );
     _p_settings->registerSetting( YAF3D_GS_SCREENHEIGHT, _screenHeight );
