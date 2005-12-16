@@ -64,7 +64,6 @@ _p_keyKeybEnglish( NULL ),
 _p_keyKeybGerman( NULL ),
 _p_resolution( NULL ),
 _p_fullscreen( NULL ),
-_p_wndscreen( NULL ),
 _p_menuEntity( p_menuEntity )
 {
 }
@@ -172,9 +171,8 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
         CEGUI::TabPane*    p_paneDisplay = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_display" ) );
 
         // get fullscreen and windowed checkboxes
-        _p_fullscreen = static_cast< CEGUI::RadioButton* >( p_paneDisplay->getChild( SDLG_PREFIX "rb_fullscreen" ) );
-        _p_fullscreen->subscribeEvent( CEGUI::RadioButton::EventSelectStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onFullscreenChanged, this ) );
-        _p_wndscreen = static_cast< CEGUI::RadioButton* >( p_paneDisplay->getChild( SDLG_PREFIX "rb_windowed" ) );
+        _p_fullscreen = static_cast< CEGUI::Checkbox* >( p_paneDisplay->getChild( SDLG_PREFIX "rb_fullscreen" ) );
+        _p_fullscreen->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onFullscreenChanged, this ) );
         // get resolution combobox
         _p_resolution = static_cast< CEGUI::Combobox* >( p_paneDisplay->getChild( SDLG_PREFIX "cbox_resolution" ) );
         // enumerate possible screen resolutions
@@ -304,14 +302,9 @@ void DialogGameSettings::setupControls()
         bool fullscreen;
         yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_FULLSCREEN, fullscreen );
         if ( fullscreen )
-        {
             _p_fullscreen->setSelected( true );
-            _p_resolution->disable();
-        }
         else
-        {
-            _p_wndscreen->setSelected( true );
-        }
+            _p_fullscreen->setSelected( false );
 
         unsigned int width, height, colorbits;
         std::stringstream resolution;
@@ -400,19 +393,16 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
     {
         bool fullscreen = _p_fullscreen->isSelected();
         yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_FULLSCREEN, fullscreen );
-        if ( !fullscreen )
-        {
-            unsigned int width, height, colorbits;
-            // get the resolution out of the combobox string
-            std::string  resstring( _p_resolution->getText().c_str() );
-            resstring.replace( resstring.find( "x", 0 ), 1, " " ); // replace x by space so that the stream operator below can work
-            resstring.replace( resstring.find( "@", 0 ), 1, " " ); // replace @ by space so that the stream operator below can work
-            std::stringstream resolution( resstring );
-            resolution >> width >> height >> colorbits;
-            yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SCREENWIDTH, width );
-            yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SCREENHEIGHT, height );
-            yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_COLORBITS, colorbits );
-        }
+        unsigned int width, height, colorbits;
+        // get the resolution out of the combobox string
+        std::string  resstring( _p_resolution->getText().c_str() );
+        resstring.replace( resstring.find( "x", 0 ), 1, " " ); // replace x by space so that the stream operator below can work
+        resstring.replace( resstring.find( "@", 0 ), 1, " " ); // replace @ by space so that the stream operator below can work
+        std::stringstream resolution( resstring );
+        resolution >> width >> height >> colorbits;
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SCREENWIDTH, width );
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SCREENHEIGHT, height );
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_COLORBITS, colorbits );
     }
 
     // store all settings into file
@@ -609,16 +599,6 @@ bool DialogGameSettings::onFullscreenChanged( const CEGUI::EventArgs& arg )
 {
     // play sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
-
-    if ( _p_fullscreen->isSelected() ) 
-    {
-        _p_resolution->disable();
-    }
-    else
-    {
-        _p_resolution->enable();
-    }
-
     return true;
 }
 

@@ -190,9 +190,7 @@ class DialogGameSettings
 
         CEGUI::Combobox*                            _p_resolution;
 
-        CEGUI::RadioButton*                         _p_fullscreen;
-
-        CEGUI::RadioButton*                         _p_wndscreen;
+        CEGUI::Checkbox*                            _p_fullscreen;
 
         EnMenu*                                     _p_menuEntity;
 
