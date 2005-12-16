@@ -134,7 +134,9 @@ void DialogLevelSelect::changeToSearchDirectory()
         return;
     }
 
-    assert( _p_levelFiles && "internal error: level file object already exists!" );
+    if( _p_levelFiles )
+        delete _p_levelFiles;
+
     _p_levelFiles = new gameutils::LevelFiles( _searchDirectory );
 }
 
