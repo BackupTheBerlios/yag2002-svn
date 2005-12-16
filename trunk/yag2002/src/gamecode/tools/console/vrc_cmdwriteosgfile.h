@@ -38,8 +38,8 @@ namespace vrc
 {
 // console command name
 #define CMD_NAME_WRITEOSGFILE    "writeosgfile"
-#define CMD_USAGE_WRITEOSGFILE   "write the current scene into given osg file.\n"\
-                                 "use: writeosgfile < output file relative to media folder >"
+#define CMD_USAGE_WRITEOSGFILE   "write the current scene into given file. if option -i is given then the input file is read and written (converted) to output file.\n"\
+                                 "use: writeosgfile [ -i < input file > ] < output file >"
 
 class BaseConsoleCommand;
 

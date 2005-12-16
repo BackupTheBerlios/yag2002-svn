@@ -33,6 +33,7 @@
 #include "vrc_basecmd.h"
 #include "vrc_cmdwriteosgfile.h"
 #include "vrc_cmdregistry.h"
+#include "vrc_console.h"
 #include <osgDB/WriteFile>
 
 namespace vrc
@@ -54,21 +55,57 @@ CmdWriteOSGFile::~CmdWriteOSGFile()
 
 const std::string& CmdWriteOSGFile::execute( const std::vector< std::string >& arguments )
 {
+    bool hasinputfile = false;
     if ( arguments.size() < 1 )
     {
         _cmdResult = getUsage();
         return _cmdResult;
     }
-
-    osg::Group* grp = yaf3d::Application::get()->getSceneRootNode();
-    if ( grp )
+    else if ( ( arguments.size() > 2 ) && ( arguments[ 0 ] == "-i" ) )
     {
-        _cmdResult = "writing scene to osg file '" + arguments[ 0 ] + "\n";
-        std::string filename = yaf3d::Application::get()->getMediaPath() + arguments[ 0 ];
+        hasinputfile = true;
+    }
+    else
+    {
+        _cmdResult = getUsage();
+        return _cmdResult;
+    }
 
-        if ( !osgDB::writeNodeFile( *grp, filename ) )
+    EnConsole* p_console = static_cast< EnConsole* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
+    assert( _p_console && "CmdWriteOSGFile::execute: console entity could not be found!" );
+    std::string cwd = yaf3d::Application::get()->getMediaPath() + p_console->getCWD() + "/";
+    if ( !hasinputfile )
+    {
+        osg::Group* grp = yaf3d::Application::get()->getSceneRootNode();
+        if ( grp )
         {
-            _cmdResult += " warning: problem writing file '" + filename + "\n";
+            _cmdResult = "writing scene to osg file '" + arguments[ 0 ] + "\n";
+            std::string filename = cwd + arguments[ 0 ];
+
+            if ( !osgDB::writeNodeFile( *grp, filename ) )
+            {
+                _cmdResult += " warning: problem writing file '" + filename + "\n";
+            }
+        }
+    }
+    else
+    {
+        _cmdResult = "reading scene file " + arguments[ 1 ] + " ...\n";
+        std::string infilename = cwd + arguments[ 1 ];
+        osg::ref_ptr< osg::Node > node = osgDB::readNodeFile( infilename );
+        if ( node.get() )
+        {
+            std::string outfilename = cwd + arguments[ 2 ];
+            _cmdResult += "writing scene to file " + outfilename + "\n";
+
+            if ( !osgDB::writeNodeFile( *( node.get() ), outfilename ) )
+            {
+                _cmdResult += " warning: problem writing file " + outfilename + "\n";
+            }
+        }
+        else
+        {
+            _cmdResult += "cannot read scene file " + infilename + "\n";
         }
     }
 
