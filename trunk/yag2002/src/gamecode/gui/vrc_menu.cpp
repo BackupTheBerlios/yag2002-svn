@@ -994,8 +994,10 @@ void EnMenu::onLevelSelected( std::string levelfile, CEGUI::Image* p_img )
         // disable the start server button
         _p_btnStartServer->disable();
 
-        // get the full binary path
+        // get the full binary path and set the server app name
         std::string cmd = yaf3d::Application::get()->getFullBinPath();
+        cmd += "/" + std::string( VRC_SERVER_APP_NAME );
+
         std::string arg1( "-server" );
         std::string arg2( "-level" );
         std::string arg3( levelfile );
