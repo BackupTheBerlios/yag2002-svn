@@ -165,16 +165,16 @@ class Networking: public RNReplicaNet::ReplicaNet
 class NetworkExpection : public std::exception
 {
     public:                                     
-                                                    NetworkExpection( const std::string& reason )
+                                                    NetworkExpection( const std::string& reason ) :
+                                                     std::exception( reason.c_str() )
                                                     {
-                                                        _reason = reason;
                                                     }
 
                                                     ~NetworkExpection() {}
 
-                                                    NetworkExpection( const NetworkExpection& e )
+                                                    NetworkExpection( const NetworkExpection& e ) :
+                                                     std::exception( e )
                                                     {
-                                                        _reason = e._reason;
                                                     }
 
     protected:
@@ -182,8 +182,6 @@ class NetworkExpection : public std::exception
                                                     NetworkExpection();
 
         NetworkExpection&                           operator = ( const NetworkExpection& );
-
-        std::string                                 _reason;
 };
 
 //! Networking device

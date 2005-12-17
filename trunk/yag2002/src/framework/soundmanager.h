@@ -45,16 +45,16 @@ class Application;
 class SoundExpection : public std::exception
 {
     public:                                     
-                                                    SoundExpection( const std::string& reason )
+                                                    SoundExpection( const std::string& reason ) :
+                                                     std::exception( reason.c_str() )
                                                     {
-                                                        _reason = reason;
                                                     }
 
                                                     ~SoundExpection() {}
 
-                                                    SoundExpection( const SoundExpection& e )
+                                                    SoundExpection( const SoundExpection& e ) :
+                                                     std::exception( e )
                                                     {
-                                                        _reason = e._reason;
                                                     }
 
     protected:
@@ -62,8 +62,6 @@ class SoundExpection : public std::exception
                                                     SoundExpection();
 
         SoundExpection&                             operator = ( const SoundExpection& );
-
-        std::string                                 _reason;
 };
 
 //! Sound manager

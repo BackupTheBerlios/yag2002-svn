@@ -128,16 +128,16 @@ class ChatConnectionConfig
 class ChatExpection : public std::exception
 {
     public:                                     
-                                                    ChatExpection( const std::string& reason )
+                                                    ChatExpection( const std::string& reason ) :
+                                                     std::exception( reason.c_str() )
                                                     {
-                                                        _reason = reason;
                                                     }
 
                                                     ~ChatExpection() {}
 
-                                                    ChatExpection( const ChatExpection& e )
+                                                    ChatExpection( const ChatExpection& e ) :
+                                                     std::exception( e )
                                                     {
-                                                        _reason = e._reason;
                                                     }
 
     protected:
@@ -145,8 +145,6 @@ class ChatExpection : public std::exception
                                                     ChatExpection();
 
         ChatExpection&                              operator = ( const ChatExpection& );
-
-        std::string                                 _reason;
 };
 
 // Class for managing the chat functionality
