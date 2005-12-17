@@ -41,6 +41,14 @@ namespace gameutils
 //! VRC version
 #define VRC_VERSION                         "1.0.1"
 
+//! Application name for server
+#ifdef WIN32
+    #define VRC_SERVER_APP_NAME                 "vrc-server.exe"
+#endif
+#ifdef LINUX
+    #define VRC_SERVER_APP_NAME                 "vrc-server"
+#endif
+
 //! Game code's configuration setting names
 #define VRC_GS_PLAYER_NAME                  "playerName"
 #define VRC_GS_PLAYER_CONFIG_DIR            "playerConfigDir"
