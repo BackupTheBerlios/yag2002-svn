@@ -72,7 +72,7 @@ const std::string& CmdWriteOSGFile::execute( const std::vector< std::string >& a
     }
 
     EnConsole* p_console = static_cast< EnConsole* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
-    assert( _p_console && "CmdWriteOSGFile::execute: console entity could not be found!" );
+    assert( p_console && "CmdWriteOSGFile::execute: console entity could not be found!" );
     std::string cwd = yaf3d::Application::get()->getMediaPath() + p_console->getCWD() + "/";
     if ( !hasinputfile )
     {
