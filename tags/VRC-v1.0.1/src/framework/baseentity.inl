@@ -1,0 +1,102 @@
+/****************************************************************
+ *  YAG2002 (http://yag2002.sourceforge.net)
+ *  Copyright (C) 2005-2007, A. Botorabi
+ *
+ *  This program is free software; you can redistribute it and/or 
+ *  modify it under the terms of the GNU Lesser General Public 
+ *  License version 2.1 as published by the Free Software Foundation.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public 
+ *  License along with this program; if not, write to the Free 
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  MA  02111-1307  USA
+ * 
+ ****************************************************************/
+
+/*###############################################################
+ # base class for all entities
+ #
+ #   date of creation:  02/17/2005
+ #
+ #   author:            ali botorabi (boto) 
+ #      e-mail:         botorabi@gmx.net
+ #
+ ################################################################*/
+
+inline const std::string& BaseEntity::getTypeName() 
+{ 
+    return _typeName; 
+} 
+
+inline void BaseEntity::setInstanceName( const std::string& name ) 
+{ 
+    _instanceName = name; 
+}
+
+inline const std::string& BaseEntity::getInstanceName() 
+{ 
+    return _instanceName; 
+} 
+
+inline AttributeManager& BaseEntity::getAttributeManager() 
+{ 
+    return *_p_attributeManager; 
+}
+
+inline void BaseEntity::setTransformationNode( osg::PositionAttitudeTransform* p_trans ) 
+{ 
+    _p_transformNode = p_trans;
+}
+
+inline osg::PositionAttitudeTransform* BaseEntity::getTransformationNode() 
+{ 
+    return _p_transformNode.get();
+}
+
+inline void BaseEntity::addToTransformationNode( osg::Node* p_node )
+{
+    assert( _p_transformNode.valid() && "this entity has no transformation node!" );
+    _p_transformNode->addChild( p_node );
+}
+
+inline void BaseEntity::removeFromTransformationNode( osg::Node* p_node )
+{
+    if ( _p_transformNode.get() )
+        _p_transformNode->removeChild( p_node );
+}
+
+inline void BaseEntity::setPosition( const osg::Vec3d &pos )
+{
+    _p_transformNode->setPosition( pos );
+}
+
+inline const osg::Vec3d& BaseEntity::getPosition()
+{
+    return _p_transformNode->getPosition();
+}
+
+inline void BaseEntity::setRotation( const osg::Quat& quats )
+{
+    _p_transformNode->setAttitude( quats );
+}
+
+inline const osg::Quat& BaseEntity::getRotation()
+{
+    return _p_transformNode->getAttitude();
+}
+
+inline void BaseEntity::setInitialized( bool init )
+{
+    _initialized = init;
+}
+
+inline bool BaseEntity::isInitialized()
+{
+    return _initialized;
+}
+
