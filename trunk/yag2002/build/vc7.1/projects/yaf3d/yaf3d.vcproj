@@ -106,6 +106,101 @@
 			<Tool
 				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
+		<Configuration
+			Name="Debug-Server|Win32"
+			OutputDirectory="../../../vc7.1/lib/framework/debug-server"
+			IntermediateDirectory="../../../vc7.1/obj/framework/debug-server"
+			ConfigurationType="4"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;../../../../src/framework"
+				PreprocessorDefinitions="TIXML_USE_STL;_DEBUG;WIN32;_WINDOWS;YAF3D_HAS_CONSOLE"
+				MinimalRebuild="FALSE"
+				BasicRuntimeChecks="0"
+				RuntimeLibrary="3"
+				BufferSecurityCheck="FALSE"
+				EnableFunctionLevelLinking="TRUE"
+				EnableEnhancedInstructionSet="2"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="base.h"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="TRUE"
+				DebugInformationFormat="4"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="../../../../lib/framework/framework-serverd.lib"
+				IgnoreDefaultLibraryNames="msvcrt"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Release-Server|Win32"
+			OutputDirectory="../../../vc7.1/lib/framework/release-server"
+			IntermediateDirectory="../../../vc7.1/obj/framework/release-server"
+			ConfigurationType="4"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Od"
+				EnableFiberSafeOptimizations="FALSE"
+				OptimizeForProcessor="3"
+				OptimizeForWindowsApplication="TRUE"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;../../../../src/framework"
+				PreprocessorDefinitions="TIXML_USE_STL;WIN32;NDEBUG;_WINDOWS;YAF3D_HAS_CONSOLE"
+				RuntimeLibrary="2"
+				BufferSecurityCheck="FALSE"
+				EnableEnhancedInstructionSet="2"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="base.h"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="TRUE"
+				DebugInformationFormat="3"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="../../../../lib/framework/framework-server.lib"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -138,6 +233,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug-Server|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release-Server|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="1"/>
@@ -285,6 +392,20 @@
 							UsePrecompiledHeader="0"
 							PrecompiledHeaderThrough=""/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug-Server|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release-Server|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\framework\yaf3dtinyxml\tinystr.h">
@@ -300,6 +421,20 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug-Server|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release-Server|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
@@ -325,6 +460,20 @@
 							UsePrecompiledHeader="0"
 							PrecompiledHeaderThrough=""/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug-Server|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release-Server|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\framework\yaf3dtinyxml\tinyxmlparser.cpp">
@@ -337,6 +486,20 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug-Server|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release-Server|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
