@@ -46,7 +46,7 @@
 
 // uncomment if the application should have an console stdout ( is used for server )
 // when using ms compiler you have also to set linker parameter /SUBSYSTEM:CONSOLE
-#define YAF3D_HAS_CONSOLE
+//#define YAF3D_HAS_CONSOLE
 
 // app icon and tile
 #define YAF3D_APP_TITLE             "VRC"
@@ -177,7 +177,8 @@ bool Application::initialize( int argc, char **argv )
     //-------------------
     // set the ful binary path of application
     _fulBinaryPath = arguments.getApplicationName();
-
+    _fulBinaryPath = cleanPath( _fulBinaryPath );
+    _fulBinaryPath = _fulBinaryPath.substr( 0, _fulBinaryPath.rfind( '/' ) );
     //-------------------
 
     // load the standard configuration before changing to 'Initializing' state
