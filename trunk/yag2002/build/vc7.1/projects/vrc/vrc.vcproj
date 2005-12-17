@@ -133,8 +133,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug-Server|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="../../../vc7.1/lib/vrc/debug-server"
+			IntermediateDirectory="../../../vc7.1/obj/vrc/debug-server"
 			ConfigurationType="1"
 			CharacterSet="2">
 			<Tool
@@ -190,8 +190,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release-Server|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="../../../vc7.1/lib/vrc/release-server"
+			IntermediateDirectory="../../../vc7.1/obj/vrc/release-server"
 			ConfigurationType="1"
 			CharacterSet="2"
 			WholeProgramOptimization="FALSE">
