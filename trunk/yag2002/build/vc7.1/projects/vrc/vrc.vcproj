@@ -43,7 +43,7 @@
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
 				IgnoreDefaultLibraryNames="msvcrt"
 				GenerateDebugInformation="TRUE"
-				SubSystem="1"
+				SubSystem="2"
 				HeapCommitSize="0"
 				StackCommitSize="0"
 				EntryPointSymbol=""/>
@@ -96,8 +96,128 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgUtil.lib osgcal.lib oalpp.lib cal3d.lib osgSDL.lib SDL.lib SDLmain.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib libpng.lib fmodex_vc.lib framework.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgUtil.lib osgcal.lib cal3d.lib osgSDL.lib SDL.lib SDLmain.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib libpng.lib fmodex_vc.lib framework.lib"
 				OutputFile="../../../../bin/win32/vrc.exe"
+				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
+				IgnoreAllDefaultLibraries="FALSE"
+				IgnoreDefaultLibraryNames=""
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)/$(ProjectName)_release.pdb"
+				SubSystem="2"
+				HeapReserveSize="0"
+				HeapCommitSize="0"
+				StackReserveSize="0"
+				StackCommitSize="0"
+				OptimizeReferences="2"
+				TargetMachine="0"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Debug-Server|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;../../../../src/framework;../../../../src/gamecode"
+				PreprocessorDefinitions="_DEBUG;WIN32;_CONSOLE"
+				MinimalRebuild="FALSE"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				BufferSecurityCheck="FALSE"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="vrc_main.h"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="TRUE"
+				DebugInformationFormat="4"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="opengl32.lib OpenThreadsWin32d.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgcald.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib libpng.lib fmodex_vc.lib framework-serverd.lib"
+				OutputFile="../../../../bin/win32/vrc_debug-server.exe"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
+				IgnoreDefaultLibraryNames="msvcrt"
+				GenerateDebugInformation="TRUE"
+				SubSystem="1"
+				HeapCommitSize="0"
+				StackCommitSize="0"
+				EntryPointSymbol=""/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Release-Server|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="2"
+			WholeProgramOptimization="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Od"
+				EnableFiberSafeOptimizations="FALSE"
+				OptimizeForProcessor="3"
+				OptimizeForWindowsApplication="TRUE"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;../../../../src/framework;../../../../src/gamecode"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				RuntimeLibrary="2"
+				BufferSecurityCheck="FALSE"
+				EnableEnhancedInstructionSet="2"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="vrc_main.h"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="TRUE"
+				DebugInformationFormat="3"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgUtil.lib osgcal.lib cal3d.lib osgSDL.lib SDL.lib SDLmain.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib libpng.lib fmodex_vc.lib framework-server.lib"
+				OutputFile="../../../../bin/win32/vrc-server.exe"
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
 				IgnoreAllDefaultLibraries="FALSE"
 				IgnoreDefaultLibraryNames=""
@@ -234,6 +354,19 @@
 								Name="VCCLCompilerTool"
 								UsePrecompiledHeader="0"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug-Server|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release-Server|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\player\networkingRoles\_RO_PlayerNetworking.h">
@@ -305,6 +438,19 @@
 										UsePrecompiledHeader="0"
 										PrecompiledHeaderThrough=""/>
 								</FileConfiguration>
+								<FileConfiguration
+									Name="Debug-Server|Win32">
+									<Tool
+										Name="VCCLCompilerTool"
+										UsePrecompiledHeader="0"/>
+								</FileConfiguration>
+								<FileConfiguration
+									Name="Release-Server|Win32">
+									<Tool
+										Name="VCCLCompilerTool"
+										UsePrecompiledHeader="0"
+										PrecompiledHeaderThrough=""/>
+								</FileConfiguration>
 							</File>
 						</Filter>
 					</Filter>
@@ -331,6 +477,20 @@
 								</FileConfiguration>
 								<FileConfiguration
 									Name="Release|Win32">
+									<Tool
+										Name="VCCLCompilerTool"
+										UsePrecompiledHeader="0"
+										PrecompiledHeaderThrough=""/>
+								</FileConfiguration>
+								<FileConfiguration
+									Name="Debug-Server|Win32">
+									<Tool
+										Name="VCCLCompilerTool"
+										UsePrecompiledHeader="0"
+										PrecompiledHeaderThrough=""/>
+								</FileConfiguration>
+								<FileConfiguration
+									Name="Release-Server|Win32">
 									<Tool
 										Name="VCCLCompilerTool"
 										UsePrecompiledHeader="0"
@@ -771,6 +931,18 @@
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug-Server|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release-Server|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\extern\Noise.h">
@@ -790,6 +962,20 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug-Server|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough=""/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release-Server|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
@@ -823,6 +1009,19 @@
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					UsePrecompiledHeader="1"
+					PrecompiledHeaderThrough="vrc_main.h"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug-Server|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					UsePrecompiledHeader="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release-Server|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
 					UsePrecompiledHeader="1"
