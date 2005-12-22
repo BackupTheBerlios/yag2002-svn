@@ -32,6 +32,7 @@
 #define _VRC_GAMEUTILS_H_
 
 #include <base.h>
+#include <singleton.h>
 
 namespace vrc
 {
@@ -43,10 +44,10 @@ namespace gameutils
 
 //! Application name for server
 #ifdef WIN32
-    #define VRC_SERVER_APP_NAME                 "vrc-server.exe"
+    #define VRC_SERVER_APP_NAME             "vrc-server.exe"
 #endif
 #ifdef LINUX
-    #define VRC_SERVER_APP_NAME                 "vrc-server"
+    #define VRC_SERVER_APP_NAME             "vrc"
 #endif
 
 //! Game code's configuration setting names
@@ -98,9 +99,9 @@ class VRCConfigRegistry : public yaf3d::GameState::CallbackStateChange
         std::string                                 _moveForward;
 
         std::string                                 _moveBackward;
-        
+
         std::string                                 _moveLeft;
-        
+
         std::string                                 _moveRight;
 
         std::string                                 _jump;
@@ -140,14 +141,14 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
     protected:
 
         yaf3d::BaseEntity*                          _p_localPlayer;
-    
+
         std::vector< yaf3d::BaseEntity* >           _remotePlayers;
 
-    friend public yaf3d::Singleton< vrc::gameutils::PlayerUtils >;
+    friend class yaf3d::Singleton< vrc::gameutils::PlayerUtils >;
 };
 
 inline std::vector< yaf3d::BaseEntity* >& PlayerUtils::getRemotePlayers()
-{                                                     
+{
     return _remotePlayers;
 }
 
@@ -190,7 +191,7 @@ class GuiUtils : public yaf3d::Singleton< vrc::gameutils::GuiUtils >, public yaf
 
         //! The main window instance
         CEGUI::Window*                              _p_mainWindow;        
-        
+
         //! yaf3d::Application's root window
         CEGUI::Window*                              _p_rootWindow;
 
@@ -199,7 +200,7 @@ class GuiUtils : public yaf3d::Singleton< vrc::gameutils::GuiUtils >, public yaf
         //! A map of sound object and its associated name
         MapSound                                    _soundMap;
 
-    friend public yaf3d::Singleton< vrc::gameutils::GuiUtils >;
+    friend class yaf3d::Singleton< vrc::gameutils::GuiUtils >;
 };
 
 //! Helper class for getting a lookup table with level files and their preview images
@@ -253,7 +254,7 @@ class EyeTransform : public osg::Transform
 
         /** Get the transformation matrix which moves from world coords to local coords.*/
         virtual bool                        computeWorldToLocalMatrix( osg::Matrix& matrix, osg::NodeVisitor* p_nv ) const
-                                            {    
+                                            {
                                                 osgUtil::CullVisitor* p_cv = dynamic_cast< osgUtil::CullVisitor* >( p_nv );
                                                 if ( p_cv )
                                                 {
@@ -275,10 +276,10 @@ class TransformationVisitor : public osg::NodeVisitor
                                                 setTraversalMask( 0xffffffff );
                                             }
 
-                                            ~TransformationVisitor() {}
+        virtual                             ~TransformationVisitor() {}
 
         void                                apply( osg::PositionAttitudeTransform& node )
-                                            {                        
+                                            {
                                                 _matrix *= osg::computeLocalToWorld( getNodePath() );
                                             }
 

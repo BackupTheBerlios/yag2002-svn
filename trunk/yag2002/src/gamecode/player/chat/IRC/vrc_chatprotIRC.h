@@ -56,7 +56,7 @@ class ChatNetworkingIRC : public OpenThreads::Thread, public BaseChatProtocol
 
 
         //! This method is used for creating an instance of protocol handler.
-        ChatNetworkingIRC*                          createInstance();
+        BaseChatProtocol*                           createInstance();
 
         //! Connect to an IRC server
         void                                        createConnection( const ChatConnectionConfig& conf ) throw ( ChatExpection );

@@ -221,7 +221,7 @@ ChatNetworkingIRC::~ChatNetworkingIRC()
         delete _p_config;
 }
 
-ChatNetworkingIRC* ChatNetworkingIRC::createInstance()
+BaseChatProtocol* ChatNetworkingIRC::createInstance()
 {
     ChatNetworkingIRC* p_inst = new ChatNetworkingIRC;
     return p_inst;

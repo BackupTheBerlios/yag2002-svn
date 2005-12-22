@@ -38,8 +38,6 @@
 #include "../vrc_chatprotocol.h"
 
 class ChatNetworkingVRC;
-class vrc::ChatConnectionConfig;
-class vrc::ChatExpection;
 
 //!  Networking implementation for VRC protocol
 class ImplChatNetworkingVRC : _RO_DO_PUBLIC_RO( ImplChatNetworkingVRC ), public yaf3d::SessionNotifyCallback
@@ -48,7 +46,7 @@ class ImplChatNetworkingVRC : _RO_DO_PUBLIC_RO( ImplChatNetworkingVRC ), public 
     public:
 
         explicit                                    ImplChatNetworkingVRC( ChatNetworkingVRC* p_nw = NULL );
-                                                        
+
         virtual                                     ~ImplChatNetworkingVRC();
 
         //! Post new chat text
@@ -62,7 +60,7 @@ class ImplChatNetworkingVRC : _RO_DO_PUBLIC_RO( ImplChatNetworkingVRC ), public 
 
         // ReplicaNet overrides
         //-----------------------------------------------------------------------------------//
-        
+
         //! Object can now be initialized in scene ( on clients )
         void                                        PostObjectCreate();
 
@@ -141,11 +139,11 @@ class ChatNetworkingVRC : public vrc::BaseChatProtocol
     public:
 
                                                     ChatNetworkingVRC();
-                                                        
+
         virtual                                     ~ChatNetworkingVRC();
 
         //! This method is used for creating an instance of an registered protocol handler.
-        ChatNetworkingVRC*                          createInstance();
+        vrc::BaseChatProtocol*                      createInstance();
 
         //! Create a new connection to a chat server
         void                                        createConnection( const vrc::ChatConnectionConfig& conf ) throw ( vrc::ChatExpection );

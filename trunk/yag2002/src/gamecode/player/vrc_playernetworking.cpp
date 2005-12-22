@@ -49,7 +49,7 @@ _cmdAnimFlags( 0 ),
 _remoteClient( false ),
 _p_playerImpl( p_playerImpl ),
 _loadedPlayerEntity( NULL )
-{   
+{
     // we have to lock creation / deletion of network objects during construction
     yaf3d::NetworkDevice::get()->lockObjects();
 
@@ -209,10 +209,14 @@ void PlayerNetworking::initialize( const osg::Vec3f& pos, const std::string& pla
     strcpy( _p_playerName, playerName.c_str() );
     strcpy( _p_configFile, cfgFile.c_str() );
 
-    ContinuityBreak( _positionX, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
-    ContinuityBreak( _positionY, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
-    ContinuityBreak( _positionZ, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
-    ContinuityBreak( _yaw, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
+    unsigned char breaktype = static_cast< unsigned char >
+                              ( RNReplicaNet::DataBlock::kTeleport |
+                                RNReplicaNet::DataBlock::kSuddenChange
+                              );
+    ContinuityBreak( _positionX, breaktype );
+    ContinuityBreak( _positionY, breaktype );
+    ContinuityBreak( _positionZ, breaktype );
+    ContinuityBreak( _yaw, breaktype );
 }
 
 void PlayerNetworking::RPC_Initialize( tInitializationData initData )
@@ -223,7 +227,7 @@ void PlayerNetworking::RPC_Initialize( tInitializationData initData )
     // init player position set by server ( it's the job of server to init the player position and rotation )
     _p_playerImpl->setPlayerPosition( osg::Vec3f( initData._posX, initData._posY, initData._posZ ) );
     _p_playerImpl->setPlayerRotation( osg::Quat( initData._rotZ, osg::Vec3f( 0.0f, 0.0f, 1.0f ) ) );
-    
+
     // reset physics body transformation
     osg::Matrixf mat;
     mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
@@ -235,10 +239,14 @@ void PlayerNetworking::RPC_Initialize( tInitializationData initData )
     _positionZ = initData._posZ;
     _yaw       = initData._rotZ;
 
-    ContinuityBreak( _positionX, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
-    ContinuityBreak( _positionY, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
-    ContinuityBreak( _positionZ, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
-    ContinuityBreak( _yaw, RNReplicaNet::DataBlock::ContinuityBreakTypes::kTeleport );
+    unsigned char breaktype = static_cast< unsigned char >
+                              ( RNReplicaNet::DataBlock::kTeleport |
+                                RNReplicaNet::DataBlock::kSuddenChange
+                              );
+    ContinuityBreak( _positionX, breaktype );
+    ContinuityBreak( _positionY, breaktype );
+    ContinuityBreak( _positionZ, breaktype );
+    ContinuityBreak( _yaw, breaktype );
 }
 
 void PlayerNetworking::update()
@@ -251,7 +259,7 @@ void PlayerNetworking::DataBlockPacketDataReceived( const RNReplicaNet::DataBloc
         return;
 
     // check for changed player name
-	RNReplicaNet::DataBlock* p_plyernameDataBlock = FindDataBlock( _p_playerName );
+    RNReplicaNet::DataBlock* p_plyernameDataBlock = FindDataBlock( _p_playerName );
     if ( p_plyernameDataBlock )
         _p_playerImpl->changePlayerName( _p_playerName );
 }

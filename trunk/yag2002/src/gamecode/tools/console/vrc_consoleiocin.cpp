@@ -31,7 +31,7 @@
 #include <vrc_main.h>
 #include "vrc_console.h"
 #include "vrc_consoleiocin.h"
-#include <conio.h>
+#include <iostream>
 
 
 namespace vrc

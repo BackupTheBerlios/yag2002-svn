@@ -124,29 +124,6 @@ class ChatConnectionConfig
         BaseChatProtocol*                           _p_protocolHandler;
 };
 
-//! Class for chat related exceptions
-class ChatExpection : public std::exception
-{
-    public:                                     
-                                                    ChatExpection( const std::string& reason ) :
-                                                     std::exception( reason.c_str() )
-                                                    {
-                                                    }
-
-                                                    ~ChatExpection() {}
-
-                                                    ChatExpection( const ChatExpection& e ) :
-                                                     std::exception( e )
-                                                    {
-                                                    }
-
-    protected:
-
-                                                    ChatExpection();
-
-        ChatExpection&                              operator = ( const ChatExpection& );
-};
-
 // Class for managing the chat functionality
 class ChatGuiCtrl;
 class ChatGuiBox;

@@ -37,8 +37,6 @@
 #include "vrc_cmdregistry.h"
 #include "vrc_basecmd.h"
 
-#include <conio.h>
-
 namespace vrc
 {
 
@@ -59,7 +57,7 @@ _cwd( "/" )
 }
 
 EnConsole::~EnConsole()
-{    
+{
 
     if ( _p_ioHandler )
         _p_ioHandler->shutdown();
@@ -91,11 +89,11 @@ void EnConsole::handleNotification( const yaf3d::EntityNotification& notificatio
 
             if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
             {
-                std::cout << std::endl;
-                std::cout << "================================" << std::endl;
-                std::cout << "=== VRC server console ready ===" << std::endl;
-                std::cout << "================================" << std::endl;
-                std::cout << std::endl;
+                log_info << std::endl;
+                log      << "================================" << std::endl;
+                log      << "=== VRC server console ready ===" << std::endl;
+                log      << "================================" << std::endl;
+                log      << "" << std::endl;
             }
             break;
 

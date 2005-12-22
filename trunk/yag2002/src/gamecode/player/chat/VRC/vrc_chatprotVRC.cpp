@@ -34,6 +34,7 @@
 #include "vrc_chatprotVRC.h"
 #include "../vrc_chatmgr.h"
 #include "../../vrc_playerimpl.h"
+#include "networkingRoles/_RO_PlayerChat.h"
 #include <RNReplicaNet/Inc/DataBlock_Function.h>
 
 using namespace RNReplicaNet;
@@ -408,7 +409,7 @@ ChatNetworkingVRC::~ChatNetworkingVRC()
         delete _p_config;
 }
 
-ChatNetworkingVRC* ChatNetworkingVRC::createInstance()
+vrc::BaseChatProtocol* ChatNetworkingVRC::createInstance()
 {
     // create and setup VRC protocol handler, this is used on server
     // on clients the instance is created by ReplicaNet

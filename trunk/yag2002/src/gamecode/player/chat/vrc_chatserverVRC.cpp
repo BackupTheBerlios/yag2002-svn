@@ -60,11 +60,11 @@ void EnChatServerVRC::initialize()
 
     // create VRC protocol
     ChatNetworkingVRC* p_protVRC = new ChatNetworkingVRC;
-    _p_chatMgr->registerChatProtocol( "VRC", p_protVRC );        
+    _p_chatMgr->registerChatProtocol( "VRC", p_protVRC );
 
     // build the chat system
     _p_chatMgr->buildServer();
-    ChatNetworkingVRC* p_inst = p_protVRC->createInstance();
+    BaseChatProtocol* p_inst = p_protVRC->createInstance();
     p_inst->registerProtocolCallback( this, "*" );
 
     // create a timestamp for log file name    
@@ -75,7 +75,7 @@ void EnChatServerVRC::initialize()
         if ( ( tmp[ cnt ] != '\\' ) && ( tmp[ cnt ] != ':' ) && ( tmp[ cnt ] != '/' ) )
             datestamp += tmp[ cnt ];
     }
-    
+
     // setup chat log
     _chatLog.addSink( "chatlog", yaf3d::Application::get()->getMediaPath() + datestamp + "-" + _logFile + ".log", yaf3d::Log::L_ERROR );
     _chatLog.enableSeverityLevelPrinting( false );

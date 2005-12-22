@@ -36,9 +36,31 @@
 namespace vrc
 {
 
-class ChatExpection;
 class BaseChatProtocol;
 class ChatConnectionConfig;
+
+//! Class for chat related exceptions
+class ChatExpection : public std::runtime_error
+{
+    public:
+                                                    ChatExpection( const std::string& reason ) :
+                                                     std::runtime_error( reason )
+                                                    {
+                                                    }
+
+        virtual                                     ~ChatExpection() throw() {}
+
+                                                    ChatExpection( const ChatExpection& e ) :
+                                                     std::runtime_error( e )
+                                                    {
+                                                    }
+
+    protected:
+
+                                                    ChatExpection();
+
+        ChatExpection&                              operator = ( const ChatExpection& );
+};
 
 //! Registration class for getting msg-receive callbacks
 class ChatProtocolCallback
