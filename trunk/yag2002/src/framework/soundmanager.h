@@ -42,18 +42,18 @@ class LevelManager;
 class Application;
 
 //! Class for sound related exceptions
-class SoundExpection : public std::exception
+class SoundExpection : public std::runtime_error
 {
-    public:                                     
+    public:
                                                     SoundExpection( const std::string& reason ) :
-                                                     std::exception( reason.c_str() )
+                                                     std::runtime_error( reason )
                                                     {
                                                     }
 
-                                                    ~SoundExpection() {}
+        virtual                                    ~SoundExpection() throw() {}
 
                                                     SoundExpection( const SoundExpection& e ) :
-                                                     std::exception( e )
+                                                     std::runtime_error( e )
                                                     {
                                                     }
 

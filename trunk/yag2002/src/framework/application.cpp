@@ -33,7 +33,7 @@
 #include "entitymanager.h"
 #include "configuration.h"
 #include "levelmanager.h"
-#include "soundManager.h"
+#include "soundmanager.h"
 #include "guimanager.h"
 #include "gamestate.h"
 #include "physics.h"

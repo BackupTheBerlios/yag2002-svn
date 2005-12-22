@@ -178,7 +178,7 @@ bool Settings::load( const std::string& filename )
     for( size_t cnt = 0; cnt < tokens; ++cnt ) 
     {
         SettingBase* p_setting = _settings[ cnt ];
-        const type_info& settings_typeinfo = p_setting->getTypeInfo();
+        const std::type_info& settings_typeinfo = p_setting->getTypeInfo();
         if ( settings_typeinfo == typeid( bool ) ) {
             read( p_setting->getTokenName(), static_cast< Setting< bool >* >( p_setting )->_value );
         } else 
@@ -242,7 +242,7 @@ bool Settings::store( const std::string& filename )
     for( size_t cnt = 0; cnt < tokens; ++cnt ) {
 
         SettingBase* p_setting = _settings[ cnt ];
-        const type_info& settings_typeinfo = p_setting->getTypeInfo();
+        const std::type_info& settings_typeinfo = p_setting->getTypeInfo();
         if ( settings_typeinfo == typeid( bool ) ) {
             write( p_setting->getTokenName(), static_cast< Setting< bool >* >( p_setting )->_value );
         } else 

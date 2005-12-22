@@ -109,7 +109,7 @@ class NodeInfo
 class SessionNotifyCallback
 {
     public:
-    
+
                                                     SessionNotifyCallback() {}
 
         virtual                                     ~SessionNotifyCallback() {}
@@ -130,7 +130,7 @@ class Networking: public RNReplicaNet::ReplicaNet
     public:
 
                                                     Networking();
-        
+
         virtual                                     ~Networking();
 
         //! Use this method in order to register a callback object in order to get notification when a client joins to or leaves the network
@@ -145,35 +145,35 @@ class Networking: public RNReplicaNet::ReplicaNet
     protected:
 
         //! Overridden method for getting notified when a session joined
-	    void                                        JoinerSessionIDPost( const int sessionID );
+        void                                        JoinerSessionIDPost( const int sessionID );
 
         //! Overridden method for getting notified when a session leaves
-	    void                                        LeaverSessionIDPost( const int sessionID );
+        void                                        LeaverSessionIDPost( const int sessionID );
 
         //! Number of joined sessions
-	    int                                         _numSessions;
+        int                                         _numSessions;
 
         //! A list of joined sessions ids
-	    std::vector< int >                          _sessionIDs;
+        std::vector< int >                          _sessionIDs;
 
         std::vector< SessionNotifyCallback* >       _sessionCallbacks;
 
-	    RNReplicaNet::MutexClass                    _mutex;
+        RNReplicaNet::MutexClass                    _mutex;
 };
 
 //! Class for network related exceptions
-class NetworkExpection : public std::exception
+class NetworkExpection : public std::runtime_error
 {
-    public:                                     
+    public:
                                                     NetworkExpection( const std::string& reason ) :
-                                                     std::exception( reason.c_str() )
+                                                     std::runtime_error( reason )
                                                     {
                                                     }
 
-                                                    ~NetworkExpection() {}
+        virtual                                     ~NetworkExpection() throw() {}
 
                                                     NetworkExpection( const NetworkExpection& e ) :
-                                                     std::exception( e )
+                                                     std::runtime_error( e )
                                                     {
                                                     }
 
