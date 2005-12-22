@@ -44,6 +44,30 @@
 
 namespace yaf3d
 {
+// implement missing time functions on linux
+#ifdef LINUX
+char* _strtime( char* p_str )
+{
+    std::time_t t;
+    std::time( &t );
+    std::tm* tstruct = localtime( &t );
+    std::stringstream timestr;
+    timestr << tstruct->tm_hour << ":" << tstruct->tm_min << ":" << tstruct->tm_sec;
+    strcpy( p_str, timestr.str().c_str() );
+    return p_str;
+}
+
+char* _strdate( char* p_str )
+{
+    std::time_t t;
+    std::time( &t );
+    std::tm* tstruct = localtime( &t );
+    std::stringstream timestr;
+    timestr << tstruct->tm_wday << " " << tstruct->tm_mon << " " << tstruct->tm_mday;
+    strcpy( p_str, timestr.str().c_str() );
+    return p_str;
+}
+#endif // LINUX
 
 std::string getTimeStamp()
 {
@@ -151,7 +175,7 @@ std::string getCurrentWorkingDirectory()
 
 #endif
 #ifdef LINUX
-    
+
     char buf[ 512 ];
     char* p_res = getcwd( buf, sizeof( buf ) );
     assert( p_res && "error getting current working directory" );
@@ -271,7 +295,7 @@ void getDirectoryListing( std::vector< std::string >& listing, const std::string
 bool checkDirectory( const std::string& dir )
 {
 #ifdef WIN32
-    
+
     WIN32_FIND_DATA findData;
     HANDLE          fileHandle;
     std::string     cdir = dir;
@@ -284,12 +308,12 @@ bool checkDirectory( const std::string& dir )
     }
     FindClose( fileHandle );
     return true;
-    
+
 #endif
 #ifdef LINUX
 
     struct stat     fileInfo;
-    return ( stat( dir.c_str(), &fileInfo ) == NULL ) ? false : true;
+    return ( stat( dir.c_str(), &fileInfo ) < 0 ) ? false : true;
 
 #endif
 
@@ -299,7 +323,7 @@ bool checkDirectory( const std::string& dir )
 
 YAF3D_SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string& params )
 {
-#ifdef WIN32    
+#ifdef WIN32
 
     HANDLE hProc = NULL;
     SHELLEXECUTEINFO shellInfo;
@@ -314,13 +338,13 @@ YAF3D_SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string&
         hProc = shellInfo.hProcess;
     }
     return hProc;
-    
+
 #endif
 #ifdef LINUX
-    
+
     // TODO: implementation
     return -1;
-    
+
 #endif
 
     // platform not supported
