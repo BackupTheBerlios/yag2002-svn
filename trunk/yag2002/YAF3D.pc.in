@@ -4,8 +4,8 @@ libdir=@libdir@
 includedir=@includedir@
 plugindir=@libdir@/@PACKAGE@
 
-Name: CTDFramework
-Description: CTD framework brings several 3D -- in particular game -- technologies together and offers a convenient platform for developing 3D interactive applications.
+Name: Yaf3DFramework
+Description: Yaf3D framework brings several 3D -- in particular game -- technologies together and offers a convenient platform for developing 3D interactive applications.
 Version: @VERSION@
-Libs: -L${libdir} -lCTDFramework
+Libs: -L${libdir} -lYAF3D
 Cflags: -I${includedir}/@PACKAGE@
