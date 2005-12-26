@@ -167,8 +167,8 @@
 <cloud COLOR="#ffff99"/>
 <node TEXT="player">
 <node TEXT="physics">
-<node TEXT="95%">
-<icon BUILTIN="idea"/>
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 <node TEXT="shadow">
@@ -177,8 +177,8 @@
 </node>
 </node>
 <node TEXT="animation">
-<node TEXT="95%">
-<icon BUILTIN="idea"/>
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 <node TEXT="sound">
@@ -187,8 +187,8 @@
 </node>
 </node>
 <node TEXT="networking">
-<node TEXT="90%">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="95%">
+<icon BUILTIN="idea"/>
 </node>
 </node>
 <node TEXT="chat functionality">
@@ -209,8 +209,8 @@
 </node>
 </node>
 <node TEXT="control / logic">
-<node TEXT="70%">
-<icon BUILTIN="messagebox_warning"/>
+<node TEXT="95%">
+<icon BUILTIN="idea"/>
 </node>
 </node>
 </node>
@@ -236,7 +236,7 @@
 </node>
 </node>
 </node>
-<node TEXT="sound (osgAL)">
+<node TEXT="sound (FMOD)">
 <node TEXT="ambient sound">
 <node TEXT="100%">
 <icon BUILTIN="button_ok"/>
@@ -325,8 +325,8 @@
 </node>
 </node>
 <node TEXT="start up intro">
-<node TEXT="80%">
-<icon BUILTIN="idea"/>
+<node TEXT="100%">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 <node TEXT="main menu">
