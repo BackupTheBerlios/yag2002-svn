@@ -39,6 +39,7 @@
  #include <sys/stat.h>
  #include <glob.h>
  #include <dirent.h>
+ #include <spawn.h>
 #endif
 
 
@@ -343,12 +344,44 @@ YAF3D_SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string&
 #ifdef LINUX
 
     // TODO: implementation
-    return -1;
+    pid_t pid = -1;
+    posix_spawn_file_actions_t* p_fileactions = NULL;
+    posix_spawnattr_t attr;
+    char*             argv[ 10 ];
+    char*             envp[ 2 ];
+
+    // set default flags in spawn attribute
+    posix_spawnattr_init( &attr );
+
+    // assemble the argument list for spawing in a xterm
+    // note: we assume that the system has xterm installed
+    // spawn command: xterm -T "VRC server" -e ./vrc < params >
+    argv[ 0 ] = strdup( "xterm" );
+    argv[ 1 ] = strdup( "-display" );
+    argv[ 2 ] = strdup( ":0.0" );
+    argv[ 3 ] = strdup( "-T" );
+    argv[ 4 ] = strdup( "\"VRC Server " YAF3D_VERSION "\"" );
+    argv[ 5 ] = strdup( "-e" );
+    std::string xtermexcec( cmd + " " + params );
+    argv[ 6 ] = strdup( xtermexcec.c_str() );
+    argv[ 7 ] = NULL;
+
+    envp[ 0 ] = NULL;
+
+    int res = posix_spawnp ( &pid,
+                             argv[ 0 ],
+                             p_fileactions,
+                             &attr,
+                             reinterpret_cast< char* const * >( &argv ),
+                             reinterpret_cast< char* const * >( &envp )
+                           );
+
+    return static_cast< YAF3D_SPAWN_PROC_ID >( pid );
 
 #endif
 
     // platform not supported
-    return ( YAF3D_SPAWN_PROC_ID )0;
+    return static_cast< YAF3D_SPAWN_PROC_ID >( 0 );
 }
 
 // helper class for enumerateDisplaySettings

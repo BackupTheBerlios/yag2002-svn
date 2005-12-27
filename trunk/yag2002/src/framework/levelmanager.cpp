@@ -80,7 +80,7 @@ class GLResourceCompiler : public osg::NodeVisitor
                                         ~GLResourceCompiler() {}
 
         void                            apply( osg::Geode& node )
-                                        {                                            
+                                        {
                                             node.compileDrawables( *_p_state );
                                             osg::Geode::DrawableList drawableList = node.getDrawableList();
                                             int listsize = drawableList.size();
@@ -216,7 +216,7 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
 
         _staticMesh = NULL;
     }
-    
+
     return true;
 }
 
@@ -251,7 +251,7 @@ osg::ref_ptr< osg::Group > LevelManager::loadLevel( const std::string& levelFile
 bool LevelManager::loadEntities( const std::string& levelFile, std::vector< BaseEntity* >* p_entities, const std::string& instPostfix )
 {
     log_info << "LevelManager: loading entities ..." << std::endl;
-    
+
     // use tiny xml to parser lvl file
     //  parse in the level configuration
     yaf3dTinyXml::TiXmlDocument doc;
@@ -274,7 +274,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
     p_node = doc.FirstChild( YAF3D_LVL_ELEM_LEVEL );
     std::string staticNodeName;
     if ( p_node ) 
-    {    
+    {
         // get level name
         p_levelElement = p_node->ToElement();
         if ( !p_levelElement ) 
@@ -348,7 +348,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         if ( !p_bufName ) 
         {
             log_debug << "LevelManager: entity has no type, skipping" << std::endl;
-            continue;       
+            continue;
         }
         else
             enttype = p_bufName;
@@ -365,25 +365,25 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         if ( !p_entfac )
         {
             log_error << "LevelManager: unknown entity type '" << entitytype << "', skipping" << std::endl;
-            continue;       
+            continue;
         }
         unsigned int creationpolicy = p_entfac->getCreationPolicy();
         bool         create         = false;
         switch ( GameState::get()->getMode() )
         {
-            case GameState::Standalone:                
+            case GameState::Standalone:
                 if ( creationpolicy & BaseEntityFactory::Standalone )
-                    create = true;                    
+                    create = true;
                 break;
 
-            case GameState::Server:                
+            case GameState::Server:
                 if ( creationpolicy & BaseEntityFactory::Server )
-                    create = true;                    
+                    create = true; 
                 break;
-        
-            case GameState::Client:                
+
+            case GameState::Client:
                 if ( creationpolicy & BaseEntityFactory::Client )
-                    create = true;                    
+                    create = true;
                 break;
 
             default:
@@ -484,8 +484,9 @@ void LevelManager::finalizeLoading()
         EntityManager::get()->flushNotificationQueue();
     }
 
-    // compile all gl textures in loaded level 
+    // compile all gl textures in loaded level
     // this avoids delays when textures are loaded on-the-fly by osg only when they are visible for first time
+    // check if glsl is supported before setting up the shaders ( gl context 0  is assumed )
     if ( GameState::get()->getMode() != GameState::Server )
     {
         GLResourceCompiler rc( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN, Application::get()->getSceneView()->getState() );

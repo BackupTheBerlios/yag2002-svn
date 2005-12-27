@@ -165,10 +165,10 @@ NetworkDevice::~NetworkDevice()
 void NetworkDevice::disconnect()
 {
     if ( _p_session ) 
-    {       
+    {
         _p_session->Disconnect();
         delete _p_session;
-        _p_session = NULL;   
+        _p_session = NULL;
     }
     _clientSessionStable = false;
     _serverSessionStable = false;
@@ -181,17 +181,17 @@ void NetworkDevice::disconnect()
 
 void NetworkDevice::shutdown()
 {
-    if ( _p_session ) 
-    {       
+    if ( _p_session )
+    {
         _p_session->Disconnect();
         delete _p_session;
-        _p_session = NULL;   
+        _p_session = NULL;
     }
     _clientSessionStable = false;
     _serverSessionStable = false;
 
     RNReplicaNet::XPURL::ShutdownNetwork();
-	RNReplicaNet::PlatformHeap::ForceFree();
+    RNReplicaNet::PlatformHeap::ForceFree();
 
     _mode = NetworkDevice::NONE;
 
@@ -222,21 +222,21 @@ void NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  ) throw 
     _p_session->SessionCreate( _nodeInfo._nodeName );
 
     unsigned int tryCounter = 0;
-	while ( !_p_session->IsStable() )
-	{
+    while ( !_p_session->IsStable() )
+    {
         RNReplicaNet::CurrentThread::Sleep( 500 );
         ++tryCounter;
 
         // try up to 10 seconds
-        if ( tryCounter > 20 ) 
+        if ( tryCounter > 20 )
         {
             _p_session->Disconnect();
             delete _p_session;
-            _p_session = NULL;   
+            _p_session = NULL;
 
             throw NetworkExpection( "Problems starting server" );
         }
-	}
+    }
     _serverSessionStable  = true;
     _mode = NetworkDevice::SERVER;
 
@@ -294,7 +294,7 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
 
         _p_session->Disconnect();
         delete _p_session;
-        _p_session = NULL;   
+        _p_session = NULL;
 
         throw NetworkExpection( "Problems connecting to server" );
     }
@@ -314,8 +314,8 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
     int          bufferLength;
     bool         gotServerInfo = false;
     tryCounter = 0;
-    while ( !gotServerInfo ) 
-    {        
+    while ( !gotServerInfo )
+    {
         _p_session->Poll();
         RNReplicaNet::CurrentThread::Sleep( 100 );
         while ( _p_session->DataReceive( &sessionId, p_buffer, &bufferLength ) ) 
@@ -332,7 +332,7 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
 
                     _p_session->Disconnect();
                     delete _p_session;
-                    _p_session = NULL;   
+                    _p_session = NULL;
 
                     std::string msg;
                     msg = "Network protocol version mismatch.\n";
@@ -352,13 +352,13 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
         }
 
         // try up to 10 seconds
-        if ( tryCounter > 100 ) 
+        if ( tryCounter > 100 )
         {
             log_warning << "*** NetworkDevice: client has problems negotiating with server" << std::endl;
 
             _p_session->Disconnect();
             delete _p_session;
-            _p_session = NULL;   
+            _p_session = NULL;
 
             throw NetworkExpection( "Problems exchanging pre-connect data with server." );
         }
@@ -374,7 +374,7 @@ void NetworkDevice::startClient() throw ( NetworkExpection )
     if ( !_clientSessionStable )
     {
         log_warning << "NetworkDevice: starting client without a stable session, cannot start client!" << std::endl;
-                    
+
         throw NetworkExpection( "Internal error: starting client without a stable session." );
     }
 
@@ -384,17 +384,17 @@ void NetworkDevice::startClient() throw ( NetworkExpection )
 
     log_info << "NetworkDevice: client successfully integrated to network" << std::endl;
     std::stringstream msg;
-    msg << "nw client: server name: '" << 
-        _nodeInfo._nodeName  << 
-        "', level name: '"   << 
-        _nodeInfo._levelName << 
+    msg << "nw client: server name: '" <<
+        _nodeInfo._nodeName  <<
+        "', level name: '"   <<
+        _nodeInfo._levelName <<
         "'" << std::endl;
     log_info << msg.str() << std::endl;
     //-----------------------------//
 
     unsigned int tryCounter = 0;
-	while ( !_p_session->IsStable() )
-	{
+    while ( !_p_session->IsStable() )
+    {
         _p_session->Poll();    // during this time we have to poll the session instance as we disabled the automatic poll!
 
         RNReplicaNet::CurrentThread::Sleep( 200 );
@@ -411,11 +411,11 @@ void NetworkDevice::startClient() throw ( NetworkExpection )
 
             _p_session->Disconnect();
             delete _p_session;
-            _p_session = NULL;   
+            _p_session = NULL;
 
             throw NetworkExpection( "Problems connecting to server" );
         }
-    }    
+    }
     log_debug << std::endl;
 
     std::string sessionurl = _p_session->SessionExportURL();
@@ -471,8 +471,8 @@ void NetworkDevice::getObjects( std::vector< RNReplicaNet::ReplicaObject* >& obj
     _p_session->ObjectListFinishIterate();
 }
 
-void NetworkDevice::updateServer( float deltaTime ) 
-{ 
+void NetworkDevice::updateServer( float deltaTime )
+{
     // poll the netwroking core
     _p_session->Poll();
 
@@ -492,7 +492,7 @@ void NetworkDevice::updateServer( float deltaTime )
             strcpy( sendData._p_levelName, _nodeInfo._levelName.c_str() );
             strcpy( sendData._p_serverName, _nodeInfo._nodeName.c_str() );
             sendData._protocolVersion = YAF3D_NETWORK_PROT_VERSION;
-            _p_session->DataSend( sessionId, ( void* )&sendData, sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );        
+            _p_session->DataSend( sessionId, ( void* )&sendData, sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
         }
     }
 }

@@ -54,7 +54,7 @@
 
 // environment variable for media directory
 //  if not existing then the relative path '../../media' of executable is assumed
-#define YAF3D_ENV_MEDIA_DIR	"YAF3D_ENV_MEDIA_DIR"
+#define YAF3D_ENV_MEDIA_DIR         "YAF3D_ENV_MEDIA_DIR"
 
 // log file names
 #define LOG_FILE_NAME               "vrc.log"
@@ -266,7 +266,7 @@ bool Application::initialize( int argc, char **argv )
 
     // setup the viewer
     //----------
-    
+
     // load the display settings
     Configuration::get()->getSettingValue( YAF3D_GS_SCREENWIDTH,  _screenWidth  );
     Configuration::get()->getSettingValue( YAF3D_GS_SCREENHEIGHT, _screenHeight );
@@ -292,10 +292,10 @@ bool Application::initialize( int argc, char **argv )
     _p_viewer = new osgSDL::Viewer;
     _rootSceneNode = new osg::Group;
     _rootSceneNode->setName( "_topSceneGroup_" );
-	osgSDL::Viewport*   p_viewport = new osgSDL::Viewport( _rootSceneNode.get() );
-	osgUtil::SceneView* p_sceneView = p_viewport->getSceneView();
+    osgSDL::Viewport*   p_viewport = new osgSDL::Viewport( _rootSceneNode.get() );
+    osgUtil::SceneView* p_sceneView = p_viewport->getSceneView();
     p_sceneView->setDefaults( osgUtil::SceneView::COMPILE_GLOBJECTS_AT_INIT );
-	_p_viewer->addViewport( p_viewport );
+    _p_viewer->addViewport( p_viewport );
     _p_viewer->requestContinuousUpdate( true ); // force event generation for FRAMEs, we need this for animations, etc.
     int flags = SDL_HWSURFACE;
     if ( _fullScreen )
@@ -304,7 +304,7 @@ bool Application::initialize( int argc, char **argv )
     {
         SDL_WM_SetCaption( YAF3D_APP_TITLE "-server", NULL );
     }
-  	_p_viewer->setDisplayMode( _screenWidth, _screenHeight, colorBits, flags );
+    _p_viewer->setDisplayMode( _screenWidth, _screenHeight, colorBits, flags );
     _p_viewer->setCursorEnabled( false );    
     //------------
 
