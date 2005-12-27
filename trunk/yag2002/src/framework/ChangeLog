@@ -1,4 +1,17 @@
 
+
+
+
+
+
+boto ( 12/27/2005 )
+
+- cleanups for linux build
+
+boto ( 12/03/2005 )
+
+- added sound manager using FMOD
+
 boto ( 11/13/2005 )
 
 - name space cleanups and filename changes; replaced CTD by yaf3d
