@@ -306,13 +306,11 @@ bool Application::initialize( int argc, char **argv )
     p_sceneView->setDefaults( osgUtil::SceneView::COMPILE_GLOBJECTS_AT_INIT );
     _p_viewer->addViewport( p_viewport );
     _p_viewer->requestContinuousUpdate( true ); // force event generation for FRAMEs, we need this for animations, etc.
+
     int flags = SDL_HWSURFACE;
     if ( _fullScreen )
         flags |= SDL_FULLSCREEN;
-    if ( GameState::get()->getMode() == GameState::Server )
-    {
-        SDL_WM_SetCaption( YAF3D_APP_TITLE "-server", NULL );
-    }
+
     _p_viewer->setDisplayMode( _screenWidth, _screenHeight, colorBits, flags );
     _p_viewer->setCursorEnabled( false );    
     //------------
