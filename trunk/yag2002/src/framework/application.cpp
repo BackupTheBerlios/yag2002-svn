@@ -274,16 +274,25 @@ bool Application::initialize( int argc, char **argv )
     unsigned int colorBits = 24;
     Configuration::get()->getSettingValue( YAF3D_GS_COLORBITS, colorBits );
 
-    // init SDL
-    SDL_Init( SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE );
-    // set the icon and caption title
-    SDL_WM_SetCaption( YAF3D_APP_TITLE, NULL );
-    SDL_Surface* p_bmpsurface = SDL_LoadBMP( YAF3D_APP_ICON );
-    if ( p_bmpsurface )
+    // set the icon and caption title only for non-servers
+    if ( GameState::get()->getMode() != GameState::Server )
     {
-        Uint32 col = SDL_MapRGB( p_bmpsurface->format, 255, 255, 255 );
-        SDL_SetColorKey( p_bmpsurface, SDL_SRCCOLORKEY, col );
-        SDL_WM_SetIcon( p_bmpsurface, NULL );
+       // init SDL with video
+        SDL_Init( SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE );
+
+        SDL_WM_SetCaption( YAF3D_APP_TITLE, NULL );
+        SDL_Surface* p_bmpsurface = SDL_LoadBMP( YAF3D_APP_ICON );
+        if ( p_bmpsurface )
+        {
+            Uint32 col = SDL_MapRGB( p_bmpsurface->format, 255, 255, 255 );
+            SDL_SetColorKey( p_bmpsurface, SDL_SRCCOLORKEY, col );
+            SDL_WM_SetIcon( p_bmpsurface, NULL );
+        }
+    }
+    else
+    {
+        // init SDl witout video for server
+        SDL_Init( SDL_INIT_NOPARACHUTE );
     }
     // enable unicode translation
     SDL_EnableUNICODE( 1 ); 
