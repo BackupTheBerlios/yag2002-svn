@@ -45,7 +45,7 @@ AM_PATH_SDL($SDL_VERSION,
             AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!])
 )
 
-AM_CFLAGS="$AM_CFLAGS -DLINUX -I/usr/local/include/fmodex"
+AM_CFLAGS="$AM_CFLAGS -DLINUX -D_NEWTON_USE_LIB -I/usr/local/include/fmodex"
 AM_LDFLAGS="$AM_LDFLAGS"
 AC_SUBST(AM_CFLAGS)
 AC_SUBST(AM_LDFLAGS)
