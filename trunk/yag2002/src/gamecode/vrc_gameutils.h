@@ -152,6 +152,49 @@ inline std::vector< yaf3d::BaseEntity* >& PlayerUtils::getRemotePlayers()
     return _remotePlayers;
 }
 
+//! A generic input handler class with automatic adding and removing to / from viewer's event hanlder list
+struct NullType {};
+template< class T = NullType >
+class GenericInputHandler : public osgGA::GUIEventHandler
+{
+    public:
+
+        explicit                                  GenericInputHandler( T* p_obj = NULL ) : 
+                                                   _p_userObject( p_obj ),
+                                                   _destroyed( false )
+                                                  {
+                                                      // register us in viewer to get event callbacks
+                                                      yaf3d::Application::get()->getViewer()->addEventHandler( this );
+                                                  }
+
+        virtual                                   ~GenericInputHandler() 
+                                                  {
+                                                      if ( !_destroyed )
+                                                          destroyHandler();
+                                                  }
+
+        //! Remove handler form viewer's handler list and destroy the object. Don't use the object after calling this method.
+        void                                        destroyHandler()
+                                                    {
+                                                        // remove this handler from viewer's handler list
+                                                        yaf3d::Application::get()->getViewer()->removeEventHandler( this );
+                                                        _destroyed = true;
+                                                    }
+
+        virtual bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa ) = 0;
+
+        //! Return the user object
+        T*                                          getUserObject() { return _p_userObject; }
+
+    protected:
+
+        //! An optional object which can be accessed in 'handle' method.
+        T*                                          _p_userObject;
+
+        //! This flag is used for calling destroyHandler on destruction if the user has forgotten that.
+        bool                                        _destroyed;
+};
+
 //! Single instance providing GUI-related utility services
 class GuiUtils : public yaf3d::Singleton< vrc::gameutils::GuiUtils >, public yaf3d::GameState::CallbackStateChange
 {
