@@ -34,6 +34,7 @@
 #include "utils.h"
 #include "configuration.h"
 #include <RNPlatform/Inc/FreewareCode.h>
+#include <RNXPSockets/Inc/XPSocket.h>
 
 
 namespace yaf3d
@@ -270,6 +271,49 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
     else
         ip = serverIp;
 
+    // further analyse the server address for hostname instead of host ip
+    {
+        std::vector< std::string > fields;
+        explode( ip, ".", &fields );
+        // check for alphanumerics
+        bool alphachar = false;
+        for ( std::size_t cnt = 0; cnt < fields.size(); ++cnt )
+        {
+            for ( std::size_t i = 0; i < fields[ cnt ].size(); ++i )
+            {
+                if ( !isdigit( fields[ cnt ][ i ] ) )
+                {
+                    alphachar = true;
+                    break;
+                }
+            }
+            if ( alphachar )
+                break;
+        }
+        if ( alphachar )
+        {
+            // try to resolve the host name
+            RNReplicaNet::XPAddress addr;
+            log_debug << "NetworkDevice: trying to resolve host name '" << ip << "'" << std::endl;
+            if ( XPSock_Resolve( &addr, ip.c_str() ) < 0 )
+            {
+                delete _p_session;
+                _p_session = NULL;
+                throw NetworkExpection( "Cannot resolve hostname '" + serverIp + "'.\nTry its IP address." );
+            }
+
+            std::stringstream hostip;
+            hostip << 
+                        static_cast< int >( addr.addr[ 0 ] ) << "." << 
+                        static_cast< int >( addr.addr[ 1 ] ) << "." << 
+                        static_cast< int >( addr.addr[ 2 ] ) << "." << 
+                        static_cast< int >( addr.addr[ 3 ] );
+                
+            ip = hostip.str();
+            log_debug << "NetworkDevice: resolved host name to '" << ip << "'" << std::endl;
+        }
+    }
+
     //assemble the url; example url: "SESSION://UDP@127.0.0.1:32001/gameserver"}
     std::string servername;
     Configuration::get()->getSettingValue( YAF3D_GS_SERVER_NAME, servername );
@@ -296,7 +340,7 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
         delete _p_session;
         _p_session = NULL;
 
-        throw NetworkExpection( "Problems connecting to server" );
+        throw NetworkExpection( "Problems connecting to server." );
     }
 
     log_info << "NetworkDevice: client is negotiating with server ..." << std::endl;
