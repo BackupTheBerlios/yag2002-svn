@@ -30,6 +30,7 @@
  ################################################################*/
 
 #include <vrc_main.h>
+#include <vrc_gameutils.h>
 #include "vrc_inspector.h"
 #include "../visuals/vrc_camera.h"
 #include <osgUtil/IntersectVisitor>
@@ -43,12 +44,12 @@ namespace vrc
 #define MAX_PICKING_DISTANCE 1000.0f
 
 //! Input handler for inspector
-class InspectorIH : public yaf3d::GenericInputHandler< EnInspector >
+class InspectorIH : public vrc::gameutils::GenericInputHandler< EnInspector >
 {
     public:
 
         explicit                            InspectorIH( EnInspector* p_ent ) : 
-                                             yaf3d::GenericInputHandler< EnInspector >( p_ent )
+                                             vrc::gameutils::GenericInputHandler< EnInspector >( p_ent )
                                             {
                                                 _p_pickResults   = new PickResults;
                                                 _lockMovement    = false;

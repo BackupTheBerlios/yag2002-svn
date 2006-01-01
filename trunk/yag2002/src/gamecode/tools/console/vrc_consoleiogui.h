@@ -32,6 +32,7 @@
 #define _VRC_CONSOLE_IO_GUI_H_
 
 #include <vrc_main.h>
+#include <vrc_gameutils.h>
 #include "vrc_consoleiobase.h"
 
 namespace vrc
@@ -40,12 +41,12 @@ namespace vrc
 class EnConsole;
 
 // Input handler for gui based console
-class ConsoleIOGui : public yaf3d::GenericInputHandler< EnConsole >, public ConsoleIOBase
+class ConsoleIOGui : public vrc::gameutils::GenericInputHandler< EnConsole >, public ConsoleIOBase
 {
     public:
 
         explicit                                    ConsoleIOGui( EnConsole* p_console );
-                                
+
         virtual                                     ~ConsoleIOGui();
 
         //! Handle input events.

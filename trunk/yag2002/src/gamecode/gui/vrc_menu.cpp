@@ -58,16 +58,16 @@ namespace vrc
 #define BCKRGD_SND_PLAY_VOLUME          0.5f
 
 //! Input handler class for menu, it handles ESC key press and toggles the menu gui
-class MenuInputHandler : public yaf3d::GenericInputHandler< EnMenu >
+class MenuInputHandler : public vrc::gameutils::GenericInputHandler< EnMenu >
 {
     public:
 
         explicit                            MenuInputHandler( EnMenu* p_menu ) :
-                                             yaf3d::GenericInputHandler< EnMenu >( p_menu ),
+                                             vrc::gameutils::GenericInputHandler< EnMenu >( p_menu ),
                                              _menuActive( true ),
                                              _lockEsc( false )
                                             {}
-                                            
+
         virtual                             ~MenuInputHandler() {}
 
         //! Handle input events

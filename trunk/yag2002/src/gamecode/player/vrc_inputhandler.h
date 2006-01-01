@@ -40,7 +40,9 @@
 #define _VRC_INPUTHANDLER_H_
 
 #include <vrc_main.h>
+#include "vrc_gameutils.h"
 #include "vrc_player.h"
+#include "vrc_playerimpl.h"
 #include "vrc_playeranim.h"
 #include "vrc_playersound.h"
 #include "vrc_playerphysics.h"
@@ -60,7 +62,7 @@ namespace vrc
 
 //! Input handler class for player, it controls player character and camera
 template< class PlayerImplT >
-class PlayerIHCharacterCameraCtrl : public yaf3d::GenericInputHandler< PlayerImplT >
+class PlayerIHCharacterCameraCtrl : public vrc::gameutils::GenericInputHandler< PlayerImplT >
 {
     public:
 
@@ -149,10 +151,10 @@ class PlayerIHCharacterCameraCtrl : public yaf3d::GenericInputHandler< PlayerImp
                 Uint16                          _screenMiddleX;
                 Uint16                          _screenMiddleY;
         };
-        
+
         // used internally
         // ---------------
-        PlayerImplT*                        getPlayerImpl() { return _p_userObject; }
+        PlayerImplT*                        getPlayerImpl() { return vrc::gameutils::GenericInputHandler< PlayerImplT >::_p_userObject; }
 
         EnPlayer*                           getPlayerEntity() { return _p_playerEntity; }
 

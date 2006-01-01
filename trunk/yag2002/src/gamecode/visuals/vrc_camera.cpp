@@ -31,23 +31,24 @@
  ################################################################*/
 
 #include <vrc_main.h>
+#include <vrc_gameutils.h>
 #include "vrc_camera.h"
 
 namespace vrc
 {
 
 //! Input handler for setting the view matrix in 'frame' callback phase
-class CameraFrameHandler : public yaf3d::GenericInputHandler< EnCamera >
+class CameraFrameHandler : public vrc::gameutils::GenericInputHandler< EnCamera >
 {
     public:
 
         explicit                        CameraFrameHandler( EnCamera* p_camEntity ) : 
-                                          yaf3d::GenericInputHandler< EnCamera >( p_camEntity ),
+                                          vrc::gameutils::GenericInputHandler< EnCamera >( p_camEntity ),
                                           _enable( true )
                                         {}
 
         virtual                         ~CameraFrameHandler() {};
-        
+
         bool                            handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
 
         void                            setEnable( bool enable )
@@ -70,15 +71,15 @@ bool CameraFrameHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
         // update camera matrix if needed
         if ( getUserObject()->_needUpdate )
         {
-            // setup the view matrix basing on position and transformation        
+            // setup the view matrix basing on position and transformation
             osg::Matrixf trans;
             trans.makeTranslate( _p_userObject->_curPosition.x(), _p_userObject->_curPosition.y(), _p_userObject->_curPosition.z() );
-            osg::Matrix rot;        
+            osg::Matrix rot;
             rot.makeRotate( _p_userObject->_curRotation );
 
             // add rotation offset (note: we do not rotate about world coord system)
             rot = _p_userObject->_offsetMatrixRotation * rot;
-            
+
             osg::Matrixf mat;
             mat = rot * trans;
 

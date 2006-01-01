@@ -42,12 +42,12 @@ class DialogGameSettings;
 class DialogPlayerConfig;
 
 //! Input handler for sensing
-class BtnInputHandler : public yaf3d::GenericInputHandler< CEGUI::PushButton >
+class BtnInputHandler : public vrc::gameutils::GenericInputHandler< CEGUI::PushButton >
 {
     public:
 
                                                     BtnInputHandler( CEGUI::PushButton* p_obj, DialogGameSettings* p_dlg ) : 
-                                                        yaf3d::GenericInputHandler< CEGUI::PushButton >( p_obj ),
+                                                        vrc::gameutils::GenericInputHandler< CEGUI::PushButton >( p_obj ),
                                                         _p_dlg( p_dlg ),
                                                         _lockInput( false )
                                                     {}

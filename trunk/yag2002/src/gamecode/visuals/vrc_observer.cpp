@@ -30,6 +30,7 @@
  ################################################################*/
 
 #include <vrc_main.h>
+#include <vrc_gameutils.h>
 #include "vrc_observer.h"
 #include "vrc_camera.h"
 
@@ -39,12 +40,12 @@ namespace vrc
 
 
 //! Input handler for observer
-class ObserverIH : public yaf3d::GenericInputHandler< EnObserver >
+class ObserverIH : public vrc::gameutils::GenericInputHandler< EnObserver >
 {
     public:
 
         explicit                            ObserverIH( EnObserver* p_ent ) : 
-                                             yaf3d::GenericInputHandler< EnObserver >( p_ent )
+                                             vrc::gameutils::GenericInputHandler< EnObserver >( p_ent )
                                             {
                                                 _lockMovement    = false;
                                                 _moveRight       = false;

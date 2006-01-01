@@ -42,7 +42,7 @@ namespace vrc
 
 ConsoleIOGui::ConsoleIOGui( EnConsole* p_console ) : 
  ConsoleIOBase( p_console ),
- yaf3d::GenericInputHandler< EnConsole >( p_console ),
+ vrc::gameutils::GenericInputHandler< EnConsole >( p_console ),
  _toggleEnable( false )
 {
     _retCode = static_cast< int >( yaf3d::KeyMap::get()->getKeyCode( KEY_ISSUE_CMD ) );

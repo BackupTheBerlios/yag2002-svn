@@ -31,7 +31,7 @@
 
 template< class PlayerImplT >
 PlayerIHCharacterCameraCtrl< PlayerImplT >::PlayerIHCharacterCameraCtrl( PlayerImplT* p_player, EnPlayer* p_playerentity ) : 
-yaf3d::GenericInputHandler< PlayerImplT >( p_player ),
+vrc::gameutils::GenericInputHandler< PlayerImplT >( p_player ),
 _p_mouseData( NULL ),
 _p_playerEntity( p_playerentity ),
 _attributeContainer( p_player->getPlayerAttributes() ),
@@ -54,7 +54,7 @@ _invertedMouse( false ),
 _mouseSensitivity( 1.0f )
 {
     // initialize the mouse data considering initial yaw
-    _p_mouseData = new vrc::PlayerIHCharacterCameraCtrl< PlayerImplT >::MouseData( 0.0f, getPlayerImpl()->_rotZ );
+    _p_mouseData = new MouseData( 0.0f, getPlayerImpl()->_rotZ );
     getPlayerImpl()->setCameraPitchYaw( 0, getPlayerImpl()->_rotZ );
 }
 
