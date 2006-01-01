@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/src/framework $(CEGUI_CFLAGS) $(SDL_CFLAGS) $(OPENAL_CFLAGS) $(VORBIS_CFLAGS) $(OSGAL_CFLAGS) $(OSGSDL_CFLAGS) $(CAL3D_CFLAGS) $(AM_CFLAGS)
+INCLUDES = -I$(top_srcdir)/src/framework $(CEGUI_CFLAGS) $(SDL_CFLAGS) $(OSGSDL_CFLAGS) $(CAL3D_CFLAGS) $(AM_CFLAGS)
 
 noinst_PROGRAMS = vrc
 vrc_LDFLAGS = -L$(top_builddir)/src/framework/.libs 
