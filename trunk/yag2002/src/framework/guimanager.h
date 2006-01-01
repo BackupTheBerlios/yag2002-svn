@@ -83,7 +83,7 @@ class GuiManager : public Singleton< GuiManager >
         bool                                    isActive() const;
 
         //! Retrieve the gui renderer. One can used it e.g. to create textures for StaticImage elements.
-        GuiRenderer*                         getGuiRenderer();
+        GuiRenderer*                            getGuiRenderer();
 
         //! Retrieve a pre-loaded font resource given its name ( e.g. yaf3d-8 or yaf3d-10 )
         /**
@@ -141,17 +141,21 @@ class GuiManager : public Singleton< GuiManager >
         CEGUI::Font*                            createFont( const std::string& fontname );
 
         //! Input handler, inputs are forwarded to gui system
-        class InputHandler : public GenericInputHandler< GuiManager >
+        class InputHandler : public osgGA::GUIEventHandler
         {
             public:
 
-                explicit                        InputHandler( GuiManager* p_guimgr );                                                    
-                                                
-                virtual                         ~InputHandler() {};
+                explicit                        InputHandler( GuiManager* p_guimgr );
+
+                virtual                         ~InputHandler();
 
 
                 //! Handle input events
                 bool                            handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
+
+            protected:
+
+                GuiManager*                     _p_guiMgr;
         };
 
         GuiRenderer*                            _p_renderer;
@@ -179,7 +183,7 @@ class GuiManager : public Singleton< GuiManager >
 
         //! Disable the mouse positioning
         bool                                    _lockMouse;
-                                         
+
     friend class Singleton< GuiManager >;
     friend class GuiViewerInitCallback;
     friend class GuiPostDrawCallback;

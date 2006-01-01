@@ -61,49 +61,6 @@ std::string extractFileName( const std::string& fullpath );
 //! Given a path this functions replaces the backslashes by slashes
 std::string cleanPath( const std::string& path );
 
-//! A generic input handler class with automatic adding and removing to / from viewer's event hanlder list
-struct NullType {};
-template< class T = NullType >
-class GenericInputHandler : public osgGA::GUIEventHandler
-{
-    public:
-
-        explicit                            GenericInputHandler( T* p_obj = NULL ) : 
-                                             _p_userObject( p_obj ),
-                                             _destroyed( false )
-                                            {
-                                                // register us in viewer to get event callbacks
-                                                Application::get()->getViewer()->addEventHandler( this );
-                                            }
-
-        virtual                             ~GenericInputHandler() 
-                                            {
-                                                if ( !_destroyed )
-                                                    destroyHandler();
-                                            }
-
-        //! Remove handler form viewer's handler list and destroy the object. Don't use the object after calling this method.
-        void                                destroyHandler()
-                                            {
-                                                 // remove this handler from viewer's handler list
-                                                 Application::get()->getViewer()->removeEventHandler( this );
-                                                 _destroyed = true;
-                                            }
-
-        virtual bool                        handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa ) = 0;
-
-        //! Return the user object
-        T*                                  getUserObject() { return _p_userObject; }
-
-    protected:
-
-        //! An optional object which can be accessed in 'handle' method.
-        T*                                  _p_userObject;
-
-        //! This flag is used for calling destroyHandler on destruction if the user has forgotten that.
-        bool                                _destroyed;
-};
-
 // functions with platform dependent implementations
 //--------------------------------------------------
 

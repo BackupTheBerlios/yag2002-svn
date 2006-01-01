@@ -83,9 +83,18 @@ class GuiResourceProvider : public CEGUI::ResourceProvider
         void                                        loadRawDataContainer( const CEGUI::String& filename, CEGUI::RawDataContainer& output, const CEGUI::String& resourceGroup );
 
 };
-GuiManager::InputHandler::InputHandler( GuiManager* p_guimgr ) : 
-GenericInputHandler< GuiManager >( p_guimgr )
+
+GuiManager::InputHandler::InputHandler( GuiManager* p_guimgr ) :
+_p_guiMgr( p_guimgr )
 {
+    // register us in viewer to get event callbacks
+    Application::get()->getViewer()->addEventHandler( this );
+}
+
+GuiManager::InputHandler::~InputHandler()
+{
+    // remove this handler from viewer's handler list
+    Application::get()->getViewer()->removeEventHandler( this );
 }
 
 void GuiResourceProvider::loadRawDataContainer( const CEGUI::String& filename, CEGUI::RawDataContainer& output, const CEGUI::String& resourceGroup )
@@ -362,7 +371,7 @@ CEGUI::DefaultWindow* GuiManager::getRootWindow()
 }
 
 void GuiManager::update( float deltaTime )
-{       
+{
     if ( _active )
         CEGUI::System::getSingleton().injectTimePulse( deltaTime );    
 }
@@ -375,7 +384,7 @@ void GuiManager::doRender()
 
 bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
-    if ( !getUserObject()->_active )
+    if ( !_p_guiMgr->_active )
         return false;
 
     const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
@@ -495,7 +504,7 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
             rbtn_up   = true;
         }
     }
-    
+
     // middle mouse button
     if ( buttonMask == osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON )
     {
@@ -516,7 +525,7 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
         }
     }
 
-    if ( !getUserObject()->_lockMouse )
+    if ( !_p_guiMgr->_lockMouse )
     {
         if ( ( eventType == osgGA::GUIEventAdapter::MOVE ) || ( eventType == osgGA::GUIEventAdapter::DRAG ) )
         {
