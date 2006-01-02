@@ -39,6 +39,13 @@
 #include "vrc_playernetworking.h"
 #include "../visuals/vrc_camera.h"
 
+
+// some networking related thresholds
+#define NW_POS_CORRECTION_THRESHOLD 5.0f
+#define NW_JUMP_THRESHOLD           0.1f
+#define NW_WALK_THRESHOLD           0.01f
+#define NW_ROT_THRESHOLD            0.005f
+
 namespace vrc
 {
 
@@ -362,7 +369,7 @@ void PlayerImplClient::update( float deltaTime )
         // calculate the current velocity
         osg::Vec3f vel( clientpos - lastpos );
         // do we need a hard position correction?
-        if ( vel.length2() > 5.0f )
+        if ( vel.length2() > NW_POS_CORRECTION_THRESHOLD )
         {
             osg::Matrix mat;
             mat.makeRotate( _currentRot );
@@ -370,12 +377,6 @@ void PlayerImplClient::update( float deltaTime )
             mat.setTrans( clientpos );
             getPlayerPhysics()->setTransformation( mat );
             getPlayerPhysics()->setDirection( 0.0f, 0.0f );
-
-            //log_debug << "* hard player position correction: " << 
-            //    clientpos.x() << " " <<
-            //    clientpos.y() << " " <<
-            //    clientpos.z() << " " <<                
-            //    endl;
         }
         else
         {
@@ -388,20 +389,22 @@ void PlayerImplClient::update( float deltaTime )
         }
 
         // set animation depending on position and rotation changes
-        if ( ( clientpos.z() - lastpos.z() ) > 0.1f )
+        if ( ( ( clientpos.z() - lastpos.z() ) > NW_JUMP_THRESHOLD ) && !getPlayerPhysics()->isJumping() )
         {
+            getPlayerPhysics()->jump();
             getPlayerAnimation()->setAnimation( EnPlayerAnimation::eIdle );
             getPlayerAnimation()->setAnimation( EnPlayerAnimation::eJump );
         }
-        else if ( vel.length2() > 0.001f )
+        else if ( vel.length2() > NW_WALK_THRESHOLD )
         {
             getPlayerAnimation()->setAnimation( EnPlayerAnimation::eWalk );
-        } else
+        } 
+        else
         {
             getPlayerAnimation()->setAnimation( EnPlayerAnimation::eIdle );
         }
         
-        if ( fabs( lastrot - _rotZ ) > 0.01f )
+        if ( fabs( lastrot - _rotZ ) > NW_ROT_THRESHOLD )
             getPlayerAnimation()->setAnimation( EnPlayerAnimation::eTurn );
     }
 

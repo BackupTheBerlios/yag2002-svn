@@ -1,4 +1,4 @@
-/* The chat member object */
+/* The player object */
 object PlayerNetworking
 {
     
