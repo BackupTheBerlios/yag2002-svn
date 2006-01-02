@@ -71,7 +71,7 @@ class Physics : public Singleton< Physics >
         };
 
         //! Update physics
-        inline void                                 update( float deltaTime );
+        void                                        update( float deltaTime );
 
         //! Return the physics world instance
         inline NewtonWorld*                         getWorld();
@@ -178,21 +178,6 @@ inline void Physics::setWorldGravity( float gravity )
 inline const float& Physics::getWorldGravity()
 {
     return _gravity;
-}
-
-inline void Physics::update( float deltaTime )
-{ 
-    if ( !_p_world )
-        return;
-
-    // Newton must be updated with fixed timesteps
-    static float time_elapsed = 0;
-    time_elapsed += deltaTime;
-    if ( time_elapsed > FIX_PHYSICS_UPDATE_PERIOD )
-    {
-        NewtonUpdate( _p_world, time_elapsed );
-        time_elapsed -= FIX_PHYSICS_UPDATE_PERIOD;
-    }
 }
 
 //-------------------------------------//

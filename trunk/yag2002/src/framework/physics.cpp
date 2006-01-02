@@ -139,6 +139,25 @@ bool Physics::reinitialize()
     return initialize();
 }
 
+void Physics::update( float deltaTime )
+{ 
+    if ( !_p_world )
+        return;
+
+    // Newton must be updated with fixed timesteps
+    static float time_elapsed = 0.0f;
+    time_elapsed += deltaTime;
+    if ( time_elapsed > FIX_PHYSICS_UPDATE_PERIOD )
+    {
+        do
+        {
+            NewtonUpdate( _p_world, FIX_PHYSICS_UPDATE_PERIOD );
+            time_elapsed -= FIX_PHYSICS_UPDATE_PERIOD;
+        }
+        while( time_elapsed > FIX_PHYSICS_UPDATE_PERIOD );
+    }
+}
+
 void Physics::shutdown()
 {
     if ( _p_world )
