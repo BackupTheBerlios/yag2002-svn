@@ -34,6 +34,7 @@
 #include "vrc_dialogsettings.h"
 #include "vrc_dialogplayercfg.h"
 #include "../sound/vrc_ambientsound.h"
+#include <mbstring.h>
 
 namespace vrc
 {
@@ -322,7 +323,13 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
 {
     // set player name
     {
-        std::string playername = _p_playerName->getText().c_str();
+        std::string playername;
+
+        // convert the utf8 string to std::string replacing special chatacters by '!'
+        CEGUI::String::const_iterator p_beg = _p_playerName->getText().begin(), p_end = _p_playerName->getText().end();
+        for ( ; p_beg != p_end; ++p_beg )
+            playername += ( isalnum( *p_beg ) ) ? static_cast< char >( *p_beg ) : '!';
+        
         yaf3d::Configuration::get()->setSettingValue( VRC_GS_PLAYER_NAME, playername );
     }
 
