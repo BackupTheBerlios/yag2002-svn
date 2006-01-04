@@ -34,7 +34,6 @@
 #include "vrc_dialogsettings.h"
 #include "vrc_dialogplayercfg.h"
 #include "../sound/vrc_ambientsound.h"
-#include <mbstring.h>
 
 namespace vrc
 {
