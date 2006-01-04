@@ -35,6 +35,7 @@
 #include "configuration.h"
 #include <RNPlatform/Inc/FreewareCode.h>
 #include <RNXPSockets/Inc/XPSocket.h>
+#include <RNXPSession/Inc/XPSession.h>
 
 
 namespace yaf3d
@@ -334,13 +335,42 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
     }
     if ( tryCounter == 100 )
     {
-        log_warning << "NetworkDevice: client cannot connect to server: " << Url << std::endl;
+        std::string errtxt;
+        unsigned int errid = _p_session->GetSessionErrorReason();
+        switch( errid )
+        {
+            case RNReplicaNet::XPSession::kXPSession_EOK: 
+                errtxt = "Cannot connect to server.";
+               break;
 
+            case RNReplicaNet::XPSession::kXPSession_EERROR: 
+                errtxt = "Undefined networking error.";
+               break;
+
+            case RNReplicaNet::XPSession::kXPSession_ETRANSPORT_CLOSED: 
+                errtxt = "Networking session disconnected or closed.";
+               break;
+
+            case RNReplicaNet::XPSession::kXPSession_ETRANSPORT_ERROR: 
+                errtxt = "Networking session has been abnormally terminated due to a transport timeout.";
+               break;
+
+            //! TODO: tn lib mismatch. this will come with rn version 5.5
+            //case RNReplicaNet::ReplicaNet::kXPSession_?: 
+            //    errtxt = "Networking session has been abnormally terminated due to a transport timeout.";
+            //   break;
+
+            default:
+                ;
+        }
         _p_session->Disconnect();
         delete _p_session;
         _p_session = NULL;
 
-        throw NetworkExpection( "Problems connecting to server." );
+        log_warning << "NetworkDevice: client cannot connect to server: " << Url << std::endl;
+        log_warning << "               Reason: " << errtxt << std::endl;
+
+        throw NetworkExpection( "Problems connecting to server.\nReason: " + errtxt );
     }
 
     log_info << "NetworkDevice: client is negotiating with server ..." << std::endl;
