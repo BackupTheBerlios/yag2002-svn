@@ -40,7 +40,7 @@ namespace gameutils
 {
 
 //! VRC version
-#define VRC_VERSION                         "1.0.1"
+#define VRC_VERSION                         "1.0.2"
 
 //! Application name for server
 #ifdef WIN32

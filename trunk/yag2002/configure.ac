@@ -2,13 +2,13 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([YAF3D],[1.0.0])
+AC_INIT([YAF3D],[1.0.2])
 
 
 # fix warning caused by SDL stuff
 AC_CANONICAL_TARGET
 
-AM_INIT_AUTOMAKE([YAF3D], [1.0.0])
+AM_INIT_AUTOMAKE([YAF3D], [1.0.2])
 AC_CONFIG_SRCDIR([src/framework/levelmanager.h])
 AC_CONFIG_HEADER([config.h])
 

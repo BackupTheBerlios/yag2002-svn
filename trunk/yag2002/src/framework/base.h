@@ -38,7 +38,7 @@
 #endif
 
 // YAF3D version
-#define YAF3D_VERSION     "1.0.1"
+#define YAF3D_VERSION     "1.0.2"
 
 // STL headers
 #include <string>
