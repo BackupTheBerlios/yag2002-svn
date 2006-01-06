@@ -925,6 +925,9 @@ void * irc_get_ctx (irc_session_t * session)
 
 void irc_disconnect (irc_session_t * session)
 {
+    if ( !session )
+        return;
+
 	if ( session->sock >= 0 )
 		socket_close (&session->sock);
 
