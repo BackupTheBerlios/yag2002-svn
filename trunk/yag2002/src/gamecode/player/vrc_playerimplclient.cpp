@@ -44,7 +44,7 @@
 #define NW_POS_CORRECTION_THRESHOLD 5.0f
 #define NW_JUMP_THRESHOLD           0.1f
 #define NW_WALK_THRESHOLD           0.01f
-#define NW_ROT_THRESHOLD            0.005f
+#define NW_ROT_THRESHOLD            0.002f
 
 namespace vrc
 {
