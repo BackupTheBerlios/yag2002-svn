@@ -428,9 +428,9 @@ void Application::run()
     _p_soundManager = SoundManager::get();
 
     osg::Timer       timer;
-    float            deltaTime = 0;
-    osg::Timer_t     curTick   = 0;
-    osg::Timer_t     lastTick  = 0;
+    float            deltaTime = 0.0f;
+    osg::Timer_t     curTick   = timer.tick();
+    osg::Timer_t     lastTick  = timer.tick();
 
     // now the network can start
     if ( GameState::get()->getMode() == GameState::Client )
