@@ -438,11 +438,11 @@ EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume, b
     p_ent->getAttributeManager().setAttributeValue( "loop",        loop     );
     p_ent->getAttributeManager().setAttributeValue( "autoPlay",    false    );
     p_ent->getAttributeManager().setAttributeValue( "volume",      volume   );
-    
+
     // init entity
     p_ent->initialize();
     p_ent->postInitialize();
-    
+
     return p_ent;
 }
 
@@ -524,14 +524,14 @@ bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
 bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
 {
     // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
     std::string url;
     yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_IP, url );
     std::string clientname;
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, clientname );
     yaf3d::NodeInfo nodeinfo( "", clientname );
-    unsigned int channel;
+    unsigned int channel = 0;
     yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
 
     // try to join
@@ -562,8 +562,8 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
                                         }
 
                 EnMenu*                 _p_menu;
-        };    
-        p_msg->setClickCallback( new MsgOkClick( this ) );    
+        };
+        p_msg->setClickCallback( new MsgOkClick( this ) );
         p_msg->show();
 
         // play attention sound
@@ -571,6 +571,7 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
 
         return true;
     }
+
     // set the game mode to Client before loading the level
     yaf3d::GameState::get()->setMode( yaf3d::GameState::Client );
     // now prepare loading level
@@ -713,11 +714,7 @@ void EnMenu::updateEntity( float deltaTime )
                     _menuState = UnloadLevel;
 
                     // play attention sound
-                    try
-                    {
-                        vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_ATTENTION );
-                    }
-                    catch( ... ) {}
+                    vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_ATTENTION );
 
                     return;
                 }
