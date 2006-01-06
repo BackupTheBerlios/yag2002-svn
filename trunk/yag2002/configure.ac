@@ -25,8 +25,8 @@ AC_ARG_ENABLE(debug, AS_HELP_STRING(--enable-debug,Build with debugging symbols)
 
 if test "x$enable_debug" = "xno"
 then
-    CFLAGS="-O3"
-    CXXFLAGS="-fomit-frame-pointer -O3"
+    CFLAGS="-O3 -g -Wall"
+    CXXFLAGS="-fomit-frame-pointer -O3 -g -Wall -pedantic -ansi"
 else
     CFLAGS="-g3 -O0"
     CXXFLAGS="-g3 -O0"
