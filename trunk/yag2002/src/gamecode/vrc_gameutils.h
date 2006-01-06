@@ -39,9 +39,6 @@ namespace vrc
 namespace gameutils
 {
 
-//! VRC version
-#define VRC_VERSION                         "1.0.2"
-
 //! Application name for server
 #ifdef WIN32
     #define VRC_SERVER_APP_NAME             "vrc-server.exe"
