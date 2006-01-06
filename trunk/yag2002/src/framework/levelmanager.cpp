@@ -87,8 +87,6 @@ class GLResourceCompiler : public osg::NodeVisitor
                                             for ( int cnt = 0; cnt < listsize; ++cnt )
                                             {
                                                 ++_numVisited;
-                                                osg::Drawable* p_drawable = drawableList[ cnt ].get();
-                                                osg::StateSet* p_stateset = p_drawable->getStateSet();
                                                 compileResource( node.getStateSet() );
                                             }
                                             traverse( node );

@@ -48,10 +48,10 @@ namespace vrc
 YAF3D_IMPL_ENTITYFACTORY( PlayerSoundEntityFactory );
 
 EnPlayerSound::EnPlayerSound() :
+_offset( osg::Vec3f( 0.0f, 0.0f, -1.0f ) ),
 _volume( 0.8f ),
 _minDistance( 1.0f ),
 _maxDistance( 15.0f ),
-_offset( osg::Vec3f( 0.0f, 0.0f, -1.0f ) ),
 _p_playerImpl( NULL )
 { 
     // register attributes

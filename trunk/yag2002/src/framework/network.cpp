@@ -309,7 +309,7 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
                         static_cast< int >( addr.addr[ 1 ] ) << "." << 
                         static_cast< int >( addr.addr[ 2 ] ) << "." << 
                         static_cast< int >( addr.addr[ 3 ] );
-                
+
             ip = hostip.str();
             log_debug << "NetworkDevice: resolved host name to '" << ip << "'" << std::endl;
         }
@@ -357,7 +357,7 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
 
             //! TODO: tn lib mismatch. this will come with rn version 5.5
             //case RNReplicaNet::ReplicaNet::kXPSession_?: 
-            //    errtxt = "Networking session has been abnormally terminated due to a transport timeout.";
+            //    errtxt = "?";
             //   break;
 
             default:
@@ -369,8 +369,8 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
 
         log_warning << "NetworkDevice: client cannot connect to server: " << Url << std::endl;
         log_warning << "               Reason: " << errtxt << std::endl;
-
-        throw NetworkExpection( "Problems connecting to server.\nReason: " + errtxt );
+        errtxt = "Problems connecting to server.\nReason: " + errtxt;
+        throw NetworkExpection( errtxt );
     }
 
     log_info << "NetworkDevice: client is negotiating with server ..." << std::endl;

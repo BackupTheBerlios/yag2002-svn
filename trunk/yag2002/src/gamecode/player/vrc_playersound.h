@@ -134,7 +134,7 @@ class EnPlayerSound  : public yaf3d::BaseEntity
 
         //! Type for sound name ( as uint ) / sound id maps
         typedef std::map< unsigned int, unsigned int > MapPlayerSounds;
-        
+
         //! All sound name / sound id pairs go here
         MapPlayerSounds                             _mapSounds;
 

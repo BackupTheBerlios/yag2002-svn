@@ -368,13 +368,13 @@ YAF3D_SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string&
 
     envp[ 0 ] = NULL;
 
-    int res = posix_spawnp ( &pid,
-                             argv[ 0 ],
-                             p_fileactions,
-                             &attr,
-                             reinterpret_cast< char* const * >( &argv ),
-                             reinterpret_cast< char* const * >( &envp )
-                           );
+    posix_spawnp( &pid,
+                  argv[ 0 ],
+                  p_fileactions,
+                  &attr,
+                  reinterpret_cast< char* const * >( &argv ),
+                  reinterpret_cast< char* const * >( &envp )
+                 );
 
     return static_cast< YAF3D_SPAWN_PROC_ID >( pid );
 

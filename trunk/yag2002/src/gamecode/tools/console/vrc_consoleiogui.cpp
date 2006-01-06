@@ -41,9 +41,13 @@ namespace vrc
 #define KEY_AUTOCOMPLETE    "Tab"
 
 ConsoleIOGui::ConsoleIOGui( EnConsole* p_console ) : 
+  vrc::gameutils::GenericInputHandler< EnConsole >( p_console ),
  ConsoleIOBase( p_console ),
- vrc::gameutils::GenericInputHandler< EnConsole >( p_console ),
- _toggleEnable( false )
+_toggleEnable( false ),
+_p_wnd( NULL ),
+_p_inputWindow( NULL ),
+_p_outputWindow( NULL ),
+_enable( false )
 {
     _retCode = static_cast< int >( yaf3d::KeyMap::get()->getKeyCode( KEY_ISSUE_CMD ) );
     _autoCompleteCode = static_cast< int >( yaf3d::KeyMap::get()->getKeyCode( KEY_AUTOCOMPLETE ) );
@@ -81,7 +85,7 @@ ConsoleIOGui::ConsoleIOGui( EnConsole* p_console ) :
         log << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
-                                        
+
 ConsoleIOGui::~ConsoleIOGui() 
 {
 }

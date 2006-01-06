@@ -704,7 +704,7 @@ void EnMenu::updateEntity( float deltaTime )
                 {
                     yaf3d::NetworkDevice::get()->startClient();
                 }
-                catch ( yaf3d::NetworkExpection& e )
+                catch ( const yaf3d::NetworkExpection& e )
                 {
 
                     yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", e.what(), yaf3d::MessageBoxDialog::OK, true );
@@ -713,7 +713,11 @@ void EnMenu::updateEntity( float deltaTime )
                     _menuState = UnloadLevel;
 
                     // play attention sound
-                    vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_ATTENTION );    
+                    try
+                    {
+                        vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_ATTENTION );
+                    }
+                    catch( ... ) {}
 
                     return;
                 }

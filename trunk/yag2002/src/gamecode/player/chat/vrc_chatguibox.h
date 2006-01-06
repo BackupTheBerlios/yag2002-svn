@@ -224,7 +224,7 @@ class ChatGuiBox
         enum
         {
             ConnectionIdle,
-            Connecting,
+            Connecting
         }                                           _connectionState;
 
         ChatManager*                                _p_chatMgr;

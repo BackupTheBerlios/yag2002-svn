@@ -72,7 +72,7 @@ class ConsoleIOGui : public vrc::gameutils::GenericInputHandler< EnConsole >, pu
         void                                        resetToggle( bool en );
 
         int                                         _retCode;
-        
+
         int                                         _autoCompleteCode;
 
         bool                                        _toggleEnable;
