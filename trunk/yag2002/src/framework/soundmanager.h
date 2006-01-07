@@ -42,26 +42,26 @@ class LevelManager;
 class Application;
 
 //! Class for sound related exceptions
-class SoundExpection : public std::runtime_error
+class SoundException : public std::runtime_error
 {
     public:
-                                                    SoundExpection( const std::string& reason ) :
+                                                    SoundException( const std::string& reason ) :
                                                      std::runtime_error( reason )
                                                     {
                                                     }
 
-        virtual                                    ~SoundExpection() throw() {}
+        virtual                                    ~SoundException() throw() {}
 
-                                                    SoundExpection( const SoundExpection& e ) :
+                                                    SoundException( const SoundException& e ) :
                                                      std::runtime_error( e )
                                                     {
                                                     }
 
     protected:
 
-                                                    SoundExpection();
+                                                    SoundException();
 
-        SoundExpection&                             operator = ( const SoundExpection& );
+        SoundException&                             operator = ( const SoundException& );
 };
 
 //! Sound manager
@@ -83,13 +83,13 @@ class SoundManager : public Singleton< SoundManager >
         };
 
         //! Create sound given a file name and creation flags. Returns a sound ID > 0 which is used for furhter operations such as releasing the sound.
-        unsigned int                                createSound( const std::string& file, float volume = 1.0f, bool autoplay = false, unsigned int flags = fmodDefaultCreationFlags2D ) throw ( SoundExpection );
+        unsigned int                                createSound( const std::string& file, float volume = 1.0f, bool autoplay = false, unsigned int flags = fmodDefaultCreationFlags2D ) throw ( SoundException );
 
         //! Release sound resouce given its id.
-        void                                        releaseSound( unsigned int soundID ) throw ( SoundExpection );
+        void                                        releaseSound( unsigned int soundID ) throw ( SoundException );
 
         //! Return associated channel for given sound.
-        FMOD::Channel*                              getSoundChannel( unsigned int soundID ) throw ( SoundExpection );
+        FMOD::Channel*                              getSoundChannel( unsigned int soundID ) throw ( SoundException );
 
         //! Play sound with given ID. Pass true for 'autocheck' in order to avoid playing the sound when it is already playing.
         void                                        playSound( unsigned int soundID, bool autocheck = false );
@@ -113,7 +113,7 @@ class SoundManager : public Singleton< SoundManager >
         virtual                                     ~SoundManager();
 
         //! Initialize the sound system
-        void                                        initialize() throw ( SoundExpection );
+        void                                        initialize() throw ( SoundException );
 
         //! Shutdown
         void                                        shutdown();

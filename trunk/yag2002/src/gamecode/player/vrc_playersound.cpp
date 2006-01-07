@@ -136,7 +136,7 @@ unsigned int EnPlayerSound::createSound( const std::string& filename )
         FMOD::Channel* p_channel = yaf3d::SoundManager::get()->getSoundChannel( soundID );
         p_channel->set3DMinMaxDistance( _minDistance, _maxDistance );
     } 
-    catch ( const yaf3d::SoundExpection& e )
+    catch ( const yaf3d::SoundException& e )
     {
         log_error << ENTITY_NAME_PLSOUND << ":" << getInstanceName() << "  error loading sound file " << filename << std::endl;
         log_error << "  reason: " << e.what() << std::endl;

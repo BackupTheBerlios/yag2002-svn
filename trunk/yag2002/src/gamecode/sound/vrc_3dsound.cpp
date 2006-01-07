@@ -67,7 +67,7 @@ En3DSound::~En3DSound()
         {
             yaf3d::SoundManager::get()->releaseSound( _soundID );
         }
-        catch ( const yaf3d::SoundExpection& e )
+        catch ( const yaf3d::SoundException& e )
         {
             log_error << ENTITY_NAME_3DSOUND << ":" << getInstanceName() << " problem releasing sound, reason: " << e.what() << std::endl;
         }
@@ -117,7 +117,7 @@ void En3DSound::initialize()
         _p_channel->set3DAttributes( &pos, NULL );
         _p_channel->set3DMinMaxDistance( _minDistance, _maxDistance );
     } 
-    catch ( const yaf3d::SoundExpection& e )
+    catch ( const yaf3d::SoundException& e )
     {
         log_error << ENTITY_NAME_3DSOUND << ":" << getInstanceName() << "  error loading sound file " << _soundFile << std::endl;
         log_error << "  reason: " << e.what() << std::endl;

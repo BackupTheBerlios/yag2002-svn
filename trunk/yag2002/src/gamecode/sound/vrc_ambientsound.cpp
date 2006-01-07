@@ -61,7 +61,7 @@ EnAmbientSound::~EnAmbientSound()
         {
             yaf3d::SoundManager::get()->releaseSound( _soundID );
         }
-        catch ( const yaf3d::SoundExpection& e )
+        catch ( const yaf3d::SoundException& e )
         {
             log_error << ENTITY_NAME_AMBIENTSOUND << ":" << getInstanceName() << " problem releasing sound, reason: " << e.what() << std::endl;
         }
@@ -101,7 +101,7 @@ void EnAmbientSound::initialize()
         _soundID    = yaf3d::SoundManager::get()->createSound( _soundFile, _volume, _autoPlay, flags );
         _p_channel  = yaf3d::SoundManager::get()->getSoundChannel( _soundID );
     } 
-    catch ( const yaf3d::SoundExpection& e )
+    catch ( const yaf3d::SoundException& e )
     {
         log_error << ENTITY_NAME_AMBIENTSOUND << ":" << getInstanceName() << "  error loading sound file " << _soundFile << std::endl;
         log_error << "  reason: " << e.what() << std::endl;

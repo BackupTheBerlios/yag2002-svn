@@ -135,7 +135,7 @@ void GuiUtils::onStateChange( unsigned int state )
                 for ( ; p_beg != p_end; ++p_beg )
                     yaf3d::SoundManager::get()->releaseSound( p_beg->second );
             }
-            catch ( const yaf3d::SoundExpection& e )
+            catch ( const yaf3d::SoundException& e )
             {
                 log_error << "GuiUtils: problem releasing sounds, reason: " << e.what() << std::endl;
             }
@@ -211,7 +211,7 @@ unsigned int GuiUtils::createSound( const std::string& name, const std::string& 
         // give the gui sound a high priority
         yaf3d::SoundManager::get()->getSoundChannel( soundID )->setPriority( 100 );
     } 
-    catch ( const yaf3d::SoundExpection& e )
+    catch ( const yaf3d::SoundException& e )
     {
         log_error << "GuiUtils::createSound" << "  error creating sound: " << filename << std::endl;
         log_error << "  reason: " << e.what() << std::endl;

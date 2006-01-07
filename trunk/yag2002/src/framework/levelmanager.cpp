@@ -507,7 +507,7 @@ void LevelManager::initializeFirstTime()
         {
             SoundManager::get()->initialize();
         }
-        catch( const SoundExpection& e )
+        catch( const SoundException& e )
         {
             log_error << "LevelManager: error initializing sound system. reason: '" << e.what() << "'" << std::endl;
         }

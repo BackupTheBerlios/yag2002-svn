@@ -350,7 +350,7 @@ bool Application::initialize( int argc, char **argv )
         {
             _p_networkDevice->setupServer( channel, nodeinfo );
         }
-        catch ( const NetworkExpection& e )
+        catch ( const NetworkExcpection& e )
         {
             log_error << "Application: error starting server, reason: " << e.what() << std::endl;
             return false;
@@ -376,7 +376,7 @@ bool Application::initialize( int argc, char **argv )
         {
             _p_networkDevice->setupClient( url, channel, nodeinfo );
         }
-        catch ( const NetworkExpection& e )
+        catch ( const NetworkExcpection& e )
         {
             log_error << "Application: error setting up client networking, reason: " << e.what() << std::endl;
             return false;
@@ -440,7 +440,7 @@ void Application::run()
         {
             _p_networkDevice->startClient();
         }
-        catch ( const NetworkExpection& e )
+        catch ( const NetworkExcpection& e )
         {
             log_error << "Application: error starting client networking, reason: " << e.what() << std::endl;
             _p_gameState->setState( GameState::Quitting );

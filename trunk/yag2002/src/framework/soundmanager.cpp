@@ -109,14 +109,14 @@ void SoundManager::update( float deltaTime )
     _p_system->update();
 }
 
-void SoundManager::initialize() throw ( SoundExpection )
+void SoundManager::initialize() throw ( SoundException )
 {
     FMOD_RESULT result;
 
     // create sound system
     result = FMOD::System_Create( &_p_system );
     if ( result != FMOD_OK )
-        throw SoundExpection( "problem creating sound system, reason: " + std::string( FMOD_ErrorString( result ) ) );
+        throw SoundException( "problem creating sound system, reason: " + std::string( FMOD_ErrorString( result ) ) );
 
     // check fmod version
     unsigned int version;
@@ -125,13 +125,13 @@ void SoundManager::initialize() throw ( SoundExpection )
     {
         std::stringstream str;
         str << "*** SoundManager: detected fmod version " << version << ", this application needs at least version " << FMOD_VERSION;
-        throw SoundExpection( str.str() );
+        throw SoundException( str.str() );
     }
 
     // init software channels
     result = _p_system->setSoftwareChannels( SOUND_MAX_SOFTWARE_CHANNELS );
     if ( result != FMOD_OK )
-        throw SoundExpection( "problem allocating required software mixed channels, reason: " + std::string( FMOD_ErrorString( result ) ) );
+        throw SoundException( "problem allocating required software mixed channels, reason: " + std::string( FMOD_ErrorString( result ) ) );
 
     // try to init hardware channels
     result = _p_system->setHardwareChannels( 32, 64, 32, 64 );
@@ -143,11 +143,11 @@ void SoundManager::initialize() throw ( SoundExpection )
 
     result = _p_system->init( SOUND_MAX_VIRTUAL_SOURCES, FMOD_INIT_NORMAL, 0 );
     if ( result != FMOD_OK )
-        throw SoundExpection( "problem initializing sound system, reason: " + std::string( FMOD_ErrorString( result ) ) );
+        throw SoundException( "problem initializing sound system, reason: " + std::string( FMOD_ErrorString( result ) ) );
 
 }
 
-unsigned int SoundManager::createSound( const std::string& file, float volume, bool autoplay, unsigned int flags ) throw ( SoundExpection )
+unsigned int SoundManager::createSound( const std::string& file, float volume, bool autoplay, unsigned int flags ) throw ( SoundException )
 {
     FMOD_RESULT result;
 
@@ -159,14 +159,14 @@ unsigned int SoundManager::createSound( const std::string& file, float volume, b
     if ( result != FMOD_OK )
     {
         delete p_soundData;
-        throw SoundExpection( "could not create sound for " + file + ", reason: " + std::string( FMOD_ErrorString( result ) ) );
+        throw SoundException( "could not create sound for " + file + ", reason: " + std::string( FMOD_ErrorString( result ) ) );
     }
 
     result = _p_system->playSound( FMOD_CHANNEL_FREE, p_soundData->_p_sound, true, &p_soundData->_p_channel );
     if ( result != FMOD_OK )
     {
         delete p_soundData;
-        throw SoundExpection( "could not create sound for " + file + ", problem pausing, reason: " + std::string( FMOD_ErrorString( result ) ) );
+        throw SoundException( "could not create sound for " + file + ", problem pausing, reason: " + std::string( FMOD_ErrorString( result ) ) );
     }
 
     float tmpvol = std::max( std::min( volume, 1.0f ), 0.0f );
@@ -177,7 +177,7 @@ unsigned int SoundManager::createSound( const std::string& file, float volume, b
     if ( result != FMOD_OK )
     {
         delete p_soundData;
-        throw SoundExpection( "could not create sound for " + file + ", problem setting pause mode, reason: " + std::string( FMOD_ErrorString( result ) ) );
+        throw SoundException( "could not create sound for " + file + ", problem setting pause mode, reason: " + std::string( FMOD_ErrorString( result ) ) );
     }
 
     volume = tmpvol;
@@ -185,7 +185,7 @@ unsigned int SoundManager::createSound( const std::string& file, float volume, b
     if ( result != FMOD_OK )
     {
         delete p_soundData;
-        throw SoundExpection( "could not create sound for " + file + ", problem setting volume, reason: " + std::string( FMOD_ErrorString( result ) ) );
+        throw SoundException( "could not create sound for " + file + ", problem setting volume, reason: " + std::string( FMOD_ErrorString( result ) ) );
     }    
 
     // store the created sound in internal map
@@ -200,14 +200,14 @@ unsigned int SoundManager::createSound( const std::string& file, float volume, b
     return _soundIDCounter;
 }
 
-void SoundManager::releaseSound( unsigned int soundID ) throw ( SoundExpection )
+void SoundManager::releaseSound( unsigned int soundID ) throw ( SoundException )
 {
     MapSoundData::iterator p_sounddata = _mapSoundData.find( soundID );
     if ( p_sounddata == _mapSoundData.end() )
     {
         std::stringstream str;
         str << "sound with given ID does not exist: " << soundID;
-        throw SoundExpection( str.str() );
+        throw SoundException( str.str() );
     }
 
     // release sound
@@ -217,14 +217,14 @@ void SoundManager::releaseSound( unsigned int soundID ) throw ( SoundExpection )
     _mapSoundData.erase( p_sounddata );
 }
 
-FMOD::Channel* SoundManager::getSoundChannel( unsigned int soundID ) throw ( SoundExpection )
+FMOD::Channel* SoundManager::getSoundChannel( unsigned int soundID ) throw ( SoundException )
 {
     MapSoundData::iterator p_sounddata = _mapSoundData.find( soundID );
     if ( p_sounddata == _mapSoundData.end() )
     {
         std::stringstream str;
         str << "sound with given ID does not exist: " << soundID;
-        throw SoundExpection( str.str() );
+        throw SoundException( str.str() );
     }
 
     SoundData* p_data = p_sounddata->second;
@@ -289,7 +289,7 @@ void SoundManager::setSoundVolume( unsigned int soundID, float volume )
     {
         std::stringstream str;
         str << "sound with given ID does not exist: " << soundID;
-        throw SoundExpection( str.str() );
+        throw SoundException( str.str() );
     }
 
     SoundData* p_data = p_sounddata->second;

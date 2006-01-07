@@ -539,7 +539,7 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
     {
         yaf3d::NetworkDevice::get()->setupClient( url, channel, nodeinfo );
     }
-    catch ( const yaf3d::NetworkExpection& e )
+    catch ( const yaf3d::NetworkExcpection& e )
     {
         log_warning << "cannot setup client networking" << std::endl;
 
@@ -705,7 +705,7 @@ void EnMenu::updateEntity( float deltaTime )
                 {
                     yaf3d::NetworkDevice::get()->startClient();
                 }
-                catch ( const yaf3d::NetworkExpection& e )
+                catch ( const yaf3d::NetworkExcpection& e )
                 {
 
                     yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", e.what(), yaf3d::MessageBoxDialog::OK, true );
