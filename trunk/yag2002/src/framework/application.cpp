@@ -350,7 +350,7 @@ bool Application::initialize( int argc, char **argv )
         {
             _p_networkDevice->setupServer( channel, nodeinfo );
         }
-        catch ( const NetworkExcpection& e )
+        catch ( const NetworkException& e )
         {
             log_error << "Application: error starting server, reason: " << e.what() << std::endl;
             return false;
@@ -376,7 +376,7 @@ bool Application::initialize( int argc, char **argv )
         {
             _p_networkDevice->setupClient( url, channel, nodeinfo );
         }
-        catch ( const NetworkExcpection& e )
+        catch ( const NetworkException& e )
         {
             log_error << "Application: error setting up client networking, reason: " << e.what() << std::endl;
             return false;
@@ -430,7 +430,7 @@ void Application::run()
     osg::Timer       timer;
     float            deltaTime = 0.0f;
     osg::Timer_t     curTick   = timer.tick();
-    osg::Timer_t     lastTick  = timer.tick();
+    osg::Timer_t     lastTick  = timer.tick() - LOWER_UPDATE_PERIOD_LIMIT;
 
     // now the network can start
     if ( GameState::get()->getMode() == GameState::Client )
@@ -440,7 +440,7 @@ void Application::run()
         {
             _p_networkDevice->startClient();
         }
-        catch ( const NetworkExcpection& e )
+        catch ( const NetworkException& e )
         {
             log_error << "Application: error starting client networking, reason: " << e.what() << std::endl;
             _p_gameState->setState( GameState::Quitting );

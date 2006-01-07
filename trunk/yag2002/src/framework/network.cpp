@@ -201,7 +201,7 @@ void NetworkDevice::shutdown()
     destroy();
 }
 
-void NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  ) throw ( NetworkExcpection )
+void NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  ) throw ( NetworkException )
 {
     // do we already have a session created?
     assert( _p_session == NULL && "there is already a running session!" );
@@ -236,7 +236,7 @@ void NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  ) throw 
             delete _p_session;
             _p_session = NULL;
 
-            throw NetworkExcpection( "Problems starting server" );
+            throw NetworkException( "Problems starting server" );
         }
     }
     _serverSessionStable  = true;
@@ -246,7 +246,7 @@ void NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  ) throw 
     log_info << "NetworkDevice: server session established: " << url << std::endl;
 }
 
-void NetworkDevice::setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo ) throw ( NetworkExcpection )
+void NetworkDevice::setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo ) throw ( NetworkException )
 {
     log_info << "NetworkDevice: starting client, time: " << yaf3d::getTimeStamp() << std::endl;
     log_info << "NetworkDevice: networking protocol version: " << getProtocolVersionAsString( YAF3D_NETWORK_PROT_VERSION ) << std::endl;
@@ -300,7 +300,7 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
             {
                 delete _p_session;
                 _p_session = NULL;
-                throw NetworkExcpection( "Cannot resolve hostname '" + serverIp + "'.\nTry its IP address." );
+                throw NetworkException( "Cannot resolve hostname '" + serverIp + "'.\nTry its IP address." );
             }
 
             std::stringstream hostip;
@@ -370,7 +370,7 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
         log_warning << "NetworkDevice: client cannot connect to server: " << Url << std::endl;
         log_warning << "               Reason: " << errtxt << std::endl;
         errtxt = "Problems connecting to server.\nReason: " + errtxt;
-        throw NetworkExcpection( errtxt );
+        throw NetworkException( errtxt );
     }
 
     log_info << "NetworkDevice: client is negotiating with server ..." << std::endl;
@@ -412,7 +412,7 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
                     msg = "Network protocol version mismatch.\n";
                     msg += "Server's version: " + getProtocolVersionAsString( p_data->_protocolVersion ) + "\n";
                     msg += "Client's version: " + getProtocolVersionAsString( YAF3D_NETWORK_PROT_VERSION );
-                    throw NetworkExcpection( msg );
+                    throw NetworkException( msg );
                 }
 
                 p_data->_p_levelName[ 63 ]  = 0;
@@ -434,7 +434,7 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
             delete _p_session;
             _p_session = NULL;
 
-            throw NetworkExcpection( "Problems exchanging pre-connect data with server." );
+            throw NetworkException( "Problems exchanging pre-connect data with server." );
         }
 
         ++tryCounter;
@@ -443,13 +443,13 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
     _mode = NetworkDevice::CLIENT;
 }
 
-void NetworkDevice::startClient() throw ( NetworkExcpection )
+void NetworkDevice::startClient() throw ( NetworkException )
 {
     if ( !_clientSessionStable )
     {
         log_warning << "NetworkDevice: starting client without a stable session, cannot start client!" << std::endl;
 
-        throw NetworkExcpection( "Internal error: starting client without a stable session." );
+        throw NetworkException( "Internal error: starting client without a stable session." );
     }
 
     log_debug << "NetworkDevice: starting client, time: " << yaf3d::getTimeStamp() << std::endl;
@@ -487,7 +487,7 @@ void NetworkDevice::startClient() throw ( NetworkExcpection )
             delete _p_session;
             _p_session = NULL;
 
-            throw NetworkExcpection( "Problems connecting to server" );
+            throw NetworkException( "Problems connecting to server" );
         }
     }
     log_debug << std::endl;

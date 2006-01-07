@@ -162,26 +162,26 @@ class Networking: public RNReplicaNet::ReplicaNet
 };
 
 //! Class for network related exceptions
-class NetworkExcpection : public std::runtime_error
+class NetworkException : public std::runtime_error
 {
     public:
-                                                    NetworkExcpection( const std::string& reason ) :
+                                                    NetworkException( const std::string& reason ) :
                                                      std::runtime_error( reason )
                                                     {
                                                     }
 
-        virtual                                     ~NetworkExcpection() throw() {}
+        virtual                                     ~NetworkException() throw() {}
 
-                                                    NetworkExcpection( const NetworkExcpection& e ) :
+                                                    NetworkException( const NetworkException& e ) :
                                                      std::runtime_error( e )
                                                     {
                                                     }
 
     protected:
 
-                                                    NetworkExcpection();
+                                                    NetworkException();
 
-        NetworkExcpection&                          operator = ( const NetworkExcpection& );
+        NetworkException&                           operator = ( const NetworkException& );
 };
 
 //! Networking device
@@ -202,7 +202,7 @@ class NetworkDevice : public Singleton< NetworkDevice >
         * \param channel                            Channel
         * \param nodeInfo                           Server information such as server and level name
         */
-        void                                        setupServer( int channel, const NodeInfo& nodeInfo ) throw ( NetworkExcpection );
+        void                                        setupServer( int channel, const NodeInfo& nodeInfo ) throw ( NetworkException );
 
         /**
         * Setup a client session joining to a server ( throws exception )
@@ -210,12 +210,12 @@ class NetworkDevice : public Singleton< NetworkDevice >
         * \param channel                            Channel
         * \param nodeInfo                           Client information
         */
-        void                                        setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo ) throw ( NetworkExcpection );
+        void                                        setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo ) throw ( NetworkException );
 
         /**
         * Start the client processing. Call this after SetupClient ( throws exception ).
         */
-        void                                        startClient() throw ( NetworkExcpection );
+        void                                        startClient() throw ( NetworkException );
 
         /**
         * Use this method in order to register a callback object in order to get notification when a client joins to or leaves the network.
