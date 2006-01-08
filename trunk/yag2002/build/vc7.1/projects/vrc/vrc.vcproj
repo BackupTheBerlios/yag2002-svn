@@ -77,7 +77,6 @@
 			WholeProgramOptimization="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/Od"
 				EnableFiberSafeOptimizations="FALSE"
 				OptimizeForProcessor="0"
 				OptimizeForWindowsApplication="TRUE"
@@ -197,7 +196,6 @@
 			WholeProgramOptimization="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/Od"
 				EnableFiberSafeOptimizations="FALSE"
 				OptimizeForProcessor="0"
 				OptimizeForWindowsApplication="TRUE"
@@ -657,6 +655,12 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\gui\vrc_intro.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_mapview.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_mapview.h">
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\gui\vrc_menu.cpp">
