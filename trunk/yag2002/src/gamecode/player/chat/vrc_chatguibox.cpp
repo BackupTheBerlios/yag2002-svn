@@ -1,6 +1,6 @@
 /****************************************************************
  *  YAG2002 (http://yag2002.sourceforge.net)
- *  Copyright (C) 2005-2007, A. Botorabi
+ *  Copyright (C) 2005-2006, A. Botorabi
  *
  *  This program is free software; you can redistribute it and/or 
  *  modify it under the terms of the GNU Lesser General Public 
@@ -44,9 +44,6 @@ namespace vrc
 
 // delay in seconds for deleting the short messages when chatbox is closed
 #define SHORTMESSAGE_DELETION_DELAY 20.0f
-
-#define VRC_IMAGE_SET               "VRCImageSet"
-#define VRC_IMAGE_SET_FILE          "gui/imagesets/VRCImageSet.imageset"
 
 // some layout related constants
 #define GUI_TABCTRL_OFFSETX         25.0f
@@ -427,7 +424,6 @@ ChatGuiBox::~ChatGuiBox()
 
         CEGUI::WindowManager::getSingleton().destroyWindow( _p_btnOpen );
         CEGUI::WindowManager::getSingleton().destroyWindow( _p_frame );
-        CEGUI::ImagesetManager::getSingleton().destroyImageset( VRC_IMAGE_SET );
 
         if ( _shortMsgBox )
             CEGUI::WindowManager::getSingleton().destroyWindow( _shortMsgBox );
@@ -510,26 +506,15 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
         _p_btnOpen->setSize( CEGUI::Size( 0.08f, 0.1f ) );
         p_wnd->addChildWindow( _p_btnOpen );
 
-        // load our custom imageset
-        CEGUI::Imageset* p_imageSet = NULL;
-        if ( CEGUI::ImagesetManager::getSingleton().isImagesetPresent( VRC_IMAGE_SET ) )
-        {
-            p_imageSet = CEGUI::ImagesetManager::getSingleton().getImageset( VRC_IMAGE_SET );
-        }
-        else
-        {
-            p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( VRC_IMAGE_SET_FILE );
-        }
-
         // set editbox open button images
-        const CEGUI::Image* p_image = &p_imageSet->getImage( "HandNormal" );
+        const CEGUI::Image* p_image = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_HAND_NORMAL );
         CEGUI::RenderableImage* p_rendImage = new CEGUI::RenderableImage;
         p_rendImage->setImage( p_image );
         _p_btnOpen->setPushedImage( p_rendImage );
         _p_btnOpen->setNormalImage( p_rendImage );
         delete p_rendImage;
 
-        p_image = &p_imageSet->getImage( "HandHoover" );
+        p_image = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_HAND_HOOVER );
         p_rendImage = new CEGUI::RenderableImage;
         p_rendImage->setImage( p_image );
         _p_btnOpen->setHoverImage( p_rendImage );
@@ -544,7 +529,8 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
         _p_btnMsgArrived->setBackgroundEnabled( false );
         _p_btnMsgArrived->setFrameEnabled( false );
         p_wnd->addChildWindow( _p_btnMsgArrived );
-        p_image = &p_imageSet->getImage( "Post" );
+
+        p_image = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_POST );
         _p_btnMsgArrived->setImage( p_image );
         _p_btnMsgArrived->hide();
 

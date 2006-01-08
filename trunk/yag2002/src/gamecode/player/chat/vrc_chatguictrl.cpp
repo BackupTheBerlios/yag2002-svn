@@ -1,6 +1,6 @@
 /****************************************************************
  *  YAG2002 (http://yag2002.sourceforge.net)
- *  Copyright (C) 2005-2007, A. Botorabi
+ *  Copyright (C) 2005-2006, A. Botorabi
  *
  *  This program is free software; you can redistribute it and/or 
  *  modify it under the terms of the GNU Lesser General Public 
@@ -35,13 +35,8 @@
 
 namespace vrc
 {
-// specific imageset
-#define VRC_IMAGE_SET           "VRCImageSet"
-#define VRC_IMAGE_SET_FILE      "gui/imagesets/VRCImageSet.imageset"
 
 #define CHATLAYOUT_PREFIX       "chatctrl_"
-#define FOOT_IMAGE_NAME         "FootNormal"
-
 
 ChatGuiCtrl::ChatGuiCtrl() :
 _p_wnd( NULL ),
@@ -74,17 +69,6 @@ void ChatGuiCtrl::initialize( ChatManager* p_chatMgr )
 
         _p_wnd = gameutils::GuiUtils::get()->getMainGuiWindow();
 
-        // load our custom imageset
-        CEGUI::Imageset* p_imageSet = NULL;
-        if ( CEGUI::ImagesetManager::getSingleton().isImagesetPresent( VRC_IMAGE_SET ) )
-        {
-            p_imageSet = CEGUI::ImagesetManager::getSingleton().getImageset( VRC_IMAGE_SET );
-        }
-        else
-        {
-            p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( VRC_IMAGE_SET_FILE );
-        }
-
         // create walk/edit mode button
         _p_btnMode = static_cast< CEGUI::StaticImage* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticImage", "_chatctrl_mode_" ) );
         _p_btnMode->setPosition( CEGUI::Point( 0.025f, 0.725f ) );
@@ -94,7 +78,7 @@ void ChatGuiCtrl::initialize( ChatManager* p_chatMgr )
         _p_btnMode->setBackgroundEnabled( false );
         _p_btnMode->setFrameEnabled( false );
         _p_wnd->addChildWindow( _p_btnMode );
-        const CEGUI::Image* p_image = &p_imageSet->getImage( FOOT_IMAGE_NAME );
+        const CEGUI::Image* p_image = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_FOOT_NORMAL );
         _p_btnMode->setImage( p_image );
         _p_btnMode->hide();
     }
