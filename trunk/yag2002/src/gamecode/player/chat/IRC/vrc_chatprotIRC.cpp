@@ -1,6 +1,6 @@
 /****************************************************************
  *  YAG2002 (http://yag2002.sourceforge.net)
- *  Copyright (C) 2005-2007, A. Botorabi
+ *  Copyright (C) 2005-2006, A. Botorabi
  *
  *  This program is free software; you can redistribute it and/or 
  *  modify it under the terms of the GNU Lesser General Public 
@@ -41,10 +41,12 @@ namespace vrc
 
 #define IRC_CMD_LIST    "\n"\
                         "/help\n"\
-                        "/names\n"\
                         "/part\n"\
-                        "/nick [nickname]\n"\
-                        "/join [#channel]"
+                        "/names\n"\
+                        "/msg   [arguments]\n"\
+                        "/whois [nickname]\n"\
+                        "/nick  [nickname]\n"\
+                        "/join  [#channel]"
 
 //! Class for defining an IRC session context
 class IRCSessionContext
@@ -187,6 +189,30 @@ void event_numeric( irc_session_t * session, unsigned int event, const char * or
     }
 }
 
+void event_notice( irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count )
+{
+    IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
+    std::string msg;
+    if ( count > 0 ) 
+        msg += std::string( origin ) + ": ";
+    if ( count >= 1 ) 
+        msg += std::string( params[ 1 ] );
+
+    p_ctx->_p_handler->recvSystemMessage( msg );
+}
+
+void event_privmsg( irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count )
+{
+    IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
+    std::string msg( "PrivMsg " );
+    if ( count > 0 ) 
+        msg += "from " + std::string( origin ) + ": ";
+    if ( count > 1 ) 
+        msg += std::string( params[ 1 ] );
+
+    p_ctx->_p_handler->recvSystemMessage( msg );
+}
+
 void event_channel( irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count )
 {
     char nickbuf[128];
@@ -238,16 +264,20 @@ void ChatNetworkingIRC::send( const std::string& msg, const std::string& channel
 
     if ( msg[ 0 ] == '/' )
     {
-        // check for /msg commands, send them raw
-        if ( ( msg.length() > 4 ) && !msg.compare( 0, 4, "/msg" ) )
-        {
-            std::string cmd = msg.substr( 4, msg.length() );
-            irc_send_raw( _p_session, cmd.c_str() );
-            return;
-        }
-
         std::vector< std::string > args;
         yaf3d::explode( msg, " ", &args );
+
+        // check for /msg commands, send them raw
+        if ( ( args.size() > 2 ) && ( args[ 0 ] == "/msg" ) )
+        {
+            // assemble the /msg command argument
+            std::string text;
+            for ( std::size_t cnt = 2; cnt < args.size(); ++cnt )
+                text += ( " " + args[ cnt ] );
+
+            irc_cmd_msg( _p_session, args[ 1 ].c_str(), text.c_str() );
+            return;
+        }
 
         // all commands without arguments go here
         if ( args.size() == 1 )
@@ -427,6 +457,8 @@ void ChatNetworkingIRC::createConnection( const ChatConnectionConfig& conf ) thr
     callbacks.event_channel = event_channel;
     callbacks.event_kick    = event_kick;
     callbacks.event_part    = event_part;
+    callbacks.event_notice  = event_notice;
+    callbacks.event_privmsg = event_privmsg;
 
     irc_session_t* p_session = NULL;
 
