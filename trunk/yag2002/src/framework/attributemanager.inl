@@ -1,6 +1,6 @@
 /****************************************************************
  *  YAG2002 (http://yag2002.sourceforge.net)
- *  Copyright (C) 2005-2007, A. Botorabi
+ *  Copyright (C) 2005-2006, A. Botorabi
  *
  *  This program is free software; you can redistribute it and/or 
  *  modify it under the terms of the GNU Lesser General Public 
@@ -38,6 +38,7 @@ _name( name )
     if (      typeid( ref ) == typeid( int ) )              _type = EntityAttributeType::INTEGER;
     else if ( typeid( ref ) == typeid( float ) )            _type = EntityAttributeType::FLOAT;
     else if ( typeid( ref ) == typeid( bool ) )             _type = EntityAttributeType::BOOL;
+    else if ( typeid( ref ) == typeid( osg::Vec2f ) )       _type = EntityAttributeType::VECTOR2;
     else if ( typeid( ref ) == typeid( osg::Vec3f ) )       _type = EntityAttributeType::VECTOR3;
     else if ( typeid( ref ) == typeid( std::string ) )      _type = EntityAttributeType::STRING;
     else _type = EntityAttributeType::UNKNOWN;

@@ -1,6 +1,6 @@
 /****************************************************************
  *  YAG2002 (http://yag2002.sourceforge.net)
- *  Copyright (C) 2005-2007, A. Botorabi
+ *  Copyright (C) 2005-2006, A. Botorabi
  *
  *  This program is free software; you can redistribute it and/or 
  *  modify it under the terms of the GNU Lesser General Public 
@@ -102,7 +102,8 @@ void VRCConfigRegistry::onStateChange( unsigned int state )
 // Implementation of player utils
 GuiUtils::GuiUtils() :
 _p_mainWindow( NULL ),
-_p_rootWindow( NULL )
+_p_rootWindow( NULL ),
+_p_vrcImageSet( NULL )
 {
     // take care, this is a phoenix singleton!
     if ( yaf3d::GameState::get()->getState() != yaf3d::GameState::Shutdown )
@@ -137,7 +138,22 @@ void GuiUtils::onStateChange( unsigned int state )
             }
             catch ( const yaf3d::SoundException& e )
             {
-                log_error << "GuiUtils: problem releasing sounds, reason: " << e.what() << std::endl;
+                log_error << "GuiUtils: problem releasing sound resources" << std::endl;
+                log << "      reason: " << e.what() << std::endl;
+            }
+
+            // release gui resources
+            try
+            {
+                if ( _p_vrcImageSet )
+                    CEGUI::ImagesetManager::getSingleton().destroyImageset( VRC_IMAGE_SET );
+
+                _p_vrcImageSet = NULL;
+            }
+            catch ( const CEGUI::Exception& e )
+            {
+                log_error << "GuiUtils: problem cleaning up gui resources" << std::endl;
+                log << "      reason: " << e.getMessage().c_str() << std::endl;
             }
         }
         break;
@@ -173,6 +189,41 @@ CEGUI::Window* GuiUtils::getMainGuiWindow()
     }
 
     return _p_mainWindow;
+}
+
+CEGUI::Imageset* GuiUtils::getCustomImageSet()
+{
+    if ( _p_vrcImageSet )
+        return _p_vrcImageSet;
+
+    if ( CEGUI::ImagesetManager::getSingleton().isImagesetPresent( VRC_IMAGE_SET ) )
+    {
+        _p_vrcImageSet = CEGUI::ImagesetManager::getSingleton().getImageset( VRC_IMAGE_SET );
+    }
+    else
+    {
+        _p_vrcImageSet = CEGUI::ImagesetManager::getSingleton().createImageset( VRC_IMAGE_SET_FILE );
+    }
+
+    return _p_vrcImageSet;
+}
+
+const CEGUI::Image* GuiUtils::getCustomImage( const std::string& name )
+{
+    CEGUI::Imageset* p_imageset = getCustomImageSet();
+    try
+    {
+        const CEGUI::Image* p_image = &p_imageset->getImage( name );
+        return p_image;
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log_error << "GuiUtils: problem getting image " << VRC_IMAGE_SET << "/" <<  name << std::endl;
+        log << "   reason: " << e.getMessage().c_str() << std::endl;
+        return NULL;
+    }
+
+    return NULL;
 }
 
 void GuiUtils::showMainWindow( bool show )

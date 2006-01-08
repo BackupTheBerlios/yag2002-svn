@@ -1,6 +1,6 @@
 /****************************************************************
  *  Project YAG2002 (http://yag2002.sourceforge.net)
- *  Copyright (C) 2005-2007, A. Botorabi
+ *  Copyright (C) 2005-2006, A. Botorabi
  *
  *  This program is free software; you can redistribute it and/or 
  *  modify it under the terms of the GNU Lesser General Public 
@@ -427,11 +427,6 @@ void Application::run()
     // store sound manager reference for faster access in loop
     _p_soundManager = SoundManager::get();
 
-    osg::Timer       timer;
-    float            deltaTime = 0.0f;
-    osg::Timer_t     curTick   = timer.tick();
-    osg::Timer_t     lastTick  = timer.tick() - LOWER_UPDATE_PERIOD_LIMIT;
-
     // now the network can start
     if ( GameState::get()->getMode() == GameState::Client )
     {
@@ -456,13 +451,14 @@ void Application::run()
     // check heap if enabled ( used for detecting heap corruptions )
     YAF3D_CHECK_HEAP();
 
+    osg::Timer       timer;
+    osg::Timer_t     curTick   = timer.tick();
+    osg::Timer_t     lastTick  = curTick;
+    float            deltaTime = LOWER_UPDATE_PERIOD_LIMIT;
+
     // begin game loop
     while( _p_gameState->getState() != GameState::Quitting )
     {
-        lastTick  = curTick;
-        curTick   = timer.tick();
-        deltaTime = timer.delta_s( lastTick, curTick );
-
         // limit the deltaTime as we have to be carefull with stability of physics calculation etc.
         if ( deltaTime > UPPER_UPDATE_PERIOD_LIMIT ) 
         {
@@ -487,6 +483,11 @@ void Application::run()
         else if ( GameState::get()->getMode() == GameState::Client )
             updateClient( deltaTime );
         else updateStandalone( deltaTime );
+
+        // calculate new delta-time
+        lastTick  = curTick;
+        curTick   = timer.tick();
+        deltaTime = timer.delta_s( lastTick, curTick );
 
         // check heap if enabled ( used for detecting heap corruptions )
         YAF3D_CHECK_HEAP();

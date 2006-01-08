@@ -1,6 +1,6 @@
 /****************************************************************
  *  YAG2002 (http://yag2002.sourceforge.net)
- *  Copyright (C) 2005-2007, A. Botorabi
+ *  Copyright (C) 2005-2006, A. Botorabi
  *
  *  This program is free software; you can redistribute it and/or 
  *  modify it under the terms of the GNU Lesser General Public 
@@ -65,6 +65,13 @@ void AttributeManager::getAttributesAsString( std::vector< std::pair< std::strin
             }
             break;
 
+            case EntityAttributeType::VECTOR2:
+            {
+                osg::Vec2f value = dynamic_cast< EntityAttribute< osg::Vec2f >* >( p_attribute )->getValue();
+                strvalue << value.x() << " " << value.y();
+            }
+            break;
+
             case EntityAttributeType::VECTOR3:
             {
                 osg::Vec3f value = dynamic_cast< EntityAttribute< osg::Vec3f >* >( p_attribute )->getValue();
@@ -113,6 +120,12 @@ bool AttributeManager::setAttributeValue( const std::string &name, const std::st
         float fValue;
         strBuffer >> fValue;
         bRet = setAttributeValue( name, fValue );
+    }
+    else if ( citype == "VECTOR2" ) 
+    {
+        osg::Vec2f vecValue;
+        strBuffer >> vecValue._v[ 0 ] >> vecValue._v[ 1 ];
+        bRet = setAttributeValue( name, vecValue );
     }
     else if ( citype == "VECTOR3" ) 
     {
@@ -173,6 +186,14 @@ bool AttributeManager::setAttributeValueByString( const std::string& name, const
         }
         break;
 
+        case EntityAttributeType::VECTOR2:
+        {
+            osg::Vec2f value;
+            strvalue >> value._v[ 0 ] >> value._v[ 1 ];
+            setAttributeValue( name, value );
+        }
+        break;
+
         case EntityAttributeType::VECTOR3:
         {
             osg::Vec3f value;
@@ -216,6 +237,13 @@ bool AttributeManager::setAttributeValue( const std::string& name, const EntityA
         case EntityAttributeType::INTEGER:
         {
             int value = dynamic_cast< const EntityAttribute< int >& >( attribute ).getValue();
+            return setAttributeValue( name, value );
+        }
+        break;
+
+        case EntityAttributeType::VECTOR2:
+        {
+            osg::Vec2f value = dynamic_cast< const EntityAttribute< osg::Vec2f >& >( attribute ).getValue();
             return setAttributeValue( name, value );
         }
         break;

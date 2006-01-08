@@ -1,6 +1,6 @@
 /****************************************************************
  *  YAG2002 (http://yag2002.sourceforge.net)
- *  Copyright (C) 2005-2007, A. Botorabi
+ *  Copyright (C) 2005-2006, A. Botorabi
  *
  *  This program is free software; you can redistribute it and/or 
  *  modify it under the terms of the GNU Lesser General Public 
@@ -69,6 +69,17 @@ namespace gameutils
 #define GUI_SND_NAME_SCROLLBAR              "cgui_scr"
 #define GUI_SND_NAME_ATTENTION              "cgui_att"
 
+//! VRC specific GUI imageset and elements
+#define VRC_IMAGE_SET                       "VRCImageSet"
+#define VRC_IMAGE_SET_FILE                  "gui/imagesets/VRCImageSet.imageset"
+#define IMAGE_NAME_FOOT_NORMAL              "FootNormal"
+#define IMAGE_NAME_FOOT_HOOVER              "FootHoover"
+#define IMAGE_NAME_HAND_NORMAL              "HandNormal"
+#define IMAGE_NAME_HAND_HOOVER              "HandHoover"
+#define IMAGE_NAME_CROSSHAIR                "Crosshair"
+#define IMAGE_NAME_POST                     "Post"
+#define IMAGE_NAME_SOUND_ON                 "SoundOn"
+#define IMAGE_NAME_SOUND_OFF                "SoundOff"
 
 //! This class is responsible for registration of all game code (VRC) related configuration settings
 class VRCConfigRegistry : public yaf3d::GameState::CallbackStateChange
@@ -208,6 +219,12 @@ class GuiUtils : public yaf3d::Singleton< vrc::gameutils::GuiUtils >, public yaf
         //! Show / hide main window
         void                                        showMainWindow( bool show );
 
+        //! Get application specific GUI imageset.
+        CEGUI::Imageset*                            getCustomImageSet();
+
+        //! Get an image from custom imageset given its name, returns NULL if image does not exist.
+        const CEGUI::Image*                         getCustomImage( const std::string& name );
+
         //! Hide mouse pointer
         void                                        hidePointer();
 
@@ -234,6 +251,9 @@ class GuiUtils : public yaf3d::Singleton< vrc::gameutils::GuiUtils >, public yaf
 
         //! yaf3d::Application's root window
         CEGUI::Window*                              _p_rootWindow;
+
+        //! Application specific imageset
+        CEGUI::Imageset*                            _p_vrcImageSet;
 
         typedef std::map< std::string, unsigned int > MapSound;
 
