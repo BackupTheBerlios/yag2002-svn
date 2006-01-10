@@ -60,17 +60,29 @@ class EnMapView :  public yaf3d::BaseEntity
 
     protected:
 
+        //! Periodic update
+        void                                        updateEntity( float deltaTime );
+
         //! This entity is persistent so it has to trigger its destruction on shutdown ifself.
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Set up the map view
         void                                        setupMapView();
 
+        //! Update the map information
+        void                                        updateMap();
+
+        //! Update the player list and related gui elements
+        void                                        updatePlayerList();
+
         //! Destory the map view
         void                                        destroyMapView();
 
-        //! Calculate absolute position giving an aligning rule and the view size
-        osg::Vec2                                   calcPosition( const std::string& align, const osg::Vec2& size );
+        //! Calculate absolute position giving an aligning rule and the view and screen size
+        osg::Vec2                                   calcPosition( const std::string& align, const osg::Vec2& size, const osg::Vec2& screenSize );
+
+        //! Helper method for creating a staticimage element given an image
+        CEGUI::StaticImage*                         createMarkerElement( const CEGUI::Image* p_img );
 
         //! File name of mini map ( currently it can be only in tga format )
         std::string                                 _minMapFile;
@@ -84,11 +96,29 @@ class EnMapView :  public yaf3d::BaseEntity
         //! Transparency of map view
         float                                       _alpha;
 
+        osg::Vec2f                                  _levelDimensions;
+
+        osg::Vec2f                                  _offset;
+
+        osg::Vec2f                                  _stretch;
+
         //! GUI stuff
         CEGUI::Window*                              _p_wnd;
 
         //! Map marker for players
         const CEGUI::Image*                         _p_imgPlayerMarker;
+
+        //! Screen width
+        osg::Vec2f                                  _screenSize;
+
+        //! For internal use
+        osg::Vec2f                                  _factor;
+
+        //! For internal use
+        osg::Vec2f                                  _halfSize;
+
+        //! Map of players and associated markers
+        std::map< yaf3d::BaseEntity*, CEGUI::StaticImage* >  _playerMarkers;
 };
 
 //! Entity type definition used for type registry
