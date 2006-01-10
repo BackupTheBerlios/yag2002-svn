@@ -348,6 +348,29 @@ bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& 
     return true;
 }
 
+void PlayerUtils::registerNotificationPlayerListChanged( yaf3d::BaseEntity* p_entity, bool reg )
+{
+    bool entityinlist = false;
+    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _notificationList.begin(), p_end = _notificationList.end();
+    for ( ; p_beg != p_end; ++p_beg )
+    {
+        if ( *p_beg == p_entity )
+        {
+            entityinlist = true;
+            break;
+        }
+    }
+
+    // check the registration / deregistration
+    assert( !( entityinlist && reg ) && "entity is already registered for getting player list changes" );
+    assert( !( !entityinlist && !reg ) && "entity has not been previousely registered for getting player list changes" );
+
+    if ( reg )
+        _notificationList.push_back( p_entity );
+    else
+        _notificationList.erase( p_beg );
+}
+
 yaf3d::BaseEntity* PlayerUtils::getLocalPlayer()
 {
     return _p_localPlayer;
@@ -356,6 +379,12 @@ yaf3d::BaseEntity* PlayerUtils::getLocalPlayer()
 void PlayerUtils::setLocalPlayer( yaf3d::BaseEntity* p_entity )
 {
     _p_localPlayer = p_entity;
+
+    // notify registered entities for changed player list
+    yaf3d::EntityNotification notification( VRC_NOTIFY_PLAYERLIST_CHANGED );
+    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _notificationList.begin(), p_end = _notificationList.end();
+    for ( ; p_beg != p_end; ++p_beg )
+        yaf3d::EntityManager::get()->sendNotification( notification, *p_beg );
 }
 
 void PlayerUtils::addRemotePlayer( yaf3d::BaseEntity* p_entity )
@@ -369,6 +398,13 @@ void PlayerUtils::addRemotePlayer( yaf3d::BaseEntity* p_entity )
     assert( ( p_beg == p_end ) && "remote player already exists in list!" );
     
     _remotePlayers.push_back( p_entity );
+
+    // notify registered entities for changed player list
+    yaf3d::EntityNotification notification( VRC_NOTIFY_PLAYERLIST_CHANGED );
+    p_beg = _notificationList.begin();
+    p_end = _notificationList.end();
+    for ( ; p_beg != p_end; ++p_beg )
+        yaf3d::EntityManager::get()->sendNotification( notification, *p_beg );
 }
 
 void PlayerUtils::removeRemotePlayer( yaf3d::BaseEntity* p_entity )
@@ -382,6 +418,13 @@ void PlayerUtils::removeRemotePlayer( yaf3d::BaseEntity* p_entity )
     assert( ( p_beg != p_end ) && "remote player does not exist in list!" );
 
     _remotePlayers.erase( p_beg );
+
+    // notify registered entities for changed player list
+    yaf3d::EntityNotification notification( VRC_NOTIFY_PLAYERLIST_CHANGED );
+    p_beg = _notificationList.begin();
+    p_end = _notificationList.end();
+    for ( ; p_beg != p_end; ++p_beg )
+        yaf3d::EntityManager::get()->sendNotification( notification, *p_beg );
 }
 
 // level file class

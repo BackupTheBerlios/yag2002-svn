@@ -81,6 +81,10 @@ namespace gameutils
 #define IMAGE_NAME_SOUND_ON                 "SoundOn"
 #define IMAGE_NAME_SOUND_OFF                "SoundOff"
 
+//! VRC specific entity notification IDs
+#define VRC_NOTIFY_PLAYERLIST_CHANGED       0xA0000000
+
+
 //! This class is responsible for registration of all game code (VRC) related configuration settings
 class VRCConfigRegistry : public yaf3d::GameState::CallbackStateChange
 {
@@ -131,7 +135,7 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
         //! Returns false if something went wrong.
         bool                                        getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile );
 
-        //! Stores a pointer to local player entity
+        //! Store a pointer to local player entity
         void                                        setLocalPlayer( yaf3d::BaseEntity* p_entity );
 
         //! Return the previousely set local player entity
@@ -146,11 +150,17 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
         //! Return the list of remote players
         inline std::vector< yaf3d::BaseEntity* >&   getRemotePlayers();
 
+        //! Notification mechanism for changed player list. The method 'handleNotification' is used with id 'VRC_NOTIFY_PLAYERLIST_CHANGED'
+        //! Use reg = true for registration and reg = false for deregistration
+        void                                        registerNotificationPlayerListChanged( yaf3d::BaseEntity* p_entity, bool reg = true );
+
     protected:
 
         yaf3d::BaseEntity*                          _p_localPlayer;
 
         std::vector< yaf3d::BaseEntity* >           _remotePlayers;
+
+        std::vector< yaf3d::BaseEntity* >           _notificationList;
 
     friend class yaf3d::Singleton< vrc::gameutils::PlayerUtils >;
 };
