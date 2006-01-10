@@ -157,7 +157,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="opengl32.lib OpenThreadsWin32d.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgcald.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib libpng.lib fmodex_vc.lib framework-serverd.lib"
-				OutputFile="../../../../bin/win32/vrc_debug-server.exe"
+				OutputFile="../../../../bin/win32/vrc-server_debug.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
 				IgnoreDefaultLibraryNames="msvcrt"
