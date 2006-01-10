@@ -269,6 +269,13 @@ void EnObserver::handleNotification( const yaf3d::EntityNotification& notificati
         case YAF3D_NOTIFY_NEW_LEVEL_INITIALIZED:
             break;
 
+        case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
+
+            // set initial pitch yaw in input handler
+            _inputHandler->setCameraPosition( _position );
+            _inputHandler->setCameraPitchYaw( osg::DegreesToRadians( _rotation.y() ), osg::DegreesToRadians( _rotation.z() ) );
+            break;
+
         // we have to trigger the deletion ourselves! ( this entity can be peristent )
         case YAF3D_NOTIFY_SHUTDOWN:
 
