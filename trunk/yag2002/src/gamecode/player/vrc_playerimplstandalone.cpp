@@ -46,12 +46,17 @@ PlayerImplStandalone::PlayerImplStandalone( EnPlayer* player ) :
 BasePlayerImplementation( player ),
 _p_inputHandler( NULL )
 {
+    // add local player in player utils
+    vrc::gameutils::PlayerUtils::get()->setLocalPlayer( player );
 }
 
 PlayerImplStandalone::~PlayerImplStandalone()
 {
     // destroy input handler
     _p_inputHandler->destroyHandler();
+
+    // remove local player in player utils
+    vrc::gameutils::PlayerUtils::get()->setLocalPlayer( NULL );
 }
 
 void PlayerImplStandalone::handleNotification( const yaf3d::EntityNotification& notification )
