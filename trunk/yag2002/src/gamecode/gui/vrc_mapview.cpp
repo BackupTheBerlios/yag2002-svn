@@ -57,7 +57,8 @@ _p_imgPlayerMarker( NULL ),
 _levelDimensions( osg::Vec2f( 175.0f, 175.0f ) ),
 _stretch( osg::Vec2f( 1.0f, -1.0f ) ),
 _offset( osg::Vec2f( 100.0f, 100.0f ) ),
-_screenSize( osg::Vec2f( 800.0f, 600.0f ) )
+_screenSize( osg::Vec2f( 800.0f, 600.0f ) ),
+_dragging( false )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "minMapFile",       _minMapFile      );
@@ -148,6 +149,7 @@ void EnMapView::setupMapView()
     {
         // calculate position of view map
         osg::Vec2 position = calcPosition( _align, _size, _screenSize );
+        _snapPoints = calcSnapPoints( _size, _screenSize );
 
         _p_wnd = CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", MAPVIEW_WND "mainWnd" );
         _p_wnd->setMetricsMode( CEGUI::Absolute );
@@ -155,11 +157,16 @@ void EnMapView::setupMapView()
         _p_wnd->setPosition( CEGUI::Point( position.x(), position.y() ) );
         _p_wnd->setAlpha( _alpha );
         _p_wnd->setAlwaysOnTop( true );
+        _p_wnd->subscribeEvent( CEGUI::Window::EventMouseButtonDown, CEGUI::Event::Subscriber( &vrc::EnMapView::onMouseDown, this ) );
+        _p_wnd->subscribeEvent( CEGUI::Window::EventMouseButtonUp,   CEGUI::Event::Subscriber( &vrc::EnMapView::onMouseUp,   this ) );
+        _p_wnd->subscribeEvent( CEGUI::Window::EventMouseMove,       CEGUI::Event::Subscriber( &vrc::EnMapView::onMouseMove, this ) );
 
         // put the map picture into a static image element
         CEGUI::StaticImage* p_staticimg = static_cast< CEGUI::StaticImage* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticImage", MAPVIEW_WND "image" ) );
         p_staticimg->setSize( CEGUI::Size( 1.0f, 1.0f ) );
         p_staticimg->setPosition( CEGUI::Point( 0.0f, 0.0f ) );
+        p_staticimg->setBackgroundEnabled( false );
+        p_staticimg->setFrameEnabled( false );
         p_staticimg->setAlpha( _alpha );
         // create a new imageset for map picture
         {
@@ -194,7 +201,7 @@ void EnMapView::updateEntity( float deltaTime )
     updateMap();
 }
 
-osg::Vec2 EnMapView::calcPosition( const std::string& align, const osg::Vec2& size, const osg::Vec2& screenSize )
+osg::Vec2 EnMapView::calcPosition( const std::string& align, const osg::Vec2& mapsize, const osg::Vec2& screenSize )
 {
     osg::Vec2 pos;
 
@@ -205,28 +212,28 @@ osg::Vec2 EnMapView::calcPosition( const std::string& align, const osg::Vec2& si
     }
     else if ( align == ALIGN_TOPMIDDLE )
     {
-        pos._v[ 0 ] = screenSize.x() / 2.0f - size.x() / 2.0f;
+        pos._v[ 0 ] = screenSize.x() / 2.0f - mapsize.x() / 2.0f;
         pos._v[ 1 ] = 0.0f;
     }
     else if ( align == ALIGN_TOPRIGHT )
     {
-        pos._v[ 0 ] = screenSize.x() - size.x();
+        pos._v[ 0 ] = screenSize.x() - mapsize.x();
         pos._v[ 1 ] = 0.0f;
     }
     else if ( align == ALIGN_BOTTOMLEFT )
     {
         pos._v[ 0 ] = 0.0f;
-        pos._v[ 1 ] = screenSize.y() - size.y();
+        pos._v[ 1 ] = screenSize.y() - mapsize.y();
     }
     else if ( align == ALIGN_BOTTOMMIDDLE )
     {
-        pos._v[ 0 ] = screenSize.x() / 2.0f - size.x() / 2.0f;
-        pos._v[ 1 ] = screenSize.y() - size.y();
+        pos._v[ 0 ] = screenSize.x() / 2.0f - mapsize.x() / 2.0f;
+        pos._v[ 1 ] = screenSize.y() - mapsize.y();
     }
     else if ( align == ALIGN_BOTTOMRIGHT )
     {
-        pos._v[ 0 ] = screenSize.x() - size.x();
-        pos._v[ 1 ] = screenSize.y() - size.y();
+        pos._v[ 0 ] = screenSize.x() - mapsize.x();
+        pos._v[ 1 ] = screenSize.y() - mapsize.y();
     }
     else
     {
@@ -334,6 +341,112 @@ void EnMapView::updateMap()
             p_beg->second->setPosition( markerpos );
         }
     }
+}
+
+std::vector< CEGUI::Point > EnMapView::calcSnapPoints( const osg::Vec2& mapsize, const osg::Vec2& screenSize )
+{
+    CEGUI::Point snap;
+    std::vector< CEGUI::Point > points;
+
+    // top left
+    snap.d_x = 0.0f;
+    snap.d_y = 0.0f;
+    points.push_back( snap );
+
+    // top middle
+    snap.d_x = screenSize.x() / 2.0f - mapsize.x() / 2.0f;
+    snap.d_y = 0.0f;
+    points.push_back( snap );
+
+    // top right
+    snap.d_x = screenSize.x() - mapsize.x();
+    snap.d_y = 0.0f;
+    points.push_back( snap );
+
+    // bottom left
+    snap.d_x = 0.0f;
+    snap.d_y = screenSize.y() - mapsize.y();
+    points.push_back( snap );
+
+    // bottom middle
+    snap.d_x = screenSize.x() / 2.0f - mapsize.x() / 2.0f;
+    snap.d_y = screenSize.y() - mapsize.y();
+    points.push_back( snap );
+
+    // bottom right
+    snap.d_x = screenSize.x() - mapsize.x();
+    snap.d_y = screenSize.y() - mapsize.y();
+    points.push_back( snap );
+
+    return points;
+}
+
+bool EnMapView::onMouseDown( const CEGUI::EventArgs& arg )
+{
+    const CEGUI::MouseEventArgs mouseevent = static_cast< const CEGUI::MouseEventArgs& >( arg );
+    // we drag only when LMB is pressed
+    if ( mouseevent.button != CEGUI::LeftButton )
+        return true;
+
+    // begin dragging
+    _dragging     = true;
+    _dragPosition = mouseevent.position;
+    return true;
+}
+
+bool EnMapView::onMouseUp( const CEGUI::EventArgs& arg )
+{
+    if ( !_dragging )
+        return true;
+
+    // stop dragging
+    _dragging = false;
+
+    // snap the map view
+    if ( snapMapView( _dragPosition ) )
+        _p_wnd->setPosition( _dragPosition );
+
+    return true;
+}
+
+bool EnMapView::onMouseMove( const CEGUI::EventArgs& arg )
+{
+    if ( !_dragging )
+        return true;
+
+    const CEGUI::MouseEventArgs mouseevent = static_cast< const CEGUI::MouseEventArgs& >( arg );
+
+    CEGUI::Point delta = mouseevent.position - _dragPosition;
+    _dragPosition = mouseevent.position;
+
+    if ( ( fabs( delta.d_x ) < 1 ) && ( fabs( delta.d_y ) < 1 ) )
+        return true;
+
+    // set new position
+    CEGUI::Point pos = _p_wnd->getPosition() + delta;
+    _p_wnd->setPosition( pos );
+
+    return true;
+}
+
+bool EnMapView::snapMapView( CEGUI::Point& pos )
+{
+    // calculate snap threshold
+    float x = _screenSize.x() / 3.0f;
+    float y = _screenSize.y() / 2.0f;
+    float snapthreshold = ( x + y ) * 0.5f;
+
+    std::vector< CEGUI::Point >::iterator p_beg = _snapPoints.begin(), p_end = _snapPoints.end();
+    for ( ; p_beg != p_end; ++p_beg )
+    {
+        if ( ( fabs( pos.d_x - p_beg->d_x ) < snapthreshold ) && ( fabs( pos.d_y - p_beg->d_y ) < snapthreshold ) )
+        {
+            pos = *p_beg;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 } // namespace vrc

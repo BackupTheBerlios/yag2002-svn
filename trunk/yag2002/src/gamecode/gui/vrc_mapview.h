@@ -79,10 +79,25 @@ class EnMapView :  public yaf3d::BaseEntity
         void                                        destroyMapView();
 
         //! Calculate absolute position giving an aligning rule and the view and screen size
-        osg::Vec2                                   calcPosition( const std::string& align, const osg::Vec2& size, const osg::Vec2& screenSize );
+        osg::Vec2                                   calcPosition( const std::string& align, const osg::Vec2& mapsize, const osg::Vec2& screenSize );
 
         //! Helper method for creating a staticimage element given an image
         CEGUI::StaticImage*                         createMarkerElement( const CEGUI::Image* p_img );
+
+        //! Consider snapping for given position, return true if snapping happened ( used for dragging the map view )
+        bool                                        snapMapView( CEGUI::Point& pos );
+
+        //! Calculate 6 snap points on screen given map view and screen size
+        std::vector< CEGUI::Point >                 calcSnapPoints( const osg::Vec2& mapsize, const osg::Vec2& screenSize );
+
+        //! Callback for mouse down ( used for dragging )
+        bool                                        onMouseDown( const CEGUI::EventArgs& arg );
+
+        //! Callback for mouse up ( used for dragging )
+        bool                                        onMouseUp( const CEGUI::EventArgs& arg );
+
+        //! Callback for mouse move ( used for dragging )
+        bool                                        onMouseMove( const CEGUI::EventArgs& arg );
 
         //! File name of mini map ( currently it can be only in tga format )
         std::string                                 _minMapFile;
@@ -116,6 +131,15 @@ class EnMapView :  public yaf3d::BaseEntity
 
         //! For internal use
         osg::Vec2f                                  _halfSize;
+
+        //! Flag showing dragging the map view
+        bool                                        _dragging;
+
+        //! Mouse position on dragging the map view
+        CEGUI::Point                                _dragPosition;
+
+        //! 6 snap points used for dragging the map view
+        std::vector< CEGUI::Point >                 _snapPoints;
 
         //! Map of players and associated markers
         std::map< yaf3d::BaseEntity*, CEGUI::StaticImage* >  _playerMarkers;
