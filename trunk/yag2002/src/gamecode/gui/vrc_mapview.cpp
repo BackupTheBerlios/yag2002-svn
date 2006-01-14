@@ -31,43 +31,57 @@
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
 #include "vrc_mapview.h"
+#include "../player/vrc_player.h"
 
 
 namespace vrc
 {
 // window element name for mapview
-#define MAPVIEW_WND    "_mapview_"
+#define MAPVIEW_WND                 "_mapview_"
+
 // aligning 
-#define ALIGN_TOPLEFT       "topleft"
-#define ALIGN_TOPMIDDLE     "topmiddle"
-#define ALIGN_TOPRIGHT      "topright"
-#define ALIGN_BOTTOMLEFT    "bottomleft"
-#define ALIGN_BOTTOMMIDDLE  "bottommiddle"
-#define ALIGN_BOTTOMRIGHT   "bottomright"
+#define ALIGN_TOPLEFT               "topleft"
+#define ALIGN_TOPMIDDLE             "topmiddle"
+#define ALIGN_TOPRIGHT              "topright"
+#define ALIGN_BOTTOMLEFT            "bottomleft"
+#define ALIGN_BOTTOMMIDDLE          "bottommiddle"
+#define ALIGN_BOTTOMRIGHT           "bottomright"
+
+// timer used for displaying the player name
+#define PLAYER_NAME_DISP_TIMEOUT    1.0f
+
 
 //! Implement and register the map view entity factory
 YAF3D_IMPL_ENTITYFACTORY( MapViewEntityFactory );
 
 EnMapView::EnMapView() :
 _align( "topright" ),
-_size( 0.2f, 0.2f ),
-_alpha( 0.8f ),
+_size( 150.0f, 150.0f ),
+_alpha( 0.9f ),
+_levelDimensions( osg::Vec2f( 100.0f, 100.0f ) ),
+_offset( osg::Vec2f( 0.0f, 0.0f ) ),
+_stretch( osg::Vec2f( 1.0f, -1.0f ) ),
+_nameDisplayPos( osg::Vec2f( 5.0f, 130.0f ) ),
+_nameDisplaySize( osg::Vec2f( 140.0f, 15.0f ) ),
+_nameDisplayColor( osg::Vec3f( 1.0f, 1.0f, 0.2f ) ),
 _p_wnd( NULL ),
 _p_imgPlayerMarker( NULL ),
-_levelDimensions( osg::Vec2f( 175.0f, 175.0f ) ),
-_stretch( osg::Vec2f( 1.0f, -1.0f ) ),
-_offset( osg::Vec2f( 100.0f, 100.0f ) ),
+_nameDisplay( NULL ),
+_nameDisplayTimer( 0.0f ),
 _screenSize( osg::Vec2f( 800.0f, 600.0f ) ),
 _dragging( false )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "minMapFile",       _minMapFile      );
-    getAttributeManager().addAttribute( "align",            _align           );
-    getAttributeManager().addAttribute( "size",             _size            );
-    getAttributeManager().addAttribute( "transparency",     _alpha           );
-    getAttributeManager().addAttribute( "levelDimensions",  _levelDimensions );
-    getAttributeManager().addAttribute( "stretch",          _stretch         );
-    getAttributeManager().addAttribute( "offset",           _offset          );
+    getAttributeManager().addAttribute( "minMapFile",           _minMapFile       );
+    getAttributeManager().addAttribute( "align",                _align            );
+    getAttributeManager().addAttribute( "size",                 _size             );
+    getAttributeManager().addAttribute( "transparency",         _alpha            );
+    getAttributeManager().addAttribute( "levelDimensions",      _levelDimensions  );
+    getAttributeManager().addAttribute( "stretch",              _stretch          );
+    getAttributeManager().addAttribute( "offset",               _offset           );
+    getAttributeManager().addAttribute( "nameDisplayPostion",   _nameDisplayPos   );
+    getAttributeManager().addAttribute( "nameDisplaySize",      _nameDisplaySize  );
+    getAttributeManager().addAttribute( "nameDisplayColor",     _nameDisplayColor );
 }
 
 EnMapView::~EnMapView()
@@ -180,6 +194,21 @@ void EnMapView::setupMapView()
             _p_wnd->addChildWindow( p_staticimg );
         }
 
+        // create a static text for displaying player name when mouse is over its point on map
+        {
+            _nameDisplay = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", MAPVIEW_WND "playername" ) );
+            _nameDisplay->setMetricsMode( CEGUI::Absolute );
+            _nameDisplay->setFrameEnabled( false );
+            _nameDisplay->setBackgroundEnabled( false );
+            _nameDisplay->setFont( YAF3D_GUI_FONT8 );
+            _nameDisplay->setTextColours( CEGUI::colour( _nameDisplayColor.x(), _nameDisplayColor.y(), _nameDisplayColor.z() ) );
+            _nameDisplay->setPosition( CEGUI::Point( _nameDisplayPos.x(), _nameDisplayPos.y() ) );
+            _nameDisplay->setSize( CEGUI::Size( _nameDisplaySize.x(), _nameDisplaySize.y() ) );
+            _nameDisplay->setAlwaysOnTop( true );
+
+            _p_wnd->addChildWindow( _nameDisplay );
+        }
+
         // image for marking a player on map
         _p_imgPlayerMarker = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_CROSSHAIR );
 
@@ -198,6 +227,17 @@ void EnMapView::setupMapView()
 
 void EnMapView::updateEntity( float deltaTime )
 {
+    // remove player name after a short time-out when the mouse pointer is no longer on the player point on map
+    if ( _nameDisplayTimer > 0.0f )
+    {
+        _nameDisplayTimer -= deltaTime;
+        if ( _nameDisplayTimer < 0.0f )
+        {
+            _nameDisplay->setText( "" );
+            _nameDisplayTimer = 0.0f;
+        }
+    }
+
     updateMap();
 }
 
@@ -301,6 +341,9 @@ void EnMapView::updatePlayerList()
         for ( ; p_beg != p_end; ++p_beg )
         {
             CEGUI::StaticImage* p_staticimg = createMarkerElement( _p_imgPlayerMarker );
+            p_staticimg->subscribeEvent( CEGUI::Window::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMapView::onMouseEntersPlayerPoint, this ) );
+            p_staticimg->subscribeEvent( CEGUI::Window::EventMouseLeaves, CEGUI::Event::Subscriber( &vrc::EnMapView::onMouseLeavesPlayerPoint, this ) );
+            p_staticimg->setUserData( reinterpret_cast< void* >( *p_beg ) );
 
             assert( p_staticimg && "EnMapView::updatePlayerList: internal error" );
             
@@ -316,6 +359,9 @@ void EnMapView::updatePlayerList()
         if ( p_localplayer )
         {
             CEGUI::StaticImage* p_staticimg = createMarkerElement( _p_imgPlayerMarker );
+            p_staticimg->subscribeEvent( CEGUI::Window::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMapView::onMouseEntersPlayerPoint, this ) );
+            p_staticimg->subscribeEvent( CEGUI::Window::EventMouseLeaves, CEGUI::Event::Subscriber( &vrc::EnMapView::onMouseLeavesPlayerPoint, this ) );
+            p_staticimg->setUserData( reinterpret_cast< void* >( p_localplayer ) );
 
             assert( p_staticimg && "EnMapView::updatePlayerList: internal error" );
             
@@ -379,6 +425,23 @@ std::vector< CEGUI::Point > EnMapView::calcSnapPoints( const osg::Vec2& mapsize,
     points.push_back( snap );
 
     return points;
+}
+
+bool EnMapView::onMouseEntersPlayerPoint( const CEGUI::EventArgs& arg )
+{
+    const CEGUI::MouseEventArgs mouseevent = static_cast< const CEGUI::MouseEventArgs& >( arg );
+    EnPlayer* p_player = reinterpret_cast< EnPlayer* >( mouseevent.window->getUserData() );
+    _nameDisplay->setText( p_player->getPlayerName() );
+
+    return true;
+}
+
+bool EnMapView::onMouseLeavesPlayerPoint( const CEGUI::EventArgs& arg )
+{
+    // reset the display timer, after the time-out the player name will disappear
+    _nameDisplayTimer = PLAYER_NAME_DISP_TIMEOUT;
+
+    return true;
 }
 
 bool EnMapView::onMouseDown( const CEGUI::EventArgs& arg )

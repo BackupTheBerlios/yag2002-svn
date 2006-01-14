@@ -99,7 +99,14 @@ class EnMapView :  public yaf3d::BaseEntity
         //! Callback for mouse move ( used for dragging )
         bool                                        onMouseMove( const CEGUI::EventArgs& arg );
 
-        //! File name of mini map ( currently it can be only in tga format )
+        //! Callback for mouse enters a player point ( used for displaying player name )
+        bool                                        onMouseEntersPlayerPoint( const CEGUI::EventArgs& arg );
+
+        //! Callback for mouse leaves a player point ( used for displaying player name )
+        bool                                        onMouseLeavesPlayerPoint( const CEGUI::EventArgs& arg );
+
+        //! Image file name of mini map ( currently it can be only in tga format )
+        //! Note: the image must be created orthographically, otherwise the player positions on map are not displayed correctly.
         std::string                                 _minMapFile;
 
         //! Align the map window, valid values: topleft, topmiddle, topright, bottomleft, bottommiddle, bottomright
@@ -111,17 +118,35 @@ class EnMapView :  public yaf3d::BaseEntity
         //! Transparency of map view
         float                                       _alpha;
 
+        //! Length and width of level
         osg::Vec2f                                  _levelDimensions;
 
+        //! Offset for player position, used if the center of mini map is not the center of level
         osg::Vec2f                                  _offset;
 
+        //! Stretch the map in x or y direction
         osg::Vec2f                                  _stretch;
+
+        //! Absolut position of name display on map view
+        osg::Vec2f                                  _nameDisplayPos;
+
+        //! Absolut size of name display on map view
+        osg::Vec2f                                  _nameDisplaySize;
+
+        //! Text color for player name display (RGB)
+        osg::Vec3f                                  _nameDisplayColor;
 
         //! GUI stuff
         CEGUI::Window*                              _p_wnd;
 
         //! Map marker for players
         const CEGUI::Image*                         _p_imgPlayerMarker;
+
+        //! Static text for displaying player names       
+        CEGUI::StaticText*                          _nameDisplay;
+
+        //! Timer for player name display ( used for hiding the name )
+        float                                       _nameDisplayTimer;
 
         //! Screen width
         osg::Vec2f                                  _screenSize;
