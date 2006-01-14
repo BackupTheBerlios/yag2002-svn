@@ -191,9 +191,14 @@ void BasePlayerImplementation::setPlayerName( const std::string& name )
 {
     // if networking exists then the player name change must be done via networking ( distributing the changed name )
     if ( _p_playerNetworking )
+    {
         _p_playerNetworking->updatePlayerName( name );
-    else
         _playerName = name;
+    }
+    else
+    {
+        _playerName = name;
+    }
 }
 
 void BasePlayerImplementation::changePlayerName( const std::string& name )
