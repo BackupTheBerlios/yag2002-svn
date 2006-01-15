@@ -359,6 +359,8 @@ void EnMapView::updatePlayerList()
         if ( p_localplayer )
         {
             CEGUI::StaticImage* p_staticimg = createMarkerElement( _p_imgPlayerMarker );
+            // the local player gets another marker color than the remote players
+            p_staticimg->setImageColours( CEGUI::ColourRect( CEGUI::colour( 0.8f, 1.0f, 0.0f ) ) );
             p_staticimg->subscribeEvent( CEGUI::Window::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMapView::onMouseEntersPlayerPoint, this ) );
             p_staticimg->subscribeEvent( CEGUI::Window::EventMouseLeaves, CEGUI::Event::Subscriber( &vrc::EnMapView::onMouseLeavesPlayerPoint, this ) );
             p_staticimg->setUserData( reinterpret_cast< void* >( p_localplayer ) );
