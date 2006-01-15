@@ -61,11 +61,11 @@ char* _strtime( char* p_str )
 char* _strdate( char* p_str )
 {
     std::time_t t;
+    char p_buf[ 128 ];
     std::time( &t );
-    std::tm* tstruct = localtime( &t );
-    std::stringstream timestr;
-    timestr << tstruct->tm_wday << " " << tstruct->tm_mon << " " << tstruct->tm_mday;
-    strcpy( p_str, timestr.str().c_str() );
+    std::tm* p_tstruct = localtime( &t );
+    strftime( p_buf, 128, "%m/%d/%y", p_tstruct );
+    strcpy( p_str, p_buf );
     return p_str;
 }
 #endif // LINUX
