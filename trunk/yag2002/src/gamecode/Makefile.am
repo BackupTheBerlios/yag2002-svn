@@ -15,6 +15,7 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			gui/vrc_dialogsettings.cpp \
 			gui/vrc_intro.cpp \
 			gui/vrc_menu.cpp \
+			gui/vrc_mapview.cpp \
 			physics/vrc_geomemitter.cpp \
 			physics/vrc_physicsbase.cpp \
 			physics/vrc_physicsbox.cpp \
