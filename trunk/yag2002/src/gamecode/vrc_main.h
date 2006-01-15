@@ -34,7 +34,7 @@
 #define _VRC_MAIN_H_
 
 //! VRC version
-#define VRC_VERSION     "1.0.2"
+#define VRC_VERSION     "1.1.0"
 
 // framework's central header for most important dependencies
 #include <base.h>

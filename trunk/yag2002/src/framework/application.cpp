@@ -280,7 +280,7 @@ bool Application::initialize( int argc, char **argv )
        // init SDL with video
         SDL_Init( SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE );
 
-        SDL_WM_SetCaption( YAF3D_APP_TITLE, NULL );
+        SDL_WM_SetCaption( YAF3D_APP_TITLE " " YAF3D_VERSION, NULL );
         SDL_Surface* p_bmpsurface = SDL_LoadBMP( YAF3D_APP_ICON );
         if ( p_bmpsurface )
         {
