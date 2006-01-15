@@ -2,13 +2,13 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([YAF3D],[1.0.2])
+AC_INIT([YAF3D],[1.1.0])
 
 
 # fix warning caused by SDL stuff
 AC_CANONICAL_TARGET
 
-AM_INIT_AUTOMAKE([YAF3D], [1.0.2])
+AM_INIT_AUTOMAKE([YAF3D], [1.1.0])
 AC_CONFIG_SRCDIR([src/framework/levelmanager.h])
 AC_CONFIG_HEADER([config.h])
 
@@ -23,10 +23,11 @@ AC_PROG_CC
 # configure options
 AC_ARG_ENABLE(debug, AS_HELP_STRING(--enable-debug,Build with debugging symbols), , enable_debug=no)
 
+# currently disabled optimization as exceptions in shared lib YAF3D cause a termination otherwise :-(
 if test "x$enable_debug" = "xno"
 then
-    CFLAGS="-O3 -g -Wall"
-    CXXFLAGS="-fomit-frame-pointer -O3 -g -Wall -pedantic -ansi"
+    CFLAGS="-O0 -g -Wall"
+    CXXFLAGS="-fomit-frame-pointer -O0 -g -Wall -pedantic -ansi"
 else
     CFLAGS="-g3 -O0"
     CXXFLAGS="-g3 -O0"
@@ -66,7 +67,7 @@ AC_FUNC_STAT
 AC_CHECK_FUNCS([getcwd memset sqrt])
 
 YAF3D_CURRENT=1
-YAF3D_REVISION=0
+YAF3D_REVISION=1
 YAF3D_AGE=0
 YAF3D_VERSION_INFO=$YAF3D_CURRENT:$YAF3D_REVISION:$YAF3D_AGE
 AC_SUBST(YAF3D_VERSION_INFO)
