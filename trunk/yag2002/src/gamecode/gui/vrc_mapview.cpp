@@ -150,8 +150,8 @@ void EnMapView::initialize()
 void EnMapView::setupMapView()
 {
     // get the screen size
-    unsigned int windowwidth  = 600.0f;
-    unsigned int windowheight = 800.0f;
+    unsigned int windowwidth  = 600;
+    unsigned int windowheight = 800;
     yaf3d::Application::get()->getScreenSize( windowwidth, windowheight );
     _screenSize = osg::Vec2f( static_cast< float >( windowwidth ), static_cast< float >( windowheight ) );
 
