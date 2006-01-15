@@ -162,14 +162,14 @@ void event_numeric( irc_session_t * session, unsigned int event, const char * or
         {
             std::string header( "WHOIS " );
             header += params[ 1 ];
-            p_ctx->_p_handler->recvMessage( p_ctx->_channel, "* ", header );
+            p_ctx->_p_handler->recvSystemMessage( header );
             for ( unsigned int cnt = 2; cnt < count; cnt ++ )
-                p_ctx->_p_handler->recvMessage( p_ctx->_channel, "- ", params[ cnt ] );
+                p_ctx->_p_handler->recvSystemMessage( params[ cnt ] );
         }
     }
     else if ( event == LIBIRC_RFC_RPL_ENDOFWHOIS )
     {
-        p_ctx->_p_handler->recvMessage( p_ctx->_channel, "* ", "--------" );
+        p_ctx->_p_handler->recvSystemMessage( "--------" );
     }
     // just output system message
     else if ( event > 400 )
@@ -194,7 +194,7 @@ void event_notice( irc_session_t * session, const char * event, const char * ori
     IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
     std::string msg;
     if ( count > 0 ) 
-        msg += std::string( origin ) + ": ";
+        msg += std::string( params[ 0 ] ) + ": ";
     if ( count >= 1 ) 
         msg += std::string( params[ 1 ] );
 

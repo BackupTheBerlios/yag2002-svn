@@ -146,6 +146,16 @@ void ChatManager::createConnection( const ChatConnectionConfig& config ) throw (
     p_prothandler->registerProtocolCallback( this, "*" ); // set an unfiltered protocol callback for receiving connection notification
     try
     {
+        // create a pane for server connection
+        ChatConnectionConfig conectiontabconf;
+        // for server connection panes we set channel and server url both to server url
+        conectiontabconf._channel   = config._serverURL;
+        conectiontabconf._serverURL = config._serverURL;
+        conectiontabconf._protocol  = config._protocol;
+        conectiontabconf._p_protocolHandler = p_prothandler;
+        _p_chatGuiBox->setupChatIO( conectiontabconf, true );
+
+        // start creating the connection
         p_prothandler->createConnection( config );
     }
     catch( const ChatExpection& e )

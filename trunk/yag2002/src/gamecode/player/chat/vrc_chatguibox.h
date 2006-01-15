@@ -61,7 +61,8 @@ class ChatGuiBox
         void                                        setEditBoxFocus( bool en );
 
         //! Setup a new chat input / output gui for a channel
-        void                                        setupChatIO( const ChatConnectionConfig& config );
+        //! Pass true for systemIO if the pane is used for server connection info, not for actual channels
+        void                                        setupChatIO( const ChatConnectionConfig& config, bool systemIO = false );
 
         //! Print a text into message box of given channel, this can be used for system messages
         //! Use wildcard "*" for channel in order to address all channels.
@@ -95,9 +96,12 @@ class ChatGuiBox
         {
             public:
 
-                                                            ChannelTabPane( CEGUI::TabControl* p_tabcontrol, ChatGuiBox* p_guibox );
+                                                            ChannelTabPane( CEGUI::TabControl* p_tabcontrol, ChatGuiBox* p_guibox, bool isSystemIO = false );
 
                 virtual                                     ~ChannelTabPane();
+
+                //! Return true if this pane is used for system IO
+                bool                                        isSystemIO() { return _isSystemIO; }
 
                 //! Set pane title
                 void                                        setTitle( const std::string& title );
@@ -157,6 +161,8 @@ class ChatGuiBox
                 //! Update the member
                 void                                        updateMemberList( std::vector< std::string >& list );
 
+                bool                                        _isSystemIO;
+
                 CEGUI::TabControl*                          _p_tabCtrl;
 
                 ChatGuiBox*                                 _p_guibox;
@@ -176,14 +182,11 @@ class ChatGuiBox
                 std::vector< std::string >                  _nickNames;
         };
 
-        //! Create tabpane for a new chat channel
-        ChannelTabPane*                             getOrCreateChannelPane( const ChatConnectionConfig& cfg );
+        //! Create tabpane for a new chat channel, pass true for isSystemIO if the pane is used only for server connection info
+        ChannelTabPane*                             getOrCreateChannelPane( const ChatConnectionConfig& cfg, bool isSystemIO );
 
         //! Remove the given tab pane from tab control
-        void                                        removeTabPane( ChatGuiBox::ChannelTabPane* p_pane )
-                                                    {   
-                                                        _queueRemoveTabPane.push( p_pane );
-                                                    }
+        void                                        removeTabPane( ChatGuiBox::ChannelTabPane* p_pane );
 
         //! Destroy a tab pane
         void                                        destroyChannelPane( const ChatConnectionConfig& cfg );
@@ -194,8 +197,11 @@ class ChatGuiBox
         //! Get the short message box gui
         CEGUI::StaticText*                          getShortMsgBox();
 
+        //! Typedef for a tab pane queue
+        typedef std::queue< ChatGuiBox::ChannelTabPane*, std::deque< ChatGuiBox::ChannelTabPane* > >  TabQueue;
+
         //! A queue for removing tab panes on next update
-        std::queue< ChatGuiBox::ChannelTabPane*, std::deque< ChatGuiBox::ChannelTabPane* > >   _queueRemoveTabPane;
+        TabQueue                                    _queueRemoveTabPane;
 
         //! Callback for resizing the chat box frame
         bool                                        onSizeChanged( const CEGUI::EventArgs& arg );

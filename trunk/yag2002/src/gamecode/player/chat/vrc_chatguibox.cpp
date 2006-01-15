@@ -72,7 +72,8 @@ namespace vrc
 #define SND_NAME_CONNECT            "cgui_con"
 #define SND_NAME_TYPING             "cgui_typ"
 
-ChatGuiBox::ChannelTabPane::ChannelTabPane( CEGUI::TabControl* p_tabcontrol, ChatGuiBox* p_guibox ) :
+ChatGuiBox::ChannelTabPane::ChannelTabPane( CEGUI::TabControl* p_tabcontrol, ChatGuiBox* p_guibox, bool isSystemIO ) :
+_isSystemIO( isSystemIO ),
 _p_tabCtrl( p_tabcontrol ),
 _p_guibox( p_guibox ),
 _p_tabPane( NULL ),
@@ -113,13 +114,16 @@ _p_listbox( NULL )
         _p_editbox->setMetricsMode( CEGUI::Absolute );
         _p_tabPane->addChildWindow( _p_editbox );
 
-        // nickname list
-        _p_listbox = static_cast< CEGUI::Listbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Listbox", std::string( CHATLAYOUT_PREFIX "tabpane_nicklist" ) + postfix ) );
-        _p_listbox->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::ChannelTabPane::onListItemSelChanged, this ) );
-        _p_listbox->setSortingEnabled( true );
-        _p_listbox->setMetricsMode( CEGUI::Absolute );
-        _p_listbox->setFont( YAF3D_GUI_FONT8 );
-        _p_tabPane->addChildWindow( _p_listbox );
+        // nickname list, needed only for channel panes, not for system IO panes
+        if ( !_isSystemIO )
+        {
+            _p_listbox = static_cast< CEGUI::Listbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Listbox", std::string( CHATLAYOUT_PREFIX "tabpane_nicklist" ) + postfix ) );
+            _p_listbox->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::ChannelTabPane::onListItemSelChanged, this ) );
+            _p_listbox->setSortingEnabled( true );
+            _p_listbox->setMetricsMode( CEGUI::Absolute );
+            _p_listbox->setFont( YAF3D_GUI_FONT8 );
+            _p_tabPane->addChildWindow( _p_listbox );
+        }
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -144,6 +148,9 @@ ChatGuiBox::ChannelTabPane::~ChannelTabPane()
 
 void ChatGuiBox::ChannelTabPane::updateMemberList( std::vector< std::string >& list )
 {
+    if ( _isSystemIO )
+        return;
+
     // set selection background color
     CEGUI::ColourRect col( 
                             CEGUI::colour( 255.0f / 255.0f, 214.0f / 255.0f, 9.0f / 255.0f, 0.8f ),
@@ -215,8 +222,11 @@ bool ChatGuiBox::ChannelTabPane::onSizeChanged( const CEGUI::EventArgs& arg )
     _p_editbox->setPosition( CEGUI::Point( GUI_PANE_SPACING, size.d_height - GUI_PANE_MSG_OFFSET_BUTTOM + GUI_PANE_SPACING ) );
     _p_editbox->setSize( CEGUI::Size( size.d_width - GUI_PANE_MSG_OFFSET_RIGHT, GUI_PANE_MSG_OFFSET_BUTTOM - 2.0f * GUI_PANE_SPACING ) );
 
-    _p_listbox->setPosition( CEGUI::Point( size.d_width - GUI_PANE_MSG_OFFSET_RIGHT + 2.0f * GUI_PANE_SPACING, GUI_PANE_SPACING ) );
-    _p_listbox->setSize( CEGUI::Size( GUI_PANE_MSG_OFFSET_RIGHT - 3.0f * GUI_PANE_SPACING, size.d_height - 2.0f * GUI_PANE_SPACING ) );
+    if ( !_isSystemIO )
+    {
+        _p_listbox->setPosition( CEGUI::Point( size.d_width - GUI_PANE_MSG_OFFSET_RIGHT + 2.0f * GUI_PANE_SPACING, GUI_PANE_SPACING ) );
+        _p_listbox->setSize( CEGUI::Size( GUI_PANE_MSG_OFFSET_RIGHT - 3.0f * GUI_PANE_SPACING, size.d_height - 2.0f * GUI_PANE_SPACING ) );
+    }
 
     return true;
 }
@@ -606,7 +616,7 @@ CEGUI::StaticText* ChatGuiBox::getShortMsgBox()
 
 void ChatGuiBox::destroyChannelPane( const ChatConnectionConfig& cfg )
 {
-    // close all tab panes
+    // find tab panes
     ChatGuiBox::TabPanePairList::iterator p_beg = _tabpanes.begin(), p_end = _tabpanes.end();
     for ( ; p_beg != p_end; ++p_beg )
         if ( cfg._channel == p_beg->first._channel )
@@ -622,7 +632,7 @@ void ChatGuiBox::destroyChannelPane( const ChatConnectionConfig& cfg )
     }
 }
 
-ChatGuiBox::ChannelTabPane* ChatGuiBox::getOrCreateChannelPane( const ChatConnectionConfig& cfg )
+ChatGuiBox::ChannelTabPane* ChatGuiBox::getOrCreateChannelPane( const ChatConnectionConfig& cfg, bool isSystemIO )
 {
     // check if already have this pane
     ChannelTabPane* p_pane = getTabPane( cfg );
@@ -630,7 +640,7 @@ ChatGuiBox::ChannelTabPane* ChatGuiBox::getOrCreateChannelPane( const ChatConnec
         return p_pane;
 
     // create new tab pane
-    p_pane = new ChannelTabPane( _p_tabCtrl, this );
+    p_pane = new ChannelTabPane( _p_tabCtrl, this, isSystemIO );
     p_pane->setTitle( cfg._protocol + " " + cfg._channel );
 
     // append the new channel to list
@@ -785,6 +795,11 @@ void ChatGuiBox::update( float deltaTime )
 
 }
 
+void ChatGuiBox::removeTabPane( ChatGuiBox::ChannelTabPane* p_pane )
+{   
+    _queueRemoveTabPane.push( p_pane );
+}
+
 void ChatGuiBox::show( bool visible )
 {
     if ( visible )
@@ -836,8 +851,27 @@ bool ChatGuiBox::onClickedCloseChannelPane( const CEGUI::EventArgs& arg )
     if ( p_beg->first._protocol == VRC_PROTOCOL_NAME )
         return true;
 
-    // trigger leaving the channel in the same way as the user would do via command
-    p_beg->first._p_protocolHandler->send( "/part", p_beg->first._channel );
+    // check if a server connection pane is to be closed
+    // server connection panes have channel and server url both set to server url
+    ChatConnectionConfig conf = p_beg->second->getConfiguration();
+    if ( conf._channel == conf._serverURL )
+    {
+        // remove all channel panes related to that server
+        ChatGuiBox::TabPanePairList::iterator p_chanbeg = _tabpanes.begin(), p_chanend = _tabpanes.end();
+        for ( ; p_chanbeg != p_chanend; ++p_chanbeg )
+        {
+            if ( p_chanbeg->second->getConfiguration()._serverURL == conf._serverURL )
+                removeTabPane( p_chanbeg->second ); 
+        }
+
+        // now close the connection to server
+        p_beg->first._p_protocolHandler->destroyConnection();
+    }
+    else
+    {
+        // trigger leaving the channel in the same way as the user would do via command
+        p_beg->first._p_protocolHandler->send( "/part", p_beg->first._channel );
+    }
 
     return true;
 }
@@ -877,7 +911,7 @@ bool ChatGuiBox::onClickedConnectIRC( const CEGUI::EventArgs& arg )
     _p_connectionDialog->setConfiguration( conf );
 
     // show up the dialog
-    _p_connectionDialog->setTitle( "IRC Connection yaf3d::Settings" );
+    _p_connectionDialog->setTitle( "IRC Connection Settings" );
     _p_connectionDialog->show( true );
 
     return true;
@@ -984,9 +1018,9 @@ void ChatGuiBox::fadeChatbox( bool fadeout )
     }
 }
 
-void ChatGuiBox::setupChatIO( const ChatConnectionConfig& config )
+void ChatGuiBox::setupChatIO( const ChatConnectionConfig& config, bool systemIO )
 {
-    ChannelTabPane* p_pane = getOrCreateChannelPane( config );
+    ChannelTabPane* p_pane = getOrCreateChannelPane( config, systemIO );
     assert( p_pane && "could not create new pane for chat io!" );
 }
 
