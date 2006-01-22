@@ -38,6 +38,25 @@
 namespace vrc
 {
 
+//! Sound related defs
+#define SND_CLOSE_CHANNEL           "sound/chatgui/closechannel.wav"
+#define SND_CONNECT                 "sound/chatgui/connect.wav"
+#define SND_TYPING                  "sound/chatgui/typing.wav"
+#define SND_VOL_CLOSE_CHANNEL       0.2f
+#define SND_VOL_CONNECT             0.2f
+#define SND_VOL_TYPING              0.5f
+#define SND_NAME_CLOSE_CHANNEL      "cgui_clc"
+#define SND_NAME_CONNECT            "cgui_con"
+#define SND_NAME_TYPING             "cgui_typ"
+
+//! Tab pane related defs
+#define GUI_PANE_SPACING            5.0f
+#define GUI_PANE_MSG_OFFSET_RIGHT   100.0f
+#define GUI_PANE_MSG_OFFSET_BUTTOM  45.0f
+
+
+class ChannelTabPane;
+
 //! Class for chat gui control
 class ChatGuiBox
 {
@@ -90,97 +109,6 @@ class ChatGuiBox
 
         //! Callback for button "IRC connect"
         bool                                        onClickedConnectIRC( const CEGUI::EventArgs& arg );
-
-        //! Class describing a tab pane for one chat channel
-        class ChannelTabPane : public ChatProtocolCallback
-        {
-            public:
-
-                                                            ChannelTabPane( CEGUI::TabControl* p_tabcontrol, ChatGuiBox* p_guibox, bool isSystemIO = false );
-
-                virtual                                     ~ChannelTabPane();
-
-                //! Return true if this pane is used for system IO
-                bool                                        isSystemIO() { return _isSystemIO; }
-
-                //! Set pane title
-                void                                        setTitle( const std::string& title );
-
-                //! Add new message into message box, author will be places at begin of message.
-                //! It is usually used by protocol handlers or for printing system messages.
-                void                                        addMessage( const CEGUI::String& msg, const CEGUI::String& author );
-
-                //! Set the connection configuration
-                void                                        setConfiguration( const ChatConnectionConfig& conf );
-
-                //! Return the configuration
-                const ChatConnectionConfig&                 getConfiguration();
-
-                //! Set pane selection
-                void                                        setSelection();
-
-                //! Get the selection state
-                bool                                        isSelected();
-
-                //! Set / Unset focus to edit box
-                void                                        setEditBoxFocus( bool en );
-
-                //! Overriden method for receiving the chat traffic.
-                void                                        onReceive( const std::string& channel, const std::string& sender, const std::string& msg );
-
-                //! Overriden method for getting nickname changes in channel.
-                //! If oldname is empty then newname is the initial one.
-                void                                        onNicknameChanged( const std::string& newname, const std::string& oldname );
-
-                //! Overridden method for getting notified when someone joined to channel.
-                void                                        onJoinedChannel( const ChatConnectionConfig& cfg );
-
-                //! Overridden method for getting notified when someone left the channel.
-                void                                        onLeftChannel( const ChatConnectionConfig& cfg );
-
-                //! Overridden method for getting notified when someone has been kicked from a channel.
-                void                                        onKicked( const std::string& channel, const std::string& kicker, const std::string& kicked );
-
-                //! Overridden method for getting notified when member list changes.
-                void                                        onReceiveMemberList( const std::string& channel );
-
-            protected:
-
-                //! Callback for sensing cariage return during editing a chat message
-                bool                                        onEditboxTextChanged( const CEGUI::EventArgs& arg );
-
-                //! Callback for changing nickname selection in list
-                bool                                        onListItemSelChanged( const CEGUI::EventArgs& arg );
-
-                //! Callback for resizing the pane
-                bool                                        onSizeChanged( const CEGUI::EventArgs& arg );
-
-                //! Callback for selecting the pane by clicking
-                bool                                        onSelected( const CEGUI::EventArgs& arg );
-
-                //! Update the member
-                void                                        updateMemberList( std::vector< std::string >& list );
-
-                bool                                        _isSystemIO;
-
-                CEGUI::TabControl*                          _p_tabCtrl;
-
-                ChatGuiBox*                                 _p_guibox;
-
-                CEGUI::Window*                              _p_tabPane;
-
-                std::string                                 _title;
-
-                CEGUI::MultiLineEditbox*                    _p_messagebox;
-
-                CEGUI::Editbox*                             _p_editbox;
-
-                CEGUI::Listbox*                             _p_listbox;
-
-                ChatConnectionConfig                        _configuration;
-
-                std::vector< std::string >                  _nickNames;
-        };
 
         //! Create tabpane for a new chat channel, pass true for isSystemIO if the pane is used only for server connection info
         ChannelTabPane*                             getOrCreateChannelPane( const ChatConnectionConfig& cfg, bool isSystemIO );
@@ -274,7 +202,9 @@ class ChatGuiBox
         ConnectionDialog< ChatGuiBox >*             _p_connectionDialog;
 
     friend class ConnectionDialog< ChatGuiBox >;
+    friend class ChannelTabPane;
 };
 
 } // namespace vrc
-#endif // _VRC_CHATGUI_H_
+
+#endif // _VRC_CHATGUIBOX_H_
