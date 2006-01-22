@@ -213,6 +213,9 @@
 				RelativePath="..\..\..\..\src\framework\application.h">
 			</File>
 			<File
+				RelativePath="..\..\..\..\src\framework\application.inl">
+			</File>
+			<File
 				RelativePath="..\..\..\..\src\framework\attributemanager.cpp">
 			</File>
 			<File

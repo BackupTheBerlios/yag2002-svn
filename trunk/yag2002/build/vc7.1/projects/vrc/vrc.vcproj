@@ -139,7 +139,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;../../../../src/framework;../../../../src/gamecode"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include\&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="_DEBUG;WIN32;_CONSOLE"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="3"
@@ -378,6 +378,12 @@
 					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\player\chat\vrc_chatguibox.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\vrc_chatguiboxtab.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\chat\vrc_chatguiboxtab.h">
 					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\player\chat\vrc_chatguicondiag.h">
