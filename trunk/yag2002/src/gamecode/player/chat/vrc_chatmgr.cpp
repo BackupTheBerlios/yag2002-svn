@@ -39,13 +39,25 @@
 namespace vrc
 {
 
+// application window notification stuff
+#define APP_WINDOW_NOTIFY_INTERVAL  0.7f
+#define APP_WINDOW_NOTIFY_COUNT     6
+
 ChatManager::ChatManager() :
 _p_chatGuiCtrl( NULL ),
 _p_chatGuiBox( NULL ),
 _activeBox( false ),
 _serverMode( false ),
-_built( false )
+_built( false ),
+_enableAppWindowNotification( false ),
+_appWindowNotifyTimer( 0.0f ),
+_appWindowNotifyCounter( 0 )
 {
+    // store original window title
+    _appWindowTitle = yaf3d::Application::get()->getWindowTitle();
+
+    // register for getting application window state changes
+    yaf3d::GameState::get()->registerCallbackAppWindowStateChange( this );
 }
 
 ChatManager::~ChatManager()
@@ -187,6 +199,10 @@ void ChatManager::onConnection( const ChatConnectionConfig& config )
         // store the new created connection for internal housekeeping
         _connections.push_back( std::make_pair( config, config._p_protocolHandler ) );
     }
+
+    // check the app window state and animate it if minimized
+    if ( !_serverMode )
+        notifyAppWindow( "connected" );
 }
 
 void ChatManager::onDisconnection( const ChatConnectionConfig& config )
@@ -203,13 +219,20 @@ void ChatManager::onDisconnection( const ChatConnectionConfig& config )
         delete config._p_protocolHandler;
         _connections.erase( p_beg );
     }
+
+    if ( !_serverMode )
+        notifyAppWindow( "disconnected" );
 }
 
 void ChatManager::onJoinedChannel( const ChatConnectionConfig& config )
 {
     // create a new chat io for the channel
     if ( !_serverMode )
+    {
         _p_chatGuiBox->setupChatIO( config );
+
+        notifyAppWindow( config._nickname + " joined " + config._channel );
+    }
 }
 
 void ChatManager::onReceiveSystemMessage( const std::string& msg )
@@ -218,10 +241,69 @@ void ChatManager::onReceiveSystemMessage( const std::string& msg )
         _p_chatGuiBox->outputText( "*", msg );
 }
 
+void ChatManager::onReceive( const std::string& channel, const std::string& sender, const std::string& msg )
+{
+    if ( !_serverMode )
+        notifyAppWindow( channel + " [" + sender + "] " + msg );
+}
+
+void ChatManager::onAppWindowStateChange( unsigned int state )
+{
+    if ( ( state == yaf3d::GameState::Restored ) || ( state == yaf3d::GameState::GainedFocus ) )
+    {
+        // restore the original app window title
+        yaf3d::Application::get()->setWindowTitle( _appWindowTitle );
+        _appWindowNotifyCounter      = 0;
+        _enableAppWindowNotification = false;
+    }
+    else
+    {
+        _enableAppWindowNotification = true;
+    }
+}
+
+void ChatManager::notifyAppWindow( const std::string& text )
+{
+    if ( !_enableAppWindowNotification )
+        return;
+
+    _appWindowNotifyCounter = APP_WINDOW_NOTIFY_COUNT;
+    _appWindowNotifyTimer   = 0.0f;
+    _appWindowNotifyText    = text;
+
+    // begin with title animation
+    yaf3d::Application::get()->setWindowTitle( _appWindowNotifyText );
+}
+
 void ChatManager::update( float deltaTime )
 {
     if ( !_serverMode )
+    {
+        // update gui box
         _p_chatGuiBox->update( deltaTime );
+
+        // app icon animation whenever needed
+        if ( _appWindowNotifyCounter > 0 )
+        {
+            _appWindowNotifyTimer += deltaTime;
+
+            if ( _appWindowNotifyTimer > APP_WINDOW_NOTIFY_INTERVAL )
+            {
+                _appWindowNotifyTimer = 0.0f;
+                --_appWindowNotifyCounter;
+
+                // toggle the app title
+                if ( _appWindowNotifyCounter % 2 )
+                {
+                    yaf3d::Application::get()->setWindowTitle( _appWindowTitle );
+                }
+                else
+                {
+                    yaf3d::Application::get()->setWindowTitle( _appWindowNotifyText );
+                }
+            }
+        }
+    }
 }
 
 } // namespace vrc

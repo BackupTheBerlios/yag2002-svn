@@ -128,7 +128,7 @@ class ChatConnectionConfig
 class ChatGuiCtrl;
 class ChatGuiBox;
 
-class ChatManager : public ChatProtocolCallback
+class ChatManager : public ChatProtocolCallback, public yaf3d::GameState::CallbackAppWindowStateChange
 {
     public:
 
@@ -165,22 +165,31 @@ class ChatManager : public ChatProtocolCallback
         //! Update the chat manager
         void                                        update( float deltaTime );
 
-        //! Overriden protocol handler callback method for getting connection notification
+        //! Overridden protocol handler callback method for getting connection notification
         void                                        onConnection( const ChatConnectionConfig& config );
 
-        //! Overriden protocol handler callback method for getting disconnection notification
+        //! Overridden protocol handler callback method for getting disconnection notification
         void                                        onDisconnection( const ChatConnectionConfig& config );
 
-        //! Overriden protocol handler callback method for getting notification when someone joined to a new channel
+        //! Overridden protocol handler callback method for getting notification when someone joined to a new channel
         void                                        onJoinedChannel( const ChatConnectionConfig& config );
 
-        //! Overriden protocol handler callback method for getting system messages
+        //! Overridden protocol handler callback method for getting system messages
         void                                        onReceiveSystemMessage( const std::string& msg );
+        
+        //! Overridden protocol handler callback method for receiving the chat traffic.
+        void                                        onReceive( const std::string& channel, const std::string& sender, const std::string& msg );
 
         //! Get all registered chat protocols
         ProtocolMap&                                getRegisteredProtocols();
 
     protected:
+
+        //! Callback for application window changes
+        void                                        onAppWindowStateChange( unsigned int state );
+
+        //! Used for animating the application window icon when minimized / lost focus and a chat activity occured
+        void                                        notifyAppWindow( const std::string& text );
 
         //! Map of chat protocols
         ProtocolMap                                 _availableProtocols;
@@ -205,6 +214,21 @@ class ChatManager : public ChatProtocolCallback
 
         //! For internal use ( checking for multiple build attempts )
         bool                                        _built;
+
+        //! Flag for enabling / disabling app window icon notification
+        bool                                        _enableAppWindowNotification;
+
+        //! Timer for animating the app window icon when minimized
+        float                                       _appWindowNotifyTimer;
+
+        //! Counter for animating the application icon
+        int                                         _appWindowNotifyCounter;
+
+        //! Text used for window title animation
+        std::string                                 _appWindowNotifyText;
+
+        //! Original window title
+        std::string                                 _appWindowTitle;
 };
 
 } // namespace vrc
