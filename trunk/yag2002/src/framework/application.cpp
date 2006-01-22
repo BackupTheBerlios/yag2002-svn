@@ -72,6 +72,40 @@
 namespace yaf3d
 {
 
+//! Hanlder for application window state changes
+//! This handler is used for disabling periodic update of some subsystems when application window is minimized.
+//! This way a noticable amount of cpu usage can be saved.
+class AppWindowStateHandler : public GameState::CallbackAppWindowStateChange
+{
+    public:
+
+        explicit                                    AppWindowStateHandler( Application* p_app ) :
+                                                     _p_app( p_app )
+                                                    {
+                                                        // register for getting application window state changes
+                                                        GameState::get()->registerCallbackAppWindowStateChange( this );
+                                                    }
+
+        virtual                                     ~AppWindowStateHandler() 
+                                                    {
+                                                    }
+
+    protected:
+
+        //! This is called whenever the app window state changes
+        void                                        onAppWindowStateChange( unsigned int state )
+                                                    {
+                                                        // when application window is minimized the let it the Application know
+                                                        if ( state == GameState::Minimized )
+                                                            _p_app->setAppWindowMinimized( true );
+                                                        else if ( state == yaf3d::GameState::Restored )
+                                                            _p_app->setAppWindowMinimized( false );
+                                                    }
+
+        Application*                                _p_app;
+};
+
+// Implementation of Application
 YAF3D_SINGLETON_IMPL( Application );
 
 Application::Application():
@@ -84,7 +118,9 @@ _p_gameState( GameState::get() ),
 _p_viewer( NULL ),
 _screenWidth( 600 ),
 _screenHeight( 400 ),
-_fullScreen( false )
+_fullScreen( false ),
+_appWindowMinimized( false ),
+_p_appWindowStateHandler( NULL )
 {
 }
 
@@ -107,6 +143,8 @@ void Application::shutdown()
     KeyMap::get()->shutdown();
 
     delete _p_viewer;
+
+    delete _p_appWindowStateHandler;
 
     SDL_Quit();
 
@@ -433,6 +471,9 @@ void Application::run()
     // from now on game state can handle application window state changes
     _p_gameState->initAppWindowStateHandler();
 
+    // setup local app window state handler
+    _p_appWindowStateHandler = new AppWindowStateHandler( this );
+    
     // now the network can start
     if ( GameState::get()->getMode() == GameState::Client )
     {
@@ -508,15 +549,19 @@ void Application::updateStandalone( float deltaTime )
     // update physics
     _p_physics->update( deltaTime );
 
-    // update gui manager
-    _p_guiManager->update( deltaTime );
-
-    // update sound system
-    _p_soundManager->update( deltaTime );
-
-    // update viewer and draw scene
+    // update viewer
     _p_viewer->update();
-    _p_viewer->draw();
+
+    // same some cpu usage when app window is minimized
+    if ( !_appWindowMinimized )
+    {
+        // update gui manager
+        _p_guiManager->update( deltaTime );
+        // update sound system
+        _p_soundManager->update( deltaTime );
+        // draw the scene
+        _p_viewer->draw();
+    }
 
     // check for termination
     if ( _p_viewer->isTerminated() )
@@ -538,15 +583,21 @@ void Application::updateClient( float deltaTime )
     // update physics
     _p_physics->update( deltaTime );
 
-    // update gui manager
-    _p_guiManager->update( deltaTime );
-
-    // update sound system
-    _p_soundManager->update( deltaTime );
-
-    // update viewer and draw scene
+    // update viewer
     _p_viewer->update();
-    _p_viewer->draw();
+
+    // same some cpu usage when app window is minimized
+    if ( !_appWindowMinimized )
+    {
+        // update gui manager
+        _p_guiManager->update( deltaTime );
+
+        // update sound system
+        _p_soundManager->update( deltaTime );
+
+        // draw the scene
+        _p_viewer->draw();
+    }
 
     // check for termination
     if ( _p_viewer->isTerminated() )

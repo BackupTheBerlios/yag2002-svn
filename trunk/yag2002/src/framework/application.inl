@@ -80,3 +80,8 @@ inline const std::string& Application::getWindowTitle()
 {
     return _appWindowTitle;
 }
+
+inline void Application::setAppWindowMinimized( bool en )
+{
+    _appWindowMinimized = en;
+}

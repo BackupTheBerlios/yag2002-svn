@@ -37,6 +37,7 @@
 namespace yaf3d
 {
 
+class AppWindowStateHandler;
 class NetworkDevice;
 class EntityManager;
 class LevelManager;
@@ -96,11 +97,17 @@ class Application : public Singleton< Application >
 
         virtual                                     ~Application();
 
+        //! Update for standalone mode
         void                                        updateStandalone( float deltaTime );
 
+        //! Update for server mode 
         void                                        updateServer( float deltaTime );
 
+        //! Update for client mode
         void                                        updateClient( float deltaTime );
+
+        //! Uses by application window state handler
+        inline void                                 setAppWindowMinimized( bool en );
 
         NetworkDevice*                              _p_networkDevice;
 
@@ -130,6 +137,11 @@ class Application : public Singleton< Application >
 
         std::string                                 _appWindowTitle;
 
+        bool                                        _appWindowMinimized;
+
+        AppWindowStateHandler*                      _p_appWindowStateHandler;
+
+    friend class AppWindowStateHandler;
     friend class Singleton< Application >;
 };
 
