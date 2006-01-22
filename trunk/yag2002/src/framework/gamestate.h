@@ -69,6 +69,16 @@ class GameState : public Singleton< GameState >
             Shutdown                // shutdown the application
         };
 
+        //! Application window state
+        enum ApplicationWindowState
+        {
+            UnknownAppWindowState = 0x30,
+            Minimized,              // application window has been iconified
+            Restored,               // application window has been restored
+            GainedFocus,            // application window got input focus
+            LostFocus               // application window lost input focus
+        };
+
         //! Class for getting callback whenever mode change occured
         class CallbackModeChange
         {
@@ -91,6 +101,17 @@ class GameState : public Singleton< GameState >
                 virtual void                        onStateChange( unsigned int state ) = 0;
         };
 
+        //! Class for getting callback whenever an application window state change occured
+        class CallbackAppWindowStateChange
+        {
+            public:
+                                                    CallbackAppWindowStateChange() {}
+
+                virtual                             ~CallbackAppWindowStateChange() {}
+
+                virtual void                        onAppWindowStateChange( unsigned int state ) = 0;
+        };
+
         //! Set game mode to Server, Client, or Standalone
         void                                    setMode( unsigned int mode );
 
@@ -111,6 +132,12 @@ class GameState : public Singleton< GameState >
         //! Note, this action is not queued, so don't call this method inside a state change callback.
         void                                    registerCallbackStateChange( CallbackStateChange* p_cb, bool reg = true );
 
+        //! Get application window state ( Minimized, Restored )
+        unsigned int                            getAppWindowState();
+ 
+        //! Register / deregister a callback for app window state change ( pass reg = true for registering, otherwiese deregistering )
+        void                                    registerCallbackAppWindowStateChange( CallbackAppWindowStateChange* p_cb, bool reg = true );
+
     protected:
 
                                                 GameState();
@@ -120,11 +147,40 @@ class GameState : public Singleton< GameState >
         //! Shutdown
         void                                    shutdown();
 
+        //! Input handler for catching application window state changes
+        class InputHandler : public osgGA::GUIEventHandler
+        {
+            public:
+
+                explicit                            InputHandler( GameState* p_gamestate );
+
+                virtual                             ~InputHandler();
+
+
+                //! Handle input events
+                bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
+
+            protected:
+
+                GameState*                          _p_gameState;
+        };
+
+        //! Set application window state, this state can be set only by GameState itself.
+        void                                    setAppWindowState( unsigned int state );
+
+        //! Create the input handler for catching app window state changes.
+        //! Note: This method must be called before making use of window state change callbacks.
+        //!       In normal case, Application will call this during system initialization.
+        void                                    initAppWindowStateHandler();
+
         //! Current game state
         unsigned int                            _curState;
 
         //! Game mode (server or client)
         unsigned int                            _gameMode;
+
+        //! Application window state
+        unsigned int                            _appWindowState;
 
         //! Registered callbacks for mode change
         std::vector< CallbackModeChange* >      _cbsModeChange;
@@ -132,6 +188,13 @@ class GameState : public Singleton< GameState >
         //! Registered callbacks for state change
         std::vector< CallbackStateChange* >     _cbsStateChange;
 
+        //! Registered callbacks for app window state change
+        std::vector< CallbackAppWindowStateChange* > _cbsAppWindowStateChange;
+
+        //! Input handler for catching and distributing applicaiton window state changes
+        osg::ref_ptr< GameState::InputHandler >  _inputHandler;
+
+    friend class GameState::InputHandler;
     friend class Singleton< GameState >;
     friend class Application;
 };

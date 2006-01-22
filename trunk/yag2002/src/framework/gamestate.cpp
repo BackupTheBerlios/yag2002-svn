@@ -37,10 +37,61 @@ namespace yaf3d
 
 YAF3D_SINGLETON_IMPL( GameState );
 
+GameState::InputHandler::InputHandler( GameState* p_gameState ) :
+_p_gameState( p_gameState )
+{
+    // register us in viewer to get event callbacks
+    Application::get()->getViewer()->addEventHandler( this );
+}
+
+GameState::InputHandler::~InputHandler()
+{
+    // remove this handler from viewer's handler list
+    Application::get()->getViewer()->removeEventHandler( this );
+}
+
+bool GameState::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+{
+    const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
+    assert( p_eventAdapter && "invalid event adapter received" );
+    const SDL_Event sdlevent = p_eventAdapter->getSDLEvent();
+
+    // get current app window state
+    unsigned int state = _p_gameState->_appWindowState;
+    // set proper state depending on current state and incoming sdl event
+    if ( sdlevent.active.type == SDL_ACTIVEEVENT )
+    {
+        if ( sdlevent.active.state == ( SDL_APPINPUTFOCUS | SDL_APPACTIVE ) )
+        {
+            if ( sdlevent.active.gain == 0 )
+                state = GameState::Minimized;
+            else
+            {
+                if ( state == GameState::LostFocus )
+                    state = GameState::GainedFocus;
+                else
+                    state = GameState::Restored;
+            }
+        }
+        else if ( sdlevent.active.state & SDL_APPINPUTFOCUS )
+        {
+            if ( sdlevent.active.gain == 0 )
+                state = GameState::LostFocus;
+            else
+                state = GameState::GainedFocus;
+        }
+                
+        _p_gameState->setAppWindowState( state );
+    }
+
+    return false;
+}
+
 //! Implementation of GameState
 GameState::GameState() :
 _curState( GameState::UnknownState ),
-_gameMode( GameState::UnknownMode )
+_gameMode( GameState::UnknownMode ),
+_appWindowState( GameState::Restored )
 {
 }
 
@@ -147,6 +198,59 @@ void GameState::registerCallbackModeChange( CallbackModeChange* p_cb, bool reg )
     {
         assert( ( p_beg != p_end ) && "mode change callback does not exist for deregistering!" );
         _cbsModeChange.erase( p_beg );
+    }
+}
+
+void GameState::setAppWindowState( unsigned int state )
+{
+    assert( 
+            ( state == GameState::UnknownAppWindowState ) || 
+            ( state == GameState::Minimized             ) || 
+            ( state == GameState::Restored              ) || 
+            ( state == GameState::GainedFocus           ) || 
+            ( state == GameState::LostFocus             ) && 
+            "GameState: invalid application window state!" 
+          );
+
+    if ( _appWindowState == state )
+        return;
+        
+    _appWindowState = state;
+
+    // call all registered callbacks
+    std::vector< CallbackAppWindowStateChange* >::iterator p_beg = _cbsAppWindowStateChange.begin(), p_end = _cbsAppWindowStateChange.end();
+    for ( ; p_beg != p_end; ++p_beg )
+        ( *p_beg )->onAppWindowStateChange( _appWindowState );
+}
+
+void GameState::initAppWindowStateHandler()
+{
+    assert( ( _inputHandler.get() == NULL ) && "GameState: app window handler already exists!" );
+    _inputHandler = new GameState::InputHandler( this );
+}
+
+unsigned int GameState::getAppWindowState()
+{
+    return _gameMode;
+}
+
+void GameState::registerCallbackAppWindowStateChange( CallbackAppWindowStateChange* p_cb, bool reg )
+{
+    // check whether the callback already exists
+    std::vector< CallbackAppWindowStateChange* >::iterator p_beg = _cbsAppWindowStateChange.begin(), p_end = _cbsAppWindowStateChange.end();
+    for ( ; p_beg != p_end; ++p_beg )
+        if ( *p_beg == p_cb )
+            break;
+
+    if ( reg )
+    {
+        assert( ( p_beg == p_end ) && "app window state change callback is already registered!" );
+        _cbsAppWindowStateChange.push_back( p_cb );
+    }
+    else
+    {
+        assert( ( p_beg != p_end ) && "app window state change callback does not exist for deregistering!" );
+        _cbsAppWindowStateChange.erase( p_beg );
     }
 }
 
