@@ -162,7 +162,7 @@ class GuiManager : public Singleton< GuiManager >
 
         CEGUI::Image*                           _p_mouseImg;
 
-        osg::ref_ptr< InputHandler >            _inputHandler;
+        osg::ref_ptr< GuiManager::InputHandler > _inputHandler;
 
         float                                   _windowWidth;
 
