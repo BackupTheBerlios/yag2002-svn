@@ -214,7 +214,10 @@ class GenericInputHandler : public osgGA::GUIEventHandler
 };
 
 //! Single instance providing GUI-related utility services
-class GuiUtils : public yaf3d::Singleton< vrc::gameutils::GuiUtils >, public yaf3d::GameState::CallbackStateChange
+class GuiUtils : 
+    public yaf3d::Singleton< vrc::gameutils::GuiUtils >, 
+    public yaf3d::GameState::CallbackStateChange,
+    public yaf3d::GameState::CallbackAppWindowStateChange
 {
     public:
 
@@ -253,6 +256,9 @@ class GuiUtils : public yaf3d::Singleton< vrc::gameutils::GuiUtils >, public yaf
 
         //! Callback method for auto-shutdown when application is shutting down
         void                                        onStateChange( unsigned int state );
+
+        //! Callback method for getting application window state changes
+        void                                        onAppWindowStateChange( unsigned int state );
 
     protected:
 

@@ -111,6 +111,9 @@ _p_vrcImageSet( NULL )
         // register this instance for getting game state changes, needed for shutdown
         yaf3d::GameState::get()->registerCallbackStateChange( this );
 
+        // register for getting application window state changes
+        yaf3d::GameState::get()->registerCallbackAppWindowStateChange( this );
+
         // setup standard gui sounds
         createSound( GUI_SND_NAME_CLICK, GUI_SND_FILE_CLICK, GUI_SND_VOL_CLICK );
         createSound( GUI_SND_NAME_HOVER, GUI_SND_FILE_HOVER, GUI_SND_VOL_HOVER );
@@ -168,6 +171,15 @@ void GuiUtils::onStateChange( unsigned int state )
         default:
             ;
     }
+}
+
+void GuiUtils::onAppWindowStateChange( unsigned int state )
+{
+    // when application window is minimized or lost focus then mute the sound
+    if ( ( state == yaf3d::GameState::Minimized ) || ( state == yaf3d::GameState::LostFocus ) )
+        yaf3d::SoundManager::get()->mute( true );
+    else if ( ( state == yaf3d::GameState::Restored ) || ( state == yaf3d::GameState::GainedFocus ) )
+        yaf3d::SoundManager::get()->mute( false );
 }
 
 CEGUI::Window* GuiUtils::getMainGuiWindow()
