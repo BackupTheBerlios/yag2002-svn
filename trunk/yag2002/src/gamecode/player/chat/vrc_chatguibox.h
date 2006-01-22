@@ -114,7 +114,7 @@ class ChatGuiBox
         ChannelTabPane*                             getOrCreateChannelPane( const ChatConnectionConfig& cfg, bool isSystemIO );
 
         //! Remove the given tab pane from tab control
-        void                                        removeTabPane( ChatGuiBox::ChannelTabPane* p_pane );
+        void                                        removeTabPane( ChannelTabPane* p_pane );
 
         //! Destroy a tab pane
         void                                        destroyChannelPane( const ChatConnectionConfig& cfg );
@@ -126,7 +126,7 @@ class ChatGuiBox
         CEGUI::StaticText*                          getShortMsgBox();
 
         //! Typedef for a tab pane queue
-        typedef std::queue< ChatGuiBox::ChannelTabPane*, std::deque< ChatGuiBox::ChannelTabPane* > >  TabQueue;
+        typedef std::queue< ChannelTabPane*, std::deque< ChannelTabPane* > >  TabQueue;
 
         //! A queue for removing tab panes on next update
         TabQueue                                    _queueRemoveTabPane;
