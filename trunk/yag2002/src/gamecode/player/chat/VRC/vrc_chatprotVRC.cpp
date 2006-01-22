@@ -307,7 +307,7 @@ void ImplChatNetworkingVRC::RPC_RecvChatText( tChatMsg chatMsg )
         return;
 
     chatMsg._text[ 255 ] = 0; // limit text length    
-    _p_protVRC->recvMessage( "VRC", _nickNames[ chatMsg._sessionID ], reinterpret_cast< char* >( chatMsg._text ) );
+    _p_protVRC->recvMessage( "", _nickNames[ chatMsg._sessionID ], reinterpret_cast< char* >( chatMsg._text ) );
 }
 
 void ImplChatNetworkingVRC::RPC_PostChatText( tChatMsg chatMsg )
@@ -317,7 +317,7 @@ void ImplChatNetworkingVRC::RPC_PostChatText( tChatMsg chatMsg )
     // here some text filtering can be done before distributing new post to all clients
     ALL_REPLICAS_FUNCTION_CALL( RPC_RecvChatText( chatMsg ) );
 
-    _p_protVRC->recvMessage( "VRC", _nickNames[ chatMsg._sessionID ], reinterpret_cast< char* >( chatMsg._text ) );
+    _p_protVRC->recvMessage( "", _nickNames[ chatMsg._sessionID ], reinterpret_cast< char* >( chatMsg._text ) );
 }
 
 void ImplChatNetworkingVRC::leave()
