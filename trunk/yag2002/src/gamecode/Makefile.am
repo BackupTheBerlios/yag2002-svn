@@ -36,6 +36,7 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			player/vrc_spawnpoint.cpp \
 			player/chat/vrc_chatmgr.cpp \
 			player/chat/vrc_chatguibox.cpp \
+			player/chat/vrc_chatguiboxtab.cpp \
 			player/chat/vrc_chatguictrl.cpp \
 			player/chat/vrc_chatprotocol.cpp \
 			player/chat/vrc_chatserverVRC.cpp \
