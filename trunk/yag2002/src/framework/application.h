@@ -83,6 +83,12 @@ class Application : public Singleton< Application >
         //! Get screen size in width and height
         inline void                                 getScreenSize( unsigned int& x, unsigned int& y ) const;
 
+        //! Set the application window title
+        void                                        setWindowTitle( const std::string& title );
+
+        //! Get the application window title
+        const std::string&                          getWindowTitle();
+
     protected:
 
 
@@ -122,46 +128,14 @@ class Application : public Singleton< Application >
 
         std::string                                 _fulBinaryPath;
 
+        std::string                                 _appWindowTitle;
+
     friend class Singleton< Application >;
 };
 
-inline osgSDL::Viewer* Application::getViewer()
-{
-    return _p_viewer;
-}
-
-inline osgUtil::SceneView* Application::getSceneView( int num )
-{
-    assert( _p_viewer && "viewer is not created!" );
-    return _p_viewer->getViewport( num )->getSceneView();
-}
-
-inline const std::string& Application::getMediaPath() const
-{
-    return _mediaPath;
-}
-
-inline const std::string& Application::getFullBinPath() const
-{
-    return _fulBinaryPath;
-}
-
-inline void Application::setSceneRootNode( osg::Group* p_root )
-{
-    _rootSceneNode = p_root;
-    getSceneView()->setSceneData( _rootSceneNode.get() );
-}
-
-inline osg::Group* Application::getSceneRootNode()
-{
-    return _rootSceneNode.get();
-}
-        
-inline void Application::getScreenSize( unsigned int& x, unsigned int& y ) const
-{
-    x = _screenWidth;
-    y = _screenHeight;
-}
+//! Include inline definitions
+#include "application.inl"
 
 }
+
 #endif // _APPLICATION_H_

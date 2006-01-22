@@ -280,7 +280,10 @@ bool Application::initialize( int argc, char **argv )
        // init SDL with video
         SDL_Init( SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE );
 
-        SDL_WM_SetCaption( YAF3D_APP_TITLE " " YAF3D_VERSION, NULL );
+        // set application window's title
+        _appWindowTitle = YAF3D_APP_TITLE " " YAF3D_VERSION;
+        setWindowTitle( _appWindowTitle );
+
         SDL_Surface* p_bmpsurface = SDL_LoadBMP( YAF3D_APP_ICON );
         if ( p_bmpsurface )
         {
@@ -426,6 +429,9 @@ void Application::run()
 
     // store sound manager reference for faster access in loop
     _p_soundManager = SoundManager::get();
+
+    // from now on game state can handle application window state changes
+    _p_gameState->initAppWindowStateHandler();
 
     // now the network can start
     if ( GameState::get()->getMode() == GameState::Client )
