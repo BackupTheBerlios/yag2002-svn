@@ -31,6 +31,7 @@ libYAF3D_la_SOURCES = 	application.cpp \
 
 
 pkginclude_HEADERS = 	application.h \
+			application.inl \
 			attributemanager.h \
 			attributemanager.inl \
 			base.h \
