@@ -137,10 +137,10 @@ class EnCamera :  public yaf3d::BaseEntity
         //! Setup the camera
         void                                        setupCamera();
 
-        //! Overriden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraPosition!
+        //! Overridden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraPosition!
         void                                        setPosition( osg::Vec3f& pos );
 
-        //! Overriden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraRotation!
+        //! Overridden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraRotation!
         void                                        setRotation( osg::Quat& quats );
 
         // Entity parameters
