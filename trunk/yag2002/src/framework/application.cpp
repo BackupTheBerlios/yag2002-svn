@@ -79,30 +79,30 @@ class AppWindowStateHandler : public GameState::CallbackAppWindowStateChange
 {
     public:
 
-        explicit                                    AppWindowStateHandler( Application* p_app ) :
-                                                     _p_app( p_app )
-                                                    {
-                                                        // register for getting application window state changes
-                                                        GameState::get()->registerCallbackAppWindowStateChange( this );
-                                                    }
+        explicit                AppWindowStateHandler( Application* p_app ) :
+                                 _p_app( p_app )
+                                {
+                                    // register for getting application window state changes
+                                    GameState::get()->registerCallbackAppWindowStateChange( this );
+                                }
 
-        virtual                                     ~AppWindowStateHandler() 
-                                                    {
-                                                    }
+        virtual                 ~AppWindowStateHandler() 
+                                {
+                                }
 
     protected:
 
         //! This is called whenever the app window state changes
-        void                                        onAppWindowStateChange( unsigned int state )
-                                                    {
-                                                        // when application window is minimized the let it the Application know
-                                                        if ( state == GameState::Minimized )
-                                                            _p_app->setAppWindowMinimized( true );
-                                                        else if ( state == yaf3d::GameState::Restored )
-                                                            _p_app->setAppWindowMinimized( false );
-                                                    }
+        void                    onAppWindowStateChange( unsigned int state )
+                                {
+                                    // when application window is minimized the let it the Application know
+                                    if ( state == GameState::Minimized )
+                                        _p_app->setAppWindowMinimized( true );
+                                    else if ( ( state == yaf3d::GameState::Restored ) || ( state == yaf3d::GameState::GainedFocus ) )
+                                        _p_app->setAppWindowMinimized( false );
+                                }
 
-        Application*                                _p_app;
+        Application*            _p_app;
 };
 
 // Implementation of Application
