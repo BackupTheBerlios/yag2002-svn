@@ -31,6 +31,7 @@
 
 #include <base.h>
 #include "gamestate.h"
+#include "application.h"
 
 namespace yaf3d
 {

@@ -34,10 +34,12 @@
 
 #include <base.h>
 #include <singleton.h>
-#include <application.h>
 
 namespace yaf3d
 {
+
+class Application;
+
 //! Game state
 /**
 * Singleton for holding various game states in a central place.
