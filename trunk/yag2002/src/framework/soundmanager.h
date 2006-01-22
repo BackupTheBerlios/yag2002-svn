@@ -38,8 +38,8 @@
 namespace yaf3d
 {
 
-class LevelManager;
 class Application;
+class LevelManager;
 
 //! Class for sound related exceptions
 class SoundException : public std::runtime_error
@@ -105,6 +105,9 @@ class SoundManager : public Singleton< SoundManager >
 
         //! Set volume for sound with given ID.
         void                                        setSoundVolume( unsigned int soundID, float volume );
+
+        //! Mute / demute all channels
+        void                                        mute( bool mut );
 
     protected:
 

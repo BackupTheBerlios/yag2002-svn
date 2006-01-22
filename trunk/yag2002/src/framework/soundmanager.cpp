@@ -302,4 +302,11 @@ void SoundManager::setSoundVolume( unsigned int soundID, float volume )
     p_data->_p_channel->setVolume( volume );
 }
 
+void SoundManager::mute( bool mut )
+{
+    MapSoundData::iterator p_beg = _mapSoundData.begin(), p_end = _mapSoundData.end();
+    for ( ; p_beg != p_end; ++p_beg )
+        p_beg->second->_p_channel->setMute( mut );
+}
+
 } // namespace yaf3d
