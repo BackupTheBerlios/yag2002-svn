@@ -88,6 +88,8 @@ class AppWindowStateHandler : public GameState::CallbackAppWindowStateChange
 
         virtual                 ~AppWindowStateHandler() 
                                 {
+                                    // deregister for getting application window state changes
+                                    yaf3d::GameState::get()->registerCallbackAppWindowStateChange( this, false );
                                 }
 
     protected:
@@ -136,15 +138,16 @@ void Application::shutdown()
     NetworkDevice::get()->shutdown();
     LevelManager::get()->shutdown();
     Configuration::get()->shutdown();
+
     // set the game state to shutdown so game code specific singletons get the chance for destruction
     GameState::get()->setState( GameState::Quitting );
+    delete _p_appWindowStateHandler;
     GameState::get()->shutdown();
+
     SettingsManager::get()->shutdown();
     KeyMap::get()->shutdown();
 
     delete _p_viewer;
-
-    delete _p_appWindowStateHandler;
 
     SDL_Quit();
 

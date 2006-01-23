@@ -69,6 +69,9 @@ ChatManager::~ChatManager()
 
     if ( _p_chatGuiBox )
         delete _p_chatGuiBox;
+
+    // deregister for getting application window state changes
+    yaf3d::GameState::get()->registerCallbackAppWindowStateChange( this, false );
 }
 
 bool ChatManager::buildClient()

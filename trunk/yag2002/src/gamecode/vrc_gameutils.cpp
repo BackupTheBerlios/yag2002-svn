@@ -132,6 +132,9 @@ void GuiUtils::onStateChange( unsigned int state )
     {
         case yaf3d::GameState::Quitting:
         {
+            // deregister for getting application window state changes
+            yaf3d::GameState::get()->registerCallbackAppWindowStateChange( this, false );
+
             // release sounds
             try
             {
