@@ -41,6 +41,10 @@
 namespace yaf3d
 {
 
+// used for copy and paste functionality
+#define TYPE_EDITBOX            "TaharezLook/Editbox"
+#define TYPE_MULITLINEBOX       "TaharezLook/MultiLineEditbox"
+
 //! Viewer's init callback. Here we initialize CEGUI's renderer.
 class GuiViewerInitCallback : public osgSDL::Viewer::ViewerInitCallback
 {
@@ -447,6 +451,14 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
                 CEGUI::System::getSingleton().injectKeyDown( CEGUI::Key::PageDown );
                 break;
 
+            case SDLK_LSHIFT:
+                CEGUI::System::getSingleton().injectKeyDown( CEGUI::Key::LeftShift );
+                break;
+
+            case SDLK_RSHIFT:
+                CEGUI::System::getSingleton().injectKeyDown( CEGUI::Key::RightShift );
+                break;
+
             default:
                 ;
         }
@@ -454,7 +466,165 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
         // inject the unicode character
         CEGUI::System::getSingleton().injectChar( static_cast< CEGUI::utf32 >( event.key.keysym.unicode ) );
     }
+    else if ( eventType == osgGA::GUIEventAdapter::KEYUP )
+    {
+        switch ( key )
+        {
+            case SDLK_BACKSPACE:
+                CEGUI::System::getSingleton().injectKeyUp( CEGUI::Key::Backspace );
+                break;
 
+            case SDLK_RETURN:
+                CEGUI::System::getSingleton().injectKeyUp( CEGUI::Key::Return );
+                break;
+
+            case SDLK_DELETE:
+                CEGUI::System::getSingleton().injectKeyUp( CEGUI::Key::Delete );
+                break;
+
+            case SDLK_ESCAPE:
+                //CEGUI::System::getSingleton().injectKeyUp( CEGUI::Key::Escape );
+                break;
+
+            case SDLK_LEFT:
+                CEGUI::System::getSingleton().injectKeyUp( CEGUI::Key::ArrowLeft );
+                break;
+
+            case SDLK_RIGHT:
+                CEGUI::System::getSingleton().injectKeyUp( CEGUI::Key::ArrowRight );
+                break;
+
+            case SDLK_UP:
+                CEGUI::System::getSingleton().injectKeyUp( CEGUI::Key::ArrowUp );
+                break;
+
+            case SDLK_DOWN:
+                CEGUI::System::getSingleton().injectKeyUp( CEGUI::Key::ArrowDown );
+                break;
+
+            case SDLK_HOME:
+                CEGUI::System::getSingleton().injectKeyUp( CEGUI::Key::Home );
+                break;
+
+            case SDLK_END:
+                CEGUI::System::getSingleton().injectKeyUp( CEGUI::Key::End );
+                break;
+
+            case SDLK_PAGEUP:
+                CEGUI::System::getSingleton().injectKeyUp( CEGUI::Key::PageUp );
+                break;
+
+            case SDLK_PAGEDOWN:
+                CEGUI::System::getSingleton().injectKeyUp( CEGUI::Key::PageDown );
+                break;
+
+            case SDLK_LSHIFT:
+                CEGUI::System::getSingleton().injectKeyUp( CEGUI::Key::LeftShift );
+                break;
+
+            case SDLK_RSHIFT:
+                CEGUI::System::getSingleton().injectKeyUp( CEGUI::Key::RightShift );
+                break;
+
+            default:
+                ;
+        }
+    }
+
+    // dispatch Ctrl+C anc Ctrl+X / Ctrl+V
+    static bool _ctrl   = false;
+    if ( eventType == osgGA::GUIEventAdapter::KEYDOWN )
+    {
+        bool cuttext = false;
+
+        switch ( key )
+        {
+            case SDLK_LCTRL:
+            case SDLK_RCTRL:
+            {
+                _ctrl = true;
+            }
+            break;
+
+            case SDLK_x:
+                cuttext = true;
+
+            case SDLK_c:
+            {
+                if ( _ctrl )
+                {
+                    if ( _p_guiMgr->_p_root )
+                    {
+                        CEGUI::Window* p_active = _p_guiMgr->_p_root->getActiveChild();
+                        if ( p_active )
+                        {
+                            CEGUI::String wintype = p_active->getType();
+                            if ( wintype == TYPE_EDITBOX ) 
+                            {
+                                // get the selected text
+                                CEGUI::Editbox* p_editbox = static_cast< CEGUI::Editbox* >( p_active );
+                                CEGUI::String::size_type beg = p_editbox->getSelectionStartIndex();
+                                CEGUI::String::size_type len = p_editbox->getSelectionLength();
+                                std::string seltext = p_editbox->getText().substr( beg, len ).c_str();
+
+                                // are we cutting or just copying?
+                                if ( cuttext && !p_editbox->isReadOnly() )
+                                {
+                                    CEGUI::String newtext = p_editbox->getText();
+                                    p_editbox->setText( newtext.erase( beg, len ) );
+                                }
+
+                                // copy to clipboard
+                                copyToClipboard( seltext );
+                            }
+                            else if ( wintype == TYPE_MULITLINEBOX ) 
+                            {
+                                // get the selected text
+                                CEGUI::MultiLineEditbox* p_mleditbox = static_cast< CEGUI::MultiLineEditbox* >( p_active );
+                                CEGUI::String::size_type beg = p_mleditbox->getSelectionStartIndex();
+                                CEGUI::String::size_type len = p_mleditbox->getSelectionLength();
+                                std::string seltext = p_mleditbox->getText().substr( beg, len ).c_str();
+
+                                // are we cutting or just copying?
+                                if ( cuttext && !p_mleditbox->isReadOnly() )
+                                {
+                                    CEGUI::String newtext = p_mleditbox->getText();
+                                    p_mleditbox->setText( newtext.erase( beg, len ) );
+                                }
+
+                                // copy to clipboard
+                                copyToClipboard( seltext );
+                            }
+                        }
+                    }
+                }
+            }
+            break;
+
+            case SDLK_v:
+            {
+                if ( _ctrl )
+                {
+                    std::string text;
+                    if ( getFromClipboard( text ) )
+                    {
+                        CEGUI::String utf32str = text;
+                        for ( std::size_t len = utf32str.length(), cnt = 0; cnt < len; ++cnt )
+                            CEGUI::System::getSingleton().injectChar( static_cast< CEGUI::utf32 >( utf32str[ cnt ] ) );
+                    }
+                }
+            }
+            break;
+
+            default:
+                ;
+        }
+    }
+    else if ( eventType == osgGA::GUIEventAdapter::KEYUP )
+    {
+        if ( ( key == SDLK_LCTRL ) || ( key == SDLK_RCTRL ) )
+            _ctrl = false;
+    }
 
     // handle mouse
     unsigned int buttonMask = ea.getButtonMask();
