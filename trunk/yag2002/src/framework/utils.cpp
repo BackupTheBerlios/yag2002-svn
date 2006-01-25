@@ -45,6 +45,69 @@
 
 namespace yaf3d
 {
+
+
+bool copyToClipboard( const std::string& text )
+{
+#ifdef WIN32
+    if ( !OpenClipboard( NULL ) )
+        return false;
+
+    // copy to clipboard data
+    EmptyClipboard();
+    HGLOBAL hmem = GlobalAlloc( GMEM_MOVEABLE, text.length() + 1 );
+    char*   p_text = ( char* )GlobalLock( hmem ); 
+    memcpy( p_text, text.c_str(), text.length() );
+    p_text[ text.length() ] = ( char )0;
+    GlobalUnlock( hmem );                                     
+    SetClipboardData( CF_TEXT, hmem );
+    CloseClipboard();
+#endif
+#ifdef LINUX
+
+    //! TODO
+    char* p_dst = new char[ text.length() ];
+    if ( p_dst != NULL )
+    {
+        Lock_Display();
+        XChangeProperty( SDL_Display, DefaultRootWindow( SDL_Display ),
+            XA_CUT_BUFFER0, format, 8, PropModeReplace, p_dst, text.length() );
+        delete p_dest;
+ //       if ( lost_scrap() )
+            XSetSelectionOwner( SDL_Display, XA_PRIMARY, SDL_Window, CurrentTime );
+
+        Unlock_Display();
+    }
+
+#endif
+    return true;
+}
+
+bool getFromClipboard( std::string& text )
+{
+#ifdef WIN32
+    if ( !OpenClipboard( NULL ) )
+        return false;
+
+   HANDLE data  = GetClipboardData( CF_TEXT );
+   if ( !data )
+       return false;
+
+   char* p_text = NULL;      
+   p_text = ( char* )GlobalLock( data );
+   GlobalUnlock( data );
+   CloseClipboard();
+   text = p_text;
+#endif
+#ifdef LINUX
+
+    //! TODO
+
+#endif
+
+   return true;
+}
+
 // implement missing time functions on linux
 #ifdef LINUX
 char* _strtime( char* p_str )
