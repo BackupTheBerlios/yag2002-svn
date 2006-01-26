@@ -40,16 +40,51 @@
  #include <glob.h>
  #include <dirent.h>
  #include <spawn.h>
+ #include <SDL_syswm.h>
 #endif
 
 
 namespace yaf3d
 {
 
+#ifdef LINUX
+
+// used for Copy & Paste 
+static Display* SDL_Display = NULL;
+static Window   SDL_Window;
+static void ( *Lock_Display   )( void );
+static void ( *Unlock_Display )( void );
+
+// init stuff for Copy & Paste
+void initCopyPaste()
+{
+    SDL_SysWMinfo info;
+    SDL_VERSION(&info.version);
+    if ( SDL_GetWMInfo( &info ) )
+    {
+        if ( info.subsystem == SDL_SYSWM_X11 )
+        {
+            SDL_Display    = info.info.x11.display;
+            SDL_Window     = info.info.x11.window;
+            Lock_Display   = info.info.x11.lock_func;
+            Unlock_Display = info.info.x11.unlock_func;
+
+            SDL_EventState( SDL_SYSWMEVENT, SDL_ENABLE );
+            //SDL_SetEventFilter( clipboardFilter );
+        }
+        else
+        {
+            SDL_SetError("SDL is not running on X11");
+        }
+    }
+}
+
+#endif
 
 bool copyToClipboard( const std::string& text )
 {
 #ifdef WIN32
+
     if ( !OpenClipboard( NULL ) )
         return false;
 
@@ -59,27 +94,30 @@ bool copyToClipboard( const std::string& text )
     char*   p_text = ( char* )GlobalLock( hmem ); 
     memcpy( p_text, text.c_str(), text.length() );
     p_text[ text.length() ] = ( char )0;
-    GlobalUnlock( hmem );                                     
+    GlobalUnlock( hmem );
     SetClipboardData( CF_TEXT, hmem );
     CloseClipboard();
+
 #endif
 #ifdef LINUX
 
-    //! TODO
-    char* p_dst = new char[ text.length() ];
-    if ( p_dst != NULL )
-    {
-        Lock_Display();
-        XChangeProperty( SDL_Display, DefaultRootWindow( SDL_Display ),
-            XA_CUT_BUFFER0, format, 8, PropModeReplace, p_dst, text.length() );
-        delete p_dest;
- //       if ( lost_scrap() )
-            XSetSelectionOwner( SDL_Display, XA_PRIMARY, SDL_Window, CurrentTime );
+    if ( !SDL_Display )
+       initCopyPaste();
 
-        Unlock_Display();
-    }
+    char* p_dst = ( char* )malloc( text.length() );
+    strcpy( p_dst, text.c_str() );
+
+    Lock_Display();
+    if ( XGetSelectionOwner( SDL_Display, XA_PRIMARY ) != SDL_Window )
+        XSetSelectionOwner( SDL_Display, XA_PRIMARY, SDL_Window, CurrentTime );
+
+    XChangeProperty( SDL_Display, DefaultRootWindow( SDL_Display ), XA_CUT_BUFFER0, XA_STRING, 8, PropModeReplace, ( unsigned char* )p_dst, strlen( p_dst ) );
+    Unlock_Display();
+
+    free( p_dst );
 
 #endif
+
     return true;
 }
 
@@ -89,23 +127,61 @@ bool getFromClipboard( std::string& text )
     if ( !OpenClipboard( NULL ) )
         return false;
 
-   HANDLE data  = GetClipboardData( CF_TEXT );
-   if ( !data )
+    HANDLE data  = GetClipboardData( CF_TEXT );
+    if ( !data )
        return false;
 
-   char* p_text = NULL;      
-   p_text = ( char* )GlobalLock( data );
-   GlobalUnlock( data );
-   CloseClipboard();
-   text = p_text;
+    char* p_text = NULL;
+    p_text = ( char* )GlobalLock( data );
+    GlobalUnlock( data );
+    CloseClipboard();
+    text = p_text;
 #endif
 #ifdef LINUX
 
-    //! TODO
+    if ( !SDL_Display )
+      initCopyPaste();
+
+    Window         owner;
+    Atom           selection;
+    Atom           selntype;
+    int            selnformat;
+    unsigned long  nbytes;
+    unsigned long  overflow;
+    char*          p_src;
+
+    Lock_Display();
+    owner = XGetSelectionOwner( SDL_Display, XA_PRIMARY );
+    Unlock_Display();
+
+    if ( ( owner == None ) || ( owner == SDL_Window ) )
+    {
+        owner = DefaultRootWindow( SDL_Display );
+        selection = XA_CUT_BUFFER0;
+    }
+    else
+    {
+        owner = SDL_Window;
+        selection = XInternAtom( SDL_Display, "SDL_SELECTION", False );
+        Lock_Display();
+        XConvertSelection( SDL_Display, XA_PRIMARY, XA_STRING, selection, owner, CurrentTime );
+        Unlock_Display();
+     }
+
+    Lock_Display();
+    if ( XGetWindowProperty( SDL_Display, owner, selection, 0, INT_MAX/4, False, XA_STRING, &selntype, &selnformat,
+         &nbytes, &overflow, ( unsigned char ** )&p_src ) == Success )
+    {
+        if ( selntype == XA_STRING )
+            text = p_src;
+
+        XFree( p_src );
+    }
+    Unlock_Display();
 
 #endif
 
-   return true;
+    return true;
 }
 
 // implement missing time functions on linux
