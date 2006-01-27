@@ -36,7 +36,7 @@ namespace vrc
 {
 	
 //! Implement and register the entity factory
-YAF3D_IMPL_ENTITYFACTORY( GeomEmitteEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( GeomEmitteEntityFactory )
 
 EnGeomEmitter::EnGeomEmitter():
 _dimensions( osg::Vec3f( 5.0f, 5.0f, 5.0f ) ),
