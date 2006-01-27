@@ -16,9 +16,9 @@ typedef struct _tInitializationData
 class _MAKE_BASE(PlayerNetworking);
 class _RO_PlayerNetworking : public RNReplicaNet::ReplicaObject
 {
-	_RO_STD_FRAMEWORK(PlayerNetworking);
-	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_Initialize);
+	_RO_STD_FRAMEWORK(PlayerNetworking)
+	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_Initialize)
 	void Call_RPC_Initialize(tInitializationData);
-	_RO_DEF_REGISTERDATABLOCKS(PlayerNetworking);
+	_RO_DEF_REGISTERDATABLOCKS(PlayerNetworking)
 };
 #endif
