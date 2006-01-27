@@ -108,7 +108,7 @@ class AppWindowStateHandler : public GameState::CallbackAppWindowStateChange
 };
 
 // Implementation of Application
-YAF3D_SINGLETON_IMPL( Application );
+YAF3D_SINGLETON_IMPL( Application )
 
 Application::Application():
 _p_networkDevice( NULL ),
