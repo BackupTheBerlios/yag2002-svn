@@ -123,7 +123,7 @@ class GLResourceCompiler : public osg::NodeVisitor
 };
 
 //! Implement the level manager singleton
-YAF3D_SINGLETON_IMPL( LevelManager );
+YAF3D_SINGLETON_IMPL( LevelManager )
 
 LevelManager::LevelManager() :
 _staticMesh( NULL ),

@@ -39,7 +39,7 @@ namespace yaf3d
 {
 
 // Implement the singleton instance
-YAF3D_SINGLETON_IMPL( EntityManager );
+YAF3D_SINGLETON_IMPL( EntityManager )
 
 
 EntityManager::EntityManager() :

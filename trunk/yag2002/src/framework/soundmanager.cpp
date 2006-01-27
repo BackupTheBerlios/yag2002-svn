@@ -40,7 +40,7 @@
 namespace yaf3d
 {
 
-YAF3D_SINGLETON_IMPL( SoundManager );
+YAF3D_SINGLETON_IMPL( SoundManager )
 
 SoundManager::SoundManager() :
 _p_system( NULL ),

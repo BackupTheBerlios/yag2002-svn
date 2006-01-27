@@ -36,7 +36,7 @@
 namespace yaf3d
 {
 
-YAF3D_SINGLETON_IMPL( SettingsManager );
+YAF3D_SINGLETON_IMPL( SettingsManager )
 
 // implementation of SettingsManager
 SettingsManager::SettingsManager()

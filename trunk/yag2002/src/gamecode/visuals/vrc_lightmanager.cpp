@@ -31,7 +31,7 @@
 #include <vrc_main.h>
 #include "vrc_lightmanager.h"
 
-YAF3D_SINGLETON_IMPL( vrc::LightManager );
+YAF3D_SINGLETON_IMPL( vrc::LightManager )
 
 namespace vrc
 {

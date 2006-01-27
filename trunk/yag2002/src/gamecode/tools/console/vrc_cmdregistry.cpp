@@ -32,7 +32,7 @@
 #include "vrc_cmdregistry.h"
 #include "vrc_basecmd.h"
 
-YAF3D_SINGLETON_IMPL( vrc::ConsoleCommandRegistry );
+YAF3D_SINGLETON_IMPL( vrc::ConsoleCommandRegistry )
 
 namespace vrc
 {

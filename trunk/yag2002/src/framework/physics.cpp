@@ -40,7 +40,7 @@
 namespace yaf3d
 {
 
-YAF3D_SINGLETON_IMPL( Physics );
+YAF3D_SINGLETON_IMPL( Physics )
 
 // default collision struct for materials
 CollisionStruct defaultCollStruct;

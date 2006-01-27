@@ -36,7 +36,7 @@
 namespace yaf3d
 {
 
-YAF3D_SINGLETON_IMPL( GameState );
+YAF3D_SINGLETON_IMPL( GameState )
 
 GameState::InputHandler::InputHandler( GameState* p_gameState ) :
 _p_gameState( p_gameState )

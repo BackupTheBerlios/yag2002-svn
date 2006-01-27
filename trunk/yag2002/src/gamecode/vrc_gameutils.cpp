@@ -32,8 +32,8 @@
 #include <vrc_gameutils.h>
 
 
-YAF3D_SINGLETON_IMPL( vrc::gameutils::PlayerUtils );
-YAF3D_SINGLETON_IMPL( vrc::gameutils::GuiUtils );
+YAF3D_SINGLETON_IMPL( vrc::gameutils::PlayerUtils )
+YAF3D_SINGLETON_IMPL( vrc::gameutils::GuiUtils )
 
 #define GUI_SND_FILE_CLICK                  "gui/sound/click.wav"
 #define GUI_SND_VOL_CLICK                   0.2f

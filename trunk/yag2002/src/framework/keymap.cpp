@@ -34,7 +34,7 @@
 namespace yaf3d
 {
 
-YAF3D_SINGLETON_IMPL( KeyMap );
+YAF3D_SINGLETON_IMPL( KeyMap )
 
 //! Implementation of KeyMap
 KeyMap::KeyMap() :

@@ -132,7 +132,7 @@ void GuiResourceProvider::loadRawDataContainer( const CEGUI::String& filename, C
 }
 
 
-YAF3D_SINGLETON_IMPL( GuiManager );
+YAF3D_SINGLETON_IMPL( GuiManager )
 
 // implementation of GuiManager
 GuiManager::GuiManager() :

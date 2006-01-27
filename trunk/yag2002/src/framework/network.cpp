@@ -42,7 +42,7 @@ namespace yaf3d
 {
 
 // Implement the singleton NetworkDevice
-YAF3D_SINGLETON_IMPL( NetworkDevice );
+YAF3D_SINGLETON_IMPL( NetworkDevice )
 
 
 // helper function for converting the protocol version to a string
