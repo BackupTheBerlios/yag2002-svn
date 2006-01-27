@@ -249,6 +249,6 @@ class AttributeManager
 
 #include "attributemanager.inl"
 
-}; // namespace yaf3d
+} // namespace yaf3d
 
 #endif //_ATTRIBUTEMANAGER_H_

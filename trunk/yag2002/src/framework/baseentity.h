@@ -265,6 +265,6 @@ class BaseEntity
 
 #include "baseentity.inl"
 
-}; // namespace yaf3d
+} // namespace yaf3d
 
 #endif //_BASEENTITY_H_

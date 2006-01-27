@@ -39,7 +39,7 @@
 namespace yaf3d
 {
 
-YAF3D_SINGLETON_IMPL( Configuration );
+YAF3D_SINGLETON_IMPL( Configuration )
 
 Configuration::Configuration() :
 _p_settings( SettingsManager::get()->createProfile( YAF3D_GAMESETTING_PROFILENAME, Application::get()->getMediaPath() + YAF3D_GAMESETTING_FILENAME ) ),
