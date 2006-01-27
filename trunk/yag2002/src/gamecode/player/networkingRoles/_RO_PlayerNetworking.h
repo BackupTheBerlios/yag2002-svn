@@ -3,7 +3,7 @@
 #define ___RO_PlayerNetworking_h__
 #include "RNReplicaNet/Inc/ReplicaObject.h"
 #include "RNReplicaNet/Inc/Define_RO.h"
-_RO_DEF_ALLOCATEFUNC(PlayerNetworking);
+_RO_DEF_ALLOCATEFUNC(PlayerNetworking)
 
 typedef struct _tInitializationData
 {
