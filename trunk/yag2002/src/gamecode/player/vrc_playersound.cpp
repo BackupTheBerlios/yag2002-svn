@@ -45,7 +45,7 @@ namespace vrc
 #define SND_GRASS       5
 
 //! Implement and register the player animation entity factory
-YAF3D_IMPL_ENTITYFACTORY( PlayerSoundEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( PlayerSoundEntityFactory )
 
 EnPlayerSound::EnPlayerSound() :
 _offset( osg::Vec3f( 0.0f, 0.0f, -1.0f ) ),

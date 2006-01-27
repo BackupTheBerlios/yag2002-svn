@@ -37,7 +37,7 @@ namespace vrc
 #define STAT_WND    "_statistics_"
 
 //! Implement and register the statistics entity factory
-YAF3D_IMPL_ENTITYFACTORY( FPSDisplayEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( FPSDisplayEntityFactory )
 
 EnFPSDisplay::EnFPSDisplay() :
 _position( osg::Vec3f( 0.001f, 0.001f, 0 ) ),

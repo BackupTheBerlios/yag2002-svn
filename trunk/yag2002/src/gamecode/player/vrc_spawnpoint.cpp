@@ -39,7 +39,7 @@ namespace vrc
 {
 
 //! Implement and register the spawn point entity factory
-YAF3D_IMPL_ENTITYFACTORY( SpawnPointEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( SpawnPointEntityFactory )
 
 std::vector< EnSpawnPoint* > EnSpawnPoint::_allSpawnPoints;
 

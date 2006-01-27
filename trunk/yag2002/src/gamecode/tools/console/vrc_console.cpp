@@ -41,7 +41,7 @@ namespace vrc
 {
 
 //! Implement and register the statistics entity factory
-YAF3D_IMPL_ENTITYFACTORY( ConsoleEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( ConsoleEntityFactory )
 
 EnConsole::EnConsole() :
 _enable( false ),

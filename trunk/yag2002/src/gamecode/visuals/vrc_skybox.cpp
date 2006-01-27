@@ -35,7 +35,7 @@ namespace vrc
 {
 
 //! Implement and register the skybox entity factory
-YAF3D_IMPL_ENTITYFACTORY( SkyBoxEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( SkyBoxEntityFactory )
 
 
 EnSkyBox::EnSkyBox() :

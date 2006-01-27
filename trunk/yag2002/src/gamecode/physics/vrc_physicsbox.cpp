@@ -38,7 +38,7 @@ namespace vrc
 static yaf3d::CollisionStruct s_boxCollStruct;
 
 //! Implement and register the entity factory
-YAF3D_IMPL_ENTITYFACTORY( PhysicsBoxEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( PhysicsBoxEntityFactory )
 
 
 EnPhysicsBox::EnPhysicsBox():

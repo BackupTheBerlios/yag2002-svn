@@ -224,7 +224,7 @@ bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
 }
 
 //! Implement and register the observer entity factory
-YAF3D_IMPL_ENTITYFACTORY( ObserverEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( ObserverEntityFactory )
 
 EnObserver::EnObserver() :
 _maxSpeed( 10.0f ),

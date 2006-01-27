@@ -205,7 +205,7 @@ osg::ref_ptr< osg::StateSet > EnWater::s_stateSet;
 
 //---------------------------------------------------
 //! Implement and register the water entity factory
-YAF3D_IMPL_ENTITYFACTORY( WaterEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( WaterEntityFactory )
 
 // Implementation of water entity
 EnWater::EnWater() :

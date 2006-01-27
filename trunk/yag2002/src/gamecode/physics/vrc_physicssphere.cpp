@@ -38,7 +38,7 @@ namespace vrc
 static yaf3d::CollisionStruct s_sphereCollStruct;
 
 //! Implement and register the entity factory
-YAF3D_IMPL_ENTITYFACTORY( PhysicsSphereEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( PhysicsSphereEntityFactory )
 
 EnPhysicsSphere::EnPhysicsSphere():
 _mass( 1.0f ),

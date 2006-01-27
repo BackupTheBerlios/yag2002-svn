@@ -37,7 +37,7 @@ namespace vrc
 {
 
 //! Implement and register the VRC chat server entity factory
-YAF3D_IMPL_ENTITYFACTORY( ChatServerVRCEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( ChatServerVRCEntityFactory )
 
 
 EnChatServerVRC::EnChatServerVRC():

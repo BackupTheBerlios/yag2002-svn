@@ -103,7 +103,7 @@ bool CameraFrameHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
 }
 
 //! Implement and register the camera entity factory
-YAF3D_IMPL_ENTITYFACTORY( CameraEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( CameraEntityFactory )
 
 EnCamera::EnCamera() :
 _fov( 60.00 ),

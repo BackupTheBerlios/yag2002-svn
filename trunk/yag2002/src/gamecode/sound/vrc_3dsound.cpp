@@ -35,7 +35,7 @@ namespace vrc
 {
 
 //! Implement and register the 3d sound entity factory
-YAF3D_IMPL_ENTITYFACTORY( ThreeDSoundEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( ThreeDSoundEntityFactory )
 
 
 En3DSound::En3DSound() :

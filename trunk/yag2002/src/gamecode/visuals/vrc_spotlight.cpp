@@ -34,7 +34,7 @@
 namespace vrc
 {
 //! Implement and register the spotlight entity factory
-YAF3D_IMPL_ENTITYFACTORY( SpotLightEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( SpotLightEntityFactory )
 
 EnSpotLight::EnSpotLight() :
 _direction( osg::Vec3f( 0.0f, 0.0f, -1.0f ) ),

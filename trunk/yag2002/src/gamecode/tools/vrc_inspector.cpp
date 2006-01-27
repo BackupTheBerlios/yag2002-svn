@@ -603,7 +603,7 @@ bool InspectorIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
 }
 
 //! Implement and register the inspector entity factory
-YAF3D_IMPL_ENTITYFACTORY( InspectorEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( InspectorEntityFactory )
 
 EnInspector::EnInspector() :
 _maxSpeed( 10.0f ),

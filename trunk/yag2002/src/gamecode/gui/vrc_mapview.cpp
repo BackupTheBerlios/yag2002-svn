@@ -52,7 +52,7 @@ namespace vrc
 
 
 //! Implement and register the map view entity factory
-YAF3D_IMPL_ENTITYFACTORY( MapViewEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( MapViewEntityFactory )
 
 EnMapView::EnMapView() :
 _align( "topright" ),

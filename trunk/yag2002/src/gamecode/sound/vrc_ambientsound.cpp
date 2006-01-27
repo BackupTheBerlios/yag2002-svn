@@ -35,7 +35,7 @@ namespace vrc
 {
 
 //! Implement and register the ambient sound entity factory
-YAF3D_IMPL_ENTITYFACTORY( AmbientSoundEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( AmbientSoundEntityFactory )
 
 
 EnAmbientSound::EnAmbientSound() :

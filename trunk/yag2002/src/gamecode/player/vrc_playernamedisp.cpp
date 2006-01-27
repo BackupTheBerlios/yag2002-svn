@@ -40,7 +40,7 @@ namespace vrc
 #define NAMEDISPLAY_PREFIX  "_playernamedisplay_"
 
 //! Implement and register the entity factory
-YAF3D_IMPL_ENTITYFACTORY( PlayerNameDisplayEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( PlayerNameDisplayEntityFactory )
     
 EnPlayerNameDisplay::EnPlayerNameDisplay() :
 _position( osg::Vec3f( 0.02f, 0.9f ,0.0f ) ),

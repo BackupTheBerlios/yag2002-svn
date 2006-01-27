@@ -35,7 +35,7 @@ namespace vrc
 {
 
 //! Implement and register the fog entity factory
-YAF3D_IMPL_ENTITYFACTORY( FogEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( FogEntityFactory )
 
 osg::Fog*    EnFog::_p_fog     = NULL;
 unsigned int EnFog::_instCount = 0;

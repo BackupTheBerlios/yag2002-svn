@@ -43,7 +43,7 @@ namespace vrc
 #define SND_PLAY_RELAX_TIME     0.2f
 
 //! Implement and register the player physics entity factory
-YAF3D_IMPL_ENTITYFACTORY( PlayerPhysicsEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( PlayerPhysicsEntityFactory )
 
 bool EnPlayerPhysics::_materialsCreated = false;
 

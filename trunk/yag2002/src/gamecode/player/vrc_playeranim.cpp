@@ -92,7 +92,7 @@ static const char glsl_fp[] =
 static osg::ref_ptr< osg::Program > s_program;
 
 //! "Implement and register the player animation entity factory
-YAF3D_IMPL_ENTITYFACTORY( PlayerAnimationEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( PlayerAnimationEntityFactory )
 
 EnPlayerAnimation::EnPlayerAnimation() :
 _anim( eIdle ),

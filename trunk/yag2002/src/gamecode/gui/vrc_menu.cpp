@@ -135,7 +135,7 @@ class MenuInputHandler : public vrc::gameutils::GenericInputHandler< EnMenu >
 };
 
 //! Implement and register the menu entity factory
-YAF3D_IMPL_ENTITYFACTORY( MenuEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( MenuEntityFactory )
 
 EnMenu::EnMenu() :
 _menuConfig( "gui/menu.xml" ),

@@ -39,7 +39,7 @@ namespace vrc
 static yaf3d::CollisionStruct s_cylinderCollStruct;
 
 //! Implement and register the entity factory
-YAF3D_IMPL_ENTITYFACTORY( PhysicsCylinderEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( PhysicsCylinderEntityFactory )
 
 EnPhysicsCylinder::EnPhysicsCylinder():
 _mass( 1.0f ),

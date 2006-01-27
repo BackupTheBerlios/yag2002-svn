@@ -39,7 +39,7 @@ namespace vrc
 #define PLAYERINFO_WND    "_playerinfo_"
 
 //! Implement and register the player ingo entity factory
-YAF3D_IMPL_ENTITYFACTORY( PlayerInfoDisplayEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( PlayerInfoDisplayEntityFactory )
 
 EnPlayerInfoDisplay::EnPlayerInfoDisplay() :
 _position( osg::Vec3f( 0.001f, 0.1f, 0 ) ),

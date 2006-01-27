@@ -35,7 +35,7 @@ namespace vrc
 {
 
 //! Implement and register the platform entity factory
-YAF3D_IMPL_ENTITYFACTORY( PlatformEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( PlatformEntityFactory )
 
 
 EnPlatform::EnPlatform():

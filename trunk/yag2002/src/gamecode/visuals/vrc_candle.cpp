@@ -36,7 +36,7 @@ namespace vrc
 {
 
 //! Implement and register the candle entity factory
-YAF3D_IMPL_ENTITYFACTORY( CandleEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( CandleEntityFactory )
 
 // Implementation of water entity
 EnCandle::EnCandle() :

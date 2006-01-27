@@ -35,7 +35,7 @@ namespace vrc
 {
 
 //! Implement and register the mesh entity factory
-YAF3D_IMPL_ENTITYFACTORY( MeshEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( MeshEntityFactory )
 
 EnMesh::EnMesh() :
 _enable( true ),

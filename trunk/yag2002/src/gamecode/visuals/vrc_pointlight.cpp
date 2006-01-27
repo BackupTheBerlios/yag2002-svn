@@ -36,7 +36,7 @@ namespace vrc
 {
 //-----------------
 //! Implement and register the pointlight entity factory
-YAF3D_IMPL_ENTITYFACTORY( PointLightEntityFactory );
+YAF3D_IMPL_ENTITYFACTORY( PointLightEntityFactory )
 
 EnPointLight::EnPointLight() :
 _lightRadius( 100.0f ),
