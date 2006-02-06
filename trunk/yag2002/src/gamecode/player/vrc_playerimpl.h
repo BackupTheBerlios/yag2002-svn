@@ -140,9 +140,6 @@ class BasePlayerImplementation
         //! Return player's camera
         inline EnCamera*                            getPlayerCamera();
 
-        //! Create the chat manager, return false if something went wrong
-        bool                                        createChatManager();
-
         //! Destroy the chat manager instance
         void                                        destroyChatManager();
 
@@ -178,6 +175,9 @@ class BasePlayerImplementation
 
         //! Set next available camera mode
         void                                        setNextCameraMode();
+
+        //! Create the chat manager, return false if something went wrong
+        static bool                                 createChatManager();
 
         //! A copy of player attributes
         EnPlayer::PlayerAttributes                  _playerAttributes;

@@ -72,6 +72,9 @@ BasePlayerImplementation::~BasePlayerImplementation()
 // get the shared chat manager
 ChatManager* BasePlayerImplementation::getChatManager()
 {
+    if ( !s_chatMgr )
+        createChatManager();
+
     return s_chatMgr;
 }
 
@@ -108,15 +111,23 @@ bool BasePlayerImplementation::createChatManager()
     }
 
     // build the chat system
-    if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
+    try
     {
-        if ( !s_chatMgr->buildServer() )
-            return false;
+        if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
+        {
+            s_chatMgr->buildServer();
+        }
+        else
+        {
+            s_chatMgr->buildClient();
+        }
     }
-    else
+    catch( const ChatExpection& e )
     {
-        if ( !s_chatMgr->buildClient() )
-            return false;
+        log_error << "Cannot create chat manager, reason: " << e.what() << std::endl;
+        delete s_chatMgr;
+        s_chatMgr = NULL;
+        return false;   
     }
 
     return true;

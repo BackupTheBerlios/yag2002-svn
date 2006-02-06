@@ -239,7 +239,7 @@ void PlayerImplClient::postInitialize()
         }
 
         // create the chat manager
-        if ( !createChatManager() )
+        if ( !getChatManager() )
         {
             log_error << "   -  could not create chat system" << std::endl;
         }
