@@ -103,8 +103,11 @@ class SoundManager : public Singleton< SoundManager >
         //! Stop sound with given ID. Next playSound call will start at begin of sound track.
         void                                        stopSound( unsigned int soundID );
 
-        //! Set volume for sound with given ID.
+        //! Set volume [0..1] for sound with given ID.
         void                                        setSoundVolume( unsigned int soundID, float volume );
+
+        //! Set master volume [0..1]
+        void                                        setMasterVolume( float volume );
 
         //! Mute / demute all channels
         void                                        mute( bool mut );

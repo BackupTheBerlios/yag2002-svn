@@ -284,6 +284,9 @@ void SoundManager::stopSound( unsigned int soundID )
 
 void SoundManager::setSoundVolume( unsigned int soundID, float volume )
 {
+    if ( ( volume > 1.0f ) || ( volume < 0.0f ) )
+        throw SoundException( "Volume out of range, it must be in range 0..1" );
+
     MapSoundData::iterator p_sounddata = _mapSoundData.find( soundID );
     if ( p_sounddata == _mapSoundData.end() )
     {
@@ -292,14 +295,20 @@ void SoundManager::setSoundVolume( unsigned int soundID, float volume )
         throw SoundException( str.str() );
     }
 
-    SoundData* p_data = p_sounddata->second;
+    p_sounddata->second->_p_channel->setVolume( volume );
+}
 
-    float tmpvol = std::max( std::min( volume, 1.0f ), 0.0f );
-    if ( fabs( tmpvol - volume ) > 0.01f )
-        log_warning << "*** SoundManager::setSoundVolume: volume must be in range [0..1], clamped to " << tmpvol << std::endl;
+void SoundManager::setMasterVolume( float volume )
+{
+    FMOD::ChannelGroup* p_mastergroup;
+    FMOD_RESULT res = _p_system->getMasterChannelGroup( &p_mastergroup );
+    if ( res != FMOD_OK )
+        throw SoundException( "Problem setting master volume" );
 
-    volume = tmpvol;
-    p_data->_p_channel->setVolume( volume );
+    if ( ( volume > 1.0f ) || ( volume < 0.0f ) )
+        throw SoundException( "Volume out of range, it must be in range 0..1" );
+
+    p_mastergroup->setVolume( volume );
 }
 
 void SoundManager::mute( bool mut )
