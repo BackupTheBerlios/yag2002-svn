@@ -178,6 +178,8 @@ void NetworkDevice::disconnect()
     _nodeInfo._levelName = "";
     _nodeInfo._nodeName  = "";
 
+    _serverIP            = "";
+
     log_debug << "NetworkDevice: successfully disconnected from network session" << std::endl;
 }
 
@@ -196,6 +198,8 @@ void NetworkDevice::shutdown()
     RNReplicaNet::PlatformHeap::ForceFree();
 
     _mode = NetworkDevice::NONE;
+
+    _serverIP            = "";
 
     // destroy singleton
     destroy();
@@ -244,6 +248,11 @@ void NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  ) throw 
 
     std::string url = _p_session->SessionExportURL();
     log_info << "NetworkDevice: server session established: " << url << std::endl;
+
+    // extract the ip from url and store it
+    std::string ip( url.substr( url.find( "@" ) + 1 ) );
+    ip.erase( ip.find( ":" ) );
+    _serverIP = ip;
 }
 
 void NetworkDevice::setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo ) throw ( NetworkException )
@@ -441,6 +450,8 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
     }
     _clientSessionStable = true;
     _mode = NetworkDevice::CLIENT;
+
+    _serverIP = ip;
 }
 
 void NetworkDevice::startClient() throw ( NetworkException )
@@ -458,7 +469,7 @@ void NetworkDevice::startClient() throw ( NetworkException )
 
     log_info << "NetworkDevice: client successfully integrated to network" << std::endl;
     std::stringstream msg;
-    msg << "nw client: server name: '" <<
+    msg << "NetworkDevice: server name: '" <<
         _nodeInfo._nodeName  <<
         "', level name: '"   <<
         _nodeInfo._levelName <<
@@ -492,8 +503,12 @@ void NetworkDevice::startClient() throw ( NetworkException )
     }
     log_debug << std::endl;
 
-    std::string sessionurl = _p_session->SessionExportURL();
-    log_info << "NetworkDevice: client successfully joined to session: " << sessionurl << std::endl;
+    log_info << "NetworkDevice: client successfully joined to session: " << _p_session->SessionExportURL() << std::endl;
+}
+
+const std::string& NetworkDevice::getServerIP()
+{
+    return _serverIP;
 }
 
 void NetworkDevice::registerSessionNotify( SessionNotifyCallback* p_cb )
@@ -556,17 +571,17 @@ void NetworkDevice::updateServer( float deltaTime )
     int         bufferLength;
     while ( _p_session->DataReceive( &sessionId, p_buffer, &bufferLength ) ) 
     {
-        PreconnectDataClient* p_data = ( PreconnectDataClient* )p_buffer;
-        if ( p_data->_typeId == ( unsigned char )YAF3DNW_PRECON_DATA_CLIENT ) 
+        PreconnectDataClient* p_data = reinterpret_cast< PreconnectDataClient* >( p_buffer );
+        if ( p_data->_typeId == static_cast< unsigned char >( YAF3DNW_PRECON_DATA_CLIENT ) ) 
         {
             log_info << "NetworkDevice: server is requested for a new client connection ... " << std::endl;
             // send server node
             PreconnectDataServer sendData;
-            sendData._typeId = ( unsigned char )YAF3DNW_PRECON_DATA_SERVER;
+            sendData._typeId = static_cast< unsigned char >( YAF3DNW_PRECON_DATA_SERVER );
             strcpy( sendData._p_levelName, _nodeInfo._levelName.c_str() );
             strcpy( sendData._p_serverName, _nodeInfo._nodeName.c_str() );
             sendData._protocolVersion = YAF3D_NETWORK_PROT_VERSION;
-            _p_session->DataSend( sessionId, ( void* )&sendData, sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
+            _p_session->DataSend( sessionId, reinterpret_cast< void* >( &sendData ), sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
         }
     }
 }

@@ -259,6 +259,12 @@ class NetworkDevice : public Singleton< NetworkDevice >
         int                                         getSessionID();
 
         /**
+        * Get server IP, this can be used in clients. Valid only after a successful connection to a server.
+        * \return                                   Server IP
+        */
+        const std::string&                          getServerIP();
+
+        /**
         * Get all replicated objects
         * \param objs                               List of objects
         */
@@ -311,6 +317,9 @@ class NetworkDevice : public Singleton< NetworkDevice >
 
         //! Flag for indicating a stable server session
         bool                                        _serverSessionStable;
+
+        //! Server IP which can be used in clients, valid after a successful connection to a server
+        std::string                                 _serverIP;
 
     friend class Singleton< NetworkDevice >;
     friend class Application;
