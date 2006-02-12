@@ -135,14 +135,17 @@ void Application::shutdown()
     log_info << "---------------------------------------" << std::endl;
     log_info << "Application: shutting down, time: " << yaf3d::getTimeStamp() << std::endl;
 
-    NetworkDevice::get()->shutdown();
     LevelManager::get()->shutdown();
+
+    if ( _p_networkDevice )
+        _p_networkDevice->shutdown();
+
     Configuration::get()->shutdown();
 
     // set the game state to shutdown so game code specific singletons get the chance for destruction
-    GameState::get()->setState( GameState::Quitting );
+    _p_gameState->setState( GameState::Quitting );
     delete _p_appWindowStateHandler;
-    GameState::get()->shutdown();
+    _p_gameState->shutdown();
 
     SettingsManager::get()->shutdown();
     KeyMap::get()->shutdown();
