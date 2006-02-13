@@ -143,7 +143,8 @@ void EnMapView::initialize()
     setupMapView();
     // register for getting periodic updates
     yaf3d::EntityManager::get()->registerUpdate( this, true );
-    // register to get notified whenever the player list changes
+
+    // register to get notifications on changed player lists
     vrc::gameutils::PlayerUtils::get()->registerNotificationPlayerListChanged( this, true );
 }
 
@@ -336,8 +337,8 @@ void EnMapView::updatePlayerList()
     }
     // create the player markers for new remote player list
     {
-        std::vector< yaf3d::BaseEntity* >& remoteplayers = vrc::gameutils::PlayerUtils::get()->getRemotePlayers();
-        std::vector< yaf3d::BaseEntity* >::iterator p_beg = remoteplayers.begin(), p_end = remoteplayers.end();
+        const std::vector< yaf3d::BaseEntity* >& remoteplayers = vrc::gameutils::PlayerUtils::get()->getRemotePlayers();
+        std::vector< yaf3d::BaseEntity* >::const_iterator p_beg = remoteplayers.begin(), p_end = remoteplayers.end();
         for ( ; p_beg != p_end; ++p_beg )
         {
             CEGUI::StaticImage* p_staticimg = createMarkerElement( _p_imgPlayerMarker );
