@@ -511,6 +511,22 @@ const std::string& NetworkDevice::getServerIP()
     return _serverIP;
 }
 
+std::string NetworkDevice::getClientIP( int sessionID )
+{
+    if ( !_p_session )
+        return std::string( "" );
+
+    // extract the ip from url
+    std::string url = _p_session->GetURLFromSessionID( sessionID );
+    if ( url.empty() )
+        return std::string( "" );
+
+    std::string ip( url.substr( url.find( "@" ) + 1 ) );
+    ip.erase( ip.find( ":" ) );
+    
+    return ip;
+}
+
 void NetworkDevice::registerSessionNotify( SessionNotifyCallback* p_cb )
 {
     assert( _p_session && "no valid session exists!" );
@@ -567,11 +583,11 @@ void NetworkDevice::updateServer( float deltaTime )
 
     // check for pre-connection requests
     int         sessionId;
-    void*       p_buffer[ 512 ];
+    static char s_buffer[ 512 ];
     int         bufferLength;
-    while ( _p_session->DataReceive( &sessionId, p_buffer, &bufferLength ) ) 
+    while ( _p_session->DataReceive( &sessionId, s_buffer, &bufferLength ) ) 
     {
-        PreconnectDataClient* p_data = reinterpret_cast< PreconnectDataClient* >( p_buffer );
+        PreconnectDataClient* p_data = reinterpret_cast< PreconnectDataClient* >( s_buffer );
         if ( p_data->_typeId == static_cast< unsigned char >( YAF3DNW_PRECON_DATA_CLIENT ) ) 
         {
             log_info << "NetworkDevice: server is requested for a new client connection ... " << std::endl;

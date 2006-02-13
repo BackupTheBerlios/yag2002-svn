@@ -253,10 +253,16 @@ class NetworkDevice : public Singleton< NetworkDevice >
         NodeInfo*                                   getNodeInfo();
 
         /**
-        * Get the session ID, call this after a successful connection
+        * Get the local session ID, call this after a successful connection.
         * \return                                   Session ID
         */
         int                                         getSessionID();
+
+        /**
+        * Get IP address of given client session ID. Use this on server only.
+        * \return                                   IP if a valid connection exists, otherwise empty string.
+        */
+        std::string                                 getClientIP( int sessionID );
 
         /**
         * Get server IP, this can be used in clients. Valid only after a successful connection to a server.
