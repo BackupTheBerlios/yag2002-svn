@@ -61,11 +61,13 @@ namespace yaf3d
 
 // gui
 #define YAF3D_GS_GUISCHEME                "guiScheme"
+#define YAF3D_GS_GUI_DEFUALT_SCHEME       "gui/schemes/TaharezLook.scheme"
 
 // networking
 #define YAF3D_GS_SERVER_NAME              "serverName"
 #define YAF3D_GS_SERVER_IP                "serverIP"
 #define YAF3D_GS_SERVER_PORT              "serverPort"
+#define YAF3D_GS_DEFAULT_SERVERPORT       32000
 
 class Application;
 

@@ -33,9 +33,6 @@
 #include "application.h"
 #include "settings.h"
 
-// default gui scheme
-#define YAF3D_GUI_DEFUALT_SCHEME "gui/schemes/TaharezLook.scheme"
-
 namespace yaf3d
 {
 
@@ -49,7 +46,8 @@ _screenHeight( 400 ),
 _colorBits( 24 ),
 _fullScreen( true ),
 _keyboardType( YAF3D_GS_KEYBOARD_ENGLISH ),
-_guiScheme( YAF3D_GUI_DEFUALT_SCHEME )
+_guiScheme( YAF3D_GS_GUI_DEFUALT_SCHEME ),
+_serverPort( YAF3D_GS_DEFAULT_SERVERPORT )
 {
     // register standard settings
     _p_settings->registerSetting( YAF3D_GS_LOG_LEVEL,    _logLevel     );
