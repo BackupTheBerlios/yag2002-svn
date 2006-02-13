@@ -65,7 +65,9 @@ _moveLeft( "A" ),
 _moveRight( "D" ),
 _jump( "Space" ),
 _cameramode( "F1" ),
-_chatmode( "RMB" )
+_chatmode( "RMB" ),
+_voiceChatEnable( true ),
+_voiceChatChannel( VRC_GS_DEFAULT_CHATVOICEPORT )
 {
     // register this instance for getting game state changes
     yaf3d::GameState::get()->registerCallbackStateChange( this );
@@ -94,6 +96,8 @@ void VRCConfigRegistry::onStateChange( unsigned int state )
     yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CHATMODE,        _chatmode         );
     yaf3d::Configuration::get()->addSetting( VRC_GS_MOUSESENS,           _mouseSensitivity );
     yaf3d::Configuration::get()->addSetting( VRC_GS_INVERTMOUSE,         _mouseInverted    );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_ENABLE,    _voiceChatEnable  );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_CHANNEL,   _voiceChatChannel );
 
     // now load the setting values from config file
     yaf3d::Configuration::get()->load();
@@ -363,29 +367,6 @@ bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& 
     return true;
 }
 
-void PlayerUtils::registerNotificationPlayerListChanged( yaf3d::BaseEntity* p_entity, bool reg )
-{
-    bool entityinlist = false;
-    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _notificationList.begin(), p_end = _notificationList.end();
-    for ( ; p_beg != p_end; ++p_beg )
-    {
-        if ( *p_beg == p_entity )
-        {
-            entityinlist = true;
-            break;
-        }
-    }
-
-    // check the registration / deregistration
-    assert( !( entityinlist && reg ) && "entity is already registered for getting player list changes" );
-    assert( !( !entityinlist && !reg ) && "entity has not been previousely registered for getting player list changes" );
-
-    if ( reg )
-        _notificationList.push_back( p_entity );
-    else
-        _notificationList.erase( p_beg );
-}
-
 yaf3d::BaseEntity* PlayerUtils::getLocalPlayer()
 {
     return _p_localPlayer;
@@ -440,6 +421,93 @@ void PlayerUtils::removeRemotePlayer( yaf3d::BaseEntity* p_entity )
     p_end = _notificationList.end();
     for ( ; p_beg != p_end; ++p_beg )
         yaf3d::EntityManager::get()->sendNotification( notification, *p_beg );
+}
+
+void PlayerUtils::registerNotificationPlayerListChanged( yaf3d::BaseEntity* p_entity, bool reg )
+{
+    bool entityinlist = false;
+    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _notificationList.begin(), p_end = _notificationList.end();
+    for ( ; p_beg != p_end; ++p_beg )
+    {
+        if ( *p_beg == p_entity )
+        {
+            entityinlist = true;
+            break;
+        }
+    }
+
+    // check the registration / deregistration
+    assert( !( entityinlist && reg ) && "entity is already registered for getting player list changes" );
+    assert( !( !entityinlist && !reg ) && "entity has not been previousely registered for getting player list changes" );
+
+    if ( reg )
+        _notificationList.push_back( p_entity );
+    else
+        _notificationList.erase( p_beg );
+}
+
+void PlayerUtils::addRemotePlayerVoiceChat( yaf3d::BaseEntity* p_entity )
+{
+    // first check whether the entity is already in list
+    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _remotePlayersVoiceChat.begin(), p_end = _remotePlayersVoiceChat.end();
+    for ( ; p_beg != p_end; ++p_beg )
+        if ( *p_beg == p_entity )
+            break;
+   
+    assert( ( p_beg == p_end ) && "remote player supporting voice chat already exists in list!" );
+    
+    _remotePlayersVoiceChat.push_back( p_entity );
+
+    // notify registered entities for changed player list supporting voice chat
+    yaf3d::EntityNotification notification( VRC_NOTIFY_PLAYERLIST_VCHAT_CHANGED );
+    p_beg = _notificationListVoiceChat.begin();
+    p_end = _notificationListVoiceChat.end();
+    for ( ; p_beg != p_end; ++p_beg )
+        yaf3d::EntityManager::get()->sendNotification( notification, *p_beg );
+}
+
+void PlayerUtils::removeRemotePlayerVoiceChat( yaf3d::BaseEntity* p_entity )
+{
+    // first check whether the entity is in list
+    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _remotePlayersVoiceChat.begin(), p_end = _remotePlayersVoiceChat.end();
+    for ( ; p_beg != p_end; ++p_beg )
+        if ( *p_beg == p_entity )
+            break;
+
+    assert( ( p_beg != p_end ) && "remote player supporting voice chat does not exist in list!" );
+
+    _remotePlayersVoiceChat.erase( p_beg );
+
+    // notify registered entities for changed player list supporting voice chat
+    yaf3d::EntityNotification notification( VRC_NOTIFY_PLAYERLIST_VCHAT_CHANGED );
+    p_beg = _notificationList.begin();
+    p_end = _notificationList.end();
+    for ( ; p_beg != p_end; ++p_beg )
+        yaf3d::EntityManager::get()->sendNotification( notification, *p_beg );
+
+}
+
+void PlayerUtils::registerNotificationVoiceChatPlayerListChanged( yaf3d::BaseEntity* p_entity, bool reg )
+{
+    bool entityinlist = false;
+    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _notificationListVoiceChat.begin(), p_end = _notificationListVoiceChat.end();
+    for ( ; p_beg != p_end; ++p_beg )
+    {
+        if ( *p_beg == p_entity )
+        {
+            entityinlist = true;
+            break;
+        }
+    }
+
+    // check the registration / deregistration
+    assert( !( entityinlist && reg ) && "entity is already registered for getting player list changes (voice chat)" );
+    assert( !( !entityinlist && !reg ) && "entity has not been previousely registered for getting player list changes (voice chat)" );
+
+    if ( reg )
+        _notificationListVoiceChat.push_back( p_entity );
+    else
+        _notificationListVoiceChat.erase( p_beg );
 }
 
 // level file class

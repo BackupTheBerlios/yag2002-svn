@@ -60,6 +60,10 @@ namespace gameutils
 #define VRC_GS_KEY_CHATMODE                 "chatMode"
 #define VRC_GS_MOUSESENS                    "mouseSensitivity"
 #define VRC_GS_INVERTMOUSE                  "mouseInverted"
+#define VRC_GS_VOICECHAT_ENABLE             "voiceChatEnable"
+#define VRC_GS_VOICECHAT_CHANNEL            "voiceChatChannel"
+#define VRC_GS_DEFAULT_CHATVOICEPORT        32100
+
 //! Game code settings' defaults
 #define VRC_GS_MAX_MOUSESENS                3.0f                // maximal mouse sensitivity
 
@@ -83,6 +87,7 @@ namespace gameutils
 
 //! VRC specific entity notification IDs
 #define VRC_NOTIFY_PLAYERLIST_CHANGED       0xA0000000
+#define VRC_NOTIFY_PLAYERLIST_VCHAT_CHANGED 0xA0000010
 
 
 //! This class is responsible for registration of all game code (VRC) related configuration settings
@@ -121,6 +126,10 @@ class VRCConfigRegistry : public yaf3d::GameState::CallbackStateChange
         std::string                                 _cameramode;
 
         std::string                                 _chatmode;
+
+        bool                                        _voiceChatEnable;
+
+        unsigned int                                _voiceChatChannel;
 };
 
 //! Single instance providing player-related utility services
@@ -147,12 +156,25 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
         //! Remove a remote player from internal list
         void                                        removeRemotePlayer( yaf3d::BaseEntity* p_entity );
 
+        //! Add a new remote player ( ghost ) supporting voice chat into internal list
+        void                                        addRemotePlayerVoiceChat( yaf3d::BaseEntity* p_entity );
+
+        //! Remove a remote player supporting voice chat from internal list
+        void                                        removeRemotePlayerVoiceChat( yaf3d::BaseEntity* p_entity );
+
         //! Return the list of remote players
-        inline std::vector< yaf3d::BaseEntity* >&   getRemotePlayers();
+        inline const std::vector< yaf3d::BaseEntity* >&   getRemotePlayers();
+
+        //! Return the list of remote players supporting voice chat
+        inline const std::vector< yaf3d::BaseEntity* >&   getRemotePlayersVoiceChat();
 
         //! Notification mechanism for changed player list. The method 'handleNotification' is used with id 'VRC_NOTIFY_PLAYERLIST_CHANGED'
         //! Use reg = true for registration and reg = false for deregistration
         void                                        registerNotificationPlayerListChanged( yaf3d::BaseEntity* p_entity, bool reg = true );
+
+        //! Notification mechanism for changed player list supporting voice chat. The method 'handleNotification' is used with id 'VRC_NOTIFY_PLAYERLIST_VCHAT_CHANGED'
+        //! Use reg = true for registration and reg = false for deregistration
+        void                                        registerNotificationVoiceChatPlayerListChanged( yaf3d::BaseEntity* p_entity, bool reg = true );
 
     protected:
 
@@ -162,12 +184,21 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
 
         std::vector< yaf3d::BaseEntity* >           _notificationList;
 
+        std::vector< yaf3d::BaseEntity* >           _remotePlayersVoiceChat;
+
+        std::vector< yaf3d::BaseEntity* >           _notificationListVoiceChat;
+
     friend class yaf3d::Singleton< vrc::gameutils::PlayerUtils >;
 };
 
-inline std::vector< yaf3d::BaseEntity* >& PlayerUtils::getRemotePlayers()
+inline const std::vector< yaf3d::BaseEntity* >& PlayerUtils::getRemotePlayers()
 {
     return _remotePlayers;
+}
+
+inline const std::vector< yaf3d::BaseEntity* >& PlayerUtils::getRemotePlayersVoiceChat()
+{
+    return _remotePlayersVoiceChat;
 }
 
 //! A generic input handler class with automatic adding and removing to / from viewer's event hanlder list
