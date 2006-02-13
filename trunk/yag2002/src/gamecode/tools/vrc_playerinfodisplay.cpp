@@ -29,7 +29,6 @@
  ################################################################*/
 
 #include <vrc_main.h>
-#include <vrc_gameutils.h>
 #include "vrc_playerinfodisplay.h"
 #include "../player/vrc_player.h"
 
@@ -41,12 +40,20 @@ namespace vrc
 //! Implement and register the player ingo entity factory
 YAF3D_IMPL_ENTITYFACTORY( PlayerInfoDisplayEntityFactory )
 
+//! Implement the callback for player list changes
+void EnPlayerInfoDisplay::CallbackPLChange::onPlayerListChanged( bool localplayer, bool joining )
+{
+    if ( localplayer )
+        _p_info->_p_playerEntity = dynamic_cast< EnPlayer* >( getJoiner() );
+}
+
 EnPlayerInfoDisplay::EnPlayerInfoDisplay() :
-_position( osg::Vec3f( 0.001f, 0.1f, 0 ) ),
+_position( osg::Vec2f( 0.001f, 0.1f ) ),
 _enable( true ),
 _p_playerEntity( NULL ),
 _p_wnd( NULL ),
-_p_outputText( NULL )
+_p_outputText( NULL ),
+_p_cbPlayerChange( NULL )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "position"    , _position    );
@@ -57,8 +64,12 @@ EnPlayerInfoDisplay::~EnPlayerInfoDisplay()
 {        
     CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
 
-    // deregister to get notified whenever the player list changes
-    vrc::gameutils::PlayerUtils::get()->registerNotificationPlayerListChanged( this, false );
+    if ( _p_cbPlayerChange )
+    {
+        // deregister to get notified whenever the player list changes
+        vrc::gameutils::PlayerUtils::get()->registerCallbackPlayerListChanged( _p_cbPlayerChange, false );
+        delete _p_cbPlayerChange;
+    }
 }
 
 void EnPlayerInfoDisplay::handleNotification( const yaf3d::EntityNotification& notification )
@@ -81,13 +92,6 @@ void EnPlayerInfoDisplay::handleNotification( const yaf3d::EntityNotification& n
         {
             enable( _enable );
             _p_wnd->setPosition( CEGUI::Point( _position.x(), _position.y() ) );
-        }
-        break;
-
-        case VRC_NOTIFY_PLAYERLIST_CHANGED:
-        {
-            // update local player reference
-            _p_playerEntity = dynamic_cast< EnPlayer* >( gameutils::PlayerUtils::get()->getLocalPlayer() );
         }
         break;
 
@@ -126,7 +130,8 @@ void EnPlayerInfoDisplay::initialize()
     // register entity in order to get notifications
     yaf3d::EntityManager::get()->registerNotification( this, true );
     // register to get notified whenever the player list changes
-    vrc::gameutils::PlayerUtils::get()->registerNotificationPlayerListChanged( this, true );
+    _p_cbPlayerChange = new CallbackPLChange( this ); 
+    vrc::gameutils::PlayerUtils::get()->registerCallbackPlayerListChanged( _p_cbPlayerChange, true );
 
     getPlayerEntity();
 }

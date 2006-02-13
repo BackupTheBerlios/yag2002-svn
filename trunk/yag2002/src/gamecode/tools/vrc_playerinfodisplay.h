@@ -32,6 +32,7 @@
 #define _VRC_PLAYERINFODISPLAY_H_
 
 #include <vrc_main.h>
+#include <vrc_gameutils.h>
 
 namespace vrc
 {
@@ -59,10 +60,6 @@ class EnPlayerInfoDisplay :  public yaf3d::BaseEntity
 
     protected:
 
-        osg::Vec3f                                  _position;
-
-    protected:
-
         //! Override notification callback
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
@@ -75,6 +72,27 @@ class EnPlayerInfoDisplay :  public yaf3d::BaseEntity
         //! Internal usage
         bool                                        getPlayerEntity();
 
+        //! Callback for getting player list changes
+        class CallbackPLChange: public gameutils::PlayerUtils::CallbackPlayerListChange
+        {
+            public:
+
+                explicit                                CallbackPLChange( EnPlayerInfoDisplay* p_info ) :
+                                                         _p_info( p_info )
+                                                        {}
+
+                virtual                                 ~CallbackPLChange() {}
+
+                void                                    onPlayerListChanged( bool localplayer, bool joining );
+
+            protected:
+                
+                EnPlayerInfoDisplay*                    _p_info;
+        };
+
+        //! Positon on screen
+        osg::Vec2f                                  _position;
+
         //! Enable flag
         bool                                        _enable;
 
@@ -85,6 +103,8 @@ class EnPlayerInfoDisplay :  public yaf3d::BaseEntity
         CEGUI::FrameWindow*                         _p_wnd;
 
         CEGUI::StaticText*                          _p_outputText;
+
+        CallbackPLChange*                           _p_cbPlayerChange;
 };
 
 //! Entity type definition used for type registry
