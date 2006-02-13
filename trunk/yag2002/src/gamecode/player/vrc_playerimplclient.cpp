@@ -42,7 +42,7 @@
 
 // some networking related thresholds
 #define NW_POS_CORRECTION_THRESHOLD 5.0f
-#define NW_JUMP_THRESHOLD           0.1f
+#define NW_JUMP_THRESHOLD           0.3f
 #define NW_WALK_THRESHOLD           0.01f
 #define NW_ROT_THRESHOLD            0.002f
 
@@ -335,9 +335,6 @@ void PlayerImplClient::getConfiguration()
 
 void PlayerImplClient::update( float deltaTime )
 {
-    // first update the physics entity
-    getPlayerPhysics()->updateEntity( deltaTime );
-
     if ( !_isRemoteClient )
     {
         // update player's actual position and rotation once per frame
@@ -407,6 +404,9 @@ void PlayerImplClient::update( float deltaTime )
         if ( fabs( lastrot - _rotZ ) > NW_ROT_THRESHOLD )
             getPlayerAnimation()->setAnimation( EnPlayerAnimation::eTurn );
     }
+
+    // now update the physics entity
+    getPlayerPhysics()->updateEntity( deltaTime );
 
     // update sound
     getPlayerSound()->updatePosition( _currentPos );
