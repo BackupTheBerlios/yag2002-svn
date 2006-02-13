@@ -48,6 +48,7 @@ YAF3D_IMPL_ENTITYFACTORY( PlayerEntityFactory )
 EnPlayer::EnPlayer() :
 _gameMode( yaf3d::GameState::get()->getMode() ),
 _p_playerImpl( NULL ),
+_voiceChatEnabled( false ),
 _deltaTime( 0.03f )
 {
     log_debug << "creating player entity"  << getInstanceName() << ", time: " << yaf3d::getTimeStamp() << std::endl;
@@ -71,12 +72,6 @@ _deltaTime( 0.03f )
 EnPlayer::~EnPlayer()
 {
     log_debug << "destroying player entity '"  << getInstanceName() << "', time: " << yaf3d::getTimeStamp() << std::endl;
-
-    // send out notification to registered entities
-    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _deletionNotifications.begin(), p_end = _deletionNotifications.end();
-    yaf3d::EntityNotification ennotify( YAF3D_NOTIFY_PLAYER_DESTRUCTION );
-    for ( ; p_beg != p_end; ++p_beg )
-        yaf3d::EntityManager::get()->sendNotification( ennotify, *p_beg );
     
     if ( _p_playerImpl )
         delete _p_playerImpl;
@@ -84,41 +79,8 @@ EnPlayer::~EnPlayer()
 
 void EnPlayer::handleNotification( const yaf3d::EntityNotification& notification )
 {
-    switch( notification.getId() )
-    {
-        case YAF3D_NOTIFY_SHUTDOWN:
-        {
-            // send out deletion notification to registered entities
-            std::vector< yaf3d::BaseEntity* >::iterator p_beg = _deletionNotifications.begin(), p_end = _deletionNotifications.end();
-            yaf3d::EntityNotification ennotify( YAF3D_NOTIFY_PLAYER_DESTRUCTION );
-            for ( ; p_beg != p_end; ++p_beg )
-                yaf3d::EntityManager::get()->sendNotification( ennotify, *p_beg );
-
-            _deletionNotifications.clear();
-        }
-        break;
-
-        default:
-            ;
-    }
-
     if ( _p_playerImpl )
         _p_playerImpl->handleNotification( notification );
-}
-
-void EnPlayer::registerNotifyDeletion( yaf3d::BaseEntity* p_entity )
-{
-    // check if the entity is already registered
-    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _deletionNotifications.begin(), p_end = _deletionNotifications.end();
-    for ( ; p_beg != p_end; ++p_beg )
-        if ( *p_beg == p_entity )
-            break;
-
-    // if entity is already registered then ignore the request
-    if ( _deletionNotifications.size() && ( p_beg != p_end ) )
-        return;
-
-    _deletionNotifications.push_back( p_entity );
 }
 
 void EnPlayer::initialize()

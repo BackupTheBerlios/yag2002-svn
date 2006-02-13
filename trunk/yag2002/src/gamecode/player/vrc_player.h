@@ -45,15 +45,16 @@
 
 #include <vrc_main.h>
 
+
+class PlayerNetworking;
+
 namespace vrc
 {
 
 //! Entity name
-#define ENTITY_NAME_PLAYER              "Player"
+#define ENTITY_NAME_PLAYER                "Player"
 
-//! Notification for player deletion ( all entity specific notification begin with 0xA )
-#define YAF3D_NOTIFY_PLAYER_DESTRUCTION   0xA0000010
-
+class EnPlayerAnimation;
 class BasePlayerImplementation;
 
 //! Player entity
@@ -66,35 +67,31 @@ class EnPlayer : public yaf3d::BaseEntity
 
         virtual                                     ~EnPlayer();
 
-
-        /**
-        * Initializing function, this is called after all engine modules are initialized and a map is loaded.
-        */
+        
+        //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
 
-        /**
-        * Post-initializing function, this is called after all plugins' entities are initilized.
-        * One important usage of this function is to search and attach entities to eachother, after all entities are initialized.
-        */
+        //! Post-initializing function, this is called after all plugins' entities are initilized.
+        //! One important usage of this function is to search and attach entities to eachother, after all entities are initialized.
         void                                        postInitialize();
-
-        //! Use this method for adding a node to player's transformation node
-        inline void                                 appendTransformationNode( osg::Node* p_node );
-
-        //! Use this method for removing a node from player's transformation node
-        inline void                                 removeTransformationNode( osg::Node* p_node );
-
-        //! Set player's implementation. This method is used by player's networking component when new clients connect to networking session.
-        inline void                                 setPlayerImplementation( BasePlayerImplementation* p_impl );
 
         //! Get player's implementation. This method is used by player's networking component when new clients connect to networking session.
         inline BasePlayerImplementation*            getPlayerImplementation();
 
-        //! Register an entity for getting player deletion notification
-        void                                        registerNotifyDeletion( yaf3d::BaseEntity* p_entity );
+        //! Get player's IP address, used for remote clients
+        inline std::string                          getIPAdress();
+
+        //! Is voice chat enabled for this player?
+        inline bool                                 isVoiceChatEnabled();
 
         //! Get last update time
         inline float                                getDeltaTime() const;
+
+        //! Get player name
+        const std::string                           getPlayerName() const;
+
+        //! Set player name
+        void                                        setPlayerName( const std::string& name );
 
         //! Entity attribute container
         class PlayerAttributes
@@ -135,12 +132,6 @@ class EnPlayer : public yaf3d::BaseEntity
         //! Return player's attribute container
         inline const PlayerAttributes &             getPlayerAttributes() const;
 
-        //! Get player name
-        const std::string                           getPlayerName() const;
-
-        //! Set player name
-        void                                        setPlayerName( const std::string& name );
-
     protected:
 
         //! Update entity
@@ -152,6 +143,21 @@ class EnPlayer : public yaf3d::BaseEntity
         //! Spawn player considering spawn points in level
         void                                        spawn();
 
+        //! Use this method for adding a node to player's transformation node
+        inline void                                 appendTransformationNode( osg::Node* p_node );
+
+        //! Use this method for removing a node from player's transformation node
+        inline void                                 removeTransformationNode( osg::Node* p_node );
+
+        //! Set player's implementation. This method is used by player's networking component when new clients connect to networking session.
+        inline void                                 setPlayerImplementation( BasePlayerImplementation* p_impl );
+
+        //! Set the network ip address for this player. It is used by networking component for remote clients.
+        inline void                                 setIPAdress( const std::string& ip );
+
+        //! Set the voice chat flag for this player. It is used by networking component for remote clients.
+        inline void                                 setVoiceChatEnabled( bool en );
+
         //! Player attributes encapsulated in a container, ready for transfering to player implementation
         PlayerAttributes                            _attributeContainer;
 
@@ -161,11 +167,17 @@ class EnPlayer : public yaf3d::BaseEntity
         //! Player implementation
         BasePlayerImplementation*                   _p_playerImpl;
 
-        //! List of registered entities for getting deletion notification
-        std::vector< yaf3d::BaseEntity* >           _deletionNotifications;
+        //! Network IP address, used for getting remote clients' ip address
+        std::string                                 _ipAddress;
+
+        //! Indicated whether voice chat is enabled for this player ( including remote clients )
+        bool                                        _voiceChatEnabled;
 
         //! Stored deltaTime needed by some player components
         float                                       _deltaTime;
+
+    friend class PlayerNetworking;
+    friend class EnPlayerAnimation;
 };
 
 //! Entity type definition used for type registry
@@ -205,6 +217,26 @@ inline void EnPlayer::setPlayerImplementation( BasePlayerImplementation* p_impl 
 inline BasePlayerImplementation* EnPlayer::getPlayerImplementation()
 {
     return _p_playerImpl;
+}
+
+inline void EnPlayer::setIPAdress( const std::string& ip )
+{
+    _ipAddress = ip;
+}
+
+inline std::string EnPlayer::getIPAdress()
+{
+    return _ipAddress;
+}
+
+inline bool EnPlayer::isVoiceChatEnabled()
+{
+    return _voiceChatEnabled;
+}
+
+inline void EnPlayer::setVoiceChatEnabled( bool en )
+{
+    _voiceChatEnabled = en;
 }
 
 inline float EnPlayer::getDeltaTime() const
