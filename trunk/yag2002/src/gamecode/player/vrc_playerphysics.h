@@ -251,8 +251,6 @@ class EnPlayerPhysics : public yaf3d::BaseEntity
         //! Sound timer
         float                                       _soundTimer;
 
-        unsigned int                                _jumpTimer;
-
         bool                                        _isJumping;
 
         enum

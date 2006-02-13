@@ -343,7 +343,6 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
         default:
             assert( NULL && "invalid jump state" );
     }
-    p_phys->_jumpTimer = p_phys->_jumpTimer ? p_phys->_jumpTimer - 1 : 0;
 
     // set body force
     NewtonBodySetForce( p_body, &force._v[ 0 ] );
@@ -387,7 +386,6 @@ _isStopped( true ),
 _isAirBorne( false ),
 _wallCollision( false ),
 _soundTimer( 0.0f ),
-_jumpTimer( 0 ),
 _isJumping( false ),
 _jumpState( Wait4Jumping ),
 _jumpForce( 5.0f ),
