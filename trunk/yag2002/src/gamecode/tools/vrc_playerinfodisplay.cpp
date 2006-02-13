@@ -56,6 +56,9 @@ _p_outputText( NULL )
 EnPlayerInfoDisplay::~EnPlayerInfoDisplay()
 {        
     CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
+
+    // deregister to get notified whenever the player list changes
+    vrc::gameutils::PlayerUtils::get()->registerNotificationPlayerListChanged( this, false );
 }
 
 void EnPlayerInfoDisplay::handleNotification( const yaf3d::EntityNotification& notification )
@@ -81,10 +84,10 @@ void EnPlayerInfoDisplay::handleNotification( const yaf3d::EntityNotification& n
         }
         break;
 
-        case YAF3D_NOTIFY_PLAYER_DESTRUCTION:
+        case VRC_NOTIFY_PLAYERLIST_CHANGED:
         {
-            // reset entity reference
-            _p_playerEntity = NULL;
+            // update local player reference
+            _p_playerEntity = dynamic_cast< EnPlayer* >( gameutils::PlayerUtils::get()->getLocalPlayer() );
         }
         break;
 
@@ -122,6 +125,8 @@ void EnPlayerInfoDisplay::initialize()
     yaf3d::EntityManager::get()->registerUpdate( this, true );
     // register entity in order to get notifications
     yaf3d::EntityManager::get()->registerNotification( this, true );
+    // register to get notified whenever the player list changes
+    vrc::gameutils::PlayerUtils::get()->registerNotificationPlayerListChanged( this, true );
 
     getPlayerEntity();
 }
@@ -182,11 +187,8 @@ bool EnPlayerInfoDisplay::getPlayerEntity()
             return false;
         }
     }
-    
-    // register in player for getting it destruction notified
-    // note: player tollerates multiple registration of same entity
-    _p_playerEntity->registerNotifyDeletion( this );
 
     return true;
 }
+
 } // namespace vrc
