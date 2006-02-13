@@ -105,6 +105,24 @@ class EnMapView :  public yaf3d::BaseEntity
         //! Callback for mouse leaves a player point ( used for displaying player name )
         bool                                        onMouseLeavesPlayerPoint( const CEGUI::EventArgs& arg );
 
+        //! Callback for getting player list changes
+        class CallbackMapPLChange: public gameutils::PlayerUtils::CallbackPlayerListChange
+        {
+            public:
+
+                explicit                                CallbackMapPLChange( EnMapView* p_map ) :
+                                                         _p_map( p_map )
+                                                        {}
+
+                virtual                                 ~CallbackMapPLChange() {}
+
+                void                                    onPlayerListChanged( bool localplayer, bool joining );
+
+            protected:
+                
+                EnMapView*                              _p_map;
+        };
+
         //! Image file name of mini map ( currently it can be only in tga format )
         //! Note: the image must be created orthographically, otherwise the player positions on map are not displayed correctly.
         std::string                                 _minMapFile;
@@ -168,6 +186,8 @@ class EnMapView :  public yaf3d::BaseEntity
 
         //! Map of players and associated markers
         std::map< yaf3d::BaseEntity*, CEGUI::StaticImage* >  _playerMarkers;
+
+        CallbackMapPLChange*                        _p_cbPLChanged;
 };
 
 //! Entity type definition used for type registry

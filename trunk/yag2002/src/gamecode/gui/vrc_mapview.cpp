@@ -54,6 +54,13 @@ namespace vrc
 //! Implement and register the map view entity factory
 YAF3D_IMPL_ENTITYFACTORY( MapViewEntityFactory )
 
+//! Implement the callback for player list changes
+void EnMapView::CallbackMapPLChange::onPlayerListChanged( bool localplayer, bool joining )
+{
+    // on player list changes we have to update the map information
+    _p_map->updatePlayerList();
+}
+
 EnMapView::EnMapView() :
 _align( "topright" ),
 _size( 150.0f, 150.0f ),
@@ -69,7 +76,8 @@ _p_imgPlayerMarker( NULL ),
 _nameDisplay( NULL ),
 _nameDisplayTimer( 0.0f ),
 _screenSize( osg::Vec2f( 800.0f, 600.0f ) ),
-_dragging( false )
+_dragging( false ),
+_p_cbPLChanged( NULL )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "minMapFile",           _minMapFile       );
@@ -87,8 +95,12 @@ _dragging( false )
 EnMapView::~EnMapView()
 {
     destroyMapView();
-    // register to get notified whenever the player list changes
-    vrc::gameutils::PlayerUtils::get()->registerNotificationPlayerListChanged( this, false );
+    // remove callback for player list changes
+    if ( _p_cbPLChanged )
+    {
+        vrc::gameutils::PlayerUtils::get()->registerCallbackPlayerListChanged( _p_cbPLChanged, false );
+        delete _p_cbPLChanged;
+    }
 }
 
 void EnMapView::handleNotification( const yaf3d::EntityNotification& notification )
@@ -96,11 +108,6 @@ void EnMapView::handleNotification( const yaf3d::EntityNotification& notificatio
     // handle notifications
     switch( notification.getId() )
     {
-        case VRC_NOTIFY_PLAYERLIST_CHANGED:
-            // on player list changes we have to update the map information
-            updatePlayerList();
-            break;
-
         case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
             // recreate the map view
             destroyMapView();
@@ -144,8 +151,9 @@ void EnMapView::initialize()
     // register for getting periodic updates
     yaf3d::EntityManager::get()->registerUpdate( this, true );
 
-    // register to get notifications on changed player lists
-    vrc::gameutils::PlayerUtils::get()->registerNotificationPlayerListChanged( this, true );
+    // set callback to get notifications on changed player lists
+    _p_cbPLChanged = new CallbackMapPLChange( this );
+    vrc::gameutils::PlayerUtils::get()->registerCallbackPlayerListChanged( _p_cbPLChanged, true );
 }
 
 void EnMapView::setupMapView()
