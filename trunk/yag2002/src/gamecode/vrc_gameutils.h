@@ -85,10 +85,6 @@ namespace gameutils
 #define IMAGE_NAME_SOUND_ON                 "SoundOn"
 #define IMAGE_NAME_SOUND_OFF                "SoundOff"
 
-//! VRC specific entity notification IDs
-#define VRC_NOTIFY_PLAYERLIST_CHANGED       0xA0000000
-#define VRC_NOTIFY_PLAYERLIST_VCHAT_CHANGED 0xA0000010
-
 
 //! This class is responsible for registration of all game code (VRC) related configuration settings
 class VRCConfigRegistry : public yaf3d::GameState::CallbackStateChange
@@ -168,13 +164,49 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
         //! Return the list of remote players supporting voice chat
         inline const std::vector< yaf3d::BaseEntity* >&   getRemotePlayersVoiceChat();
 
-        //! Notification mechanism for changed player list. The method 'handleNotification' is used with id 'VRC_NOTIFY_PLAYERLIST_CHANGED'
-        //! Use reg = true for registration and reg = false for deregistration
-        void                                        registerNotificationPlayerListChanged( yaf3d::BaseEntity* p_entity, bool reg = true );
+        //! Class for getting callbacks whenever the player list ( also those supporting voice chat ) changed 
+        class CallbackPlayerListChange
+        {
+            public:
+                                                        CallbackPlayerListChange() {}
 
-        //! Notification mechanism for changed player list supporting voice chat. The method 'handleNotification' is used with id 'VRC_NOTIFY_PLAYERLIST_VCHAT_CHANGED'
+                virtual                                 ~CallbackPlayerListChange() {}
+
+                //! Callback method, if 'localplayer' is true then the local player has been changed, otherwise the remote player list has been changed.
+                //! If 'localplayer' is true then get the entity of local player using PlayerUtil's method 'getLocalPlayer'.
+                //! In overridden callback method access the leaver / joiner using methods below depending on 'joining'.
+                //! In case a player is joining 'joining' is true otherwise it is false.
+                //! A complete list of players use the PlayerUtil's methods 'getRemotePlayers' or 'getRemotePlayersVoiceChat'.
+                virtual void                            onPlayerListChanged( bool localplayer, bool joining ) = 0;
+
+                //! Get leaving player
+                yaf3d::BaseEntity*                      getLeaver()
+                                                        {
+                                                            return _p_leaver;
+                                                        }
+
+                //! Get joining player
+                yaf3d::BaseEntity*                      getJoiner()
+                                                        {
+                                                            return _p_joiner;
+                                                        }
+
+            protected:
+
+                yaf3d::BaseEntity*                      _p_leaver;
+
+                yaf3d::BaseEntity*                      _p_joiner;
+
+            friend class PlayerUtils;
+        };
+
+        //! Callback for changed player list.
         //! Use reg = true for registration and reg = false for deregistration
-        void                                        registerNotificationVoiceChatPlayerListChanged( yaf3d::BaseEntity* p_entity, bool reg = true );
+        void                                        registerCallbackPlayerListChanged( CallbackPlayerListChange* p_cb, bool reg = true );
+
+        //! Callback for changed player list supporting voice chat.
+        //! Use reg = true for registration and reg = false for deregistration
+        void                                        registerCallbackVoiceChatPlayerListChanged( CallbackPlayerListChange* p_cb, bool reg = true );
 
     protected:
 
@@ -182,11 +214,11 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
 
         std::vector< yaf3d::BaseEntity* >           _remotePlayers;
 
-        std::vector< yaf3d::BaseEntity* >           _notificationList;
+        std::vector< CallbackPlayerListChange* >    _cbPlayerList;
 
         std::vector< yaf3d::BaseEntity* >           _remotePlayersVoiceChat;
 
-        std::vector< yaf3d::BaseEntity* >           _notificationListVoiceChat;
+        std::vector< CallbackPlayerListChange* >    _cbPlayerListVoiceChat;
 
     friend class yaf3d::Singleton< vrc::gameutils::PlayerUtils >;
 };

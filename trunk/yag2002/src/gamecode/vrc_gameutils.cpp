@@ -376,11 +376,14 @@ void PlayerUtils::setLocalPlayer( yaf3d::BaseEntity* p_entity )
 {
     _p_localPlayer = p_entity;
 
-    // notify registered entities for changed player list
-    yaf3d::EntityNotification notification( VRC_NOTIFY_PLAYERLIST_CHANGED );
-    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _notificationList.begin(), p_end = _notificationList.end();
+    // notify registered callbacks for changed player list
+    std::vector< CallbackPlayerListChange* >::iterator p_beg = _cbPlayerList.begin(), p_end = _cbPlayerList.end();
     for ( ; p_beg != p_end; ++p_beg )
-        yaf3d::EntityManager::get()->sendNotification( notification, *p_beg );
+    {
+        ( *p_beg )->_p_joiner = p_entity;
+        ( *p_beg )->_p_leaver = p_entity;
+        ( *p_beg )->onPlayerListChanged( true, p_entity ? true : false );
+    }
 }
 
 void PlayerUtils::addRemotePlayer( yaf3d::BaseEntity* p_entity )
@@ -395,12 +398,14 @@ void PlayerUtils::addRemotePlayer( yaf3d::BaseEntity* p_entity )
     
     _remotePlayers.push_back( p_entity );
 
-    // notify registered entities for changed player list
-    yaf3d::EntityNotification notification( VRC_NOTIFY_PLAYERLIST_CHANGED );
-    p_beg = _notificationList.begin();
-    p_end = _notificationList.end();
-    for ( ; p_beg != p_end; ++p_beg )
-        yaf3d::EntityManager::get()->sendNotification( notification, *p_beg );
+    // notify registered callbacks for changed remote player list
+    std::vector< CallbackPlayerListChange* >::iterator p_cbbeg = _cbPlayerList.begin(), p_cbend = _cbPlayerList.end();
+    for ( ; p_cbbeg != p_cbend; ++p_cbbeg )
+    {
+        ( *p_cbbeg )->_p_joiner = p_entity;
+        ( *p_cbbeg )->_p_leaver = NULL;
+        ( *p_cbbeg )->onPlayerListChanged( false, true );
+    }
 }
 
 void PlayerUtils::removeRemotePlayer( yaf3d::BaseEntity* p_entity )
@@ -415,35 +420,37 @@ void PlayerUtils::removeRemotePlayer( yaf3d::BaseEntity* p_entity )
 
     _remotePlayers.erase( p_beg );
 
-    // notify registered entities for changed player list
-    yaf3d::EntityNotification notification( VRC_NOTIFY_PLAYERLIST_CHANGED );
-    p_beg = _notificationList.begin();
-    p_end = _notificationList.end();
-    for ( ; p_beg != p_end; ++p_beg )
-        yaf3d::EntityManager::get()->sendNotification( notification, *p_beg );
+    // notify registered callbacks for changed remote player list
+    std::vector< CallbackPlayerListChange* >::iterator p_cbbeg = _cbPlayerList.begin(), p_cbend = _cbPlayerList.end();
+    for ( ; p_cbbeg != p_cbend; ++p_cbbeg )
+    {
+        ( *p_cbbeg )->_p_joiner = NULL;
+        ( *p_cbbeg )->_p_leaver = p_entity;
+        ( *p_cbbeg )->onPlayerListChanged( false, false );
+    }
 }
 
-void PlayerUtils::registerNotificationPlayerListChanged( yaf3d::BaseEntity* p_entity, bool reg )
+void PlayerUtils::registerCallbackPlayerListChanged( CallbackPlayerListChange* p_cb, bool reg )
 {
-    bool entityinlist = false;
-    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _notificationList.begin(), p_end = _notificationList.end();
+    bool cbinlist = false;
+    std::vector< CallbackPlayerListChange* >::iterator p_beg = _cbPlayerList.begin(), p_end = _cbPlayerList.end();
     for ( ; p_beg != p_end; ++p_beg )
     {
-        if ( *p_beg == p_entity )
+        if ( *p_beg == p_cb )
         {
-            entityinlist = true;
+            cbinlist = true;
             break;
         }
     }
 
     // check the registration / deregistration
-    assert( !( entityinlist && reg ) && "entity is already registered for getting player list changes" );
-    assert( !( !entityinlist && !reg ) && "entity has not been previousely registered for getting player list changes" );
+    assert( !( cbinlist && reg ) && "callback is already registered for getting player list changes" );
+    assert( !( !cbinlist && !reg ) && "callback has not been previousely registered for getting player list changes" );
 
     if ( reg )
-        _notificationList.push_back( p_entity );
+        _cbPlayerList.push_back( p_cb );
     else
-        _notificationList.erase( p_beg );
+        _cbPlayerList.erase( p_beg );
 }
 
 void PlayerUtils::addRemotePlayerVoiceChat( yaf3d::BaseEntity* p_entity )
@@ -458,12 +465,14 @@ void PlayerUtils::addRemotePlayerVoiceChat( yaf3d::BaseEntity* p_entity )
     
     _remotePlayersVoiceChat.push_back( p_entity );
 
-    // notify registered entities for changed player list supporting voice chat
-    yaf3d::EntityNotification notification( VRC_NOTIFY_PLAYERLIST_VCHAT_CHANGED );
-    p_beg = _notificationListVoiceChat.begin();
-    p_end = _notificationListVoiceChat.end();
-    for ( ; p_beg != p_end; ++p_beg )
-        yaf3d::EntityManager::get()->sendNotification( notification, *p_beg );
+    // notify registered callbacks for changed remote player list supporting voice chat
+    std::vector< CallbackPlayerListChange* >::iterator p_cbbeg = _cbPlayerListVoiceChat.begin(), p_cbend = _cbPlayerListVoiceChat.end();
+    for ( ; p_cbbeg != p_cbend; ++p_cbbeg )
+    {
+        ( *p_cbbeg )->_p_joiner = p_entity;
+        ( *p_cbbeg )->_p_leaver = NULL;
+        ( *p_cbbeg )->onPlayerListChanged( false, true );
+    }
 }
 
 void PlayerUtils::removeRemotePlayerVoiceChat( yaf3d::BaseEntity* p_entity )
@@ -478,36 +487,37 @@ void PlayerUtils::removeRemotePlayerVoiceChat( yaf3d::BaseEntity* p_entity )
 
     _remotePlayersVoiceChat.erase( p_beg );
 
-    // notify registered entities for changed player list supporting voice chat
-    yaf3d::EntityNotification notification( VRC_NOTIFY_PLAYERLIST_VCHAT_CHANGED );
-    p_beg = _notificationList.begin();
-    p_end = _notificationList.end();
-    for ( ; p_beg != p_end; ++p_beg )
-        yaf3d::EntityManager::get()->sendNotification( notification, *p_beg );
-
+    // notify registered callbacks for changed remote player list supporting voice chat
+    std::vector< CallbackPlayerListChange* >::iterator p_cbbeg = _cbPlayerListVoiceChat.begin(), p_cbend = _cbPlayerListVoiceChat.end();
+    for ( ; p_cbbeg != p_cbend; ++p_cbbeg )
+    {
+        ( *p_cbbeg )->_p_joiner = NULL;
+        ( *p_cbbeg )->_p_leaver = p_entity;
+        ( *p_cbbeg )->onPlayerListChanged( false, false );
+    }
 }
 
-void PlayerUtils::registerNotificationVoiceChatPlayerListChanged( yaf3d::BaseEntity* p_entity, bool reg )
+void PlayerUtils::registerCallbackVoiceChatPlayerListChanged( CallbackPlayerListChange* p_cb, bool reg )
 {
-    bool entityinlist = false;
-    std::vector< yaf3d::BaseEntity* >::iterator p_beg = _notificationListVoiceChat.begin(), p_end = _notificationListVoiceChat.end();
+    bool cbinlist = false;
+    std::vector< CallbackPlayerListChange* >::iterator p_beg = _cbPlayerListVoiceChat.begin(), p_end = _cbPlayerListVoiceChat.end();
     for ( ; p_beg != p_end; ++p_beg )
     {
-        if ( *p_beg == p_entity )
+        if ( *p_beg == p_cb )
         {
-            entityinlist = true;
+            cbinlist = true;
             break;
         }
     }
 
     // check the registration / deregistration
-    assert( !( entityinlist && reg ) && "entity is already registered for getting player list changes (voice chat)" );
-    assert( !( !entityinlist && !reg ) && "entity has not been previousely registered for getting player list changes (voice chat)" );
+    assert( !( cbinlist && reg ) && "callback is already registered for getting player list changes (voice chat)" );
+    assert( !( !cbinlist && !reg ) && "callback has not been previousely registered for getting player list changes (voice chat)" );
 
     if ( reg )
-        _notificationListVoiceChat.push_back( p_entity );
+        _cbPlayerListVoiceChat.push_back( p_cb );
     else
-        _notificationListVoiceChat.erase( p_beg );
+        _cbPlayerListVoiceChat.erase( p_beg );
 }
 
 // level file class
