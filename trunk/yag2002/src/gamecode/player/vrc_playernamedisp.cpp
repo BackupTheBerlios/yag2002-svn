@@ -169,8 +169,8 @@ void EnPlayerNameDisplay::updateName()
 
     //! find nearest player in front of local player
     yaf3d::BaseEntity* p_playerinfront = NULL;
-    std::vector< yaf3d::BaseEntity* >& remoteplayers = vrc::gameutils::PlayerUtils::get()->getRemotePlayers();
-    std::vector< yaf3d::BaseEntity* >::iterator p_beg = remoteplayers.begin(), p_end = remoteplayers.end();
+    const std::vector< yaf3d::BaseEntity* >& remoteplayers = vrc::gameutils::PlayerUtils::get()->getRemotePlayers();
+    std::vector< yaf3d::BaseEntity* >::const_iterator p_beg = remoteplayers.begin(), p_end = remoteplayers.end();
     for ( ; p_beg != p_end; ++p_beg )
     {
         line = ( *p_beg )->getPosition() - campos;
