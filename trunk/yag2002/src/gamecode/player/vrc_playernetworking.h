@@ -66,9 +66,6 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
                                                                 const std::string& cfgFile
                                                               );
 
-        //! Update distributed object over network, call this in every game loop step
-        void                                        update();
-
         //! Returns true if the networking is for local client
         bool                                        isRemoteClient() const { return _remoteClient; }
 
@@ -96,7 +93,14 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         //! Put new chat text
         void                                        putChatText( const CEGUI::String& text );
 
-        // RN Overrides
+        //! Enable / disable voice chat, use only for local client
+        void                                        enableVoiceChat( bool en );
+
+        //! Is voice chat enabled?
+        bool                                        isEnabledVoiceChat();
+
+
+        // Internal RN Overrides, do not use these methods!
         //-----------------------------------------------------------------------------------//
         //! Object can now be initialized in scene
         void                                        PostObjectCreate();
@@ -104,8 +108,14 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         //! Hook into player name changes
         void                                        DataBlockPacketDataReceived( const RNReplicaNet::DataBlock* p_datablock );
 
+        //! Granting function called by server on new connected client for getting initial data etc.
+        void                                        RPC_ServerGrantsAccess( tInitializationData initData );
+
         //! Initialization function called on a new connected client and its ghosts
         void                                        RPC_Initialize( tInitializationData initData );
+
+        //! Enable / disable voice chat
+        void                                        RPC_EnableVoiceChat( bool en );
 
     protected:
 
@@ -126,6 +136,9 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         char                                        _p_playerName[ 32 ];
 
         char                                        _p_configFile[ 64 ];
+
+        bool                                        _voiceChat;
+
         //-------
 
         bool                                        _remoteClient;
