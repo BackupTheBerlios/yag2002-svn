@@ -202,6 +202,13 @@ class ViewPositionUpdateCallback: public osg::Uniform::Callback
 
 // shared water effect state set
 osg::ref_ptr< osg::StateSet > EnWater::s_stateSet;
+osg::Uniform* EnWater::s_fadeBias       = NULL;
+osg::Uniform* EnWater::s_waveSpeed      = NULL;
+osg::Uniform* EnWater::s_fadeExp        = NULL;
+osg::Uniform* EnWater::s_noiseSpeed     = NULL;
+osg::Uniform* EnWater::s_waterColor     = NULL;
+osg::Uniform* EnWater::s_scale          = NULL;
+osg::Uniform* EnWater::s_trans          = NULL;
 
 //---------------------------------------------------
 //! Implement and register the water entity factory
@@ -257,9 +264,15 @@ void EnWater::handleNotification( const yaf3d::EntityNotification& notification 
         case YAF3D_NOTIFY_MENU_ENTER:
 
             if ( _usedInMenu ) 
+            {
                 addToTransformationNode( _water.get() );
+                // refresh the shader parameters
+                setShaderParams();
+            }
             else
+            {
                 removeFromTransformationNode( _water.get() );
+            }
 
             break;
 
@@ -267,18 +280,28 @@ void EnWater::handleNotification( const yaf3d::EntityNotification& notification 
         case YAF3D_NOTIFY_MENU_LEAVE:
 
             if ( _usedInMenu )
+            {
                 removeFromTransformationNode( _water.get() );
+            }
             else
+            {
                 addToTransformationNode( _water.get() );
+                // refresh the shader parameters
+                setShaderParams();
+            }
 
             break;
 
         case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
 
             // re-create the water
+            //--------------------
+
             removeFromTransformationNode( _water.get() );
-            // delete state set before re-setup
+
+            // delete stateset before re-setup
             s_stateSet = NULL;
+
             _water = setupWater();
             if ( _enable )
                 addToTransformationNode( _water.get() );
@@ -412,6 +435,16 @@ osg::Node* EnWater::setupWater()
     if ( !p_extensions->isGlslSupported() ) 
         return p_node;
 
+    // create skybox cube map texture
+    std::vector< std::string > texfiles;
+    texfiles.push_back( _cubeMapTextures[ 0 ] );
+    texfiles.push_back( _cubeMapTextures[ 1 ] );
+    texfiles.push_back( _cubeMapTextures[ 2 ] );
+    texfiles.push_back( _cubeMapTextures[ 3 ] );
+    texfiles.push_back( _cubeMapTextures[ 4 ] );
+    texfiles.push_back( _cubeMapTextures[ 5 ] );
+    _reflectmap = vrc::gameutils::readCubeMap( texfiles );
+
     // setup the shaders and uniforms, share the stateset
     if ( !s_stateSet.valid() )
     {
@@ -423,21 +456,21 @@ osg::Node* EnWater::setupWater()
         p_program->addShader( new osg::Shader( osg::Shader::FRAGMENT, glsl_fp ) );
         s_stateSet->setAttributeAndModes( p_program, osg::StateAttribute::ON );
 
-        osg::Uniform* p_fadeBias    = new osg::Uniform( "fadeBias",     _fadeBias                       );
-        osg::Uniform* p_waveSpeed   = new osg::Uniform( "waveSpeed",    _waveSpeed                      );
-        osg::Uniform* p_fadeExp     = new osg::Uniform( "fadeExp",      _fadeExp                        );
-        osg::Uniform* p_noiseSpeed  = new osg::Uniform( "noiseSpeed",   _noiseSpeed                     );
-        osg::Uniform* p_waterColor  = new osg::Uniform( "waterColor",   osg::Vec4f( _waterColor, 1.0f ) );
-        osg::Uniform* p_scale       = new osg::Uniform( "scale",        osg::Vec4f( _scale, 1.0f )      );
-        osg::Uniform* p_trans       = new osg::Uniform( "transparency", _transparency                   );
+        s_fadeBias    = new osg::Uniform( "fadeBias",     _fadeBias                       );
+        s_waveSpeed   = new osg::Uniform( "waveSpeed",    _waveSpeed                      );
+        s_fadeExp     = new osg::Uniform( "fadeExp",      _fadeExp                        );
+        s_noiseSpeed  = new osg::Uniform( "noiseSpeed",   _noiseSpeed                     );
+        s_waterColor  = new osg::Uniform( "waterColor",   osg::Vec4f( _waterColor, 1.0f ) );
+        s_scale       = new osg::Uniform( "scale",        osg::Vec4f( _scale, 1.0f )      );
+        s_trans       = new osg::Uniform( "transparency", _transparency                   );
 
-        s_stateSet->addUniform( p_fadeBias   );
-        s_stateSet->addUniform( p_waveSpeed  );
-        s_stateSet->addUniform( p_fadeExp    );
-        s_stateSet->addUniform( p_scale      );
-        s_stateSet->addUniform( p_noiseSpeed );
-        s_stateSet->addUniform( p_waterColor );
-        s_stateSet->addUniform( p_trans      );
+        s_stateSet->addUniform( s_fadeBias   );
+        s_stateSet->addUniform( s_waveSpeed  );
+        s_stateSet->addUniform( s_fadeExp    );
+        s_stateSet->addUniform( s_scale      );
+        s_stateSet->addUniform( s_noiseSpeed );
+        s_stateSet->addUniform( s_waterColor );
+        s_stateSet->addUniform( s_trans      );
 
         osg::Uniform* p_viewPosition = new osg::Uniform( "viewPosition", osg::Vec4f() );
         s_stateSet->addUniform( p_viewPosition );
@@ -462,18 +495,8 @@ osg::Node* EnWater::setupWater()
 
         s_stateSet->setTextureAttribute( LOCATION_NOISE_SAMPLER, p_noiseTexture );
         s_stateSet->addUniform( new osg::Uniform( "samplerNoise", LOCATION_NOISE_SAMPLER ) );
-
-        // create skybox texture
-        std::vector< std::string > texfiles;
-        texfiles.push_back( _cubeMapTextures[ 0 ] );
-        texfiles.push_back( _cubeMapTextures[ 1 ] );
-        texfiles.push_back( _cubeMapTextures[ 2 ] );
-        texfiles.push_back( _cubeMapTextures[ 3 ] );
-        texfiles.push_back( _cubeMapTextures[ 4 ] );
-        texfiles.push_back( _cubeMapTextures[ 5 ] );
-        osg::ref_ptr< osg::TextureCubeMap > reflectmap = vrc::gameutils::readCubeMap( texfiles );
         
-        s_stateSet->setTextureAttribute( LOCATION_CUBEMAP_SAMPLER, reflectmap.get() );
+        s_stateSet->setTextureAttribute( LOCATION_CUBEMAP_SAMPLER, _reflectmap.get() );
         s_stateSet->addUniform( new osg::Uniform( "samplerSkyBox", LOCATION_CUBEMAP_SAMPLER ) );
 
         // set lighting and culling
@@ -493,11 +516,30 @@ osg::Node* EnWater::setupWater()
         p_node->setStateSet( s_stateSet.get() );
     }
 
+    // set shader parameters
+    setShaderParams();
+
     osg::Group* p_group = new osg::Group;
     p_group->setCullingActive( false );
     p_group->addChild( p_node );
 
     return p_group;
+}
+
+void EnWater::setShaderParams()
+{
+    if ( !s_stateSet.valid() )
+        return;
+
+    // update / refresh the shader uniforms and texture cubemap
+    s_fadeBias->set( _fadeBias );
+    s_waveSpeed->set( _waveSpeed );
+    s_fadeExp->set( _fadeExp );
+    s_noiseSpeed->set( _noiseSpeed );
+    s_waterColor->set( osg::Vec4f( _waterColor, 1.0f ) );
+    s_scale->set( osg::Vec4f( _scale, 1.0f ) );
+    s_trans->set( _transparency );
+    s_stateSet->setTextureAttribute( LOCATION_CUBEMAP_SAMPLER, _reflectmap.get() );
 }
 
 }

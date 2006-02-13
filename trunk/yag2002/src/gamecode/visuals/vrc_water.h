@@ -104,6 +104,9 @@ class EnWater :  public yaf3d::BaseEntity
         //! Notification call-back
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
+        //! Set the shader params specified by entity attributes
+        void                                        setShaderParams();
+
         //! Setup water geom, shaders and state sets
         osg::Node*                                  setupWater();
         
@@ -113,8 +116,20 @@ class EnWater :  public yaf3d::BaseEntity
         //! Enable / disable water
         bool                                        _enable;
 
+        //! Texture cube for refletion map
+        osg::ref_ptr< osg::TextureCubeMap >         _reflectmap;
+
         //! Shared stateset for water effect
         static osg::ref_ptr< osg::StateSet >        s_stateSet;
+
+        //! Shared shader uniforms
+        static osg::Uniform*                        s_fadeBias;
+        static osg::Uniform*                        s_waveSpeed;
+        static osg::Uniform*                        s_fadeExp;
+        static osg::Uniform*                        s_noiseSpeed;
+        static osg::Uniform*                        s_waterColor;
+        static osg::Uniform*                        s_scale;
+        static osg::Uniform*                        s_trans;
 
     friend class DeltaWaveUpdateCallback;
     friend class DeltaNoiseUpdateCallback;
