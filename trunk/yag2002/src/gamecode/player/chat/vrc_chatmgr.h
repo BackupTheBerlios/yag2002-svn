@@ -151,10 +151,10 @@ class ChatManager : public ChatProtocolCallback, public yaf3d::GameState::Callba
         bool                                        registerChatProtocol( const std::string& prot, BaseChatProtocol* p_prot );
 
         //! Build the chat system for client or standalone mode
-        bool                                        buildClient();
+        void                                        buildClient() throw ( ChatExpection );
 
         //! Build the chat system for server mode
-        bool                                        buildServer();
+        void                                        buildServer() throw ( ChatExpection );
 
         //! Create a chat setting up a connection ( and joining to a channel if a channel is given )
         void                                        createConnection( const ChatConnectionConfig& config ) throw ( ChatExpection );

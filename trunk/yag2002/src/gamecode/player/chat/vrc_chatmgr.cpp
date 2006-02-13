@@ -74,10 +74,13 @@ ChatManager::~ChatManager()
     yaf3d::GameState::get()->registerCallbackAppWindowStateChange( this, false );
 }
 
-bool ChatManager::buildClient()
+void ChatManager::buildClient() throw ( ChatExpection )
 {
-    assert( _availableProtocols.size() && "no chat protocols available!" );
-    assert( !_built && "obviousely the chat manager has been already built!" );
+    if ( !_availableProtocols.size() )
+        throw ChatExpection( "No chat protocols available!" );
+
+    if ( _built )
+        throw ChatExpection( "Obviousely the chat manager has been already built!" );
 
     _p_chatGuiCtrl  = new ChatGuiCtrl;
     _p_chatGuiCtrl->initialize( this );
@@ -87,19 +90,18 @@ bool ChatManager::buildClient()
 
     _serverMode     = false;
     _built          = true;
-
-    return true;
 }
 
-bool ChatManager::buildServer()
+void ChatManager::buildServer() throw ( ChatExpection )
 {
-    assert( _availableProtocols.size() && "no chat protocols available!" );
-    assert( !_built && "obviousely the chat manager has been already built!" );
+    if ( !_availableProtocols.size() )
+        throw ChatExpection( "No chat protocols available!" );
+
+    if ( _built )
+        throw ChatExpection( "Obviousely the chat manager has been already built!" );
 
     _serverMode     = true;
     _built          = true;
-
-    return true;
 }
 
 bool ChatManager::registerChatProtocol( const std::string& prot, BaseChatProtocol* p_prot )
