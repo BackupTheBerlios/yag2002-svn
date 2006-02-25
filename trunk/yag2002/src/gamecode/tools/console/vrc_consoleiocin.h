@@ -60,10 +60,10 @@ class ConsoleIOCin : public OpenThreads::Thread, public ConsoleIOBase
         //! Shutdown this handler
         void                                        shutdown();
 
+    protected:
+
         //! Implement pure method of class Thread 
         void                                        run();
-
-    protected:
 
         bool                                        _enable;
 
