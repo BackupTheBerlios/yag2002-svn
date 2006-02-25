@@ -61,6 +61,16 @@ object PlayerNetworking
             Reliable();
         }
 
+        NData _voiceChat;
+        { 
+            Reliable();
+        }
+
+        NData _ip;
+        { 
+            Reliable();
+        }
+
         Function RPC_ServerGrantsAccess;
         { 
             Reliable();
