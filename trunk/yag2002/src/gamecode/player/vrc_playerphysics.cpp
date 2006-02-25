@@ -456,7 +456,7 @@ void EnPlayerPhysics::initializePhysicsMaterials()
     NewtonMaterialSetDefaultCollidable( _p_world, yaf3d::Physics::get()->getMaterialId( "nocol" ), playerID, 0 );
 
     // set the material properties for player on default
-    NewtonMaterialSetDefaultElasticity( _p_world, playerID, defaultID, 0.3f );
+    NewtonMaterialSetDefaultElasticity( _p_world, playerID, defaultID, 0.1f );
     NewtonMaterialSetDefaultSoftness( _p_world, playerID, defaultID, 0.5f );
     NewtonMaterialSetDefaultFriction( _p_world, playerID, defaultID, 0.8f, 0.7f );
     NewtonMaterialSetCollisionCallback( _p_world, playerID, defaultID, &player_levelCollStruct, playerContactBegin, playerContactProcessLevel, playerContactEnd ); 
@@ -468,31 +468,31 @@ void EnPlayerPhysics::initializePhysicsMaterials()
     NewtonMaterialSetCollisionCallback( _p_world, playerID, wallID, &player_levelCollStruct, playerContactBegin, playerContactProcessLevel, playerContactEnd ); 
 
     // set the material properties for player on level
-    NewtonMaterialSetDefaultElasticity( _p_world, playerID, levelID, 0.3f );
+    NewtonMaterialSetDefaultElasticity( _p_world, playerID, levelID, 0.1f );
     NewtonMaterialSetDefaultSoftness( _p_world, playerID, levelID, 0.8f );
     NewtonMaterialSetDefaultFriction( _p_world, playerID, levelID, 0.8f, 0.7f );
     NewtonMaterialSetCollisionCallback( _p_world, playerID, levelID, &player_levelCollStruct, playerContactBegin, playerContactProcessLevel, playerContactEnd ); 
 
     // set the material properties for player on wood
-    NewtonMaterialSetDefaultElasticity( _p_world, playerID, woodID, 0.5f );
+    NewtonMaterialSetDefaultElasticity( _p_world, playerID, woodID, 0.1f );
     NewtonMaterialSetDefaultSoftness( _p_world, playerID, woodID, 0.5f );
     NewtonMaterialSetDefaultFriction( _p_world, playerID, woodID, 0.6f, 0.4f);
     NewtonMaterialSetCollisionCallback( _p_world, playerID, woodID, &player_woodCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
 
     // set the material properties for player on metal
-    NewtonMaterialSetDefaultElasticity( _p_world, playerID, metalID, 0.7f );
+    NewtonMaterialSetDefaultElasticity( _p_world, playerID, metalID, 0.1f );
     NewtonMaterialSetDefaultSoftness( _p_world, playerID, metalID, 0.9f );
     NewtonMaterialSetDefaultFriction( _p_world, playerID, metalID, 0.8f, 0.6f );
     NewtonMaterialSetCollisionCallback( _p_world, playerID, metalID, &player_metalCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
 
     // set the material properties for player on grass
-    NewtonMaterialSetDefaultElasticity( _p_world, playerID, grassID, 0.2f );
+    NewtonMaterialSetDefaultElasticity( _p_world, playerID, grassID, 0.1f );
     NewtonMaterialSetDefaultSoftness( _p_world, playerID, grassID, 0.3f );
     NewtonMaterialSetDefaultFriction( _p_world, playerID, grassID, 0.8f, 0.7f );
     NewtonMaterialSetCollisionCallback( _p_world, playerID, grassID, &player_grassCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
 
     // set the material properties for player on stone
-    NewtonMaterialSetDefaultElasticity( _p_world, playerID, stoneID, 0.45f );
+    NewtonMaterialSetDefaultElasticity( _p_world, playerID, stoneID, 0.2f );
     NewtonMaterialSetDefaultSoftness( _p_world, playerID, stoneID, 0.1f );
     NewtonMaterialSetDefaultFriction( _p_world, playerID, stoneID, 0.9f, 0.7f );
     NewtonMaterialSetCollisionCallback( _p_world, playerID, stoneID, &player_stoneCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
@@ -525,7 +525,7 @@ void EnPlayerPhysics::initialize()
     // release the collision object, we don't need it anymore
     NewtonReleaseCollision( _p_world, p_collision );
 
-    // set wood material
+    // set player material
     NewtonBodySetMaterialGroupID( _p_body, yaf3d::Physics::get()->getMaterialId( "player" ) );
 
     NewtonBodySetUserData( _p_body, this );
