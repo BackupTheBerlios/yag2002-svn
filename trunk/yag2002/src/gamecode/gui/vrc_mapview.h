@@ -39,7 +39,7 @@ namespace vrc
 #define ENTITY_NAME_MAPVIEW    "MapView"
 
 //! Map view entity
-class EnMapView :  public yaf3d::BaseEntity
+class EnMapView :  public yaf3d::BaseEntity, public gameutils::PlayerUtils::FunctorPlayerListChange
 {
     public:
                                                     EnMapView();
@@ -65,6 +65,9 @@ class EnMapView :  public yaf3d::BaseEntity
 
         //! This entity is persistent so it has to trigger its destruction on shutdown ifself.
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
+
+        //! Functor for getting player list changes
+        void                                        operator()( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity );
 
         //! Set up the map view
         void                                        setupMapView();
@@ -104,24 +107,6 @@ class EnMapView :  public yaf3d::BaseEntity
 
         //! Callback for mouse leaves a player point ( used for displaying player name )
         bool                                        onMouseLeavesPlayerPoint( const CEGUI::EventArgs& arg );
-
-        //! Callback for getting player list changes
-        class CallbackMapPLChange: public gameutils::PlayerUtils::CallbackPlayerListChange
-        {
-            public:
-
-                explicit                                CallbackMapPLChange( EnMapView* p_map ) :
-                                                         _p_map( p_map )
-                                                        {}
-
-                virtual                                 ~CallbackMapPLChange() {}
-
-                void                                    onPlayerListChanged( bool localplayer, bool joining );
-
-            protected:
-                
-                EnMapView*                              _p_map;
-        };
 
         //! Image file name of mini map ( currently it can be only in tga format )
         //! Note: the image must be created orthographically, otherwise the player positions on map are not displayed correctly.
@@ -186,8 +171,6 @@ class EnMapView :  public yaf3d::BaseEntity
 
         //! Map of players and associated markers
         std::map< yaf3d::BaseEntity*, CEGUI::StaticImage* >  _playerMarkers;
-
-        CallbackMapPLChange*                        _p_cbPLChanged;
 };
 
 //! Entity type definition used for type registry
