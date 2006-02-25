@@ -40,20 +40,12 @@ namespace vrc
 //! Implement and register the player ingo entity factory
 YAF3D_IMPL_ENTITYFACTORY( PlayerInfoDisplayEntityFactory )
 
-//! Implement the callback for player list changes
-void EnPlayerInfoDisplay::CallbackPLChange::onPlayerListChanged( bool localplayer, bool joining )
-{
-    if ( localplayer )
-        _p_info->_p_playerEntity = dynamic_cast< EnPlayer* >( getJoiner() );
-}
-
 EnPlayerInfoDisplay::EnPlayerInfoDisplay() :
 _position( osg::Vec2f( 0.001f, 0.1f ) ),
 _enable( true ),
 _p_playerEntity( NULL ),
 _p_wnd( NULL ),
-_p_outputText( NULL ),
-_p_cbPlayerChange( NULL )
+_p_outputText( NULL )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "position"    , _position    );
@@ -62,13 +54,12 @@ _p_cbPlayerChange( NULL )
 
 EnPlayerInfoDisplay::~EnPlayerInfoDisplay()
 {        
-    CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
-
-    if ( _p_cbPlayerChange )
+    if ( _p_wnd )
     {
+        CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
+
         // deregister to get notified whenever the player list changes
-        vrc::gameutils::PlayerUtils::get()->registerCallbackPlayerListChanged( _p_cbPlayerChange, false );
-        delete _p_cbPlayerChange;
+        vrc::gameutils::PlayerUtils::get()->registerFunctorPlayerListChanged( this, false );
     }
 }
 
@@ -100,6 +91,12 @@ void EnPlayerInfoDisplay::handleNotification( const yaf3d::EntityNotification& n
     }
 }
 
+void EnPlayerInfoDisplay::operator()( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity )
+{
+    if ( localplayer )
+        _p_playerEntity = dynamic_cast< EnPlayer* >( p_entity );
+}
+
 void EnPlayerInfoDisplay::initialize()
 {
     try
@@ -123,6 +120,7 @@ void EnPlayerInfoDisplay::initialize()
     {
         log_error << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
         log << "      reason: " << e.getMessage().c_str() << std::endl;
+        _p_wnd = NULL;
     }
 
     // register entity in order to get updated per simulation step
@@ -130,8 +128,7 @@ void EnPlayerInfoDisplay::initialize()
     // register entity in order to get notifications
     yaf3d::EntityManager::get()->registerNotification( this, true );
     // register to get notified whenever the player list changes
-    _p_cbPlayerChange = new CallbackPLChange( this ); 
-    vrc::gameutils::PlayerUtils::get()->registerCallbackPlayerListChanged( _p_cbPlayerChange, true );
+    vrc::gameutils::PlayerUtils::get()->registerFunctorPlayerListChanged( this, true );
 
     getPlayerEntity();
 }

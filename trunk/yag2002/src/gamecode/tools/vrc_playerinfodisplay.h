@@ -42,7 +42,7 @@ namespace vrc
 class EnPlayer;
 
 //! Player information display entity
-class EnPlayerInfoDisplay :  public yaf3d::BaseEntity
+class EnPlayerInfoDisplay :  public yaf3d::BaseEntity, public gameutils::PlayerUtils::FunctorPlayerListChange
 {
     public:
                                                     EnPlayerInfoDisplay();
@@ -72,23 +72,8 @@ class EnPlayerInfoDisplay :  public yaf3d::BaseEntity
         //! Internal usage
         bool                                        getPlayerEntity();
 
-        //! Callback for getting player list changes
-        class CallbackPLChange: public gameutils::PlayerUtils::CallbackPlayerListChange
-        {
-            public:
-
-                explicit                                CallbackPLChange( EnPlayerInfoDisplay* p_info ) :
-                                                         _p_info( p_info )
-                                                        {}
-
-                virtual                                 ~CallbackPLChange() {}
-
-                void                                    onPlayerListChanged( bool localplayer, bool joining );
-
-            protected:
-                
-                EnPlayerInfoDisplay*                    _p_info;
-        };
+        //! Functor for changed player list
+        void                                        operator()( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity );
 
         //! Positon on screen
         osg::Vec2f                                  _position;
@@ -103,8 +88,6 @@ class EnPlayerInfoDisplay :  public yaf3d::BaseEntity
         CEGUI::FrameWindow*                         _p_wnd;
 
         CEGUI::StaticText*                          _p_outputText;
-
-        CallbackPLChange*                           _p_cbPlayerChange;
 };
 
 //! Entity type definition used for type registry
