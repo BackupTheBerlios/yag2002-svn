@@ -96,7 +96,7 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         //! Enable / disable voice chat, use only for local client
         void                                        enableVoiceChat( bool en );
 
-        //! Is voice chat enabled?
+        //! Is voice chat enabled? This can be used on local and remote clients.
         bool                                        isEnabledVoiceChat();
 
 
@@ -138,6 +138,8 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         char                                        _p_configFile[ 64 ];
 
         bool                                        _voiceChat;
+
+        char                                        _ip[ 24 ];
 
         //-------
 

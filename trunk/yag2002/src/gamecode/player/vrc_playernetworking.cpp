@@ -40,6 +40,9 @@
 #include "vrc_playerphysics.h"
 #include "vrc_player.h"
 #include "chat/vrc_chatmgr.h"
+#include <RNReplicaNet/Inc/DataBlock_Function.h>
+
+using namespace RNReplicaNet;
 
 PlayerNetworking::PlayerNetworking( vrc::BasePlayerImplementation* p_playerImpl ) :
 _positionX( 0 ),
@@ -65,8 +68,13 @@ _loadedPlayerEntity( NULL )
     else
     {
         strcpy( _p_playerName, _p_playerImpl->getPlayerEntity()->getPlayerName().c_str() );
+
+        // set the voice chat flag so it can be set by replicas on initialization
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_ENABLE, _voiceChat );
+        _p_playerImpl->getPlayerEntity()->setVoiceChatEnabled( _voiceChat );
     }
     _p_configFile[ 0 ] = 0;
+    _ip[ 0 ]           = 0;
     _cmdAnimFlags      = 0;
 
     yaf3d::NetworkDevice::get()->unlockObjects();
@@ -112,14 +120,16 @@ void PlayerNetworking::PostObjectCreate()
     // complete setting up ghost ( remote client ) or server-side player
     if ( isRemoteClient() )
     {
+        // struct for sending init data
+        static tInitializationData init;
+
         // create the player and its components
         createPlayer();
 
         // setup new connected client
         if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
         {
-            // send intialization data
-            static tInitializationData init;
+            // send intialization data            
             osg::Vec3f pos = _loadedPlayerEntity->getPlayerImplementation()->getPlayerPosition();
             _positionX = pos.x();
             _positionY = pos.y();
@@ -134,21 +144,131 @@ void PlayerNetworking::PostObjectCreate()
             init._posZ = _positionZ;
             init._rotZ = _yaw;
 
-            // set ip address
+            // determine the public client ip and tell it to new connected client
             int sid = GetSessionID();
             std::string ip = yaf3d::NetworkDevice::get()->getClientIP( sid );
             strcpy( init._ip, ip.c_str() );
-
             log_debug << "  session id / client ip: " << sid << " / " << ip << std::endl;
 
+            // set ip address in player entity
             _loadedPlayerEntity->setIPAdress( ip );
 
             // grant new connected client to session with initialization data
             MASTER_FUNCTION_CALL( RPC_ServerGrantsAccess( init ) );
         }
+        else
+        {
+            // check if we have a valid ip
+            if ( _ip[ 0 ] )
+            {
+                // terminate the ip string to be on safe side
+                _ip[ sizeof( _ip ) - 1 ] = 0;
+                _p_playerImpl->getPlayerEntity()->setIPAdress( _ip );
+
+                // is voice chat enabled?
+                _p_playerImpl->getPlayerEntity()->setVoiceChatEnabled( _voiceChat );
+                if ( _voiceChat )
+                    vrc::gameutils::PlayerUtils::get()->addRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
+            }
+        }
     }
 
-    log_info << "  player created: " << _p_playerName << std::endl;
+    log_info << "  remote player created: " << _p_playerName << std::endl;
+}
+
+void PlayerNetworking::RPC_ServerGrantsAccess( tInitializationData initData )
+{ // this method is called on new connected client
+
+    log_info << "  player networking: server grants access to network session" << std::endl;
+
+    // init player
+    {
+        // init player position set by server ( it's the job of server to init the player position and rotation )
+        _p_playerImpl->setPlayerPosition( osg::Vec3f( initData._posX, initData._posY, initData._posZ ) );
+        _p_playerImpl->setPlayerRotation( osg::Quat( initData._rotZ, osg::Vec3f( 0.0f, 0.0f, 1.0f ) ) );
+
+        // reset physics body transformation
+        osg::Matrixf mat;
+        mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
+        mat.setTrans( _p_playerImpl->getPlayerPosition() ); 
+        _p_playerImpl->getPlayerPhysics()->setTransformation( mat );
+
+        _positionX = initData._posX;
+        _positionY = initData._posY;
+        _positionZ = initData._posZ;
+        _yaw       = initData._rotZ;
+
+        unsigned char breaktype = static_cast< unsigned char >( RNReplicaNet::DataBlock::kTeleport | RNReplicaNet::DataBlock::kSuddenChange );
+        ContinuityBreak( _positionX, breaktype );
+        ContinuityBreak( _positionY, breaktype );
+        ContinuityBreak( _positionZ, breaktype );
+        ContinuityBreak( _yaw, breaktype );
+
+        // store our public ip
+        initData._ip[ sizeof( _ip ) - 1 ] = 0;
+        strcpy( _ip, initData._ip );
+        _p_playerImpl->getPlayerEntity()->setIPAdress( _ip );
+    }
+
+    // distribute our initial data to all other replicas
+    ALL_REPLICAS_FUNCTION_CALL( RPC_Initialize( initData ) );
+}
+
+void PlayerNetworking::RPC_Initialize( tInitializationData initData )
+{ // this method is called on replicas of new connected client
+
+    // this rpc is also called on server, skip it in this case!
+    if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Client ) 
+        return;
+
+    // init remote player
+    {
+        // init player position set by server ( it's the job of server to init the player position and rotation )
+        _p_playerImpl->setPlayerPosition( osg::Vec3f( initData._posX, initData._posY, initData._posZ ) );
+        _p_playerImpl->setPlayerRotation( osg::Quat( initData._rotZ, osg::Vec3f( 0.0f, 0.0f, 1.0f ) ) );
+
+        // reset physics body transformation
+        osg::Matrixf mat;
+        mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
+        mat.setTrans( _p_playerImpl->getPlayerPosition() ); 
+        _p_playerImpl->getPlayerPhysics()->setTransformation( mat );
+
+        _positionX = initData._posX;
+        _positionY = initData._posY;
+        _positionZ = initData._posZ;
+        _yaw       = initData._rotZ;
+
+        unsigned char breaktype = static_cast< unsigned char >( RNReplicaNet::DataBlock::kTeleport | RNReplicaNet::DataBlock::kSuddenChange );
+        ContinuityBreak( _positionX, breaktype );
+        ContinuityBreak( _positionY, breaktype );
+        ContinuityBreak( _positionZ, breaktype );
+        ContinuityBreak( _yaw, breaktype );
+
+        // is voice chat enabled?
+        _p_playerImpl->getPlayerEntity()->setIPAdress( _ip );
+        _p_playerImpl->getPlayerEntity()->setVoiceChatEnabled( _voiceChat );
+        if ( _voiceChat )
+            vrc::gameutils::PlayerUtils::get()->addRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
+    }
+}
+
+void PlayerNetworking::RPC_EnableVoiceChat( bool en )
+{
+    _p_playerImpl->getPlayerEntity()->setVoiceChatEnabled( en );
+
+    if ( _voiceChat == en )
+        return;
+
+    _voiceChat = en;
+
+    // only relevant for remote clients
+    if ( ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client ) && isRemoteClient() )
+    {
+        if ( _voiceChat )
+            vrc::gameutils::PlayerUtils::get()->addRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
+        else
+            vrc::gameutils::PlayerUtils::get()->removeRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
+    }
 }
 
 void PlayerNetworking::createPlayer()
@@ -236,115 +356,13 @@ void PlayerNetworking::initialize( const osg::Vec3f& pos, const std::string& pla
     ContinuityBreak( _yaw, breaktype );
 }
 
-void PlayerNetworking::RPC_ServerGrantsAccess( tInitializationData initData )
-{ // this method is called on new connected client
-
-    log_info << "server grants access to network session, our public IP is: " << initData._ip << std::endl;
-
-    // store our public ip
-    _p_playerImpl->getPlayerEntity()->setIPAdress( initData._ip );
-
-    // init player
-    {
-        // init player position set by server ( it's the job of server to init the player position and rotation )
-        _p_playerImpl->setPlayerPosition( osg::Vec3f( initData._posX, initData._posY, initData._posZ ) );
-        _p_playerImpl->setPlayerRotation( osg::Quat( initData._rotZ, osg::Vec3f( 0.0f, 0.0f, 1.0f ) ) );
-
-        // reset physics body transformation
-        osg::Matrixf mat;
-        mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
-        mat.setTrans( _p_playerImpl->getPlayerPosition() ); 
-        _p_playerImpl->getPlayerPhysics()->setTransformation( mat );
-
-        _positionX = initData._posX;
-        _positionY = initData._posY;
-        _positionZ = initData._posZ;
-        _yaw       = initData._rotZ;
-
-        unsigned char breaktype = static_cast< unsigned char >
-            ( RNReplicaNet::DataBlock::kTeleport |
-            RNReplicaNet::DataBlock::kSuddenChange
-            );
-
-        ContinuityBreak( _positionX, breaktype );
-        ContinuityBreak( _positionY, breaktype );
-        ContinuityBreak( _positionZ, breaktype );
-        ContinuityBreak( _yaw, breaktype );
-    }
-
-    // distribute our initial data to all other replicas
-    ALL_REPLICAS_FUNCTION_CALL( RPC_Initialize( initData ) );
-
-    // set the voice chat flag
-    yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_ENABLE, _voiceChat );
-    enableVoiceChat( _voiceChat );
-}
-
-void PlayerNetworking::RPC_Initialize( tInitializationData initData )
-{ // this method is called on all replicas of new connected client
-
-    // this rpc is also called on server, skip it in this case!
-    if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Client ) 
-        return;
-
-    // init remote player
-    {
-        // init player position set by server ( it's the job of server to init the player position and rotation )
-        _p_playerImpl->setPlayerPosition( osg::Vec3f( initData._posX, initData._posY, initData._posZ ) );
-        _p_playerImpl->setPlayerRotation( osg::Quat( initData._rotZ, osg::Vec3f( 0.0f, 0.0f, 1.0f ) ) );
-
-        // reset physics body transformation
-        osg::Matrixf mat;
-        mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
-        mat.setTrans( _p_playerImpl->getPlayerPosition() ); 
-        _p_playerImpl->getPlayerPhysics()->setTransformation( mat );
-
-        _positionX = initData._posX;
-        _positionY = initData._posY;
-        _positionZ = initData._posZ;
-        _yaw       = initData._rotZ;
-
-        unsigned char breaktype = static_cast< unsigned char >
-            ( RNReplicaNet::DataBlock::kTeleport |
-            RNReplicaNet::DataBlock::kSuddenChange
-            );
-
-        ContinuityBreak( _positionX, breaktype );
-        ContinuityBreak( _positionY, breaktype );
-        ContinuityBreak( _positionZ, breaktype );
-        ContinuityBreak( _yaw, breaktype );
-
-        // store ip address
-        initData._ip[ sizeof( initData._ip ) - 1 ] = 0;
-        log_debug << "  public client ip: " << initData._ip << std::endl;
-        _p_playerImpl->getPlayerEntity()->setIPAdress( initData._ip );
-    }
-}
-        
 void PlayerNetworking::enableVoiceChat( bool en )
-{
+{ // this method must be called only on local client
+
+    _voiceChat = en;
     _p_playerImpl->getPlayerEntity()->setVoiceChatEnabled( en );
     // call the rpc on all replicated clients
     ALL_REPLICAS_FUNCTION_CALL( RPC_EnableVoiceChat( en ) );
-}
-
-void PlayerNetworking::RPC_EnableVoiceChat( bool en )
-{
-    _p_playerImpl->getPlayerEntity()->setVoiceChatEnabled( en );
-
-    if ( _voiceChat == en )
-        return;
-
-    _voiceChat = en;
-
-    // only relevant for remote clients
-    if ( ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client ) && isRemoteClient() )
-    {
-        if ( _voiceChat )
-            vrc::gameutils::PlayerUtils::get()->addRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
-        else
-            vrc::gameutils::PlayerUtils::get()->removeRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
-    }
 }
 
 bool PlayerNetworking::isEnabledVoiceChat()
