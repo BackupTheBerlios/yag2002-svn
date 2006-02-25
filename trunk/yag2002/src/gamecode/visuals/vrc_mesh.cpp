@@ -30,6 +30,7 @@
 
 #include <vrc_main.h>
 #include "vrc_mesh.h"
+#include "vrc_lod.h"
 
 namespace vrc
 {
@@ -39,14 +40,18 @@ YAF3D_IMPL_ENTITYFACTORY( MeshEntityFactory )
 
 EnMesh::EnMesh() :
 _enable( true ),
-_usedInMenu( false )
+_usedInMenu( false ),
+_useLOD( false ),
+_lodErrorThreshold( 0.05f )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "usedInMenu"    , _usedInMenu );
-    getAttributeManager().addAttribute( "enable"        , _enable     );
-    getAttributeManager().addAttribute( "meshFile"      , _meshFile   );
-    getAttributeManager().addAttribute( "position"      , _position   );
-    getAttributeManager().addAttribute( "rotation"      , _rotation   );
+    getAttributeManager().addAttribute( "usedInMenu"            , _usedInMenu        );
+    getAttributeManager().addAttribute( "enable"                , _enable            );
+    getAttributeManager().addAttribute( "meshFile"              , _meshFile          );
+    getAttributeManager().addAttribute( "position"              , _position          );
+    getAttributeManager().addAttribute( "rotation"              , _rotation          );
+    getAttributeManager().addAttribute( "useLOD"                , _useLOD            );
+    getAttributeManager().addAttribute( "lodErrorThreshold"     , _lodErrorThreshold );
 }
 
 EnMesh::~EnMesh()
@@ -114,12 +119,19 @@ void EnMesh::initialize()
         addToTransformationNode( _mesh.get() );
 
     // register entity in order to get menu notifications
-    yaf3d::EntityManager::get()->registerNotification( this, true );    
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 osg::ref_ptr< osg::Node > EnMesh::setupMesh()
 {
-    osg::Node* p_node = yaf3d::LevelManager::get()->loadMesh( _meshFile );
+    osg::Node* p_node;
+
+    // don't cache the mesh if lod is used
+    if ( _useLOD )
+        p_node = yaf3d::LevelManager::get()->loadMesh( _meshFile, false );
+    else
+        p_node = yaf3d::LevelManager::get()->loadMesh( _meshFile, true );
+
     if ( !p_node )
     {
         log_error << "*** could not load mesh file: " << _meshFile << ", in '" << getInstanceName() << "'" << std::endl;
@@ -132,9 +144,27 @@ osg::ref_ptr< osg::Node > EnMesh::setupMesh()
                      osg::DegreesToRadians( _rotation.y() ), osg::Vec3f( 0.0f, 1.0f, 0.0f ),
                      osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0.0f, 0.0f, 1.0f )
                     );
-    setRotation( rot );
+    setRotation( rot );    
 
+    if ( _useLOD )
+        p_node = setupLODObject( p_node );
+    
     return p_node;
+}
+
+osg::Node* EnMesh::setupLODObject( osg::Node* p_node )
+{
+    osg::Node* p_lodnode = p_node;
+
+    // build the GLOD groups and objects
+    osg::ref_ptr< LODSettings > p_lodsettings = new LODSettings( LODSettings::LOD_DISCRETE );
+    p_lodsettings->setupScreenSpaceThreshold( _lodErrorThreshold );
+
+    LODVisitor lodvis;
+    lodvis.setLODSettings( p_lodsettings.get() );
+    p_lodnode->accept( lodvis );
+
+    return p_lodnode;
 }
 
 void EnMesh::enable( bool en )

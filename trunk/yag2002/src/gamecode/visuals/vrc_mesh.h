@@ -57,25 +57,34 @@ class EnMesh :  public yaf3d::BaseEntity
 
     protected:
 
+        //! Handle system notifications
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
+
+        //! Setup a node using LOD
+        osg::Node*                                  setupLODObject( osg::Node* p_node );
+
+        //! Setup the mesh
+        osg::ref_ptr< osg::Node >                   setupMesh();
+
+        //! Entity attributes
+
         std::string                                 _meshFile;
 
         osg::Vec3f                                  _position;
 
         osg::Vec3f                                  _rotation;
 
-    protected:
-
-        //! Handle system notifications
-        void                                        handleNotification( const yaf3d::EntityNotification& notification );
-
-        //! Setup the mesh
-        osg::ref_ptr< osg::Node >                   setupMesh();
-
-        osg::ref_ptr< osg::Node >                   _mesh;
-
         bool                                        _enable;
 
         bool                                        _usedInMenu;
+
+        bool                                        _useLOD;
+
+        float                                       _lodErrorThreshold;
+
+        //! Internal attributes
+
+        osg::ref_ptr< osg::Node >                   _mesh;
 };
 
 //! Entity type definition used for type registry
