@@ -92,7 +92,7 @@ void ImplChatNetworkingVRC::PostObjectCreate()
     _p_protVRC->connected();
 
     // do an RPC on server object
-    log_debug << "requesting VRC server to join ..." << std::endl;
+    log_debug << "  requesting VRC chat protocol server to join ..." << std::endl;
     NOMINATED_REPLICAS_FUNCTION_CALL( 1, &_serverSID, RPC_RequestJoin( _config ) );
 }
 
