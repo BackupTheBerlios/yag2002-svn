@@ -67,7 +67,8 @@ _jump( "Space" ),
 _cameramode( "F1" ),
 _chatmode( "RMB" ),
 _voiceChatEnable( true ),
-_voiceChatChannel( VRC_GS_DEFAULT_CHATVOICEPORT )
+_voiceChatChanSnd( VRC_GS_DEFAULT_CHATVOICEPORT ),
+_voiceChatChanRecv( VRC_GS_DEFAULT_CHATVOICEPORT + 1 )
 {
     // register this instance for getting game state changes
     yaf3d::GameState::get()->registerCallbackStateChange( this );
@@ -84,20 +85,21 @@ void VRCConfigRegistry::onStateChange( unsigned int state )
         return;
 
     // register settings
-    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_NAME,         _playerName       );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_CONFIG_DIR,   _playerConfigDir  );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_CONFIG,       _playerConfig     );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_FORWARD,    _moveForward      );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_BACKWARD,   _moveBackward     );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_LEFT,       _moveLeft         );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_RIGHT,      _moveRight        );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_JUMP,            _jump             );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CAMERAMODE,      _cameramode       );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CHATMODE,        _chatmode         );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_MOUSESENS,           _mouseSensitivity );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_INVERTMOUSE,         _mouseInverted    );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_ENABLE,    _voiceChatEnable  );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_CHANNEL,   _voiceChatChannel );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_NAME,         _playerName        );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_CONFIG_DIR,   _playerConfigDir   );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_CONFIG,       _playerConfig      );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_FORWARD,    _moveForward       );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_BACKWARD,   _moveBackward      );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_LEFT,       _moveLeft          );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_RIGHT,      _moveRight         );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_JUMP,            _jump              );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CAMERAMODE,      _cameramode        );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CHATMODE,        _chatmode          );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_MOUSESENS,           _mouseSensitivity  );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_INVERTMOUSE,         _mouseInverted     );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_ENABLE,    _voiceChatEnable   );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_CHAN_SND,  _voiceChatChanSnd  );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_CHAN_RECV, _voiceChatChanRecv );
 
     // now load the setting values from config file
     yaf3d::Configuration::get()->load();
@@ -377,13 +379,9 @@ void PlayerUtils::setLocalPlayer( yaf3d::BaseEntity* p_entity )
     _p_localPlayer = p_entity;
 
     // notify registered callbacks for changed player list
-    std::vector< CallbackPlayerListChange* >::iterator p_beg = _cbPlayerList.begin(), p_end = _cbPlayerList.end();
+    std::vector< FunctorPlayerListChange* >::iterator p_beg = _funcPlayerList.begin(), p_end = _funcPlayerList.end();
     for ( ; p_beg != p_end; ++p_beg )
-    {
-        ( *p_beg )->_p_joiner = p_entity;
-        ( *p_beg )->_p_leaver = p_entity;
-        ( *p_beg )->onPlayerListChanged( true, p_entity ? true : false );
-    }
+        ( *p_beg )->operator()( true, p_entity ? true : false, p_entity );
 }
 
 void PlayerUtils::addRemotePlayer( yaf3d::BaseEntity* p_entity )
@@ -399,13 +397,9 @@ void PlayerUtils::addRemotePlayer( yaf3d::BaseEntity* p_entity )
     _remotePlayers.push_back( p_entity );
 
     // notify registered callbacks for changed remote player list
-    std::vector< CallbackPlayerListChange* >::iterator p_cbbeg = _cbPlayerList.begin(), p_cbend = _cbPlayerList.end();
+    std::vector< FunctorPlayerListChange* >::iterator p_cbbeg = _funcPlayerList.begin(), p_cbend = _funcPlayerList.end();
     for ( ; p_cbbeg != p_cbend; ++p_cbbeg )
-    {
-        ( *p_cbbeg )->_p_joiner = p_entity;
-        ( *p_cbbeg )->_p_leaver = NULL;
-        ( *p_cbbeg )->onPlayerListChanged( false, true );
-    }
+        ( *p_cbbeg )->operator()( false, true, p_entity );
 }
 
 void PlayerUtils::removeRemotePlayer( yaf3d::BaseEntity* p_entity )
@@ -421,36 +415,32 @@ void PlayerUtils::removeRemotePlayer( yaf3d::BaseEntity* p_entity )
     _remotePlayers.erase( p_beg );
 
     // notify registered callbacks for changed remote player list
-    std::vector< CallbackPlayerListChange* >::iterator p_cbbeg = _cbPlayerList.begin(), p_cbend = _cbPlayerList.end();
+    std::vector< FunctorPlayerListChange* >::iterator p_cbbeg = _funcPlayerList.begin(), p_cbend = _funcPlayerList.end();
     for ( ; p_cbbeg != p_cbend; ++p_cbbeg )
-    {
-        ( *p_cbbeg )->_p_joiner = NULL;
-        ( *p_cbbeg )->_p_leaver = p_entity;
-        ( *p_cbbeg )->onPlayerListChanged( false, false );
-    }
+        ( *p_cbbeg )->operator()( false, false, p_entity );
 }
 
-void PlayerUtils::registerCallbackPlayerListChanged( CallbackPlayerListChange* p_cb, bool reg )
+void PlayerUtils::registerFunctorPlayerListChanged( FunctorPlayerListChange* p_cb, bool reg )
 {
-    bool cbinlist = false;
-    std::vector< CallbackPlayerListChange* >::iterator p_beg = _cbPlayerList.begin(), p_end = _cbPlayerList.end();
+    bool funcinlist = false;
+    std::vector< FunctorPlayerListChange* >::iterator p_beg = _funcPlayerList.begin(), p_end = _funcPlayerList.end();
     for ( ; p_beg != p_end; ++p_beg )
     {
         if ( *p_beg == p_cb )
         {
-            cbinlist = true;
+            funcinlist = true;
             break;
         }
     }
 
     // check the registration / deregistration
-    assert( !( cbinlist && reg ) && "callback is already registered for getting player list changes" );
-    assert( !( !cbinlist && !reg ) && "callback has not been previousely registered for getting player list changes" );
+    assert( !( funcinlist && reg ) && "functor is already registered for getting player list changes" );
+    assert( !( !funcinlist && !reg ) && "functor has not been previousely registered for getting player list changes" );
 
     if ( reg )
-        _cbPlayerList.push_back( p_cb );
+        _funcPlayerList.push_back( p_cb );
     else
-        _cbPlayerList.erase( p_beg );
+        _funcPlayerList.erase( p_beg );
 }
 
 void PlayerUtils::addRemotePlayerVoiceChat( yaf3d::BaseEntity* p_entity )
@@ -466,13 +456,9 @@ void PlayerUtils::addRemotePlayerVoiceChat( yaf3d::BaseEntity* p_entity )
     _remotePlayersVoiceChat.push_back( p_entity );
 
     // notify registered callbacks for changed remote player list supporting voice chat
-    std::vector< CallbackPlayerListChange* >::iterator p_cbbeg = _cbPlayerListVoiceChat.begin(), p_cbend = _cbPlayerListVoiceChat.end();
+    std::vector< FunctorPlayerListChange* >::iterator p_cbbeg = _funcPlayerListVoiceChat.begin(), p_cbend = _funcPlayerListVoiceChat.end();
     for ( ; p_cbbeg != p_cbend; ++p_cbbeg )
-    {
-        ( *p_cbbeg )->_p_joiner = p_entity;
-        ( *p_cbbeg )->_p_leaver = NULL;
-        ( *p_cbbeg )->onPlayerListChanged( false, true );
-    }
+        ( *p_cbbeg )->operator()( false, true, p_entity );
 }
 
 void PlayerUtils::removeRemotePlayerVoiceChat( yaf3d::BaseEntity* p_entity )
@@ -488,36 +474,32 @@ void PlayerUtils::removeRemotePlayerVoiceChat( yaf3d::BaseEntity* p_entity )
     _remotePlayersVoiceChat.erase( p_beg );
 
     // notify registered callbacks for changed remote player list supporting voice chat
-    std::vector< CallbackPlayerListChange* >::iterator p_cbbeg = _cbPlayerListVoiceChat.begin(), p_cbend = _cbPlayerListVoiceChat.end();
+    std::vector< FunctorPlayerListChange* >::iterator p_cbbeg = _funcPlayerListVoiceChat.begin(), p_cbend = _funcPlayerListVoiceChat.end();
     for ( ; p_cbbeg != p_cbend; ++p_cbbeg )
-    {
-        ( *p_cbbeg )->_p_joiner = NULL;
-        ( *p_cbbeg )->_p_leaver = p_entity;
-        ( *p_cbbeg )->onPlayerListChanged( false, false );
-    }
+        ( *p_cbbeg )->operator()( false, false, p_entity );
 }
 
-void PlayerUtils::registerCallbackVoiceChatPlayerListChanged( CallbackPlayerListChange* p_cb, bool reg )
+void PlayerUtils::registerFunctorVoiceChatPlayerListChanged( FunctorPlayerListChange* p_cb, bool reg )
 {
-    bool cbinlist = false;
-    std::vector< CallbackPlayerListChange* >::iterator p_beg = _cbPlayerListVoiceChat.begin(), p_end = _cbPlayerListVoiceChat.end();
+    bool funcinlist = false;
+    std::vector< FunctorPlayerListChange* >::iterator p_beg = _funcPlayerListVoiceChat.begin(), p_end = _funcPlayerListVoiceChat.end();
     for ( ; p_beg != p_end; ++p_beg )
     {
         if ( *p_beg == p_cb )
         {
-            cbinlist = true;
+            funcinlist = true;
             break;
         }
     }
 
     // check the registration / deregistration
-    assert( !( cbinlist && reg ) && "callback is already registered for getting player list changes (voice chat)" );
-    assert( !( !cbinlist && !reg ) && "callback has not been previousely registered for getting player list changes (voice chat)" );
+    assert( !( funcinlist && reg ) && "functor is already registered for getting player list changes (voice chat)" );
+    assert( !( !funcinlist && !reg ) && "functor has not been previousely registered for getting player list changes (voice chat)" );
 
     if ( reg )
-        _cbPlayerListVoiceChat.push_back( p_cb );
+        _funcPlayerListVoiceChat.push_back( p_cb );
     else
-        _cbPlayerListVoiceChat.erase( p_beg );
+        _funcPlayerListVoiceChat.erase( p_beg );
 }
 
 // level file class
