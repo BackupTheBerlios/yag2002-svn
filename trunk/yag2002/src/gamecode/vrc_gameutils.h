@@ -61,9 +61,8 @@ namespace gameutils
 #define VRC_GS_MOUSESENS                    "mouseSensitivity"
 #define VRC_GS_INVERTMOUSE                  "mouseInverted"
 #define VRC_GS_VOICECHAT_ENABLE             "voiceChatEnable"
-#define VRC_GS_VOICECHAT_CHAN_SND           "voiceChatChannelSender"
-#define VRC_GS_VOICECHAT_CHAN_RECV          "voiceChatChannelReceiver"
-#define VRC_GS_DEFAULT_CHATVOICEPORT        32200
+#define VRC_GS_VOICECHAT_CHANNEL            "voiceChatChannel"
+#define VRC_GS_DEFAULT_VOICECHANNEL         32200
 
 //! Game code settings' defaults
 #define VRC_GS_MAX_MOUSESENS                3.0f                // maximal mouse sensitivity
@@ -126,9 +125,7 @@ class VRCConfigRegistry : public yaf3d::GameState::CallbackStateChange
 
         bool                                        _voiceChatEnable;
 
-        unsigned int                                _voiceChatChanSnd;
-
-        unsigned int                                _voiceChatChanRecv;
+        unsigned int                                _voiceChatChannel;
 };
 
 //! Single instance providing player-related utility services

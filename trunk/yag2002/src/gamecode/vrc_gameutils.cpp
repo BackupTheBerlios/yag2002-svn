@@ -67,8 +67,7 @@ _jump( "Space" ),
 _cameramode( "F1" ),
 _chatmode( "RMB" ),
 _voiceChatEnable( true ),
-_voiceChatChanSnd( VRC_GS_DEFAULT_CHATVOICEPORT ),
-_voiceChatChanRecv( VRC_GS_DEFAULT_CHATVOICEPORT + 1 )
+_voiceChatChannel( VRC_GS_DEFAULT_VOICECHANNEL )
 {
     // register this instance for getting game state changes
     yaf3d::GameState::get()->registerCallbackStateChange( this );
@@ -98,8 +97,7 @@ void VRCConfigRegistry::onStateChange( unsigned int state )
     yaf3d::Configuration::get()->addSetting( VRC_GS_MOUSESENS,           _mouseSensitivity  );
     yaf3d::Configuration::get()->addSetting( VRC_GS_INVERTMOUSE,         _mouseInverted     );
     yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_ENABLE,    _voiceChatEnable   );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_CHAN_SND,  _voiceChatChanSnd  );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_CHAN_RECV, _voiceChatChanRecv );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_CHANNEL,   _voiceChatChannel  );
 
     // now load the setting values from config file
     yaf3d::Configuration::get()->load();
