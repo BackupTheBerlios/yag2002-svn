@@ -83,6 +83,24 @@ void EnAmbientSound::handleNotification( const yaf3d::EntityNotification& notifi
             startPlaying();
             break;
 
+        case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
+        {
+            // recreate sound if any attribute has been changed
+            if (  _soundID > 0 )
+            {
+                try
+                {
+                    stopPlaying( false );
+                    yaf3d::SoundManager::get()->releaseSound( _soundID );
+                }
+                catch ( const yaf3d::SoundException& )
+                {
+                }
+            }
+            initialize();
+        }
+        break;
+
         default:
             ;
     }
