@@ -1018,9 +1018,6 @@
 					RelativePath="..\..\..\..\src\gamecode\voice\vrc_codec.h">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\voice\vrc_codec.inl">
-				</File>
-				<File
 					RelativePath="..\..\..\..\src\gamecode\voice\vrc_netvoice.cpp">
 				</File>
 				<File
