@@ -44,15 +44,14 @@ YAF3D_IMPL_ENTITYFACTORY( NetworkVoiceEntityFactory )
 
 EnNetworkVoice::EnNetworkVoice():
 _spotRange( 20.0f ),
-_enableVoice( true ),
 _p_receiver( NULL ),
 _p_voiceNetwork( NULL ),
 _p_codec( NULL ),
 _p_soundInput( NULL )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "spotRange",   _spotRange   );
-    getAttributeManager().addAttribute( "enableVoice", _enableVoice );
+    getAttributeManager().addAttribute( "spotRange",       _spotRange  );
+    getAttributeManager().addAttribute( "testSoundFile",   _testFile   );
 }
 
 EnNetworkVoice::~EnNetworkVoice()
@@ -85,7 +84,6 @@ EnNetworkVoice::~EnNetworkVoice()
 
         if ( _p_soundInput )
         {
-            _p_soundInput->shutdown();
             delete _p_soundInput;
         }
 
@@ -117,9 +115,6 @@ void EnNetworkVoice::handleNotification( const yaf3d::EntityNotification& notifi
 
 void EnNetworkVoice::initialize()
 {
-    if ( !_enableVoice )
-        return;
-
     try
     {
         // create a sound receiver
@@ -128,18 +123,23 @@ void EnNetworkVoice::initialize()
 
         _p_voiceNetwork = new VoiceNetwork;
         _p_voiceNetwork->initialize();
+        _p_voiceNetwork->setHotspotRange( _spotRange );
 
         // create sound compression codec
         _p_codec = new NetworkSoundCodec;
         _p_codec->setEncoderComplexity( 9 );
-        _p_codec->setEncoderQuality( 9 );
+        _p_codec->setEncoderQuality( 10 );
         _p_codec->setupEncoder();
 
-        // create a file input as voice source for testing
-        //! TODO: replace this by microphone input later
-        _p_soundInput = new VoiceFileInput( "sound/nwtest-pcm16mono8khz.wav", NULL, _p_codec );
-        _p_soundInput->initialize();
+        // create a file input as voice source for testing if a test file is given
+        // the file must have following format: PCM16, mono, 8 kHz
+        // if no test file given then we take the microphone as input ( normal case )
+        if ( _testFile.length() )
+            _p_soundInput = new VoiceFileInput( _testFile, NULL, _p_codec );
+        else
+            _p_soundInput = new VoiceMicrophoneInput( NULL, _p_codec );
 
+        _p_soundInput->initialize();
     }
     catch ( const NetworkSoundExpection& e )
     {

@@ -79,8 +79,8 @@ class EnNetworkVoice :
         //! Sound spot range, only players in this range transmit voice data
         float                                       _spotRange;
 
-        //! Enable / disable voice
-        bool                                        _enableVoice;
+        //! Sound file for test purpose
+        std::string                                 _testFile;
 
         //! Voice receiver
         BaseNetworkSoundImplementation*             _p_receiver;

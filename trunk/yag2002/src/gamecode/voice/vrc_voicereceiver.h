@@ -71,9 +71,6 @@ class VoiceReceiver : public BaseNetworkSoundImplementation
         //! Setup ReplicaNet
         void                                        setupNetwork()  throw( NetworkSoundExpection );
 
-        //! Update ReplicaNet
-        void                                        updateNetwork();
-
         //! A map for connected senders ( udp transport / sound node )
         typedef std::map< RNReplicaNet::Transport*, SoundNode* > SenderMap;
         SenderMap                                   _soundNodeMap;
@@ -83,12 +80,6 @@ class VoiceReceiver : public BaseNetworkSoundImplementation
 
         //! Sound system
         FMOD::System*                               _p_soundSystem;
-
-        //! Sound object
-        FMOD::Sound*                                _p_sound;
-        
-        //! Sound channel
-        FMOD::Channel*                              _p_channel;
 };
 
 } // namespace vrc

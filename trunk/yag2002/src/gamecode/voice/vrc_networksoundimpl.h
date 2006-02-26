@@ -42,23 +42,23 @@ typedef std::queue< short, std::deque< short > > SoundSampleQueue;
 class NetworkSoundExpection : public std::runtime_error
 {
     public:
-                                                    NetworkSoundExpection( const std::string& reason ) :
-                                                     std::runtime_error( reason )
-                                                    {
-                                                    }
+                                        NetworkSoundExpection( const std::string& reason ) :
+                                         std::runtime_error( reason )
+                                        {
+                                        }
 
-        virtual                                     ~NetworkSoundExpection() throw() {}
+        virtual                         ~NetworkSoundExpection() throw() {}
 
-                                                    NetworkSoundExpection( const NetworkSoundExpection& e ) :
-                                                     std::runtime_error( e )
-                                                    {
-                                                    }
+                                        NetworkSoundExpection( const NetworkSoundExpection& e ) :
+                                         std::runtime_error( e )
+                                        {
+                                        }
 
     protected:
 
-                                                    NetworkSoundExpection();
+                                        NetworkSoundExpection();
 
-        NetworkSoundExpection&                      operator = ( const NetworkSoundExpection& );
+        NetworkSoundExpection&          operator = ( const NetworkSoundExpection& );
 };
 
 //! Base class of all network sound implementations
@@ -67,19 +67,19 @@ class BaseNetworkSoundImplementation
     public:
 
 
-                                                    BaseNetworkSoundImplementation();
+                                        BaseNetworkSoundImplementation();
 
-        virtual                                     ~BaseNetworkSoundImplementation();
+        virtual                         ~BaseNetworkSoundImplementation();
 
         
         //! Initialize
-        virtual void                                initialize() throw( NetworkSoundExpection ) = 0;
+        virtual void                    initialize() throw( NetworkSoundExpection ) = 0;
 
         //! Update
-        virtual void                                update( float deltaTime ) = 0;
+        virtual void                    update( float deltaTime ) = 0;
 
         //! Shutdown
-        virtual void                                shutdown() = 0;
+        virtual void                    shutdown() = 0;
 };
 
 //! Voice server name
@@ -92,14 +92,17 @@ class BaseNetworkSoundImplementation
 //! Type of raw voice data, currently we use 'short' for PCM16
 #define VOICE_DATA_FORMAT_TYPE                  short
 
+//! Life-sign signaling period ( in seconds ) used in voice paket transmission protocol
+#define VOICE_LIFESIGN_PERIOD                   1.0f
+
 //! Paket structure and type ids for transmitting voice stream
 #define NETWORKSOUND_PAKET_TYPE_CON_REQ         0x0010  /* Sender requests receiver for connection */
 #define NETWORKSOUND_PAKET_TYPE_CON_GRANT       0x0020  /* Receiver grants connection from sender */
 #define NETWORKSOUND_PAKET_TYPE_CON_DENY        0x0030  /* Receiver denies connection from sender */
 #define NETWORKSOUND_PAKET_TYPE_CON_CLOSE       0x0040  /* Sender closes connection */
-#define NETWORKSOUND_PAKET_TYPE_VOICE_DATA      0x0050  /* voice data buffer */
-#define NETWORKSOUND_PAKET_TYPE_VOICE_ENABLE    0x0060  /* enable voice transmission */
-#define NETWORKSOUND_PAKET_TYPE_VOICE_DISABLE   0x0070  /* disable voice transmission */
+#define NETWORKSOUND_PAKET_TYPE_CON_PING        0x0050  /* Sender pings receiver */
+#define NETWORKSOUND_PAKET_TYPE_CON_PONG        0x0060  /* Receiver pongs sender */
+#define NETWORKSOUND_PAKET_TYPE_VOICE_DATA      0x0070  /* voice data buffer */
 
 
 #define VOICE_PAKET_MAX_BUF_SIZE                508

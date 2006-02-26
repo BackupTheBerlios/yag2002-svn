@@ -66,14 +66,8 @@ class VoiceSender : public BaseNetworkSoundImplementation, public BaseVoiceInput
         //! Setup FMOD
         void                                        setupSound() throw( NetworkSoundExpection );
 
-        //! Update sound system
-        void                                        updateSound();
-
         //! Setup ReplicaNet
         void                                        setupNetwork()  throw( NetworkSoundExpection );
-
-        //! Update ReplicaNet
-        void                                        updateNetwork();
 
         //! Functor for grabbing the sound input, see class BaseVoiceInput
         void                                        operator ()( char* p_encodedaudio, unsigned short length );
@@ -98,6 +92,12 @@ class VoiceSender : public BaseNetworkSoundImplementation, public BaseVoiceInput
 
         //! Sound input
         BaseVoiceInput*                             _p_soundInput;
+
+        //! Used for alive-signaling in voice trasmission protocol
+        float                                       _pingTimer;
+
+        //! Used for alive-signaling in voice trasmission protocol
+        float                                       _pongTimer;
 
     friend class BaseVoiceInput::FCaptureInput;
 };

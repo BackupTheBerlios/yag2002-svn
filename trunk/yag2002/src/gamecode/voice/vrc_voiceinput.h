@@ -46,15 +46,12 @@ class BaseVoiceInput
 
         //! If no sound system / compression codec is given then they are created with default settings and destroyed on shutdown.
         //! Note: if a sound system / codec is given then it is not destroyed on shutdown!
-        explicit                                    BaseVoiceInput( FMOD::System* p_sndsystem = NULL, NetworkSoundCodec* p_codec = NULL );
+                                                    BaseVoiceInput( FMOD::System* p_sndsystem = NULL, NetworkSoundCodec* p_codec = NULL );
 
         virtual                                     ~BaseVoiceInput();
         
         //! Initialize the voice input
-        virtual void                                initialize() throw( NetworkSoundExpection ) = 0;
-
-        //! Shutdown the voice input
-        virtual void                                shutdown() = 0;
+        virtual void                                initialize() throw( NetworkSoundExpection );
 
         //! Update sound system, call this only once per simulation step
         virtual void                                update();
@@ -95,10 +92,10 @@ class BaseVoiceInput
         char                                        _p_encoderbuffer[ VOICE_PAKET_MAX_BUF_SIZE ];
 
         //! Indicated whether the sound system has been created by this instance
-        bool                                        _createdSoundSystem;
+        bool                                        _createSoundSystem;
 
         //! Indicated whether the codec has been created by this instance
-        bool                                        _createdCodec;
+        bool                                        _createCodec;
 
         //! Registered stream sinks
         std::vector< FCaptureInput* >               _sinks;
@@ -109,15 +106,16 @@ class VoiceMicrophoneInput: public BaseVoiceInput
 {
     public:
 
-        explicit                                    VoiceMicrophoneInput( FMOD::System* p_sndsystem = NULL );
+        //! Pass NULL for p_sndsystem or p_codec for getting them created with default settings
+                                                    VoiceMicrophoneInput( FMOD::System* p_sndsystem, NetworkSoundCodec* p_codec );
 
         virtual                                     ~VoiceMicrophoneInput();
         
         //! Initialize the microphone input
         void                                        initialize() throw( NetworkSoundExpection );
 
-        //! Shutdown the microphone input
-        void                                        shutdown();
+        //! Update the input and encoder, call this only once per simulation step.
+        void                                        update();
 
     protected:
 
@@ -130,7 +128,7 @@ class VoiceFileInput: public BaseVoiceInput
 {
     public:
 
-        //! Construct input for given file and sound system ( see base class note on default behaviour when p_sndsystem is NULL )
+        //! Pass NULL for p_sndsystem or p_codec for getting them created with default settings
                                                     VoiceFileInput( const std::string& file, FMOD::System* p_sndsystem, NetworkSoundCodec* p_codec );
 
         virtual                                     ~VoiceFileInput();
@@ -138,10 +136,7 @@ class VoiceFileInput: public BaseVoiceInput
         //! Initialize the file input
         void                                        initialize() throw( NetworkSoundExpection );
 
-        //! Shutdown the file input
-        void                                        shutdown();
-
-        //! Update the input and encoder, call this only once per simulation step
+        //! Update the input and encoder, call this only once per simulation step.
         void                                        update();
 
     protected:

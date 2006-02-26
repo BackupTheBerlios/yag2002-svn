@@ -43,34 +43,49 @@ class SoundNode
 {
     public:
 
-                                                    SoundNode()
-                                                    {
-                                                        _p_sampleQueue = new SoundSampleQueue;
-                                                        _p_codec       = new NetworkSoundCodec;
-                                                        _p_codec->setupDecoder();
-                                                        _p_codec->setDecoderENH( true );
-                                                        _p_codec->setMaxDecodeQueueSize( 8000 );
-                                                    }
+                                     SoundNode()
+                                     {
+                                         _p_sound       = NULL;
+                                         _p_channel     = NULL;
+                                         _pingTimer     = 0.0f;
+                                         _p_sampleQueue = new SoundSampleQueue;
+                                         _p_codec       = new NetworkSoundCodec;
+                                         _p_codec->setupDecoder();
+                                         _p_codec->setDecoderENH( true );
+                                         _p_codec->setMaxDecodeQueueSize( CODEC_MAX_BUFFER_SIZE );
+                                     }
 
-                                                    ~SoundNode()
-                                                    {
-                                                        delete _p_sampleQueue;
-                                                        delete _p_codec;
-                                                    }
+                                     ~SoundNode()
+                                     {
+                                         delete _p_sampleQueue;
+                                         delete _p_codec;
+
+                                         if ( _p_channel )
+                                             _p_channel->stop();
+                                         if ( _p_sound )                                                            
+                                             _p_sound->release();
+                                     }
 
         //! Queue for raw sound data
-        SoundSampleQueue*                           _p_sampleQueue;
+        SoundSampleQueue*            _p_sampleQueue;
 
         //! Encoder / decoder, use only the decoder!
-        NetworkSoundCodec*                          _p_codec;
+        NetworkSoundCodec*           _p_codec;
+
+        //! Sound object
+        FMOD::Sound*                 _p_sound;
+        
+        //! Sound channel
+        FMOD::Channel*               _p_channel;
+
+        //! Timer for alive-signaling
+        float                        _pingTimer;
 };
 
 
 VoiceReceiver::VoiceReceiver() :
 _p_udpTransport( NULL ),
-_p_soundSystem( NULL ),
-_p_sound( NULL ),
-_p_channel( NULL )
+_p_soundSystem( NULL )
 {
 }
 
@@ -93,11 +108,8 @@ void VoiceReceiver::shutdown()
     if ( _p_soundSystem )
     {
         FMOD_RESULT result;
-        result = _p_sound->release();
         result = _p_soundSystem->release();
         _p_soundSystem = NULL;
-        _p_sound       = NULL;
-        _p_channel     = NULL;
     }
 
     if ( _p_udpTransport )
@@ -122,9 +134,21 @@ void VoiceReceiver::initialize() throw( NetworkSoundExpection )
     }
 }
 
-void VoiceReceiver::update( float deltaTime )
+void VoiceReceiver::setupSound() throw( NetworkSoundExpection )
 {
-    updateNetwork();
+    FMOD_RESULT result;
+    result = FMOD::System_Create( &_p_soundSystem );
+    if ( result != FMOD_OK )
+        throw NetworkSoundExpection( "Cannot create sound system" );
+
+    unsigned int version;
+    result = _p_soundSystem->getVersion( &version );
+
+    if ( version < FMOD_VERSION )
+        throw NetworkSoundExpection( "FMOD version conflict." );
+
+    //result = _p_soundSystem->setSoftwareFormat( 200, VOICE_SOUND_FORMAT, 1, 0, FMOD_DSP_RESAMPLER_LINEAR );
+    result = _p_soundSystem->init( 32, FMOD_INIT_NORMAL, 0 );
 }
 
 FMOD_RESULT F_CALLBACK voiceServerReadPCM( FMOD_SOUND* p_sound, void* p_data, unsigned int datalen )
@@ -152,7 +176,7 @@ FMOD_RESULT F_CALLBACK voiceServerReadPCM( FMOD_SOUND* p_sound, void* p_data, un
 
         for ( ; cnt > 0; --cnt )
         {
-            *p_sndbuffer++ = samplequeue.front();
+            *p_sndbuffer++ = samplequeue.front();            
             samplequeue.pop();
         }
     }
@@ -163,24 +187,6 @@ FMOD_RESULT F_CALLBACK voiceServerReadPCM( FMOD_SOUND* p_sound, void* p_data, un
     }
 
     return FMOD_OK;
-}
-
-void VoiceReceiver::setupSound() throw( NetworkSoundExpection )
-{
-    FMOD_RESULT result;
-    result = FMOD::System_Create( &_p_soundSystem );
-    if ( result != FMOD_OK )
-        throw NetworkSoundExpection( "Cannot create sound system" );
-
-    unsigned int version;
-    result = _p_soundSystem->getVersion( &version );
-
-    if ( version < FMOD_VERSION )
-        throw NetworkSoundExpection( "FMOD version conflict." );
-
-    //result = _p_soundSystem->setSoftwareFormat( 200, VOICE_SOUND_FORMAT, 1, 0, FMOD_DSP_RESAMPLER_LINEAR );
-
-    result = _p_soundSystem->init( 32, FMOD_INIT_NORMAL, 0 );
 }
 
 SoundNode* VoiceReceiver::createSoundNode()
@@ -200,21 +206,19 @@ SoundNode* VoiceReceiver::createSoundNode()
     createsoundexinfo.format            = VOICE_SOUND_FORMAT;
     createsoundexinfo.pcmreadcallback   = voiceServerReadPCM;
 
-    result = _p_soundSystem->createSound( 0, mode, &createsoundexinfo, &_p_sound );
-    FMOD::Channel* p_channel = NULL;
-    _p_soundSystem->playSound( FMOD_CHANNEL_FREE, _p_sound, false, &p_channel );
-    
     // create a new node
     SoundNode* p_soundnode = new SoundNode();
-    _p_sound->setUserData( static_cast< void* >( p_soundnode ) );
-
+    result = _p_soundSystem->createSound( 0, mode, &createsoundexinfo, &p_soundnode->_p_sound );
+    _p_soundSystem->playSound( FMOD_CHANNEL_FREE, p_soundnode->_p_sound, false, &p_soundnode->_p_channel );    
+    p_soundnode->_p_sound->setUserData( static_cast< void* >( p_soundnode ) );
+    
     return p_soundnode;
 }
 
 void VoiceReceiver::setupNetwork() throw( NetworkSoundExpection )
 {
     int channel;
-    yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_CHAN_SND, channel );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_CHANNEL, channel );
 
 	RNReplicaNet::XPURL::RegisterDefaultTransports();
 	RNReplicaNet::XPURL xpurl;
@@ -227,7 +231,7 @@ void VoiceReceiver::setupNetwork() throw( NetworkSoundExpection )
     log_debug << "  voice receiver started: " << url << std::endl;
 }
 
-void VoiceReceiver::updateNetwork()
+void VoiceReceiver::update( float deltaTime )
 {
     assert( _p_udpTransport && "network transport is not available!" );
 
@@ -246,7 +250,21 @@ void VoiceReceiver::updateNetwork()
     SenderMap::iterator p_beg = _soundNodeMap.begin(), p_end = _soundNodeMap.end();
     for ( ; p_beg != p_end; ++p_beg )
     {
+        SoundNode* p_sendernode = p_beg->second;
         p_sender = p_beg->first;
+
+        // first check for dead senders
+        if ( ( p_sendernode->_pingTimer += deltaTime ) > ( VOICE_LIFESIGN_PERIOD * 5.0f ) )
+        {
+            // remove senders which do not respond anymore
+            delete p_sendernode;
+            delete p_sender;
+            _soundNodeMap.erase( p_beg );
+            p_beg = _soundNodeMap.begin();
+            p_end = _soundNodeMap.end();
+            continue;
+        }
+
         if ( !p_sender->Recv( s_buffer, 512 ) )
             continue;
 
@@ -255,8 +273,9 @@ void VoiceReceiver::updateNetwork()
         {
             case NETWORKSOUND_PAKET_TYPE_CON_REQ:
             {
-                //! TODO:  send back a GRANT, currently we always grant!
-                // we may change the grant to deny e.g. when too much senders are already connected
+                // send back a GRANT
+                //!TODO: currently we always grant!
+                //       we may deny e.g. when too much senders are already connected
                 p_data->_length = 0;
                 p_data->_typeId = NETWORKSOUND_PAKET_TYPE_CON_GRANT;
                 p_sender->SendReliable( reinterpret_cast< char* >( p_data ), 4  + p_data->_length );
@@ -288,15 +307,16 @@ void VoiceReceiver::updateNetwork()
             }
             break;
 
-            case NETWORKSOUND_PAKET_TYPE_VOICE_ENABLE:
+            case NETWORKSOUND_PAKET_TYPE_CON_PING:
             {
-                //! TODO
-            }
-            break;
+                // send back a pong
+                p_data->_length = 0;
+                p_data->_typeId = NETWORKSOUND_PAKET_TYPE_CON_PONG;
+                p_sender->SendReliable( reinterpret_cast< char* >( p_data ), 4  + p_data->_length );
+                log_debug << "got ping, sending pong to sender" << std::endl;
 
-            case NETWORKSOUND_PAKET_TYPE_VOICE_DISABLE:
-            {
-                //! TODO
+                // reset the ping timer
+                p_sendernode->_pingTimer = 0.0f;
             }
             break;
 

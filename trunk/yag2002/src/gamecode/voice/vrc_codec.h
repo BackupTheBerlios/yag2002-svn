@@ -33,12 +33,13 @@
 
 #include <vrc_main.h>
 #include <speex/speex.h>
+#include <speex/speex_preprocess.h>
 
 namespace vrc
 {
 
 // codec samples per frame ( for narrow mode it's always 160 )
-#define CODEC_SAMPLES               160
+#define CODEC_FRAME_SIZE            160
 // maximum buffer size for encoding and decoding
 #define CODEC_MAX_BUFFER_SIZE       8000
 
@@ -72,24 +73,22 @@ class NetworkSoundCodec
         //! Enable / disable perceptual enhancement for decoding
         void                                        setDecoderENH( bool enh );
 
-        //! Encode 'length' number of raw sound data ( of given type ) to a compressed paket stored in p_bitbuffer.
-        //! This method returns the cound of bytes needed for encoding. The caller must ensure that p_bitbuffer in big enough.
-        //! SoundDataTypeT determines the data type of raw sound data; e.g. 'short' for PCM16 format, and 'char' for PCM8
-        template< typename SoundDataTypeT >
-        unsigned int                                encode( SoundDataTypeT* p_soundbuffer, unsigned int length, char* p_bitbuffer );
+        //! Encode 'length' number of raw sound data ( of type short ) to a compressed paket stored in p_bitbuffer.
+        //! This method returns the count of bytes needed for encoding. The caller must ensure that p_bitbuffer is big enough.
+        unsigned int                                encode( short* p_soundbuffer, unsigned int length, char* p_bitbuffer );
 
-        //! Decode incoming compressed sound paket into given sample queue with given type.
-        //! SoundDataTypeT determines the data type of raw sound data pushed into queue; e.g. 'short' for PCM16 format, and 'char' for PCM8
+        //! Decode incoming compressed sound paket into given sample queue.
         //! Returns false if a queue overflow occurs ( see setMaxDecodeQueueSize ).
-        template< typename SoundDataTypeT >
-        bool                                        decode( char* p_bitbuffer, unsigned int length, std::queue< SoundDataTypeT , std::deque< SoundDataTypeT > >& samplequeue );
+        bool                                        decode( char* p_bitbuffer, unsigned int length, std::queue< short , std::deque< short > >& samplequeue );
 
     protected:
 
+        //! Preprocessor state, used for encoding
+        SpeexPreprocessState*                       _p_preprocessorState;
 
         //! Encoder State
         void*                                       _p_codecEncoderState;
-        
+                
         //! Encoder bit structure
         SpeexBits                                   _encoderBits;
 
@@ -115,13 +114,8 @@ class NetworkSoundCodec
         unsigned int                                _maxDecodeQueueSize;
 
         //! Internal buffer for getting access to decoded sound data
-        float                                       _p_outputBuffer[ CODEC_MAX_BUFFER_SIZE ];
-
-        //! Internal buffer for converting sound data buffer
-        float                                       _p_inputBuffer[ CODEC_MAX_BUFFER_SIZE ];
+        short                                       _p_outputBuffer[ CODEC_MAX_BUFFER_SIZE ];
 };
-
-#include "vrc_codec.inl"
 
 } // namespace vrc
 
