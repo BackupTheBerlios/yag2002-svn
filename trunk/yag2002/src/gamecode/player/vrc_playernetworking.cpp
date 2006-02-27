@@ -58,6 +58,10 @@ _loadedPlayerEntity( NULL )
     // we have to lock creation / deletion of network objects during construction
     yaf3d::NetworkDevice::get()->lockObjects();
 
+    _p_configFile[ 0 ] = 0;
+    _cmdAnimFlags      = 0;
+    _ip[ 0 ]           = 0;
+
     // this constructor can be called either by player entity or networking system (in client or server mode)
     //  when called by player entity then it means that we are a local client, otherwise we are a remote client
     if ( !p_playerImpl )
@@ -72,10 +76,14 @@ _loadedPlayerEntity( NULL )
         // set the voice chat flag so it can be set by replicas on initialization
         yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_ENABLE, _voiceChat );
         _p_playerImpl->getPlayerEntity()->setVoiceChatEnabled( _voiceChat );
+
+        // if a public host is given then set our ip to that host ip
+        std::string publichost;
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_PUBLIC_HOST, publichost );
+        publichost = yaf3d::resolveHostName( publichost );
+        if ( publichost.length() )
+            strcpy( _ip, publichost.c_str() );
     }
-    _p_configFile[ 0 ] = 0;
-    _ip[ 0 ]           = 0;
-    _cmdAnimFlags      = 0;
 
     yaf3d::NetworkDevice::get()->unlockObjects();
 }
@@ -145,8 +153,16 @@ void PlayerNetworking::PostObjectCreate()
             init._rotZ = _yaw;
 
             // determine the public client ip and tell it to new connected client
+            // consider also a possible "public host" set in client, if so _ip already contains the valid IP address
+            _ip[ sizeof( _ip ) - 1 ] = 0;
+            std::string ip;
             int sid = GetSessionID();
-            std::string ip = yaf3d::NetworkDevice::get()->getClientIP( sid );
+
+            if ( _ip[ 0 ] == 0 )
+                ip = yaf3d::NetworkDevice::get()->getClientIP( sid );
+            else
+                ip = _ip;
+
             strcpy( init._ip, ip.c_str() );
             log_debug << "  session id / client ip: " << sid << " / " << ip << std::endl;
 
