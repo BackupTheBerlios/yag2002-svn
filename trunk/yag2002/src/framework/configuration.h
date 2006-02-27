@@ -67,6 +67,7 @@ namespace yaf3d
 #define YAF3D_GS_SERVER_NAME              "serverName"
 #define YAF3D_GS_SERVER_IP                "serverIP"
 #define YAF3D_GS_SERVER_PORT              "serverPort"
+#define YAF3D_GS_PUBLIC_HOST              "publicHost"
 #define YAF3D_GS_DEFAULT_SERVERPORT       32000
 
 class Application;
@@ -132,6 +133,8 @@ class Configuration : public Singleton< Configuration >
         std::string                             _serverIP;
         
         unsigned int                            _serverPort;
+
+        std::string                             _publicHost;
 
     friend class Singleton< Configuration >;
     friend class Application;

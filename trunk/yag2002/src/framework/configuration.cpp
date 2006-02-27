@@ -60,6 +60,7 @@ _serverPort( YAF3D_GS_DEFAULT_SERVERPORT )
     _p_settings->registerSetting( YAF3D_GS_SERVER_NAME,  _serverName   );
     _p_settings->registerSetting( YAF3D_GS_SERVER_IP,    _serverIP     );
     _p_settings->registerSetting( YAF3D_GS_SERVER_PORT,  _serverPort   );
+    _p_settings->registerSetting( YAF3D_GS_PUBLIC_HOST,  _publicHost   );
 }
 
 Configuration::~Configuration()
