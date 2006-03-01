@@ -57,7 +57,7 @@ Log::~Log()
 
 bool Log::addSink( const std::string& sinkname, const std::string& filename, unsigned int loglevel )
 {
-    if( loglevel > L_INFO || loglevel < L_ERROR )
+    if( loglevel > L_INFO || loglevel < L_VERBOSE )
     {
         log_error << "invalid log level for given sink '"  << sinkname <<  "'" << std::endl;
         return false;
@@ -94,7 +94,7 @@ bool Log::addSink( const std::string& sinkname, const std::string& filename, uns
 
 bool Log::addSink( const std::string& sinkname, std::ostream& sink, unsigned int loglevel )
 {
-    if( loglevel > L_INFO || loglevel < L_ERROR )
+    if( loglevel > L_INFO || loglevel < L_VERBOSE )
     {
         log_error << "invalid log level for given sink '" << sinkname <<  "'" << std::endl;
         return false;
@@ -194,6 +194,9 @@ std::basic_ios< char >::int_type Log::LogStreamBuf::overflow( int_type c )
                     break;
                 case L_ERROR:
                     severity = "[error]   ";
+                    break;
+                case L_VERBOSE:
+                    severity = "[verbose] ";
                     break;
                 default:
                     assert( NULL && "unknown log severity" );
