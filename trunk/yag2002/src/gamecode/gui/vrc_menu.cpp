@@ -433,8 +433,12 @@ EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume, b
         return NULL;
     }
 
+    // all menu sounds are of type Common
+    std::string sndgroup( "Common" );
+
     // setup entity parameters
     p_ent->getAttributeManager().setAttributeValue( "soundFile",   filename );
+    p_ent->getAttributeManager().setAttributeValue( "soundGroup",  sndgroup );
     p_ent->getAttributeManager().setAttributeValue( "loop",        loop     );
     p_ent->getAttributeManager().setAttributeValue( "autoPlay",    false    );
     p_ent->getAttributeManager().setAttributeValue( "volume",      volume   );
