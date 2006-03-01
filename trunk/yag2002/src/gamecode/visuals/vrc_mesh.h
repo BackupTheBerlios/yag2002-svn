@@ -64,7 +64,7 @@ class EnMesh :  public yaf3d::BaseEntity
         osg::Node*                                  setupLODObject( osg::Node* p_node );
 
         //! Setup the mesh
-        osg::ref_ptr< osg::Node >                   setupMesh();
+        osg::Node*                                 setupMesh();
 
         //! Entity attributes
 

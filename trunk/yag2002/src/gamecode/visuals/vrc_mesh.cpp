@@ -100,6 +100,8 @@ void EnMesh::handleNotification( const yaf3d::EntityNotification& notification )
         // if used in menu then this entity is persisten, so we have to trigger its deletion on shutdown
         case YAF3D_NOTIFY_SHUTDOWN:
         {
+            removeFromTransformationNode( _mesh.get() );
+
             if ( _usedInMenu )
                 yaf3d::EntityManager::get()->deleteEntity( this );
         }
@@ -122,7 +124,7 @@ void EnMesh::initialize()
     yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
-osg::ref_ptr< osg::Node > EnMesh::setupMesh()
+osg::Node* EnMesh::setupMesh()
 {
     osg::Node* p_node;
 
