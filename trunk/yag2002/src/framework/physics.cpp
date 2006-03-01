@@ -134,7 +134,7 @@ bool Physics::reinitialize()
     // clear the material cache
     _materials.clear();
 
-    log_debug << "Physics: remaining non-freed bytes: " <<  allocBytesSum - freedBytesSum << std::endl;
+    log_verbose << "Physics: remaining non-freed bytes: " <<  allocBytesSum - freedBytesSum << std::endl;
 
     return initialize();
 }
@@ -171,7 +171,7 @@ void Physics::shutdown()
         _p_world = NULL;
     }
 
-    log_debug << "Physics: remaining non-freed bytes: " <<  allocBytesSum - freedBytesSum << std::endl;
+    log_verbose << "Physics: remaining non-freed bytes: " <<  allocBytesSum - freedBytesSum << std::endl;
 
     // destroy singleton
     destroy();
