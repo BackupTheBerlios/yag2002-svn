@@ -66,6 +66,9 @@ class En3DSound : public yaf3d::BaseEntity
         // Handler system notifications
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
+        //! Setup or destroy sound depending on menu settings
+        void                                        setupSound();
+
         //! This entity needs updating
         void                                        updateEntity( float deltaTime );
 
@@ -83,6 +86,9 @@ class En3DSound : public yaf3d::BaseEntity
 
         //! Sound volume [ 0..1 ]
         float                                       _volume;
+
+        //! Sound group ( see yaf3d::SoundManager for valid values )
+        std::string                                 _soundGroup;
 
         //! Begin of rolloff ( min distance )
         float                                       _minDistance;

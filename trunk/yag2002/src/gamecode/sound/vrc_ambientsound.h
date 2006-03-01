@@ -58,16 +58,19 @@ class EnAmbientSound : public yaf3d::BaseEntity
         //! Stop playing sound, pass 'true' in order to pause only, otherwise the sound is stopped
         void                                        stopPlaying( bool pause = false );
 
-        //! Set sound volume (0..1)
+        //! Set sound volume [ 0..1 ]
         void                                        setVolume( float volume );
 
-        //! Get sound volume (0..1)
+        //! Get sound volume [ 0..1 ]
         float                                       getVolume();
 
     protected:
 
         // Handler system notifications
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
+
+        //! Setup or destroy sound depending on menu settings
+        void                                        setupSound();
 
         //! Sound file name
         std::string                                 _soundFile;
@@ -80,6 +83,9 @@ class EnAmbientSound : public yaf3d::BaseEntity
 
         //! Sound volume [ 0..1 ]
         float                                       _volume;
+
+        //! Sound group ( see yaf3d::SoundManager for valid values )
+        std::string                                 _soundGroup;
 
         //! Sound ID
         unsigned int                                _soundID;

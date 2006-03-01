@@ -29,6 +29,7 @@
  ################################################################*/
 
 #include <vrc_main.h>
+#include <vrc_gameutils.h>
 #include "vrc_ambientsound.h"
 
 namespace vrc
@@ -42,14 +43,16 @@ EnAmbientSound::EnAmbientSound() :
 _loop( true ),
 _autoPlay( true ),
 _volume( 0.8f ),
+_soundGroup( "Music" ),
 _soundID( 0 ),
 _p_channel( NULL )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "soundFile",    _soundFile );
-    getAttributeManager().addAttribute( "loop",         _loop      );
-    getAttributeManager().addAttribute( "autoPlay",     _autoPlay  );
-    getAttributeManager().addAttribute( "volume",       _volume    );
+    getAttributeManager().addAttribute( "soundFile",    _soundFile  );
+    getAttributeManager().addAttribute( "soundGroup",   _soundGroup );
+    getAttributeManager().addAttribute( "loop",         _loop       );
+    getAttributeManager().addAttribute( "autoPlay",     _autoPlay   );
+    getAttributeManager().addAttribute( "volume",       _volume     );
 }
 
 EnAmbientSound::~EnAmbientSound()
@@ -80,7 +83,11 @@ void EnAmbientSound::handleNotification( const yaf3d::EntityNotification& notifi
 
         case YAF3D_NOTIFY_MENU_LEAVE:
 
-            startPlaying();
+            // respond to sound setting changes in menu only if the sound type is not Common
+            if ( yaf3d::SoundManager::get()->getSoundGroupIdFromString( _soundGroup ) != yaf3d::SoundManager::SoundGroupCommon )
+                setupSound();
+
+            startPlaying( true );
             break;
 
         case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
@@ -97,7 +104,7 @@ void EnAmbientSound::handleNotification( const yaf3d::EntityNotification& notifi
                 {
                 }
             }
-            initialize();
+            setupSound();
         }
         break;
 
@@ -108,6 +115,57 @@ void EnAmbientSound::handleNotification( const yaf3d::EntityNotification& notifi
 
 void EnAmbientSound::initialize()
 {
+    // register entity in order to get menu notifications
+    yaf3d::EntityManager::get()->registerNotification( this, true );
+    setupSound();
+}
+
+void EnAmbientSound::setupSound()
+{
+    // check if sound is enabled in menu system
+    bool skiptypecheck = false;
+    unsigned int soundgroup = yaf3d::SoundManager::get()->getSoundGroupIdFromString( _soundGroup );
+    bool sndenable;
+    std::string settingskey;
+    if ( soundgroup == yaf3d::SoundManager::SoundGroupMusic )
+        settingskey = VRC_GS_MUSIC_ENABLE;
+    else if ( soundgroup == yaf3d::SoundManager::SoundGroupFX )
+        settingskey = VRC_GS_FX_ENABLE;
+    else if ( soundgroup == yaf3d::SoundManager::SoundGroupCommon )
+        skiptypecheck = true;
+    else
+        log_error << ENTITY_NAME_AMBIENTSOUND << ":" << getInstanceName() << " invalid sound group type" << std::endl;
+
+
+    // sound group Common is always created
+    if ( !skiptypecheck )
+    {
+        yaf3d::Configuration::get()->getSettingValue( settingskey, sndenable );
+        if ( _soundID > 0 )
+        {
+            // destroy sound if it exists but even disabled in menu
+            if ( !sndenable )
+            {
+                try
+                {
+                    yaf3d::SoundManager::get()->releaseSound( _soundID );
+                    _soundID = 0;
+                }
+                catch ( const yaf3d::SoundException& e )
+                {
+                    log_error << ENTITY_NAME_AMBIENTSOUND << ":" << getInstanceName() << " problem releasing sound, reason: " << e.what() << std::endl;
+                }
+                return;
+            }
+            else return;
+        }
+        // no sound exists and no sound enabling in menu? then we have nothing to do
+        else if ( !sndenable )
+            return;
+    }
+    else if ( _soundID > 0 )
+        return;
+
     try 
     {
         unsigned int flags = 0;
@@ -116,7 +174,7 @@ void EnAmbientSound::initialize()
         else
             flags = yaf3d::SoundManager::fmodDefaultCreationFlags2D;
 
-        _soundID    = yaf3d::SoundManager::get()->createSound( _soundFile, _volume, _autoPlay, flags );
+        _soundID    = yaf3d::SoundManager::get()->createSound( soundgroup, _soundFile, _volume, _autoPlay, flags );
         _p_channel  = yaf3d::SoundManager::get()->getSoundChannel( _soundID );
     } 
     catch ( const yaf3d::SoundException& e )
@@ -152,7 +210,6 @@ void EnAmbientSound::stopPlaying( bool pause )
     }
 }
 
-//! Set sound volume (0..1)
 void EnAmbientSound::setVolume( float volume )
 {
     if ( _soundID > 0 )

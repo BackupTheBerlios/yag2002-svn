@@ -29,6 +29,7 @@
  ################################################################*/
 
 #include <vrc_main.h>
+#include <vrc_gameutils.h>
 #include "vrc_3dsound.h"
 
 namespace vrc
@@ -42,6 +43,7 @@ En3DSound::En3DSound() :
 _loop( true ),
 _autoPlay( true ),
 _volume( 0.8f ),
+_soundGroup( "Music" ),
 _minDistance( 1.0f ),
 _maxDistance( 15.0f ),
 _soundID( 0 ),
@@ -49,6 +51,7 @@ _p_channel( NULL )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "soundFile",        _soundFile   );
+    getAttributeManager().addAttribute( "soundGroup",       _soundGroup  );
     getAttributeManager().addAttribute( "sourceMesh",       _sourceMesh  );
     getAttributeManager().addAttribute( "position",         _position    );
     getAttributeManager().addAttribute( "loop",             _loop        );
@@ -87,6 +90,10 @@ void En3DSound::handleNotification( const yaf3d::EntityNotification& notificatio
 
         case YAF3D_NOTIFY_MENU_LEAVE:
         {
+            // respond to sound setting changes in menu only if the sound type is not Common
+            if ( yaf3d::SoundManager::get()->getSoundGroupIdFromString( _soundGroup ) != yaf3d::SoundManager::SoundGroupCommon )
+                setupSound();
+
             startPlaying( true );
         }
         break;
@@ -105,7 +112,7 @@ void En3DSound::handleNotification( const yaf3d::EntityNotification& notificatio
                 {
                 }
             }
-            initialize();
+            setupSound();
         }
         break;
 
@@ -116,6 +123,55 @@ void En3DSound::handleNotification( const yaf3d::EntityNotification& notificatio
 
 void En3DSound::initialize()
 {
+    // register entity in order to get menu notifications
+    yaf3d::EntityManager::get()->registerNotification( this, true );
+    setupSound();
+}
+
+void En3DSound::setupSound()
+{
+    // check if sound is enabled in menu system
+    bool skiptypecheck = false;
+    unsigned int soundgroup = yaf3d::SoundManager::get()->getSoundGroupIdFromString( _soundGroup );
+    bool sndenable;
+    std::string settingskey;
+    if ( soundgroup == yaf3d::SoundManager::SoundGroupMusic )
+        settingskey = VRC_GS_MUSIC_ENABLE;
+    else if ( soundgroup == yaf3d::SoundManager::SoundGroupFX )
+        settingskey = VRC_GS_FX_ENABLE;
+    else if ( soundgroup == yaf3d::SoundManager::SoundGroupCommon )
+        skiptypecheck = true;
+    else
+        log_error << ENTITY_NAME_3DSOUND << ":" << getInstanceName() << " invalid sound group type" << std::endl;
+
+    if ( !skiptypecheck )
+    {
+        yaf3d::Configuration::get()->getSettingValue( settingskey, sndenable );
+        if ( _soundID > 0 )
+        {
+            // destroy sound if it exists but even disabled in menu
+            if ( !sndenable )
+            {
+                try
+                {
+                    yaf3d::SoundManager::get()->releaseSound( _soundID );
+                    _soundID = 0;
+                }
+                catch ( const yaf3d::SoundException& e )
+                {
+                    log_error << ENTITY_NAME_3DSOUND << ":" << getInstanceName() << " problem releasing sound, reason: " << e.what() << std::endl;
+                }
+                return;
+            }
+            else return;
+        }
+        // no sound exists and no sound enabling in menu? then we have nothing to do
+        else if ( !sndenable )
+            return;
+    }
+    else if ( _soundID > 0 )
+        return;
+
     try 
     {
         unsigned int flags = 0;
@@ -124,7 +180,7 @@ void En3DSound::initialize()
         else
             flags = yaf3d::SoundManager::fmodDefaultCreationFlags3D;
 
-        _soundID    = yaf3d::SoundManager::get()->createSound( _soundFile, _volume, _autoPlay, flags );
+        _soundID    = yaf3d::SoundManager::get()->createSound( soundgroup, _soundFile, _volume, _autoPlay, flags );
         _p_channel  = yaf3d::SoundManager::get()->getSoundChannel( _soundID );
 
         // set position and velocity
@@ -157,9 +213,6 @@ void En3DSound::initialize()
             log_error << "3DSound: error loading mesh file for sound source 'sound/soundsrc.osg'" << std::endl;
         }
     }
-
-    // register entity in order to get menu notifications
-    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 void En3DSound::updateEntity( float deltaTime )
@@ -197,7 +250,6 @@ void En3DSound::stopPlaying( bool pause )
     }
 }
 
-//! Set sound volume (0..1)
 void En3DSound::setVolume( float volume )
 {
     if ( _soundID > 0 )
