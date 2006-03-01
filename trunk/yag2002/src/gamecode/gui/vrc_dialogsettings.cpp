@@ -63,7 +63,13 @@ _mouseInverted( false ),
 _p_keyKeybEnglish( NULL ),
 _p_keyKeybGerman( NULL ),
 _p_resolution( NULL ),
-_p_fullscreen( NULL ),
+_p_enableFullscreen( NULL ),
+_p_enableMusic( NULL ),
+_p_volumeMusic( NULL ),
+_volumeMusic( 1.0f ),
+_p_enableFX( NULL ),
+_p_volumeFX( NULL ),
+_volumeFX( 1.0f ),
 _p_menuEntity( p_menuEntity )
 {
 }
@@ -114,74 +120,96 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
 
         // get contents of pane Network
         //#############################
-        CEGUI::TabPane*    p_paneNetworking = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_networking" ) );
-        _p_serverName = static_cast< CEGUI::Editbox* >( p_paneNetworking->getChild( SDLG_PREFIX "nw_servername" ) );
-        _p_serverIP   = static_cast< CEGUI::Editbox* >( p_paneNetworking->getChild( SDLG_PREFIX "nw_serverip" ) );
-        _p_serverPort = static_cast< CEGUI::Editbox* >( p_paneNetworking->getChild( SDLG_PREFIX "nw_serverport" ) );
+        {
+            CEGUI::TabPane*    p_paneNetworking = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_networking" ) );
+            _p_serverName = static_cast< CEGUI::Editbox* >( p_paneNetworking->getChild( SDLG_PREFIX "nw_servername" ) );
+            _p_serverIP   = static_cast< CEGUI::Editbox* >( p_paneNetworking->getChild( SDLG_PREFIX "nw_serverip" ) );
+            _p_serverPort = static_cast< CEGUI::Editbox* >( p_paneNetworking->getChild( SDLG_PREFIX "nw_serverport" ) );
+        }
 
         // get contents of pane Control
         //#############################
-        CEGUI::TabPane*    p_paneControl = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_control" ) );
+        {
+            CEGUI::TabPane* p_paneControl = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_control" ) );
 
-        // key bindings
-        //-------------
-        _p_keyMoveForward  = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_forward" ) );
-        _p_keyMoveForward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedForward, this ) );
+            _p_keyMoveForward  = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_forward" ) );
+            _p_keyMoveForward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedForward, this ) );
 
-        _p_keyMoveBackward = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_backward" ) );
-        _p_keyMoveBackward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedBackward, this ) );
+            _p_keyMoveBackward = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_backward" ) );
+            _p_keyMoveBackward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedBackward, this ) );
 
-        _p_keyMoveLeft     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_left" ) );
-        _p_keyMoveLeft->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedLeft, this ) );
+            _p_keyMoveLeft     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_left" ) );
+            _p_keyMoveLeft->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedLeft, this ) );
 
-        _p_keyMoveRight    = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_right" ) );
-        _p_keyMoveRight->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedRight, this ) );
+            _p_keyMoveRight    = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_right" ) );
+            _p_keyMoveRight->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedRight, this ) );
 
-        _p_keyJump         = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_jump" ) );
-        _p_keyJump->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedJump, this ) );
+            _p_keyJump         = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_jump" ) );
+            _p_keyJump->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedJump, this ) );
 
-        _p_keyCameraMode   = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_camera" ) );
-        _p_keyCameraMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedCameraMode, this ) );
+            _p_keyCameraMode   = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_camera" ) );
+            _p_keyCameraMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedCameraMode, this ) );
 
-        _p_keyChatMode     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_chatmode" ) );
-        _p_keyChatMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedChatMode, this ) );
-        //-------------
+            _p_keyChatMode     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_chatmode" ) );
+            _p_keyChatMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedChatMode, this ) );
+
+            _p_mouseSensivity = static_cast< CEGUI::Scrollbar* >( p_paneControl->getChild( SDLG_PREFIX "sb_mousesensivity" ) );
+            _p_mouseSensivity->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onMouseSensitivityChanged, this ) );
+
+            _p_mouseInvert = static_cast< CEGUI::Checkbox* >( p_paneControl->getChild( SDLG_PREFIX "cbx_mouseinvert" ) );
+        }
 
         // get contents of pane Keyboard
         //#############################
-        CEGUI::TabPane*    p_paneKeyboard = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_keyboard" ) );
+        {
+            CEGUI::TabPane* p_paneKeyboard = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_keyboard" ) );
 
-        _p_keyKeybEnglish = static_cast< CEGUI::Checkbox* >( p_paneKeyboard->getChild( SDLG_PREFIX "cb_english" ) );
-        _p_keyKeybEnglish->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onKeyboardEnglishChanged, this ) );
+            _p_keyKeybEnglish = static_cast< CEGUI::Checkbox* >( p_paneKeyboard->getChild( SDLG_PREFIX "cb_english" ) );
+            _p_keyKeybEnglish->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onKeyboardEnglishChanged, this ) );
 
-        _p_keyKeybGerman  = static_cast< CEGUI::Checkbox* >( p_paneKeyboard->getChild( SDLG_PREFIX "cb_german" ) );
-        _p_keyKeybGerman->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onKeyboardGermanChanged, this ) );
-
-        //-------------
-        // set callback for mouse sensivity scrollbar
-        _p_mouseSensivity = static_cast< CEGUI::Scrollbar* >( p_paneControl->getChild( SDLG_PREFIX "sb_mousesensivity" ) );
-        _p_mouseSensivity->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onMouseSensitivityChanged, this ) );
-
-        // setup invert mouse callback
-        _p_mouseInvert = static_cast< CEGUI::Checkbox* >( p_paneControl->getChild( SDLG_PREFIX "cbx_mouseinvert" ) );
-
+            _p_keyKeybGerman  = static_cast< CEGUI::Checkbox* >( p_paneKeyboard->getChild( SDLG_PREFIX "cb_german" ) );
+            _p_keyKeybGerman->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onKeyboardGermanChanged, this ) );
+        }
         // get contents of pane Display
         //#############################
         // fill up the resolution combobox
-        CEGUI::TabPane*    p_paneDisplay = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_display" ) );
-
-        // get fullscreen and windowed checkboxes
-        _p_fullscreen = static_cast< CEGUI::Checkbox* >( p_paneDisplay->getChild( SDLG_PREFIX "rb_fullscreen" ) );
-        _p_fullscreen->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onFullscreenChanged, this ) );
-        // get resolution combobox
-        _p_resolution = static_cast< CEGUI::Combobox* >( p_paneDisplay->getChild( SDLG_PREFIX "cbox_resolution" ) );
-        // enumerate possible screen resolutions
-        std::vector< std::string > settings;
-        yaf3d::enumerateDisplaySettings( settings, 16 ); // we take settings including above 16 color bits
-        for ( size_t cnt = 0; cnt < settings.size(); ++cnt )
         {
-            CEGUI::ListboxTextItem* p_item = new CEGUI::ListboxTextItem( settings[ cnt ].c_str() );
-            _p_resolution->addItem( p_item );
+            CEGUI::TabPane* p_paneDisplay = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_display" ) );
+
+            // get fullscreen and windowed checkboxes
+            _p_enableFullscreen = static_cast< CEGUI::Checkbox* >( p_paneDisplay->getChild( SDLG_PREFIX "rb_fullscreen" ) );
+            _p_enableFullscreen->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onFullscreenChanged, this ) );
+            // get resolution combobox
+            _p_resolution = static_cast< CEGUI::Combobox* >( p_paneDisplay->getChild( SDLG_PREFIX "cbox_resolution" ) );
+            // enumerate possible screen resolutions
+            std::vector< std::string > settings;
+            yaf3d::enumerateDisplaySettings( settings, 16 ); // we take settings including above 16 color bits
+            for ( size_t cnt = 0; cnt < settings.size(); ++cnt )
+            {
+                CEGUI::ListboxTextItem* p_item = new CEGUI::ListboxTextItem( settings[ cnt ].c_str() );
+                _p_resolution->addItem( p_item );
+            }
+        }
+
+        // get contents of pane Sound/Voice
+        //#############################
+        // fill up the resolution combobox
+        {
+            CEGUI::TabPane* p_paneSoundVoice = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_soundvoice" ) );
+
+            // get music on/off
+            _p_enableMusic = static_cast< CEGUI::Checkbox* >( p_paneSoundVoice->getChild( SDLG_PREFIX "cbx_music" ) );
+            _p_enableMusic->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onEnableMusicChanged, this ) );
+            // music volume
+            _p_volumeMusic = static_cast< CEGUI::Scrollbar* >( p_paneSoundVoice->getChild( SDLG_PREFIX "sb_musicvolume" ) );
+            _p_volumeMusic->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onMusicVolumeChanged, this ) );
+
+            // get fx on/off
+            _p_enableFX = static_cast< CEGUI::Checkbox* >( p_paneSoundVoice->getChild( SDLG_PREFIX "cbx_fx" ) );
+            _p_enableFX->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onEnableFXChanged, this ) );
+            // fx volume
+            _p_volumeFX = static_cast< CEGUI::Scrollbar* >( p_paneSoundVoice->getChild( SDLG_PREFIX "sb_fxvolume" ) );
+            _p_volumeFX->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onFXVolumeChanged, this ) );
         }
     }
     catch ( const CEGUI::Exception& e )
@@ -302,9 +330,9 @@ void DialogGameSettings::setupControls()
         bool fullscreen;
         yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_FULLSCREEN, fullscreen );
         if ( fullscreen )
-            _p_fullscreen->setSelected( true );
+            _p_enableFullscreen->setSelected( true );
         else
-            _p_fullscreen->setSelected( false );
+            _p_enableFullscreen->setSelected( false );
 
         unsigned int width, height, colorbits;
         std::stringstream resolution;
@@ -313,6 +341,46 @@ void DialogGameSettings::setupControls()
         yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_COLORBITS, colorbits );
         resolution << width << "x" << height << "@" << colorbits;
         _p_resolution->setText( resolution.str().c_str() );
+    }
+
+    // get sound/voice settings
+    {
+        // Music
+        bool musicenable;
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_MUSIC_ENABLE, musicenable );
+        _p_enableMusic->setSelected( musicenable );
+
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_MUSIC_VOLUME, _volumeMusic );
+        _p_volumeMusic->setScrollPosition( _volumeMusic );
+
+        if ( musicenable )
+            yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMusic, 0.0f );
+        else
+            yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMusic, _volumeMusic );
+
+        if ( !musicenable )
+            _p_volumeMusic->setEnabled( false );
+        else
+            _p_volumeMusic->setEnabled( true );
+
+
+        // FX
+        bool fxenable;
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_FX_ENABLE, fxenable );
+        _p_enableFX->setSelected( fxenable );
+
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_FX_VOLUME, _volumeFX );
+        _p_volumeFX->setScrollPosition( _volumeFX );
+
+        if ( fxenable )
+            yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupFX, _volumeFX );
+        else                        
+            yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupFX, 0.0f );
+
+        if ( !fxenable )
+            _p_volumeFX->setEnabled( false );
+        else
+            _p_volumeFX->setEnabled( true );
     }
 }
 
@@ -397,7 +465,7 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
 
     // set the display setting
     {
-        bool fullscreen = _p_fullscreen->isSelected();
+        bool fullscreen = _p_enableFullscreen->isSelected();
         yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_FULLSCREEN, fullscreen );
         unsigned int width, height, colorbits;
         // get the resolution out of the combobox string
@@ -409,6 +477,17 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
         yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SCREENWIDTH, width );
         yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SCREENHEIGHT, height );
         yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_COLORBITS, colorbits );
+    }
+
+    // set sound/voice settings
+    {
+        bool musicenable = _p_enableMusic->isSelected();
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_MUSIC_ENABLE, musicenable );
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_MUSIC_VOLUME, _volumeMusic );
+
+        bool fxenable = _p_enableFX->isSelected();
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_FX_ENABLE, fxenable );
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_FX_VOLUME, _volumeFX );
     }
 
     // store all settings into file
@@ -608,8 +687,66 @@ bool DialogGameSettings::onFullscreenChanged( const CEGUI::EventArgs& arg )
     return true;
 }
 
+bool DialogGameSettings::onEnableMusicChanged( const CEGUI::EventArgs& arg )
+{
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
+    if ( _p_enableMusic->isSelected() )
+    {
+        _p_volumeMusic->setEnabled( true );
+        yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMusic, _volumeMusic );
+    }
+    else
+    {
+        _p_volumeMusic->setEnabled( false );
+        yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMusic, 0.0f );
+    }
+    return true;
+}
+
+bool DialogGameSettings::onMusicVolumeChanged( const CEGUI::EventArgs& arg )
+{
+    // play scroll sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_SCROLLBAR );
+
+    _volumeMusic = _p_volumeMusic->getScrollPosition();
+    yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMusic, _volumeMusic );
+
+    return true;
+}
+
+bool DialogGameSettings::onEnableFXChanged( const CEGUI::EventArgs& arg )
+{
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
+    if ( _p_enableFX->isSelected() )
+    {
+        _p_volumeFX->setEnabled( true );
+        yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupFX, _volumeFX );
+    }
+    else
+    {
+        _p_volumeFX->setEnabled( false );
+        yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupFX, 0.0f );
+    }
+    return true;
+}
+
+bool DialogGameSettings::onFXVolumeChanged( const CEGUI::EventArgs& arg )
+{
+    // play scroll sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_SCROLLBAR );
+
+    _volumeFX = _p_volumeFX->getScrollPosition();
+    yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupFX, _volumeFX );
+
+    return true;
+}
+
 void DialogGameSettings::senseKeybinding( CEGUI::PushButton* p_btn )
-{    
+{
     // play mouse click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 

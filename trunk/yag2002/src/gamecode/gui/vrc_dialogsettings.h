@@ -143,6 +143,18 @@ class DialogGameSettings
         //! Dialog callback for fullscreen checkbox        
         bool                                        onFullscreenChanged( const CEGUI::EventArgs& arg );
 
+        //! Dialog callback for enable music checkbox        
+        bool                                        onEnableMusicChanged( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for music volume scrollbar       
+        bool                                        onMusicVolumeChanged( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for enable fx checkbox        
+        bool                                        onEnableFXChanged( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for fx volume scrollbar       
+        bool                                        onFXVolumeChanged( const CEGUI::EventArgs& arg );
+
         //! This method is used for sensing keybinding by the mean of a little messagebox
         void                                        senseKeybinding( CEGUI::PushButton* p_btn );
         //---------
@@ -190,7 +202,19 @@ class DialogGameSettings
 
         CEGUI::Combobox*                            _p_resolution;
 
-        CEGUI::Checkbox*                            _p_fullscreen;
+        CEGUI::Checkbox*                            _p_enableFullscreen;
+
+        CEGUI::Checkbox*                            _p_enableMusic;
+
+        CEGUI::Scrollbar*                           _p_volumeMusic;
+
+        float                                       _volumeMusic;
+
+        CEGUI::Checkbox*                            _p_enableFX;
+
+        CEGUI::Scrollbar*                           _p_volumeFX;
+
+        float                                       _volumeFX;
 
         EnMenu*                                     _p_menuEntity;
 
