@@ -63,6 +63,17 @@ void SoundManager::shutdown()
     // shutdown fmod
     if ( _p_system )
     {
+        // release sound channel groups
+        FMOD::ChannelGroup* p_soundgroup = NULL;
+        p_soundgroup = _soundGroupMap[ SoundGroupCommon ];
+        p_soundgroup->release();
+
+        p_soundgroup = _soundGroupMap[ SoundGroupMusic ];
+        p_soundgroup->release();
+
+        p_soundgroup = _soundGroupMap[ SoundGroupFX ];
+        p_soundgroup->release();
+
         _p_system->close();
         _p_system->release();
     }
@@ -116,7 +127,7 @@ void SoundManager::initialize() throw ( SoundException )
     // create sound system
     result = FMOD::System_Create( &_p_system );
     if ( result != FMOD_OK )
-        throw SoundException( "problem creating sound system, reason: " + std::string( FMOD_ErrorString( result ) ) );
+        throw SoundException( "Problem creating sound system, reason: " + std::string( FMOD_ErrorString( result ) ) );
 
     // check fmod version
     unsigned int version;
@@ -124,14 +135,14 @@ void SoundManager::initialize() throw ( SoundException )
     if ( version < FMOD_VERSION )
     {
         std::stringstream str;
-        str << "*** SoundManager: detected fmod version " << version << ", this application needs at least version " << FMOD_VERSION;
+        str << "SoundManager: detected fmod version " << version << ", this application needs at least version " << FMOD_VERSION;
         throw SoundException( str.str() );
     }
 
     // init software channels
     result = _p_system->setSoftwareChannels( SOUND_MAX_SOFTWARE_CHANNELS );
     if ( result != FMOD_OK )
-        throw SoundException( "problem allocating required software mixed channels, reason: " + std::string( FMOD_ErrorString( result ) ) );
+        throw SoundException( "Problem allocating required software mixed channels, reason: " + std::string( FMOD_ErrorString( result ) ) );
 
     // try to init hardware channels
     result = _p_system->setHardwareChannels( 32, 64, 32, 64 );
@@ -143,30 +154,118 @@ void SoundManager::initialize() throw ( SoundException )
 
     result = _p_system->init( SOUND_MAX_VIRTUAL_SOURCES, FMOD_INIT_NORMAL, 0 );
     if ( result != FMOD_OK )
-        throw SoundException( "problem initializing sound system, reason: " + std::string( FMOD_ErrorString( result ) ) );
+        throw SoundException( "Problem initializing sound system, reason: " + std::string( FMOD_ErrorString( result ) ) );
 
+    FMOD::ChannelGroup* p_mastergroup;
+    result = _p_system->getMasterChannelGroup( &p_mastergroup );
+    if ( result != FMOD_OK )
+        throw SoundException( "Problem getting main sound group" );
+
+    // put the master sound group into map
+    _soundGroupMap[ SoundGroupMaster ] = p_mastergroup;
+
+    // setup common sound group
+    {
+        FMOD::ChannelGroup* p_groupCommon;
+        result = _p_system->createChannelGroup( "SoundGroupCommon", &p_groupCommon );
+        if ( result != FMOD_OK )
+            throw SoundException( "Problem creating common sound group" );
+
+        result = p_mastergroup->addGroup( p_groupCommon );
+        if ( result != FMOD_OK )
+            throw SoundException( "Problem adding common sound group" );
+
+        _soundGroupMap[ SoundGroupCommon ] = p_groupCommon;
+    }
+    // setup music sound group
+    {
+        FMOD::ChannelGroup* p_groupMusic;
+        result = _p_system->createChannelGroup( "SoundGroupCommon", &p_groupMusic );
+        if ( result != FMOD_OK )
+            throw SoundException( "Problem creating music sound group" );
+
+        result = p_mastergroup->addGroup( p_groupMusic );
+        if ( result != FMOD_OK )
+            throw SoundException( "Problem adding music sound group" );
+
+        _soundGroupMap[ SoundGroupMusic ] = p_groupMusic;
+    }
+    // setup fx sound group
+    {
+        FMOD::ChannelGroup* p_groupFX;
+        result = _p_system->createChannelGroup( "SoundGroupFX", &p_groupFX );
+        if ( result != FMOD_OK )
+            throw SoundException( "Problem creating fx sound group" );
+
+        result = p_mastergroup->addGroup( p_groupFX );
+        if ( result != FMOD_OK )
+            throw SoundException( "Problem adding fx sound group" );
+
+        _soundGroupMap[ SoundGroupFX ] = p_groupFX;
+    }
 }
 
-unsigned int SoundManager::createSound( const std::string& file, float volume, bool autoplay, unsigned int flags ) throw ( SoundException )
+unsigned int SoundManager::getSoundGroupIdFromString( const std::string& soundgroup ) throw ( SoundException )
 {
+    if ( soundgroup == "Master" )
+        return SoundGroupMaster;
+    else if ( soundgroup == "Common" )
+        return SoundGroupCommon;
+    else if ( soundgroup == "Music" )
+        return SoundGroupMusic;
+    else if ( soundgroup == "FX" )
+        return SoundGroupFX;
+
+    throw SoundException( "Invalid sound group name: " + soundgroup );
+    return 0;
+}
+
+std::string SoundManager::getSoundGroupStringFromId( unsigned int soundgroup ) throw ( SoundException )
+{
+    if ( soundgroup == SoundGroupMaster )
+        return "Master";
+    else if ( soundgroup == SoundGroupCommon )
+        return "Common";
+    else if ( soundgroup == SoundGroupMusic )
+        return "Music";
+    else if ( soundgroup == SoundGroupFX )
+        return "FX";
+
+    std::stringstream str;
+    str << "Invalid sound group id: " <<  soundgroup;
+    throw SoundException( str.str() );
+
+    return 0;
+}
+
+unsigned int SoundManager::createSound( unsigned int soundgroup, const std::string& file, float volume, bool autoplay, unsigned int flags ) throw ( SoundException )
+{
+    // check the given group id
+    FMOD::ChannelGroup* p_soundgroup;
+    if ( _soundGroupMap.find( soundgroup ) == _soundGroupMap.end() )
+        throw SoundException( "Invalid sound group for creating sound for: " + file );
+
+    p_soundgroup = _soundGroupMap[ soundgroup ];
+
     FMOD_RESULT result;
 
     SoundData* p_soundData  = new SoundData;
     p_soundData->_p_sound   = NULL;
     p_soundData->_p_channel = NULL;
 
+    // create sound
     result = _p_system->createSound( std::string( Application::get()->getMediaPath() + file ).c_str(), flags, 0, &p_soundData->_p_sound );
     if ( result != FMOD_OK )
     {
         delete p_soundData;
-        throw SoundException( "could not create sound for " + file + ", reason: " + std::string( FMOD_ErrorString( result ) ) );
+        throw SoundException( "Could not create sound for " + file + ", reason: " + std::string( FMOD_ErrorString( result ) ) );
     }
 
     result = _p_system->playSound( FMOD_CHANNEL_FREE, p_soundData->_p_sound, true, &p_soundData->_p_channel );
     if ( result != FMOD_OK )
     {
         delete p_soundData;
-        throw SoundException( "could not create sound for " + file + ", problem pausing, reason: " + std::string( FMOD_ErrorString( result ) ) );
+        throw SoundException( "Could not create sound for " + file + ", problem pausing, reason: " + std::string( FMOD_ErrorString( result ) ) );
     }
 
     float tmpvol = std::max( std::min( volume, 1.0f ), 0.0f );
@@ -177,9 +276,10 @@ unsigned int SoundManager::createSound( const std::string& file, float volume, b
     if ( result != FMOD_OK )
     {
         delete p_soundData;
-        throw SoundException( "could not create sound for " + file + ", problem setting pause mode, reason: " + std::string( FMOD_ErrorString( result ) ) );
+        throw SoundException( "Could not create sound for " + file + ", problem setting pause mode, reason: " + std::string( FMOD_ErrorString( result ) ) );
     }
 
+    // limit the volume range to 0..1
     volume = tmpvol;
 	result = p_soundData->_p_channel->setVolume( volume );
     if ( result != FMOD_OK )
@@ -195,7 +295,10 @@ unsigned int SoundManager::createSound( const std::string& file, float volume, b
     if ( autoplay )
         playSound( _soundIDCounter );
 
-    log_debug << "SoundManager: created sound '" << file << "', id " << _soundIDCounter << std::endl;
+    // set the channel group
+    p_soundData->_p_channel->setChannelGroup( p_soundgroup );
+
+    log_verbose << "SoundManager: created sound '" << file << "', id: " << _soundIDCounter << ", group: " << getSoundGroupStringFromId( soundgroup ) << std::endl;
 
     return _soundIDCounter;
 }
@@ -212,9 +315,14 @@ void SoundManager::releaseSound( unsigned int soundID ) throw ( SoundException )
 
     // release sound
     SoundData* p_data = p_sounddata->second;
+    // make the channel available for reuse
+    p_data->_p_channel->stop();
+    // release sound
     p_data->_p_sound->release();
     // remove sound from internal map
     _mapSoundData.erase( p_sounddata );
+
+    log_verbose << "SoundManager: releasing sound, id '" << soundID << "'" << std::endl;
 }
 
 FMOD::Channel* SoundManager::getSoundChannel( unsigned int soundID ) throw ( SoundException )
@@ -231,22 +339,13 @@ FMOD::Channel* SoundManager::getSoundChannel( unsigned int soundID ) throw ( Sou
     return p_data->_p_channel;
 }
 
-void SoundManager::playSound( unsigned int soundID, bool autocheck )
+void SoundManager::playSound( unsigned int soundID )
 {
     MapSoundData::iterator p_sounddata = _mapSoundData.find( soundID );
     if ( p_sounddata == _mapSoundData.end() )
         return;
 
     SoundData* p_data = p_sounddata->second;
-
-    // if autocheck is enabled then don't play the sound if it is already playing
-    if ( autocheck )
-    {
-        bool isplaying = false;
-        p_data->_p_channel->isPlaying( &isplaying );
-        if ( isplaying )
-            return;
-    }
 
     p_data->_p_channel->setPaused( false );
     _p_system->playSound( FMOD_CHANNEL_REUSE, p_data->_p_sound, false, &p_data->_p_channel );
@@ -298,24 +397,42 @@ void SoundManager::setSoundVolume( unsigned int soundID, float volume )
     p_sounddata->second->_p_channel->setVolume( volume );
 }
 
-void SoundManager::setMasterVolume( float volume )
+void SoundManager::setSoundMute( unsigned int soundID, bool en )
 {
-    FMOD::ChannelGroup* p_mastergroup;
-    FMOD_RESULT res = _p_system->getMasterChannelGroup( &p_mastergroup );
-    if ( res != FMOD_OK )
-        throw SoundException( "Problem setting master volume" );
+    MapSoundData::iterator p_sounddata = _mapSoundData.find( soundID );
+    if ( p_sounddata == _mapSoundData.end() )
+    {
+        std::stringstream str;
+        str << "sound with given ID does not exist: " << soundID;
+        throw SoundException( str.str() );
+    }
 
+    p_sounddata->second->_p_channel->setMute( en );
+}
+
+void SoundManager::setGroupVolume( unsigned int soundgroup, float volume )
+{
     if ( ( volume > 1.0f ) || ( volume < 0.0f ) )
         throw SoundException( "Volume out of range, it must be in range 0..1" );
 
-    p_mastergroup->setVolume( volume );
+    // first check the given group id
+    if ( _soundGroupMap.find( soundgroup ) == _soundGroupMap.end() )
+        throw SoundException( "Invalid sound group" );
+
+    FMOD::ChannelGroup* p_soundgroup = _soundGroupMap[ soundgroup ];
+    p_soundgroup->setVolume( volume );
 }
 
-void SoundManager::mute( bool mut )
+float SoundManager::getGroupVolume( unsigned int soundgroup )
 {
-    MapSoundData::iterator p_beg = _mapSoundData.begin(), p_end = _mapSoundData.end();
-    for ( ; p_beg != p_end; ++p_beg )
-        p_beg->second->_p_channel->setMute( mut );
+    // first check the given group id
+    if ( _soundGroupMap.find( soundgroup ) == _soundGroupMap.end() )
+        throw SoundException( "Invalid sound group" );
+
+    FMOD::ChannelGroup* p_soundgroup = _soundGroupMap[ soundgroup ];
+    float volume;
+    p_soundgroup->getVolume( &volume );
+    return volume;
 }
 
 } // namespace yaf3d

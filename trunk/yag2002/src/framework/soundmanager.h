@@ -82,8 +82,30 @@ class SoundManager : public Singleton< SoundManager >
             fmodDefaultCreationFlags3DLoop = FMOD_LOOP_NORMAL | FMOD_3D | FMOD_SOFTWARE | FMOD_3D_LINEARROLLOFF
         };
 
-        //! Create sound given a file name and creation flags. Returns a sound ID > 0 which is used for furhter operations such as releasing the sound.
-        unsigned int                                createSound( const std::string& file, float volume = 1.0f, bool autoplay = false, unsigned int flags = fmodDefaultCreationFlags2D ) throw ( SoundException );
+        //! Sound groups having own master volume
+        enum
+        {
+            SoundGroupMaster = 0x10,  // the main sound group containing the following three groups
+            SoundGroupCommon,         // common sound group used e.g. for GUI sounds   
+            SoundGroupMusic,          // can be used e.g. for background sound
+            SoundGroupFX              // special effect sound group
+        };
+
+        //! Given a string for sound group returns its id ( see above ). Throws an exception passing an invalid string.
+        //! Valid strings are:
+        //!    Master
+        //!    Common
+        //!    Music
+        //!    FX
+        unsigned int                                getSoundGroupIdFromString( const std::string& soundgroup ) throw ( SoundException );
+
+        //! Given a sound group ID returns its name ( the opposite of the method above ).
+        std::string                                 getSoundGroupStringFromId( unsigned int soundgroup ) throw ( SoundException );
+
+        //! Create sound belonging to sound group 'soundgroup' given a file name and creation flags. 
+        //! Returns a sound ID > 0 which is used for furhter operations such as releasing the sound.
+        //! Returns 0 if something went wrong, in this case also an exception is thrown.
+        unsigned int                                createSound( unsigned int soundgroup, const std::string& file, float volume = 1.0f, bool autoplay = false, unsigned int flags = fmodDefaultCreationFlags2D ) throw ( SoundException );
 
         //! Release sound resouce given its id.
         void                                        releaseSound( unsigned int soundID ) throw ( SoundException );
@@ -91,8 +113,8 @@ class SoundManager : public Singleton< SoundManager >
         //! Return associated channel for given sound.
         FMOD::Channel*                              getSoundChannel( unsigned int soundID ) throw ( SoundException );
 
-        //! Play sound with given ID. Pass true for 'autocheck' in order to avoid playing the sound when it is already playing.
-        void                                        playSound( unsigned int soundID, bool autocheck = false );
+        //! Play sound with given ID.
+        void                                        playSound( unsigned int soundID );
 
         //! Pause sound with given ID.
         void                                        pauseSound( unsigned int soundID );
@@ -100,17 +122,21 @@ class SoundManager : public Singleton< SoundManager >
         //! Continue a paused sound with given ID.
         void                                        continueSound( unsigned int soundID );
 
-        //! Stop sound with given ID. Next playSound call will start at begin of sound track.
+        //! Stop sound with given ID. Next playSound call will start at begin of sound track with a new channel assigned.
         void                                        stopSound( unsigned int soundID );
 
-        //! Set volume [0..1] for sound with given ID.
+        //! Set volume [ 0..1 ] for sound with given ID.
         void                                        setSoundVolume( unsigned int soundID, float volume );
 
-        //! Set master volume [0..1]
-        void                                        setMasterVolume( float volume );
+        //! Mute / demute a sound given its ID.
+        //! Pass en = true for muting and en = false foe demuting.
+        void                                        setSoundMute( unsigned int soundID, bool en );
 
-        //! Mute / demute all channels
-        void                                        mute( bool mut );
+        //! Set volume [ 0..1 ] of given sound group. Pass SoundGroupMaster for changing the master volume of all sound groups.
+        void                                        setGroupVolume( unsigned int soundgroup, float volume );
+
+        //! Get volume [ 0..1 ] of given sound group. Pass SoundGroupMaster for getting the master volume.
+        float                                       getGroupVolume( unsigned int soundgroup );
 
     protected:
 
@@ -129,6 +155,12 @@ class SoundManager : public Singleton< SoundManager >
 
         //! fmod's sound system instance
         FMOD::System*                               _p_system;
+
+        //! Map type for holding < group id / sound group object >
+        typedef std::map< unsigned int, FMOD::ChannelGroup* > SoundGroupMap;
+
+        //! Sound group map
+        SoundGroupMap                               _soundGroupMap;
 
         //! Structure used for internal storage of Sound sources
         struct SoundData
