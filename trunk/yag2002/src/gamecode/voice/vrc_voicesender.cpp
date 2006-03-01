@@ -44,11 +44,13 @@ _p_udpTransport( NULL ),
 _senderState( Initial ),
 _p_soundInput( p_soundInput ),
 _pingTimer( 0.0f ),
-_pongTimer( 0.0f )
+_pongTimer( 0.0f ),
+_paketStamp( 0 )
 {
     assert( receiverIP.length() && "invalid server IP" );
     assert( p_soundInput && "invalid sound input" );
     _p_voicePaket = new VoicePaket;
+    _p_voicePaket->_paketStamp = _paketStamp;
 }
 
 VoiceSender::~VoiceSender()
@@ -99,6 +101,7 @@ void VoiceSender::initialize() throw( NetworkSoundExpection )
         std::stringstream assembledUrl;
         assembledUrl << "UDP@" << _receiverIP << ":" << channel << "/" << VOICE_SERVER_NAME;
         _p_udpTransport->Connect( assembledUrl.str() );
+        log_debug << " connected receiver: " << assembledUrl.str() << std::endl;
     }
 }
 
@@ -121,10 +124,9 @@ void VoiceSender::update( float deltaTime )
             // check if connection is established
             if ( _p_udpTransport->GetStatus() != RNReplicaNet::Transport::kTransport_EOK )
                 break;
-
-            _p_voicePaket->_typeId   = NETWORKSOUND_PAKET_TYPE_CON_REQ;
-            _p_voicePaket->_length   = 0;
-            _p_udpTransport->SendReliable( reinterpret_cast< char* >( _p_voicePaket ), 4  + _p_voicePaket->_length );
+            _p_voicePaket->_typeId    = NETWORKSOUND_PAKET_TYPE_CON_REQ;
+            _p_voicePaket->_length    = 0;
+            _p_udpTransport->SendReliable( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE + _p_voicePaket->_length );
             _senderState = RequestConnection;
 
             log_debug << "  -> requesting for connection to sound receiver ... " << std::endl;
@@ -160,7 +162,7 @@ void VoiceSender::update( float deltaTime )
                 _pingTimer = 0.0f;
                 _p_voicePaket->_length = 0;
                 _p_voicePaket->_typeId = NETWORKSOUND_PAKET_TYPE_CON_PING;
-                _p_udpTransport->SendCertain( reinterpret_cast< char* >( _p_voicePaket ), 4 );
+                _p_udpTransport->SendCertain( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE );
             }
 
             // check for receiver's pong
@@ -195,10 +197,11 @@ void VoiceSender::operator ()( char* p_encodedaudio, unsigned short length )
         return;
 
     // transmit encoded input over net
-    _p_voicePaket->_typeId   = NETWORKSOUND_PAKET_TYPE_VOICE_DATA;
-    _p_voicePaket->_length   = length;
+    _p_voicePaket->_paketStamp = ++_paketStamp;
+    _p_voicePaket->_typeId     = NETWORKSOUND_PAKET_TYPE_VOICE_DATA;
+    _p_voicePaket->_length     = length;
     memcpy( _p_voicePaket->_p_buffer, p_encodedaudio, length );
-    _p_udpTransport->SendCertain( reinterpret_cast< char* >( _p_voicePaket ), 4  + _p_voicePaket->_length );
+    _p_udpTransport->Send( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE + _p_voicePaket->_length );
 }
 
 } // namespace vrc

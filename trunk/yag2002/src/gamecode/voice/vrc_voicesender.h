@@ -99,6 +99,9 @@ class VoiceSender : public BaseNetworkSoundImplementation, public BaseVoiceInput
         //! Used for alive-signaling in voice trasmission protocol
         float                                       _pongTimer;
 
+        //! Paket stamp for voice transmission
+        unsigned int                                _paketStamp;
+
     friend class BaseVoiceInput::FCaptureInput;
 };
 

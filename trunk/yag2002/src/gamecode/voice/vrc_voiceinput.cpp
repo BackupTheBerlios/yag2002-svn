@@ -237,7 +237,16 @@ void VoiceMicrophoneInput::update()
                     VOICE_DATA_FORMAT_TYPE* p_data = reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_rawpointer1 );
 
                     // encode grabbed raw data
-                    encodedbytes = _p_codec->encode( p_data, blocklength, _p_encoderbuffer );
+                    encodedbytes = _p_codec->encode( p_data, len1, _p_encoderbuffer );
+                    // check for network paket overrun
+                    assert( encodedbytes <= VOICE_PAKET_MAX_BUF_SIZE );
+                }
+                if ( p_rawpointer2 && len2 )
+                {
+                    VOICE_DATA_FORMAT_TYPE* p_data = reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_rawpointer2 );
+
+                    // encode grabbed raw data
+                    encodedbytes = _p_codec->encode( p_data, len2, _p_encoderbuffer );
                     // check for network paket overrun
                     assert( encodedbytes <= VOICE_PAKET_MAX_BUF_SIZE );
                 }
@@ -257,6 +266,17 @@ void VoiceMicrophoneInput::update()
             ( *p_beg )->operator ()( _p_encoderbuffer, encodedbytes );
     }
 }
+
+void VoiceMicrophoneInput::stop( bool st )
+{
+    assert( _p_sound && "input is not initialized!" );
+
+    if ( st )
+        _p_soundSystem->recordStart( _p_sound, true );
+    else
+        _p_soundSystem->recordStop();
+}
+
 
 // implementation of file input
 VoiceFileInput::VoiceFileInput( const std::string& file, FMOD::System* p_sndsystem, NetworkSoundCodec* p_codec ):
@@ -340,11 +360,20 @@ void VoiceFileInput::update()
                     VOICE_DATA_FORMAT_TYPE* p_data = reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_rawpointer1 );
 
                     // encode grabbed raw data
-                    encodedbytes = _p_codec->encode( p_data, blocklength, _p_encoderbuffer );
+                    encodedbytes = _p_codec->encode( p_data, len1, _p_encoderbuffer );
                     // check for network paket overrun
                     assert( encodedbytes <= VOICE_PAKET_MAX_BUF_SIZE );
                 }
- 
+                if ( p_rawpointer2 && len2 )
+                {
+                    VOICE_DATA_FORMAT_TYPE* p_data = reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_rawpointer2 );
+
+                    // encode grabbed raw data
+                    encodedbytes = _p_codec->encode( p_data, len2, _p_encoderbuffer );
+                    // check for network paket overrun
+                    assert( encodedbytes <= VOICE_PAKET_MAX_BUF_SIZE );
+                }
+
                 _p_sound->unlock( p_rawpointer1, p_rawpointer2, len1, len2 );
             }
 
@@ -359,6 +388,16 @@ void VoiceFileInput::update()
         for ( ; p_beg != p_end; ++p_beg )
             ( *p_beg )->operator ()( _p_encoderbuffer, encodedbytes );
     }
+}
+
+void VoiceFileInput::stop( bool st )
+{
+    assert( _p_channel && "input is not initialized!" );
+
+    if ( st )
+        _p_channel->setPaused( true );
+    else
+        _p_channel->setPaused( false );
 }
 
 } // namespace vrc

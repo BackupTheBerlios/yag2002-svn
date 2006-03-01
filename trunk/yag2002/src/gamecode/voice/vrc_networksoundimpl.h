@@ -104,10 +104,13 @@ class BaseNetworkSoundImplementation
 #define NETWORKSOUND_PAKET_TYPE_CON_PONG        0x0060  /* Receiver pongs sender */
 #define NETWORKSOUND_PAKET_TYPE_VOICE_DATA      0x0070  /* voice data buffer */
 
-
+//! Maximal data in _p_buffer ( in bytes ) in a voice paket
 #define VOICE_PAKET_MAX_BUF_SIZE                508
+//! Voice paket header size ( in bytes )
+#define VOICE_PAKET_HEADER_SIZE                 8
 struct VoicePaket
 {
+    unsigned int        _paketStamp;        // stamp for detecting lost pakets
     unsigned short      _typeId;            // paket id
     unsigned short      _length;            // buffer length
     char                _p_buffer[ VOICE_PAKET_MAX_BUF_SIZE ];          // this buffer must not exceed 508 bytes

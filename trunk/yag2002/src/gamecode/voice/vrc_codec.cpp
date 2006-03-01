@@ -140,7 +140,7 @@ unsigned int NetworkSoundCodec::encode( short* p_soundbuffer, unsigned int lengt
         length = CODEC_MAX_BUFFER_SIZE;
         log_debug << "*** sound codec: encoder had to limit requested buffer length to defined maximum: " << CODEC_MAX_BUFFER_SIZE << std::endl;
     }
- 
+
     int encodedbytes = 0;
     // preprocess input before encoding, encode only when speech is detected
     int prec = speex_preprocess( _p_preprocessorState, p_soundbuffer, NULL );

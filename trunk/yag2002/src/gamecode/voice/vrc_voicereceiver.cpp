@@ -45,11 +45,12 @@ class SoundNode
 
                                      SoundNode()
                                      {
-                                         _p_sound       = NULL;
-                                         _p_channel     = NULL;
-                                         _pingTimer     = 0.0f;
-                                         _p_sampleQueue = new SoundSampleQueue;
-                                         _p_codec       = new NetworkSoundCodec;
+                                         _p_sound        = NULL;
+                                         _p_channel      = NULL;
+                                         _pingTimer      = 0.0f;
+                                         _lastPaketStamp = 0;
+                                         _p_sampleQueue  = new SoundSampleQueue;
+                                         _p_codec        = new NetworkSoundCodec;
                                          _p_codec->setupDecoder();
                                          _p_codec->setDecoderENH( true );
                                          _p_codec->setMaxDecodeQueueSize( CODEC_MAX_BUFFER_SIZE );
@@ -80,6 +81,9 @@ class SoundNode
 
         //! Timer for alive-signaling
         float                        _pingTimer;
+
+        //! Last received valid voice paket stamp
+        unsigned int                 _lastPaketStamp;
 };
 
 
@@ -151,7 +155,7 @@ void VoiceReceiver::setupSound() throw( NetworkSoundExpection )
     result = _p_soundSystem->init( 32, FMOD_INIT_NORMAL, 0 );
 }
 
-FMOD_RESULT F_CALLBACK voiceServerReadPCM( FMOD_SOUND* p_sound, void* p_data, unsigned int datalen )
+FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, unsigned int datalen )
 {
     FMOD::Sound*    p_fmodsound = reinterpret_cast< FMOD::Sound* >( p_sound );
     void*           p_userdata;
@@ -199,12 +203,12 @@ SoundNode* VoiceReceiver::createSoundNode()
     int                     channels = 1;
     memset( &createsoundexinfo, 0, sizeof( FMOD_CREATESOUNDEXINFO ) );
     createsoundexinfo.cbsize            = sizeof( FMOD_CREATESOUNDEXINFO );    
-    createsoundexinfo.decodebuffersize  = 200;      // FIXME: determine a good buffer size, too big sizes result in noise and echos
+    createsoundexinfo.decodebuffersize  = CODEC_FRAME_SIZE; // FIXME: determine a good buffer size, too big sizes result in noise and echos
     createsoundexinfo.length            = -1;
     createsoundexinfo.numchannels       = channels;
     createsoundexinfo.defaultfrequency  = VOICE_SAMPLE_RATE;
     createsoundexinfo.format            = VOICE_SOUND_FORMAT;
-    createsoundexinfo.pcmreadcallback   = voiceServerReadPCM;
+    createsoundexinfo.pcmreadcallback   = voiceReceiverReadPCM;
 
     // create a new node
     SoundNode* p_soundnode = new SoundNode();
@@ -239,8 +243,8 @@ void VoiceReceiver::update( float deltaTime )
 	RNReplicaNet::Transport* p_sender = _p_udpTransport->Accept();
     if ( p_sender )
     {
-        log_debug << "  <- sender connection accepted " << std::endl;
-
+        log_debug << "  <- sender connection accepted from: " << p_sender->GetPeerURL() << std::endl;
+        
         SoundNode* p_soundnode = createSoundNode();
         _soundNodeMap[ p_sender ] = p_soundnode;
     }
@@ -278,7 +282,7 @@ void VoiceReceiver::update( float deltaTime )
                 //       we may deny e.g. when too much senders are already connected
                 p_data->_length = 0;
                 p_data->_typeId = NETWORKSOUND_PAKET_TYPE_CON_GRANT;
-                p_sender->SendReliable( reinterpret_cast< char* >( p_data ), 4  + p_data->_length );
+                p_sender->SendReliable( reinterpret_cast< char* >( p_data ), VOICE_PAKET_HEADER_SIZE  + p_data->_length );
 
                 log_debug << "  <- voice sender connection request granted ( " << _soundNodeMap.size() << " )" << std::endl;
             }
@@ -297,6 +301,15 @@ void VoiceReceiver::update( float deltaTime )
 
             case NETWORKSOUND_PAKET_TYPE_VOICE_DATA:
             {
+                // drop obsolete packets
+                if ( p_data->_paketStamp < p_sendernode->_lastPaketStamp )
+                {
+                    log_debug << "receiver: paket loss detected (recved/current)" << p_data->_paketStamp << "/" << p_sendernode->_lastPaketStamp << std::endl;
+                    continue;
+                }
+                // udpate sound node's stamp
+                p_sendernode->_lastPaketStamp = p_data->_paketStamp;
+
                 // decode and enqueue the samples
                 SoundNode* p_soundnode = p_beg->second;
                 if ( !p_soundnode->_p_codec->decode( p_data->_p_buffer, p_data->_length, *p_soundnode->_p_sampleQueue ) )
@@ -312,8 +325,9 @@ void VoiceReceiver::update( float deltaTime )
                 // send back a pong
                 p_data->_length = 0;
                 p_data->_typeId = NETWORKSOUND_PAKET_TYPE_CON_PONG;
-                p_sender->SendReliable( reinterpret_cast< char* >( p_data ), 4  + p_data->_length );
-                log_debug << "got ping, sending pong to sender" << std::endl;
+                p_sender->SendReliable( reinterpret_cast< char* >( p_data ), VOICE_PAKET_HEADER_SIZE  + p_data->_length );
+                
+                // log_debug << "got ping, sending pong to sender" << std::endl;
 
                 // reset the ping timer
                 p_sendernode->_pingTimer = 0.0f;

@@ -56,6 +56,9 @@ class BaseVoiceInput
         //! Update sound system, call this only once per simulation step
         virtual void                                update();
 
+        //! Stop / continue grabbing
+        virtual void                                stop( bool st ) = 0;
+
         //! Functor for grabbing the encoded audio data.
         class FCaptureInput
         {
@@ -117,6 +120,9 @@ class VoiceMicrophoneInput: public BaseVoiceInput
         //! Update the input and encoder, call this only once per simulation step.
         void                                        update();
 
+        //! Stop / continue grabbing
+        void                                        stop( bool st );
+
     protected:
 
         //! Used for getting access to raw sound data
@@ -138,6 +144,9 @@ class VoiceFileInput: public BaseVoiceInput
 
         //! Update the input and encoder, call this only once per simulation step.
         void                                        update();
+
+        //! Stop / continue grabbing
+        void                                        stop( bool st );
 
     protected:
 

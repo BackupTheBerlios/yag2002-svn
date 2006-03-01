@@ -140,6 +140,8 @@ void EnNetworkVoice::initialize()
             _p_soundInput = new VoiceMicrophoneInput( NULL, _p_codec );
 
         _p_soundInput->initialize();
+        // we begin with input grabbing when at least one sender is active
+        _p_soundInput->stop( true );
     }
     catch ( const NetworkSoundExpection& e )
     {
@@ -212,6 +214,10 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
             BaseNetworkSoundImplementation* p_sender = new VoiceSender( receiverIP, _p_soundInput );
             p_sender->initialize();
             _sendersMap[ p_entity ] = p_sender;
+
+            // continue grabbing input if it was stopped before
+            if ( _sendersMap.size() == 1 )
+                _p_soundInput->stop( false );
         }
     }
     else
@@ -222,6 +228,9 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
         hit->second->shutdown();
         delete hit->second;
         _sendersMap.erase( hit );
+        // stop input grabbing when no senders exist
+        if ( _sendersMap.size() == 0 )
+            _p_soundInput->stop( true );
     }
 }
 
