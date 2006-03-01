@@ -620,6 +620,9 @@ void LevelManager::shutdown()
         GuiManager::get()->shutdown();
     }
 
+    // unload level
+    unloadLevel( true, true );
+
     Physics::get()->shutdown();
     // destroy singleton
     destroy();
