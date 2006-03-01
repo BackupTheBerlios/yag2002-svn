@@ -62,7 +62,13 @@ namespace gameutils
 #define VRC_GS_INVERTMOUSE                  "mouseInverted"
 #define VRC_GS_VOICECHAT_ENABLE             "voiceChatEnable"
 #define VRC_GS_VOICECHAT_CHANNEL            "voiceChatChannel"
-#define VRC_GS_DEFAULT_VOICECHANNEL         32200
+#define VRC_GS_DEFAULT_VOICE_CHANNEL        32200
+#define VRC_GS_MUSIC_ENABLE                 "enableMusic"
+#define VRC_GS_MUSIC_VOLUME                 "volumeMusic"
+#define VRC_GS_FX_ENABLE                    "enableFX"
+#define VRC_GS_FX_VOLUME                    "volumeFX"
+#define VRC_GS_DEFAULT_SOUND_VOLUME         1.0f
+
 
 //! Game code settings' defaults
 #define VRC_GS_MAX_MOUSESENS                3.0f                // maximal mouse sensitivity
@@ -126,6 +132,14 @@ class VRCConfigRegistry : public yaf3d::GameState::CallbackStateChange
         bool                                        _voiceChatEnable;
 
         unsigned int                                _voiceChatChannel;
+
+        bool                                        _musicEnable;
+
+        float                                       _musicVolume;
+
+        bool                                        _fxEnable;
+
+        float                                       _fxVolume;
 };
 
 //! Single instance providing player-related utility services
@@ -318,6 +332,9 @@ class GuiUtils :
 
         //! A map of sound object and its associated name
         MapSound                                    _soundMap;
+
+        //! Used for storing master sound volume on app window minimizing
+        float                                       _masterVolume;
 
     friend class yaf3d::Singleton< vrc::gameutils::GuiUtils >;
 };

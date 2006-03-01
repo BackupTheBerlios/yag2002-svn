@@ -67,7 +67,11 @@ _jump( "Space" ),
 _cameramode( "F1" ),
 _chatmode( "RMB" ),
 _voiceChatEnable( true ),
-_voiceChatChannel( VRC_GS_DEFAULT_VOICECHANNEL )
+_voiceChatChannel( VRC_GS_DEFAULT_VOICE_CHANNEL ),
+_musicEnable( true ),
+_musicVolume( VRC_GS_DEFAULT_SOUND_VOLUME ),
+_fxEnable( true ),
+_fxVolume( VRC_GS_DEFAULT_SOUND_VOLUME )
 {
     // register this instance for getting game state changes
     yaf3d::GameState::get()->registerCallbackStateChange( this );
@@ -98,6 +102,10 @@ void VRCConfigRegistry::onStateChange( unsigned int state )
     yaf3d::Configuration::get()->addSetting( VRC_GS_INVERTMOUSE,         _mouseInverted     );
     yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_ENABLE,    _voiceChatEnable   );
     yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_CHANNEL,   _voiceChatChannel  );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_MUSIC_ENABLE,        _musicEnable       );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_MUSIC_VOLUME,        _musicVolume       );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_FX_ENABLE,           _fxEnable          );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_FX_VOLUME,           _fxVolume          );
 
     // now load the setting values from config file
     yaf3d::Configuration::get()->load();
@@ -107,7 +115,8 @@ void VRCConfigRegistry::onStateChange( unsigned int state )
 GuiUtils::GuiUtils() :
 _p_mainWindow( NULL ),
 _p_rootWindow( NULL ),
-_p_vrcImageSet( NULL )
+_p_vrcImageSet( NULL ),
+_masterVolume( 1.0f )
 {
     // take care, this is a phoenix singleton!
     if ( yaf3d::GameState::get()->getState() != yaf3d::GameState::Shutdown )
@@ -182,11 +191,16 @@ void GuiUtils::onStateChange( unsigned int state )
 
 void GuiUtils::onAppWindowStateChange( unsigned int state )
 {
-    // when application window is minimized or lost focus then mute the sound
+    // when application window is minimized or lost focus then set the master sound volume to zero
     if ( ( state == yaf3d::GameState::Minimized ) || ( state == yaf3d::GameState::LostFocus ) )
-        yaf3d::SoundManager::get()->mute( true );
+    {
+        _masterVolume = yaf3d::SoundManager::get()->getGroupVolume( yaf3d::SoundManager::SoundGroupMaster );
+        yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMaster, 0.0f );
+    }
     else if ( ( state == yaf3d::GameState::Restored ) || ( state == yaf3d::GameState::GainedFocus ) )
-        yaf3d::SoundManager::get()->mute( false );
+    {
+        yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMaster, _masterVolume );
+    }
 }
 
 CEGUI::Window* GuiUtils::getMainGuiWindow()
@@ -277,7 +291,8 @@ unsigned int GuiUtils::createSound( const std::string& name, const std::string& 
 
     try 
     {
-        soundID   = yaf3d::SoundManager::get()->createSound( filename, volume, false, yaf3d::SoundManager::fmodDefaultCreationFlags2D );
+        // all gui sounds are of type Common
+        soundID = yaf3d::SoundManager::get()->createSound( yaf3d::SoundManager::SoundGroupCommon, filename, volume, false, yaf3d::SoundManager::fmodDefaultCreationFlags2D );
         // give the gui sound a high priority
         yaf3d::SoundManager::get()->getSoundChannel( soundID )->setPriority( 100 );
     } 
