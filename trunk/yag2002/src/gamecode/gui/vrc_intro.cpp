@@ -102,7 +102,12 @@ void IntroControl::update( float deltaTime )
 
     _introTimer += deltaTime;
     if ( _introTimer > INTRO_FADEIN_TIME )
+    {
+        _intoImageSize = CEGUI::Size( 1.0f, 1.0f );
+        _p_wndIntro->setSize( _intoImageSize );
+        _p_wndIntro->setAlpha( 1.0f );
         return;
+    }
 
     // fade-in the intro image
     float imgSize = _introTimer / float( INTRO_FADEIN_TIME );
