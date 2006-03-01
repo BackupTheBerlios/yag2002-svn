@@ -150,6 +150,7 @@ void Application::shutdown()
     SettingsManager::get()->shutdown();
     KeyMap::get()->shutdown();
 
+    // delete viewer
     delete _p_viewer;
 
     SDL_Quit();
@@ -234,12 +235,12 @@ bool Application::initialize( int argc, char **argv )
     // setup log system
     {
         std::string loglevel;
-        bool        invalidloglevel = false;
-        Log::Level  level           = Log::L_ERROR;
+        Log::Level  level = Log::L_ERROR;
 
         // get the log level from configuration
         Configuration::get()->getSettingValue( YAF3D_GS_LOG_LEVEL, loglevel );
 
+        // check if we have to report an invalid log level in configuration
         if ( loglevel == "error" )
             level = Log::L_ERROR;
         else if ( loglevel == "warning" )
@@ -248,8 +249,10 @@ bool Application::initialize( int argc, char **argv )
             level = Log::L_DEBUG;
         else if ( loglevel == "info" )
             level = Log::L_INFO;
+        else if ( loglevel == "verbose" )
+            level = Log::L_VERBOSE;
         else 
-            invalidloglevel = true;
+            log_warning << "Application: configuration contains an invalid log level, possible values are: error, warning, debug, info, verbose. set to error." << std::endl;
 
         // create log sinks with configured log level
         if ( GameState::get()->getMode() != GameState::Server )
@@ -262,9 +265,6 @@ bool Application::initialize( int argc, char **argv )
         log.addSink( "stdout", std::cout, level );
 #endif
 
-        // check if we have to report an invalid log level in configuration
-        if ( invalidloglevel )
-            log_warning << "Application: configuration contains an invalid log level, possible values are: error, warning, debug, info. set to error." << std::endl;
     }
 
     log.enableSeverityLevelPrinting( false );
