@@ -31,18 +31,12 @@
  ################################################################*/
 
 #include <vrc_main.h>
+#include <vrc_gameutils.h>
 #include "vrc_playersound.h"
 #include "vrc_playerimpl.h"
 
 namespace vrc
 {
-
-// internal material names
-#define SND_GROUND      1
-#define SND_WOOD        2
-#define SND_STONE       3
-#define SND_METAL       4
-#define SND_GRASS       5
 
 //! Implement and register the player animation entity factory
 YAF3D_IMPL_ENTITYFACTORY( PlayerSoundEntityFactory )
@@ -69,9 +63,7 @@ _p_playerImpl( NULL )
 EnPlayerSound::~EnPlayerSound()
 {
     // release sounds
-    MapPlayerSounds::iterator p_beg = _mapSounds.begin(), p_end = _mapSounds.end();
-    for ( ; p_beg != p_end; ++p_beg )
-        yaf3d::SoundManager::get()->releaseSound( p_beg->second );
+    releaseSounds();
 }
 
 void EnPlayerSound::handleNotification( const yaf3d::EntityNotification& notification )
@@ -79,6 +71,24 @@ void EnPlayerSound::handleNotification( const yaf3d::EntityNotification& notific
     // handle attribute changing
     switch( notification.getId() )
     {
+        case YAF3D_NOTIFY_MENU_LEAVE:
+        {
+            // respond to sound setting changes in menu for fx sound
+            bool sndenable;
+            yaf3d::Configuration::get()->getSettingValue( VRC_GS_FX_ENABLE, sndenable );
+            // did we just enabled the fx sound in menu?
+            if ( sndenable && ( _mapSounds.size() == 0 ) )
+            {
+                setupSounds();
+            }
+            // did we just disabled fx sound in menu?
+            else if ( !sndenable && ( _mapSounds.size() > 0 ) )
+            {
+                releaseSounds();
+            }
+        }
+        break;
+
         case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
         {
             _volume = std::max( std::min( _volume, 1.0f ), 0.0f );
@@ -96,6 +106,20 @@ void EnPlayerSound::setPlayer( BasePlayerImplementation* p_player )
 }
 
 void EnPlayerSound::postInitialize()
+{
+    // is fx sound enabled?
+    bool sndenable;
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_FX_ENABLE, sndenable );
+    if ( !sndenable )
+        return;
+
+    // register entity for getting notifications
+    yaf3d::EntityManager::get()->registerNotification( this, true );
+    // setup all player sounds
+    setupSounds();
+}
+
+void EnPlayerSound::setupSounds()
 {
     // check if the player has already set its association
     assert( _p_playerImpl && "player implementation has to set its association in initialize phase!" );
@@ -121,9 +145,16 @@ void EnPlayerSound::postInitialize()
     soundID = createSound( _walkGrass );
     if ( soundID > 0 )
         _mapSounds.insert( std::make_pair( SND_GRASS, soundID ) );
+}
 
-    // register entity for getting notifications
-    yaf3d::EntityManager::get()->registerNotification( this, true );
+void EnPlayerSound::releaseSounds()
+{
+    // release sounds
+    MapPlayerSounds::iterator p_beg = _mapSounds.begin(), p_end = _mapSounds.end();
+    for ( ; p_beg != p_end; ++p_beg )
+        yaf3d::SoundManager::get()->releaseSound( p_beg->second );
+
+    _mapSounds.clear();
 }
 
 unsigned int EnPlayerSound::createSound( const std::string& filename )
@@ -131,8 +162,10 @@ unsigned int EnPlayerSound::createSound( const std::string& filename )
     unsigned int soundID = 0;
     try 
     {
+        // player sounds are all FX sounds
+        unsigned int soundgroup = yaf3d::SoundManager::get()->getSoundGroupIdFromString( "FX" );
         float volume = std::max( std::min( _volume, 1.0f ), 0.0f );
-        soundID      = yaf3d::SoundManager::get()->createSound( filename, volume, false, yaf3d::SoundManager::fmodDefaultCreationFlags3D );
+        soundID      = yaf3d::SoundManager::get()->createSound( soundgroup, filename, volume, false, yaf3d::SoundManager::fmodDefaultCreationFlags3D );
         FMOD::Channel* p_channel = yaf3d::SoundManager::get()->getSoundChannel( soundID );
         p_channel->set3DMinMaxDistance( _minDistance, _maxDistance );
     } 
@@ -144,31 +177,6 @@ unsigned int EnPlayerSound::createSound( const std::string& filename )
     }
 
     return soundID;    
-}
-
-void EnPlayerSound::playWalkGround()
-{
-    playSoundFx( SND_GROUND );
-}
-
-void EnPlayerSound::playWalkWood()
-{
-    playSoundFx( SND_WOOD );
-}
-
-void EnPlayerSound::playWalkMetal()
-{
-    playSoundFx( SND_METAL );
-}
-
-void EnPlayerSound::playWalkStone()
-{
-    playSoundFx( SND_STONE );
-}
-
-void EnPlayerSound::playWalkGrass()
-{
-    playSoundFx( SND_GRASS );
 }
 
 void EnPlayerSound::playSoundFx( unsigned int soundName )
@@ -184,17 +192,17 @@ void EnPlayerSound::playSoundFx( unsigned int soundName )
     MapPlayerSounds::iterator p_beg = _mapSounds.begin(), p_end = _mapSounds.end();
     for ( ; p_beg != p_end; ++p_beg )
         if ( p_beg->second != soundID )
-            yaf3d::SoundManager::get()->stopSound( p_beg->second );
+            yaf3d::SoundManager::get()->pauseSound( p_beg->second );
 
     // now play the new sound
-    yaf3d::SoundManager::get()->playSound( soundID, true );
+    yaf3d::SoundManager::get()->playSound( soundID );
 }
 
 void EnPlayerSound::stopPlayingAll()
 {
     MapPlayerSounds::iterator p_beg = _mapSounds.begin(), p_end = _mapSounds.end();
     for ( ; p_beg != p_end; ++p_beg )
-        yaf3d::SoundManager::get()->stopSound( p_beg->second );
+        yaf3d::SoundManager::get()->pauseSound( p_beg->second );
 }
 
 void EnPlayerSound::updatePosition( const osg::Vec3f& pos )

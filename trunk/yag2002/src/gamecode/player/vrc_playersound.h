@@ -44,7 +44,14 @@
 namespace vrc
 {
 
-#define ENTITY_NAME_PLSOUND   "PlayerSound"
+#define ENTITY_NAME_PLSOUND     "PlayerSound"
+
+//! Internal material names
+#define SND_GROUND              1
+#define SND_WOOD                2
+#define SND_STONE               3
+#define SND_METAL               4
+#define SND_GRASS               5
 
 class BasePlayerImplementation;
 
@@ -70,28 +77,34 @@ class EnPlayerSound  : public yaf3d::BaseEntity
         //! Update the sound location
         void                                        updatePosition( const osg::Vec3f& pos );
 
-        //! Play walk on ground sound
-        void                                        playWalkGround();
-
-        //! Play walk on wood sound
-        void                                        playWalkWood();
-
-        //! Play walk on stone sound
-        void                                        playWalkStone();
-
-        //! Play walk on metal sound
-        void                                        playWalkMetal();
-
-        //! Play walk on grass sound
-        void                                        playWalkGrass();
-
         //! Stop any sound
         void                                        stopPlayingAll();
+
+        //! Play walk on ground sound
+        inline void                                 playWalkGround();
+
+        //! Play walk on wood sound
+        inline void                                 playWalkWood();
+
+        //! Play walk on stone sound
+        inline void                                 playWalkStone();
+
+        //! Play walk on metal sound
+        inline void                                 playWalkMetal();
+
+        //! Play walk on grass sound
+        inline void                                 playWalkGrass();
 
     protected:
 
         // Handler system notifications
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
+
+        //! Setup all sounds
+        void                                        setupSounds();
+
+        //! Release all sounds
+        void                                        releaseSounds();
 
         //! Create a new sound
         unsigned int                                createSound( const std::string& filename );
@@ -153,6 +166,32 @@ class PlayerSoundEntityFactory : public yaf3d::BaseEntityFactory
 
         Macro_CreateEntity( EnPlayerSound );
 };
+
+//! Inlines
+inline void EnPlayerSound::playWalkGround()
+{
+    playSoundFx( SND_GROUND );
+}
+
+inline void EnPlayerSound::playWalkWood()
+{
+    playSoundFx( SND_WOOD );
+}
+
+inline void EnPlayerSound::playWalkMetal()
+{
+    playSoundFx( SND_METAL );
+}
+
+inline void EnPlayerSound::playWalkStone()
+{
+    playSoundFx( SND_STONE );
+}
+
+inline void EnPlayerSound::playWalkGrass()
+{
+    playSoundFx( SND_GRASS );
+}
 
 } // namespace vrc
 
