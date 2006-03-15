@@ -60,13 +60,16 @@ namespace gameutils
 #define VRC_GS_KEY_CHATMODE                 "chatMode"
 #define VRC_GS_MOUSESENS                    "mouseSensitivity"
 #define VRC_GS_INVERTMOUSE                  "mouseInverted"
-#define VRC_GS_VOICECHAT_ENABLE             "voiceChatEnable"
-#define VRC_GS_VOICECHAT_CHANNEL            "voiceChatChannel"
-#define VRC_GS_DEFAULT_VOICE_CHANNEL        32200
 #define VRC_GS_MUSIC_ENABLE                 "enableMusic"
 #define VRC_GS_MUSIC_VOLUME                 "volumeMusic"
 #define VRC_GS_FX_ENABLE                    "enableFX"
 #define VRC_GS_FX_VOLUME                    "volumeFX"
+#define VRC_GS_VOICECHAT_ENABLE             "voiceChatEnable"
+#define VRC_GS_VOICECHAT_INPUT_DEVICE       "voiceChatInputDevice"
+#define VRC_GS_VOICE_INPUT_GAIN             "voiceInputGain"
+#define VRC_GS_VOICE_OUTPUT_GAIN            "voiceOutputGain"
+#define VRC_GS_VOICECHAT_CHANNEL            "voiceChatChannel"
+#define VRC_GS_DEFAULT_VOICE_CHANNEL        32200
 #define VRC_GS_DEFAULT_SOUND_VOLUME         1.0f
 
 
@@ -129,10 +132,6 @@ class VRCConfigRegistry : public yaf3d::GameState::CallbackStateChange
 
         std::string                                 _chatmode;
 
-        bool                                        _voiceChatEnable;
-
-        unsigned int                                _voiceChatChannel;
-
         bool                                        _musicEnable;
 
         float                                       _musicVolume;
@@ -140,6 +139,16 @@ class VRCConfigRegistry : public yaf3d::GameState::CallbackStateChange
         bool                                        _fxEnable;
 
         float                                       _fxVolume;
+
+        bool                                        _voiceChatEnable;
+
+        unsigned int                                _voiceChatInputDev;
+
+        float                                       _voiceInputGain;
+
+        float                                       _voiceOutputGain;
+
+        unsigned int                                _voiceChatChannel;
 };
 
 //! Single instance providing player-related utility services

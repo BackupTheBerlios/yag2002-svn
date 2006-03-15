@@ -66,12 +66,15 @@ _moveRight( "D" ),
 _jump( "Space" ),
 _cameramode( "F1" ),
 _chatmode( "RMB" ),
-_voiceChatEnable( true ),
-_voiceChatChannel( VRC_GS_DEFAULT_VOICE_CHANNEL ),
 _musicEnable( true ),
 _musicVolume( VRC_GS_DEFAULT_SOUND_VOLUME ),
 _fxEnable( true ),
-_fxVolume( VRC_GS_DEFAULT_SOUND_VOLUME )
+_fxVolume( VRC_GS_DEFAULT_SOUND_VOLUME ),
+_voiceChatEnable( true ),
+_voiceChatInputDev( 0 ),
+_voiceInputGain( VRC_GS_DEFAULT_SOUND_VOLUME ),
+_voiceOutputGain( VRC_GS_DEFAULT_SOUND_VOLUME ),
+_voiceChatChannel( VRC_GS_DEFAULT_VOICE_CHANNEL )
 {
     // register this instance for getting game state changes
     yaf3d::GameState::get()->registerCallbackStateChange( this );
@@ -88,24 +91,27 @@ void VRCConfigRegistry::onStateChange( unsigned int state )
         return;
 
     // register settings
-    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_NAME,         _playerName        );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_CONFIG_DIR,   _playerConfigDir   );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_CONFIG,       _playerConfig      );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_FORWARD,    _moveForward       );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_BACKWARD,   _moveBackward      );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_LEFT,       _moveLeft          );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_RIGHT,      _moveRight         );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_JUMP,            _jump              );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CAMERAMODE,      _cameramode        );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CHATMODE,        _chatmode          );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_MOUSESENS,           _mouseSensitivity  );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_INVERTMOUSE,         _mouseInverted     );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_ENABLE,    _voiceChatEnable   );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_CHANNEL,   _voiceChatChannel  );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_MUSIC_ENABLE,        _musicEnable       );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_MUSIC_VOLUME,        _musicVolume       );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_FX_ENABLE,           _fxEnable          );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_FX_VOLUME,           _fxVolume          );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_NAME,            _playerName        );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_CONFIG_DIR,      _playerConfigDir   );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_CONFIG,          _playerConfig      );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_FORWARD,       _moveForward       );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_BACKWARD,      _moveBackward      );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_LEFT,          _moveLeft          );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_RIGHT,         _moveRight         );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_JUMP,               _jump              );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CAMERAMODE,         _cameramode        );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CHATMODE,           _chatmode          );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_MOUSESENS,              _mouseSensitivity  );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_INVERTMOUSE,            _mouseInverted     );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_MUSIC_ENABLE,           _musicEnable       );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_MUSIC_VOLUME,           _musicVolume       );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_FX_ENABLE,              _fxEnable          );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_FX_VOLUME,              _fxVolume          );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_ENABLE,       _voiceChatEnable   );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_INPUT_DEVICE, _voiceChatInputDev );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICE_INPUT_GAIN,       _voiceInputGain    );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICE_OUTPUT_GAIN,      _voiceOutputGain   );
+    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_CHANNEL,      _voiceChatChannel  );
 
     // now load the setting values from config file
     yaf3d::Configuration::get()->load();
@@ -405,8 +411,12 @@ void PlayerUtils::addRemotePlayer( yaf3d::BaseEntity* p_entity )
         if ( *p_beg == p_entity )
             break;
    
-    assert( ( p_beg == p_end ) && "remote player already exists in list!" );
-    
+    if ( p_beg != p_end )
+    {
+        log_error << "PlayerUtils: remote player already exists in list!" << std::endl;
+        return;
+    }
+ 
     _remotePlayers.push_back( p_entity );
 
     // notify registered callbacks for changed remote player list
@@ -423,7 +433,11 @@ void PlayerUtils::removeRemotePlayer( yaf3d::BaseEntity* p_entity )
         if ( *p_beg == p_entity )
             break;
 
-    assert( ( p_beg != p_end ) && "remote player does not exist in list!" );
+    if ( p_beg == p_end )
+    {
+        log_error << "PlayerUtils: remote player does not exist in list!" << std::endl;
+        return;
+    }
 
     _remotePlayers.erase( p_beg );
 
@@ -447,8 +461,16 @@ void PlayerUtils::registerFunctorPlayerListChanged( FunctorPlayerListChange* p_c
     }
 
     // check the registration / deregistration
-    assert( !( funcinlist && reg ) && "functor is already registered for getting player list changes" );
-    assert( !( !funcinlist && !reg ) && "functor has not been previousely registered for getting player list changes" );
+    if ( funcinlist && reg )
+    {
+        log_error << "PlayerUtils: functor is already registered for getting player list changes!" << std::endl;
+        return;
+    }
+    if ( !funcinlist && !reg )
+    {
+        log_error << "PlayerUtils: functor has not been previousely registered for getting player list changes!" << std::endl;
+        return;
+    }
 
     if ( reg )
         _funcPlayerList.push_back( p_cb );
@@ -464,7 +486,11 @@ void PlayerUtils::addRemotePlayerVoiceChat( yaf3d::BaseEntity* p_entity )
         if ( *p_beg == p_entity )
             break;
    
-    assert( ( p_beg == p_end ) && "remote player supporting voice chat already exists in list!" );
+    if ( p_beg != p_end )
+    {
+        log_error << "PlayerUtils: remote player supporting voice chat already exists in list!" << std::endl;
+        return;
+    }
     
     _remotePlayersVoiceChat.push_back( p_entity );
 
@@ -482,7 +508,11 @@ void PlayerUtils::removeRemotePlayerVoiceChat( yaf3d::BaseEntity* p_entity )
         if ( *p_beg == p_entity )
             break;
 
-    assert( ( p_beg != p_end ) && "remote player supporting voice chat does not exist in list!" );
+    if ( p_beg == p_end )
+    {
+        log_error << "PlayerUtils: remote player supporting voice chat does not exist in list!" << std::endl;
+        return;
+    }
 
     _remotePlayersVoiceChat.erase( p_beg );
 
@@ -506,8 +536,16 @@ void PlayerUtils::registerFunctorVoiceChatPlayerListChanged( FunctorPlayerListCh
     }
 
     // check the registration / deregistration
-    assert( !( funcinlist && reg ) && "functor is already registered for getting player list changes (voice chat)" );
-    assert( !( !funcinlist && !reg ) && "functor has not been previousely registered for getting player list changes (voice chat)" );
+    if ( funcinlist && reg )
+    {
+        log_error << "PlayerUtils: functor is already registered for getting player list changes (voice chat)!" << std::endl;
+        return;
+    }
+    if ( !funcinlist && !reg )
+    {
+        log_error << "PlayerUtils: functor has not been previousely registered for getting player list changes (voice chat)!" << std::endl;
+        return;
+    }
 
     if ( reg )
         _funcPlayerListVoiceChat.push_back( p_cb );
