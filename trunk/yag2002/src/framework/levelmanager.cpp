@@ -474,14 +474,6 @@ void LevelManager::finalizeLoading()
     EntityManager::get()->setupEntities( _setupQueue );
     _setupQueue.clear();
 
-    // send the notification that the a new level has been loaded and initialized
-    {
-        EntityNotification ennotify( YAF3D_NOTIFY_NEW_LEVEL_INITIALIZED );
-        EntityManager::get()->sendNotification( ennotify );
-        // flush the notification queue so perior and new entities get the notification
-        EntityManager::get()->flushNotificationQueue();
-    }
-
     // compile all gl textures in loaded level
     // this avoids delays when textures are loaded on-the-fly by osg only when they are visible for first time
     // check if glsl is supported before setting up the shaders ( gl context 0  is assumed )
@@ -491,6 +483,14 @@ void LevelManager::finalizeLoading()
         log_debug << "LevelManager: start compiling openGL resources ..." << std::endl;
         _topGroup->accept( rc );
         log_debug << "LevelManager: total num of evaluated elements: " << rc.getNumVisited() << std::endl;
+    }
+
+    // send the notification that the a new level has been loaded and initialized
+    {
+        EntityNotification ennotify( YAF3D_NOTIFY_NEW_LEVEL_INITIALIZED );
+        EntityManager::get()->sendNotification( ennotify );
+        // flush the notification queue so perior and new entities get the notification
+        EntityManager::get()->flushNotificationQueue();
     }
 
     // mark that we have done the first level loading
