@@ -61,8 +61,8 @@ class EnCamera :  public yaf3d::BaseEntity
         //! Note: this flag is checked by framework on destruction of a level.
         void                                        setPersistent( bool persistence ) { _isPersistent = persistence; }
 
-        //! Set camera translation
-        inline void                                 setCameraTranslation( const osg::Vec3f& pos, const osg::Quat& rot );
+        //! Set camera transformation
+        inline void                                 setCameraTransformation( const osg::Vec3f& pos, const osg::Quat& rot );
 
         //! Set camera position
         inline void                                 setCameraPosition( const osg::Vec3f& pos );
@@ -125,6 +125,9 @@ class EnCamera :  public yaf3d::BaseEntity
         //! Enable / disable this camera
         void                                        setEnable( bool enable );
 
+        //! Update camera view, set forceupdate in order to ignore internal check for update need
+        void                                        updateCameraView( bool forceupdate = false );
+
         //! This entity can be either persistent or not!
         const bool                                  isPersistent() const { return _isPersistent; }
 
@@ -137,10 +140,10 @@ class EnCamera :  public yaf3d::BaseEntity
         //! Setup the camera
         void                                        setupCamera();
 
-        //! Overridden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraPosition!
+        //! Overridden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTransformation or setCameraPosition!
         void                                        setPosition( osg::Vec3f& pos );
 
-        //! Overridden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTranslation or setCameraRotation!
+        //! Overridden, declared as protected and left as unimplemented as for this entity you must use the methods setCameraTransformation or setCameraRotation!
         void                                        setRotation( osg::Quat& quats );
 
         // Entity parameters
@@ -207,7 +210,7 @@ class CameraEntityFactory : public yaf3d::BaseEntityFactory
 
 
 // inlines
-inline void EnCamera::setCameraTranslation( const osg::Vec3f& pos, const osg::Quat& rot )
+inline void EnCamera::setCameraTransformation( const osg::Vec3f& pos, const osg::Quat& rot )
 {
     _curPosition = pos;
     _curRotation = rot;

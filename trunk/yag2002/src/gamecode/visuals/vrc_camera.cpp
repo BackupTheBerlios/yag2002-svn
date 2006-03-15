@@ -44,7 +44,7 @@ class CameraFrameHandler : public vrc::gameutils::GenericInputHandler< EnCamera 
 
         explicit                        CameraFrameHandler( EnCamera* p_camEntity ) : 
                                           vrc::gameutils::GenericInputHandler< EnCamera >( p_camEntity ),
-                                          _enable( true )
+                                          _enable( false )
                                         {}
 
         virtual                         ~CameraFrameHandler() {};
@@ -67,38 +67,8 @@ bool CameraFrameHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAct
         return false;
 
     if ( ea.getEventType() == osgGA::GUIEventAdapter::FRAME )
-    {
-        // update camera matrix if needed
-        if ( getUserObject()->_needUpdate )
-        {
-            // setup the view matrix basing on position and transformation
-            osg::Matrixf trans;
-            trans.makeTranslate( _p_userObject->_curPosition.x(), _p_userObject->_curPosition.y(), _p_userObject->_curPosition.z() );
-            osg::Matrix rot;
-            rot.makeRotate( _p_userObject->_curRotation );
+        getUserObject()->updateCameraView();
 
-            // add rotation offset (note: we do not rotate about world coord system)
-            rot = _p_userObject->_offsetMatrixRotation * rot;
-
-            osg::Matrixf mat;
-            mat = rot * trans;
-
-            // add position offset here
-            mat = _p_userObject->_offsetMatrixPosition * mat;
-
-            //  inverse the matrix
-            osg::Matrixf inv = osg::Matrixf::inverse( mat );
-
-            // adjust Z-UP
-            static osg::Matrixf adjustZ_Up ( osg::Matrixf::rotate( -osg::PI / 2.0f, 1.0f, 0.0f, 0.0f ) );
-
-            // set view matrix
-            yaf3d::Application::get()->getSceneView()->setViewMatrix( osg::Matrixf( inv.ptr() ) * adjustZ_Up  );
-
-            // reset update flag
-            getUserObject()->_needUpdate = false;
-         }
-    }
     return false;
 }
 
@@ -137,6 +107,12 @@ void EnCamera::handleNotification( const yaf3d::EntityNotification& notification
     // handle notifications
     switch( notification.getId() )
     {
+        // we enable the camera after level initialization
+        case YAF3D_NOTIFY_NEW_LEVEL_INITIALIZED:
+
+            setEnable( true );
+            break;
+
         // re-setup camera when an attribute changed
         case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
 
@@ -183,12 +159,45 @@ void EnCamera::setupCamera()
                                 osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0.0f, 0.0f, 1.0f )  // yaw
                             );
 
-    setCameraTranslation( _curPosition, _curRotation );
+    setCameraTransformation( _curPosition, _curRotation );
 }
 
 void EnCamera::setEnable( bool enable )
 {
     _p_cameraHandler->setEnable( enable );
+}
+
+void EnCamera::updateCameraView( bool forceupdate )
+{
+    if ( !( _needUpdate || forceupdate ) )
+        return;
+    
+    // setup the view matrix basing on position and transformation
+    osg::Matrixf trans;
+    trans.makeTranslate( _curPosition.x(), _curPosition.y(), _curPosition.z() );
+    osg::Matrix rot;
+    rot.makeRotate( _curRotation );
+
+    // add rotation offset (note: we do not rotate about world coord system)
+    rot = _offsetMatrixRotation * rot;
+
+    osg::Matrixf mat;
+    mat = rot * trans;
+
+    // add position offset here
+    mat = _offsetMatrixPosition * mat;
+
+    //  inverse the matrix
+    osg::Matrixf inv = osg::Matrixf::inverse( mat );
+
+    // adjust Z-UP
+    static osg::Matrixf adjustZ_Up ( osg::Matrixf::rotate( -osg::PI / 2.0f, 1.0f, 0.0f, 0.0f ) );
+
+    // set view matrix
+    yaf3d::Application::get()->getSceneView()->setViewMatrix( osg::Matrixf( inv.ptr() ) * adjustZ_Up  );
+
+    // reset update flag
+    _needUpdate = false;
 }
 
 } // namespace vrc
