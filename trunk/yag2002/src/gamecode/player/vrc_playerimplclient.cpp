@@ -346,7 +346,7 @@ void PlayerImplClient::update( float deltaTime )
         getPlayerNetworking()->updateAnimationFlags( getPlayerAnimation()->getAnimationFlags() );
 
         // adjust the camera to updated position and rotation. the physics updates the translation of player.
-        _p_camera->setCameraTranslation( getPlayerPosition(), getPlayerRotation() );
+        _p_camera->setCameraTransformation( getPlayerPosition(), getPlayerRotation() );
         // update chat gui
         getChatManager()->update( deltaTime );
     }

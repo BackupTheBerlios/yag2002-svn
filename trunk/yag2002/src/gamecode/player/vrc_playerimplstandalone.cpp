@@ -220,6 +220,10 @@ void PlayerImplStandalone::postInitialize()
         // get configuration settings
         getConfiguration();
     }
+
+    // set initial camera transformation
+    if ( _p_camera )
+       _p_camera->setCameraTransformation( getPlayerPosition(), getPlayerRotation() );
 }
 
 void PlayerImplStandalone::getConfiguration()
@@ -266,7 +270,7 @@ void PlayerImplStandalone::update( float deltaTime )
 
     // adjust the camera to updated position and rotation. the physics updates the translation of player.
     if ( _p_camera )
-        _p_camera->setCameraTranslation( getPlayerPosition(), getPlayerRotation() );
+        _p_camera->setCameraTransformation( getPlayerPosition(), getPlayerRotation() );
 
     getChatManager()->update( deltaTime );
 
