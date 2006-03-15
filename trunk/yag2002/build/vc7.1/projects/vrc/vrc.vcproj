@@ -683,6 +683,12 @@
 				<File
 					RelativePath="..\..\..\..\src\gamecode\gui\vrc_menu.h">
 				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_microinput.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_microinput.h">
+				</File>
 			</Filter>
 			<Filter
 				Name="tools"
