@@ -142,6 +142,7 @@ void EnMapView::initialize()
 {
     // set up the map view
     setupMapView();
+
     // register for getting periodic updates
     yaf3d::EntityManager::get()->registerUpdate( this, true );
 

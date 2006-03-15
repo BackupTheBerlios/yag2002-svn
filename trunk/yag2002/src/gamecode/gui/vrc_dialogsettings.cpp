@@ -34,6 +34,7 @@
 #include "vrc_dialogsettings.h"
 #include "vrc_dialogplayercfg.h"
 #include "../sound/vrc_ambientsound.h"
+#include "vrc_microinput.h"
 
 namespace vrc
 {
@@ -70,6 +71,13 @@ _volumeMusic( 1.0f ),
 _p_enableFX( NULL ),
 _p_volumeFX( NULL ),
 _volumeFX( 1.0f ),
+_p_enableVoiceChat( NULL ),
+_inputDevices( NULL ),
+_p_voiceInputGain( NULL ),
+_voiceInputGain( 1.0f ),
+_p_voiceOutputGain( NULL ),
+_voiceOutputGain( 1.0f ),
+_p_microInput( NULL ),
 _p_menuEntity( p_menuEntity )
 {
 }
@@ -172,7 +180,6 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
         }
         // get contents of pane Display
         //#############################
-        // fill up the resolution combobox
         {
             CEGUI::TabPane* p_paneDisplay = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_display" ) );
 
@@ -193,7 +200,6 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
 
         // get contents of pane Sound/Voice
         //#############################
-        // fill up the resolution combobox
         {
             CEGUI::TabPane* p_paneSoundVoice = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_soundvoice" ) );
 
@@ -210,6 +216,27 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
             // fx volume
             _p_volumeFX = static_cast< CEGUI::Scrollbar* >( p_paneSoundVoice->getChild( SDLG_PREFIX "sb_fxvolume" ) );
             _p_volumeFX->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onFXVolumeChanged, this ) );
+
+            // get voice chat on/off
+            _p_enableVoiceChat = static_cast< CEGUI::Checkbox* >( p_paneSoundVoice->getChild( SDLG_PREFIX "cbx_voicechat" ) );
+            _p_enableVoiceChat->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onEnableVoiceChatChanged, this ) );
+
+            // input devices
+            _inputDevices = static_cast< CEGUI::Combobox* >( p_paneSoundVoice->getChild( SDLG_PREFIX "cbox_voiceinputdevice" ) );
+            _inputDevices->subscribeEvent( CEGUI::Combobox::EventListSelectionAccepted, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onVoiceInputDeviceChanged, this ) );
+
+            // input gain
+            _p_voiceInputGain = static_cast< CEGUI::Scrollbar* >( p_paneSoundVoice->getChild( SDLG_PREFIX "sb_voiceinputgain" ) );
+            _p_voiceInputGain->setDocumentSize( 2.0f ); // the scrollbar works in range 0...2 now
+            _p_voiceInputGain->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onVoiceInputGainChanged, this ) );
+
+            // output gain
+            _p_voiceOutputGain = static_cast< CEGUI::Scrollbar* >( p_paneSoundVoice->getChild( SDLG_PREFIX "sb_voiceoutputgain" ) );
+            _p_voiceOutputGain->setDocumentSize( 2.0f ); // the scrollbar works in range 0...2 now
+            _p_voiceOutputGain->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onVoiceOutputGainChanged, this ) );
+
+            CEGUI::PushButton* p_inputtest = static_cast< CEGUI::PushButton* >( p_paneSoundVoice->getChild( SDLG_PREFIX "btn_voicetest" ) );
+            p_inputtest->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onVoiceTestClicked, this ) );
         }
     }
     catch ( const CEGUI::Exception& e )
@@ -381,6 +408,75 @@ void DialogGameSettings::setupControls()
             _p_volumeFX->setEnabled( false );
         else
             _p_volumeFX->setEnabled( true );
+
+
+        // voice chat
+
+        bool voiceenable;
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_ENABLE, voiceenable );
+        _p_enableVoiceChat->setSelected( voiceenable );
+
+        // setup input device combo box
+        if ( voiceenable )
+        {
+            _inputDevices->setEnabled( true );
+            _inputDevices->resetList();
+            _inputDevices->setSortingEnabled( false );
+
+            CEGUI::ListboxTextItem* p_item = NULL;
+
+            // determine all available input devices
+            MicrophoneInput* p_micinput = new MicrophoneInput;
+            MicrophoneInput::InputDeviceMap inputs;
+            if ( p_micinput->initialize() )
+            {
+                p_micinput->getInputDevices( inputs );
+                for ( int numdevs = inputs.size() - 1; numdevs >= 0 ; --numdevs )
+                {
+                    p_item = new CEGUI::ListboxTextItem( inputs[ numdevs ].c_str() );
+                    _inputDevices->insertItem( p_item, NULL );
+                }
+            }
+            else
+            {
+                log_error << "cannot initialize microphone input detection" << std::endl;
+            }
+            // release the micro input object
+            delete p_micinput;
+
+            // set the right device in drop-down list
+            unsigned int inputdevice;
+            yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_INPUT_DEVICE, inputdevice );
+            if ( inputdevice < inputs.size() )
+            {
+                _inputDevices->setItemSelectState( inputdevice, true );
+                _inputDevices->setText( _inputDevices->getListboxItemFromIndex( inputdevice )->getText() );
+            }
+            else
+            {
+                _inputDevices->setSelection( 0, 0 );
+            }
+        }
+        else
+        {
+            _inputDevices->setEnabled( false );
+        }
+
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_INPUT_GAIN, _voiceInputGain );
+        _p_voiceInputGain->setScrollPosition( _voiceInputGain );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_OUTPUT_GAIN, _voiceOutputGain );
+        _p_voiceOutputGain->setScrollPosition( _voiceOutputGain );
+
+        if ( voiceenable )
+        {
+            _p_voiceInputGain->setEnabled( true );
+            _p_voiceOutputGain->setEnabled( true );
+        }
+        else
+        {
+            _p_voiceInputGain->setEnabled( false );
+            _p_voiceOutputGain->setEnabled( false );
+        }
     }
 }
 
@@ -488,6 +584,26 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
         bool fxenable = _p_enableFX->isSelected();
         yaf3d::Configuration::get()->setSettingValue( VRC_GS_FX_ENABLE, fxenable );
         yaf3d::Configuration::get()->setSettingValue( VRC_GS_FX_VOLUME, _volumeFX );
+
+        bool voiceenable = _p_enableVoiceChat->isSelected();
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_VOICECHAT_ENABLE, voiceenable );
+
+        CEGUI::ListboxItem* p_item = _inputDevices->getSelectedItem();
+        if ( p_item )
+        {
+            unsigned int inputdevice = _inputDevices->getItemIndex( p_item );
+            yaf3d::Configuration::get()->setSettingValue( VRC_GS_VOICECHAT_INPUT_DEVICE, inputdevice );
+        }
+
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_VOICE_INPUT_GAIN, _voiceInputGain );
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_VOICE_OUTPUT_GAIN, _voiceOutputGain );
+
+        // release micro input object
+        if ( _p_microInput )
+        {
+            delete _p_microInput;
+            _p_microInput = NULL;
+        }
     }
 
     // store all settings into file
@@ -584,6 +700,13 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
 
         // play attention sound
         vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_ATTENTION );    
+    }
+
+    // release micro input object
+    if ( _p_microInput )
+    {
+        delete _p_microInput;
+        _p_microInput = NULL;
     }
 
     return true;
@@ -740,7 +863,99 @@ bool DialogGameSettings::onFXVolumeChanged( const CEGUI::EventArgs& arg )
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_SCROLLBAR );
 
     _volumeFX = _p_volumeFX->getScrollPosition();
-    yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupFX, _volumeFX );
+
+    return true;
+}
+
+bool DialogGameSettings::onEnableVoiceChatChanged( const CEGUI::EventArgs& arg )
+{
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
+    if ( _p_enableVoiceChat->isSelected() )
+    {
+        _p_voiceInputGain->setEnabled( true );
+        _p_voiceOutputGain->setEnabled( true );
+        _inputDevices->setEnabled( true );
+    }
+    else
+    {
+        _p_voiceInputGain->setEnabled( false );
+        _p_voiceOutputGain->setEnabled( false );
+        _inputDevices->setEnabled( false );
+    }
+    return true;
+}
+
+bool DialogGameSettings::onVoiceInputDeviceChanged( const CEGUI::EventArgs& arg )
+{
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
+    if ( _p_microInput )
+    {
+        CEGUI::ListboxItem* p_item = _inputDevices->getSelectedItem();
+        if ( p_item )
+        {
+            unsigned int inputdevice = _inputDevices->getItemIndex( p_item );
+            _p_microInput->setInputDevice( inputdevice );
+        }
+    }
+
+    return true;
+}
+
+bool DialogGameSettings::onVoiceInputGainChanged( const CEGUI::EventArgs& arg )
+{
+    // play scroll sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_SCROLLBAR );
+
+    _voiceInputGain = _p_voiceInputGain->getScrollPosition();
+    if ( _p_microInput )
+    {
+        _p_microInput->setInputGain( _voiceInputGain );
+    }
+
+    return true;
+}
+
+bool DialogGameSettings::onVoiceTestClicked( const CEGUI::EventArgs& arg )
+{
+    if ( !_p_microInput )
+    {
+        _p_microInput = new MicrophoneInput;
+        if ( !_p_microInput->initialize() )
+        {
+            delete _p_microInput;
+            _p_microInput = NULL;
+            return true;
+        }
+
+        unsigned int inputdevice;
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_INPUT_DEVICE, inputdevice );
+        _p_microInput->setInputDevice( inputdevice );
+        _p_microInput->beginMicroTest();
+    }
+    else
+    {
+        delete _p_microInput;
+        _p_microInput = NULL;
+    }
+
+    return true;
+}
+
+bool DialogGameSettings::onVoiceOutputGainChanged( const CEGUI::EventArgs& arg )
+{
+    // play scroll sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_SCROLLBAR );
+
+    _voiceOutputGain = _p_voiceOutputGain->getScrollPosition();
+
+    if ( _p_microInput )
+    {
+        _p_microInput->setOutputGain( _voiceOutputGain );
+    }
 
     return true;
 }

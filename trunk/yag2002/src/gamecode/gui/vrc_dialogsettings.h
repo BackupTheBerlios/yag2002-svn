@@ -38,6 +38,7 @@ namespace vrc
 
 class EnMenu;
 class EnAmbientSound;
+class MicrophoneInput;
 class DialogGameSettings;
 class DialogPlayerConfig;
 
@@ -98,62 +99,77 @@ class DialogGameSettings
         //! Setup all controls when the dialog is opening ( show( true ) )
         void                                        setupControls();
 
-        //! Dialog callback for config player button        
+        //! Dialog callback for config player button
         bool                                        onClickedPlayerConfig( const CEGUI::EventArgs& arg );
 
-        //! Dialog callback for Ok button        
+        //! Dialog callback for Ok button
         bool                                        onClickedOk( const CEGUI::EventArgs& arg );
 
-        //! Dialog callback for Cancel button        
+        //! Dialog callback for Cancel button
         bool                                        onClickedCancel( const CEGUI::EventArgs& arg );
 
-        //! Dialog callback for changing the tab      
+        //! Dialog callback for changing the tab
         bool                                        onTabChanged( const CEGUI::EventArgs& arg );
 
-        //! Dialog callback for mouse sensitivity scrollbar        
+        //! Dialog callback for mouse sensitivity scrollbar
         bool                                        onMouseSensitivityChanged( const CEGUI::EventArgs& arg );
        
-        //! Dialog callback for keyboarch checkbox: english        
+        //! Dialog callback for keyboarch checkbox: english
         bool                                        onKeyboardEnglishChanged( const CEGUI::EventArgs& arg );
        
-        //! Dialog callback for keyboarch checkbox: german        
+        //! Dialog callback for keyboarch checkbox: german
         bool                                        onKeyboardGermanChanged( const CEGUI::EventArgs& arg );
        
-        //! Dialog callback for move forward button        
+        //! Dialog callback for move forward button
         bool                                        onClickedForward( const CEGUI::EventArgs& arg );
 
-        //! Dialog callback for move backward button        
+        //! Dialog callback for move backward button
         bool                                        onClickedBackward( const CEGUI::EventArgs& arg );
 
-        //! Dialog callback for move left button        
+        //! Dialog callback for move left button
         bool                                        onClickedLeft( const CEGUI::EventArgs& arg );
 
-        //! Dialog callback for move right button        
+        //! Dialog callback for move right button
         bool                                        onClickedRight( const CEGUI::EventArgs& arg );
 
-        //! Dialog callback for jump button        
+        //! Dialog callback for jump button
         bool                                        onClickedJump( const CEGUI::EventArgs& arg );
 
-        //! Dialog callback for camera mode button        
+        //! Dialog callback for camera mode button
         bool                                        onClickedCameraMode( const CEGUI::EventArgs& arg );
 
-        //! Dialog callback for chat mode button        
+        //! Dialog callback for chat mode button
         bool                                        onClickedChatMode( const CEGUI::EventArgs& arg );
 
-        //! Dialog callback for fullscreen checkbox        
+        //! Dialog callback for fullscreen checkbox
         bool                                        onFullscreenChanged( const CEGUI::EventArgs& arg );
 
-        //! Dialog callback for enable music checkbox        
+        //! Dialog callback for enable music checkbox
         bool                                        onEnableMusicChanged( const CEGUI::EventArgs& arg );
 
-        //! Dialog callback for music volume scrollbar       
+        //! Dialog callback for music volume scrollbar
         bool                                        onMusicVolumeChanged( const CEGUI::EventArgs& arg );
 
-        //! Dialog callback for enable fx checkbox        
+        //! Dialog callback for enable fx checkbox
         bool                                        onEnableFXChanged( const CEGUI::EventArgs& arg );
 
-        //! Dialog callback for fx volume scrollbar       
+        //! Dialog callback for fx volume scrollbar
         bool                                        onFXVolumeChanged( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for enable voice chat checkbox
+        bool                                        onEnableVoiceChatChanged( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for changed selection in input device combobox
+        bool                                        onVoiceInputDeviceChanged( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for clicking output gain test
+        bool                                        onVoiceTestClicked( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for input gain scrollbar
+        bool                                        onVoiceInputGainChanged( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for output gain scrollbar
+        bool                                        onVoiceOutputGainChanged( const CEGUI::EventArgs& arg );
 
         //! This method is used for sensing keybinding by the mean of a little messagebox
         void                                        senseKeybinding( CEGUI::PushButton* p_btn );
@@ -215,6 +231,20 @@ class DialogGameSettings
         CEGUI::Scrollbar*                           _p_volumeFX;
 
         float                                       _volumeFX;
+
+        CEGUI::Checkbox*                            _p_enableVoiceChat;
+
+        CEGUI::Combobox*                            _inputDevices;
+
+        CEGUI::Scrollbar*                           _p_voiceInputGain;
+
+        float                                       _voiceInputGain;
+
+        CEGUI::Scrollbar*                           _p_voiceOutputGain;
+
+        float                                       _voiceOutputGain;
+
+        MicrophoneInput*                            _p_microInput;
 
         EnMenu*                                     _p_menuEntity;
 

@@ -761,7 +761,7 @@ void EnMenu::updateEntity( float deltaTime )
                 osg::Quat rot;
                 mat.get( rot );
                 osg::Vec3f pos = mat.getTrans();
-                _p_cameraControl->setCameraTranslation( pos, rot );
+                _p_cameraControl->setCameraTransformation( pos, rot );
             }
 
             // handle menu idling
