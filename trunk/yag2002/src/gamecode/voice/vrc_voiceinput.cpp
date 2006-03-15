@@ -32,6 +32,7 @@
 #include <vrc_gameutils.h>
 #include "vrc_voiceinput.h"
 #include "vrc_codec.h"
+#include <fmod_errors.h>
 
 namespace vrc
 {
@@ -41,8 +42,10 @@ _p_soundSystem( p_sndsystem ),
 _p_codec( p_codec ),
 _p_sound( NULL ),
 _p_channel( NULL ),
+_inputGain( 1.0f ),
 _createSoundSystem( true ),
-_createCodec( true )
+_createCodec( true ),
+_active( false )
 {
     // remember if sound system was given for destruction phase later
     if ( p_sndsystem )
@@ -82,7 +85,10 @@ void BaseVoiceInput::initialize() throw( NetworkSoundExpection )
         if ( version < FMOD_VERSION )
             throw NetworkSoundExpection( "FMOD version conflict." );
  
-        result = _p_soundSystem->init( 32, FMOD_INIT_NORMAL, 0 );
+        // we need only one single channel in sound system
+        result = _p_soundSystem->init( 1, FMOD_INIT_NORMAL, 0 );
+        if ( result != FMOD_OK )
+            throw NetworkSoundExpection( "Cannot initialize sound system" );
     }
 
     // need for creating codec?
@@ -91,6 +97,11 @@ void BaseVoiceInput::initialize() throw( NetworkSoundExpection )
         _p_codec = new NetworkSoundCodec;
         _p_codec->setupEncoder();
     }
+}
+
+void BaseVoiceInput::setInputGain( float gain )
+{
+    _inputGain = gain;
 }
 
 void BaseVoiceInput::update()
@@ -155,28 +166,21 @@ void VoiceMicrophoneInput::initialize() throw( NetworkSoundExpection )
     memset( &createsoundexinfo, 0, sizeof( FMOD_CREATESOUNDEXINFO ) );
     createsoundexinfo.cbsize            = sizeof( FMOD_CREATESOUNDEXINFO );
     createsoundexinfo.decodebuffersize  = 0;
-    createsoundexinfo.length            = VOICE_SAMPLE_RATE * sizeof( short ) * 2; // buffer for 2 seconds recording 
+    createsoundexinfo.length            = VOICE_SAMPLE_RATE * sizeof( short ) * 0.5f; // buffer for 0.5 seconds recording 
     createsoundexinfo.numchannels       = channels;
     createsoundexinfo.defaultfrequency  = VOICE_SAMPLE_RATE;
     createsoundexinfo.format            = VOICE_SOUND_FORMAT;
 
     result = _p_soundSystem->createSound( NULL, mode, &createsoundexinfo, &_p_sound );
     if ( result != FMOD_OK )
-    {
-        std::stringstream exptext;
-        exptext << "Problem occured during creation of sound object, error code: " << result;
-        throw NetworkSoundExpection( exptext.str() );
-    }
+        throw NetworkSoundExpection( "Problem occured during creation of sound object: " + std::string( FMOD_ErrorString( result ) ) );
 
     // get input device
     int numdrivers = 0;
     result = _p_soundSystem->getRecordNumDrivers( &numdrivers );
     if ( result != FMOD_OK )
-    {
-        std::stringstream exptext;
-        exptext << "Cannot get any microphone devices, error code: " << result;
-        throw NetworkSoundExpection( exptext.str() );
-    }
+        throw NetworkSoundExpection( "Cannot get any microphone devices: " + std::string( FMOD_ErrorString( result ) ) );
+
     int inputdevice = -1;
     for ( int count = 0; count < numdrivers; ++count )
     {
@@ -195,18 +199,14 @@ void VoiceMicrophoneInput::initialize() throw( NetworkSoundExpection )
     }
     result = _p_soundSystem->setRecordDriver( inputdevice );
     if ( result != FMOD_OK )
-    {
-        std::stringstream exptext;
-        exptext << "Error setting input device, error code: " << result;
-        throw NetworkSoundExpection( exptext.str() );
-    }
-
-    // start grabbing from microphone
-    result = _p_soundSystem->recordStart( _p_sound, true );
+        throw NetworkSoundExpection( "Error setting input device: " + std::string( FMOD_ErrorString( result ) ) );
 }
 
 void VoiceMicrophoneInput::update()
 {
+    if ( !_active )
+        return;
+
     assert( _p_sound && "sound has not been created, first call initialize!" );
 
     // update base object first
@@ -237,7 +237,7 @@ void VoiceMicrophoneInput::update()
                     VOICE_DATA_FORMAT_TYPE* p_data = reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_rawpointer1 );
 
                     // encode grabbed raw data
-                    encodedbytes = _p_codec->encode( p_data, len1, _p_encoderbuffer );
+                    encodedbytes = _p_codec->encode( p_data, len1, _p_encoderbuffer, _inputGain );
                     // check for network paket overrun
                     assert( encodedbytes <= VOICE_PAKET_MAX_BUF_SIZE );
                 }
@@ -246,7 +246,7 @@ void VoiceMicrophoneInput::update()
                     VOICE_DATA_FORMAT_TYPE* p_data = reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_rawpointer2 );
 
                     // encode grabbed raw data
-                    encodedbytes = _p_codec->encode( p_data, len2, _p_encoderbuffer );
+                    encodedbytes = _p_codec->encode( p_data, len2, _p_encoderbuffer, _inputGain );
                     // check for network paket overrun
                     assert( encodedbytes <= VOICE_PAKET_MAX_BUF_SIZE );
                 }
@@ -271,10 +271,13 @@ void VoiceMicrophoneInput::stop( bool st )
 {
     assert( _p_sound && "input is not initialized!" );
 
-    if ( st )
+    if ( !st )
         _p_soundSystem->recordStart( _p_sound, true );
     else
         _p_soundSystem->recordStop();
+
+    // set active flag
+    _active = !st;
 }
 
 
@@ -302,27 +305,12 @@ void VoiceFileInput::initialize() throw( NetworkSoundExpection )
     // first init the base object
     BaseVoiceInput::initialize();
 
-    // create a sound object
     FMOD_RESULT result;
-    FMOD_MODE               mode = FMOD_2D | FMOD_LOOP_NORMAL | FMOD_SOFTWARE;
-    FMOD_CREATESOUNDEXINFO  createsoundexinfo;
-    int                     channels = 1;
-
-    memset( &createsoundexinfo, 0, sizeof( FMOD_CREATESOUNDEXINFO ) );
-    createsoundexinfo.cbsize            = sizeof( FMOD_CREATESOUNDEXINFO );
-    createsoundexinfo.decodebuffersize  = 0;
-    createsoundexinfo.length            = -1;
-    createsoundexinfo.numchannels       = channels;
-    createsoundexinfo.defaultfrequency  = VOICE_SAMPLE_RATE;
-    createsoundexinfo.format            = VOICE_SOUND_FORMAT;
-
-    result = _p_soundSystem->createSound( std::string( yaf3d::Application::get()->getMediaPath() + _file ).c_str(), mode, &createsoundexinfo, &_p_sound );
+    // create a sound object
+    FMOD_MODE   mode = FMOD_2D | FMOD_LOOP_NORMAL | FMOD_SOFTWARE;
+    result = _p_soundSystem->createSound( std::string( yaf3d::Application::get()->getMediaPath() + _file ).c_str(), mode, NULL, &_p_sound );
     if ( result != FMOD_OK )
-    {
-        std::stringstream exptext;
-        exptext << "Problem occured during creation of sound object, error code: " << result;
-        throw NetworkSoundExpection( exptext.str() );
-    }
+        throw NetworkSoundExpection( "Problem occured during creation of sound object: " + std::string( FMOD_ErrorString( result ) + std::string( " : " ) + _file ) );
 
     _p_soundSystem->playSound( FMOD_CHANNEL_FREE, _p_sound, false, &_p_channel );
     _p_channel->setMute( true );
@@ -330,6 +318,9 @@ void VoiceFileInput::initialize() throw( NetworkSoundExpection )
 
 void VoiceFileInput::update()
 {
+    if ( !_active )
+        return;
+
     assert( _p_sound && "sound has not been created, first call initialize!" );
 
     // update base object first
@@ -360,7 +351,7 @@ void VoiceFileInput::update()
                     VOICE_DATA_FORMAT_TYPE* p_data = reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_rawpointer1 );
 
                     // encode grabbed raw data
-                    encodedbytes = _p_codec->encode( p_data, len1, _p_encoderbuffer );
+                    encodedbytes = _p_codec->encode( p_data, len1, _p_encoderbuffer, _inputGain );
                     // check for network paket overrun
                     assert( encodedbytes <= VOICE_PAKET_MAX_BUF_SIZE );
                 }
@@ -369,7 +360,7 @@ void VoiceFileInput::update()
                     VOICE_DATA_FORMAT_TYPE* p_data = reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_rawpointer2 );
 
                     // encode grabbed raw data
-                    encodedbytes = _p_codec->encode( p_data, len2, _p_encoderbuffer );
+                    encodedbytes = _p_codec->encode( p_data, len2, _p_encoderbuffer, _inputGain );
                     // check for network paket overrun
                     assert( encodedbytes <= VOICE_PAKET_MAX_BUF_SIZE );
                 }
@@ -398,6 +389,8 @@ void VoiceFileInput::stop( bool st )
         _p_channel->setPaused( true );
     else
         _p_channel->setPaused( false );
+
+    _active = !st;
 }
 
 } // namespace vrc

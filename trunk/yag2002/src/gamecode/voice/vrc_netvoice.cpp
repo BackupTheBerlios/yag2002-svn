@@ -47,7 +47,9 @@ _spotRange( 20.0f ),
 _p_receiver( NULL ),
 _p_voiceNetwork( NULL ),
 _p_codec( NULL ),
-_p_soundInput( NULL )
+_p_soundInput( NULL ),
+_inputGain( 1.0f ),
+_active( false )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "spotRange",       _spotRange  );
@@ -56,45 +58,8 @@ _p_soundInput( NULL )
 
 EnNetworkVoice::~EnNetworkVoice()
 {
-    try
-    {
-        SenderMap::iterator p_beg = _sendersMap.begin(), p_end = _sendersMap.end();
-        for ( ; p_beg != p_end; ++p_beg )
-        {
-            delete p_beg->second;
-        }
-        _sendersMap.clear();
-
-        if ( _p_receiver )
-        {
-            _p_receiver->shutdown();
-            delete _p_receiver;
-        }
-
-        // remove callbacks
-        vrc::gameutils::PlayerUtils::get()->registerFunctorVoiceChatPlayerListChanged( this, false );
-        _p_voiceNetwork->registerFunctorHotspotChanged( this, false );
-
-        // now destroy voice network
-        if ( _p_voiceNetwork )
-        {
-            _p_voiceNetwork->shutdown();
-            delete _p_voiceNetwork;
-        }
-
-        if ( _p_soundInput )
-        {
-            delete _p_soundInput;
-        }
-
-        if ( _p_codec )
-            delete _p_codec;
-    }
-    catch ( const NetworkSoundExpection& e )
-    {
-        log_error << ENTITY_NAME_NETWORKVOICE << ":" << getInstanceName() << "  a problem occurred during shutdown." << std::endl;
-        log_error << "  reason: " << e.what() << std::endl;
-    }
+    if ( _active )
+        destroyVoiceChat();
 }
 
 void EnNetworkVoice::handleNotification( const yaf3d::EntityNotification& notification )
@@ -103,6 +68,9 @@ void EnNetworkVoice::handleNotification( const yaf3d::EntityNotification& notifi
     switch( notification.getId() )
     {
         case YAF3D_NOTIFY_MENU_LEAVE:
+
+            // reflect the settings in menu
+            setupNetworkVoice();
             break;
 
         case YAF3D_NOTIFY_SHUTDOWN:
@@ -115,31 +83,77 @@ void EnNetworkVoice::handleNotification( const yaf3d::EntityNotification& notifi
 
 void EnNetworkVoice::initialize()
 {
+    // setup voice chat
+    setupNetworkVoice();
+
+    // register entity in order to get notifications (e.g. from menu entity)
+    yaf3d::EntityManager::get()->registerNotification( this, true );
+}
+
+void EnNetworkVoice::setupNetworkVoice()
+{
+    // check if voice chat is enabled
+    bool voicechatenable;
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_ENABLE, voicechatenable );
+    if ( voicechatenable )
+    {
+        // get further menu settings for voice chat
+        float outputgain;
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_OUTPUT_GAIN, outputgain );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_INPUT_GAIN, _inputGain );
+
+        // is voice chat already active?
+        if ( !_active )
+        {
+            createVoiceChat( _inputGain, outputgain );
+        }
+        else
+        {
+            // just update the input and output gain
+            _p_soundInput->setInputGain( _inputGain );
+            _p_receiver->setOutputGain( outputgain );
+        }
+    }
+    else if ( !voicechatenable && _active )
+    {
+        destroyVoiceChat();
+    }
+}
+
+void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
+{
+    assert( !_active && "trying to destroy voice chat which has already been created before!" );
+
     try
     {
+        _inputGain = inputgain;
+
         // create a sound receiver
         _p_receiver = new VoiceReceiver();
         _p_receiver->initialize();
+        _p_receiver->setOutputGain( outputgain );
 
+        // create the network manager for voice chat clients
         _p_voiceNetwork = new VoiceNetwork;
         _p_voiceNetwork->initialize();
         _p_voiceNetwork->setHotspotRange( _spotRange );
 
-        // create sound compression codec
+        // create sound codec
         _p_codec = new NetworkSoundCodec;
         _p_codec->setEncoderComplexity( 9 );
         _p_codec->setEncoderQuality( 10 );
         _p_codec->setupEncoder();
 
         // create a file input as voice source for testing if a test file is given
-        // the file must have following format: PCM16, mono, 8 kHz
-        // if no test file given then we take the microphone as input ( normal case )
+        // the file must have following format: PCM16
+        // if no test file is given then we take the microphone as input ( normal case )
         if ( _testFile.length() )
             _p_soundInput = new VoiceFileInput( _testFile, NULL, _p_codec );
         else
             _p_soundInput = new VoiceMicrophoneInput( NULL, _p_codec );
 
         _p_soundInput->initialize();
+        _p_soundInput->setInputGain( _inputGain );
         // we begin with input grabbing when at least one sender is active
         _p_soundInput->stop( true );
     }
@@ -166,11 +180,65 @@ void EnNetworkVoice::initialize()
     // register for getting periodic updates
     yaf3d::EntityManager::get()->registerUpdate( this, true );
 
-    // set callback to get notifications on changed voice chat list
+    // set functor to get notifications on changed voice chat list
     vrc::gameutils::PlayerUtils::get()->registerFunctorVoiceChatPlayerListChanged( this, true );
 
-    // set callback to get notifications on changed hotspot
+    // set functor to get notifications on changed hotspot
     _p_voiceNetwork->registerFunctorHotspotChanged( this, true );
+
+    // set active flag
+    _active = true;
+}
+
+void EnNetworkVoice::destroyVoiceChat()
+{
+    assert( _active && "trying to destroy voice chat which has not been created before!" );
+
+    // deregister for getting periodic updates
+    yaf3d::EntityManager::get()->registerUpdate( this, false );
+
+    try
+    {
+        // remove functor in player utils
+        vrc::gameutils::PlayerUtils::get()->registerFunctorVoiceChatPlayerListChanged( this, false );
+
+        SenderMap::iterator p_beg = _sendersMap.begin(), p_end = _sendersMap.end();
+        for ( ; p_beg != p_end; ++p_beg )
+        {
+            delete p_beg->second;
+        }
+        _sendersMap.clear();
+
+        if ( _p_receiver )
+        {
+            _p_receiver->shutdown();
+            delete _p_receiver;
+        }
+
+        // now destroy voice network
+        if ( _p_voiceNetwork )
+        {
+            _p_voiceNetwork->registerFunctorHotspotChanged( this, false );
+            _p_voiceNetwork->shutdown();
+            delete _p_voiceNetwork;
+        }
+
+        if ( _p_soundInput )
+        {
+            delete _p_soundInput;
+        }
+
+        if ( _p_codec )
+            delete _p_codec;
+    }
+    catch ( const NetworkSoundExpection& e )
+    {
+        log_error << ENTITY_NAME_NETWORKVOICE << ":" << getInstanceName() << "  a problem occurred during shutdown." << std::endl;
+        log_error << "  reason: " << e.what() << std::endl;
+    }
+
+    // reset active flag
+    _active = false;
 }
 
 void EnNetworkVoice::updateEntity( float deltaTime )
@@ -236,7 +304,7 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
 
 void EnNetworkVoice::operator()( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity )
 {
-    // let the voice network manager update its internal client list when 
+    // let the voice network manager update its internal client list when a new client is joining 
     if ( joining )
         _p_voiceNetwork->updateVoiceClients( p_entity, true );
     else
@@ -245,6 +313,7 @@ void EnNetworkVoice::operator()( bool localplayer, bool joining, yaf3d::BaseEnti
 
 void EnNetworkVoice::operator()( bool joining, yaf3d::BaseEntity* p_entity )
 {
+    // update the hotspot when clients enter / leave the hotspot range
     updateHotspot( p_entity, joining );
 }
 

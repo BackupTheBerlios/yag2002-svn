@@ -75,17 +75,21 @@ class BaseNetworkSoundImplementation
         //! Initialize
         virtual void                    initialize() throw( NetworkSoundExpection ) = 0;
 
+        virtual void                    setOutputGain( float gain ) {}
+
         //! Update
         virtual void                    update( float deltaTime ) = 0;
 
         //! Shutdown
         virtual void                    shutdown() = 0;
+
+        //! Set output gain, this is meant to be used in a receiver
 };
 
 //! Voice server name
 #define VOICE_SERVER_NAME                       "vrc-voiceserver"
 //! Voice sample rate
-#define VOICE_SAMPLE_RATE                       8000
+#define VOICE_SAMPLE_RATE                       16000
 
 //! Sound format, this must match to VOICE_DATA_FORMAT_TYPE
 #define VOICE_SOUND_FORMAT                      FMOD_SOUND_FORMAT_PCM16

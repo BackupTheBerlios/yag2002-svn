@@ -59,6 +59,9 @@ class BaseVoiceInput
         //! Stop / continue grabbing
         virtual void                                stop( bool st ) = 0;
 
+        //! Set input gain
+        virtual void                                setInputGain( float gain );
+
         //! Functor for grabbing the encoded audio data.
         class FCaptureInput
         {
@@ -91,6 +94,9 @@ class BaseVoiceInput
         //! Sound channel
         FMOD::Channel*                              _p_channel;
 
+        //! Input gain
+        float                                       _inputGain;
+
         //! Encoder buffer
         char                                        _p_encoderbuffer[ VOICE_PAKET_MAX_BUF_SIZE ];
 
@@ -99,6 +105,9 @@ class BaseVoiceInput
 
         //! Indicated whether the codec has been created by this instance
         bool                                        _createCodec;
+
+        //! Identifies whether the input is grabbed ( reflects the state set by 'stop' )
+        bool                                        _active;
 
         //! Registered stream sinks
         std::vector< FCaptureInput* >               _sinks;

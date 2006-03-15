@@ -56,6 +56,9 @@ class VoiceReceiver : public BaseNetworkSoundImplementation
         //! Initialize the voice server
         void                                        initialize() throw( NetworkSoundExpection );
 
+        //! Set output gain
+        void                                        setOutputGain( float gain );
+
         //! Shutdown the voice server
         void                                        shutdown();
 
@@ -80,6 +83,9 @@ class VoiceReceiver : public BaseNetworkSoundImplementation
 
         //! Sound system
         FMOD::System*                               _p_soundSystem;
+    
+        //! Output gain
+        float                                       _outputGain;
 };
 
 } // namespace vrc

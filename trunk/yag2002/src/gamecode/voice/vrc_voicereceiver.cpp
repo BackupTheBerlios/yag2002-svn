@@ -89,7 +89,8 @@ class SoundNode
 
 VoiceReceiver::VoiceReceiver() :
 _p_udpTransport( NULL ),
-_p_soundSystem( NULL )
+_p_soundSystem( NULL ),
+_outputGain( 1.0f )
 {
 }
 
@@ -138,6 +139,11 @@ void VoiceReceiver::initialize() throw( NetworkSoundExpection )
     }
 }
 
+void VoiceReceiver::setOutputGain( float gain )
+{
+    _outputGain = gain;
+}
+
 void VoiceReceiver::setupSound() throw( NetworkSoundExpection )
 {
     FMOD_RESULT result;
@@ -151,8 +157,7 @@ void VoiceReceiver::setupSound() throw( NetworkSoundExpection )
     if ( version < FMOD_VERSION )
         throw NetworkSoundExpection( "FMOD version conflict." );
 
-    //result = _p_soundSystem->setSoftwareFormat( 200, VOICE_SOUND_FORMAT, 1, 0, FMOD_DSP_RESAMPLER_LINEAR );
-    result = _p_soundSystem->init( 32, FMOD_INIT_NORMAL, 0 );
+    result = _p_soundSystem->init( 32, FMOD_INIT_STREAM_FROM_UPDATE, 0 );
 }
 
 FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, unsigned int datalen )
@@ -168,19 +173,21 @@ FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, 
     VOICE_DATA_FORMAT_TYPE*   p_sndbuffer = reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_data );
     unsigned int    cnt = datalen / sizeof( VOICE_DATA_FORMAT_TYPE );
 
-    // get the proper sample queue and put the sampes into raw sound buffer
+    // get the proper sample queue and put the samples into raw sound buffer
     SoundSampleQueue& samplequeue = *p_soundnode->_p_sampleQueue;
     if ( !samplequeue.empty() )
     {
-        log_debug << "recv bytes: " << samplequeue.size() << std::endl;
+        //log_verbose << "recv bytes: " << samplequeue.size() << std::endl;
 
         // handle buffer underrun
         if ( samplequeue.size() < cnt )
+        {
+            log_verbose << "playback buffer overrun: " << samplequeue.size() << ", " << cnt << std::endl;
             cnt = samplequeue.size();
-
+        }
         for ( ; cnt > 0; --cnt )
         {
-            *p_sndbuffer++ = samplequeue.front();            
+            *p_sndbuffer++ = samplequeue.front();
             samplequeue.pop();
         }
     }
@@ -198,14 +205,13 @@ SoundNode* VoiceReceiver::createSoundNode()
     // create a sound
     FMOD_RESULT result;
 
-    FMOD_MODE               mode = FMOD_2D | FMOD_OPENUSER | FMOD_LOOP_NORMAL | FMOD_SOFTWARE | FMOD_CREATESTREAM;
+    FMOD_MODE               mode = FMOD_2D | FMOD_OPENUSER | FMOD_SOFTWARE | FMOD_CREATESTREAM;
     FMOD_CREATESOUNDEXINFO  createsoundexinfo;
-    int                     channels = 1;
     memset( &createsoundexinfo, 0, sizeof( FMOD_CREATESOUNDEXINFO ) );
     createsoundexinfo.cbsize            = sizeof( FMOD_CREATESOUNDEXINFO );    
-    createsoundexinfo.decodebuffersize  = CODEC_FRAME_SIZE; // FIXME: determine a good buffer size, too big sizes result in noise and echos
-    createsoundexinfo.length            = -1;
-    createsoundexinfo.numchannels       = channels;
+    createsoundexinfo.decodebuffersize  = CODEC_FRAME_SIZE; //! TODO: determine a good buffer size, too big sizes result in noise and echos
+    createsoundexinfo.length            = -1;//10 * VOICE_SAMPLE_RATE * sizeof( short );
+    createsoundexinfo.numchannels       = 1;
     createsoundexinfo.defaultfrequency  = VOICE_SAMPLE_RATE;
     createsoundexinfo.format            = VOICE_SOUND_FORMAT;
     createsoundexinfo.pcmreadcallback   = voiceReceiverReadPCM;
@@ -232,7 +238,7 @@ void VoiceReceiver::setupNetwork() throw( NetworkSoundExpection )
 	_p_udpTransport = xpurl.FindTransport( "UDP@" )->Allocate();
     _p_udpTransport->Listen( channel );
 	std::string url = _p_udpTransport->ExportURL();
-    log_debug << "  voice receiver started: " << url << std::endl;
+    log_debug << "  <- voice receiver started: " << url << std::endl;
 }
 
 void VoiceReceiver::update( float deltaTime )
@@ -243,7 +249,7 @@ void VoiceReceiver::update( float deltaTime )
 	RNReplicaNet::Transport* p_sender = _p_udpTransport->Accept();
     if ( p_sender )
     {
-        log_debug << "  <- sender connection accepted from: " << p_sender->GetPeerURL() << std::endl;
+        log_debug << "  <- connection accepted from sender: " << p_sender->GetPeerURL() << std::endl;
         
         SoundNode* p_soundnode = createSoundNode();
         _soundNodeMap[ p_sender ] = p_soundnode;
@@ -284,7 +290,7 @@ void VoiceReceiver::update( float deltaTime )
                 p_data->_typeId = NETWORKSOUND_PAKET_TYPE_CON_GRANT;
                 p_sender->SendReliable( reinterpret_cast< char* >( p_data ), VOICE_PAKET_HEADER_SIZE  + p_data->_length );
 
-                log_debug << "  <- voice sender connection request granted ( " << _soundNodeMap.size() << " )" << std::endl;
+                log_debug << "  <- joining request granted ( " << _soundNodeMap.size() << " )" << std::endl;
             }
             break;
 
@@ -294,7 +300,7 @@ void VoiceReceiver::update( float deltaTime )
                 delete p_beg->second;
                 _soundNodeMap.erase( p_beg );
                 p_beg = _soundNodeMap.begin(), p_end = _soundNodeMap.end();
-                log_debug << "  <- voice sender leaves hotspot ( " << _soundNodeMap.size() << " )" << std::endl;
+                log_debug << "  <- voice sender leaves ( " << _soundNodeMap.size() << " )" << std::endl;
                 continue;
             }
             break;
@@ -304,7 +310,11 @@ void VoiceReceiver::update( float deltaTime )
                 // drop obsolete packets
                 if ( p_data->_paketStamp < p_sendernode->_lastPaketStamp )
                 {
-                    log_debug << "receiver: paket loss detected (recved/current)" << p_data->_paketStamp << "/" << p_sendernode->_lastPaketStamp << std::endl;
+                    log_debug << "  <- *** paket loss detected (stamps received/current)" << p_data->_paketStamp << "/" << p_sendernode->_lastPaketStamp << std::endl;
+                    // update our stamp also when a loss has been detected
+                    // currently we cannot know if there was an actual loss or an addition overflow occured in stamp variable
+                    // one possible to handle this issue would be that the protocol would support a sort of "reset stamp number"
+                    p_sendernode->_lastPaketStamp = p_data->_paketStamp;
                     continue;
                 }
                 // udpate sound node's stamp
@@ -312,11 +322,13 @@ void VoiceReceiver::update( float deltaTime )
 
                 // decode and enqueue the samples
                 SoundNode* p_soundnode = p_beg->second;
-                if ( !p_soundnode->_p_codec->decode( p_data->_p_buffer, p_data->_length, *p_soundnode->_p_sampleQueue ) )
+                if ( !p_soundnode->_p_codec->decode( p_data->_p_buffer, p_data->_length, *p_soundnode->_p_sampleQueue, _outputGain ) )
                 {
                     log_debug << "decoder queue overrun, flushing queue!" << std::endl;
                     p_soundnode->_p_sampleQueue->c.clear();
                 }
+
+                // log_verbose << "encoded size: " << p_data->_length << std::endl;
             }
             break;
 
@@ -327,7 +339,7 @@ void VoiceReceiver::update( float deltaTime )
                 p_data->_typeId = NETWORKSOUND_PAKET_TYPE_CON_PONG;
                 p_sender->SendReliable( reinterpret_cast< char* >( p_data ), VOICE_PAKET_HEADER_SIZE  + p_data->_length );
                 
-                // log_debug << "got ping, sending pong to sender" << std::endl;
+                // log_verbose << "got ping, sending pong to sender" << std::endl;
 
                 // reset the ping timer
                 p_sendernode->_pingTimer = 0.0f;

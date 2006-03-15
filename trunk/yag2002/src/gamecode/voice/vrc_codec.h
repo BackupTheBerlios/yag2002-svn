@@ -38,10 +38,10 @@
 namespace vrc
 {
 
-// codec samples per frame ( for narrow mode it's always 160 )
-#define CODEC_FRAME_SIZE            160
+// codec samples per frame
+#define CODEC_FRAME_SIZE            320
 // maximum buffer size for encoding and decoding
-#define CODEC_MAX_BUFFER_SIZE       8000
+#define CODEC_MAX_BUFFER_SIZE       16000
 
 
 //! Codec class
@@ -56,32 +56,35 @@ class NetworkSoundCodec
         
         //! Setup Encoder
         void                                        setupEncoder();
-
-        //! Setup Decoder
-        void                                        setupDecoder();
-
+    
         //! All incomming decoded samples are dropped when the sample queue is bigger than a maximum size set by this method.
         //! The default is CODEC_MAX_BUFFER_SIZE
         void                                        setMaxDecodeQueueSize( unsigned int size );
 
-        //! Set encoder quality in range [1..10], default is 8
+        //! Set encoder quality in range [ 1 ... 10 ], default is 8
         void                                        setEncoderQuality( unsigned int q );
 
-        //! Set decoder complexity in range [1..10], default is 5
+        //! Set decoder complexity in range [ 1 ... 10 ], default is 5
         void                                        setEncoderComplexity( unsigned int c );
+        
+        //! Encode 'length' number of raw sound data ( of type short ) to a compressed paket stored in p_bitbuffer, the samples are multiplied by 'gain'.
+        //! This method returns the count of bytes needed for encoding. The caller must ensure that p_bitbuffer is big enough.
+        unsigned int                                encode( short* p_soundbuffer, unsigned int length, char* p_bitbuffer, float gain = 1.0f );
+
+        //! Setup Decoder
+        void                                        setupDecoder();
 
         //! Enable / disable perceptual enhancement for decoding
         void                                        setDecoderENH( bool enh );
 
-        //! Encode 'length' number of raw sound data ( of type short ) to a compressed paket stored in p_bitbuffer.
-        //! This method returns the count of bytes needed for encoding. The caller must ensure that p_bitbuffer is big enough.
-        unsigned int                                encode( short* p_soundbuffer, unsigned int length, char* p_bitbuffer );
-
-        //! Decode incoming compressed sound paket into given sample queue.
+        //! Decode incoming compressed sound paket into given sample queue, the samples are multiplied by 'gain'.
         //! Returns false if a queue overflow occurs ( see setMaxDecodeQueueSize ).
-        bool                                        decode( char* p_bitbuffer, unsigned int length, std::queue< short , std::deque< short > >& samplequeue );
+        bool                                        decode( char* p_bitbuffer, unsigned int length, std::queue< short , std::deque< short > >& samplequeue, float gain = 1.0f );
 
     protected:
+
+        //! Codec mode ( narrow, wide, ultrawide )
+        const SpeexMode*                            _p_mode;
 
         //! Preprocessor state, used for encoding
         SpeexPreprocessState*                       _p_preprocessorState;
@@ -92,10 +95,10 @@ class NetworkSoundCodec
         //! Encoder bit structure
         SpeexBits                                   _encoderBits;
 
-        //! [1..10]
+        //! [ 1 ... 10 ]
         int                                         _encoderQuality;
 
-        //! [1..10]
+        //! [ 1 ... 10 ]
         int                                         _encoderComplexity;
 
         //! Decoder State
@@ -112,6 +115,9 @@ class NetworkSoundCodec
 
         //! Max size for decode queue
         unsigned int                                _maxDecodeQueueSize;
+
+        //! Internal buffer for encoding sound data
+        float                                       _p_inputBuffer[ CODEC_MAX_BUFFER_SIZE ];
 
         //! Internal buffer for getting access to decoded sound data
         short                                       _p_outputBuffer[ CODEC_MAX_BUFFER_SIZE ];

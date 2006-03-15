@@ -66,6 +66,15 @@ class EnNetworkVoice :
         //! Handle notifications
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
+        //! Setup the voice chat considering the settings in menu
+        void                                        setupNetworkVoice();
+
+        //! Create voice chat
+        void                                        createVoiceChat( float inputgain, float outputgain );
+
+        //! Destroy voice chat
+        void                                        destroyVoiceChat();
+
         //! Update the sender list, 'joining' = true means that a new player has entered the voice hotspot
         //! Otherwise it means that an entity has left the hotspot.
         void                                        updateHotspot( yaf3d::BaseEntity* p_entity, bool joining );
@@ -99,6 +108,12 @@ class EnNetworkVoice :
 
         //! Sender map
         SenderMap                                   _sendersMap;
+
+        //! Sender input gain
+        float                                       _inputGain;
+
+        //! Identifies whether the voice chat is activated
+        bool                                        _active;
 };
 
 //! Entity type definition used for type registry

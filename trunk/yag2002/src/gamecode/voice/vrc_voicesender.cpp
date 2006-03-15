@@ -101,7 +101,7 @@ void VoiceSender::initialize() throw( NetworkSoundExpection )
         std::stringstream assembledUrl;
         assembledUrl << "UDP@" << _receiverIP << ":" << channel << "/" << VOICE_SERVER_NAME;
         _p_udpTransport->Connect( assembledUrl.str() );
-        log_debug << " connected receiver: " << assembledUrl.str() << std::endl;
+        log_debug << "  -> trying to connect the receiver: " << assembledUrl.str() << " ..." << std::endl;
     }
 }
 
@@ -129,7 +129,7 @@ void VoiceSender::update( float deltaTime )
             _p_udpTransport->SendReliable( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE + _p_voicePaket->_length );
             _senderState = RequestConnection;
 
-            log_debug << "  -> requesting for connection to sound receiver ... " << std::endl;
+            log_debug << "  -> ... connected, requesting for joining voice session ... " << std::endl;
         }
         break;
 
@@ -142,12 +142,12 @@ void VoiceSender::update( float deltaTime )
             if ( p_data->_typeId == NETWORKSOUND_PAKET_TYPE_CON_GRANT )
             {
                 _senderState = ConnectionReady;
-                log_debug << "  receiver granted connection " << std::endl;
+                log_debug << "  -> receiver granted joining " << std::endl;
             }
             else if ( p_data->_typeId == NETWORKSOUND_PAKET_TYPE_CON_DENY )
             {
                 _senderState = ConnectionDenied;
-                log_debug << "  receiver denied connection " << std::endl;
+                log_debug << "  -> receiver denied joining " << std::endl;
             }
         }
         break;
@@ -201,7 +201,7 @@ void VoiceSender::operator ()( char* p_encodedaudio, unsigned short length )
     _p_voicePaket->_typeId     = NETWORKSOUND_PAKET_TYPE_VOICE_DATA;
     _p_voicePaket->_length     = length;
     memcpy( _p_voicePaket->_p_buffer, p_encodedaudio, length );
-    _p_udpTransport->Send( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE + _p_voicePaket->_length );
+    _p_udpTransport->SendReliable( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE + _p_voicePaket->_length );
 }
 
 } // namespace vrc

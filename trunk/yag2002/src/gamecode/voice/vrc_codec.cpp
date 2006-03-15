@@ -36,6 +36,7 @@ namespace vrc
 {
 
 NetworkSoundCodec::NetworkSoundCodec() :
+_p_mode( NULL ),
 _p_codecEncoderState( NULL ),
 _encoderQuality( 8 ),
 _encoderComplexity( 5 ),
@@ -44,6 +45,34 @@ _enh( 1 ),
 _sampleRate( VOICE_SAMPLE_RATE ),
 _maxDecodeQueueSize( CODEC_MAX_BUFFER_SIZE )
 {
+    // determine the mode
+    int modeID = -1;
+
+    if (_sampleRate > 48000 )
+    {
+        log_error << "NetworkSoundCodec: sample rate " << _sampleRate << " is too high, valid sample rate range is [ 6000 ... 48000 ]" << std::endl;
+        return;
+    }
+        
+    if ( _sampleRate > 25000 )
+    {
+        modeID = SPEEX_MODEID_UWB;
+    } 
+    else if ( _sampleRate > 12500 )
+    {
+        modeID = SPEEX_MODEID_WB;
+    } 
+    else if ( _sampleRate >= 6000 )
+    {
+        modeID = SPEEX_MODEID_NB;
+    } 
+    else
+    {
+        log_error << "NetworkSoundCodec: sample rate " << _sampleRate << " is too low, valid sample rate range is [ 6000 ... 48000 ]" << std::endl;
+        return;
+    }
+
+    _p_mode = speex_lib_get_mode( modeID );
 }
 
 NetworkSoundCodec::~NetworkSoundCodec()
@@ -66,6 +95,10 @@ NetworkSoundCodec::~NetworkSoundCodec()
 
 void NetworkSoundCodec::setupEncoder()
 {
+    // catch invalid sample rates resulting in invalid mode
+    if ( !_p_mode )
+        return;
+
     assert( ( _p_codecEncoderState == NULL ) && "encoder already initialized" );
 
     int enabled  = 1;
@@ -73,28 +106,29 @@ void NetworkSoundCodec::setupEncoder()
     // setup preprocessor
     _p_preprocessorState = speex_preprocess_state_init( CODEC_FRAME_SIZE, _sampleRate );
     speex_preprocess_ctl( _p_preprocessorState, SPEEX_PREPROCESS_SET_DENOISE, &enabled );
-    //! TODO: for some reason AGC does not work!? check why!
-    //int agclevel = 16000;
-    //speex_preprocess_ctl( _p_preprocessorState, SPEEX_PREPROCESS_SET_AGC, &enabled );
-    //speex_preprocess_ctl( _p_preprocessorState, SPEEX_PREPROCESS_SET_AGC_LEVEL, &agclevel );
     speex_preprocess_ctl( _p_preprocessorState, SPEEX_PREPROCESS_SET_VAD, &enabled );
 
     // setup encoder
-    _p_codecEncoderState = speex_encoder_init( &speex_nb_mode );
+    _p_codecEncoderState = speex_encoder_init( _p_mode );
     speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_QUALITY, &_encoderQuality );
     speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_COMPLEXITY, &_encoderComplexity );
     speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_SAMPLING_RATE, &_sampleRate );
-    speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_VBR, &enabled );
+    int disable = 0;
+    speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_VBR, &disable );
     speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_DTX, &enabled );
     speex_bits_init( &_encoderBits );
 }
 
 void NetworkSoundCodec::setupDecoder()
 {
+    // catch invalid sample rates resulting in invalid mode
+    if ( !_p_mode )
+        return;
+
     assert( ( _p_codecDecoderState == NULL ) && "decoder already initialized" );
 
     int enabled = 1;
-    _p_codecDecoderState = speex_decoder_init( &speex_nb_mode );
+    _p_codecDecoderState = speex_decoder_init( _p_mode );
     speex_decoder_ctl( _p_codecDecoderState, SPEEX_SET_ENH, &enabled );
     speex_decoder_ctl( _p_codecDecoderState, SPEEX_SET_SAMPLING_RATE, &_sampleRate );
     speex_bits_init( &_decoderBits );
@@ -130,7 +164,7 @@ void NetworkSoundCodec::setDecoderENH( bool enh )
         speex_decoder_ctl( _p_codecDecoderState, SPEEX_SET_ENH, &_enh );
 }
 
-unsigned int NetworkSoundCodec::encode( short* p_soundbuffer, unsigned int length, char* p_bitbuffer )
+unsigned int NetworkSoundCodec::encode( short* p_soundbuffer, unsigned int length, char* p_bitbuffer, float gain )
 {
     assert( _p_codecEncoderState && "encoder has not been created!" );
 
@@ -147,7 +181,14 @@ unsigned int NetworkSoundCodec::encode( short* p_soundbuffer, unsigned int lengt
     if ( prec > 0 )
     {
         speex_bits_reset( &_encoderBits );
-        speex_encode_int( _p_codecEncoderState, p_soundbuffer, &_encoderBits );
+
+        // copy and gain input data to encoder buffer
+        int numsamples = 0;
+        speex_encoder_ctl( _p_codecEncoderState, SPEEX_GET_FRAME_SIZE, &numsamples );
+        for ( int cnt = 0; cnt < numsamples; ++cnt )
+            _p_inputBuffer[ cnt ] = static_cast< float >( p_soundbuffer[ cnt ] ) * gain;
+
+        speex_encode( _p_codecEncoderState, _p_inputBuffer, &_encoderBits );
         int nb = speex_bits_nbytes( &_encoderBits );
         encodedbytes = speex_bits_write( &_encoderBits, p_bitbuffer, nb );
     }
@@ -155,7 +196,7 @@ unsigned int NetworkSoundCodec::encode( short* p_soundbuffer, unsigned int lengt
     return static_cast< unsigned int >( encodedbytes );
 }
 
-bool NetworkSoundCodec::decode( char* p_bitbuffer, unsigned int length, std::queue< short , std::deque< short > >& samplequeue )
+bool NetworkSoundCodec::decode( char* p_bitbuffer, unsigned int length, std::queue< short , std::deque< short > >& samplequeue, float gain )
 {
     assert( _p_codecDecoderState && "decoder has not been created!" );
 
@@ -170,7 +211,7 @@ bool NetworkSoundCodec::decode( char* p_bitbuffer, unsigned int length, std::que
     if ( res == 0 )
     {
         for ( unsigned short cnt = 0; cnt < CODEC_FRAME_SIZE; ++cnt )
-            samplequeue.push( _p_outputBuffer[ cnt ] );
+            samplequeue.push( static_cast< float >( _p_outputBuffer[ cnt ] ) * gain );
     }
 
     return true;
