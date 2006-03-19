@@ -36,6 +36,9 @@
 #include "vrc_voiceinput.h"
 #include "vrc_codec.h"
 
+//! TODO: remove this later
+#include "vrc_voicetestutils.h"
+
 namespace vrc
 {
 
@@ -56,10 +59,21 @@ _active( false )
     getAttributeManager().addAttribute( "testSoundFile",   _testFile   );
 }
 
+//! TODO: remove this test object later
+// ************************************
+//CodecTest* s_p_codecTest = NULL;
+// ************************************
+
 EnNetworkVoice::~EnNetworkVoice()
 {
     if ( _active )
         destroyVoiceChat();
+
+//! TODO: remove this test later
+// ******************************
+    //if ( s_p_codecTest )
+    //    delete s_p_codecTest;
+// ******************************
 }
 
 void EnNetworkVoice::handleNotification( const yaf3d::EntityNotification& notification )
@@ -123,6 +137,12 @@ void EnNetworkVoice::setupNetworkVoice()
 void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
 {
     assert( !_active && "trying to destroy voice chat which has already been created before!" );
+
+////! TODO: remove this test later
+//// ******************************
+//    s_p_codecTest = new CodecTest( "C:\\temp\\codectestrip.wav", _testFile );
+//    s_p_codecTest->initialize();
+//// ******************************
 
     try
     {
@@ -243,13 +263,33 @@ void EnNetworkVoice::destroyVoiceChat()
 
 void EnNetworkVoice::updateEntity( float deltaTime )
 {
+//! TODO: remove this test later
+// ******************************
+//    s_p_codecTest->update();
+// ******************************
+
     // update the voice network state
     _p_voiceNetwork->update( deltaTime );
 
     // update senders
     SenderMap::iterator p_beg = _sendersMap.begin(), p_end = _sendersMap.end();
     for ( ; p_beg != p_end; ++p_beg )
-        p_beg->second->update( deltaTime );
+    {
+        VoiceSender* p_sender = static_cast< VoiceSender* >( p_beg->second );
+        // check for dead senders
+        if ( !p_sender->isAlive() )
+        {
+            delete p_sender;
+            _sendersMap.erase( p_beg );
+            p_beg = _sendersMap.begin();
+            p_end = _sendersMap.end();
+            continue;
+        }
+        else
+        {
+            p_beg->second->update( deltaTime );
+        }
+    }
 
     // update audio input
     _p_soundInput->update();
@@ -257,6 +297,19 @@ void EnNetworkVoice::updateEntity( float deltaTime )
     // update our receiver
     if ( _p_receiver )
         _p_receiver->update( deltaTime );
+
+    //! TODO: remove this diagnostics stuff later
+    //*******************************************
+    static float t = 0.0f;
+    t += deltaTime;
+    if ( t > 2.0f )
+    {
+        t = 0.0f;
+        std::stringstream msg;
+        msg << "current active senders: " << _sendersMap.size();
+        log_verbose << msg.str() << std::endl;
+    }
+    //*******************************************
 }
 
 void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
@@ -266,7 +319,8 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
     SenderMap::iterator hit = _sendersMap.find( p_entity );
     if ( joining )
     {
-        assert( ( hit == _sendersMap.end() ) && "entity is already in internal hotspot map!" );
+        if ( hit != _sendersMap.end() )
+            log_error << "EnNetworkVoice: entity is already in internal hotspot map!" << std::endl;
 
         // determine receiver's ip
         VoiceNetwork::VoiceClientMap::const_iterator vmapend = _p_voiceNetwork->getHotspot().end();
@@ -290,7 +344,8 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
     }
     else
     {
-        assert( ( hit != _sendersMap.end() ) && "entity is not in internal hotspot map!" );
+        if ( hit == _sendersMap.end() )
+            log_error << "EnNetworkVoice: entity is not in internal hotspot map!" << std::endl;
 
         // destroy the sender
         hit->second->shutdown();

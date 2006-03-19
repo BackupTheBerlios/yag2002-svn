@@ -35,8 +35,17 @@
 #include "vrc_codec.h"
 #include "RNXPURL/Inc/XPURL.h"
 
+#include "vrc_voicetestutils.h"
+
 namespace vrc
 {
+
+//**************************************************************
+//! TODO remove this test ripper
+std::queue< short > s_wavqueue;
+//*******************************************************************************
+
+
 
 //! Class for fast access of stuff needed for decoding incoming voice pakets from different voice clients
 class SoundNode
@@ -58,13 +67,11 @@ class SoundNode
 
                                      ~SoundNode()
                                      {
-                                         delete _p_sampleQueue;
-                                         delete _p_codec;
-
-                                         if ( _p_channel )
-                                             _p_channel->stop();
                                          if ( _p_sound )                                                            
                                              _p_sound->release();
+
+                                         delete _p_sampleQueue;
+                                         delete _p_codec;
                                      }
 
         //! Queue for raw sound data
@@ -86,12 +93,15 @@ class SoundNode
         unsigned int                 _lastPaketStamp;
 };
 
-
 VoiceReceiver::VoiceReceiver() :
+_senderID( 0 ),
 _p_udpTransport( NULL ),
 _p_soundSystem( NULL ),
 _outputGain( 1.0f )
 {
+    // setup sender ID enumeration
+    srand( static_cast< unsigned int >( time( NULL ) ) );
+    _senderID = static_cast< unsigned int >( rand() );
 }
 
 VoiceReceiver::~VoiceReceiver()
@@ -101,6 +111,21 @@ VoiceReceiver::~VoiceReceiver()
 
 void VoiceReceiver::shutdown()
 {
+//*******************************
+    // write out the ripped wav file
+    {
+        SenderMap::iterator p_beg = _soundNodeMap.begin(), p_end = _soundNodeMap.end();
+        // we take the first sender and write it out
+        if ( p_beg != p_end )
+        {
+            // write out the rip
+            WaveWriterPCM16 wavwriter( VOICE_SAMPLE_RATE, WaveWriterPCM16::MONO );
+            wavwriter.write( "c:\\temp\\sender0-rip.wav", s_wavqueue );
+        }
+    }
+//*******************************
+
+
     // clean up sender / sound node map
     SenderMap::iterator p_beg = _soundNodeMap.begin(), p_end = _soundNodeMap.end();
     for ( ; p_beg != p_end; ++p_beg )
@@ -112,8 +137,8 @@ void VoiceReceiver::shutdown()
 
     if ( _p_soundSystem )
     {
-        FMOD_RESULT result;
-        result = _p_soundSystem->release();
+        _p_soundSystem->close();
+        _p_soundSystem->release();
         _p_soundSystem = NULL;
     }
 
@@ -157,7 +182,8 @@ void VoiceReceiver::setupSound() throw( NetworkSoundExpection )
     if ( version < FMOD_VERSION )
         throw NetworkSoundExpection( "FMOD version conflict." );
 
-    result = _p_soundSystem->init( 32, FMOD_INIT_STREAM_FROM_UPDATE, 0 );
+    // use FMOD_INIT_STREAM_FROM_UPDATE in order to synchronize the play callback with networking in update method
+    result = _p_soundSystem->init( 5, FMOD_INIT_STREAM_FROM_UPDATE, 0 );
 }
 
 FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, unsigned int datalen )
@@ -169,7 +195,7 @@ FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, 
 
     if ( !p_soundnode )
         return FMOD_OK;
-  
+
     VOICE_DATA_FORMAT_TYPE*   p_sndbuffer = reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_data );
     unsigned int    cnt = datalen / sizeof( VOICE_DATA_FORMAT_TYPE );
 
@@ -184,12 +210,20 @@ FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, 
         {
             log_verbose << "playback buffer overrun: " << samplequeue.size() << ", " << cnt << std::endl;
             cnt = samplequeue.size();
+            // erase the remaining buffer
+            memset( p_sndbuffer + cnt, 0, ( datalen - cnt ) * sizeof( short ) );
+            log_verbose << "playback buffer corrected" << std::endl;
         }
         for ( ; cnt > 0; --cnt )
         {
             *p_sndbuffer++ = samplequeue.front();
+
+            //! TODO: remove this later, it's only for ripping to a test wave file
+            s_wavqueue.push( samplequeue.front() );
+
             samplequeue.pop();
         }
+
     }
     //! TODO: better turn off the sound when buffer is empty
     else
@@ -205,12 +239,12 @@ SoundNode* VoiceReceiver::createSoundNode()
     // create a sound
     FMOD_RESULT result;
 
-    FMOD_MODE               mode = FMOD_2D | FMOD_OPENUSER | FMOD_SOFTWARE | FMOD_CREATESTREAM;
+    FMOD_MODE               mode = FMOD_2D | FMOD_OPENUSER | FMOD_SOFTWARE | FMOD_CREATESTREAM | FMOD_LOOP_NORMAL;
     FMOD_CREATESOUNDEXINFO  createsoundexinfo;
     memset( &createsoundexinfo, 0, sizeof( FMOD_CREATESOUNDEXINFO ) );
     createsoundexinfo.cbsize            = sizeof( FMOD_CREATESOUNDEXINFO );    
     createsoundexinfo.decodebuffersize  = CODEC_FRAME_SIZE; //! TODO: determine a good buffer size, too big sizes result in noise and echos
-    createsoundexinfo.length            = -1;//10 * VOICE_SAMPLE_RATE * sizeof( short );
+    createsoundexinfo.length            = VOICE_SAMPLE_RATE;
     createsoundexinfo.numchannels       = 1;
     createsoundexinfo.defaultfrequency  = VOICE_SAMPLE_RATE;
     createsoundexinfo.format            = VOICE_SOUND_FORMAT;
@@ -218,7 +252,7 @@ SoundNode* VoiceReceiver::createSoundNode()
 
     // create a new node
     SoundNode* p_soundnode = new SoundNode();
-    result = _p_soundSystem->createSound( 0, mode, &createsoundexinfo, &p_soundnode->_p_sound );
+    result = _p_soundSystem->createStream( 0, mode, &createsoundexinfo, &p_soundnode->_p_sound );
     _p_soundSystem->playSound( FMOD_CHANNEL_FREE, p_soundnode->_p_sound, false, &p_soundnode->_p_channel );    
     p_soundnode->_p_sound->setUserData( static_cast< void* >( p_soundnode ) );
     
@@ -244,6 +278,9 @@ void VoiceReceiver::setupNetwork() throw( NetworkSoundExpection )
 void VoiceReceiver::update( float deltaTime )
 {
     assert( _p_udpTransport && "network transport is not available!" );
+
+    // update sound system
+    _p_soundSystem->update();
 
     // check for new connecting senders
 	RNReplicaNet::Transport* p_sender = _p_udpTransport->Accept();
@@ -286,8 +323,11 @@ void VoiceReceiver::update( float deltaTime )
                 // send back a GRANT
                 //!TODO: currently we always grant!
                 //       we may deny e.g. when too much senders are already connected
-                p_data->_length = 0;
-                p_data->_typeId = NETWORKSOUND_PAKET_TYPE_CON_GRANT;
+                p_data->_length   = 0;
+                p_data->_typeId   = NETWORKSOUND_PAKET_TYPE_CON_GRANT;
+                // assign a unique ID to new sender
+                ++_senderID;
+                p_data->_senderID = _senderID;
                 p_sender->SendReliable( reinterpret_cast< char* >( p_data ), VOICE_PAKET_HEADER_SIZE  + p_data->_length );
 
                 log_debug << "  <- joining request granted ( " << _soundNodeMap.size() << " )" << std::endl;
@@ -322,6 +362,7 @@ void VoiceReceiver::update( float deltaTime )
 
                 // decode and enqueue the samples
                 SoundNode* p_soundnode = p_beg->second;
+
                 if ( !p_soundnode->_p_codec->decode( p_data->_p_buffer, p_data->_length, *p_soundnode->_p_sampleQueue, _outputGain ) )
                 {
                     log_debug << "decoder queue overrun, flushing queue!" << std::endl;

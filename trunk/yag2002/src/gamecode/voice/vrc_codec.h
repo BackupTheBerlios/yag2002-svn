@@ -79,7 +79,7 @@ class NetworkSoundCodec
 
         //! Decode incoming compressed sound paket into given sample queue, the samples are multiplied by 'gain'.
         //! Returns false if a queue overflow occurs ( see setMaxDecodeQueueSize ).
-        bool                                        decode( char* p_bitbuffer, unsigned int length, std::queue< short , std::deque< short > >& samplequeue, float gain = 1.0f );
+        bool                                        decode( char* p_bitbuffer, unsigned int length, std::queue< short >& samplequeue, float gain = 1.0f );
 
     protected:
 

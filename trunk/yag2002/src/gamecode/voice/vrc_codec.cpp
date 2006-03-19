@@ -35,10 +35,13 @@
 namespace vrc
 {
 
+// threshold for detection of silent periods in voice data during encoding ( about 30% of max amp )
+#define SILENCE_DETECT_THRESHOLD    1200.0f
+
 NetworkSoundCodec::NetworkSoundCodec() :
 _p_mode( NULL ),
 _p_codecEncoderState( NULL ),
-_encoderQuality( 8 ),
+_encoderQuality( 9 ),
 _encoderComplexity( 5 ),
 _p_codecDecoderState( NULL ),
 _enh( 1 ),
@@ -102,21 +105,21 @@ void NetworkSoundCodec::setupEncoder()
     assert( ( _p_codecEncoderState == NULL ) && "encoder already initialized" );
 
     int enabled  = 1;
-
-    // setup preprocessor
-    _p_preprocessorState = speex_preprocess_state_init( CODEC_FRAME_SIZE, _sampleRate );
-    speex_preprocess_ctl( _p_preprocessorState, SPEEX_PREPROCESS_SET_DENOISE, &enabled );
-    speex_preprocess_ctl( _p_preprocessorState, SPEEX_PREPROCESS_SET_VAD, &enabled );
-
     // setup encoder
     _p_codecEncoderState = speex_encoder_init( _p_mode );
     speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_QUALITY, &_encoderQuality );
     speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_COMPLEXITY, &_encoderComplexity );
     speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_SAMPLING_RATE, &_sampleRate );
-    int disable = 0;
-    speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_VBR, &disable );
+    speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_VBR, &enabled );
     speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_DTX, &enabled );
     speex_bits_init( &_encoderBits );
+
+    // setup preprocessor
+    int framesize;
+    speex_encoder_ctl( _p_codecEncoderState, SPEEX_GET_FRAME_SIZE, &framesize );
+    _p_preprocessorState = speex_preprocess_state_init( framesize, _sampleRate );
+    speex_preprocess_ctl( _p_preprocessorState, SPEEX_PREPROCESS_SET_DENOISE, &enabled );
+    speex_preprocess_ctl( _p_preprocessorState, SPEEX_PREPROCESS_SET_VAD, &enabled );
 }
 
 void NetworkSoundCodec::setupDecoder()
@@ -175,19 +178,14 @@ unsigned int NetworkSoundCodec::encode( short* p_soundbuffer, unsigned int lengt
         log_debug << "*** sound codec: encoder had to limit requested buffer length to defined maximum: " << CODEC_MAX_BUFFER_SIZE << std::endl;
     }
 
+    // copy and gain the input
+    for ( unsigned int cnt = 0; cnt < length; ++cnt )
+        _p_inputBuffer[ cnt ] = static_cast< float >( p_soundbuffer[ cnt ] ) * gain;
+
+    // encode
     int encodedbytes = 0;
-    // preprocess input before encoding, encode only when speech is detected
-    int prec = speex_preprocess( _p_preprocessorState, p_soundbuffer, NULL );
-    if ( prec > 0 )
     {
         speex_bits_reset( &_encoderBits );
-
-        // copy and gain input data to encoder buffer
-        int numsamples = 0;
-        speex_encoder_ctl( _p_codecEncoderState, SPEEX_GET_FRAME_SIZE, &numsamples );
-        for ( int cnt = 0; cnt < numsamples; ++cnt )
-            _p_inputBuffer[ cnt ] = static_cast< float >( p_soundbuffer[ cnt ] ) * gain;
-
         speex_encode( _p_codecEncoderState, _p_inputBuffer, &_encoderBits );
         int nb = speex_bits_nbytes( &_encoderBits );
         encodedbytes = speex_bits_write( &_encoderBits, p_bitbuffer, nb );
@@ -196,7 +194,7 @@ unsigned int NetworkSoundCodec::encode( short* p_soundbuffer, unsigned int lengt
     return static_cast< unsigned int >( encodedbytes );
 }
 
-bool NetworkSoundCodec::decode( char* p_bitbuffer, unsigned int length, std::queue< short , std::deque< short > >& samplequeue, float gain )
+bool NetworkSoundCodec::decode( char* p_bitbuffer, unsigned int length, std::queue< short >& samplequeue, float gain )
 {
     assert( _p_codecDecoderState && "decoder has not been created!" );
 
@@ -210,7 +208,9 @@ bool NetworkSoundCodec::decode( char* p_bitbuffer, unsigned int length, std::que
     int res = speex_decode_int( _p_codecDecoderState, &_decoderBits, _p_outputBuffer );
     if ( res == 0 )
     {
-        for ( unsigned short cnt = 0; cnt < CODEC_FRAME_SIZE; ++cnt )
+        int framesize = 0;
+        speex_decoder_ctl( _p_codecDecoderState, SPEEX_GET_FRAME_SIZE, &framesize ); 
+        for ( unsigned short cnt = 0; cnt < framesize; ++cnt )
             samplequeue.push( static_cast< float >( _p_outputBuffer[ cnt ] ) * gain );
     }
 

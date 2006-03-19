@@ -78,6 +78,9 @@ class VoiceReceiver : public BaseNetworkSoundImplementation
         typedef std::map< RNReplicaNet::Transport*, SoundNode* > SenderMap;
         SenderMap                                   _soundNodeMap;
 
+        //! Unique sender ID for connecting senders
+        unsigned int                                _senderID;
+
         //! UDP Transport
         RNReplicaNet::Transport*                    _p_udpTransport;
 

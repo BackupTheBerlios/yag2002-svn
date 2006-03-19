@@ -36,7 +36,7 @@
 namespace vrc
 {
 
-typedef std::queue< short, std::deque< short > > SoundSampleQueue;
+typedef std::queue< short > SoundSampleQueue;
 
 //! Class for network sound related exceptions
 class NetworkSoundExpection : public std::runtime_error
@@ -109,15 +109,17 @@ class BaseNetworkSoundImplementation
 #define NETWORKSOUND_PAKET_TYPE_VOICE_DATA      0x0070  /* voice data buffer */
 
 //! Maximal data in _p_buffer ( in bytes ) in a voice paket
-#define VOICE_PAKET_MAX_BUF_SIZE                508
+#define VOICE_PAKET_MAX_BUF_SIZE                500
 //! Voice paket header size ( in bytes )
-#define VOICE_PAKET_HEADER_SIZE                 8
+#define VOICE_PAKET_HEADER_SIZE                 12
+//! The total paket size must not exceed 512 bytes!
 struct VoicePaket
 {
     unsigned int        _paketStamp;        // stamp for detecting lost pakets
+    unsigned int        _senderID;          // unique sender ID, 0 means unassigned
     unsigned short      _typeId;            // paket id
     unsigned short      _length;            // buffer length
-    char                _p_buffer[ VOICE_PAKET_MAX_BUF_SIZE ];          // this buffer must not exceed 508 bytes
+    char                _p_buffer[ VOICE_PAKET_MAX_BUF_SIZE ];
 };
 
 } // namespace vrc

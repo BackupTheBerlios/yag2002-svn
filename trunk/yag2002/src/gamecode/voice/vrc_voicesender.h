@@ -52,6 +52,9 @@ class VoiceSender : public BaseNetworkSoundImplementation, public BaseVoiceInput
 
         virtual                                     ~VoiceSender();
         
+        //! Returns flase if the sender is dead, i.e. it had lost connection to receiver
+        inline bool                                 isAlive();
+
     protected:
 
         //! Initialize the voice server
@@ -102,8 +105,19 @@ class VoiceSender : public BaseNetworkSoundImplementation, public BaseVoiceInput
         //! Paket stamp for voice transmission
         unsigned int                                _paketStamp;
 
+        //! Unique sender ID retrieved from receiver
+        unsigned int                                _senderID;
+
+        //! Alive flag set when the sender loses the connection to receiver
+        bool                                        _isAlive;
+
     friend class BaseVoiceInput::FCaptureInput;
 };
+
+inline bool VoiceSender::isAlive()
+{
+    return _isAlive;
+}
 
 } // namespace vrc
 

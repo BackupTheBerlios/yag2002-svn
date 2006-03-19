@@ -109,6 +109,9 @@ class BaseVoiceInput
         //! Identifies whether the input is grabbed ( reflects the state set by 'stop' )
         bool                                        _active;
 
+        //! Used for getting access to raw sound data
+        unsigned int                                _lastSoundTrackPos;
+
         //! Registered stream sinks
         std::vector< FCaptureInput* >               _sinks;
 };
@@ -123,6 +126,8 @@ class VoiceMicrophoneInput: public BaseVoiceInput
 
         virtual                                     ~VoiceMicrophoneInput();
         
+    protected:
+
         //! Initialize the microphone input
         void                                        initialize() throw( NetworkSoundExpection );
 
@@ -131,11 +136,6 @@ class VoiceMicrophoneInput: public BaseVoiceInput
 
         //! Stop / continue grabbing
         void                                        stop( bool st );
-
-    protected:
-
-        //! Used for getting access to raw sound data
-        unsigned int                                _lastSoundTrackPos;
 };
 
 //! Class for capturing file as input
@@ -148,6 +148,8 @@ class VoiceFileInput: public BaseVoiceInput
 
         virtual                                     ~VoiceFileInput();
         
+    protected:
+
         //! Initialize the file input
         void                                        initialize() throw( NetworkSoundExpection );
 
@@ -156,11 +158,6 @@ class VoiceFileInput: public BaseVoiceInput
 
         //! Stop / continue grabbing
         void                                        stop( bool st );
-
-    protected:
-
-        //! Used for getting access to raw sound data
-        unsigned int                                _lastSoundTrackPos;
 
         //! File to be captured as input
         std::string                                 _file;
