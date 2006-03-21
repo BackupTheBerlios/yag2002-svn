@@ -45,7 +45,7 @@ namespace vrc
 
 
 //! Codec class
-//! Note: This codec class uses Speex in narrow mode
+//! Note: This codec class uses Speex in wide mode
 class NetworkSoundCodec
 {
     public:
@@ -53,10 +53,10 @@ class NetworkSoundCodec
                                                     NetworkSoundCodec();
 
         virtual                                     ~NetworkSoundCodec();
-        
+
         //! Setup Encoder
         void                                        setupEncoder();
-    
+
         //! All incomming decoded samples are dropped when the sample queue is bigger than a maximum size set by this method.
         //! The default is CODEC_MAX_BUFFER_SIZE
         void                                        setMaxDecodeQueueSize( unsigned int size );
@@ -66,7 +66,7 @@ class NetworkSoundCodec
 
         //! Set decoder complexity in range [ 1 ... 10 ], default is 5
         void                                        setEncoderComplexity( unsigned int c );
-        
+
         //! Encode 'length' number of raw sound data ( of type short ) to a compressed paket stored in p_bitbuffer, the samples are multiplied by 'gain'.
         //! This method returns the count of bytes needed for encoding. The caller must ensure that p_bitbuffer is big enough.
         unsigned int                                encode( short* p_soundbuffer, unsigned int length, char* p_bitbuffer, float gain = 1.0f );
@@ -91,7 +91,7 @@ class NetworkSoundCodec
 
         //! Encoder State
         void*                                       _p_codecEncoderState;
-                
+
         //! Encoder bit structure
         SpeexBits                                   _encoderBits;
 
@@ -103,7 +103,7 @@ class NetworkSoundCodec
 
         //! Decoder State
         void*                                       _p_codecDecoderState;
-        
+
         //! Decoder bit structure
         SpeexBits                                   _decoderBits;
 

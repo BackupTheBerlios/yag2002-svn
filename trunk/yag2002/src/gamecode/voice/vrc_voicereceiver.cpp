@@ -366,7 +366,8 @@ void VoiceReceiver::update( float deltaTime )
                 if ( !p_soundnode->_p_codec->decode( p_data->_p_buffer, p_data->_length, *p_soundnode->_p_sampleQueue, _outputGain ) )
                 {
                     log_debug << "decoder queue overrun, flushing queue!" << std::endl;
-                    p_soundnode->_p_sampleQueue->c.clear();
+                    delete p_soundnode->_p_sampleQueue;
+                    p_soundnode->_p_sampleQueue = new SoundSampleQueue;
                 }
 
                 // log_verbose << "encoded size: " << p_data->_length << std::endl;
@@ -379,7 +380,7 @@ void VoiceReceiver::update( float deltaTime )
                 p_data->_length = 0;
                 p_data->_typeId = NETWORKSOUND_PAKET_TYPE_CON_PONG;
                 p_sender->SendReliable( reinterpret_cast< char* >( p_data ), VOICE_PAKET_HEADER_SIZE  + p_data->_length );
-                
+
                 // log_verbose << "got ping, sending pong to sender" << std::endl;
 
                 // reset the ping timer

@@ -126,7 +126,7 @@ class ChatGuiBox
         CEGUI::StaticText*                          getShortMsgBox();
 
         //! Typedef for a tab pane queue
-        typedef std::queue< ChatGuiBox::ChannelTabPane* >  TabQueue;
+        typedef std::queue< ChannelTabPane* >       TabQueue;
 
         //! A queue for removing tab panes on next update
         TabQueue                                    _queueRemoveTabPane;

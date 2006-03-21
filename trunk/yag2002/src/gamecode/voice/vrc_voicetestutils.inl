@@ -135,7 +135,7 @@ bool WaveWriter< DataTypeT >::write( const std::string& filename, const std::vec
 
     writeHeader( file, data.size() );
 
-    std::vector< DataTypeT >::const_iterator p_beg = data.begin(), p_end = data.end();
+    typename std::vector< DataTypeT >::const_iterator p_beg = data.begin(), p_end = data.end();
     for ( ; p_beg != p_end; ++p_beg )
         writeSample( file, *p_beg );
 

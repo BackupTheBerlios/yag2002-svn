@@ -211,7 +211,7 @@ bool NetworkSoundCodec::decode( char* p_bitbuffer, unsigned int length, std::que
         int framesize = 0;
         speex_decoder_ctl( _p_codecDecoderState, SPEEX_GET_FRAME_SIZE, &framesize ); 
         for ( unsigned short cnt = 0; cnt < framesize; ++cnt )
-            samplequeue.push( static_cast< float >( _p_outputBuffer[ cnt ] ) * gain );
+            samplequeue.push( static_cast< short >( static_cast< float >( _p_outputBuffer[ cnt ] ) * gain ) );
     }
 
     return true;

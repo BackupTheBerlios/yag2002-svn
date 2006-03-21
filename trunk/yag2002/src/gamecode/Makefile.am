@@ -4,7 +4,7 @@ noinst_PROGRAMS = vrc
 vrc_LDFLAGS = -L$(top_builddir)/src/framework/.libs 
 
 vrc_LDADD = -lpthread -lYAF3D $(CEGUI_LIBS) $(SDL_LIBS) $(OPENAL_LIBS) $(VORBIS_LIBS)  $(OSGAL_LIBS) $(OSGSDL_LIBS) $(AM_LDFLAGS) \
-$(OSGCAL_LIBS) $(CAL3D_LIBS) -losgCal -lNewton -lRNReplicaNet -lRNXPSession -lRNXPURL -lRNXPCompression -lRNXPSockets -lRNPlatform -lfmodex 
+$(OSGCAL_LIBS) $(CAL3D_LIBS) -losgCal -lNewton -lRNReplicaNet -lRNXPSession -lRNXPURL -lRNXPCompression -lRNXPSockets -lRNPlatform -lfmodex -lspeex -lGLOD
 
 vrc_SOURCES = vrc_gameutils.cpp \
 			vrc_main.cpp \

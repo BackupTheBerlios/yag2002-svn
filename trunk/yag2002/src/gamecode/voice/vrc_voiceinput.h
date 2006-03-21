@@ -49,7 +49,7 @@ class BaseVoiceInput
                                                     BaseVoiceInput( FMOD::System* p_sndsystem = NULL, NetworkSoundCodec* p_codec = NULL );
 
         virtual                                     ~BaseVoiceInput();
-        
+
         //! Initialize the voice input
         virtual void                                initialize() throw( NetworkSoundExpection );
 
@@ -66,11 +66,11 @@ class BaseVoiceInput
         class FCaptureInput
         {
             public:
-    
+
                                                         FCaptureInput() {}
 
-                                                        ~FCaptureInput() {}
-    
+                virtual                                 ~FCaptureInput() {}
+
                 //! Implement the functor in your derived class
                 //! p_encodedaudio contains the encoded audio data, length is the count of encoded bytes.
                 virtual void                            operator ()( char* p_encodedaudio, unsigned short length ) = 0;
