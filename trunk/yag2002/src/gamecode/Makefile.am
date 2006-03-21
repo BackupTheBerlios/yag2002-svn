@@ -95,7 +95,15 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			visuals/vrc_pointlight.cpp \
 			visuals/vrc_skybox.cpp \
 			visuals/vrc_spotlight.cpp \
-			visuals/vrc_water.cpp
+			visuals/vrc_water.cpp \
+			voice/vrc_codec.cpp \
+			voice/vrc_netvoice.cpp \
+			voice/vrc_networksoundimpl.cpp \
+			voice/vrc_voiceinput.cpp \
+			voice/vrc_voicenetwork.cpp \
+			voice/vrc_voicereceiver.cpp \
+			voice/vrc_voicesender.cpp \
+			voice/vrc_voicetestutils.cpp
 
 install-exec-local:
 	$(INSTALL_PROGRAM) $(top_builddir)/src/gamecode/vrc $(top_srcdir)/bin/linux
