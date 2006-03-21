@@ -1059,6 +1059,15 @@
 				<File
 					RelativePath="..\..\..\..\src\gamecode\voice\vrc_voicesender.h">
 				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\voice\vrc_voicetestutils.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\voice\vrc_voicetestutils.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\voice\vrc_voicetestutils.inl">
+				</File>
 			</Filter>
 		</Filter>
 		<File
