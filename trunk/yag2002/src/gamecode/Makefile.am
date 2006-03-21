@@ -13,6 +13,7 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			gui/vrc_dialoglevelselect.cpp \
 			gui/vrc_dialogplayercfg.cpp \
 			gui/vrc_dialogsettings.cpp \
+			gui/vrc_microinput.cpp \
 			gui/vrc_intro.cpp \
 			gui/vrc_menu.cpp \
 			gui/vrc_mapview.cpp \
@@ -86,11 +87,13 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			tools/console/vrc_console.cpp \
 			tools/console/vrc_consoleiocin.cpp \
 			tools/console/vrc_consoleiogui.cpp \
+			tools/console/vrc_cmdrenderingmode.cpp \
 			visuals/vrc_camera.cpp \
 			visuals/vrc_candle.cpp \
 			visuals/vrc_fog.cpp \
 			visuals/vrc_lightmanager.cpp \
 			visuals/vrc_mesh.cpp \
+			visuals/vrc_lod.cpp \
 			visuals/vrc_observer.cpp \
 			visuals/vrc_pointlight.cpp \
 			visuals/vrc_skybox.cpp \
