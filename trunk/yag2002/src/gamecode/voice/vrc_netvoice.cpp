@@ -36,9 +36,6 @@
 #include "vrc_voiceinput.h"
 #include "vrc_codec.h"
 
-//! TODO: remove this later
-#include "vrc_voicetestutils.h"
-
 namespace vrc
 {
 
@@ -59,21 +56,10 @@ _active( false )
     getAttributeManager().addAttribute( "testSoundFile",   _testFile   );
 }
 
-//! TODO: remove this test object later
-// ************************************
-//CodecTest* s_p_codecTest = NULL;
-// ************************************
-
 EnNetworkVoice::~EnNetworkVoice()
 {
     if ( _active )
         destroyVoiceChat();
-
-//! TODO: remove this test later
-// ******************************
-    //if ( s_p_codecTest )
-    //    delete s_p_codecTest;
-// ******************************
 }
 
 void EnNetworkVoice::handleNotification( const yaf3d::EntityNotification& notification )
@@ -115,6 +101,8 @@ void EnNetworkVoice::setupNetworkVoice()
         float outputgain;
         yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_OUTPUT_GAIN, outputgain );
         yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_INPUT_GAIN, _inputGain );
+        unsigned int  inputdev;
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_INPUT_DEVICE, inputdev );
 
         // is voice chat already active?
         if ( !_active )
@@ -126,6 +114,7 @@ void EnNetworkVoice::setupNetworkVoice()
             // just update the input and output gain
             _p_soundInput->setInputGain( _inputGain );
             _p_receiver->setOutputGain( outputgain );
+            _p_soundInput->setInputDevice( inputdev );
         }
     }
     else if ( !voicechatenable && _active )
@@ -137,12 +126,6 @@ void EnNetworkVoice::setupNetworkVoice()
 void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
 {
     assert( !_active && "trying to destroy voice chat which has already been created before!" );
-
-////! TODO: remove this test later
-//// ******************************
-//    s_p_codecTest = new CodecTest( "C:\\temp\\codectestrip.wav", _testFile );
-//    s_p_codecTest->initialize();
-//// ******************************
 
     try
     {
@@ -263,11 +246,6 @@ void EnNetworkVoice::destroyVoiceChat()
 
 void EnNetworkVoice::updateEntity( float deltaTime )
 {
-//! TODO: remove this test later
-// ******************************
-//    s_p_codecTest->update();
-// ******************************
-
     // update the voice network state
     _p_voiceNetwork->update( deltaTime );
 
@@ -320,7 +298,10 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
     if ( joining )
     {
         if ( hit != _sendersMap.end() )
-            log_error << "EnNetworkVoice: entity is already in internal hotspot map!" << std::endl;
+        {
+            log_warning << "EnNetworkVoice: entity is already in internal hotspot map!" << std::endl;
+            return;
+        }
 
         // determine receiver's ip
         VoiceNetwork::VoiceClientMap::const_iterator vmapend = _p_voiceNetwork->getHotspot().end();
@@ -345,7 +326,10 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
     else
     {
         if ( hit == _sendersMap.end() )
-            log_error << "EnNetworkVoice: entity is not in internal hotspot map!" << std::endl;
+        {
+            log_warning << "EnNetworkVoice: entity is not in internal hotspot map!" << std::endl;
+            return;
+        }
 
         // destroy the sender
         hit->second->shutdown();
