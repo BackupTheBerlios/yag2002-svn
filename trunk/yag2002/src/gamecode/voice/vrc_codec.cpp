@@ -32,11 +32,13 @@
 #include "vrc_codec.h"
 #include "vrc_networksoundimpl.h"
 
+#include "vrc_voicetestutils.h"
+
 namespace vrc
 {
 
-// threshold for detection of silent periods in voice data during encoding ( about 30% of max amp )
-#define SILENCE_DETECT_THRESHOLD    1200.0f
+// power threshold for detection of silent periods in voice data during encoding
+#define VOICE_ACTIVATION_THRESHOLD  0.0015f
 
 NetworkSoundCodec::NetworkSoundCodec() :
 _p_mode( NULL ),
@@ -56,7 +58,7 @@ _maxDecodeQueueSize( CODEC_MAX_BUFFER_SIZE )
         log_error << "NetworkSoundCodec: sample rate " << _sampleRate << " is too high, valid sample rate range is [ 6000 ... 48000 ]" << std::endl;
         return;
     }
-        
+
     if ( _sampleRate > 25000 )
     {
         modeID = SPEEX_MODEID_UWB;
@@ -178,18 +180,19 @@ unsigned int NetworkSoundCodec::encode( short* p_soundbuffer, unsigned int lengt
         log_debug << "*** sound codec: encoder had to limit requested buffer length to defined maximum: " << CODEC_MAX_BUFFER_SIZE << std::endl;
     }
 
-    // copy and gain the input
-    for ( unsigned int cnt = 0; cnt < length; ++cnt )
-        _p_inputBuffer[ cnt ] = static_cast< float >( p_soundbuffer[ cnt ] ) * gain;
-
     // encode
     int encodedbytes = 0;
-    {
-        speex_bits_reset( &_encoderBits );
-        speex_encode( _p_codecEncoderState, _p_inputBuffer, &_encoderBits );
-        int nb = speex_bits_nbytes( &_encoderBits );
-        encodedbytes = speex_bits_write( &_encoderBits, p_bitbuffer, nb );
-    }
+    int vad = speex_preprocess( _p_preprocessorState, p_soundbuffer, NULL );
+
+    // copy and gain the preprocessed input
+    for ( unsigned int cnt = 0; cnt < length; ++cnt )        
+        _p_inputBuffer[ cnt ] = static_cast< float >( p_soundbuffer[ cnt ]  ) * gain;
+
+    // encode
+    speex_bits_reset( &_encoderBits );
+    speex_encode( _p_codecEncoderState, _p_inputBuffer, &_encoderBits );
+    int nb = speex_bits_nbytes( &_encoderBits );
+    encodedbytes = speex_bits_write( &_encoderBits, p_bitbuffer, nb );
 
     return static_cast< unsigned int >( encodedbytes );
 }
