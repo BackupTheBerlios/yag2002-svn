@@ -227,7 +227,7 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
 
             // input gain
             _p_voiceInputGain = static_cast< CEGUI::Scrollbar* >( p_paneSoundVoice->getChild( SDLG_PREFIX "sb_voiceinputgain" ) );
-            _p_voiceInputGain->setDocumentSize( 2.0f ); // the scrollbar works in range 0...2 now
+            _p_voiceInputGain->setDocumentSize( 30.0f ); // the scrollbar works in range 0...2 now
             _p_voiceInputGain->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onVoiceInputGainChanged, this ) );
 
             // output gain
