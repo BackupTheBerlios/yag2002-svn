@@ -62,6 +62,9 @@ class BaseVoiceInput
         //! Set input gain
         virtual void                                setInputGain( float gain );
 
+        //! Set input device given its ID
+        virtual void                                setInputDevice( unsigned int deviceid ) {}
+
         //! Functor for grabbing the encoded audio data.
         class FCaptureInput
         {
@@ -133,6 +136,9 @@ class VoiceMicrophoneInput: public BaseVoiceInput
 
         //! Update the input and encoder, call this only once per simulation step.
         void                                        update();
+
+        //! Set input device given its ID
+        void                                        setInputDevice( unsigned int deviceid );
 
         //! Stop / continue grabbing
         void                                        stop( bool st );

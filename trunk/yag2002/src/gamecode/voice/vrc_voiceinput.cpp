@@ -273,13 +273,20 @@ void VoiceMicrophoneInput::stop( bool st )
 {
     assert( _p_sound && "input is not initialized!" );
 
-    if ( !st )
-        _p_soundSystem->recordStart( _p_sound, true );
-    else
+    if ( st )
         _p_soundSystem->recordStop();
+    else
+        _p_soundSystem->recordStart( _p_sound, true );
 
     // set active flag
     _active = !st;
+}
+
+void VoiceMicrophoneInput::setInputDevice( unsigned int deviceid )
+{
+    _p_soundSystem->recordStop();
+    _p_soundSystem->setRecordDriver( deviceid );
+    _p_soundSystem->recordStart( _p_sound, true );
 }
 
 // implementation of file input
