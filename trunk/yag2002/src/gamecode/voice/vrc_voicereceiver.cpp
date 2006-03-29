@@ -211,7 +211,7 @@ FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, 
             log_verbose << "playback buffer overrun: " << samplequeue.size() << ", " << cnt << std::endl;
             cnt = samplequeue.size();
             // erase the remaining buffer
-            memset( p_sndbuffer + cnt, 0, ( datalen - cnt ) * sizeof( short ) );
+            memset( p_sndbuffer + cnt, 0, datalen - ( cnt * sizeof( VOICE_DATA_FORMAT_TYPE ) ) );
             log_verbose << "playback buffer corrected" << std::endl;
         }
         for ( ; cnt > 0; --cnt )
