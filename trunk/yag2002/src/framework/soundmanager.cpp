@@ -145,12 +145,13 @@ void SoundManager::initialize() throw ( SoundException )
         throw SoundException( "Problem allocating required software mixed channels, reason: " + std::string( FMOD_ErrorString( result ) ) );
 
     // try to init hardware channels
-    result = _p_system->setHardwareChannels( 32, 64, 32, 64 );
+    result = _p_system->setHardwareChannels( 30, 62, 30, 62 );
     if ( result != FMOD_OK )
-        result = _p_system->setHardwareChannels( 16, 32, 16, 32 );
-            if ( result != FMOD_OK )
-                log_warning << "*** SoundManager: cannot allocate at least 16 hardware sound channels" << std::endl;
-
+    {
+        result = _p_system->setHardwareChannels( 14, 30, 14, 30 );
+        if ( result != FMOD_OK )
+            log_warning << "*** SoundManager: cannot allocate at least 16 hardware sound channels" << std::endl;
+    }
 
     result = _p_system->init( SOUND_MAX_VIRTUAL_SOURCES, FMOD_INIT_NORMAL, 0 );
     if ( result != FMOD_OK )
