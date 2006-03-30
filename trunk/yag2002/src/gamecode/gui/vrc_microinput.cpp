@@ -98,7 +98,6 @@ void MicrophoneInput::getInputDevices( MicrophoneInput::InputDeviceMap& devices 
     if ( result != FMOD_OK )
         return;
 
-    int inputdevice = -1;
     for ( int count = 0; count < numdrivers; ++count )
     {
         char name[ 256 ];
@@ -163,7 +162,7 @@ void MicrophoneInput::beginMicroTest()
     memset( &createsoundexinfo, 0, sizeof( FMOD_CREATESOUNDEXINFO ) );
     createsoundexinfo.cbsize            = sizeof( FMOD_CREATESOUNDEXINFO );
     createsoundexinfo.decodebuffersize  = 0;
-    createsoundexinfo.length            = MICINPUT_SAMPLE_RATE * sizeof( short ) * 0.5f; // buffer for 0.5 seconds recording 
+    createsoundexinfo.length            = MICINPUT_SAMPLE_RATE * sizeof( short ) / 2; // buffer for 0.5 seconds recording 
     createsoundexinfo.numchannels       = channels;
     createsoundexinfo.defaultfrequency  = MICINPUT_SAMPLE_RATE;
     createsoundexinfo.format            = MICINPUT_SOUND_FORMAT;
