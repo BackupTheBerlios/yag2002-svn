@@ -48,7 +48,8 @@ namespace yaf3d
 struct EntityAttributeType
 {
         //! Attribute type
-        enum Type {
+        enum Type 
+        {
             UNKNOWN = 0,
             FLOAT,
             BOOL,
@@ -61,14 +62,14 @@ struct EntityAttributeType
 };
 
 //! Base of attribute
-class EntityAttributeBase
+class BaseEntityAttribute
 {
 
     public:
 
-                                                    EntityAttributeBase() {}
+                                                    BaseEntityAttribute() {}
                                                     
-        virtual                                     ~EntityAttributeBase() {}
+        virtual                                     ~BaseEntityAttribute() {}
 
         /**
         * Get attribute name
@@ -92,7 +93,7 @@ class EntityAttributeBase
 
 //! One single attribute holding name and a reference to an existing variable
 template< class TypeT >
-class EntityAttribute : public EntityAttributeBase
+class EntityAttribute : public BaseEntityAttribute
 {
 
 
@@ -178,7 +179,7 @@ class AttributeManager
         * Get attribute list
         * \return                                   List of attributes
         */
-        std::vector< EntityAttributeBase* >&        getAttributes();
+        std::vector< BaseEntityAttribute* >&        getAttributes();
 
         /**
         * Get all attribute names and values as string.
@@ -210,7 +211,7 @@ class AttributeManager
         * \param attribute                          The value of this Attribute is set to named local attribute.
         * \return                                   true if the value has been found, otherwise false
         */
-        bool                                        setAttributeValue( const std::string& name, const EntityAttributeBase& attribute );
+        bool                                        setAttributeValue( const std::string& name, const BaseEntityAttribute& attribute );
 
         /**
         * Set attribute value given its name, type ( see EntityAttributeType ) and value, all as strings
@@ -244,7 +245,7 @@ class AttributeManager
     protected:
 
         //! Attributes
-        std::vector< EntityAttributeBase* >         _attributes;
+        std::vector< BaseEntityAttribute* >         _attributes;
 };
 
 #include "attributemanager.inl"

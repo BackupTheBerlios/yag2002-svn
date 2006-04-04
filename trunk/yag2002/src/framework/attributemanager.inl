@@ -75,7 +75,7 @@ const std::type_info& EntityAttribute< TypeT >::getTypeInfo() const
 }
 
 
-inline std::vector< EntityAttributeBase* >& AttributeManager::getAttributes()
+inline std::vector< BaseEntityAttribute* >& AttributeManager::getAttributes()
 {
     return _attributes;
 }
@@ -91,8 +91,10 @@ template< class TypeT >
 bool AttributeManager::getAttributeValue( const std::string& name, TypeT& value ) 
 {
     std::vector< EntityAttributeBase* >::iterator p_attr = _attributes.begin(), p_end = _attributes.end();
-    while ( p_attr != p_end ) {
-        if ( ( *p_attr )->getName() == name ) {
+    while ( p_attr != p_end ) 
+    {
+        if ( ( *p_attr )->getName() == name ) 
+        {
             assert( typeid( TypeT ) == ( *p_attr )->getTypeInfo() && "*** wrong type for requested attribute!" );
             value = ( dynamic_cast< EntityAttribute< TypeT >* >( *p_attr ) )->getValue();
             return true;
@@ -106,9 +108,11 @@ bool AttributeManager::getAttributeValue( const std::string& name, TypeT& value 
 template< class TypeT >
 bool AttributeManager::setAttributeValue( const std::string& name, TypeT value ) 
 {
-    std::vector< EntityAttributeBase* >::iterator p_attr = _attributes.begin(), p_end = _attributes.end();
-    while ( p_attr != p_end ) {
-        if ( ( *p_attr )->getName() == name ) {
+    std::vector< BaseEntityAttribute* >::iterator p_attr = _attributes.begin(), p_end = _attributes.end();
+    while ( p_attr != p_end ) 
+    {
+        if ( ( *p_attr )->getName() == name ) 
+        {
             if ( typeid( TypeT ) != ( *p_attr )->getTypeInfo() )
             {
                 log_error << "*** wrong type for requested attribute '" << name << "', skipping!" << std::endl;

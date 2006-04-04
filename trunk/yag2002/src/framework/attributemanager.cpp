@@ -36,10 +36,10 @@ namespace yaf3d
 
 void AttributeManager::getAttributesAsString( std::vector< std::pair< std::string, std::string > >& attributes )
 {
-    std::vector< EntityAttributeBase* >::iterator p_beg = _attributes.begin(), p_end = _attributes.end();
+    std::vector< BaseEntityAttribute* >::iterator p_beg = _attributes.begin(), p_end = _attributes.end();
     for ( ; p_beg != p_end; ++p_beg )
     {
-        EntityAttributeBase* p_attribute = *p_beg;
+        BaseEntityAttribute* p_attribute = *p_beg;
         std::stringstream strvalue;
         unsigned int type = p_attribute->getType();
         switch ( type ) 
@@ -145,7 +145,7 @@ bool AttributeManager::setAttributeValue( const std::string &name, const std::st
 
 bool AttributeManager::setAttributeValueByString( const std::string& name, const std::string& valuestring )
 {        
-    std::vector< EntityAttributeBase* >::iterator p_beg = _attributes.begin(), p_end = _attributes.end();
+    std::vector< BaseEntityAttribute* >::iterator p_beg = _attributes.begin(), p_end = _attributes.end();
     for ( ; p_beg != p_end; ++p_beg )
     {
         if ( ( *p_beg )->getName() == name )
@@ -157,7 +157,7 @@ bool AttributeManager::setAttributeValueByString( const std::string& name, const
         return false;
     }
 
-    EntityAttributeBase* p_attribute = *p_beg;
+    BaseEntityAttribute* p_attribute = *p_beg;
     std::stringstream strvalue;
     strvalue << valuestring;
     unsigned int type = p_attribute->getType();
@@ -215,7 +215,7 @@ bool AttributeManager::setAttributeValueByString( const std::string& name, const
     return true;
 }
 
-bool AttributeManager::setAttributeValue( const std::string& name, const EntityAttributeBase& attribute )
+bool AttributeManager::setAttributeValue( const std::string& name, const BaseEntityAttribute& attribute )
 {
     unsigned int type = attribute.getType();
     switch ( type ) 
@@ -271,7 +271,7 @@ bool AttributeManager::setAttributeValue( const std::string& name, const EntityA
 
 void AttributeManager::removeAllAttributes()
 {
-    std::vector< EntityAttributeBase* >::iterator pp_attr = _attributes.begin(), p_end = _attributes.end();
+    std::vector< BaseEntityAttribute* >::iterator pp_attr = _attributes.begin(), p_end = _attributes.end();
     while ( pp_attr != p_end ) 
     {
         delete *pp_attr;
@@ -286,7 +286,7 @@ AttributeManager& AttributeManager::operator = ( AttributeManager& attr )
         return *this;
 
     // copy attribute values
-    std::vector< EntityAttributeBase* >::iterator p_beg = attr.getAttributes().begin(), p_end = attr.getAttributes().end();
+    std::vector< BaseEntityAttribute* >::iterator p_beg = attr.getAttributes().begin(), p_end = attr.getAttributes().end();
     for ( ; p_beg != p_end; ++p_beg )
         setAttributeValue( ( *p_beg )->getName(), **p_beg );
 
