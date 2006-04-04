@@ -157,8 +157,8 @@ std::string CmdEntityDump::dumpEntity( yaf3d::BaseEntity* p_entity, unsigned int
     dump += cpolicy + "\" />\n\n";
 
     yaf3d::AttributeManager& attrmgr = p_entity->getAttributeManager();
-    std::vector< yaf3d::EntityAttributeBase* >& attributes = attrmgr.getAttributes();
-    std::vector< yaf3d::EntityAttributeBase* >::iterator p_beg = attributes.begin(), p_end = attributes.end();
+    std::vector< yaf3d::BaseEntityAttribute* >& attributes = attrmgr.getAttributes();
+    std::vector< yaf3d::BaseEntityAttribute* >::iterator p_beg = attributes.begin(), p_end = attributes.end();
 
     for ( ; p_beg != p_end; ++p_beg )
     {
