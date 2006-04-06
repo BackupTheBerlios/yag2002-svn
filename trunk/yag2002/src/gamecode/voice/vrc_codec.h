@@ -38,11 +38,8 @@
 namespace vrc
 {
 
-// codec samples per frame
-#define CODEC_FRAME_SIZE            320
-// maximum buffer size for encoding and decoding
+// maximum smaple buffer size for encoding and decoding
 #define CODEC_MAX_BUFFER_SIZE       16000
-
 
 //! Codec class
 //! Note: This codec class uses Speex in wide mode
@@ -69,6 +66,7 @@ class NetworkSoundCodec
 
         //! Encode 'length' number of raw sound data ( of type short ) to a compressed paket stored in p_bitbuffer, the samples are multiplied by 'gain'.
         //! This method returns the count of bytes needed for encoding. The caller must ensure that p_bitbuffer is big enough.
+        //! Note: p_soundbuffer is modified by this method ( preprocessing ) 
         unsigned int                                encode( short* p_soundbuffer, unsigned int length, char* p_bitbuffer, float gain = 1.0f );
 
         //! Setup Decoder
@@ -101,6 +99,9 @@ class NetworkSoundCodec
         //! [ 1 ... 10 ]
         int                                         _encoderComplexity;
 
+        //! Frame size for encoder
+        int                                         _encoderFrameSize;
+
         //! Decoder State
         void*                                       _p_codecDecoderState;
 
@@ -116,11 +117,14 @@ class NetworkSoundCodec
         //! Max size for decode queue
         unsigned int                                _maxDecodeQueueSize;
 
+        //! Frame size for decoder
+        int                                         _decoderFrameSize;
+
         //! Internal buffer for encoding sound data
         float                                       _p_inputBuffer[ CODEC_MAX_BUFFER_SIZE ];
 
         //! Internal buffer for getting access to decoded sound data
-        short                                       _p_outputBuffer[ CODEC_MAX_BUFFER_SIZE ];
+        float                                       _p_outputBuffer[ CODEC_MAX_BUFFER_SIZE ];
 };
 
 } // namespace vrc

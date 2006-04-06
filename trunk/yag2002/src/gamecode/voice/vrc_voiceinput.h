@@ -85,6 +85,9 @@ class BaseVoiceInput
 
     protected:
 
+        //! Encode and distribute samples
+        void                                        distributeSamples( void* const p_rawpointer1, void* const p_rawpointer2, unsigned int len1, unsigned int len2 );
+
         //! Sound system
         FMOD::System*                               _p_soundSystem;
 

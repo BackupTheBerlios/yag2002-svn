@@ -40,6 +40,9 @@
 namespace vrc
 {
 
+// codec samples per frame
+#define CODEC_FRAME_SIZE            320
+
 //**************************************************************
 //! TODO remove this test ripper
 std::queue< short > s_wavqueue;
@@ -111,6 +114,7 @@ VoiceReceiver::~VoiceReceiver()
 
 void VoiceReceiver::shutdown()
 {
+//! TODO: remove this rip code later
 //*******************************
     // write out the ripped wav file
     {
@@ -120,7 +124,7 @@ void VoiceReceiver::shutdown()
         {
             // write out the rip
             WaveWriterPCM16 wavwriter( VOICE_SAMPLE_RATE, WaveWriterPCM16::MONO );
-            wavwriter.write( "c:\\temp\\sender0-rip.wav", s_wavqueue );
+            wavwriter.write( yaf3d::Application::get()->getMediaPath() + std::string( "sender0-rip.wav" ), s_wavqueue );
         }
     }
 //*******************************
@@ -203,12 +207,10 @@ FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, 
     SoundSampleQueue& samplequeue = *p_soundnode->_p_sampleQueue;
     if ( !samplequeue.empty() )
     {
-        //log_verbose << "recv bytes: " << samplequeue.size() << std::endl;
-
         // handle buffer underrun
         if ( samplequeue.size() < cnt )
         {
-            log_verbose << "playback buffer overrun: " << samplequeue.size() << ", " << cnt << std::endl;
+            log_verbose << "playback buffer underrun: " << samplequeue.size() << ", " << cnt << std::endl;
             cnt = samplequeue.size();
             // erase the remaining buffer
             memset( p_sndbuffer + cnt, 0, datalen - ( cnt * sizeof( VOICE_DATA_FORMAT_TYPE ) ) );
@@ -218,17 +220,16 @@ FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, 
         {
             *p_sndbuffer++ = samplequeue.front();
 
-            //! TODO: remove this later, it's only for ripping to a test wave file
+//! TODO: remove this later, it's only for ripping to a test wave file
             s_wavqueue.push( samplequeue.front() );
 
             samplequeue.pop();
         }
 
     }
-    //! TODO: better turn off the sound when buffer is empty
     else
     {
-        memset( p_sndbuffer, 0, datalen );
+        log_verbose << "." << std::endl;
     }
 
     return FMOD_OK;
@@ -243,7 +244,7 @@ SoundNode* VoiceReceiver::createSoundNode()
     FMOD_CREATESOUNDEXINFO  createsoundexinfo;
     memset( &createsoundexinfo, 0, sizeof( FMOD_CREATESOUNDEXINFO ) );
     createsoundexinfo.cbsize            = sizeof( FMOD_CREATESOUNDEXINFO );    
-    createsoundexinfo.decodebuffersize  = CODEC_FRAME_SIZE; //! TODO: determine a good buffer size, too big sizes result in noise and echos
+    createsoundexinfo.decodebuffersize  = CODEC_FRAME_SIZE;
     createsoundexinfo.length            = VOICE_SAMPLE_RATE;
     createsoundexinfo.numchannels       = 1;
     createsoundexinfo.defaultfrequency  = VOICE_SAMPLE_RATE;
@@ -350,10 +351,12 @@ void VoiceReceiver::update( float deltaTime )
                 // drop obsolete packets
                 if ( p_data->_paketStamp < p_sendernode->_lastPaketStamp )
                 {
-                    log_debug << "  <- *** paket loss detected (stamps received/current)" << p_data->_paketStamp << "/" << p_sendernode->_lastPaketStamp << std::endl;
+                    std::stringstream msg;
+                    msg << "  <- *** paket loss detected (stamps received/current)" << p_data->_paketStamp << "/" << p_sendernode->_lastPaketStamp;
+                    log_debug << msg.str() << std::endl;
                     // update our stamp also when a loss has been detected
                     // currently we cannot know if there was an actual loss or an addition overflow occured in stamp variable
-                    // one possible to handle this issue would be that the protocol would support a sort of "reset stamp number"
+                    // one possible way to handle this issue would be that the protocol would support a sort of "reset stamp number"
                     p_sendernode->_lastPaketStamp = p_data->_paketStamp;
                     continue;
                 }
@@ -361,16 +364,12 @@ void VoiceReceiver::update( float deltaTime )
                 p_sendernode->_lastPaketStamp = p_data->_paketStamp;
 
                 // decode and enqueue the samples
-                SoundNode* p_soundnode = p_beg->second;
-
-                if ( !p_soundnode->_p_codec->decode( p_data->_p_buffer, p_data->_length, *p_soundnode->_p_sampleQueue, _outputGain ) )
+                if ( !p_sendernode->_p_codec->decode( p_data->_p_buffer, p_data->_length, *p_sendernode->_p_sampleQueue, _outputGain ) )
                 {
                     log_debug << "decoder queue overrun, flushing queue!" << std::endl;
-                    delete p_soundnode->_p_sampleQueue;
-                    p_soundnode->_p_sampleQueue = new SoundSampleQueue;
+                    delete p_sendernode->_p_sampleQueue;
+                    p_sendernode->_p_sampleQueue = new SoundSampleQueue;
                 }
-
-                // log_verbose << "encoded size: " << p_data->_length << std::endl;
             }
             break;
 
@@ -380,9 +379,6 @@ void VoiceReceiver::update( float deltaTime )
                 p_data->_length = 0;
                 p_data->_typeId = NETWORKSOUND_PAKET_TYPE_CON_PONG;
                 p_sender->SendReliable( reinterpret_cast< char* >( p_data ), VOICE_PAKET_HEADER_SIZE  + p_data->_length );
-
-                // log_verbose << "got ping, sending pong to sender" << std::endl;
-
                 // reset the ping timer
                 p_sendernode->_pingTimer = 0.0f;
             }

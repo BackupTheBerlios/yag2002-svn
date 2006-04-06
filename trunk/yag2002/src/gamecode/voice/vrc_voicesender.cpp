@@ -217,7 +217,7 @@ void VoiceSender::operator ()( char* p_encodedaudio, unsigned short length )
     _p_voicePaket->_senderID   = _senderID;
     _p_voicePaket->_length     = length;
     memcpy( _p_voicePaket->_p_buffer, p_encodedaudio, length );
-    _p_udpTransport->Send( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE + _p_voicePaket->_length );
+    _p_udpTransport->SendReliable( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE + _p_voicePaket->_length );
 }
 
 } // namespace vrc

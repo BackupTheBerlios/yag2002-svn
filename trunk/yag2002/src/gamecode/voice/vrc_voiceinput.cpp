@@ -56,6 +56,7 @@ _lastSoundTrackPos( 0 )
 
     if ( p_codec )
         _createCodec = false;
+
 }
 
 BaseVoiceInput::~BaseVoiceInput()
@@ -92,7 +93,7 @@ void BaseVoiceInput::initialize() throw( NetworkSoundExpection )
         //    throw NetworkSoundExpection( "Cannot set software format" );
 
         // we need only one single channel in sound system
-        result = _p_soundSystem->init( 1, FMOD_INIT_NORMAL, 0 );
+        result = _p_soundSystem->init( 1, FMOD_INIT_STREAM_FROM_UPDATE, 0 );
         if ( result != FMOD_OK )
             throw NetworkSoundExpection( "Cannot initialize sound system" );
     }
@@ -139,6 +140,42 @@ void BaseVoiceInput::registerStreamSink( FCaptureInput* p_functor, bool reg )
         _sinks.erase( p_beg );    
 }
 
+void BaseVoiceInput::distributeSamples( void* const p_rawpointer1, void* const p_rawpointer2, unsigned int len1, unsigned int len2 )
+{
+    // codec's encoder modifies the sample buffer, hence we need a sample temprary buffer
+    static char s_samplebuffer[ CODEC_MAX_BUFFER_SIZE ];
+
+    if ( p_rawpointer1 && len1 )
+    {
+        // copy raw data to sample buffer
+        memcpy( s_samplebuffer, p_rawpointer1, len1 );
+    }
+    if ( p_rawpointer2 && len2 )
+    {
+        // append the wrapped data segment to sample buffer
+        char* dest = s_samplebuffer + len1;
+        memcpy( dest, p_rawpointer2, len2 );
+    }
+
+    // captured new samples? if so then encode and distribute them
+    if ( ( len1 + len2 ) > 0 )
+    {
+        VOICE_DATA_FORMAT_TYPE* p_data = reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( s_samplebuffer );
+        unsigned int encodedbytes = _p_codec->encode( p_data, ( len1 + len2 ) / sizeof ( VOICE_DATA_FORMAT_TYPE ), _p_encoderbuffer, _inputGain );
+
+        // check for network paket overrun
+        assert( encodedbytes <= VOICE_PAKET_MAX_BUF_SIZE );
+
+        // call all registered functors with fresh data
+        if ( encodedbytes > 0 )
+        {
+            std::vector< FCaptureInput* >::iterator p_beg = _sinks.begin(), p_end = _sinks.end();
+            for ( ; p_beg != p_end; ++p_beg )
+                ( *p_beg )->operator ()( _p_encoderbuffer, encodedbytes );
+        }
+    }
+}
+
 // implementation of microphone input
 VoiceMicrophoneInput::VoiceMicrophoneInput( FMOD::System* p_sndsystem, NetworkSoundCodec* p_codec ):
 BaseVoiceInput( p_sndsystem, p_codec )
@@ -164,7 +201,7 @@ void VoiceMicrophoneInput::initialize() throw( NetworkSoundExpection )
 
     // create a sound object
     FMOD_RESULT result;
-    FMOD_MODE               mode = FMOD_2D | FMOD_OPENUSER | FMOD_SOFTWARE;
+    FMOD_MODE               mode = FMOD_2D | FMOD_OPENUSER | FMOD_SOFTWARE | FMOD_LOOP_NORMAL;
     FMOD_CREATESOUNDEXINFO  createsoundexinfo;
     int                     channels = 1;
 
@@ -211,61 +248,32 @@ void VoiceMicrophoneInput::update()
     BaseVoiceInput::update();
 
     unsigned int encodedbytes = 0;
-    // get access to sound's raw data and encode
+    // get access to sound's raw data, encode and distribute
     {
         unsigned int currentSoundTrackPos;
         _p_soundSystem->getRecordPosition( &currentSoundTrackPos );
 
         if ( _lastSoundTrackPos != currentSoundTrackPos )        
         {
-            int blocklength = static_cast< int >( currentSoundTrackPos ) - static_cast< int >( _lastSoundTrackPos );
+            unsigned int len1, len2;
+            void* p_rawpointer1 = NULL;
+            void* p_rawpointer2 = NULL;
+            int blocklength     = abs( static_cast< int >( currentSoundTrackPos ) - static_cast< int >( _lastSoundTrackPos ) );
 
-            if ( blocklength > 0 )
+            // get access to raw sound data
+            FMOD_RESULT res = _p_sound->lock( _lastSoundTrackPos * sizeof( VOICE_DATA_FORMAT_TYPE ), blocklength * sizeof( VOICE_DATA_FORMAT_TYPE ), &p_rawpointer1, &p_rawpointer2, &len1, &len2 );
+            if ( res != FMOD_OK )
             {
-                unsigned int len1, len2;
-                void* p_rawpointer1 = NULL;
-                void* p_rawpointer2 = NULL;
-
-                // get access to raw sound data
-                FMOD_RESULT res = _p_sound->lock( _lastSoundTrackPos * sizeof( VOICE_DATA_FORMAT_TYPE ), blocklength * sizeof( VOICE_DATA_FORMAT_TYPE ), &p_rawpointer1, &p_rawpointer2, &len1, &len2 );
-                assert( res == FMOD_OK );
-
-                if ( p_rawpointer1 && len1 )
-                {
-                    VOICE_DATA_FORMAT_TYPE* p_data = reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_rawpointer1 );
-
-                    unsigned int paketsize = len1 / sizeof ( VOICE_DATA_FORMAT_TYPE );
-
-                    // encode grabbed raw data
-                    encodedbytes = _p_codec->encode( p_data, paketsize, _p_encoderbuffer, _inputGain );
-                    // check for network paket overrun
-                    assert( encodedbytes <= VOICE_PAKET_MAX_BUF_SIZE );
-                }
-                if ( p_rawpointer2 && len2 )
-                {
-                    VOICE_DATA_FORMAT_TYPE* p_data = reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_rawpointer2 );
-
-                    unsigned int paketsize = len2 / sizeof ( VOICE_DATA_FORMAT_TYPE );
-
-                    // encode grabbed raw data
-                    encodedbytes = _p_codec->encode( p_data, paketsize, _p_encoderbuffer, _inputGain );
-                    // check for network paket overrun
-                    assert( encodedbytes <= VOICE_PAKET_MAX_BUF_SIZE );
-                }
- 
-                _p_sound->unlock( p_rawpointer1, p_rawpointer2, len1, len2 );
+                log_error << "VoiceMicrophoneInput: cannot lock input sample buffer" << std::endl;
+                return;
             }
 
-            _lastSoundTrackPos = currentSoundTrackPos;
-        }
-    }
+            // encode and distribute samples
+            distributeSamples( p_rawpointer1, p_rawpointer2, len1, len2 );
 
-    // call all registered functors with fresh data
-    if ( encodedbytes > 0 )
-    {
-        std::vector< FCaptureInput* >::iterator p_beg = _sinks.begin(), p_end = _sinks.end();
-        for ( ; p_beg != p_end; ++p_beg )
-            ( *p_beg )->operator ()( _p_encoderbuffer, encodedbytes );
+            _p_sound->unlock( p_rawpointer1, p_rawpointer2, len1, len2 );
+        }
+        _lastSoundTrackPos = currentSoundTrackPos;
     }
 }
 
@@ -334,61 +342,29 @@ void VoiceFileInput::update()
     BaseVoiceInput::update();
 
     unsigned int encodedbytes = 0;
-    // get access to sound's raw data and encode
+    // get access to sound's raw data, encode and distribute
     {
         unsigned int currentSoundTrackPos;
         _p_channel->getPosition( &currentSoundTrackPos, FMOD_TIMEUNIT_PCM );
 
         if ( _lastSoundTrackPos != currentSoundTrackPos )        
         {
-            int blocklength = static_cast< int >( currentSoundTrackPos ) - static_cast< int >( _lastSoundTrackPos );
+            unsigned int len1, len2;
+            void* p_rawpointer1 = NULL;
+            void* p_rawpointer2 = NULL;
+            int   blocklength   = abs( static_cast< int >( currentSoundTrackPos ) - static_cast< int >( _lastSoundTrackPos ) );
 
-            if ( blocklength > 0 )
-            {
-                unsigned int len1, len2;
-                void* p_rawpointer1 = NULL;
-                void* p_rawpointer2 = NULL;
+            // get access to raw sound data
+            FMOD_RESULT res = _p_sound->lock( _lastSoundTrackPos * sizeof( VOICE_DATA_FORMAT_TYPE ), blocklength * sizeof( VOICE_DATA_FORMAT_TYPE ), &p_rawpointer1, &p_rawpointer2, &len1, &len2 );
+            assert( res == FMOD_OK );
 
-                // get access to raw sound data
-                FMOD_RESULT res = _p_sound->lock( _lastSoundTrackPos * sizeof( VOICE_DATA_FORMAT_TYPE ), blocklength * sizeof( VOICE_DATA_FORMAT_TYPE ), &p_rawpointer1, &p_rawpointer2, &len1, &len2 );
-                assert( res == FMOD_OK );
+            // encode and distribute samples
+            distributeSamples( p_rawpointer1, p_rawpointer2, len1, len2 );
 
-                if ( p_rawpointer1 && len1 )
-                {
-                    VOICE_DATA_FORMAT_TYPE* p_data = reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_rawpointer1 );
-                    
-                    unsigned int paketsize = len1 / sizeof ( VOICE_DATA_FORMAT_TYPE );
-
-                    // encode grabbed raw data
-                    encodedbytes = _p_codec->encode( p_data, paketsize, _p_encoderbuffer, _inputGain );
-                    // check for network paket overrun
-                    assert( encodedbytes <= VOICE_PAKET_MAX_BUF_SIZE );
-                }
-                if ( p_rawpointer2 && len2 )
-                {
-                    VOICE_DATA_FORMAT_TYPE* p_data = reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_rawpointer2 );
-
-                    unsigned int paketsize = len2 / sizeof ( VOICE_DATA_FORMAT_TYPE );
-
-                    // encode grabbed raw data
-                    encodedbytes = _p_codec->encode( p_data, paketsize, _p_encoderbuffer, _inputGain );
-                    // check for network paket overrun
-                    assert( encodedbytes <= VOICE_PAKET_MAX_BUF_SIZE );
-                }
-
-                _p_sound->unlock( p_rawpointer1, p_rawpointer2, len1, len2 );
-            }
-
-            _lastSoundTrackPos = currentSoundTrackPos;
+            _p_sound->unlock( p_rawpointer1, p_rawpointer2, len1, len2 );
         }
-    }
 
-    // call all registered functors with fresh data
-    if ( encodedbytes > 0 )
-    {
-        std::vector< FCaptureInput* >::iterator p_beg = _sinks.begin(), p_end = _sinks.end();
-        for ( ; p_beg != p_end; ++p_beg )
-            ( *p_beg )->operator ()( _p_encoderbuffer, encodedbytes );
+        _lastSoundTrackPos = currentSoundTrackPos;
     }
 }
 
