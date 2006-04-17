@@ -20,7 +20,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include&quot;;&quot;$(YAF3D_DEP_DIR)\LOD\glod\include&quot;;../../../../src/framework;../../../../src/gamecode"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include&quot;;&quot;$(YAF3D_DEP_DIR)\LOD\glod\include&quot;;&quot;$(YAF3D_DEP_DIR)\scripting\lua5.1\include&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="_DEBUG;WIN32;_CONSOLE"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="3"
@@ -80,7 +80,7 @@
 				EnableFiberSafeOptimizations="FALSE"
 				OptimizeForProcessor="0"
 				OptimizeForWindowsApplication="TRUE"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include&quot;;&quot;$(YAF3D_DEP_DIR)\LOD\glod\include&quot;;../../../../src/framework;../../../../src/gamecode"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include&quot;;&quot;$(YAF3D_DEP_DIR)\LOD\glod\include&quot;;&quot;$(YAF3D_DEP_DIR)\scripting\lua5.1\include&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
@@ -139,7 +139,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include&quot;;&quot;$(YAF3D_DEP_DIR)\LOD\glod\include&quot;;../../../../src/framework;../../../../src/gamecode"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include&quot;;&quot;$(YAF3D_DEP_DIR)\LOD\glod\include&quot;;&quot;$(YAF3D_DEP_DIR)\scripting\lua5.1\include&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="_DEBUG;WIN32;_CONSOLE"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="3"
@@ -156,7 +156,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsWin32d.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgcald.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib libpng.lib fmodex_vc.lib libspeexd.lib glodd.lib framework-serverd.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsWin32d.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgcald.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib libpng.lib fmodex_vc.lib libspeexd.lib glodd.lib lua51.lib framework-serverd.lib"
 				OutputFile="../../../../bin/win32/vrc-server_debug.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
@@ -199,7 +199,7 @@
 				EnableFiberSafeOptimizations="FALSE"
 				OptimizeForProcessor="0"
 				OptimizeForWindowsApplication="TRUE"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include\&quot;;&quot;$(YAF3D_DEP_DIR)\LOD\glod\include&quot;;../../../../src/framework;../../../../src/gamecode"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.10.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include\&quot;;&quot;$(YAF3D_DEP_DIR)\LOD\glod\include&quot;;&quot;$(YAF3D_DEP_DIR)\Scripting\lua5.1\include&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
@@ -214,7 +214,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgUtil.lib osgcal.lib cal3d.lib osgSDL.lib SDL.lib SDLmain.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib libpng.lib fmodex_vc.lib libspeex.lib glod.lib framework-server.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgUtil.lib osgcal.lib cal3d.lib osgSDL.lib SDL.lib SDLmain.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib libpng.lib fmodex_vc.lib libspeex.lib glod.lib lua51.lib framework-server.lib"
 				OutputFile="../../../../bin/win32/vrc-server.exe"
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
 				IgnoreAllDefaultLibraries="FALSE"
@@ -1067,6 +1067,25 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\voice\vrc_voicetestutils.inl">
+				</File>
+			</Filter>
+			<Filter
+				Name="scripting"
+				Filter="">
+				<File
+					RelativePath="..\..\..\..\src\gamecode\scripting\vrc_script.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\scripting\vrc_script.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\scripting\vrc_script.inl">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\scripting\vrc_testscript.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\scripting\vrc_testscript.h">
 				</File>
 			</Filter>
 		</Filter>
