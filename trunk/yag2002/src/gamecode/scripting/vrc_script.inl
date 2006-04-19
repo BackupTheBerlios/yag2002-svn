@@ -34,6 +34,10 @@
     #error "do not include this file directly, include vrc_script.h instead"
 #endif
 
+//! Variable accessible in loaded scripts which contains the script path
+//! This variable can be used for loading other scripts e.g. via 'dofile'
+#define SCRIPT_PATH_VAR "scriptpath"
+
 // Template definitions of Param
 template< typename TypeT >
 BaseParam* Param< TypeT >::clone()
@@ -148,6 +152,14 @@ void BaseScript< T >::loadScript( const std::string& luaModuleName, const std::s
 
     lua_newtable( _p_state );
     _methodTableIndex = lua_gettop( _p_state );
+
+    // make the script path accessible to script so it can include other scripts using this vaiable 'scriptpath'
+    std::string scriptpath( yaf3d::extractPath( file ) );
+    scriptpath += "/";
+    lua_pushstring( _p_state, SCRIPT_PATH_VAR );
+    lua_pushlstring( _p_state, scriptpath.c_str(), scriptpath.length() );
+    lua_settable( _p_state, LUA_GLOBALSINDEX );
+
     lua_pushstring( _p_state, luaModuleName.c_str() );
     lua_pushvalue( _p_state, _methodTableIndex );
     lua_settable( _p_state, LUA_GLOBALSINDEX );
