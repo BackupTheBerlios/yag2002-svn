@@ -94,32 +94,32 @@ void BaseScript< T >::setupLuaLibs( lua_State* p_state, unsigned int usedlibs )
 {
     luaopen_base( p_state );
 
-    if ( usedlibs == BaseScript::LOADLIB )
+    if ( usedlibs & BaseScript::LOADLIB )
     {
         luaopen_package( p_state );
         lua_settop( p_state, 0 );
     }
-    if ( usedlibs == BaseScript::STRING )
+    if ( usedlibs & BaseScript::STRING )
     {
         luaopen_string( p_state );
         lua_settop( p_state, 0 );
     }
-    if ( usedlibs == BaseScript::TABLE )
+    if ( usedlibs & BaseScript::TABLE )
     {
         luaopen_table( p_state );
         lua_settop( p_state, 0 );
     }
-    if ( usedlibs == BaseScript::DEBUG )
+    if ( usedlibs & BaseScript::DEBUG )
     {
         luaopen_debug( p_state );
         lua_settop( p_state, 0 );
     }
-    if ( usedlibs == BaseScript::MATH )
+    if ( usedlibs & BaseScript::MATH )
     {
         luaopen_math( p_state );
         lua_settop( p_state, 0 );
     }
-    if ( usedlibs == BaseScript::IO )
+    if ( usedlibs & BaseScript::IO )
     {
         luaopen_io( p_state );
         lua_settop( p_state, 0 );
