@@ -1088,6 +1088,20 @@
 					RelativePath="..\..\..\..\src\gamecode\scripting\vrc_testscript.h">
 				</File>
 			</Filter>
+			<Filter
+				Name="npc"
+				Filter="">
+				<Filter
+					Name="fish"
+					Filter="">
+					<File
+						RelativePath="..\..\..\..\src\gamecode\npc\fish\vrc_npcfish.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\npc\fish\vrc_npcfish.h">
+					</File>
+				</Filter>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\VRC.rc">
