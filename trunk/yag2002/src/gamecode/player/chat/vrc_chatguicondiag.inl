@@ -170,6 +170,8 @@ _p_parent( p_parent )
         _p_editPassword->setSize( CEGUI::Size( 0.45f, 0.07f ) );
         _p_editPassword->setText( "" );
         _p_editPassword->setFont( YAF3D_GUI_FONT8 );
+        _p_editPassword->setMaskCodePoint( CEGUI::utf32( '*' ) );
+        _p_editPassword->setTextMasked( true );
         _p_frame->addChildWindow( _p_editPassword );
 
          // port
@@ -267,7 +269,9 @@ bool ConnectionDialog< TypeT >::onClickedConnect( const CEGUI::EventArgs& arg )
     _cfg._serverURL = _p_editServerUrl->getText().c_str();
     _cfg._channel   = _p_editChannel->getText().c_str();
     _cfg._nickname  = _p_editNickName->getText().c_str();
+    _cfg._password  = _p_editPassword->getText().c_str();
     _cfg._username  = _p_editUserName->getText().c_str();
+    _cfg._realname  = _p_editRealName->getText().c_str();
 
     std::stringstream port;
     port << _p_editPort->getText().c_str();
