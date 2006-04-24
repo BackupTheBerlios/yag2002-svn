@@ -175,6 +175,7 @@ class PlayerIHCharacterCameraCtrl : public vrc::gameutils::GenericInputHandler< 
         bool                                _moveBackward;
         bool                                _camSwitch;
         bool                                _chatSwitch;
+        bool                                _toggleChatMode;
 
     public:
 

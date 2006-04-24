@@ -43,6 +43,7 @@ _moveForward( false ),
 _moveBackward( false ),
 _camSwitch( false ),
 _chatSwitch( false ),
+_toggleChatMode( false ),
 _keyCodeMoveForward( osgGA::GUIEventAdapter::KEY_Up ),
 _keyCodeMoveBackward( osgGA::GUIEventAdapter::KEY_Down ),
 _keyCodeMoveLeft( osgGA::GUIEventAdapter::KEY_Left ),
@@ -92,7 +93,6 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
 
     // first check the edit / walk toggle command
     //--------
-    static bool s_toggleChatMode = false;
     if ( keyDown || mouseButtonPush )
     {
         if ( key == _keyCodeChatMode )
@@ -100,16 +100,16 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             if ( !_chatSwitch )
             {
                 // this method has an side effect on _enable (see below)
-                enable( s_toggleChatMode );
-                s_toggleChatMode = !s_toggleChatMode;
+                enable( _toggleChatMode );
+                _toggleChatMode = !_toggleChatMode;
                 _chatSwitch = true;
 
                 // let the chat control know that we are in edit mode now
-                getPlayerImpl()->getChatManager()->activateBox( s_toggleChatMode );
+                getPlayerImpl()->getChatManager()->activateBox( _toggleChatMode );
 
                 // continue the current movement when toggling from walk to edit mode
                 //  so allowing chatting during moving ( it was requested by the community )
-                if ( !s_toggleChatMode )
+                if ( !_toggleChatMode )
                 {
                     // stop player and sound
                     getPlayerImpl()->getPlayerAnimation()->animIdle();
