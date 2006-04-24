@@ -52,7 +52,7 @@ namespace vrc
 #define GUI_TABCTRL_SIZEY           35.0f
 #define GUI_TABCTRL_TAB_HEIGHT      25.0f
 
-#define GUI_CLOSE_BTN_WIDTH         70.0f
+#define GUI_CLOSE_BTN_WIDTH         120.0f
 #define GUI_CLOSE_BTN_HEIGHT        20.0f
 
 #define GUI_IRCCONNECT_BTN_WIDTH    110.0f
@@ -137,8 +137,8 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
         _p_btnCloseChannel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onClickedCloseChannelPane, this ) );
         _p_btnCloseChannel->setMetricsMode( CEGUI::Absolute );
         // actual size is calculated in resize callback
-        _p_btnCloseChannel->setSize( CEGUI::Size( 50.0f, 20.0f ) );
-        _p_btnCloseChannel->setText( "close" );
+        _p_btnCloseChannel->setSize( CEGUI::Size( GUI_CLOSE_BTN_WIDTH, GUI_CLOSE_BTN_HEIGHT ) );
+        _p_btnCloseChannel->setText( "close channel" );
         _p_btnCloseChannel->setFont( YAF3D_GUI_FONT8 );
         _p_btnCloseChannel->show();
         _p_frame->addChildWindow( _p_btnCloseChannel );
