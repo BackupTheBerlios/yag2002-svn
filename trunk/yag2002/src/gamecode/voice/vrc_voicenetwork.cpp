@@ -150,7 +150,7 @@ void VoiceNetwork::updateVoiceClients( yaf3d::BaseEntity* p_playerentity, bool j
             }
             else
             {
-                log_error << "cannot resolve client IP for voice chat" << std::endl;
+                log_error << "VoiceNetwork: cannot resolve client IP for voice chat" << std::endl;
             }
         }        
     }

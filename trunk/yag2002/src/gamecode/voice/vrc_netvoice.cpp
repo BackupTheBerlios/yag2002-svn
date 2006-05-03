@@ -35,6 +35,7 @@
 #include "vrc_voicereceiver.h"
 #include "vrc_voiceinput.h"
 #include "vrc_codec.h"
+#include <RNXPURL/Inc/NetworkEmulation.h>
 
 namespace vrc
 {
@@ -88,6 +89,17 @@ void EnNetworkVoice::initialize()
 
     // register entity in order to get notifications (e.g. from menu entity)
     yaf3d::EntityManager::get()->registerNotification( this, true );
+
+    // some network emulation settings
+    //bool enableNetworkEmulation = true;
+    //if ( enableNetworkEmulation )
+    //{
+    //    RNReplicaNet::NetworkEmulation::SetEnabled( true );
+    //    RNReplicaNet::NetworkEmulation::SetConnection( RNReplicaNet::NetworkEmulation::kModem56k, true );
+    //    RNReplicaNet::NetworkEmulation::SetPacketLoss( 5 );
+    //    RNReplicaNet::NetworkEmulation::SetAverageLatency( 0.1f );
+    //    RNReplicaNet::NetworkEmulation::SetJitter( 0.02f );
+    //}
 }
 
 void EnNetworkVoice::setupNetworkVoice()
@@ -195,10 +207,7 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
 
 void EnNetworkVoice::destroyVoiceChat()
 {
-    assert( _active && "trying to destroy voice chat which has not been created before!" );
-
-    // deregister for getting periodic updates
-    yaf3d::EntityManager::get()->registerUpdate( this, false );
+    assert( _active && "trying to destroy voice chat entity which has not been created before!" );
 
     try
     {
@@ -345,9 +354,26 @@ void EnNetworkVoice::operator()( bool localplayer, bool joining, yaf3d::BaseEnti
 {
     // let the voice network manager update its internal client list when a new client is joining 
     if ( joining )
+    {
         _p_voiceNetwork->updateVoiceClients( p_entity, true );
+    }
     else
+    {
         _p_voiceNetwork->updateVoiceClients( p_entity, false );
+
+        // remove player from sender map
+        SenderMap::iterator player = _sendersMap.find( p_entity );
+        if ( player != _sendersMap.end() )
+        {
+            BaseNetworkSoundImplementation* p_sender = player->second;
+            delete p_sender;
+            _sendersMap.erase( player );
+        }
+        else
+        {
+            log_error << "VoiceNetwork: leaving player could not be found in sender map" << std::endl;
+        }    
+    }
 }
 
 void EnNetworkVoice::operator()( bool joining, yaf3d::BaseEntity* p_entity )

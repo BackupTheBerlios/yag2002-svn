@@ -116,17 +116,17 @@ void VoiceReceiver::shutdown()
 {
 //! TODO: remove this rip code later
 //*******************************
-    // write out the ripped wav file
-    {
-        SenderMap::iterator p_beg = _soundNodeMap.begin(), p_end = _soundNodeMap.end();
-        // we take the first sender and write it out
-        if ( p_beg != p_end )
-        {
-            // write out the rip
-            WaveWriterPCM16 wavwriter( VOICE_SAMPLE_RATE, WaveWriterPCM16::MONO );
-            wavwriter.write( yaf3d::Application::get()->getMediaPath() + std::string( "sender0-rip.wav" ), s_wavqueue );
-        }
-    }
+    //// write out the ripped wav file
+    //{
+    //    SenderMap::iterator p_beg = _soundNodeMap.begin(), p_end = _soundNodeMap.end();
+    //    // we take the first sender and write it out
+    //    if ( p_beg != p_end )
+    //    {
+    //        // write out the rip
+    //        WaveWriterPCM16 wavwriter( VOICE_SAMPLE_RATE, WaveWriterPCM16::MONO );
+    //        wavwriter.write( yaf3d::Application::get()->getMediaPath() + std::string( "sender0-rip.wav" ), s_wavqueue );
+    //    }
+    //}
 //*******************************
 
 
@@ -221,7 +221,7 @@ FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, 
             *p_sndbuffer++ = samplequeue.front();
 
 //! TODO: remove this later, it's only for ripping to a test wave file
-            s_wavqueue.push( samplequeue.front() );
+//            s_wavqueue.push( samplequeue.front() );
 
             samplequeue.pop();
         }
@@ -229,7 +229,7 @@ FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, 
     }
     else
     {
-        log_verbose << "." << std::endl;
+//        log_verbose << "." << std::endl;
     }
 
     return FMOD_OK;
@@ -302,16 +302,19 @@ void VoiceReceiver::update( float deltaTime )
         p_sender = p_beg->first;
 
         // first check for dead senders
-        if ( ( p_sendernode->_pingTimer += deltaTime ) > ( VOICE_LIFESIGN_PERIOD * 5.0f ) )
-        {
-            // remove senders which do not respond anymore
-            delete p_sendernode;
-            delete p_sender;
-            _soundNodeMap.erase( p_beg );
-            p_beg = _soundNodeMap.begin();
-            p_end = _soundNodeMap.end();
-            continue;
-        }
+        //if ( ( p_sendernode->_pingTimer += deltaTime ) > ( VOICE_LIFESIGN_PERIOD * 5.0f ) )
+        //{
+        //    // removing sender 
+        //    log_verbose << "  <- remove sender from receiver list!" << std::endl;
+
+        //    // remove senders which do not respond anymore
+        //    delete p_sendernode;
+        //    delete p_sender;
+        //    _soundNodeMap.erase( p_beg );
+        //    p_beg = _soundNodeMap.begin();
+        //    p_end = _soundNodeMap.end();
+        //    continue;
+        //}
 
         if ( !p_sender->Recv( s_buffer, 512 ) )
             continue;

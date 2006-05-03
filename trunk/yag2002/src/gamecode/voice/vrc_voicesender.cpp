@@ -34,6 +34,7 @@
 #include "vrc_voicesender.h"
 #include "vrc_codec.h"
 #include <RNXPSession/Inc/XPSession.h>
+#include <RNXPURL/Inc/TransportConfig.h>
 
 namespace vrc
 {
@@ -94,6 +95,10 @@ void VoiceSender::initialize() throw( NetworkSoundExpection )
     {
         int channel;
         yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_CHANNEL, channel );
+
+        // Enable packet buffering and set paket update time for transport layer
+        RNReplicaNet::TransportConfig::SetPacketBufferEnable( true );
+        RNReplicaNet::TransportConfig::SetPacketBufferTime( 1.0f / 60.0f );
 
         RNReplicaNet::XPURL::RegisterDefaultTransports();
         RNReplicaNet::XPURL xpurl;
@@ -190,19 +195,22 @@ void VoiceSender::update( float deltaTime )
         _p_udpTransport->SendReliable( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE );
     }
 
-    // check for receiver's pong
-    _pongTimer += deltaTime;
-    if ( _pongTimer > ( VOICE_LIFESIGN_PERIOD * 5.0f ) )
-    {
-        // lost the receiver
-        log_verbose << "  -> voice chat receiver does not respond, going dead ..." << std::endl;
-        _pongTimer = 0.0f;
+    //!FIXME: checking for lifesign, i.e. checking the ping/ping timers, causes a problem 
+    //        when dragging the app window the gameloop stucks which causes lifetime exceeding!
 
-        // set the alive flag to false, this flag is polled by netvoice entity and handled appropriately
-        _isAlive = false;
-        // set the state to Initial so the input functor gets inactive too
-        _senderState = Initial;
-    }
+    //// check for receiver's pong
+    //_pongTimer += deltaTime;
+    //if ( _pongTimer > ( VOICE_LIFESIGN_PERIOD * 5.0f ) )
+    //{
+    //    // lost the receiver
+    //    log_verbose << "  -> voice chat receiver does not respond, going dead ..." << std::endl;
+    //    _pongTimer = 0.0f;
+
+    //    // set the alive flag to false, this flag is polled by netvoice entity and handled appropriately
+    //    _isAlive = false;
+    //    // set the state to Initial so the input functor gets inactive too
+    //    _senderState = Initial;
+    //}
 }
 
 void VoiceSender::operator ()( char* p_encodedaudio, unsigned short length )
