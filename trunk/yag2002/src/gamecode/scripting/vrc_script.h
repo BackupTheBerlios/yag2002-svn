@@ -171,7 +171,7 @@ class Params: protected std::vector< BaseParam* >
         //! Assignment operator
         Params&                                 operator = ( const Params& params );
 
-    friend class BaseScript;
+    template< class T > friend class BaseScript;
 };
 
 //! Base class for scripts
