@@ -17,6 +17,10 @@
 // added by boto
 #define ENABLE_THREADS
 
+#ifdef WIN32
+    #pragma warning( disable : 4996 ) // disable warnings for deprecated functions (vc8.0)
+#endif
+
 #include "portable.c"
 #include "sockets.c"
 
