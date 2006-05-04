@@ -411,7 +411,7 @@ void PlayerNetworking::updatePlayerName( const std::string& name )
 {
     // limit the name length to be on safe side
     std::string cleanedname = name;
-    cleanedname[ 31 ] = '\0';
+	cleanedname[ std::min( static_cast< int >( name.length() - 1 ),  static_cast< int >( 31 ) ) ] = '\0';
     strcpy( _p_playerName, cleanedname.c_str() );
 }
 
