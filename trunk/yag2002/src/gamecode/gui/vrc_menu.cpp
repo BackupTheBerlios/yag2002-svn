@@ -159,6 +159,7 @@ _levelSelectionState( ForStandalone ),
 _p_cameraControl( NULL ),
 _p_introSound( NULL ),
 _p_backgrdSound( NULL ),
+_backgrdSoundVolume( 1.0f ),
 _p_menuWindow( NULL ),
 _p_loadingWindow( NULL ),
 _p_btnStartJoin( NULL ),
@@ -262,7 +263,18 @@ void EnMenu::initialize()
         _p_introSound = setupSound( _introductionSound, _introductionSoundVolume, false );
 
     if ( _backgroundSound.length() )
+    {
         _p_backgrdSound = setupSound( _backgroundSound, _backgroundSoundVolume, true );
+
+        bool musicenabled = true;
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_MUSIC_ENABLE, musicenabled );
+        if ( !musicenabled )
+            _backgrdSoundVolume = 0.0f;
+        else
+            yaf3d::Configuration::get()->getSettingValue( VRC_GS_MUSIC_VOLUME, _backgrdSoundVolume );
+        
+        setBkgMusicVolume( _backgrdSoundVolume );
+    }
 
     // create a scene with camera path animation and world geometry
     createMenuScene();
@@ -809,7 +821,7 @@ void EnMenu::updateEntity( float deltaTime )
                 break;
             }
 
-            float volume = std::min( BCKRGD_SND_PLAY_VOLUME * ( _soundFadingCnt / BCKRGD_SND_FADEIN_PERIOD ), 1.0f );
+            float volume = std::min( BCKRGD_SND_PLAY_VOLUME * ( _soundFadingCnt / BCKRGD_SND_FADEIN_PERIOD ), _backgrdSoundVolume );
             _p_backgrdSound->setVolume( volume );
         }
         break;
@@ -967,6 +979,14 @@ void EnMenu::onSettingsDialogClose()
 {
     _p_menuWindow->enable();
     _settingsDialog->show( false );
+}
+
+void EnMenu::setBkgMusicVolume( float volume )
+{
+    if ( _p_backgrdSound )
+        _p_backgrdSound->setVolume( volume );
+
+    _backgrdSoundVolume = volume;
 }
 
 void EnMenu::onLevelSelectCanceled()

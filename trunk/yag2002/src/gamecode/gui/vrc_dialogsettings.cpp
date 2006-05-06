@@ -428,9 +428,8 @@ void DialogGameSettings::setupControls()
             // determine all available input devices
             MicrophoneInput* p_micinput = new MicrophoneInput;
             MicrophoneInput::InputDeviceMap inputs;
-            if ( p_micinput->initialize() )
+            if ( p_micinput->getInputDevices( inputs ) )
             {
-                p_micinput->getInputDevices( inputs );
                 for ( int numdevs = inputs.size() - 1; numdevs >= 0 ; --numdevs )
                 {
                     p_item = new CEGUI::ListboxTextItem( inputs[ numdevs ].c_str() );
@@ -817,13 +816,16 @@ bool DialogGameSettings::onEnableMusicChanged( const CEGUI::EventArgs& arg )
 
     if ( _p_enableMusic->isSelected() )
     {
+        _volumeMusic = _p_volumeMusic->getScrollPosition();
         _p_volumeMusic->setEnabled( true );
         yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMusic, _volumeMusic );
+        _p_menuEntity->setBkgMusicVolume( _volumeMusic );
     }
     else
     {
         _p_volumeMusic->setEnabled( false );
         yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMusic, 0.0f );
+        _p_menuEntity->setBkgMusicVolume( 0.0f );
     }
     return true;
 }
@@ -835,6 +837,9 @@ bool DialogGameSettings::onMusicVolumeChanged( const CEGUI::EventArgs& arg )
 
     _volumeMusic = _p_volumeMusic->getScrollPosition();
     yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMusic, _volumeMusic );
+
+    if ( _p_enableMusic->isSelected() )
+        _p_menuEntity->setBkgMusicVolume( _volumeMusic );
 
     return true;
 }
@@ -899,6 +904,7 @@ bool DialogGameSettings::onVoiceInputDeviceChanged( const CEGUI::EventArgs& arg 
         {
             unsigned int inputdevice = _inputDevices->getItemIndex( p_item );
             _p_microInput->setInputDevice( inputdevice );
+            _p_microInput->beginMicroTest();
         }
     }
 
@@ -924,17 +930,18 @@ bool DialogGameSettings::onVoiceTestClicked( const CEGUI::EventArgs& arg )
     if ( !_p_microInput )
     {
         _p_microInput = new MicrophoneInput;
-        if ( !_p_microInput->initialize() )
-        {
-            delete _p_microInput;
-            _p_microInput = NULL;
-            return true;
-        }
-
         unsigned int inputdevice;
         yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_INPUT_DEVICE, inputdevice );
-        _p_microInput->setInputDevice( inputdevice );
-        _p_microInput->beginMicroTest();
+        if ( _p_microInput->setInputDevice( inputdevice ) )
+        {
+            _p_microInput->beginMicroTest();
+        }
+        else
+        {
+            log_error << "gui: cannot set input device" << std::endl;
+            delete _p_microInput;
+            _p_microInput = NULL;
+        }
     }
     else
     {

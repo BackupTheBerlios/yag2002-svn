@@ -134,6 +134,9 @@ class EnMenu :  public yaf3d::BaseEntity
         //! Interface method used by settings dialog
         //---
         void                                        onSettingsDialogClose();
+
+        //! Set background music volume
+        void										setBkgMusicVolume( float volume );
         //---
 
         //! Begin intro
@@ -219,6 +222,8 @@ class EnMenu :  public yaf3d::BaseEntity
         EnAmbientSound*                             _p_introSound;
 
         EnAmbientSound*                             _p_backgrdSound;
+
+        float                                       _backgrdSoundVolume;
 
         std::auto_ptr< DialogGameSettings >         _settingsDialog;
 
