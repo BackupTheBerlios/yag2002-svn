@@ -62,77 +62,122 @@ MicrophoneInput::~MicrophoneInput()
     }
 }
 
-bool MicrophoneInput::initialize()
+bool MicrophoneInput::getInputDevices( MicrophoneInput::InputDeviceMap& devices )
 {
     FMOD_RESULT result;
 
-    // need to create a soundsystem?
-    if ( _p_soundSystem )
-        return false;
-
-    result = FMOD::System_Create( &_p_soundSystem );
+    FMOD::System* p_system;
+    result = FMOD::System_Create( &p_system );
     if ( result != FMOD_OK )
+    {
+        log_error << "+gui MicrophoneInput: cannot create sound system!" << std::endl;
         return false;
+    }
 
     unsigned int version;
-    result = _p_soundSystem->getVersion( &version );
-
+    result = p_system->getVersion( &version );
     if ( version < FMOD_VERSION )
+    {
+        log_error << "+gui MicrophoneInput: wrong fmod version!" << std::endl;
         return false;
+    }
 
     // we need only one single channel in sound system
-    result = _p_soundSystem->init( 1, FMOD_INIT_NORMAL, 0 );
+    result = p_system->init( 1, FMOD_INIT_NORMAL, 0 );
+    if ( result != FMOD_OK )
+    {
+        log_error << "+gui MicrophoneInput: cannot initialize sound system" << std::endl;
+        return false;
+    }
+
+    int numdrivers = 0;
+    result = p_system->getRecordNumDrivers( &numdrivers );
     if ( result != FMOD_OK )
         return false;
-
-    return true;
-}
-
-void MicrophoneInput::getInputDevices( MicrophoneInput::InputDeviceMap& devices )
-{
-    assert( _p_soundSystem && "MicrophoneInput has not been initialized!" );
-
-    FMOD_RESULT result;
-    int numdrivers = 0;
-    result = _p_soundSystem->getRecordNumDrivers( &numdrivers );
-    if ( result != FMOD_OK )
-        return;
 
     for ( int count = 0; count < numdrivers; ++count )
     {
         char name[ 256 ];
-        result = _p_soundSystem->getRecordDriverName( count, name, 256 );
+        result = p_system->getRecordDriverName( count, name, 256 );
         if ( result != FMOD_OK )
             log_error << "MicrophoneInput: error getting input device name" << std::endl;
         else
-        {
             devices[ count ] = std::string( name );
-        }
     }
+
+    p_system->release();
+
+    return true;
 }
 
-void MicrophoneInput::setInputDevice( unsigned int deviceid )
+bool MicrophoneInput::setupInputCapturing( unsigned int deviceid )
 {
-    assert( _p_soundSystem && "MicrophoneInput has not been initialized!" );
+    if ( _p_soundSystem )
+        _p_soundSystem->release();
 
-    if ( _microTestRunning )
-        _p_soundSystem->recordStop();
+    FMOD_RESULT result;
+
+    result = FMOD::System_Create( &_p_soundSystem );
+    if ( result != FMOD_OK )
+    {
+        log_error << "gui MicrophoneInput: cannot create sound system!" << std::endl;
+        return false;
+    }
+
+    unsigned int version;
+    result = _p_soundSystem->getVersion( &version );
+    if ( version < FMOD_VERSION )
+    {
+        log_error << "gui MicrophoneInput: wrong fmod version!" << std::endl;
+        return false;
+    }
 
     _p_soundSystem->setRecordDriver( deviceid );
 
+    // we need only one single channel in sound system
+    result = _p_soundSystem->init( 1, FMOD_INIT_NORMAL, 0 );
+    if ( result != FMOD_OK )
+    {
+        log_error << "gui MicrophoneInput: cannot initialize sound system" << std::endl;
+        return false;
+    }
+
+    _p_soundSystem->recordStart( _p_sound, true );
+
+    return true;
+}
+
+void MicrophoneInput::destroyInputCapturing()
+{
+    _p_soundSystem->release();
+
+    _p_soundSystem = NULL;
+    _p_channel     = NULL;
+    _p_sound       = NULL;
+}
+
+bool MicrophoneInput::setInputDevice( unsigned int deviceid )
+{
     if ( _microTestRunning )
-        _p_soundSystem->recordStart( _p_sound, true );
+    {
+        endMicroTest();
+        destroyInputCapturing();
+    }
+
+    return setupInputCapturing( deviceid );
 }
 
 void MicrophoneInput::setInputGain( float gain )
 {
-    assert( _p_channel && "MicrophoneInput: micro test is already running!" );
-
     // limit the gain to [ 0 ... 2 ]
     _inputGain = std::min( std::max( 0.0f, gain ), 2.0f );
+    
     // we simulate separate input / output gains here
-    float totalgain = std::min( std::max( 0.0f, _inputGain * _outputGain ), 1.0f );
-    _p_channel->setVolume( totalgain );
+    if ( _p_channel )
+    {
+        float totalgain = std::min( std::max( 0.0f, _inputGain * _outputGain ), 1.0f );
+        _p_channel->setVolume( totalgain );
+    }
 }
 
 void MicrophoneInput::setOutputGain( float gain )
@@ -141,14 +186,21 @@ void MicrophoneInput::setOutputGain( float gain )
 
     // limit the gain to [ 0 ... 2 ]
     _outputGain = std::min( std::max( 0.0f, gain ), 2.0f );
-    // we simulate separate input / output gains here
-    float totalgain = std::min( std::max( 0.0f, _inputGain * _outputGain ), 1.0f );
-    _p_channel->setVolume( totalgain );
+
+    if ( _p_channel )
+    {
+        // we simulate separate input / output gains here
+        float totalgain = std::min( std::max( 0.0f, _inputGain * _outputGain ), 1.0f );
+        _p_channel->setVolume( totalgain );
+    }
 }
 
 void MicrophoneInput::beginMicroTest()
 {
     assert( ( _p_sound == NULL ) && "MicrophoneInput: micro test is already running!" );
+
+    if ( _microTestRunning )
+        return;
 
     _microTestRunning = true;
 
@@ -169,7 +221,12 @@ void MicrophoneInput::beginMicroTest()
 
     result = _p_soundSystem->createSound( NULL, mode, &createsoundexinfo, &_p_sound );
     if ( result != FMOD_OK )
+    {
+        std::stringstream msg;
+        msg << result;
+        log_error << "cannot set micro input device, error code: " << msg.str() << std::endl;
         return;
+    }
 
     _p_soundSystem->playSound( FMOD_CHANNEL_FREE, _p_sound, false, &_p_channel );
 
@@ -182,6 +239,9 @@ void MicrophoneInput::beginMicroTest()
 
 void MicrophoneInput::endMicroTest()
 {
+    if ( !_microTestRunning )
+        return;
+
     // stop recording
     _p_soundSystem->recordStop();
 
