@@ -39,7 +39,7 @@
 namespace vrc
 {
 //! Minimum radius of free area around a spawn point which is evaluated for selecting a spawn point
-#define SPAWN_MIN_FREE_RADIUS      2.0f
+#define SPAWN_MIN_FREE_RADIUS      5.0f
 
 
 #define ENTITY_NAME_SPAWNPOINT    "SpawnPoint"
