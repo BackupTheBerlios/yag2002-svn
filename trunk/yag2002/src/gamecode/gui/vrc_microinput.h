@@ -47,17 +47,13 @@ class MicrophoneInput : public OpenThreads::Thread
                                                     MicrophoneInput();
 
         virtual                                     ~MicrophoneInput();
-        
-        //! Initialize input device setup. Call this before using any of following methods.
-        //! Returns false if no input devices available.
-        bool                                        initialize();
 
         //! Get all detected input devices
-        void                                        getInputDevices( InputDeviceMap& devices );
+        bool                                        getInputDevices( InputDeviceMap& devices );
 
         //! Set input device given its ID, retrieve the ID using 'getInputDevices'
-        //! This method can be used during micro test
-        void                                        setInputDevice( unsigned int deviceid );
+        //! This method can be used during micro test. Returns false if something went wrong.
+        bool                                        setInputDevice( unsigned int deviceid );
 
         //! Begin microphone input test, call this method after setting a valid input device using 'setInputDevice'
         void                                        beginMicroTest();
@@ -83,6 +79,12 @@ class MicrophoneInput : public OpenThreads::Thread
 
         //! Thread's run method
         void                                        run();
+
+        //! Start capturing input from given device
+        bool                                        setupInputCapturing( unsigned int deviceid );
+
+        //! Stop capturing input
+        void                                        destroyInputCapturing();
 
         //! Sound system
         FMOD::System*                               _p_soundSystem;
