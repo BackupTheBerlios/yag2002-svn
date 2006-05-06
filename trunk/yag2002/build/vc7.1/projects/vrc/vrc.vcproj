@@ -829,12 +829,6 @@
 							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdlevellist.h">
 						</File>
 						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdlistentity.cpp">
-						</File>
-						<File
-							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdlistentity.h">
-						</File>
-						<File
 							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdloadentities.cpp">
 						</File>
 						<File
