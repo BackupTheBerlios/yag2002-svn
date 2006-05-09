@@ -53,8 +53,7 @@ _inputGain( 1.0f ),
 _active( false )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "spotRange",       _spotRange  );
-    getAttributeManager().addAttribute( "testSoundFile",   _testFile   );
+    getAttributeManager().addAttribute( "spotRange", _spotRange  );
 }
 
 EnNetworkVoice::~EnNetworkVoice()
