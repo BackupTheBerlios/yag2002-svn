@@ -71,6 +71,8 @@ namespace gameutils
 #define VRC_GS_VOICECHAT_CHANNEL            "voiceChatChannel"
 #define VRC_GS_DEFAULT_VOICE_CHANNEL        32200
 #define VRC_GS_DEFAULT_SOUND_VOLUME         1.0f
+// Input device not ready
+#define VRC_GS_VOICECHAT_INPUT_DEVICE_NA    0
 
 
 //! Game code settings' defaults
