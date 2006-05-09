@@ -178,7 +178,8 @@ void BaseVoiceInput::distributeSamples( void* const p_rawpointer1, void* const p
 
 // implementation of microphone input
 VoiceMicrophoneInput::VoiceMicrophoneInput( FMOD::System* p_sndsystem, NetworkSoundCodec* p_codec ):
-BaseVoiceInput( p_sndsystem, p_codec )
+BaseVoiceInput( p_sndsystem, p_codec ),
+_inputDeviceReady( false )
 {
 }
 
@@ -198,6 +199,8 @@ void VoiceMicrophoneInput::initialize() throw( NetworkSoundExpection )
 {
     // first init the base object
     BaseVoiceInput::initialize();
+
+    _inputDeviceReady = false;
 
     // create a sound object
     FMOD_RESULT result;
@@ -225,21 +228,30 @@ void VoiceMicrophoneInput::initialize() throw( NetworkSoundExpection )
 
     unsigned int inputdevice;
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_INPUT_DEVICE, inputdevice );
+    if ( inputdevice == VRC_GS_VOICECHAT_INPUT_DEVICE_NA )
+    {
+        _inputDeviceReady = false;
+    }
     // default to first device if something with setting is wrong
-    if ( static_cast< int >( inputdevice ) > numdrivers )
+    else if ( static_cast< int >( inputdevice ) > numdrivers )
     {
         log_error << "VoiceMicrophoneInput: cannot set requested input device, set to default first device" << std::endl;
-        inputdevice = 0;
+        inputdevice = VRC_GS_VOICECHAT_INPUT_DEVICE_NA;
     }
 
     result = _p_soundSystem->setRecordDriver( inputdevice );
     if ( result != FMOD_OK )
+    {
+        _inputDeviceReady = false;
         throw NetworkSoundExpection( "Error setting input device: " + std::string( FMOD_ErrorString( result ) ) );
+    }
+
+    _inputDeviceReady = true;
 }
 
 void VoiceMicrophoneInput::update()
 {
-    if ( !_active )
+    if ( !_active || !_inputDeviceReady )
         return;
 
     assert( _p_sound && "sound has not been created, first call initialize!" );

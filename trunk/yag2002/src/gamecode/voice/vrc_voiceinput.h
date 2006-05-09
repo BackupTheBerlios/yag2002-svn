@@ -145,6 +145,9 @@ class VoiceMicrophoneInput: public BaseVoiceInput
 
         //! Stop / continue grabbing
         void                                        stop( bool st );
+
+        //! Identifies whether the micro device has been initialized properly
+        bool                                        _inputDeviceReady;
 };
 
 //! Class for capturing file as input
