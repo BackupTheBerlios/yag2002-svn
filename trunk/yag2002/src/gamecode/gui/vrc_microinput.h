@@ -37,7 +37,7 @@ namespace vrc
 {
 
 //! Class for setting up microphone input device
-class MicrophoneInput : public OpenThreads::Thread
+class MicrophoneInput
 {
     public:
 
@@ -77,14 +77,8 @@ class MicrophoneInput : public OpenThreads::Thread
 
     protected:
 
-        //! Thread's run method
-        void                                        run();
-
         //! Start capturing input from given device
         bool                                        setupInputCapturing( unsigned int deviceid );
-
-        //! Stop capturing input
-        void                                        destroyInputCapturing();
 
         //! Sound system
         FMOD::System*                               _p_soundSystem;

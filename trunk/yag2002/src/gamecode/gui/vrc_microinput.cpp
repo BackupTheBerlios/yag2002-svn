@@ -112,8 +112,7 @@ bool MicrophoneInput::getInputDevices( MicrophoneInput::InputDeviceMap& devices 
 
 bool MicrophoneInput::setupInputCapturing( unsigned int deviceid )
 {
-    if ( _p_soundSystem )
-        _p_soundSystem->release();
+    assert( ( _p_soundSystem == NULL ) && "MicrophoneInput: sound system already created!" );
 
     FMOD_RESULT result;
 
@@ -142,18 +141,7 @@ bool MicrophoneInput::setupInputCapturing( unsigned int deviceid )
         return false;
     }
 
-    _p_soundSystem->recordStart( _p_sound, true );
-
     return true;
-}
-
-void MicrophoneInput::destroyInputCapturing()
-{
-    _p_soundSystem->release();
-
-    _p_soundSystem = NULL;
-    _p_channel     = NULL;
-    _p_sound       = NULL;
 }
 
 bool MicrophoneInput::setInputDevice( unsigned int deviceid )
@@ -161,7 +149,13 @@ bool MicrophoneInput::setInputDevice( unsigned int deviceid )
     if ( _microTestRunning )
     {
         endMicroTest();
-        destroyInputCapturing();
+
+        if ( !setupInputCapturing( deviceid ) )
+            return false;
+    
+        beginMicroTest();
+
+        return true;
     }
 
     return setupInputCapturing( deviceid );
@@ -182,8 +176,6 @@ void MicrophoneInput::setInputGain( float gain )
 
 void MicrophoneInput::setOutputGain( float gain )
 {
-    assert( _p_channel && "MicrophoneInput: micro test is already running!" );
-
     // limit the gain to [ 0 ... 2 ]
     _outputGain = std::min( std::max( 0.0f, gain ), 2.0f );
 
@@ -197,7 +189,7 @@ void MicrophoneInput::setOutputGain( float gain )
 
 void MicrophoneInput::beginMicroTest()
 {
-    assert( ( _p_sound == NULL ) && "MicrophoneInput: micro test is already running!" );
+    assert( _p_soundSystem && "MicrophoneInput: first set the input device using 'setInputDevice'!" );
 
     if ( _microTestRunning )
         return;
@@ -232,9 +224,6 @@ void MicrophoneInput::beginMicroTest()
 
     // start recording
     _p_soundSystem->recordStart( _p_sound, true );
-
-    // start the sound update thread
-    start();
 }
 
 void MicrophoneInput::endMicroTest()
@@ -244,30 +233,12 @@ void MicrophoneInput::endMicroTest()
 
     // stop recording
     _p_soundSystem->recordStop();
-
-    // try to kill the update thread if it is running
-    if ( isRunning() )
-    {
-        cancel();
-        // wait until the thread has been shut down
-        while( isRunning() );
-    }
-
-    if ( _p_sound )
-    {
-        _p_sound->release();
-        _p_sound = NULL;
-    }
+    _p_soundSystem->release();
+    _p_soundSystem = NULL;
+    _p_channel     = NULL;
+    _p_sound       = NULL;
 
     _microTestRunning = false;
-}
-
-void MicrophoneInput::run()
-{
-    while ( !testCancel() )
-    {
-        _p_soundSystem->update();
-    }
 }
 
 } // namespace vrc

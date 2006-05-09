@@ -904,7 +904,6 @@ bool DialogGameSettings::onVoiceInputDeviceChanged( const CEGUI::EventArgs& arg 
         {
             unsigned int inputdevice = _inputDevices->getItemIndex( p_item );
             _p_microInput->setInputDevice( inputdevice );
-            _p_microInput->beginMicroTest();
         }
     }
 
