@@ -159,18 +159,16 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
         _p_codec->setEncoderQuality( 10 );
         _p_codec->setupEncoder();
 
-        // create a file input as voice source for testing if a test file is given
-        // the file must have following format: PCM16
-        // if no test file is given then we take the microphone as input ( normal case )
-        if ( _testFile.length() )
-            _p_soundInput = new VoiceFileInput( _testFile, NULL, _p_codec );
-        else
-            _p_soundInput = new VoiceMicrophoneInput( NULL, _p_codec );
-
-        _p_soundInput->initialize();
-        _p_soundInput->setInputGain( _inputGain );
-        // we begin with input grabbing when at least one sender is active
-        _p_soundInput->stop( true );
+        unsigned int inputdevice;
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_INPUT_DEVICE, inputdevice );
+        _p_soundInput = new VoiceMicrophoneInput( NULL, _p_codec );
+        if ( inputdevice != VRC_GS_VOICECHAT_INPUT_DEVICE_NA )
+        {
+            _p_soundInput->initialize();
+            _p_soundInput->setInputGain( _inputGain );
+            // we begin with input grabbing when at least one sender is active
+            _p_soundInput->stop( true );
+        }
     }
     catch ( const NetworkSoundExpection& e )
     {
