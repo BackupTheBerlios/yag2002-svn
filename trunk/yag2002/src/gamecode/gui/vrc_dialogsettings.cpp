@@ -1029,7 +1029,7 @@ bool BtnInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAction
     }
 
     // check for mouse buttons
-    unsigned int buttonMask = ea.getButtonMask();
+    unsigned int buttonMask = p_eventAdapter->getButtonMask();
     // left mouse button
     if ( buttonMask & 
         ( 
