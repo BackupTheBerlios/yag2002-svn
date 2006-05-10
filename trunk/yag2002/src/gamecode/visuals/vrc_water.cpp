@@ -313,6 +313,10 @@ void EnWater::handleNotification( const yaf3d::EntityNotification& notification 
 
             if ( _usedInMenu )
                 yaf3d::EntityManager::get()->deleteEntity( this );
+
+            // release the shader state set
+            s_stateSet = NULL;
+
             break;
 
         default:
