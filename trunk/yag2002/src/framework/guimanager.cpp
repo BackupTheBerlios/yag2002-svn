@@ -627,7 +627,7 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
     }
 
     // handle mouse
-    unsigned int buttonMask = ea.getButtonMask();
+    unsigned int buttonMask = p_eventAdapter->getButtonMask();
     static bool  lbtn_down  = false;
     static bool  lbtn_up    = true;
     static bool  rbtn_down  = false;
@@ -700,8 +700,8 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
         if ( ( eventType == osgGA::GUIEventAdapter::MOVE ) || ( eventType == osgGA::GUIEventAdapter::DRAG ) )
         {
             // adjust the pointer position
-            float x = ea.getX();
-            float y = ea.getY();
+            float x = p_eventAdapter->getX();
+            float y = p_eventAdapter->getY();
             CEGUI::System::getSingleton().injectMousePosition( x, y );
         }
     }
