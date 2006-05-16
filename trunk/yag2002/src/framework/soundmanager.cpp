@@ -122,6 +122,8 @@ void SoundManager::update( float deltaTime )
 
 void SoundManager::initialize() throw ( SoundException )
 {
+    assert( ( _p_system == NULL ) && "sound system is already initialized, shutdown first!" );
+
     FMOD_RESULT result;
 
     // create sound system
@@ -181,7 +183,7 @@ void SoundManager::initialize() throw ( SoundException )
     // setup music sound group
     {
         FMOD::ChannelGroup* p_groupMusic;
-        result = _p_system->createChannelGroup( "SoundGroupCommon", &p_groupMusic );
+        result = _p_system->createChannelGroup( "SoundGroupMusic", &p_groupMusic );
         if ( result != FMOD_OK )
             throw SoundException( "Problem creating music sound group" );
 
@@ -250,9 +252,10 @@ unsigned int SoundManager::createSound( unsigned int soundgroup, const std::stri
 
     FMOD_RESULT result;
 
-    SoundData* p_soundData  = new SoundData;
-    p_soundData->_p_sound   = NULL;
-    p_soundData->_p_channel = NULL;
+    SoundData* p_soundData       = new SoundData;
+    p_soundData->_p_sound        = NULL;
+    p_soundData->_p_channel      = NULL;
+    p_soundData->_p_channelGroup = NULL;
 
     // create sound
     result = _p_system->createSound( std::string( Application::get()->getMediaPath() + file ).c_str(), flags, 0, &p_soundData->_p_sound );
@@ -273,13 +276,6 @@ unsigned int SoundManager::createSound( unsigned int soundgroup, const std::stri
     if ( fabs( tmpvol - volume ) > 0.01f )
         log_warning << "SoundManager, createSound: volume must be in range [0..1], clamped to " << tmpvol << std::endl;
 
-    result = p_soundData->_p_channel->setPaused( true );
-    if ( result != FMOD_OK )
-    {
-        delete p_soundData;
-        throw SoundException( "Could not create sound for " + file + ", problem setting pause mode, reason: " + std::string( FMOD_ErrorString( result ) ) );
-    }
-
     // limit the volume range to 0..1
     volume = tmpvol;
 	result = p_soundData->_p_channel->setVolume( volume );
@@ -289,15 +285,21 @@ unsigned int SoundManager::createSound( unsigned int soundgroup, const std::stri
         throw SoundException( "could not create sound for " + file + ", problem setting volume, reason: " + std::string( FMOD_ErrorString( result ) ) );
     }    
 
+    // set the channel group
+    p_soundData->_p_channelGroup = p_soundgroup;
+    p_soundData->_p_channel->setChannelGroup( p_soundgroup );
+    if ( result != FMOD_OK )
+    {
+        delete p_soundData;
+        throw SoundException( "could not set requested channel group: " + getSoundGroupStringFromId( soundgroup ) + " for " + file + ", reason: " + std::string( FMOD_ErrorString( result ) ) );
+    }
+
     // store the created sound in internal map
     _soundIDCounter++;
     _mapSoundData[ _soundIDCounter ] = p_soundData;
 
     if ( autoplay )
         playSound( _soundIDCounter );
-
-    // set the channel group
-    p_soundData->_p_channel->setChannelGroup( p_soundgroup );
 
     log_verbose << "SoundManager: created sound '" << file << "', id: " << _soundIDCounter << ", group: " << getSoundGroupStringFromId( soundgroup ) << std::endl;
 
@@ -320,6 +322,8 @@ void SoundManager::releaseSound( unsigned int soundID ) throw ( SoundException )
     p_data->_p_channel->stop();
     // release sound
     p_data->_p_sound->release();
+    // delete sound data structure
+    delete p_data;
     // remove sound from internal map
     _mapSoundData.erase( p_sounddata );
 
@@ -347,9 +351,10 @@ void SoundManager::playSound( unsigned int soundID )
         return;
 
     SoundData* p_data = p_sounddata->second;
-
+    _p_system->playSound( FMOD_CHANNEL_REUSE, p_data->_p_sound, true, &p_data->_p_channel );
+    // re-set the channel group, fmod seems to lose the channel group when start playing
+    p_data->_p_channel->setChannelGroup( p_data->_p_channelGroup );
     p_data->_p_channel->setPaused( false );
-    _p_system->playSound( FMOD_CHANNEL_REUSE, p_data->_p_sound, false, &p_data->_p_channel );
 }
 
 void SoundManager::pauseSound( unsigned int soundID )

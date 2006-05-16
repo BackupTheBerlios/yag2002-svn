@@ -168,6 +168,8 @@ class SoundManager : public Singleton< SoundManager >
             FMOD::Sound*                                _p_sound;
 
             FMOD::Channel*                              _p_channel;
+
+            FMOD::ChannelGroup*                         _p_channelGroup;
         };
 
         //! Type for sound data map
