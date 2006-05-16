@@ -107,14 +107,15 @@ void EnPlayerSound::setPlayer( BasePlayerImplementation* p_player )
 
 void EnPlayerSound::postInitialize()
 {
+    // register entity for getting notifications
+    yaf3d::EntityManager::get()->registerNotification( this, true );
+
     // is fx sound enabled?
     bool sndenable;
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_FX_ENABLE, sndenable );
     if ( !sndenable )
         return;
 
-    // register entity for getting notifications
-    yaf3d::EntityManager::get()->registerNotification( this, true );
     // setup all player sounds
     setupSounds();
 }
@@ -168,7 +169,7 @@ unsigned int EnPlayerSound::createSound( const std::string& filename )
         soundID      = yaf3d::SoundManager::get()->createSound( soundgroup, filename, volume, false, yaf3d::SoundManager::fmodDefaultCreationFlags3D );
         FMOD::Channel* p_channel = yaf3d::SoundManager::get()->getSoundChannel( soundID );
         p_channel->set3DMinMaxDistance( _minDistance, _maxDistance );
-    } 
+    }
     catch ( const yaf3d::SoundException& e )
     {
         log_error << ENTITY_NAME_PLSOUND << ":" << getInstanceName() << "  error loading sound file " << filename << std::endl;
