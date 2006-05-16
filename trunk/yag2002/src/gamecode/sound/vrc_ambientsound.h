@@ -38,7 +38,7 @@ namespace vrc
 
 #define ENTITY_NAME_AMBIENTSOUND    "AmbientSound"
 
-//! 3DSound Entity
+//! Ambient sound Entity
 class EnAmbientSound : public yaf3d::BaseEntity
 {
     public:

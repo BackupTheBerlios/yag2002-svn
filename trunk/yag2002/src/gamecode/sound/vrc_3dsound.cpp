@@ -205,23 +205,12 @@ void En3DSound::setupSound()
         {
             addToTransformationNode( p_mesh );
             setPosition( _position );
-            // register entity in order to get updated per simulation step
-            yaf3d::EntityManager::get()->registerUpdate( this );   
         }
         else
         {
-            log_error << "3DSound: error loading mesh file for sound source 'sound/soundsrc.osg'" << std::endl;
+            log_error << "3DSound: error loading mesh file for sound source: " << _sourceMesh << std::endl;
         }
     }
-}
-
-void En3DSound::updateEntity( float deltaTime )
-{
-    static float a = 0;
-    a = ( a < 2.0f * osg::PI ) ? a + deltaTime : a - 2.0f * osg::PI + deltaTime;
-    osg::Quat quat;
-    quat.makeRotate( a,  osg::Vec3f( 0.0f, 0.0f, 1.0f ) );
-    setRotation( quat );
 }
 
 void En3DSound::startPlaying( bool cont )

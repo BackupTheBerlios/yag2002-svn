@@ -69,9 +69,6 @@ class En3DSound : public yaf3d::BaseEntity
         //! Setup or destroy sound depending on menu settings
         void                                        setupSound();
 
-        //! This entity needs updating
-        void                                        updateEntity( float deltaTime );
-
         //! Sound file name
         std::string                                 _soundFile;
 
