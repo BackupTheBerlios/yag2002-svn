@@ -54,8 +54,7 @@ namespace vrc
 
 // menu background sound related parameters
 #define BCKRGD_SND_FADEIN_PERIOD        2.0f
-#define BCKRGD_SND_FADEOUT_PERIOD       0.4f
-#define BCKRGD_SND_PLAY_VOLUME          0.5f
+#define BCKRGD_SND_FADEOUT_PERIOD       1.5f
 
 //! Input handler class for menu, it handles ESC key press and toggles the menu gui
 class MenuInputHandler : public vrc::gameutils::GenericInputHandler< EnMenu >
@@ -458,6 +457,8 @@ EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume, b
     // init entity
     p_ent->initialize();
     p_ent->postInitialize();
+    // this entity instance needs no notification handling
+    yaf3d::EntityManager::get()->registerNotification( p_ent, false );
 
     return p_ent;
 }
@@ -821,7 +822,7 @@ void EnMenu::updateEntity( float deltaTime )
                 break;
             }
 
-            float volume = std::min( BCKRGD_SND_PLAY_VOLUME * ( _soundFadingCnt / BCKRGD_SND_FADEIN_PERIOD ), _backgrdSoundVolume );
+            float volume = std::min( _soundFadingCnt / BCKRGD_SND_FADEIN_PERIOD, _backgrdSoundVolume );
             _p_backgrdSound->setVolume( volume );
         }
         break;
@@ -837,7 +838,7 @@ void EnMenu::updateEntity( float deltaTime )
                 break;
             }
 
-            float volume = std::max( BCKRGD_SND_PLAY_VOLUME * ( 1.0f - _soundFadingCnt / BCKRGD_SND_FADEOUT_PERIOD ), 0.0f );
+            float volume = std::max( _backgrdSoundVolume * ( 1.0f - _soundFadingCnt / BCKRGD_SND_FADEOUT_PERIOD ), 0.0f );
             _p_backgrdSound->setVolume( volume );
         }
         break;
@@ -912,8 +913,11 @@ void EnMenu::enter()
     // activate the menu scene
     switchMenuScene( true );
 
-    // trigger fading in the menu sound
-    _menuSoundState = SoundFadeIn;
+    // trigger fading in the menu sound, if music is enabled
+    bool musicenable;
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_MUSIC_ENABLE, musicenable );
+    if ( musicenable )
+        _menuSoundState = SoundFadeIn;
 
     // set menu state
     _menuState = Visible;
@@ -938,8 +942,11 @@ void EnMenu::leave()
     // deactivate the menu scene
     switchMenuScene( false );
 
-    // trigger fading out the menu sound
-    _menuSoundState = SoundFadeOut;
+    // trigger fading out the menu sound, if music is enabled
+    bool musicenable;
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_MUSIC_ENABLE, musicenable );
+    if ( musicenable )
+        _menuSoundState = SoundFadeOut;
 
     // set menu state
     _menuState = Hidden;
@@ -979,6 +986,19 @@ void EnMenu::onSettingsDialogClose()
 {
     _p_menuWindow->enable();
     _settingsDialog->show( false );
+}
+
+void EnMenu::setBkgMusicEnable( bool en )
+{
+    if ( _p_backgrdSound )
+    {
+        // use pausing and unpausing instead of stopping / unstopping sound
+        //  stopping a sound can cause a lost of channel group affilication!
+        if ( en )
+            _p_backgrdSound->startPlaying( true );
+        else
+            _p_backgrdSound->stopPlaying( true );
+    }
 }
 
 void EnMenu::setBkgMusicVolume( float volume )

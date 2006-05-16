@@ -135,8 +135,11 @@ class EnMenu :  public yaf3d::BaseEntity
         //---
         void                                        onSettingsDialogClose();
 
+        //! Enable / disable background music
+        void                                        setBkgMusicEnable( bool en );
+
         //! Set background music volume
-        void										setBkgMusicVolume( float volume );
+        void                                        setBkgMusicVolume( float volume );
         //---
 
         //! Begin intro

@@ -381,9 +381,9 @@ void DialogGameSettings::setupControls()
         _p_volumeMusic->setScrollPosition( _volumeMusic );
 
         if ( musicenable )
-            yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMusic, 0.0f );
-        else
             yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMusic, _volumeMusic );
+        else
+            yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMusic, 0.0f );
 
         if ( !musicenable )
             _p_volumeMusic->setEnabled( false );
@@ -404,10 +404,7 @@ void DialogGameSettings::setupControls()
         else                        
             yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupFX, 0.0f );
 
-        if ( !fxenable )
-            _p_volumeFX->setEnabled( false );
-        else
-            _p_volumeFX->setEnabled( true );
+        _p_volumeFX->setEnabled( fxenable );
 
 
         // voice chat
@@ -819,12 +816,14 @@ bool DialogGameSettings::onEnableMusicChanged( const CEGUI::EventArgs& arg )
         _volumeMusic = _p_volumeMusic->getScrollPosition();
         _p_volumeMusic->setEnabled( true );
         yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMusic, _volumeMusic );
+        _p_menuEntity->setBkgMusicEnable( true );
         _p_menuEntity->setBkgMusicVolume( _volumeMusic );
     }
     else
     {
         _p_volumeMusic->setEnabled( false );
         yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMusic, 0.0f );
+        _p_menuEntity->setBkgMusicEnable( false );
         _p_menuEntity->setBkgMusicVolume( 0.0f );
     }
     return true;
@@ -868,6 +867,7 @@ bool DialogGameSettings::onFXVolumeChanged( const CEGUI::EventArgs& arg )
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_SCROLLBAR );
 
     _volumeFX = _p_volumeFX->getScrollPosition();
+    yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupFX, _volumeFX );
 
     return true;
 }
