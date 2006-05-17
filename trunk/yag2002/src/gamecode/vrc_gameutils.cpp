@@ -300,7 +300,7 @@ unsigned int GuiUtils::createSound( const std::string& name, const std::string& 
         // all gui sounds are of type Common
         soundID = yaf3d::SoundManager::get()->createSound( yaf3d::SoundManager::SoundGroupCommon, filename, volume, false, yaf3d::SoundManager::fmodDefaultCreationFlags2D );
         // give the gui sound a high priority
-        yaf3d::SoundManager::get()->getSoundChannel( soundID )->setPriority( 100 );
+        yaf3d::SoundManager::get()->getSoundResource( soundID )->getChannel()->setPriority( 100 );
     } 
     catch ( const yaf3d::SoundException& e )
     {
