@@ -91,6 +91,52 @@ class SoundManager : public Singleton< SoundManager >
             SoundGroupFX              // special effect sound group
         };
 
+        //! Class for storage of Sound resources
+        class SoundResource
+        {
+            public:
+
+                //! Get sound object
+                FMOD::Sound* const                      getSound() const
+                                                        {
+                                                            return _p_sound;
+                                                        }
+
+                //! Get sound channel
+                FMOD::Channel* const                    getChannel() const
+                                                        {
+                                                            return _p_channel;
+                                                        }
+
+                //! Get channel group
+                FMOD::ChannelGroup* const               getChannelGroup() const
+                                                        {
+                                                            return _p_channelGroup;
+                                                        }
+
+            protected:
+                                                        SoundResource() :
+                                                         _p_sound( NULL ),
+                                                         _p_channel( NULL ),
+                                                         _p_channelGroup( NULL )
+                                                        {
+                                                        }
+
+                virtual                                 ~SoundResource()
+                                                        {
+                                                            if ( _p_sound )
+                                                                _p_sound->release();
+                                                        }
+
+                FMOD::Sound*                            _p_sound;
+
+                FMOD::Channel*                          _p_channel;
+
+                FMOD::ChannelGroup*                     _p_channelGroup;
+
+            friend class yaf3d::SoundManager;
+        };
+
         //! Given a string for sound group returns its id ( see above ). Throws an exception passing an invalid string.
         //! Valid strings are:
         //!    Master
@@ -110,11 +156,11 @@ class SoundManager : public Singleton< SoundManager >
         //! Release sound resouce given its id.
         void                                        releaseSound( unsigned int soundID ) throw ( SoundException );
 
-        //! Return associated channel for given sound.
-        FMOD::Channel*                              getSoundChannel( unsigned int soundID ) throw ( SoundException );
+        //! Return associated fmod sound resources for given sound. Use this for performing advanced operations on sound, channel, and channel group.
+        SoundManager::SoundResource*                getSoundResource( unsigned int soundID ) throw ( SoundException );
 
-        //! Play sound with given ID.
-        void                                        playSound( unsigned int soundID );
+        //! Play sound with given ID. Set 'paused' in order to start the sound in paused state. You have to unpause it yourself using its channel in associated 'SoundResource' ( see 'getSoundResource' method ).
+        void                                        playSound( unsigned int soundID, bool paused = false );
 
         //! Pause sound with given ID.
         void                                        pauseSound( unsigned int soundID );
@@ -162,21 +208,11 @@ class SoundManager : public Singleton< SoundManager >
         //! Sound group map
         SoundGroupMap                               _soundGroupMap;
 
-        //! Structure used for internal storage of Sound sources
-        struct SoundData
-        {
-            FMOD::Sound*                                _p_sound;
-
-            FMOD::Channel*                              _p_channel;
-
-            FMOD::ChannelGroup*                         _p_channelGroup;
-        };
-
-        //! Type for sound data map
-        typedef std::map< unsigned int, SoundData* >    MapSoundData;
+        //! Type for sound resource map
+        typedef std::map< unsigned int, SoundResource* > MapSoundResource;
 
         //! Sound data map for internal housekeeping
-        MapSoundData                                _mapSoundData;
+        MapSoundResource                            _mapSoundResource;
 
         //! Used for creating unique IDs for sound sources
         unsigned int                                _soundIDCounter;

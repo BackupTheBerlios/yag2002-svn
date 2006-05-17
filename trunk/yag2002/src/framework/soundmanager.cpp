@@ -81,8 +81,8 @@ void SoundManager::shutdown()
     _p_system       = NULL;
     _soundIDCounter = 0;
 
-    if ( _mapSoundData.size() )
-        log_warning << "*** SoundManager::shutdown: " << _mapSoundData.size() << " sound sources were not released before shutdown!" << std::endl;
+    if ( _mapSoundResource.size() )
+        log_warning << "*** SoundManager::shutdown: " << _mapSoundResource.size() << " sound sources were not released before shutdown!" << std::endl;
 
     // destroy singleton
     destroy();
@@ -252,23 +252,23 @@ unsigned int SoundManager::createSound( unsigned int soundgroup, const std::stri
 
     FMOD_RESULT result;
 
-    SoundData* p_soundData       = new SoundData;
-    p_soundData->_p_sound        = NULL;
-    p_soundData->_p_channel      = NULL;
-    p_soundData->_p_channelGroup = NULL;
+    SoundResource* p_resource   = new SoundResource;
+    p_resource->_p_sound        = NULL;
+    p_resource->_p_channel      = NULL;
+    p_resource->_p_channelGroup = NULL;
 
     // create sound
-    result = _p_system->createSound( std::string( Application::get()->getMediaPath() + file ).c_str(), flags, 0, &p_soundData->_p_sound );
+    result = _p_system->createSound( std::string( Application::get()->getMediaPath() + file ).c_str(), flags, 0, &p_resource->_p_sound );
     if ( result != FMOD_OK )
     {
-        delete p_soundData;
+        delete p_resource;
         throw SoundException( "Could not create sound for " + file + ", reason: " + std::string( FMOD_ErrorString( result ) ) );
     }
 
-    result = _p_system->playSound( FMOD_CHANNEL_FREE, p_soundData->_p_sound, true, &p_soundData->_p_channel );
+    result = _p_system->playSound( FMOD_CHANNEL_FREE, p_resource->_p_sound, true, &p_resource->_p_channel );
     if ( result != FMOD_OK )
     {
-        delete p_soundData;
+        delete p_resource;
         throw SoundException( "Could not create sound for " + file + ", problem pausing, reason: " + std::string( FMOD_ErrorString( result ) ) );
     }
 
@@ -278,25 +278,25 @@ unsigned int SoundManager::createSound( unsigned int soundgroup, const std::stri
 
     // limit the volume range to 0..1
     volume = tmpvol;
-	result = p_soundData->_p_channel->setVolume( volume );
+	result = p_resource->_p_channel->setVolume( volume );
     if ( result != FMOD_OK )
     {
-        delete p_soundData;
+        delete p_resource;
         throw SoundException( "could not create sound for " + file + ", problem setting volume, reason: " + std::string( FMOD_ErrorString( result ) ) );
     }    
 
     // set the channel group
-    p_soundData->_p_channelGroup = p_soundgroup;
-    p_soundData->_p_channel->setChannelGroup( p_soundgroup );
+    p_resource->_p_channelGroup = p_soundgroup;
+    p_resource->_p_channel->setChannelGroup( p_soundgroup );
     if ( result != FMOD_OK )
     {
-        delete p_soundData;
+        delete p_resource;
         throw SoundException( "could not set requested channel group: " + getSoundGroupStringFromId( soundgroup ) + " for " + file + ", reason: " + std::string( FMOD_ErrorString( result ) ) );
     }
 
     // store the created sound in internal map
     _soundIDCounter++;
-    _mapSoundData[ _soundIDCounter ] = p_soundData;
+    _mapSoundResource[ _soundIDCounter ] = p_resource;
 
     if ( autoplay )
         playSound( _soundIDCounter );
@@ -308,8 +308,8 @@ unsigned int SoundManager::createSound( unsigned int soundgroup, const std::stri
 
 void SoundManager::releaseSound( unsigned int soundID ) throw ( SoundException )
 {
-    MapSoundData::iterator p_sounddata = _mapSoundData.find( soundID );
-    if ( p_sounddata == _mapSoundData.end() )
+    MapSoundResource::iterator p_soundresource = _mapSoundResource.find( soundID );
+    if ( p_soundresource == _mapSoundResource.end() )
     {
         std::stringstream str;
         str << "sound with given ID does not exist: " << soundID;
@@ -317,74 +317,74 @@ void SoundManager::releaseSound( unsigned int soundID ) throw ( SoundException )
     }
 
     // release sound
-    SoundData* p_data = p_sounddata->second;
-    // make the channel available for reuse
-    p_data->_p_channel->stop();
-    // release sound
-    p_data->_p_sound->release();
-    // delete sound data structure
-    delete p_data;
+    delete p_soundresource->second;
+  
     // remove sound from internal map
-    _mapSoundData.erase( p_sounddata );
+    _mapSoundResource.erase( p_soundresource );
 
     log_verbose << "SoundManager: releasing sound, id '" << soundID << "'" << std::endl;
 }
 
-FMOD::Channel* SoundManager::getSoundChannel( unsigned int soundID ) throw ( SoundException )
+
+SoundManager::SoundResource* SoundManager::getSoundResource( unsigned int soundID ) throw ( SoundException )
 {
-    MapSoundData::iterator p_sounddata = _mapSoundData.find( soundID );
-    if ( p_sounddata == _mapSoundData.end() )
+    MapSoundResource::iterator p_soundresource = _mapSoundResource.find( soundID );
+    if ( p_soundresource == _mapSoundResource.end() )
     {
         std::stringstream str;
-        str << "sound with given ID does not exist: " << soundID;
+        str << "sound data with given sound ID does not exist: " << soundID;
         throw SoundException( str.str() );
     }
 
-    SoundData* p_data = p_sounddata->second;
-    return p_data->_p_channel;
+    SoundResource* p_resource = p_soundresource->second;
+    return p_resource;
 }
 
-void SoundManager::playSound( unsigned int soundID )
+void SoundManager::playSound( unsigned int soundID, bool paused )
 {
-    MapSoundData::iterator p_sounddata = _mapSoundData.find( soundID );
-    if ( p_sounddata == _mapSoundData.end() )
+    MapSoundResource::iterator p_soundresource = _mapSoundResource.find( soundID );
+    if ( p_soundresource == _mapSoundResource.end() )
         return;
 
-    SoundData* p_data = p_sounddata->second;
-    _p_system->playSound( FMOD_CHANNEL_REUSE, p_data->_p_sound, true, &p_data->_p_channel );
+    SoundResource* p_resource = p_soundresource->second;
+    
+    _p_system->playSound( FMOD_CHANNEL_REUSE, p_resource->_p_sound, true, &p_resource->_p_channel );
+    
     // re-set the channel group, fmod seems to lose the channel group when start playing
-    p_data->_p_channel->setChannelGroup( p_data->_p_channelGroup );
-    p_data->_p_channel->setPaused( false );
+    p_resource->_p_channel->setChannelGroup( p_resource->_p_channelGroup );
+    
+    if ( !paused )
+        p_resource->_p_channel->setPaused( false );
 }
 
 void SoundManager::pauseSound( unsigned int soundID )
 {
-    MapSoundData::iterator p_sounddata = _mapSoundData.find( soundID );
-    if ( p_sounddata == _mapSoundData.end() )
+    MapSoundResource::iterator p_soundresource = _mapSoundResource.find( soundID );
+    if ( p_soundresource == _mapSoundResource.end() )
         return;
 
-    SoundData* p_data = p_sounddata->second;
-    p_data->_p_channel->setPaused( true );
+    SoundResource* p_resource = p_soundresource->second;
+    p_resource->_p_channel->setPaused( true );
 }
 
 void SoundManager::continueSound( unsigned int soundID )
 {
-    MapSoundData::iterator p_sounddata = _mapSoundData.find( soundID );
-    if ( p_sounddata == _mapSoundData.end() )
+    MapSoundResource::iterator p_soundresource = _mapSoundResource.find( soundID );
+    if ( p_soundresource == _mapSoundResource.end() )
         return;
 
-    SoundData* p_data = p_sounddata->second;
-    p_data->_p_channel->setPaused( false );
+    SoundResource* p_resource = p_soundresource->second;
+    p_resource->_p_channel->setPaused( false );
 }
 
 void SoundManager::stopSound( unsigned int soundID )
 {
-    MapSoundData::iterator p_sounddata = _mapSoundData.find( soundID );
-    if ( p_sounddata == _mapSoundData.end() )
+    MapSoundResource::iterator p_soundresource = _mapSoundResource.find( soundID );
+    if ( p_soundresource == _mapSoundResource.end() )
         return;
 
-    SoundData* p_data = p_sounddata->second;
-    p_data->_p_channel->stop();
+    SoundResource* p_resource = p_soundresource->second;
+    p_resource->_p_channel->stop();
 }
 
 void SoundManager::setSoundVolume( unsigned int soundID, float volume )
@@ -392,28 +392,28 @@ void SoundManager::setSoundVolume( unsigned int soundID, float volume )
     if ( ( volume > 1.0f ) || ( volume < 0.0f ) )
         throw SoundException( "Volume out of range, it must be in range 0..1" );
 
-    MapSoundData::iterator p_sounddata = _mapSoundData.find( soundID );
-    if ( p_sounddata == _mapSoundData.end() )
+    MapSoundResource::iterator p_soundresource = _mapSoundResource.find( soundID );
+    if ( p_soundresource == _mapSoundResource.end() )
     {
         std::stringstream str;
         str << "sound with given ID does not exist: " << soundID;
         throw SoundException( str.str() );
     }
 
-    p_sounddata->second->_p_channel->setVolume( volume );
+    p_soundresource->second->_p_channel->setVolume( volume );
 }
 
 void SoundManager::setSoundMute( unsigned int soundID, bool en )
 {
-    MapSoundData::iterator p_sounddata = _mapSoundData.find( soundID );
-    if ( p_sounddata == _mapSoundData.end() )
+    MapSoundResource::iterator p_soundresource = _mapSoundResource.find( soundID );
+    if ( p_soundresource == _mapSoundResource.end() )
     {
         std::stringstream str;
         str << "sound with given ID does not exist: " << soundID;
         throw SoundException( str.str() );
     }
 
-    p_sounddata->second->_p_channel->setMute( en );
+    p_soundresource->second->_p_channel->setMute( en );
 }
 
 void SoundManager::setGroupVolume( unsigned int soundgroup, float volume )
