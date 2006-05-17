@@ -131,11 +131,11 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
     {
         if ( p_phys->getSoundTimer() <= 0.0f )
         {
+            // reset sound timer
+            p_phys->setSoundTimer( SND_PLAY_RELAX_TIME );
+
             if ( p_phys->isMoving() )
             {
-                // reset sound timer
-                p_phys->setSoundTimer( SND_PLAY_RELAX_TIME );
-
                 unsigned int materialType = static_cast< unsigned int >( NewtonMaterialGetContactFaceAttribute( p_material ) );
                 switch ( materialType )
                 {
@@ -166,7 +166,6 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
             else
             {        
                 p_playerSound->stopPlayingAll();
-                p_phys->setSoundTimer( SND_PLAY_RELAX_TIME );
             }
         }
     }
