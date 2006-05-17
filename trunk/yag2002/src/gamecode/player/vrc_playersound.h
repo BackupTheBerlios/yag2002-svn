@@ -151,6 +151,10 @@ class EnPlayerSound  : public yaf3d::BaseEntity
         //! All sound name / sound id pairs go here
         MapPlayerSounds                             _mapSounds;
 
+        //! Sound position
+        FMOD_VECTOR                                 _soundPosition;
+
+        //! Player implementation
         BasePlayerImplementation*                   _p_playerImpl;
 };
 

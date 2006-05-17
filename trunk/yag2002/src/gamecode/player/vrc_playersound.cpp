@@ -58,6 +58,8 @@ _p_playerImpl( NULL )
     getAttributeManager().addAttribute( "soundWalkStone"      , _walkStone   );
     getAttributeManager().addAttribute( "soundWalkMetal"      , _walkMetal   );
     getAttributeManager().addAttribute( "soundWalkGrass"      , _walkGrass   );
+
+    _soundPosition.x = _soundPosition.y = _soundPosition.z = 0.0f;
 }
 
 EnPlayerSound::~EnPlayerSound()
@@ -167,8 +169,6 @@ unsigned int EnPlayerSound::createSound( const std::string& filename )
         unsigned int soundgroup = yaf3d::SoundManager::get()->getSoundGroupIdFromString( "FX" );
         float volume = std::max( std::min( _volume, 1.0f ), 0.0f );
         soundID      = yaf3d::SoundManager::get()->createSound( soundgroup, filename, volume, false, yaf3d::SoundManager::fmodDefaultCreationFlags3D );
-        FMOD::Channel* p_channel = yaf3d::SoundManager::get()->getSoundChannel( soundID );
-        p_channel->set3DMinMaxDistance( _minDistance, _maxDistance );
     }
     catch ( const yaf3d::SoundException& e )
     {
@@ -195,8 +195,16 @@ void EnPlayerSound::playSoundFx( unsigned int soundName )
         if ( p_beg->second != soundID )
             yaf3d::SoundManager::get()->pauseSound( p_beg->second );
 
-    // now play the new sound
+    // now play the new sound and refresh its min / max distance and position
     yaf3d::SoundManager::get()->playSound( soundID );
+    yaf3d::SoundManager::SoundResource* p_resource = yaf3d::SoundManager::get()->getSoundResource( soundID );
+    p_resource->getChannel()->set3DMinMaxDistance( _minDistance, _maxDistance );
+
+    FMOD_VECTOR pos;
+    pos.x = _soundPosition.x - _offset.x();
+    pos.y = _soundPosition.y - _offset.y();
+    pos.z = _soundPosition.z - _offset.z();
+    p_resource->getChannel()->set3DAttributes( &pos, NULL );
 }
 
 void EnPlayerSound::stopPlayingAll()
@@ -208,19 +216,9 @@ void EnPlayerSound::stopPlayingAll()
 
 void EnPlayerSound::updatePosition( const osg::Vec3f& pos )
 {
-    FMOD_VECTOR soundpos;
-    osg::Vec3f  destpos = pos - _offset;
-    soundpos.x = destpos.x();
-    soundpos.y = destpos.y();
-    soundpos.z = destpos.z();
-
-    FMOD::Channel* p_channel;
-    MapPlayerSounds::iterator p_beg = _mapSounds.begin(), p_end = _mapSounds.end();
-    for ( ; p_beg != p_end; ++p_beg )
-    {
-        p_channel = yaf3d::SoundManager::get()->getSoundChannel( p_beg->second );
-        p_channel->set3DAttributes( &soundpos, NULL );
-    }
+    _soundPosition.x = pos.x();
+    _soundPosition.y = pos.y();
+    _soundPosition.z = pos.z();
 }
 
 } // namespace vrc
