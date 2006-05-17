@@ -175,7 +175,7 @@ void EnAmbientSound::setupSound()
             flags = yaf3d::SoundManager::fmodDefaultCreationFlags2D;
 
         _soundID    = yaf3d::SoundManager::get()->createSound( soundgroup, _soundFile, _volume, _autoPlay, flags );
-        _p_channel  = yaf3d::SoundManager::get()->getSoundChannel( _soundID );
+        _p_channel  = yaf3d::SoundManager::get()->getSoundResource( _soundID )->getChannel();
     } 
     catch ( const yaf3d::SoundException& e )
     {

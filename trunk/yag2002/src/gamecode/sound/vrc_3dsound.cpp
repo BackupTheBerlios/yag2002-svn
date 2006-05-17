@@ -181,7 +181,7 @@ void En3DSound::setupSound()
             flags = yaf3d::SoundManager::fmodDefaultCreationFlags3D;
 
         _soundID    = yaf3d::SoundManager::get()->createSound( soundgroup, _soundFile, _volume, _autoPlay, flags );
-        _p_channel  = yaf3d::SoundManager::get()->getSoundChannel( _soundID );
+        _p_channel  = yaf3d::SoundManager::get()->getSoundResource( _soundID )->getChannel();
 
         // set position and velocity
         FMOD_VECTOR pos;
