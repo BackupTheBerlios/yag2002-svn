@@ -55,7 +55,7 @@ _decoderFrameSize( 0 )
     // determine the mode
     int modeID = -1;
 
-    if (_sampleRate > 48000 )
+    if ( _sampleRate > 48000 )
     {
         log_error << "NetworkSoundCodec: sample rate " << _sampleRate << " is too high, valid sample rate range is [ 6000 ... 48000 ]" << std::endl;
         return;

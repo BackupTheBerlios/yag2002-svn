@@ -60,6 +60,7 @@ class SoundNode
                                          _p_sound        = NULL;
                                          _p_channel      = NULL;
                                          _pingTimer      = 0.0f;
+                                         _senderID       = 0;
                                          _lastPaketStamp = 0;
                                          _p_sampleQueue  = new SoundSampleQueue;
                                          _p_codec        = new NetworkSoundCodec;
@@ -89,6 +90,9 @@ class SoundNode
         //! Sound channel
         FMOD::Channel*               _p_channel;
 
+        //! Unique sender ID
+        unsigned int                 _senderID;
+
         //! Timer for alive-signaling
         float                        _pingTimer;
 
@@ -116,17 +120,17 @@ void VoiceReceiver::shutdown()
 {
 //! TODO: remove this rip code later
 //*******************************
-    //// write out the ripped wav file
-    //{
-    //    SenderMap::iterator p_beg = _soundNodeMap.begin(), p_end = _soundNodeMap.end();
-    //    // we take the first sender and write it out
-    //    if ( p_beg != p_end )
-    //    {
-    //        // write out the rip
-    //        WaveWriterPCM16 wavwriter( VOICE_SAMPLE_RATE, WaveWriterPCM16::MONO );
-    //        wavwriter.write( yaf3d::Application::get()->getMediaPath() + std::string( "sender0-rip.wav" ), s_wavqueue );
-    //    }
-    //}
+    // write out the ripped wav file
+    {
+        SenderMap::iterator p_beg = _soundNodeMap.begin(), p_end = _soundNodeMap.end();
+        // we take the first sender and write it out
+        if ( p_beg != p_end )
+        {
+            // write out the rip
+            WaveWriterPCM16 wavwriter( VOICE_SAMPLE_RATE, WaveWriterPCM16::MONO );
+            wavwriter.write( yaf3d::Application::get()->getMediaPath() + std::string( "sender0-rip.wav" ), s_wavqueue );
+        }
+    }
 //*******************************
 
 
@@ -221,7 +225,7 @@ FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, 
             *p_sndbuffer++ = samplequeue.front();
 
 //! TODO: remove this later, it's only for ripping to a test wave file
-//            s_wavqueue.push( samplequeue.front() );
+            s_wavqueue.push( samplequeue.front() );
 
             samplequeue.pop();
         }
@@ -283,6 +287,10 @@ void VoiceReceiver::update( float deltaTime )
     // update sound system
     _p_soundSystem->update();
 
+    static char  s_buffer[ 512 ];
+    VoicePaket*  p_data   = NULL;
+    unsigned int senderID = 0xFFFFFFFF;
+
     // check for new connecting senders
 	RNReplicaNet::Transport* p_sender = _p_udpTransport->Accept();
     if ( p_sender )
@@ -293,8 +301,6 @@ void VoiceReceiver::update( float deltaTime )
         _soundNodeMap[ p_sender ] = p_soundnode;
     }
 
-    // poll incoming data from senders
-    static char s_buffer[ 512 ];
     SenderMap::iterator p_beg = _soundNodeMap.begin(), p_end = _soundNodeMap.end();
     for ( ; p_beg != p_end; ++p_beg )
     {
@@ -302,24 +308,38 @@ void VoiceReceiver::update( float deltaTime )
         p_sender = p_beg->first;
 
         // first check for dead senders
-        //if ( ( p_sendernode->_pingTimer += deltaTime ) > ( VOICE_LIFESIGN_PERIOD * 5.0f ) )
-        //{
-        //    // removing sender 
-        //    log_verbose << "  <- remove sender from receiver list!" << std::endl;
+        if ( ( p_sendernode->_pingTimer += deltaTime ) > ( VOICE_LIFESIGN_PERIOD ) )
+        {
+            // removing sender 
+            log_verbose << "  <- remove sender from receiver list!" << std::endl;
 
-        //    // remove senders which do not respond anymore
-        //    delete p_sendernode;
-        //    delete p_sender;
-        //    _soundNodeMap.erase( p_beg );
-        //    p_beg = _soundNodeMap.begin();
-        //    p_end = _soundNodeMap.end();
-        //    continue;
-        //}
-
-        if ( !p_sender->Recv( s_buffer, 512 ) )
+            // remove senders which do not respond anymore
+            delete p_sendernode;
+            delete p_sender;
+            _soundNodeMap.erase( p_beg );
+            p_beg = _soundNodeMap.begin();
+            p_end = _soundNodeMap.end();
             continue;
+        }
 
-        VoicePaket* p_data = reinterpret_cast< VoicePaket* >( s_buffer );
+        // poll incoming data from senders
+        if ( p_sender->Recv( s_buffer, 512 ) )
+        {
+            p_data = reinterpret_cast< VoicePaket* >( s_buffer );
+            senderID = p_data->_senderID;
+        }
+        else
+        {
+            continue;
+        }
+
+        // check if the incoming voice paket belogs to current sender node
+        if ( senderID != p_sendernode->_senderID )
+        {
+            log_error << "internal error on voice paket receiver! sender id mismatch" << std::endl;
+            continue;
+        }
+
         switch( p_data->_typeId )
         {
             case NETWORKSOUND_PAKET_TYPE_CON_REQ:
@@ -329,9 +349,19 @@ void VoiceReceiver::update( float deltaTime )
                 //       we may deny e.g. when too much senders are already connected
                 p_data->_length   = 0;
                 p_data->_typeId   = NETWORKSOUND_PAKET_TYPE_CON_GRANT;
+
                 // assign a unique ID to new sender
                 ++_senderID;
+
+                // check the id overflow ( this is very uncommon, but we want to be on safe side )
+                if ( _senderID > 0xFFFFFFFE )
+                    _senderID = 1;
+
                 p_data->_senderID = _senderID;
+
+                // store the sender ID into node
+                p_sendernode->_senderID = _senderID;
+
                 p_sender->SendReliable( reinterpret_cast< char* >( p_data ), VOICE_PAKET_HEADER_SIZE  + p_data->_length );
 
                 log_debug << "  <- joining request granted ( " << _soundNodeMap.size() << " )" << std::endl;

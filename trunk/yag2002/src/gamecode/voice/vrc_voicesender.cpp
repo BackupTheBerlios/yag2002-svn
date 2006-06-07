@@ -186,7 +186,7 @@ void VoiceSender::update( float deltaTime )
 
     // send out a ping to receiver
     _pingTimer += deltaTime;
-    if ( _pingTimer > VOICE_LIFESIGN_PERIOD )
+    if ( _pingTimer > ( VOICE_LIFESIGN_PERIOD / 10.0f ) )
     {
         _pingTimer = 0.0f;
         _p_voicePaket->_length   = 0;
@@ -195,22 +195,22 @@ void VoiceSender::update( float deltaTime )
         _p_udpTransport->SendReliable( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE );
     }
 
-    //!FIXME: checking for lifesign, i.e. checking the ping/ping timers, causes a problem 
+    //!FIXME: checking for lifesign, i.e. checking the ping/pong timers, causes a problem 
     //        when dragging the app window the gameloop stucks which causes lifetime exceeding!
 
-    //// check for receiver's pong
-    //_pongTimer += deltaTime;
-    //if ( _pongTimer > ( VOICE_LIFESIGN_PERIOD * 5.0f ) )
-    //{
-    //    // lost the receiver
-    //    log_verbose << "  -> voice chat receiver does not respond, going dead ..." << std::endl;
-    //    _pongTimer = 0.0f;
+    // check for receiver's pong
+    _pongTimer += deltaTime;
+    if ( _pongTimer > ( VOICE_LIFESIGN_PERIOD ) )
+    {
+        // lost the receiver
+        log_verbose << "  -> voice chat receiver does not respond, going dead ..." << std::endl;
+        _pongTimer = 0.0f;
 
-    //    // set the alive flag to false, this flag is polled by netvoice entity and handled appropriately
-    //    _isAlive = false;
-    //    // set the state to Initial so the input functor gets inactive too
-    //    _senderState = Initial;
-    //}
+        // set the alive flag to false, this flag is polled by netvoice entity and handled appropriately
+        _isAlive = false;
+        // set the state to Initial so the input functor gets inactive too
+        _senderState = Initial;
+    }
 }
 
 void VoiceSender::operator ()( char* p_encodedaudio, unsigned short length )
@@ -225,7 +225,7 @@ void VoiceSender::operator ()( char* p_encodedaudio, unsigned short length )
     _p_voicePaket->_senderID   = _senderID;
     _p_voicePaket->_length     = length;
     memcpy( _p_voicePaket->_p_buffer, p_encodedaudio, length );
-    _p_udpTransport->SendReliable( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE + _p_voicePaket->_length );
+    _p_udpTransport->Send( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE + _p_voicePaket->_length );
 }
 
 } // namespace vrc

@@ -97,7 +97,7 @@ class BaseNetworkSoundImplementation
 #define VOICE_DATA_FORMAT_TYPE                  short
 
 //! Life-sign signaling period ( in seconds ) used in voice paket transmission protocol
-#define VOICE_LIFESIGN_PERIOD                   1.0f
+#define VOICE_LIFESIGN_PERIOD                   10.0f
 
 //! Paket structure and type ids for transmitting voice stream
 #define NETWORKSOUND_PAKET_TYPE_CON_REQ         0x0010  /* Sender requests receiver for connection */

@@ -284,15 +284,15 @@ void EnNetworkVoice::updateEntity( float deltaTime )
 
     //! TODO: remove this diagnostics stuff later
     //*******************************************
-    static float t = 0.0f;
-    t += deltaTime;
-    if ( t > 2.0f )
-    {
-        t = 0.0f;
-        std::stringstream msg;
-        msg << "current active senders: " << _sendersMap.size();
-        log_verbose << msg.str() << std::endl;
-    }
+    //static float t = 0.0f;
+    //t += deltaTime;
+    //if ( t > 2.0f )
+    //{
+    //    t = 0.0f;
+    //    std::stringstream msg;
+    //    msg << "current active senders: " << _sendersMap.size();
+    //    log_verbose << msg.str() << std::endl;
+    //}
     //*******************************************
 }
 
