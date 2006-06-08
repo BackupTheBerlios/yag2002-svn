@@ -120,17 +120,17 @@ void VoiceReceiver::shutdown()
 {
 //! TODO: remove this rip code later
 //*******************************
-    // write out the ripped wav file
-    {
-        SenderMap::iterator p_beg = _soundNodeMap.begin(), p_end = _soundNodeMap.end();
-        // we take the first sender and write it out
-        if ( p_beg != p_end )
-        {
-            // write out the rip
-            WaveWriterPCM16 wavwriter( VOICE_SAMPLE_RATE, WaveWriterPCM16::MONO );
-            wavwriter.write( yaf3d::Application::get()->getMediaPath() + std::string( "sender0-rip.wav" ), s_wavqueue );
-        }
-    }
+    //// write out the ripped wav file
+    //{
+    //    SenderMap::iterator p_beg = _soundNodeMap.begin(), p_end = _soundNodeMap.end();
+    //    // we take the first sender and write it out
+    //    if ( p_beg != p_end )
+    //    {
+    //        // write out the rip
+    //        WaveWriterPCM16 wavwriter( VOICE_SAMPLE_RATE, WaveWriterPCM16::MONO );
+    //        wavwriter.write( yaf3d::Application::get()->getMediaPath() + std::string( "sender0-rip.wav" ), s_wavqueue );
+    //    }
+    //}
 //*******************************
 
 
@@ -225,7 +225,7 @@ FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, 
             *p_sndbuffer++ = samplequeue.front();
 
 //! TODO: remove this later, it's only for ripping to a test wave file
-            s_wavqueue.push( samplequeue.front() );
+//            s_wavqueue.push( samplequeue.front() );
 
             samplequeue.pop();
         }
