@@ -222,6 +222,7 @@ void EnNetworkVoice::destroyVoiceChat()
         {
             _p_receiver->shutdown();
             delete _p_receiver;
+            _p_receiver = NULL;
         }
 
         // now destroy voice network
@@ -230,15 +231,20 @@ void EnNetworkVoice::destroyVoiceChat()
             _p_voiceNetwork->registerFunctorHotspotChanged( this, false );
             _p_voiceNetwork->shutdown();
             delete _p_voiceNetwork;
+            _p_voiceNetwork = NULL;
         }
 
         if ( _p_soundInput )
         {
             delete _p_soundInput;
+            _p_soundInput = NULL;
         }
 
         if ( _p_codec )
+        {
             delete _p_codec;
+            _p_codec = NULL;
+        }
     }
     catch ( const NetworkSoundExpection& e )
     {
@@ -253,7 +259,8 @@ void EnNetworkVoice::destroyVoiceChat()
 void EnNetworkVoice::updateEntity( float deltaTime )
 {
     // update the voice network state
-    _p_voiceNetwork->update( deltaTime );
+    if ( _p_voiceNetwork )
+        _p_voiceNetwork->update( deltaTime );
 
     // update senders
     SenderMap::iterator p_beg = _sendersMap.begin(), p_end = _sendersMap.end();
@@ -276,7 +283,8 @@ void EnNetworkVoice::updateEntity( float deltaTime )
     }
 
     // update audio input
-    _p_soundInput->update();
+    if ( _p_soundInput )
+        _p_soundInput->update();
 
     // update our receiver
     if ( _p_receiver )
