@@ -28,6 +28,9 @@
  #
  ################################################################*/
 
+#ifndef _ATTRIBUTEMANAGER_H_
+#error "do not include this file directly, include attributemanager.h instead"
+#endif
 
 template< class TypeT >
 EntityAttribute< TypeT >::EntityAttribute( const std::string& name, TypeT& ref ) :
@@ -90,7 +93,7 @@ inline void AttributeManager::addAttribute( const std::string& name, TypeT& _ref
 template< class TypeT >
 bool AttributeManager::getAttributeValue( const std::string& name, TypeT& value ) 
 {
-    std::vector< EntityAttributeBase* >::iterator p_attr = _attributes.begin(), p_end = _attributes.end();
+    std::vector< BaseEntityAttribute* >::iterator p_attr = _attributes.begin(), p_end = _attributes.end();
     while ( p_attr != p_end ) 
     {
         if ( ( *p_attr )->getName() == name ) 

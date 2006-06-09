@@ -68,7 +68,7 @@ class BaseEntityAttribute
     public:
 
                                                     BaseEntityAttribute() {}
-                                                    
+
         virtual                                     ~BaseEntityAttribute() {}
 
         /**
@@ -98,7 +98,7 @@ class EntityAttribute : public BaseEntityAttribute
 
 
     public:
-    
+
         /**
         * Construct an attribute
         * \param strName                            Attribute name
