@@ -13,17 +13,17 @@ typedef struct _tInitializationData
     char    _ip[ 24 ];
 } tInitializationData;
 
-_RO_DEF_ALLOCATEFUNC(PlayerNetworking);
+_RO_DEF_ALLOCATEFUNC(PlayerNetworking)
 class _MAKE_BASE(PlayerNetworking);
 class _RO_PlayerNetworking : public RNReplicaNet::ReplicaObject
 {
-	_RO_STD_FRAMEWORK(PlayerNetworking);
-	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_ServerGrantsAccess);
+	_RO_STD_FRAMEWORK(PlayerNetworking)
+	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_ServerGrantsAccess)
 	void Call_RPC_ServerGrantsAccess(tInitializationData);
-	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_Initialize);
+	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_Initialize)
 	void Call_RPC_Initialize(tInitializationData);
-	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_EnableVoiceChat);
+	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_EnableVoiceChat)
 	void Call_RPC_EnableVoiceChat(bool);
-	_RO_DEF_REGISTERDATABLOCKS(PlayerNetworking);
+	_RO_DEF_REGISTERDATABLOCKS(PlayerNetworking)
 };
 #endif

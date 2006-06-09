@@ -67,7 +67,7 @@ class EnPlayer : public yaf3d::BaseEntity
 
         virtual                                     ~EnPlayer();
 
-        
+
         //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
 
@@ -176,7 +176,7 @@ class EnPlayer : public yaf3d::BaseEntity
         //! Stored deltaTime needed by some player components
         float                                       _deltaTime;
 
-    friend class PlayerNetworking;
+    friend class ::PlayerNetworking;
     friend class EnPlayerAnimation;
 };
 

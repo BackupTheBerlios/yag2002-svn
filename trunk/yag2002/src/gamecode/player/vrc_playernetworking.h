@@ -55,12 +55,12 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
 
     public:
 
-        explicit                                    PlayerNetworking( vrc::BasePlayerImplementation* p_playerImp = NULL );
-                                                        
-        virtual                                     ~PlayerNetworking();
+        explicit                                   PlayerNetworking( vrc::BasePlayerImplementation* p_playerImp = NULL );
+
+        virtual                                    ~PlayerNetworking();
 
         //! Initialize
-        void                                        initialize(             
+        void                                        initialize(
                                                                 const osg::Vec3f&  pos,
                                                                 const std::string& playerName,
                                                                 const std::string& cfgFile
@@ -126,7 +126,7 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         float                                       _positionX;
 
         float                                       _positionY;
-        
+
         float                                       _positionZ;
 
         float                                       _yaw;
