@@ -120,11 +120,12 @@ bool Log::addSink( const std::string& sinkname, std::ostream& sink, unsigned int
 void Log::removeSink( const std::string& sinkname )
 {
     std::vector< Sink* >::iterator p_sink = _sinks.begin(), p_sinkEnd = _sinks.end();
-    for ( ; p_sink != p_sinkEnd; p_sink++ )
+    for ( ; p_sink != p_sinkEnd; ++p_sink )
     {
         if ( ( *p_sink )->_name == sinkname )
         {
             delete *p_sink;
+            _sinks.erase( p_sink );
             return;
         }
     }
