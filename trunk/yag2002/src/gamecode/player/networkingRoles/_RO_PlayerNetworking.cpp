@@ -5,13 +5,13 @@
 #endif
 #include "../vrc_playernetworking.h"
 
-_RO_DO_STD_FRAMEWORK(PlayerNetworking);
+_RO_DO_STD_FRAMEWORK(PlayerNetworking)
 #include "RNReplicaNet/Inc/DataBlock_Function.h"
 _RO_DO_MEMBERFUNC_PRESTAGE_DEF(PlayerNetworking,RPC_ServerGrantsAccess)
 tInitializationData value1
 _RO_DO_MEMBERFUNC_PRESTAGE(RPC_ServerGrantsAccess);
 _RO_DO_MEMBERFUNC_ADDVAR2(value1,tInitializationData);
-_RO_DO_MEMBERFUNC_POSTSTAGE(RPC_ServerGrantsAccess);
+_RO_DO_MEMBERFUNC_POSTSTAGE(RPC_ServerGrantsAccess)
 _RO_DO_MEMBERFUNC_CRACK_START(PlayerNetworking,RPC_ServerGrantsAccess)
 tInitializationData value1;
 _RO_DO_MEMBERFUNC_MESSAGE_CRACK(value1);
@@ -22,7 +22,7 @@ _RO_DO_MEMBERFUNC_PRESTAGE_DEF(PlayerNetworking,RPC_Initialize)
 tInitializationData value1
 _RO_DO_MEMBERFUNC_PRESTAGE(RPC_Initialize);
 _RO_DO_MEMBERFUNC_ADDVAR2(value1,tInitializationData);
-_RO_DO_MEMBERFUNC_POSTSTAGE(RPC_Initialize);
+_RO_DO_MEMBERFUNC_POSTSTAGE(RPC_Initialize)
 _RO_DO_MEMBERFUNC_CRACK_START(PlayerNetworking,RPC_Initialize)
 tInitializationData value1;
 _RO_DO_MEMBERFUNC_MESSAGE_CRACK(value1);
@@ -33,7 +33,7 @@ _RO_DO_MEMBERFUNC_PRESTAGE_DEF(PlayerNetworking,RPC_EnableVoiceChat)
 bool value1
 _RO_DO_MEMBERFUNC_PRESTAGE(RPC_EnableVoiceChat);
 _RO_DO_MEMBERFUNC_ADDVAR2(value1,bool);
-_RO_DO_MEMBERFUNC_POSTSTAGE(RPC_EnableVoiceChat);
+_RO_DO_MEMBERFUNC_POSTSTAGE(RPC_EnableVoiceChat)
 _RO_DO_MEMBERFUNC_CRACK_START(PlayerNetworking,RPC_EnableVoiceChat)
 bool value1;
 _RO_DO_MEMBERFUNC_MESSAGE_CRACK(value1);
@@ -93,4 +93,4 @@ _RO_DO_REGISTERBLOCK_END();
 _RO_DO_REGISTERBLOCK_FUNCTION_VAR(RPC_EnableVoiceChat);
 _RO_DO_DATABLOCK_MAKERELIABLE();
 _RO_DO_REGISTERBLOCK_END();
-_RO_DO_ENDREGISTERDATABLOCKS(PlayerNetworking);
+_RO_DO_ENDREGISTERDATABLOCKS(PlayerNetworking)

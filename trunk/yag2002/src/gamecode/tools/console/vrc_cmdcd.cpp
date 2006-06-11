@@ -37,7 +37,7 @@ namespace vrc
 {
 
 //! Implement and register the command
-VRC_IMPL_CONSOLE_CMD( CmdCd );
+VRC_IMPL_CONSOLE_CMD( CmdCd )
 
 
 CmdCd::CmdCd() :

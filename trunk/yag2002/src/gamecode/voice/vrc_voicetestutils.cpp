@@ -38,8 +38,8 @@ namespace vrc
 {
 
 CodecTest::CodecTest( const std::string& outputfile, const std::string& testfile ) :
-_outputFile( outputfile ),
 _testFile( testfile ),
+_outputFile( outputfile ),
 _p_soundInput( NULL ),
 _p_codec( NULL )
 {

@@ -37,7 +37,7 @@ namespace vrc
 {
 
 //! Implement and register the command
-VRC_IMPL_CONSOLE_CMD( CmdPwd );
+VRC_IMPL_CONSOLE_CMD( CmdPwd )
 
 
 CmdPwd::CmdPwd() :

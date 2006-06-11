@@ -4,7 +4,7 @@ noinst_PROGRAMS = vrc
 vrc_LDFLAGS = -L$(top_builddir)/src/framework/.libs 
 
 vrc_LDADD = -lpthread -lYAF3D $(CEGUI_LIBS) $(SDL_LIBS) $(OPENAL_LIBS) $(VORBIS_LIBS)  $(OSGAL_LIBS) $(OSGSDL_LIBS) $(AM_LDFLAGS) \
-$(OSGCAL_LIBS) $(CAL3D_LIBS) -losgCal -lNewton -lRNReplicaNet -lRNXPSession -lRNXPURL -lRNXPCompression -lRNXPSockets -lRNPlatform -lfmodex -lspeex -lGLOD
+$(OSGCAL_LIBS) $(CAL3D_LIBS) -losgCal -lNewton -lRNReplicaNet -lRNXPSession -lRNXPSockets -lRNXPURL -lRNPlatform -lRNXPCompression -lfmodex -lspeex 
 
 vrc_SOURCES = vrc_gameutils.cpp \
 			vrc_main.cpp \
@@ -65,7 +65,6 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			tools/console/vrc_cmdhelp.cpp \
 			tools/console/vrc_cmdidle.cpp \
 			tools/console/vrc_cmdlevellist.cpp \
-			tools/console/vrc_cmdlistentity.cpp \
 			tools/console/vrc_cmdloadentities.cpp \
 			tools/console/vrc_cmdloadfinalize.cpp \
 			tools/console/vrc_cmdloadlevel.cpp \
@@ -93,7 +92,6 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			visuals/vrc_fog.cpp \
 			visuals/vrc_lightmanager.cpp \
 			visuals/vrc_mesh.cpp \
-			visuals/vrc_lod.cpp \
 			visuals/vrc_observer.cpp \
 			visuals/vrc_pointlight.cpp \
 			visuals/vrc_skybox.cpp \

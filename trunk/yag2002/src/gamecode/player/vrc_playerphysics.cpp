@@ -209,7 +209,7 @@ float EnPlayerPhysics::findGround( NewtonWorld* world, const osg::Vec3f& p0, flo
     osg::Vec3f p1( p0 ); 
     p1._v[ 2 ] -= maxDist;
 
-    NewtonWorldRayCast( _p_world, &p0._v[ 0 ], &p1._v[ 0 ], physicsRayCastPlacement, &data );
+    NewtonWorldRayCast( _p_world, &p0._v[ 0 ], &p1._v[ 0 ], physicsRayCastPlacement, &data, NULL );
 
     // the intesection is the interpolater value
     return p0._v[ 2 ] - maxDist * data._parameter;

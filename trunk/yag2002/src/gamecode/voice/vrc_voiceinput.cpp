@@ -259,7 +259,6 @@ void VoiceMicrophoneInput::update()
     // update base object first
     BaseVoiceInput::update();
 
-    unsigned int encodedbytes = 0;
     // get access to sound's raw data, encode and distribute
     {
         unsigned int currentSoundTrackPos;
@@ -353,7 +352,6 @@ void VoiceFileInput::update()
     // update base object first
     BaseVoiceInput::update();
 
-    unsigned int encodedbytes = 0;
     // get access to sound's raw data, encode and distribute
     {
         unsigned int currentSoundTrackPos;

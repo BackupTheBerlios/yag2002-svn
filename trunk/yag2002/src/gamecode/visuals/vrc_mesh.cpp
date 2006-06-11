@@ -30,7 +30,12 @@
 
 #include <vrc_main.h>
 #include "vrc_mesh.h"
-#include "vrc_lod.h"
+
+#define DONT_USE_GLOD
+
+#ifndef DONT_USE_GLOD
+ #include "vrc_lod.h"
+#endif
 
 namespace vrc
 {
@@ -88,7 +93,7 @@ void EnMesh::handleNotification( const yaf3d::EntityNotification& notification )
         break;
 
         case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
-        {         
+        {
             removeFromTransformationNode( _mesh.get() );
             // re-setup mesh
             _mesh = setupMesh();
@@ -148,15 +153,19 @@ osg::Node* EnMesh::setupMesh()
                     );
     setRotation( rot );    
 
+#ifndef DONT_USE_GLOD
     if ( _useLOD )
         p_node = setupLODObject( p_node );
-    
+#endif
+
     return p_node;
 }
 
 osg::Node* EnMesh::setupLODObject( osg::Node* p_node )
 {
     osg::Node* p_lodnode = p_node;
+
+#ifndef DONT_USE_GLOD
 
     // build the GLOD groups and objects
     osg::ref_ptr< LODSettings > p_lodsettings = new LODSettings( LODSettings::LOD_DISCRETE );
@@ -165,6 +174,8 @@ osg::Node* EnMesh::setupLODObject( osg::Node* p_node )
     LODVisitor lodvis;
     lodvis.setLODSettings( p_lodsettings.get() );
     p_lodnode->accept( lodvis );
+
+#endif
 
     return p_lodnode;
 }

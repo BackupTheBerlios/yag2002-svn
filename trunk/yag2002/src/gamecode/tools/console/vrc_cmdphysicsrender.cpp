@@ -36,7 +36,7 @@ namespace vrc
 {
 
 //! Implement and register the command
-VRC_IMPL_CONSOLE_CMD( CmdPhysicsRender );
+VRC_IMPL_CONSOLE_CMD( CmdPhysicsRender )
 
 
 CmdPhysicsRender::CmdPhysicsRender() :

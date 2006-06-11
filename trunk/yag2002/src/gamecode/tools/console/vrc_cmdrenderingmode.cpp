@@ -38,7 +38,7 @@ namespace vrc
 {
 
 //! Implement and register the command
-VRC_IMPL_CONSOLE_CMD( CmdRenderingMode );
+VRC_IMPL_CONSOLE_CMD( CmdRenderingMode )
 
 
 CmdRenderingMode::CmdRenderingMode() :
