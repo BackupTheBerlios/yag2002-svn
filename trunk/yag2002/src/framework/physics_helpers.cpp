@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,19 +11,19 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
- # physics system 
+ # physics system
  #
  #   date of creation:  02/20/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -41,11 +41,11 @@ NewtonCollision* PhysicsVisitor::_p_collision   = NULL;
 
 // debug display related
 //----------------------------//
-void DebugShowGeometryCollision( const NewtonBody* p_body, int vertexCount, const float* p_faceVertec, int id )
+void DebugShowGeometryCollision( const NewtonBody* /*p_body*/, int vertexCount, const float* p_faceVertec, int /*id*/ )
 {
 	int i = vertexCount - 1;
 	osg::Vec3f p0( p_faceVertec[ i * 3 + 0 ], p_faceVertec[ i * 3 + 1 ], p_faceVertec[ i * 3 + 2 ] );
-	for ( i = 0; i < vertexCount; ++i ) 
+	for ( i = 0; i < vertexCount; ++i )
     {
 		osg::Vec3f p1( p_faceVertec[ i * 3 + 0 ], p_faceVertec[ i * 3 + 1 ], p_faceVertec[ i * 3 + 2 ] );
 		glVertex3f( p0._v[ 0 ], p0._v[ 1 ], p0._v[ 2 ] );
@@ -59,7 +59,7 @@ void DebugShowBodyCollision( const NewtonBody* p_body )
 	NewtonBodyForEachPolygonDo( p_body, DebugShowGeometryCollision );
 }
 
-void PhysicsDebugDrawable::drawImplementation( osg::State& state ) const
+void PhysicsDebugDrawable::drawImplementation( osg::State& /*state*/ ) const
 {
     glPushClientAttrib( GL_CLIENT_ALL_ATTRIB_BITS );
     glPushAttrib( GL_ALL_ATTRIB_BITS );
@@ -83,11 +83,11 @@ void PhysicsDebugDrawable::drawImplementation( osg::State& state ) const
 //----------------------------//
 
 void PhysicsVisitor::apply( osg::Geode& node )
-{ 
+{
     // retrieve the node mask which is used for physics material and later for other properies
     // only the first byte is relevant for pyhsics material description
     _attribute = node.getNodeMask() & 0xFF;
-    
+
     // this means no need for building static collision geom
     //  this is not the same as MAT_NOCOL, as MAT_NOCOL collisions are detected
     if ( _attribute == Physics::NO_BUILD )
@@ -103,7 +103,7 @@ void PhysicsVisitor::apply( osg::Geode& node )
         // evaluate the geom and generate an appropriate collision geometry
         if ( p_geom )
         {
-            osg::Array*  p_verts   = p_geom->getVertexArray();                        
+            osg::Array*  p_verts   = p_geom->getVertexArray();
             osg::IndexArray* p_indices  = p_geom->getVertexIndices();
             unsigned int numPrims = p_geom->getNumPrimitiveSets();
             {
@@ -113,12 +113,12 @@ void PhysicsVisitor::apply( osg::Geode& node )
                     switch( p_set->getMode() )
                     {
                         case osg::PrimitiveSet::POINTS:
-                        case osg::PrimitiveSet::LINES:        
+                        case osg::PrimitiveSet::LINES:
                         case osg::PrimitiveSet::LINE_STRIP:
                         case osg::PrimitiveSet::LINE_LOOP:
                             return;
 
-                        case osg::PrimitiveSet::TRIANGLES: 
+                        case osg::PrimitiveSet::TRIANGLES:
                             buildTrianlges( p_set, p_verts, mat, p_indices );
                             break;
 
@@ -127,7 +127,7 @@ void PhysicsVisitor::apply( osg::Geode& node )
                             break;
 
                         case osg::PrimitiveSet::TRIANGLE_FAN:
-                        case osg::PrimitiveSet::QUADS: 
+                        case osg::PrimitiveSet::QUADS:
                         case osg::PrimitiveSet::QUAD_STRIP:
                         case osg::PrimitiveSet::POLYGON:
 
@@ -142,7 +142,7 @@ void PhysicsVisitor::apply( osg::Geode& node )
 
 void PhysicsVisitor::buildTrianlges( const osg::PrimitiveSet* p_set, osg::Array* p_verts, const osg::Matrixf& mat, const osg::IndexArray* p_indices )
 {
-    if( p_verts->getType() != osg::Array::Vec3ArrayType ) 
+    if( p_verts->getType() != osg::Array::Vec3ArrayType )
     {
         log_error << "Physics: cannot build trimesh collision data as the vertexarray has not a Vec3 format!" << std::endl;
         return;
@@ -173,14 +173,14 @@ void PhysicsVisitor::buildTrianlges( const osg::PrimitiveSet* p_set, osg::Array*
 
 void PhysicsVisitor::buildTrianlgeStrip( const osg::PrimitiveSet* p_set, osg::Array* p_verts, const osg::Matrixf& mat, const osg::IndexArray* p_indices )
 {
-    if( p_verts->getType() != osg::Array::Vec3ArrayType ) 
+    if( p_verts->getType() != osg::Array::Vec3ArrayType )
     {
         log_error << "Physics: cannot build trimesh collision data as the vertexarray has not a Vec3 format!" << std::endl;
         return;
     }
 
     osg::Vec3Array*   p_vertVecs  = static_cast< osg::Vec3Array* >( p_verts );
-    unsigned int      numIndices = p_set->getNumIndices();  
+    unsigned int      numIndices = p_set->getNumIndices();
     osg::Vec3f        triVerts[ 3 ];
     unsigned int odd, even;
     // destripify the mesh and build triangle faces
@@ -200,7 +200,7 @@ void PhysicsVisitor::buildTrianlgeStrip( const osg::PrimitiveSet* p_set, osg::Ar
 
         triVerts[ 1 ] = ( *p_vertVecs )[ p_indices ? p_indices->index( vindex + ( 0 * odd ) + ( 2 * even ) ) : p_set->index( vindex + ( 0 * odd ) + ( 2 * even ) ) ];
         triVerts[ 1 ] = triVerts[ 1 ] * mat;
- 
+
         triVerts[ 0 ] = ( *p_vertVecs )[ p_indices ? p_indices->index( vindex + ( 2 * odd ) + ( 1 * even ) ) : p_set->index( vindex + ( 2 * odd ) + ( 1 * even ) ) ];
         triVerts[ 0 ] = triVerts[ 0 ] * mat;
 

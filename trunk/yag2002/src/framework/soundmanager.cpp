@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  12/03/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -88,7 +88,7 @@ void SoundManager::shutdown()
     destroy();
 }
 
-void SoundManager::update( float deltaTime )
+void SoundManager::update( float /*deltaTime*/ )
 {
     assert( _p_system && "sound system is not initialized" );
 
@@ -283,7 +283,7 @@ unsigned int SoundManager::createSound( unsigned int soundgroup, const std::stri
     {
         delete p_resource;
         throw SoundException( "could not create sound for " + file + ", problem setting volume, reason: " + std::string( FMOD_ErrorString( result ) ) );
-    }    
+    }
 
     // set the channel group
     p_resource->_p_channelGroup = p_soundgroup;
@@ -318,7 +318,7 @@ void SoundManager::releaseSound( unsigned int soundID ) throw ( SoundException )
 
     // release sound
     delete p_soundresource->second;
-  
+
     // remove sound from internal map
     _mapSoundResource.erase( p_soundresource );
 
@@ -347,12 +347,12 @@ void SoundManager::playSound( unsigned int soundID, bool paused )
         return;
 
     SoundResource* p_resource = p_soundresource->second;
-    
+
     _p_system->playSound( FMOD_CHANNEL_REUSE, p_resource->_p_sound, true, &p_resource->_p_channel );
-    
+
     // re-set the channel group, fmod seems to lose the channel group when start playing
     p_resource->_p_channel->setChannelGroup( p_resource->_p_channelGroup );
-    
+
     if ( !paused )
         p_resource->_p_channel->setPaused( false );
 }
