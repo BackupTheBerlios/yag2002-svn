@@ -9,7 +9,7 @@
 			<Target title="Debug">
 				<Option output="../../../../bin/linux/vrc_debug" />
 				<Option working_dir="../../../../bin/linux/" />
-				<Option object_output="../../../linux/obj/vrc/debug" />
+				<Option object_output="../../../linux-cb/obj/vrc/debug" />
 				<Option external_deps="../../../../lib/framework/libframeworkd.a;" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -66,7 +66,7 @@
 			<Target title="Release">
 				<Option output="../../../../bin/linux/vrc" />
 				<Option working_dir="../../../../bin/linux/" />
-				<Option object_output="../../../linux/obj/vrc/release" />
+				<Option object_output="../../../linux-cb/obj/vrc/release" />
 				<Option external_deps="../../../../lib/framework/libframework.a;" />
 				<Option type="1" />
 				<Option compiler="gcc" />
