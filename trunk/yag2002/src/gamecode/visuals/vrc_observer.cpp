@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -24,7 +24,7 @@
  #
  #   date of creation:  07/20/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -44,7 +44,7 @@ class ObserverIH : public vrc::gameutils::GenericInputHandler< EnObserver >
 {
     public:
 
-        explicit                            ObserverIH( EnObserver* p_ent ) : 
+        explicit                            ObserverIH( EnObserver* p_ent ) :
                                              vrc::gameutils::GenericInputHandler< EnObserver >( p_ent )
                                             {
                                                 _lockMovement    = false;
@@ -113,7 +113,7 @@ class ObserverIH : public vrc::gameutils::GenericInputHandler< EnObserver >
         Uint16                              _screenMiddleY;
 };
 
-bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*aa*/ )
 {
     const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
     assert( p_eventAdapter && "invalid event adapter received" );
@@ -178,7 +178,7 @@ bool ObserverIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
         pos._v[ 0 ] += speed * dt;
 
     const SDL_Event& sdlevent = p_eventAdapter->getSDLEvent();
-    
+
     // enable the camera rotation on dragging right mouse button
     if ( sdlevent.button.button == SDL_BUTTON_RIGHT )
     {
@@ -291,7 +291,7 @@ void EnObserver::handleNotification( const yaf3d::EntityNotification& notificati
 void EnObserver::initialize()
 {
     try
-    {        
+    {
         _p_wnd = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", OBSERVER_WND "mainFrame" ) );
         _p_wnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &vrc::EnObserver::onClickedClose, this ) );
         _p_wnd->setSize( CEGUI::Size( 0.35f, 0.25f ) );
@@ -316,7 +316,7 @@ void EnObserver::initialize()
         p_stext->setFrameEnabled( false );
         p_stext->setBackgroundEnabled( false );
         _p_wnd->addChildWindow( p_stext );
-        
+
         _p_speedBar = static_cast< CEGUI::Scrollbar* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/HorizontalScrollbar", OBSERVER_WND "speed" ) );
         _p_speedBar->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::EnObserver::onSpeedChanged, this ) );
         _p_speedBar->setSize( CEGUI::Size( 0.75f, 0.075f ) );
@@ -369,21 +369,21 @@ void EnObserver::postInitialize()
     enableInfoWindow( false );
 }
 
-bool EnObserver::onClickedClose( const CEGUI::EventArgs& arg )
+bool EnObserver::onClickedClose( const CEGUI::EventArgs& /*arg*/ )
 {
     // hide the info window via input handler, so it has the change to update its internal state
     _inputHandler->enableInfoWindow( false );
     return true;
 }
 
-bool EnObserver::onSpeedChanged( const CEGUI::EventArgs& arg )
+bool EnObserver::onSpeedChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     _speed = _p_speedBar->getScrollPosition();
     _speed *= _maxSpeed;
     return true;
 }
 
-bool EnObserver::onLockChanged( const CEGUI::EventArgs& arg )
+bool EnObserver::onLockChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     _inputHandler->lockMovement( _p_lockCheckbox->isSelected() );
     return true;
@@ -427,7 +427,7 @@ void EnObserver::updateEntity( float deltaTime )
         _p_outputText->setText( info );
     }
 }
-       
+
 void EnObserver::enableInfoWindow( bool en )
 {
     _infoWindowEnable = en;

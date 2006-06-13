@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  06/07/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -92,14 +92,14 @@ _p_settingsDialog( p_menuEntity )
                 // create a new imageset
                 CEGUI::Texture*  p_texture = yaf3d::GuiManager::get()->getGuiRenderer()->createTexture( previewPic, "MenuResources" );
                 CEGUI::Imageset* p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( playertype, p_texture );
-             
+
                 if ( !p_imageSet->isImageDefined( previewPic ) )
                 {
                     p_imageSet->defineImage( playertype, CEGUI::Point( 0.0f, 0.0f ), CEGUI::Size( p_texture->getWidth(), p_texture->getHeight() ), CEGUI::Point( 0.0f, 0.0f ) );
                 }
 
                 CEGUI::Image* p_image = &const_cast< CEGUI::Image& >( p_imageSet->getImage( playertype ) );
-                
+
                 // add new preview to map
                 _players.insert( make_pair( playertype, p_image ) );
             }
@@ -127,7 +127,7 @@ DialogPlayerConfig::~DialogPlayerConfig()
 }
 
 bool DialogPlayerConfig::initialize( const std::string& layoutfile )
-{    
+{
     _p_playerConfigDialog = yaf3d::GuiManager::get()->loadLayout( layoutfile, NULL, ADLG_PREFIX );
     if ( !_p_playerConfigDialog )
     {
@@ -182,12 +182,12 @@ void DialogPlayerConfig::setupControls()
     //-----------------
     _p_listbox->setSortingEnabled( true );
     // set selection background color
-    CEGUI::ColourRect col( 
+    CEGUI::ColourRect col(
                             CEGUI::colour( 255.0f / 255.0f, 214.0f / 255.0f, 9.0f / 255.0f, 0.8f ),
                             CEGUI::colour( 12.0f  / 255.0f, 59.0f  / 255.0f, 0.0f         , 0.8f ),
                             CEGUI::colour( 255.0f / 255.0f, 214.0f / 255.0f, 9.0f / 255.0f, 0.8f ),
                             CEGUI::colour( 12.0f  / 255.0f, 59.0f  / 255.0f, 0.0f         , 0.8f )
-                          );    
+                          );
     // fill up the list
     _p_listbox->resetList();
     {
@@ -229,7 +229,7 @@ void DialogPlayerConfig::setupControls()
         {
             CEGUI::ListboxItem* p_sel = _p_listbox->findItemWithText( playertype.c_str(), NULL );
             assert( p_sel && "cannot find the player type in list!" );
-                
+
             p_sel->setSelected( true );
             _p_lastListSelection = p_sel;
             // set preview image
@@ -252,10 +252,10 @@ void DialogPlayerConfig::setPreviewPic( const CEGUI::ListboxItem* p_item )
 
 // dialog callbacks
 //-----------------
-bool DialogPlayerConfig::onClickedOk( const CEGUI::EventArgs& arg )
+bool DialogPlayerConfig::onClickedOk( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
     if ( _currentSelection == "" )
         return true;
@@ -279,10 +279,10 @@ bool DialogPlayerConfig::onClickedOk( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool DialogPlayerConfig::onClickedCancel( const CEGUI::EventArgs& arg )
+bool DialogPlayerConfig::onClickedCancel( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
     _currentSelection = "";
 
@@ -292,10 +292,10 @@ bool DialogPlayerConfig::onClickedCancel( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool DialogPlayerConfig::onListItemSelChanged( const CEGUI::EventArgs& arg )
+bool DialogPlayerConfig::onListItemSelChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
     // get selection
     CEGUI::ListboxItem* p_sel = _p_listbox->getFirstSelectedItem();
@@ -319,7 +319,7 @@ bool DialogPlayerConfig::onListItemSelChanged( const CEGUI::EventArgs& arg )
     return true;
 }
 
-void DialogPlayerConfig::update( float deltaTime )
+void DialogPlayerConfig::update( float /*deltaTime*/ )
 {
     // nothing to do
 }

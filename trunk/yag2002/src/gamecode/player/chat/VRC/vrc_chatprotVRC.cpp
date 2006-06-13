@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  10/13/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  #
@@ -87,7 +87,7 @@ ImplChatNetworkingVRC::~ImplChatNetworkingVRC()
 
 void ImplChatNetworkingVRC::PostObjectCreate()
 {// this method is called by ReplicaNet only when an object is replicated here
-    
+
     // notify connection
     _p_protVRC->connected();
 
@@ -96,7 +96,7 @@ void ImplChatNetworkingVRC::PostObjectCreate()
     NOMINATED_REPLICAS_FUNCTION_CALL( 1, &_serverSID, RPC_RequestJoin( _config ) );
 }
 
-void ImplChatNetworkingVRC::onSessionJoined( int sessionID )
+void ImplChatNetworkingVRC::onSessionJoined( int /*sessionID*/ )
 {
     // nothing to do
 }
@@ -110,7 +110,7 @@ void ImplChatNetworkingVRC::onSessionLeft( int sessionID )
     RPC_RequestLeave( chatdata );
 }
 
-void ImplChatNetworkingVRC::getMemberList( const std::string& channel, std::vector< std::string >& list )
+void ImplChatNetworkingVRC::getMemberList( const std::string& /*channel*/, std::vector< std::string >& list )
 {
     // currently 'channel' is unused in VRC protocol!
     std::map< int, std::string >::iterator p_beg = _nickNames.begin(), p_end = _nickNames.end();
@@ -141,7 +141,7 @@ std::string ImplChatNetworkingVRC::makeUniqueNickname( const std::string& reqnic
             newnick = reqnick + postf.str();
             ++postfix;
         }
-        
+
     } while ( !found );
 
     return newnick;
@@ -288,7 +288,7 @@ void ImplChatNetworkingVRC::RPC_RequestMemberList( tChatData chatdata )
         tChatData data;
         strcpy( data._nickname, p_beg->second.c_str() );
         data._sessionID = p_beg->first;
-        NOMINATED_REPLICAS_FUNCTION_CALL( 1, &chatdata._sessionID, RPC_RecvMemberList( data ) );  
+        NOMINATED_REPLICAS_FUNCTION_CALL( 1, &chatdata._sessionID, RPC_RecvMemberList( data ) );
     }
 }
 
@@ -306,7 +306,7 @@ void ImplChatNetworkingVRC::RPC_RecvChatText( tChatMsg chatMsg )
     if ( chatMsg._sessionID == _clientSID )
         return;
 
-    chatMsg._text[ 255 ] = 0; // limit text length    
+    chatMsg._text[ 255 ] = 0; // limit text length
     _p_protVRC->recvMessage( "", _nickNames[ chatMsg._sessionID ], reinterpret_cast< char* >( chatMsg._text ) );
 }
 
@@ -346,7 +346,7 @@ void ImplChatNetworkingVRC::postChatText( const CEGUI::String& text )
                 chatdata._sessionID = _clientSID;
                 NOMINATED_REPLICAS_FUNCTION_CALL( 1, &_serverSID, RPC_RequestMemberList( chatdata ) );
                 return;
-            } 
+            }
             else
             {
                 _p_protVRC->recvMessage( "", "", VRC_CMD_LIST );
@@ -355,14 +355,14 @@ void ImplChatNetworkingVRC::postChatText( const CEGUI::String& text )
 
         }
         // all commands with one single argument go here
-        else if ( args.size() == 2 )        
+        else if ( args.size() == 2 )
         {
             if ( ( args[ 0 ] == "/nick" ) || ( args[ 0 ] == "/NICK" ) )
             {
                 tChatData chatdata;
                 chatdata._sessionID = _clientSID;
                 strcpy( chatdata._nickname, args[ 1 ].c_str() );
-                NOMINATED_REPLICAS_FUNCTION_CALL( 1, &_serverSID, RPC_RequestChangeNickname( chatdata ) );  
+                NOMINATED_REPLICAS_FUNCTION_CALL( 1, &_serverSID, RPC_RequestChangeNickname( chatdata ) );
                 return;
             }
             else
@@ -385,7 +385,7 @@ void ImplChatNetworkingVRC::postChatText( const CEGUI::String& text )
         text.copy( textdata._text );
         textdata._sessionID = _clientSID;
         NOMINATED_REPLICAS_FUNCTION_CALL( 1, &_serverSID, RPC_PostChatText( textdata ) );
-    }    
+    }
 }
 
 //------------
@@ -421,7 +421,7 @@ vrc::BaseChatProtocol* ChatNetworkingVRC::createInstance()
     return this;
 }
 
-void ChatNetworkingVRC::createConnection( const vrc::ChatConnectionConfig& conf ) throw ( vrc::ChatExpection )
+void ChatNetworkingVRC::createConnection( const vrc::ChatConnectionConfig& /*conf*/ ) throw ( vrc::ChatExpection )
 {
 }
 
@@ -434,7 +434,7 @@ void ChatNetworkingVRC::destroyConnection()
     }
 }
 
-void ChatNetworkingVRC::send( const std::string& msg, const std::string& channel )
+void ChatNetworkingVRC::send( const std::string& msg, const std::string& /*channel*/ )
 {
     if ( _p_nwImpl )
         _p_nwImpl->postChatText( msg );

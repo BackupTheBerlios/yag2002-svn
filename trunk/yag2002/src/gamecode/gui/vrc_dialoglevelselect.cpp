@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  04/26/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -86,7 +86,7 @@ void DialogLevelSelect::destroyResources()
 }
 
 bool DialogLevelSelect::initialize( const std::string& layoutfile )
-{    
+{
     _p_levelSelectDialog = yaf3d::GuiManager::get()->loadLayout( layoutfile, NULL, LDLG_PREFIX );
     if ( !_p_levelSelectDialog )
     {
@@ -148,12 +148,12 @@ void DialogLevelSelect::setupControls()
     //-----------------
     _p_listbox->setSortingEnabled( true );
     // set selection background color
-    CEGUI::ColourRect col( 
+    CEGUI::ColourRect col(
                             CEGUI::colour( 255.0f / 255.0f, 214.0f / 255.0f, 9.0f / 255.0f, 0.8f ),
                             CEGUI::colour( 12.0f  / 255.0f, 59.0f  / 255.0f, 0.0f         , 0.8f ),
                             CEGUI::colour( 255.0f / 255.0f, 214.0f / 255.0f, 9.0f / 255.0f, 0.8f ),
                             CEGUI::colour( 12.0f  / 255.0f, 59.0f  / 255.0f, 0.0f         , 0.8f )
-                          );    
+                          );
     // fill up the list
     _p_listbox->resetList();
     std::map< std::string, CEGUI::Image* >::iterator p_beg = _p_levelFiles->getAllFiles().begin(), p_end = _p_levelFiles->getAllFiles().end();
@@ -192,10 +192,10 @@ void DialogLevelSelect::setPreviewPic( CEGUI::ListboxItem* p_item )
 
 // dialog callbacks
 //-----------------
-bool DialogLevelSelect::onClickedStart( const CEGUI::EventArgs& arg )
+bool DialogLevelSelect::onClickedStart( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
     if ( _currentSelection == "" )
         return true;
@@ -211,10 +211,10 @@ bool DialogLevelSelect::onClickedStart( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool DialogLevelSelect::onClickedReturn( const CEGUI::EventArgs& arg )
+bool DialogLevelSelect::onClickedReturn( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
     _p_levelSelectDialog->hide();
 
@@ -225,10 +225,10 @@ bool DialogLevelSelect::onClickedReturn( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool DialogLevelSelect::onListItemSelChanged( const CEGUI::EventArgs& arg )
+bool DialogLevelSelect::onListItemSelChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
     // get selection
     CEGUI::ListboxItem* p_sel = _p_listbox->getFirstSelectedItem();
@@ -248,7 +248,7 @@ bool DialogLevelSelect::onListItemSelChanged( const CEGUI::EventArgs& arg )
     return true;
 }
 
-void DialogLevelSelect::update( float deltaTime )
+void DialogLevelSelect::update( float /*deltaTime*/ )
 {
     // nothing to do
 }

@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -24,7 +24,7 @@
  #
  #   date of creation:  04/25/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -135,9 +135,9 @@ int entityContactBegin( const NewtonMaterial* p_material, const NewtonBody* p_bo
     // save the colliding bodies
     s_entityColStruct->_p_body0 = const_cast< NewtonBody* >( p_body0 );
     s_entityColStruct->_p_body1 = const_cast< NewtonBody* >( p_body1 );
-    // clear the contact normal speed 
+    // clear the contact normal speed
     s_entityColStruct->_contactMaxNormalSpeed  = 0.0f;
-    // clear the contact sliding speed 
+    // clear the contact sliding speed
     s_entityColStruct->_contactMaxTangentSpeed = 0.0f;
 
     // set also Physics' col struct as we may need some useful Physics' callbacks during contanct processing
@@ -145,10 +145,10 @@ int entityContactBegin( const NewtonMaterial* p_material, const NewtonBody* p_bo
     yaf3d::Physics::setCollisionStruct( s_entityColStruct );
 
     return 1;
-} 
+}
 
 //! This function is called affter all collision contacts are proccesed
-void entityContactEnd( const NewtonMaterial* p_material )
+void entityContactEnd( const NewtonMaterial* /*p_material*/ )
 {
 }
 

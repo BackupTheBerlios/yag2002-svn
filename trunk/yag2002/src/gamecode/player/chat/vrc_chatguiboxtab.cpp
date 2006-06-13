@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  01/22/2006
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -120,12 +120,12 @@ void ChannelTabPane::updateMemberList( std::vector< std::string >& list )
         return;
 
     // set selection background color
-    CEGUI::ColourRect col( 
+    CEGUI::ColourRect col(
                             CEGUI::colour( 255.0f / 255.0f, 214.0f / 255.0f, 9.0f / 255.0f, 0.8f ),
                             CEGUI::colour( 12.0f  / 255.0f, 59.0f  / 255.0f, 0.0f         , 0.8f ),
                             CEGUI::colour( 255.0f / 255.0f, 214.0f / 255.0f, 9.0f / 255.0f, 0.8f ),
                             CEGUI::colour( 12.0f  / 255.0f, 59.0f  / 255.0f, 0.0f         , 0.8f )
-                          );    
+                          );
     // fill up the list
     _p_listbox->resetList();
     std::vector< std::string >::iterator p_beg = list.begin(), p_end = list.end();
@@ -163,7 +163,7 @@ void ChannelTabPane::addMessage( const CEGUI::String& msg, const CEGUI::String& 
     _p_messagebox->setCaratIndex( buffer.length() - 1 );
 }
 
-bool ChannelTabPane::onSelected( const CEGUI::EventArgs& arg )
+bool ChannelTabPane::onSelected( const CEGUI::EventArgs& /*arg*/ )
 {
     // remove "new message" marker ( '*' )
     _p_tabPane->setText( _title );
@@ -171,14 +171,14 @@ bool ChannelTabPane::onSelected( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool ChannelTabPane::onListItemSelChanged( const CEGUI::EventArgs& arg )
+bool ChannelTabPane::onListItemSelChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
     return true;
 }
 
-bool ChannelTabPane::onSizeChanged( const CEGUI::EventArgs& arg )
+bool ChannelTabPane::onSizeChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // recalculate gui elements
 
@@ -213,9 +213,9 @@ bool ChannelTabPane::onEditboxTextChanged( const CEGUI::EventArgs& arg )
         // skip empty lines
         if ( !_p_editbox->getText().length() )
             return true;
-        
+
         // send the msg over net
-        _configuration._p_protocolHandler->send( _p_editbox->getText().c_str(), _configuration._channel ); 
+        _configuration._p_protocolHandler->send( _p_editbox->getText().c_str(), _configuration._channel );
 
         // add the msg to local chat box ( if it was not a command )
         if ( _p_editbox->getText().compare( 0, 1, "/" ) )
@@ -249,7 +249,7 @@ void ChannelTabPane::setSelection()
 }
 
 bool ChannelTabPane::isSelected()
-{       
+{
     return _p_tabCtrl->isTabContentsSelected( _p_tabCtrl->getTabContents( _p_tabPane->getID() ) );
 }
 
@@ -265,7 +265,7 @@ void ChannelTabPane::setEditBoxFocus( bool en )
     }
 }
 
-void ChannelTabPane::onReceive( const std::string& channel, const std::string& sender, const std::string& msg )
+void ChannelTabPane::onReceive( const std::string& /*channel*/, const std::string& sender, const std::string& msg )
 {
     addMessage( msg, sender );
 }
@@ -358,7 +358,7 @@ void ChannelTabPane::onKicked( const std::string& channel, const std::string& ki
     }
 }
 
-void ChannelTabPane::onReceiveMemberList( const std::string& channel )
+void ChannelTabPane::onReceiveMemberList( const std::string& /*channel*/ )
 {
     // update member list
     _nickNames.clear();

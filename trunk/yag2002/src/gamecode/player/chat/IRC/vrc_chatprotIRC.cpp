@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -24,7 +24,7 @@
  #
  #   date of creation:  10/13/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  #
@@ -71,7 +71,7 @@ class IRCSessionContext
 
 // internal callback functions
 //----
-void event_connect( irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count )
+void event_connect( irc_session_t * session, const char * /*event*/, const char * /*origin*/, const char ** params, unsigned int /*count*/ )
 {
     // auto-join after connection
     IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
@@ -89,7 +89,7 @@ void event_connect( irc_session_t * session, const char * event, const char * or
     p_ctx->_p_handler->recvNicknameChange( p_ctx->_channel, p_ctx->_nickname, "" );
 }
 
-void event_join( irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count )
+void event_join( irc_session_t * session, const char * /*event*/, const char * origin, const char ** params, unsigned int /*count*/ )
 {
     if ( !origin )
         return;
@@ -98,7 +98,7 @@ void event_join( irc_session_t * session, const char * event, const char * origi
     p_ctx->_p_handler->joined( params[ 0 ], origin );
 }
 
-void event_nick( irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count )
+void event_nick( irc_session_t * session, const char * /*event*/, const char * origin, const char ** params, unsigned int /*count*/ )
 {
     if ( !origin )
         return;
@@ -111,12 +111,12 @@ void event_nick( irc_session_t * session, const char * event, const char * origi
         p_ctx->_nickname = params[ 0 ];
     }
     else
-    {        
+    {
         p_ctx->_p_handler->recvNicknameChange( params[ 0 ], params[ 0 ], origin );
     }
 }
 
-void event_kick( irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count )
+void event_kick( irc_session_t * session, const char * /*event*/, const char * origin, const char ** params, unsigned int count )
 {
     if ( !origin || ( count < 1 ) )
         return;
@@ -125,7 +125,7 @@ void event_kick( irc_session_t * session, const char * event, const char * origi
     p_ctx->_p_handler->recvKicked( params[ 0 ], std::string( origin ), std::string( params[ 1 ] ) );
 }
 
-void event_part( irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count )
+void event_part( irc_session_t * session, const char * /*event*/, const char * origin, const char ** params, unsigned int /*count*/ )
 {
     if ( !origin )
         return;
@@ -134,7 +134,7 @@ void event_part( irc_session_t * session, const char * event, const char * origi
     p_ctx->_p_handler->left( params[ 0 ], std::string( origin ) );
 }
 
-void event_numeric( irc_session_t * session, unsigned int event, const char * origin, const char ** params, unsigned int count )
+void event_numeric( irc_session_t * session, unsigned int event, const char * /*origin*/, const char ** params, unsigned int count )
 {
     IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
 
@@ -143,7 +143,7 @@ void event_numeric( irc_session_t * session, unsigned int event, const char * or
     {
         std::vector< std::string > names;
         std::string namestring( params[ 3 ] );
-        
+
         yaf3d::explode( namestring, " ", &names );
         // fill the list
         p_ctx->_p_handler->_nickNames.clear();
@@ -176,7 +176,7 @@ void event_numeric( irc_session_t * session, unsigned int event, const char * or
     {
         std::string msg;
 
-        if ( count > 0 ) 
+        if ( count > 0 )
             msg += std::string( params[ 0 ] );
 
         if ( count > 1 )
@@ -189,31 +189,31 @@ void event_numeric( irc_session_t * session, unsigned int event, const char * or
     }
 }
 
-void event_notice( irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count )
+void event_notice( irc_session_t * session, const char * /*event*/, const char * /*origin*/, const char ** params, unsigned int count )
 {
     IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
     std::string msg;
-    if ( count > 0 ) 
+    if ( count > 0 )
         msg += std::string( params[ 0 ] ) + ": ";
-    if ( count >= 1 ) 
+    if ( count >= 1 )
         msg += std::string( params[ 1 ] );
 
     p_ctx->_p_handler->recvSystemMessage( msg );
 }
 
-void event_privmsg( irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count )
+void event_privmsg( irc_session_t * session, const char * /*event*/, const char * origin, const char ** params, unsigned int count )
 {
     IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
     std::string msg( "PrivMsg " );
-    if ( count > 0 ) 
+    if ( count > 0 )
         msg += "from " + std::string( origin ) + ": ";
-    if ( count > 1 ) 
+    if ( count > 1 )
         msg += std::string( params[ 1 ] );
 
     p_ctx->_p_handler->recvSystemMessage( msg );
 }
 
-void event_channel( irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count )
+void event_channel( irc_session_t * session, const char * /*event*/, const char * origin, const char ** params, unsigned int count )
 {
     char nickbuf[128];
 
@@ -297,13 +297,13 @@ void ChatNetworkingIRC::send( const std::string& msg, const std::string& channel
 
         }
         // all commands with one single argument go here
-        else if ( args.size() == 2 )        
+        else if ( args.size() == 2 )
         {
             if ( args[ 0 ] == "/nick" )
             {
                 irc_cmd_nick( _p_session, args[ 1 ].c_str() );
             }
-            else if ( args[ 0 ] == "/join" )           
+            else if ( args[ 0 ] == "/join" )
             {
                 //! TODO: what is "key" about?
                 irc_cmd_join( _p_session, args[ 1 ].c_str(), NULL );
@@ -335,7 +335,7 @@ void ChatNetworkingIRC::requestMemberList( const std::string& channel )
     irc_cmd_names( _p_session, channel.c_str() );
 }
 
-void ChatNetworkingIRC::getMemberList( const std::string& channel, std::vector< std::string >& list )
+void ChatNetworkingIRC::getMemberList( const std::string& /*channel*/, std::vector< std::string >& list )
 {
     // currently 'channel' is unused in VRC protocol!
     std::vector< std::string >::iterator p_beg = _nickNames.begin(), p_end = _nickNames.end();
@@ -408,14 +408,14 @@ void ChatNetworkingIRC::recvMemberList( const std::string& channel )
 void ChatNetworkingIRC::recvSystemMessage( const std::string& msg )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; ++p_beg )            
+    for ( ; p_beg != p_end; ++p_beg )
         p_beg->second->onReceiveSystemMessage( msg );
 }
 
-void ChatNetworkingIRC::recvNicknameChange( const std::string& channel, const std::string& newname, const std::string& oldname )
+void ChatNetworkingIRC::recvNicknameChange( const std::string& /*channel*/, const std::string& newname, const std::string& oldname )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
-    for ( ; p_beg != p_end; ++p_beg ) 
+    for ( ; p_beg != p_end; ++p_beg )
         p_beg->second->onNicknameChanged( newname, oldname );
 }
 
@@ -441,7 +441,7 @@ void ChatNetworkingIRC::createConnection( const ChatConnectionConfig& conf ) thr
     int     err;
     version = MAKEWORD( 2, 2 );
     err = WSAStartup( version, &data );
-    if ( err != 0 ) 
+    if ( err != 0 )
     {
         throw ChatExpection( "Cannot setup ms winsock" );
     }
@@ -478,13 +478,13 @@ void ChatNetworkingIRC::createConnection( const ChatConnectionConfig& conf ) thr
     irc_option_set( p_session, LIBIRC_OPTION_STRIPNICKS );
 
     // initiate the IRC server connection
-    if ( irc_connect( 
-        p_session, 
-        conf._serverURL.c_str(), 
-        conf._port, 
-        conf._password.length() ? conf._password.c_str() : NULL, 
-        conf._nickname.c_str(), 
-        conf._username.length() ? conf._username.c_str() : NULL, 
+    if ( irc_connect(
+        p_session,
+        conf._serverURL.c_str(),
+        conf._port,
+        conf._password.length() ? conf._password.c_str() : NULL,
+        conf._nickname.c_str(),
+        conf._username.length() ? conf._username.c_str() : NULL,
         conf._realname.length() ? conf._realname.c_str() : NULL ) )
     {
         throw ChatExpection( std::string( irc_strerror( irc_errno( p_session ) ) ) );

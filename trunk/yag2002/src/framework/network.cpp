@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  04/08/2004
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -86,10 +86,10 @@ std::string resolveHostName( const std::string& host )
             return "";
 
         std::stringstream hostip;
-        hostip << 
-                    static_cast< int >( addr.addr[ 0 ] ) << "." << 
-                    static_cast< int >( addr.addr[ 1 ] ) << "." << 
-                    static_cast< int >( addr.addr[ 2 ] ) << "." << 
+        hostip <<
+                    static_cast< int >( addr.addr[ 0 ] ) << "." <<
+                    static_cast< int >( addr.addr[ 1 ] ) << "." <<
+                    static_cast< int >( addr.addr[ 2 ] ) << "." <<
                     static_cast< int >( addr.addr[ 3 ] );
 
         return hostip.str();
@@ -206,7 +206,7 @@ NetworkDevice::~NetworkDevice()
 
 void NetworkDevice::disconnect()
 {
-    if ( _p_session ) 
+    if ( _p_session )
     {
         _p_session->Disconnect();
         delete _p_session;
@@ -336,7 +336,7 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
 
     unsigned int tryCounter = 0;
     // wait for pre-connect state for 10 seconds
-    while ( !_p_session->GetPreConnectStatus() && tryCounter < 100 ) 
+    while ( !_p_session->GetPreConnectStatus() && tryCounter < 100 )
     {
         _p_session->Poll();
         RNReplicaNet::CurrentThread::Sleep( 100 );
@@ -348,24 +348,24 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
         unsigned int errid = _p_session->GetSessionErrorReason();
         switch( errid )
         {
-            case RNReplicaNet::XPSession::kXPSession_EOK: 
+            case RNReplicaNet::XPSession::kXPSession_EOK:
                 errtxt = "Cannot connect to server.";
                break;
 
-            case RNReplicaNet::XPSession::kXPSession_EERROR: 
+            case RNReplicaNet::XPSession::kXPSession_EERROR:
                 errtxt = "Undefined networking error.";
                break;
 
-            case RNReplicaNet::XPSession::kXPSession_ETRANSPORT_CLOSED: 
+            case RNReplicaNet::XPSession::kXPSession_ETRANSPORT_CLOSED:
                 errtxt = "Networking session disconnected or closed.";
                break;
 
-            case RNReplicaNet::XPSession::kXPSession_ETRANSPORT_ERROR: 
+            case RNReplicaNet::XPSession::kXPSession_ETRANSPORT_ERROR:
                 errtxt = "Networking session has been abnormally terminated due to a transport timeout.";
                break;
 
             //! TODO: tn lib mismatch. this will come with rn version 5.5
-            //case RNReplicaNet::ReplicaNet::kXPSession_?: 
+            //case RNReplicaNet::ReplicaNet::kXPSession_?:
             //    errtxt = "?";
             //   break;
 
@@ -401,10 +401,10 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
     {
         _p_session->Poll();
         RNReplicaNet::CurrentThread::Sleep( 100 );
-        while ( _p_session->DataReceive( &sessionId, p_buffer, &bufferLength ) ) 
+        while ( _p_session->DataReceive( &sessionId, p_buffer, &bufferLength ) )
         {
             PreconnectDataServer* p_data = ( PreconnectDataServer* )p_buffer;
-            if ( p_data->_typeId == ( unsigned char )YAF3DNW_PRECON_DATA_SERVER ) 
+            if ( p_data->_typeId == ( unsigned char )YAF3DNW_PRECON_DATA_SERVER )
             {
                 // check network protocol versions
                 if ( p_data->_protocolVersion != YAF3D_NETWORK_PROT_VERSION )
@@ -490,7 +490,7 @@ void NetworkDevice::startClient() throw ( NetworkException )
         log.enableSeverityLevelPrinting( true );
 
         // try up to 10 seconds
-        if ( tryCounter > 50 ) 
+        if ( tryCounter > 50 )
         {
             log_warning << "*** NetworkDevice: client has problems connecting to server" << std::endl;
 
@@ -523,7 +523,7 @@ std::string NetworkDevice::getClientIP( int sessionID )
 
     std::string ip( url.substr( url.find( "@" ) + 1 ) );
     ip.erase( ip.find( ":" ) );
-    
+
     return ip;
 }
 
@@ -565,7 +565,7 @@ void NetworkDevice::getObjects( std::vector< RNReplicaNet::ReplicaObject* >& obj
     _p_session->ObjectListBeginIterate();
 
     RNReplicaNet::ReplicaObject* p_obj = NULL;
-    do 
+    do
     {
         p_obj = _p_session->ObjectListIterate();
         if ( !p_obj )
@@ -585,10 +585,10 @@ void NetworkDevice::updateServer( float deltaTime )
     int         sessionId;
     static char s_buffer[ 512 ];
     int         bufferLength;
-    while ( _p_session->DataReceive( &sessionId, s_buffer, &bufferLength ) ) 
+    while ( _p_session->DataReceive( &sessionId, s_buffer, &bufferLength ) )
     {
         PreconnectDataClient* p_data = reinterpret_cast< PreconnectDataClient* >( s_buffer );
-        if ( p_data->_typeId == static_cast< unsigned char >( YAF3DNW_PRECON_DATA_CLIENT ) ) 
+        if ( p_data->_typeId == static_cast< unsigned char >( YAF3DNW_PRECON_DATA_CLIENT ) )
         {
             log_info << "NetworkDevice: server is requested for a new client connection ... " << std::endl;
             // send server node
@@ -602,8 +602,8 @@ void NetworkDevice::updateServer( float deltaTime )
     }
 }
 
-void NetworkDevice::updateClient( float fDeltaTime ) 
-{ 
+void NetworkDevice::updateClient( float fDeltaTime )
+{
     // poll the netwroking core
     if ( _p_session )
         _p_session->Poll();

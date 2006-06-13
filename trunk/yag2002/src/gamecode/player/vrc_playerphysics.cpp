@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -26,7 +26,7 @@
  #
  #   date of creation:  03/01/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -39,7 +39,7 @@
 namespace vrc
 {
 
-// used to avoid playing too short sound 
+// used to avoid playing too short sound
 #define SND_PLAY_RELAX_TIME     0.2f
 
 //! Implement and register the player physics entity factory
@@ -66,11 +66,11 @@ struct  PlayerCollisionStruct
     NewtonBody*             _p_body0;
 
     NewtonBody*             _p_body1;
-    
+
     osg::Vec3f              _position;
-    
+
     float                   _contactMaxNormalSpeed;
-    
+
     float                   _contactMaxTangentSpeed;
 
     yaf3d::BaseEntity*             _p_otherEntity;
@@ -96,13 +96,13 @@ int playerContactBegin( const NewtonMaterial* p_material, const NewtonBody* p_bo
     // save the colliding bodies
     s_colStruct->_p_body0 = const_cast< NewtonBody* >( p_body0 );
     s_colStruct->_p_body1 = const_cast< NewtonBody* >( p_body1 );
-    // clear the contact normal speed 
+    // clear the contact normal speed
     s_colStruct->_contactMaxNormalSpeed  = 0.0f;
-    // clear the contact sliding speed 
+    // clear the contact sliding speed
     s_colStruct->_contactMaxTangentSpeed = 0.0f;
 
     return 1;
-} 
+}
 
 // physics system callback functions
 //---------------------------------------
@@ -116,7 +116,7 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
     if ( p_userData ) // level geoms have no data associated
     {
         p_phys = static_cast< EnPlayerPhysics* >( p_userData );
-    } 
+    }
     else // this else is only for being on safe side. in normal case all level bodies come in as body0!
     {
         p_phys = static_cast< EnPlayerPhysics* >( NewtonBodyGetUserData( s_colStruct->_p_body0 ) );
@@ -164,7 +164,7 @@ int playerContactProcessLevel( const NewtonMaterial* p_material, const NewtonCon
                 }
             }
             else
-            {        
+            {
                 p_playerSound->stopPlayingAll();
             }
         }
@@ -196,17 +196,17 @@ int playerContactProcess( const NewtonMaterial* p_material, const NewtonContact*
 }
 
 // this function is called affter all collision contacts are processed
-void playerContactEnd( const NewtonMaterial* p_material )
+void playerContactEnd( const NewtonMaterial* /*p_material*/ )
 {
 }
 
 // find ground for character placement
-float EnPlayerPhysics::findGround( NewtonWorld* world, const osg::Vec3f& p0, float maxDist )
+float EnPlayerPhysics::findGround( NewtonWorld* /*p_world*/, const osg::Vec3f& p0, float maxDist )
 {
     PlayerRayCastData data( _p_body );
-    
+
     // shot a vertical ray from a high altitude and collect the intersetion partameter.
-    osg::Vec3f p1( p0 ); 
+    osg::Vec3f p1( p0 );
     p1._v[ 2 ] -= maxDist;
 
     NewtonWorldRayCast( _p_world, &p0._v[ 0 ], &p1._v[ 0 ], physicsRayCastPlacement, &data, NULL );
@@ -216,7 +216,7 @@ float EnPlayerPhysics::findGround( NewtonWorld* world, const osg::Vec3f& p0, flo
 }
 
 // rigid body destructor callback
-void EnPlayerPhysics::physicsBodyDestructor( const NewtonBody* p_body )
+void EnPlayerPhysics::physicsBodyDestructor( const NewtonBody* /*p_body*/ )
 {
 }
 
@@ -225,7 +225,7 @@ void EnPlayerPhysics::physicsSetTransform( const NewtonBody* p_body, const float
 {
     BasePlayerImplementation* p_node = static_cast< EnPlayerPhysics* >( NewtonBodyGetUserData( p_body ) )->_p_playerImpl;
     osg::Matrixf& mat = p_node->getPlayerPhysics()->_matrix;
-    mat = osg::Matrixf( p_matrix );    
+    mat = osg::Matrixf( p_matrix );
     osg::Quat quat;
     mat.get( quat );
 
@@ -235,7 +235,7 @@ void EnPlayerPhysics::physicsSetTransform( const NewtonBody* p_body, const float
     p_node->setPlayerPosition( trans );
 }
 
-int EnPlayerPhysics::collideWithLevel( const NewtonMaterial* p_material, const NewtonContact* p_contact )
+int EnPlayerPhysics::collideWithLevel( const NewtonMaterial* p_material, const NewtonContact* /*p_contact*/ )
 {
     osg::Vec3f point;
     osg::Vec3f normal;
@@ -249,12 +249,12 @@ int EnPlayerPhysics::collideWithLevel( const NewtonMaterial* p_material, const N
         _wallCollision = true;
 
     // avoid sliding down on slopes ( only when player does not wish to move )
-    if ( _requestForMovement ) 
+    if ( _requestForMovement )
     {
         NewtonMaterialSetContactFrictionState( p_material, 0, 0 );
         NewtonMaterialSetContactFrictionState( p_material, 0, 1 );
-    } 
-    else 
+    }
+    else
     {
         NewtonMaterialSetContactStaticFrictionCoef( p_material, 2.0f, 0 );
         NewtonMaterialSetContactKineticFrictionCoef( p_material, 2.0f, 0 );
@@ -265,8 +265,8 @@ int EnPlayerPhysics::collideWithLevel( const NewtonMaterial* p_material, const N
     return 1;
 }
 
-int EnPlayerPhysics::collideWithOtherEntities( const NewtonMaterial* p_material, const NewtonContact* p_contact )
-{ 
+int EnPlayerPhysics::collideWithOtherEntities( const NewtonMaterial* /*p_material*/, const NewtonContact* /*p_contact*/ )
+{
     return 1;
 }
 
@@ -295,7 +295,7 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
 
     osg::Matrixf matrix;
     NewtonBodyGetMatrix( p_phys->_p_body, matrix.ptr() );
-    osg::Vec3f pos( matrix.getTrans() );    
+    osg::Vec3f pos( matrix.getTrans() );
     // set the stopped flag when no movement
     p_phys->_isStopped = ( p_phys->_lastPosition - pos ).length2() < p_phys->_moveDetectThreshold2;
     p_phys->_lastPosition = pos;
@@ -347,13 +347,13 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     NewtonBodySetForce( p_body, &force._v[ 0 ] );
 }
 
-float EnPlayerPhysics::physicsRayCastPlacement( const NewtonBody* p_body, const float* p_normal, int collisionID, void* p_userData, float intersectParam )
+float EnPlayerPhysics::physicsRayCastPlacement( const NewtonBody* p_body, const float* /*p_normal*/, int /*collisionID*/, void* p_userData, float intersectParam )
 {
     float paramPtr = 1.2f;
     PlayerRayCastData& data = *( static_cast< PlayerRayCastData* >( p_userData ) );
 
     // any body can be a ground
-    if ( data._p_body != p_body ) 
+    if ( data._p_body != p_body )
     {
         if ( intersectParam < data._parameter ) {
             data._parameter = intersectParam;
@@ -390,9 +390,9 @@ _jumpState( Wait4Jumping ),
 _jumpForce( 5.0f ),
 _deltaTime( 0.001f ),
 _requestForMovement( false )
-{ 
+{
     // register entity in order to get notifications about physics building
-    yaf3d::EntityManager::get()->registerNotification( this, true );   
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 
     // add entity attributes
     getAttributeManager().addAttribute( "dimensions"           , _dimensions           );
@@ -458,43 +458,43 @@ void EnPlayerPhysics::initializePhysicsMaterials()
     NewtonMaterialSetDefaultElasticity( _p_world, playerID, defaultID, 0.1f );
     NewtonMaterialSetDefaultSoftness( _p_world, playerID, defaultID, 0.5f );
     NewtonMaterialSetDefaultFriction( _p_world, playerID, defaultID, 0.8f, 0.7f );
-    NewtonMaterialSetCollisionCallback( _p_world, playerID, defaultID, &player_levelCollStruct, playerContactBegin, playerContactProcessLevel, playerContactEnd ); 
+    NewtonMaterialSetCollisionCallback( _p_world, playerID, defaultID, &player_levelCollStruct, playerContactBegin, playerContactProcessLevel, playerContactEnd );
 
     // set the material properties for player on wall
     NewtonMaterialSetDefaultElasticity( _p_world, playerID, wallID, 0.01f );
     NewtonMaterialSetDefaultSoftness( _p_world, playerID, wallID, 0.01f );
     NewtonMaterialSetDefaultFriction( _p_world, playerID, wallID, 0.01f, 0.01f );
-    NewtonMaterialSetCollisionCallback( _p_world, playerID, wallID, &player_levelCollStruct, playerContactBegin, playerContactProcessLevel, playerContactEnd ); 
+    NewtonMaterialSetCollisionCallback( _p_world, playerID, wallID, &player_levelCollStruct, playerContactBegin, playerContactProcessLevel, playerContactEnd );
 
     // set the material properties for player on level
     NewtonMaterialSetDefaultElasticity( _p_world, playerID, levelID, 0.1f );
     NewtonMaterialSetDefaultSoftness( _p_world, playerID, levelID, 0.8f );
     NewtonMaterialSetDefaultFriction( _p_world, playerID, levelID, 0.8f, 0.7f );
-    NewtonMaterialSetCollisionCallback( _p_world, playerID, levelID, &player_levelCollStruct, playerContactBegin, playerContactProcessLevel, playerContactEnd ); 
+    NewtonMaterialSetCollisionCallback( _p_world, playerID, levelID, &player_levelCollStruct, playerContactBegin, playerContactProcessLevel, playerContactEnd );
 
     // set the material properties for player on wood
     NewtonMaterialSetDefaultElasticity( _p_world, playerID, woodID, 0.1f );
     NewtonMaterialSetDefaultSoftness( _p_world, playerID, woodID, 0.5f );
     NewtonMaterialSetDefaultFriction( _p_world, playerID, woodID, 0.6f, 0.4f);
-    NewtonMaterialSetCollisionCallback( _p_world, playerID, woodID, &player_woodCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
+    NewtonMaterialSetCollisionCallback( _p_world, playerID, woodID, &player_woodCollStruct, playerContactBegin, playerContactProcess, playerContactEnd );
 
     // set the material properties for player on metal
     NewtonMaterialSetDefaultElasticity( _p_world, playerID, metalID, 0.1f );
     NewtonMaterialSetDefaultSoftness( _p_world, playerID, metalID, 0.9f );
     NewtonMaterialSetDefaultFriction( _p_world, playerID, metalID, 0.8f, 0.6f );
-    NewtonMaterialSetCollisionCallback( _p_world, playerID, metalID, &player_metalCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
+    NewtonMaterialSetCollisionCallback( _p_world, playerID, metalID, &player_metalCollStruct, playerContactBegin, playerContactProcess, playerContactEnd );
 
     // set the material properties for player on grass
     NewtonMaterialSetDefaultElasticity( _p_world, playerID, grassID, 0.1f );
     NewtonMaterialSetDefaultSoftness( _p_world, playerID, grassID, 0.3f );
     NewtonMaterialSetDefaultFriction( _p_world, playerID, grassID, 0.8f, 0.7f );
-    NewtonMaterialSetCollisionCallback( _p_world, playerID, grassID, &player_grassCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
+    NewtonMaterialSetCollisionCallback( _p_world, playerID, grassID, &player_grassCollStruct, playerContactBegin, playerContactProcess, playerContactEnd );
 
     // set the material properties for player on stone
     NewtonMaterialSetDefaultElasticity( _p_world, playerID, stoneID, 0.2f );
     NewtonMaterialSetDefaultSoftness( _p_world, playerID, stoneID, 0.1f );
     NewtonMaterialSetDefaultFriction( _p_world, playerID, stoneID, 0.9f, 0.7f );
-    NewtonMaterialSetCollisionCallback( _p_world, playerID, stoneID, &player_stoneCollStruct, playerContactBegin, playerContactProcess, playerContactEnd ); 
+    NewtonMaterialSetCollisionCallback( _p_world, playerID, stoneID, &player_stoneCollStruct, playerContactBegin, playerContactProcess, playerContactEnd );
 }
 
 void EnPlayerPhysics::setPlayer( BasePlayerImplementation* p_player )
@@ -513,7 +513,7 @@ void EnPlayerPhysics::initialize()
     // convert angular speed from degrees to radiants
     _angularSpeed = osg::DegreesToRadians( _angularSpeed );
 
-    // create the collision 
+    // create the collision
     NewtonCollision* p_col = NewtonCreateSphere( _p_world, _dimensions._v[ 0 ] * 0.5f, _dimensions._v[ 1 ] * 0.5f, _dimensions._v[ 2 ] * 0.5f, NULL );
     NewtonCollision* p_collision = NewtonCreateConvexHullModifier( _p_world, p_col );
     NewtonReleaseCollision( yaf3d::Physics::get()->getWorld(), p_col );
@@ -528,7 +528,7 @@ void EnPlayerPhysics::initialize()
     NewtonBodySetMaterialGroupID( _p_body, yaf3d::Physics::get()->getMaterialId( "player" ) );
 
     NewtonBodySetUserData( _p_body, this );
-    
+
     NewtonBodySetLinearDamping( _p_body, _linearDamping );
 
     float damp[3];
@@ -539,7 +539,7 @@ void EnPlayerPhysics::initialize()
 
     // disable auto freeze management for the player
     NewtonBodySetAutoFreeze( _p_body, 0 );
-    // keep the player always active 
+    // keep the player always active
     NewtonWorldUnfreezeBody( _p_world, _p_body );
 
     // set callbacks
@@ -556,7 +556,7 @@ void EnPlayerPhysics::initialize()
 
     // create an up vector joint, this way we constraint the body to keep up
     osg::Vec3f upDirection (0.0f, 0.0f, 1.0f);
-    _upVectorJoint = NewtonConstraintCreateUpVector( _p_world, &upDirection._v[ 0 ], _p_body ); 
+    _upVectorJoint = NewtonConstraintCreateUpVector( _p_world, &upDirection._v[ 0 ], _p_body );
 }
 
 void EnPlayerPhysics::postInitialize()
@@ -566,8 +566,8 @@ void EnPlayerPhysics::postInitialize()
 
     osg::Matrixf mat;
     mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
-    mat.setTrans( _p_playerImpl->getPlayerPosition() ); 
-    
+    mat.setTrans( _p_playerImpl->getPlayerPosition() );
+
     // find ground under the initial position and adapt body matrix
     float z = findGround( _p_world, _p_playerImpl->getPlayerPosition(), 1000.0f );
     mat.ptr()[ 14 ] = z + _dimensions._v[ 2 ] + 0.2f; // add an offset of player height plus 0.2 meters

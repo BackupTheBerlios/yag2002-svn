@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  05/31/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -135,7 +135,7 @@ void PlayerImplClient::handleNotification( const yaf3d::EntityNotification& noti
     }
 }
 
-void PlayerImplClient::onServerDisconnect( int sessionID )
+void PlayerImplClient::onServerDisconnect( int /*sessionID*/ )
 {
     yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Networking Problem", "Disconnected from server.\nLeave the level and try to re-connect to server.\n", yaf3d::MessageBoxDialog::OK, true );
     p_msg->show();
@@ -174,7 +174,7 @@ void PlayerImplClient::initialize()
         // get player's remote client config file so its ghosts load the right config while they get setup on remote machines
         std::string playerconfig;
         gameutils::PlayerUtils::get()->getPlayerConfig( yaf3d::GameState::get()->getMode(), true, playerconfig );
-        // init player's networking 
+        // init player's networking
         getPlayerNetworking()->initialize( _currentPos, getPlayerEntity()->getPlayerName(), playerconfig );
     }
 }
@@ -395,12 +395,12 @@ void PlayerImplClient::update( float deltaTime )
         else if ( vel.length2() > NW_WALK_THRESHOLD )
         {
             getPlayerAnimation()->setAnimation( EnPlayerAnimation::eWalk );
-        } 
+        }
         else
         {
             getPlayerAnimation()->setAnimation( EnPlayerAnimation::eIdle );
         }
-        
+
         if ( fabs( lastrot - _rotZ ) > NW_ROT_THRESHOLD )
             getPlayerAnimation()->setAnimation( EnPlayerAnimation::eTurn );
     }

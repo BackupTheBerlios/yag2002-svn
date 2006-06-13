@@ -1,14 +1,14 @@
-/* 
+/*
  * Copyright (C) 2004 Georgy Yunaev tim@krasnogorsk.ru
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2 of the License, or (at your 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at your
  * option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
  * License for more details.
  *
  * $Id: libirc_params.h,v 1.10 2005/03/09 21:26:16 gyunaev Exp $
@@ -33,8 +33,8 @@
 #define LIBIRC_STATE_CONNECTING		2
 #define LIBIRC_STATE_CONNECTED		3
 #define LIBIRC_STATE_DISCONNECTED	4
-#define LIBIRC_STATE_CONFIRM_SIZE	5	// Used only by DCC send to confirm the amount of sent data
-#define LIBIRC_STATE_REMOVED		10	// this state is used only in DCC
+#define LIBIRC_STATE_CONFIRM_SIZE	5	/* Used only by DCC send to confirm the amount of sent data */
+#define LIBIRC_STATE_REMOVED		10	/* this state is used only in DCC */
 
 
 #endif /* INCLUDE_IRC_PARAMS_H */

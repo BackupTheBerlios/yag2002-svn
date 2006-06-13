@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  04/19/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -235,7 +235,7 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
 
     // setup sounds
     unsigned int sndID = 0;
-    
+
     sndID = gameutils::GuiUtils::get()->getSoundID( SND_NAME_CLOSE_CHANNEL );
     if ( sndID == 0 )
         gameutils::GuiUtils::get()->createSound( SND_NAME_CLOSE_CHANNEL, SND_CLOSE_CHANNEL, SND_VOL_CLOSE_CHANNEL );
@@ -367,7 +367,7 @@ void ChatGuiBox::update( float deltaTime )
             {
                 _fadeTimer = 0;
                 // restore the initial size
-                CEGUI::Size size( _boxFrameSize.x(), _boxFrameSize.y() ); 
+                CEGUI::Size size( _boxFrameSize.x(), _boxFrameSize.y() );
                 _p_frame->setAlpha( _frameAlphaValue );
                 _p_frame->setSize( size );
                 _p_btnOpen->hide();
@@ -380,7 +380,7 @@ void ChatGuiBox::update( float deltaTime )
             _fadeTimer += deltaTime;
             // fade in the box
             float fadefac = _fadeTimer / FADE_TIME;
-            CEGUI::Size size( _boxFrameSize.x() * fadefac, _boxFrameSize.y() * fadefac ); 
+            CEGUI::Size size( _boxFrameSize.x() * fadefac, _boxFrameSize.y() * fadefac );
             _p_frame->setSize( size );
             _p_frame->setAlpha( fadefac * _frameAlphaValue );
             _p_btnOpen->setAlpha( std::max( 0.0f, ( 1.0f - ( _fadeTimer / FADE_TIME ) ) * _frameAlphaValue ) );
@@ -394,7 +394,7 @@ void ChatGuiBox::update( float deltaTime )
             {
                 _fadeTimer = 0;
                 // set size to zero
-                CEGUI::Size size( 0, 0 ); 
+                CEGUI::Size size( 0, 0 );
                 _p_frame->setSize( size );
                 _p_frame->hide();
                 setEditBoxFocus( false );
@@ -406,7 +406,7 @@ void ChatGuiBox::update( float deltaTime )
             _fadeTimer += deltaTime;
             // fade in the box
             float fadefac = std::max( 0.0f, 1.0f - ( _fadeTimer / FADE_TIME ) );
-            CEGUI::Size size( _boxFrameSize.x() * fadefac, _boxFrameSize.y() * fadefac ); 
+            CEGUI::Size size( _boxFrameSize.x() * fadefac, _boxFrameSize.y() * fadefac );
             _p_frame->setSize( size );
             _p_frame->setAlpha( fadefac * _frameAlphaValue );
             _p_btnOpen->setAlpha( ( _fadeTimer / FADE_TIME ) * _frameAlphaValue );
@@ -420,7 +420,7 @@ void ChatGuiBox::update( float deltaTime )
 
     // check the tab pane removal queue
     while ( _queueRemoveTabPane.size() )
-    { 
+    {
         ChannelTabPane* p_pane = _queueRemoveTabPane.front();
         destroyChannelPane( p_pane->getConfiguration() );
         _queueRemoveTabPane.pop();
@@ -455,7 +455,7 @@ void ChatGuiBox::update( float deltaTime )
 }
 
 void ChatGuiBox::removeTabPane( ChannelTabPane* p_pane )
-{   
+{
     _queueRemoveTabPane.push( p_pane );
 }
 
@@ -482,7 +482,7 @@ void ChatGuiBox::show( bool visible )
     }
 }
 
-bool ChatGuiBox::onCloseFrame( const CEGUI::EventArgs& arg )
+bool ChatGuiBox::onCloseFrame( const CEGUI::EventArgs& /*arg*/ )
 {
     // play click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
@@ -491,7 +491,7 @@ bool ChatGuiBox::onCloseFrame( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool ChatGuiBox::onClickedCloseChannelPane( const CEGUI::EventArgs& arg )
+bool ChatGuiBox::onClickedCloseChannelPane( const CEGUI::EventArgs& /*arg*/ )
 {
     // play sound
     gameutils::GuiUtils::get()->playSound( SND_NAME_CLOSE_CHANNEL );
@@ -520,7 +520,7 @@ bool ChatGuiBox::onClickedCloseChannelPane( const CEGUI::EventArgs& arg )
         for ( ; p_chanbeg != p_chanend; ++p_chanbeg )
         {
             if ( p_chanbeg->second->getConfiguration()._serverURL == conf._serverURL )
-                removeTabPane( p_chanbeg->second ); 
+                removeTabPane( p_chanbeg->second );
         }
 
         // now close the connection to server
@@ -536,7 +536,7 @@ bool ChatGuiBox::onClickedCloseChannelPane( const CEGUI::EventArgs& arg )
 }
 
 // this is called when clicking on connection button
-bool ChatGuiBox::onClickedConnectIRC( const CEGUI::EventArgs& arg )
+bool ChatGuiBox::onClickedConnectIRC( const CEGUI::EventArgs& /*arg*/ )
 {
     // play sound
     gameutils::GuiUtils::get()->playSound( SND_NAME_CONNECT );
@@ -545,7 +545,7 @@ bool ChatGuiBox::onClickedConnectIRC( const CEGUI::EventArgs& arg )
     if ( _connectionState == Connecting )
     {
         yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", "Already trying to connect to a chat server.", yaf3d::MessageBoxDialog::OK, true );
-        p_msg->show();                
+        p_msg->show();
         return true;
     }
 
@@ -592,12 +592,12 @@ void ChatGuiBox::onConnectionDialogClickedConnect( const ChatConnectionConfig& c
     catch( const ChatExpection& e )
     {
         yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Connection error", std::string( "Could not connect to server.\n" ) + e.what(), yaf3d::MessageBoxDialog::OK, true );
-        p_msg->show();                
+        p_msg->show();
 
         log_error << "exception occured trying to connect to a chat server" << std::endl;
         log << "   reason: " << e.what() << std::endl;
     }
-        
+
     _connectionState = ConnectionIdle;
 }
 
@@ -611,7 +611,7 @@ void ChatGuiBox::onConnectionDialogClickedCancel()
     _p_connectionDialog->show( false );
 }
 
-bool ChatGuiBox::onSizeChanged( const CEGUI::EventArgs& arg )
+bool ChatGuiBox::onSizeChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     CEGUI::Size size = _p_frame->getSize( CEGUI::Absolute );
 
@@ -628,21 +628,21 @@ bool ChatGuiBox::onSizeChanged( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool ChatGuiBox::onChannelTabChanged( const CEGUI::EventArgs& arg )
+bool ChatGuiBox::onChannelTabChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
     return true;
 }
 
-bool ChatGuiBox::onHoverOpen( const CEGUI::EventArgs& arg )
+bool ChatGuiBox::onHoverOpen( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse over sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_HOVER );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_HOVER );
     return true;
 }
 
-bool ChatGuiBox::onClickedOpen( const CEGUI::EventArgs& arg )
+bool ChatGuiBox::onClickedOpen( const CEGUI::EventArgs& /*arg*/ )
 {
     // are we already in fading action?
     if ( ( _boxState == BoxFadeIn ) || ( _boxState == BoxFadeOut ) )
@@ -691,7 +691,7 @@ void ChatGuiBox::outputText( const std::string& channel, const std::string& msg 
     {
         if ( p_beg->second->isSelected() )
         {
-            p_beg->second->addMessage( msg, "* " );
+            p_beg->second->addMessage( channel + ": " + msg, "* " );
             break;
         }
     }

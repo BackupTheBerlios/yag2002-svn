@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  04/18/2006
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -105,10 +105,10 @@ class EnNPCFish : public BaseScript< EnNPCFish >, public yaf3d::BaseEntity
 class NPCFishEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
-                                                    NPCFishEntityFactory() : 
+                                                    NPCFishEntityFactory() :
                                                      yaf3d::BaseEntityFactory
-                                                     ( 
-                                                       ENTITY_NAME_NPCFISH, 
+                                                     (
+                                                       ENTITY_NAME_NPCFISH,
                                                        yaf3d::BaseEntityFactory::Client | yaf3d::BaseEntityFactory::Standalone
                                                       )
                                                     {}
@@ -120,4 +120,4 @@ class NPCFishEntityFactory : public yaf3d::BaseEntityFactory
 
 }
 
-#endif _VRC_NPCFISH_H_
+#endif // _VRC_NPCFISH_H_

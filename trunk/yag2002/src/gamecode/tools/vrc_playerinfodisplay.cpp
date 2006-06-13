@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  06/28/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -53,7 +53,7 @@ _p_outputText( NULL )
 }
 
 EnPlayerInfoDisplay::~EnPlayerInfoDisplay()
-{        
+{
     if ( _p_wnd )
     {
         CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
@@ -91,7 +91,7 @@ void EnPlayerInfoDisplay::handleNotification( const yaf3d::EntityNotification& n
     }
 }
 
-void EnPlayerInfoDisplay::operator()( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity )
+void EnPlayerInfoDisplay::operator()( bool localplayer, bool /*joining*/, yaf3d::BaseEntity* p_entity )
 {
     if ( localplayer )
         _p_playerEntity = dynamic_cast< EnPlayer* >( p_entity );
@@ -100,7 +100,7 @@ void EnPlayerInfoDisplay::operator()( bool localplayer, bool joining, yaf3d::Bas
 void EnPlayerInfoDisplay::initialize()
 {
     try
-    {        
+    {
         _p_wnd = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", PLAYERINFO_WND "mainFrame" ) );
         _p_wnd->setSize( CEGUI::Size( 0.35f, 0.15f ) );
         _p_wnd->setText( "player info" );
@@ -133,7 +133,7 @@ void EnPlayerInfoDisplay::initialize()
     getPlayerEntity();
 }
 
-void EnPlayerInfoDisplay::updateEntity( float deltaTime )
+void EnPlayerInfoDisplay::updateEntity( float /*deltaTime*/ )
 {
     if ( !_enable || !_p_playerEntity )
         return;
@@ -141,7 +141,7 @@ void EnPlayerInfoDisplay::updateEntity( float deltaTime )
     static char text[ 1024 ];
     osg::Vec3 pos( _p_playerEntity->getPosition() );
     osg::Quat rot( _p_playerEntity->getRotation() );
-    sprintf( text, 
+    sprintf( text,
         " name:      %s\n"
         " position:  %0.2f %0.2f %0.2f\n"
         " rotation:  %0.2f %0.2f %0.2f %0.2f\n",

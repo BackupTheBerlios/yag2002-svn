@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  04/15/2006
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -73,12 +73,12 @@ void EnNPCFish::initialize()
 bool EnNPCFish::setupScript()
 {
     try
-    {     
+    {
         // load script file and scope all exposed methods with 'fish'
         loadScript( "fish", _scriptFile, BaseScript< EnNPCFish >::MATH );
 
         // expose methods
-        
+
         Params arguments;
         Params returnsvalues;
 
@@ -178,7 +178,7 @@ void EnNPCFish::handleNotification( const yaf3d::EntityNotification& notificatio
     }
 }
 
-void EnNPCFish::updateEntity( float deltaTime )
+void EnNPCFish::updateEntity( float /*deltaTime*/ )
 {
     // call script function update: void update( float deltatime )
     callScriptFunction( "update", _p_fcnArgUpdate );
@@ -189,7 +189,7 @@ void EnNPCFish::updateEntity( float deltaTime )
 
         if ( _updateRotation )
         {
-            osg::Quat   rot(                 
+            osg::Quat   rot(
                             _direction.x(), osg::Vec3f( 1.0f, 0.0f, 0.0f ),
                             _direction.y(), osg::Vec3f( 0.0f, 1.0f, 0.0f ),
                             _direction.z(), osg::Vec3f( 0.0f, 0.0f, 1.0f )
@@ -200,28 +200,28 @@ void EnNPCFish::updateEntity( float deltaTime )
     }
 }
 
-void EnNPCFish::lgetPosition( const Params& arguments, Params& returnvalues )
+void EnNPCFish::lgetPosition( const Params& /*arguments*/, Params& returnvalues )
 {
     SET_SCRIPT_PARAMVALUE( returnvalues, 0, float, _position._v[ 0 ] );
     SET_SCRIPT_PARAMVALUE( returnvalues, 1, float, _position._v[ 1 ] );
     SET_SCRIPT_PARAMVALUE( returnvalues, 2, float, _position._v[ 2 ] );
 }
 
-void EnNPCFish::lsetPosition( const Params& arguments, Params& returnvalues )
+void EnNPCFish::lsetPosition( const Params& arguments, Params& /*returnvalues*/ )
 {
     _position._v[ 0 ] = GET_SCRIPT_PARAMVALUE( arguments, 0, float );
     _position._v[ 1 ] = GET_SCRIPT_PARAMVALUE( arguments, 1, float );
     _position._v[ 2 ] = GET_SCRIPT_PARAMVALUE( arguments, 2, float );
 }
 
-void EnNPCFish::lgetDirection( const Params& arguments, Params& returnvalues )
+void EnNPCFish::lgetDirection( const Params& /*arguments*/, Params& returnvalues )
 {
     SET_SCRIPT_PARAMVALUE( returnvalues, 0, float, _direction._v[ 0 ] );
     SET_SCRIPT_PARAMVALUE( returnvalues, 1, float, _direction._v[ 1 ] );
     SET_SCRIPT_PARAMVALUE( returnvalues, 2, float, _direction._v[ 2 ] );
 }
 
-void EnNPCFish::lsetDirection( const Params& arguments, Params& returnvalues )
+void EnNPCFish::lsetDirection( const Params& arguments, Params& /*returnvalues*/ )
 {
     _direction._v[ 0 ] = GET_SCRIPT_PARAMVALUE( arguments, 0, float );
     _direction._v[ 1 ] = GET_SCRIPT_PARAMVALUE( arguments, 1, float );

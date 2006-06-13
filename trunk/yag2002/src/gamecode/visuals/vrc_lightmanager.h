@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  04/16/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -45,17 +45,17 @@ class LightManager;
 class BaseLight
 {
     public:
-                                                    BaseLight() : 
+                                                    BaseLight() :
                                                      _lightId( 0 ),
                                                      _ambientColor( osg::Vec3f( 0.2f, 0.2f, 0.2f ) ),
                                                      _diffuseColor( osg::Vec3f( 0.7f, 0.7f, 0.7f ) ),
                                                      _specularColor( osg::Vec3f( 0.9f, 0.9f, 0.9f ) ),
                                                      _constAttenuation( 0.01f ),
                                                      _linearAttenuation( 0.001f ),
-                                                     _quadraticAttenuation( 0.0001f )          
+                                                     _quadraticAttenuation( 0.0001f )
                                                     {}
 
-        virtual                                     ~BaseLight() 
+        virtual                                     ~BaseLight()
                                                     {
                                                         if ( _lightSource.get() )
                                                             _lightSource = NULL;
@@ -90,7 +90,7 @@ class BaseLight
         osg::Vec3f                                  _ambientColor;
 
         osg::Vec3f                                  _diffuseColor;
-        
+
         osg::Vec3f                                  _specularColor;
 
         float                                       _constAttenuation;
@@ -108,7 +108,7 @@ class LightManager : public yaf3d::Singleton< LightManager >, public osgSDL::Vie
 {
     public:
 
-       inline void                                  operator()( const osgSDL::Viewport* p_vp ) 
+       inline void                                  operator()( const osgSDL::Viewport* /*p_vp*/ )
                                                     {
                                                         // enable lights
                                                         flush();
@@ -120,7 +120,7 @@ class LightManager : public yaf3d::Singleton< LightManager >, public osgSDL::Vie
     protected:
 
                                                     LightManager();
-   
+
 
         virtual                                     ~LightManager(){}
 
@@ -148,8 +148,8 @@ class LightCallback : public osg::NodeCallback
 
     public:
 
-        explicit                                    LightCallback( BaseLight* p_lightentity ) : 
-                                                    _lightEntity( p_lightentity )  
+        explicit                                    LightCallback( BaseLight* p_lightentity ) :
+                                                    _lightEntity( p_lightentity )
                                                     {}
 
         virtual                                     ~LightCallback() {}

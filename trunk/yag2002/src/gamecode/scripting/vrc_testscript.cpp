@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  04/15/2006
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -55,12 +55,12 @@ void EnTestScript::initialize()
         loadScript( "testScript", _scriptFile );
 
         // expose methods
-        
+
         Params arguments;
         Params returnsvalues;
 
         //Note: for adding a parameter type into a Params container one can define an initial value ( which is normally ignored ).
-        //      it is important that the compiler can deduce the 'add' method by knowing the type which is added. 
+        //      it is important that the compiler can deduce the 'add' method by knowing the type which is added.
         //      currently int, float, double, and std::string types are supported.
         //      take also care on the order you define the arguments or return values.
 
@@ -75,19 +75,19 @@ void EnTestScript::initialize()
 
         // some tests
         {
-            size_t argumentcontainersize = arguments.size();
+            std::size_t argumentcontainersize = arguments.size();
             assert( argumentcontainersize == 2 );
 
-            size_t returnsvaluescontainersize = returnsvalues.size();
+            std::size_t returnsvaluescontainersize = returnsvalues.size();
             assert( returnsvaluescontainersize == 2 );
 
-            const type_info& typeofelementatindexZero = arguments.getTypeInfo( 0 );
+            const std::type_info& typeofelementatindexZero = arguments.getTypeInfo( 0 );
             assert( typeofelementatindexZero == typeid( int ) );
 
-            const type_info& typeofelementatindexOne  = arguments.getTypeInfo( 1 );
+            const std::type_info& typeofelementatindexOne  = arguments.getTypeInfo( 1 );
             assert( typeofelementatindexOne == typeid( float ) );
         }
-        
+
         arguments.clear();
         returnsvalues.clear();
 
@@ -105,7 +105,7 @@ void EnTestScript::initialize()
         {
             Params args;
             args.add( 100.42 );
-            
+
             // the function has no return value
             callScriptFunction( "scriptFcn1", &args );
         }
@@ -120,13 +120,13 @@ void EnTestScript::initialize()
             rets.add( std::string() );
             rets.add( 0 );
             rets.add( 0 );
-            
+
             callScriptFunction( "scriptFcn2", &args, &rets );
 
             std::stringstream msg;
             msg << "in Entity: scriptFcn2 returned: " << GET_SCRIPT_PARAMVALUE( rets, 0, std::string ) << " "
                 << GET_SCRIPT_PARAMVALUE( rets, 1, int ) << " " << GET_SCRIPT_PARAMVALUE( rets, 2, int );
-            log_debug << msg.str() << std::endl;           
+            log_debug << msg.str() << std::endl;
         }
 
         // close the script and clean up its resources
@@ -183,7 +183,7 @@ void EnTestScript::handleNotification( const yaf3d::EntityNotification& notifica
     }
 }
 
-void EnTestScript::updateEntity( float deltaTime )
+void EnTestScript::updateEntity( float /*deltaTime*/ )
 {
 }
 
@@ -199,7 +199,7 @@ void EnTestScript::exposedMethod1( const Params& arguments, Params& returnvalues
     SET_SCRIPT_PARAMVALUE( returnvalues, 1, float, 0.12345f );
 }
 
-void EnTestScript::exposedMethod2( const Params& arguments, Params& returnvalues )
+void EnTestScript::exposedMethod2( const Params& arguments, Params& /*returnvalues*/ )
 {
     std::stringstream msg;
     msg << "in Entity: exposedMethod2( " << GET_SCRIPT_PARAMVALUE( arguments, 0, int ) << ", " << GET_SCRIPT_PARAMVALUE( arguments, 1, std::string ) << " )";

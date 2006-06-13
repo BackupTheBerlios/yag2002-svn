@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  04/16/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -36,7 +36,7 @@ YAF3D_SINGLETON_IMPL( vrc::LightManager )
 namespace vrc
 {
 
-LightManager::LightManager() : 
+LightManager::LightManager() :
 _currId( 0 ),
 _initialized( false )
 {
@@ -61,14 +61,14 @@ void LightManager::addLight( BaseLight* p_light )
     _lights.push_back( p_light );
     // assign an available light id to light object
     p_light->_lightSource->getLight()->setLightNum( _currId );
-    if ( _currId < VRC_MAX_GL_LIGHTS - 1 ) 
+    if ( _currId < VRC_MAX_GL_LIGHTS - 1 )
         ++_currId;
 }
 
 void LightManager::flush()
 {
     unsigned int numlights = std::min( ( int )_lights.size(), VRC_MAX_GL_LIGHTS - 1 );
-    
+
     osg::StateSet*  p_stateset = yaf3d::Application::get()->getSceneView()->getGlobalStateSet();
     // first turn off all lights
     for ( unsigned int l = 0; l < VRC_MAX_GL_LIGHTS - 1; ++l )
@@ -97,7 +97,7 @@ void LightManager::flush()
 
 
 // do light culling and add the light to light manager list if it is not culled
-void LightCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
+void LightCallback::operator()( osg::Node* /*node*/, osg::NodeVisitor* nv )
 {
     // add the light into light manager if it is not culled
     osgUtil::CullVisitor* p_cv = dynamic_cast< osgUtil::CullVisitor* >( nv );
@@ -105,7 +105,7 @@ void LightCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         return;
 
     if ( !p_cv->isCulled( _lightEntity->getBoundingSphere() ) )
-        LightManager::get()->addLight( _lightEntity );    
+        LightManager::get()->addLight( _lightEntity );
 }
 
 } // namespace vrc

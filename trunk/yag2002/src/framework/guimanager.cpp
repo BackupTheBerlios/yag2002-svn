@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  04/01/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -49,7 +49,7 @@ namespace yaf3d
 class GuiViewerInitCallback : public osgSDL::Viewer::ViewerInitCallback
 {
     public:
-       
+
         virtual void                                operator()( const osgSDL::Viewport* p_vp )
                                                     {
                                                         GuiManager::get()->doInitialize();
@@ -66,7 +66,7 @@ class GuiPostDrawCallback : public osgSDL::Viewer::DrawCallback
 {
     public:
 
-       virtual void                                 operator()( const osgSDL::Viewport* p_vp ) 
+       virtual void                                 operator()( const osgSDL::Viewport* p_vp )
                                                     {
                                                         GuiManager::get()->doRender();
                                                     }
@@ -109,7 +109,7 @@ void GuiResourceProvider::loadRawDataContainer( const CEGUI::String& filename, C
     p_stream->open( fullpath.c_str(), std::ios_base::binary | std::ios_base::in );
     // if the file does not exist then return
     if ( !( *p_stream ) )
-    {   
+    {
         log_warning << " GuiResourceProvider: file '" << fullpath << "' does not exist." << std::endl;
         throw CEGUI::Exception( "GuiResourceProvider cannot find file '" + fullpath + "'" );
     }
@@ -123,7 +123,7 @@ void GuiResourceProvider::loadRawDataContainer( const CEGUI::String& filename, C
     unsigned char* p_buf = new unsigned char[ filesize + 1 ];
     p_buf[ filesize ] = 0;
     p_stream->read( ( char* )p_buf, filesize );
- 
+
     // set output
     output.setData( p_buf );
     output.setSize( filesize );
@@ -151,12 +151,12 @@ GuiManager::~GuiManager()
 }
 
 void GuiManager::shutdown()
-{    
+{
     delete CEGUI::System::getSingletonPtr();
     delete _p_renderer;
 
     // destroy singleton
-    destroy();    
+    destroy();
 }
 
 void GuiManager::initialize()
@@ -174,14 +174,14 @@ void GuiManager::initialize()
 void GuiManager::doInitialize()
 {
     // get window size
-    unsigned int width, height;
+    unsigned int width = 0, height = 0;
     Configuration::get()->getSettingValue( YAF3D_GS_SCREENWIDTH,  width  );
     Configuration::get()->getSettingValue( YAF3D_GS_SCREENHEIGHT, height );
     _windowWidth = float( width );
     _windowHeight = float( height );
 
     // create a renderer
-    _p_renderer = new GuiRenderer( 0, int( _windowWidth ), int( _windowHeight ) );    
+    _p_renderer = new GuiRenderer( 0, int( _windowWidth ), int( _windowHeight ) );
     // create the gui
     GuiResourceProvider* p_resourceLoader = new GuiResourceProvider;
     new CEGUI::System( _p_renderer, p_resourceLoader );
@@ -226,7 +226,7 @@ CEGUI::Font* GuiManager::createFont( const std::string& fontname )
 {
     CEGUI::Font* p_font = NULL;
 
-    try 
+    try
     {
         // load font
         p_font = CEGUI::FontManager::getSingleton().createFont( fontname );
@@ -286,7 +286,7 @@ void GuiManager::changeDisplayResolution( float width, float height )
 }
 
 void GuiManager::showMousePointer( bool show ) const
-{    
+{
     if ( show )
         CEGUI::MouseCursor::getSingleton().show();
     else
@@ -377,7 +377,7 @@ CEGUI::DefaultWindow* GuiManager::getRootWindow()
 void GuiManager::update( float deltaTime )
 {
     if ( _active )
-        CEGUI::System::getSingleton().injectTimePulse( deltaTime );    
+        CEGUI::System::getSingleton().injectTimePulse( deltaTime );
 }
 
 void GuiManager::doRender()
@@ -396,7 +396,7 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
 
     unsigned int eventType    = p_eventAdapter->getEventType();
     int          key          = p_eventAdapter->getSDLKey();
- 
+
     // dispatch key down activity
     if ( eventType == osgGA::GUIEventAdapter::KEYDOWN )
     {
@@ -559,7 +559,7 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
                         if ( p_active )
                         {
                             CEGUI::String wintype = p_active->getType();
-                            if ( wintype == TYPE_EDITBOX ) 
+                            if ( wintype == TYPE_EDITBOX )
                             {
                                 // get the selected text
                                 CEGUI::Editbox* p_editbox = static_cast< CEGUI::Editbox* >( p_active );
@@ -577,7 +577,7 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
                                 // copy to clipboard
                                 copyToClipboard( seltext );
                             }
-                            else if ( wintype == TYPE_MULITLINEBOX ) 
+                            else if ( wintype == TYPE_MULITLINEBOX )
                             {
                                 // get the selected text
                                 CEGUI::MultiLineEditbox* p_mleditbox = static_cast< CEGUI::MultiLineEditbox* >( p_active );
@@ -643,7 +643,7 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
             CEGUI::System::getSingleton().injectMouseButtonDown( CEGUI::LeftButton );
             lbtn_down = true;
             lbtn_up   = false;
-        } 
+        }
     }
     else
     {

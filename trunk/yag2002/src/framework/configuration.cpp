@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  04/02/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -87,37 +87,37 @@ void Configuration::getConfigurationAsString( std::vector< std::pair< std::strin
         std::string token = ( *p_beg )->getTokenName();
         std::stringstream tokenvalue;
         const std::type_info& settings_typeinfo = ( *p_beg )->getTypeInfo();
-        if ( settings_typeinfo == typeid( bool ) ) 
+        if ( settings_typeinfo == typeid( bool ) )
         {
-            bool value;
+            bool value = false;
             _p_settings->getValue( token, value );
             tokenvalue << ( value ? "true" : "false" );
-        } 
-        else if ( settings_typeinfo == typeid( int ) ) 
+        }
+        else if ( settings_typeinfo == typeid( int ) )
         {
-            int value;
+            int value = 0;
             _p_settings->getValue( token, value );
             tokenvalue << value;
         }
-        else if ( settings_typeinfo == typeid( unsigned int ) ) 
+        else if ( settings_typeinfo == typeid( unsigned int ) )
         {
-            unsigned int value;
+            unsigned int value = 0;
             _p_settings->getValue( token, value );
             tokenvalue << value;
         }
-        else if ( settings_typeinfo == typeid( std::string ) ) 
+        else if ( settings_typeinfo == typeid( std::string ) )
         {
             std::string value;
             _p_settings->getValue( token, value );
             tokenvalue << value;
         }
-        else if ( settings_typeinfo == typeid( float ) ) 
+        else if ( settings_typeinfo == typeid( float ) )
         {
-            float value;
+            float value = 0.0f;
             _p_settings->getValue( token, value );
             tokenvalue << value;
         }
-        else if ( settings_typeinfo == typeid( osg::Vec3f ) ) 
+        else if ( settings_typeinfo == typeid( osg::Vec3f ) )
         {
             osg::Vec3f value;
             _p_settings->getValue( token, value );
@@ -140,13 +140,13 @@ bool Configuration::setSettingValueAsString( const std::string& name, const std:
         // set the setting value
         std::stringstream tokenvalue;
         const std::type_info& settings_typeinfo = ( *p_beg )->getTypeInfo();
-        if ( settings_typeinfo == typeid( bool ) ) 
+        if ( settings_typeinfo == typeid( bool ) )
         {
             bool value = ( valuestring == "true" ) ? true : false;
             _p_settings->setValue( token, value );
             break;
-        } 
-        else if ( settings_typeinfo == typeid( int ) ) 
+        }
+        else if ( settings_typeinfo == typeid( int ) )
         {
             tokenvalue << valuestring;
             int value = -1;
@@ -154,7 +154,7 @@ bool Configuration::setSettingValueAsString( const std::string& name, const std:
             _p_settings->setValue( token, value );
             break;
         }
-        else if ( settings_typeinfo == typeid( unsigned int ) ) 
+        else if ( settings_typeinfo == typeid( unsigned int ) )
         {
             tokenvalue << valuestring;
             unsigned int value = ( unsigned int )-1;
@@ -162,13 +162,13 @@ bool Configuration::setSettingValueAsString( const std::string& name, const std:
             _p_settings->setValue( token, value );
             break;
         }
-        else if ( settings_typeinfo == typeid( std::string ) ) 
+        else if ( settings_typeinfo == typeid( std::string ) )
         {
             std::string value = valuestring;
             _p_settings->setValue( token, value );
             break;
         }
-        else if ( settings_typeinfo == typeid( float ) ) 
+        else if ( settings_typeinfo == typeid( float ) )
         {
             tokenvalue << valuestring;
             float value = -1;
@@ -176,7 +176,7 @@ bool Configuration::setSettingValueAsString( const std::string& name, const std:
             _p_settings->setValue( token, value );
             break;
         }
-        else if ( settings_typeinfo == typeid( osg::Vec3f ) ) 
+        else if ( settings_typeinfo == typeid( osg::Vec3f ) )
         {
             tokenvalue << valuestring;
             osg::Vec3f value;

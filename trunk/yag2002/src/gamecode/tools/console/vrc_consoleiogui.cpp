@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  09/09/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -40,7 +40,7 @@ namespace vrc
 #define KEY_ISSUE_CMD       "Return"
 #define KEY_AUTOCOMPLETE    "Tab"
 
-ConsoleIOGui::ConsoleIOGui( EnConsole* p_console ) : 
+ConsoleIOGui::ConsoleIOGui( EnConsole* p_console ) :
   vrc::gameutils::GenericInputHandler< EnConsole >( p_console ),
  ConsoleIOBase( p_console ),
 _toggleEnable( false ),
@@ -86,17 +86,17 @@ _enable( false )
     }
 }
 
-ConsoleIOGui::~ConsoleIOGui() 
+ConsoleIOGui::~ConsoleIOGui()
 {
 }
 
-bool ConsoleIOGui::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+bool ConsoleIOGui::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*aa*/ )
 {
     const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
     assert( p_eventAdapter && "invalid event adapter received" );
     SDLKey key = p_eventAdapter->getSDLKey();
 
-    if ( p_eventAdapter->getEventType() == osgGA::GUIEventAdapter::KEYDOWN ) 
+    if ( p_eventAdapter->getEventType() == osgGA::GUIEventAdapter::KEYDOWN )
     {
         if ( key == SDLK_F10 )
         {
@@ -130,12 +130,12 @@ bool ConsoleIOGui::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAda
     return false;
 }
 
-void ConsoleIOGui::resetToggle( bool en ) 
+void ConsoleIOGui::resetToggle( bool en )
 {
     _toggleEnable = en;
 }
 
-void ConsoleIOGui::shutdown() 
+void ConsoleIOGui::shutdown()
 {
     destroyHandler();
 }
@@ -175,7 +175,7 @@ void ConsoleIOGui::output( const std::string& text )
     _p_outputWindow->setCaratIndex( cetext.length() );
 }
 
-bool ConsoleIOGui::onCloseFrame( const CEGUI::EventArgs& arg )
+bool ConsoleIOGui::onCloseFrame( const CEGUI::EventArgs& /*arg*/ )
 {
     enable( false );
     resetToggle( false );

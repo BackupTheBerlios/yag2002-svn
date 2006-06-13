@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -24,7 +24,7 @@
  #
  #   date of creation:  08/01/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -48,7 +48,7 @@ class InspectorIH : public vrc::gameutils::GenericInputHandler< EnInspector >
 {
     public:
 
-        explicit                            InspectorIH( EnInspector* p_ent ) : 
+        explicit                            InspectorIH( EnInspector* p_ent ) :
                                              vrc::gameutils::GenericInputHandler< EnInspector >( p_ent )
                                             {
                                                 _p_pickResults   = new PickResults;
@@ -83,11 +83,11 @@ class InspectorIH : public vrc::gameutils::GenericInputHandler< EnInspector >
                                                     _bboxGeode = new osg::Geode;
                                                     _bboxGeode->setName( "_bboxCube_" );
                                                     _p_linesGeom = new osg::Geometry;
-                                                    _p_linesGeom->setSupportsDisplayList( false ); 
+                                                    _p_linesGeom->setSupportsDisplayList( false );
                                                     _p_linesGeom->setUseDisplayList( false );
 
                                                     osg::StateSet* p_stateSet = new osg::StateSet;
-                                                    p_stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF ); 
+                                                    p_stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
                                                     _p_linesGeom->setStateSet( p_stateSet );
 
                                                     osg::Vec3Array* vertices = new osg::Vec3Array( 8 );
@@ -101,7 +101,7 @@ class InspectorIH : public vrc::gameutils::GenericInputHandler< EnInspector >
                                                     _p_linesGeom->setColorArray( colors );
                                                     _p_linesGeom->setColorBinding( osg::Geometry::BIND_OVERALL );
 
-                                                    GLushort indices[] = 
+                                                    GLushort indices[] =
                                                     {
                                                         0,1,
                                                         0,4,
@@ -121,7 +121,7 @@ class InspectorIH : public vrc::gameutils::GenericInputHandler< EnInspector >
 
                                                     // create the primitive set for bbox and append it to top root node
                                                     _p_linesGeom->addPrimitiveSet( new osg::DrawElementsUShort( osg::PrimitiveSet::LINES, 24, indices ) );
-                                                    _bboxGeode->addDrawable( _p_linesGeom );                                               
+                                                    _bboxGeode->addDrawable( _p_linesGeom );
                                                     yaf3d::Application::get()->getSceneRootNode()->addChild( _bboxGeode.get() );
 
                                                     // create a line segment for intersection tests
@@ -130,7 +130,7 @@ class InspectorIH : public vrc::gameutils::GenericInputHandler< EnInspector >
                                                     // intersection line for visualizing the line, is just for debugging and can be removed later
                                                     {
                                                         _p_linesIntersect = new osg::Geometry;
-                                                        _p_linesIntersect->setSupportsDisplayList( false ); 
+                                                        _p_linesIntersect->setSupportsDisplayList( false );
                                                         _p_linesIntersect->setUseDisplayList( false );
 
                                                         _p_linesIntersect->setStateSet( p_stateSet );
@@ -149,12 +149,12 @@ class InspectorIH : public vrc::gameutils::GenericInputHandler< EnInspector >
 
                                                         GLushort iindices[] = { 0, 1 };
                                                         _p_linesIntersect->addPrimitiveSet( new osg::DrawElementsUShort( osg::PrimitiveSet::LINES, 2, iindices ) );
-                                                        _bboxGeode->addDrawable( _p_linesIntersect ); 
+                                                        _bboxGeode->addDrawable( _p_linesIntersect );
                                                     }
                                                 }
                                             }
 
-        virtual                             ~InspectorIH() 
+        virtual                             ~InspectorIH()
                                             {
                                                 delete _p_pickResults;
                                                 _p_pickResults = NULL;
@@ -212,18 +212,18 @@ class InspectorIH : public vrc::gameutils::GenericInputHandler< EnInspector >
                                             }
 
             osg::Drawable*                  _p_drawable;
-            osgUtil::Hit*                   _p_hit; 
+            osgUtil::Hit*                   _p_hit;
         };
-        
+
         // pick an drawable in level using ray-casting and return its nodepath. x, y is the normalized pointer position [-1...+1]
-        // return true when something picked and store the results in _p_pickResults. 
+        // return true when something picked and store the results in _p_pickResults.
         // use getPickResults to retrieve the results of picking when pick returns true.
         bool                                pick( float x, float y );
-        
+
         PickResults*                        getPickResults() { return _p_pickResults; }
 
         PickResults*                        _p_pickResults;
-        
+
         // update the bbox lines given a drawable, pass NULL in order to disable bbox drawing, returns the original bbox dimensions
         osg::Vec3f                         updateBBox( osg::Drawable* p_drawable, const osg::Matrix& accumat, bool hastransformnode );
 
@@ -261,9 +261,9 @@ bool InspectorIH::pick( float x, float y )
     // calculate start and end point of ray
     osgUtil::SceneView* p_sv = yaf3d::Application::get()->getSceneView();
     osg::Matrixd vum;
-    vum.set( 
+    vum.set(
             osg::Matrixd( p_sv->getViewMatrix() ) *
-            osg::Matrixd( p_sv->getProjectionMatrix() ) 
+            osg::Matrixd( p_sv->getProjectionMatrix() )
             );
     osg::Matrixd inverseMVPW;
     inverseMVPW.invert( vum );
@@ -414,7 +414,7 @@ osg::Vec3f InspectorIH::updateBBox( osg::Drawable* p_drawable, const osg::Matrix
     return dims;
 }
 
-bool InspectorIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+bool InspectorIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*aa*/ )
 {
     const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
     assert( p_eventAdapter && "invalid event adapter received" );
@@ -452,7 +452,7 @@ bool InspectorIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
         if ( sdlevent.button.button == SDL_BUTTON_LEFT && eventType == osgGA::GUIEventAdapter::PUSH )
         {
             float x = sdlevent.motion.x, y = sdlevent.motion.y;
-            x = 2.0f * ( x * _iscreenWidth ) - 1.0f; 
+            x = 2.0f * ( x * _iscreenWidth ) - 1.0f;
             y = 2.0f * ( y * _iscreenHeight ) - 1.0f;
 
             // picked something?
@@ -476,7 +476,7 @@ bool InspectorIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
                     {
                         osg::MatrixTransform* p_mt  = dynamic_cast< osg::MatrixTransform* >( *p_nbeg );
                         osg::Group*           p_grp = dynamic_cast< osg::Group* >( *p_nbeg );
- 
+
                         if ( !nodename.length() )
                         {
                             if ( p_mt )
@@ -490,7 +490,7 @@ bool InspectorIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
                                 nodename = p_grp->getName();
                             }
                         }
-                        else 
+                        else
                             break;
                     }
 
@@ -557,7 +557,7 @@ bool InspectorIH::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
         pos._v[ 0 ] -= speed * dt;
     else if ( _moveRight )
         pos._v[ 0 ] += speed * dt;
-    
+
     // enable the camera rotation on dragging right mouse button
     if ( sdlevent.button.button == SDL_BUTTON_RIGHT )
     {
@@ -665,7 +665,7 @@ void EnInspector::handleNotification( const yaf3d::EntityNotification& notificat
 void EnInspector::initialize()
 {
     try
-    {        
+    {
         // setup main gui
         {
             _p_wndMain = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", INSPECTOR_WND "mainFrame" ) );
@@ -769,7 +769,7 @@ void EnInspector::postInitialize()
 }
 
 // main gui callbacks
-bool EnInspector::onClickedCloseMain( const CEGUI::EventArgs& arg )
+bool EnInspector::onClickedCloseMain( const CEGUI::EventArgs& /*arg*/ )
 {
     // hide the info window via input handler, so it has the change to update its internal state
     if ( _inputHandler.valid() )
@@ -778,21 +778,21 @@ bool EnInspector::onClickedCloseMain( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool EnInspector::onSpeedChanged( const CEGUI::EventArgs& arg )
+bool EnInspector::onSpeedChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     _speed = _p_speedBarMain->getScrollPosition();
     _speed *= _maxSpeed;
     return true;
 }
 
-bool EnInspector::onLockChanged( const CEGUI::EventArgs& arg )
+bool EnInspector::onLockChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     _inputHandler->lockMovement( _p_lockCheckboxMain->isSelected() );
     return true;
 }
 
 // picker gui callbacks
-bool EnInspector::onClickedClosePicker( const CEGUI::EventArgs& arg )
+bool EnInspector::onClickedClosePicker( const CEGUI::EventArgs& /*arg*/ )
 {
     _p_wndPicker->hide();
     return true;
@@ -842,7 +842,7 @@ void EnInspector::updateEntity( float deltaTime )
         _p_outputTextMain->setText( info );
     }
 }
-       
+
 void EnInspector::enableInfoWindow( bool en )
 {
     _infoWindowEnable = en;

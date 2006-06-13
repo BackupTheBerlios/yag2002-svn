@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  02/04/2006
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -64,15 +64,15 @@ _decoderFrameSize( 0 )
     if ( _sampleRate > 25000 )
     {
         modeID = SPEEX_MODEID_UWB;
-    } 
+    }
     else if ( _sampleRate > 12500 )
     {
         modeID = SPEEX_MODEID_WB;
-    } 
+    }
     else if ( _sampleRate >= 6000 )
     {
         modeID = SPEEX_MODEID_NB;
-    } 
+    }
     else
     {
         log_error << "NetworkSoundCodec: sample rate " << _sampleRate << " is too low, valid sample rate range is [ 6000 ... 48000 ]" << std::endl;
@@ -84,15 +84,15 @@ _decoderFrameSize( 0 )
 
 NetworkSoundCodec::~NetworkSoundCodec()
 {
-    if ( _p_codecEncoderState ) 
-    {    
+    if ( _p_codecEncoderState )
+    {
         speex_preprocess_state_destroy( _p_preprocessorState );
         speex_encoder_destroy( _p_codecEncoderState );
         speex_bits_destroy( &_encoderBits );
         _p_codecEncoderState = NULL;
     }
 
-    if ( _p_codecDecoderState ) 
+    if ( _p_codecDecoderState )
     {
         speex_decoder_destroy( _p_codecDecoderState );
         speex_bits_destroy( &_decoderBits );
@@ -138,7 +138,7 @@ void NetworkSoundCodec::setupDecoder()
     _p_codecDecoderState = speex_decoder_init( _p_mode );
     speex_decoder_ctl( _p_codecDecoderState, SPEEX_SET_ENH, &enabled );
     speex_decoder_ctl( _p_codecDecoderState, SPEEX_SET_SAMPLING_RATE, &_sampleRate );
-    speex_decoder_ctl( _p_codecDecoderState, SPEEX_GET_FRAME_SIZE, &_decoderFrameSize ); 
+    speex_decoder_ctl( _p_codecDecoderState, SPEEX_GET_FRAME_SIZE, &_decoderFrameSize );
     speex_bits_init( &_decoderBits );
 }
 
@@ -184,10 +184,10 @@ unsigned int NetworkSoundCodec::encode( short* p_soundbuffer, unsigned int lengt
     }
 
     // preproces samples
-    int vad = speex_preprocess( _p_preprocessorState, p_soundbuffer, NULL );
+    /*int vad = */speex_preprocess( _p_preprocessorState, p_soundbuffer, NULL );
 
     // copy and gain the preprocessed input
-    for ( unsigned int cnt = 0; cnt < length; ++cnt )        
+    for ( unsigned int cnt = 0; cnt < length; ++cnt )
         _p_inputBuffer[ cnt ] = static_cast< float >( p_soundbuffer[ cnt ]  ) * gain;
 
     // encode
@@ -214,7 +214,7 @@ bool NetworkSoundCodec::decode( char* p_bitbuffer, unsigned int length, std::que
     speex_bits_read_from( &_decoderBits, p_bitbuffer, length );
     int res = speex_decode( _p_codecDecoderState, &_decoderBits, _p_outputBuffer );
     if ( res == 0 )
-    {        
+    {
         for ( unsigned short cnt = 0; cnt < _decoderFrameSize; ++cnt )
             samplequeue.push( static_cast< short >( _p_outputBuffer[ cnt ] * gain ) );
     }

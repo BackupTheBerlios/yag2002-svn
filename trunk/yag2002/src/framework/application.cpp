@@ -2,8 +2,8 @@
  *  Project YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  02/17/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -60,7 +60,7 @@
 #define LOG_FILE_NAME               "vrc.log"
 #define LOG_FILE_NAME_SERVER        "vrc-server.log"
 
-// media path relative to inst dir  
+// media path relative to inst dir
 #define YAF3D_MEDIA_PATH            "/media/"
 // default level
 #define YAF3D_DEFAULT_LEVEL         "gui/loader"
@@ -86,7 +86,7 @@ class AppWindowStateHandler : public GameState::CallbackAppWindowStateChange
                                     GameState::get()->registerCallbackAppWindowStateChange( this );
                                 }
 
-        virtual                 ~AppWindowStateHandler() 
+        virtual                 ~AppWindowStateHandler()
                                 {
                                     // deregister for getting application window state changes
                                     yaf3d::GameState::get()->registerCallbackAppWindowStateChange( this, false );
@@ -186,7 +186,7 @@ bool Application::initialize( int argc, char **argv )
         arguments.remove( argpos );
     }
 
-    // note: before beginning to initialize the framework modules the media path must be set, 
+    // note: before beginning to initialize the framework modules the media path must be set,
     //  other modules need it for loading resources etc.
     //-------------------
     std::vector< std::string > path;
@@ -251,7 +251,7 @@ bool Application::initialize( int argc, char **argv )
             level = Log::L_INFO;
         else if ( loglevel == "verbose" )
             level = Log::L_VERBOSE;
-        else 
+        else
             log_warning << "Application: configuration contains an invalid log level, possible values are: error, warning, debug, info, verbose. set to error." << std::endl;
 
         // create log sinks with configured log level
@@ -285,21 +285,21 @@ bool Application::initialize( int argc, char **argv )
     {
         std::stringstream cpuinfo;
         cpuinfo << "Application: CPU supports ";
-        if ( SDL_HasRDTSC() ) 
+        if ( SDL_HasRDTSC() )
             cpuinfo << "RDTSC ";
-        if ( SDL_HasMMX() ) 
+        if ( SDL_HasMMX() )
             cpuinfo << "MMX ";
-        if ( SDL_HasMMXExt() ) 
+        if ( SDL_HasMMXExt() )
             cpuinfo << "MMXExt ";
-        if ( SDL_Has3DNow() ) 
+        if ( SDL_Has3DNow() )
             cpuinfo << "3DNow ";
-        if ( SDL_Has3DNowExt() ) 
+        if ( SDL_Has3DNowExt() )
             cpuinfo << "3DNowExt ";
-        if ( SDL_HasSSE() ) 
+        if ( SDL_HasSSE() )
             cpuinfo << "SSE ";
-        if ( SDL_HasSSE2() ) 
+        if ( SDL_HasSSE2() )
             cpuinfo << "SSE2 ";
-        if ( SDL_HasAltiVec() ) 
+        if ( SDL_HasAltiVec() )
             cpuinfo << "AltiVec ";
 
         log << cpuinfo.str() << std::endl;
@@ -342,7 +342,7 @@ bool Application::initialize( int argc, char **argv )
         SDL_Init( SDL_INIT_NOPARACHUTE );
     }
     // enable unicode translation
-    SDL_EnableUNICODE( 1 ); 
+    SDL_EnableUNICODE( 1 );
     SDL_EnableKeyRepeat( SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL ); // enable key repeating
 
     _p_viewer = new osgSDL::Viewer;
@@ -359,7 +359,7 @@ bool Application::initialize( int argc, char **argv )
         flags |= SDL_FULLSCREEN;
 
     _p_viewer->setDisplayMode( _screenWidth, _screenHeight, colorBits, flags );
-    _p_viewer->setCursorEnabled( false );    
+    _p_viewer->setCursorEnabled( false );
     //------------
 
     // setup keyboard map
@@ -389,7 +389,7 @@ bool Application::initialize( int argc, char **argv )
         std::string servername;
         Configuration::get()->getSettingValue( YAF3D_GS_SERVER_NAME, servername );
         NodeInfo nodeinfo( arg_levelname, servername );
-        unsigned int channel;
+        unsigned int channel = 0;
         Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
 
         // try to setup server
@@ -415,7 +415,7 @@ bool Application::initialize( int argc, char **argv )
         Configuration::get()->getSettingValue( YAF3D_GS_SERVER_IP, url );
         std::string clientname( "vrc-client" );
         NodeInfo nodeinfo( "", clientname );
-        unsigned int channel;
+        unsigned int channel = 0;
         Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
 
         // try to setup client networking
@@ -479,7 +479,7 @@ void Application::run()
 
     // setup local app window state handler
     _p_appWindowStateHandler = new AppWindowStateHandler( this );
-    
+
     // now the network can start
     if ( GameState::get()->getMode() == GameState::Client )
     {
@@ -513,7 +513,7 @@ void Application::run()
     while( _p_gameState->getState() != GameState::Quitting )
     {
         // limit the deltaTime as we have to be carefull with stability of physics calculation etc.
-        if ( deltaTime > UPPER_UPDATE_PERIOD_LIMIT ) 
+        if ( deltaTime > UPPER_UPDATE_PERIOD_LIMIT )
         {
             deltaTime = UPPER_UPDATE_PERIOD_LIMIT;
         }
@@ -526,7 +526,7 @@ void Application::run()
                 OpenThreads::Thread::microSleep( 100 );
                 curTick   = timer.tick();
                 deltaTime = timer.delta_s( lastTick, curTick );
-            } 
+            }
             while ( deltaTime < LOWER_UPDATE_PERIOD_LIMIT );
         }
 

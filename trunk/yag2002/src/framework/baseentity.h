@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  02/17/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  # change history:
@@ -43,7 +43,7 @@
 
 #include "attributemanager.h"
 
-namespace yaf3d 
+namespace yaf3d
 {
 
 class BaseEntity;
@@ -54,7 +54,7 @@ class BaseEntityFactory;
 class EntityNotification
 {
     public:
-                                                    
+
                                                     EntityNotification( unsigned int id ) :
                                                      _id( id )
                                                     {}
@@ -135,17 +135,17 @@ class BaseEntity
         */
         osg::PositionAttitudeTransform*             getTransformationNode();
 
-        /** 
+        /**
         * Set position of the transform node
         */
         inline void                                 setPosition( const osg::Vec3d& pos );
 
-        /** 
+        /**
         * Get position of the transform node
         */
         inline const osg::Vec3d&                    getPosition();
 
-        /** 
+        /**
         * Set rotation of the transform node
         */
         inline void                                 setRotation( const osg::Quat& quats );
@@ -163,7 +163,7 @@ class BaseEntity
         */
         virtual BaseEntity*                         clone( const std::string& instanceName, osg::Group* p_scenegroup = NULL );
 
-        /** 
+        /**
         * A convenient way to clone and initialize / post-initialize an entity.
         */
         virtual BaseEntity*                         cloneAndInitialize( const std::string& instanceName, osg::Group* p_scenegroup = NULL );
@@ -187,14 +187,14 @@ class BaseEntity
         * Update entity
         * \param fDeltaTime                         Time passed since last update
         */
-        virtual void                                updateEntity( float deltaTime ) {}
+        virtual void                                updateEntity( float /*deltaTime*/ ) {}
 
         /**
         * Handle notifications. In order to get notifications the entity must register via EntityManager's registerNotification method.
-        * \param notification                       The notification struct. It may be useful to cast it to appropriate type for 
-        *                                           game-codespecific structs. 
+        * \param notification                       The notification struct. It may be useful to cast it to appropriate type for
+        *                                           game-codespecific structs.
         */
-        virtual void                                handleNotification( const EntityNotification& notification ) {}
+        virtual void                                handleNotification( const EntityNotification& /*notification*/ ) {}
 
         /**
         * Set transformation node. An application developer does not need this method in normal case.
@@ -233,13 +233,13 @@ class BaseEntity
 
     private:
 
-        /** 
+        /**
         * Avoid usage of copy constructor
         */
                                                     BaseEntity( const BaseEntity& );
 
-        /** 
-        * Avoid usage of assignment operator        
+        /**
+        * Avoid usage of assignment operator
         */
         BaseEntity&                                 operator = ( BaseEntity& );
 

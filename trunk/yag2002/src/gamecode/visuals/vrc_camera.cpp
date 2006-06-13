@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,21 +11,21 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
  # entity camera
- #  this entity can be used by other entities (e.g. player) for 
+ #  this entity can be used by other entities (e.g. player) for
  #  controling the rendering view.
  #
  #   date of creation:  04/21/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -42,7 +42,7 @@ class CameraFrameHandler : public vrc::gameutils::GenericInputHandler< EnCamera 
 {
     public:
 
-        explicit                        CameraFrameHandler( EnCamera* p_camEntity ) : 
+        explicit                        CameraFrameHandler( EnCamera* p_camEntity ) :
                                           vrc::gameutils::GenericInputHandler< EnCamera >( p_camEntity ),
                                           _enable( false )
                                         {}
@@ -61,7 +61,7 @@ class CameraFrameHandler : public vrc::gameutils::GenericInputHandler< EnCamera 
         bool                            _enable;
 };
 
-bool CameraFrameHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+bool CameraFrameHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*aa*/ )
 {
     if ( !_enable )
         return false;
@@ -118,7 +118,7 @@ void EnCamera::handleNotification( const yaf3d::EntityNotification& notification
 
             setupCamera();
             break;
-             
+
         // we have to trigger the deletion ourselves! ( this entity can be peristent )
         case YAF3D_NOTIFY_SHUTDOWN:
 
@@ -153,7 +153,7 @@ void EnCamera::setupCamera()
     yaf3d::Application::get()->getSceneView()->setComputeNearFarMode( osgUtil::CullVisitor::DO_NOT_COMPUTE_NEAR_FAR );
 
     _curPosition = _position;
-    _curRotation = osg::Quat( 
+    _curRotation = osg::Quat(
                                 osg::DegreesToRadians( _rotation.x() ), osg::Vec3f( 0.0f, 1.0f, 0.0f ), // roll
                                 osg::DegreesToRadians( _rotation.y() ), osg::Vec3f( 1.0f, 0.0f, 0.0f ), // pitch
                                 osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0.0f, 0.0f, 1.0f )  // yaw
@@ -171,7 +171,7 @@ void EnCamera::updateCameraView( bool forceupdate )
 {
     if ( !( _needUpdate || forceupdate ) )
         return;
-    
+
     // setup the view matrix basing on position and transformation
     osg::Matrixf trans;
     trans.makeTranslate( _curPosition.x(), _curPosition.y(), _curPosition.z() );

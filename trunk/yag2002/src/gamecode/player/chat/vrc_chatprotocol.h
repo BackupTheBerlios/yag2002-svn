@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  10/16/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  #
@@ -71,32 +71,32 @@ class ChatProtocolCallback
         virtual                                     ~ChatProtocolCallback() {}
 
         //! Override this method in derived classes in order to get connection notification.
-        virtual void                                onConnection( const ChatConnectionConfig& config ) {}
+        virtual void                                onConnection( const ChatConnectionConfig& /*config*/ ) {}
 
         //! Override this method in derived classes in order to get disconnection notification.
-        virtual void                                onDisconnection( const ChatConnectionConfig& config ) {}
+        virtual void                                onDisconnection( const ChatConnectionConfig& /*config*/ ) {}
 
         //! Override this method in derived classes in order to get notification when someone joined to a channel.
-        virtual void                                onJoinedChannel( const ChatConnectionConfig& cfg ) {}
+        virtual void                                onJoinedChannel( const ChatConnectionConfig& /*cfg*/ ) {}
 
         //! Override this method in derived classes in order to get notification when someone left the channel.
-        virtual void                                onLeftChannel( const ChatConnectionConfig& cfg ) {}
+        virtual void                                onLeftChannel( const ChatConnectionConfig& /*cfg*/ ) {}
 
         //! Override this method in derived classes in order to get notification when someone has been kicked from a channel.
-        virtual void                                onKicked( const std::string& channel, const std::string& kicker, const std::string& kicked ) {}
+        virtual void                                onKicked( const std::string& /*channel*/, const std::string& /*kicker*/, const std::string& /*kicked*/ ) {}
 
         //! Override this method in derived classes in order to receive the chat traffic.
-        virtual void                                onReceive( const std::string& channel, const std::string& sender, const std::string& msg ) {}
+        virtual void                                onReceive( const std::string& /*channel*/, const std::string& /*sender*/, const std::string& /*msg*/ ) {}
 
         //! Override this to get a callback whenever a nickname changed in channel.
         //! If oldname is empty then newname is the initial one.
-        virtual void                                onNicknameChanged( const std::string& newname, const std::string& oldname ) {}
+        virtual void                                onNicknameChanged( const std::string& /*newname*/, const std::string& /*oldname*/ ) {}
 
         //! Override this method in derived classes in order to receive member list changes.
-        virtual void                                onReceiveMemberList( const std::string& channel ) {}
+        virtual void                                onReceiveMemberList( const std::string& /*channel*/ ) {}
 
         //! Override this method in derived classes in order to get system messages.
-        virtual void                                onReceiveSystemMessage( const std::string& msg ) {}
+        virtual void                                onReceiveSystemMessage( const std::string& /*msg*/ ) {}
 
     private:
 

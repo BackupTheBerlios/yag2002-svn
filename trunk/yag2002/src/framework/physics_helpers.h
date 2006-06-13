@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,19 +11,19 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
- # physics system 
+ # physics system
  #
  #   date of creation:  02/20/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -38,29 +38,31 @@
 namespace yaf3d
 {
 
-//! Class used for rendering physics debug info 
+//! Class used for rendering physics debug info
 class PhysicsDebugDrawable : public osg::Drawable
 {
     public :
 
                                         PhysicsDebugDrawable() { _supportsDisplayList = false; _useDisplayList = false; }
-                                                                        
+
         // Copy constructor using CopyOp to manage deep vs shallow copy.
-                                        PhysicsDebugDrawable( const PhysicsDebugDrawable&, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY ) {};
+                                        PhysicsDebugDrawable( const PhysicsDebugDrawable& drawable, const osg::CopyOp& copyop = osg::CopyOp::SHALLOW_COPY ) :
+                                         Drawable( drawable, copyop )
+                                        {};
 
         osg::Object*                    cloneType() const { return new PhysicsDebugDrawable(); }
 
         osg::Object*                    clone( const osg::CopyOp& ) const { return new PhysicsDebugDrawable(); }
-        
+
         bool                            isSameKindAs( const osg::Object* obj ) const { return dynamic_cast<const PhysicsDebugDrawable*>(obj)!=NULL; }
-        
+
         const char*                     className() const { return "PhysicsDebugDrawable"; }
-        
+
         void                            drawImplementation( osg::State& state ) const;
-        
+
     protected:
-    
-        virtual                         ~PhysicsDebugDrawable() {}        
+
+        virtual                         ~PhysicsDebugDrawable() {}
 };
 
 //! Visitor for traversing all Geode objects in scenegraph and build collision geometry
@@ -68,13 +70,13 @@ class PhysicsVisitor : public osg::NodeVisitor
 {
     public:
                                         PhysicsVisitor( osg::NodeVisitor::TraversalMode tm,  NewtonCollision* p_col ) :
-                                            osg::NodeVisitor( tm ),                                            
+                                            osg::NodeVisitor( tm ),
                                             _attribute( 0 )
                                         {
                                             // we take all nodes
                                             setTraversalMask( 0xffffffff );
                                             assert( p_col );
-                                            _p_collision    = p_col;                                                                                        
+                                            _p_collision    = p_col;
                                             _numPrimitives  = 0;
                                             _numVertices    = 0;
                                         }

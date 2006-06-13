@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,14 +23,14 @@
  #
  #   date of creation:  05/26/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
 
 
 template< class PlayerImplT >
-PlayerIHCharacterCameraCtrl< PlayerImplT >::PlayerIHCharacterCameraCtrl( PlayerImplT* p_player, EnPlayer* p_playerentity ) : 
+PlayerIHCharacterCameraCtrl< PlayerImplT >::PlayerIHCharacterCameraCtrl( PlayerImplT* p_player, EnPlayer* p_playerentity ) :
 vrc::gameutils::GenericInputHandler< PlayerImplT >( p_player ),
 _p_mouseData( NULL ),
 _p_playerEntity( p_playerentity ),
@@ -60,13 +60,13 @@ _mouseSensitivity( 1.0f )
 }
 
 template< class PlayerImplT >
-PlayerIHCharacterCameraCtrl< PlayerImplT >::~PlayerIHCharacterCameraCtrl() 
+PlayerIHCharacterCameraCtrl< PlayerImplT >::~PlayerIHCharacterCameraCtrl()
 {
     delete _p_mouseData;
 }
 
 template< class PlayerImplT >
-bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*aa*/ )
 {
     // while in menu we skip input processing for player
     if ( _menuEnabled )
@@ -77,12 +77,12 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
 
     unsigned int eventType  = p_eventAdapter->getEventType();
     int          kcode      = p_eventAdapter->getSDLKey();
-    unsigned int mouseBtn   = p_eventAdapter->getButton();    
+    unsigned int mouseBtn   = p_eventAdapter->getButton();
     bool keyDown            = ( eventType == osgGA::GUIEventAdapter::KEYDOWN );
     bool keyUp              = ( eventType == osgGA::GUIEventAdapter::KEYUP   );
     bool mouseButtonPush    = ( eventType == osgGA::GUIEventAdapter::PUSH    );
     bool mouseButtonRelease = ( eventType == osgGA::GUIEventAdapter::RELEASE );
-    
+
     float deltaTime         = getPlayerEntity()->getDeltaTime();
     unsigned int key        = 0;
 
@@ -167,7 +167,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             getPlayerImpl()->getPlayerAnimation()->animIdle();
             getPlayerImpl()->getPlayerAnimation()->animJump();
         }
-    } 
+    }
     else if ( keyUp || mouseButtonRelease )
     {
         if ( key == _keyCodeCameraMode )
@@ -205,8 +205,8 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         getPlayerImpl()->getPlayerPhysics()->setDirection( getPlayerImpl()->_moveDir._v[ 0 ], getPlayerImpl()->_moveDir._v[ 1 ] );
         if ( !getPlayerImpl()->getPlayerPhysics()->isJumping() )
             getPlayerImpl()->getPlayerAnimation()->animWalk();
-    } 
-    
+    }
+
     if ( _moveBackward )
     {
         getPlayerImpl()->getPlayerPhysics()->setDirection( -getPlayerImpl()->_moveDir._v[ 0 ], -getPlayerImpl()->_moveDir._v[ 1 ] );
@@ -264,7 +264,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                     getPlayerImpl()->getPlayerAnimation()->animTurn();
             }
             break;
-            
+
             case BasePlayerImplementation::Ego:
             {
                 osg::Vec3f side;
@@ -367,7 +367,7 @@ void PlayerIHCharacterCameraCtrl< PlayerImplT >::updatePlayerPitchYaw( float& pi
 
         // calculate yaw and change player direction when in ego mode
         float& rotZ = getPlayerImpl()->_rotZ;
-        rotZ = yaw; 
+        rotZ = yaw;
         getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
         getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
 

@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,21 +11,21 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
  # class providing base mechanisms for loading and executing scripts
- #  currently Lua ( http://www.lua.org ) is supported as scripting 
+ #  currently Lua ( http://www.lua.org ) is supported as scripting
  #  language.
  #
  #   date of creation:  04/15/2006
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -50,40 +50,40 @@ BaseParam* Param< TypeT >::clone()
 template< typename TypeT >
 void Params::add( TypeT param )
 {
-    typename Param< TypeT >* p_param = new Param< TypeT >( param );
+    Param< TypeT >* p_param = new Param< TypeT >( param );
     std::vector< BaseParam* >::push_back( p_param );
 }
 
 template< typename TypeT >
 const TypeT& Params::getValue( unsigned int index )
 {
-    typename Param< TypeT >* p_param = static_cast< Param< TypeT >* >( at( index ) );
+    Param< TypeT >* p_param = static_cast< Param< TypeT >* >( at( index ) );
     return p_param->getValue();
 }
 
 template< typename TypeT >
 void Params::setValue( unsigned int index, TypeT value )
 {
-    typename Param< TypeT >* p_param = static_cast< Param< TypeT >* >( at( index ) );
+    Param< TypeT >* p_param = static_cast< Param< TypeT >* >( at( index ) );
     p_param->setValue( value );
 }
 
-const type_info& Params::getTypeInfo( unsigned int index )
+const std::type_info& Params::getTypeInfo( unsigned int index )
 {
     return at( index )->getTypeInfo();
 }
 
 std::size_t Params::size()
-{ 
-    return std::vector< BaseParam* >::size(); 
+{
+    return std::vector< BaseParam* >::size();
 }
 
 // Template definitions of BaseScript
 template< class T >
 BaseScript< T >::BaseScript() :
 _p_state( NULL ),
-_methodTableIndex( 0 ),
-_valid( false )
+_valid( false ),
+_methodTableIndex( 0 )
 {
 }
 
@@ -113,7 +113,7 @@ void BaseScript< T >::setupLuaLibs( lua_State* p_state, unsigned int usedlibs )
         luaopen_table( p_state );
         lua_settop( p_state, 0 );
     }
-    if ( usedlibs & BaseScript::DEBUG )
+    if ( usedlibs & BaseScript::DBG )
     {
         luaopen_debug( p_state );
         lua_settop( p_state, 0 );
@@ -134,11 +134,11 @@ template< class T >
 void BaseScript< T >::loadScript( const std::string& luaModuleName, const std::string& scriptfile, unsigned int usedlibs ) throw ( ScriptingException )
 {
     std::string file( yaf3d::Application::get()->getMediaPath() + scriptfile );
-    
+
     assert( ( _p_state == NULL ) && "script file already created!" );
 
     _p_state = lua_open();
-    
+
     setupLuaLibs( _p_state, usedlibs );
 
     int status = luaL_loadfile( _p_state, file.c_str() );
@@ -163,7 +163,7 @@ void BaseScript< T >::loadScript( const std::string& luaModuleName, const std::s
     lua_pushstring( _p_state, luaModuleName.c_str() );
     lua_pushvalue( _p_state, _methodTableIndex );
     lua_settable( _p_state, LUA_GLOBALSINDEX );
-    
+
     _valid = true;
     _scriptFile = scriptfile;
 }
@@ -179,7 +179,7 @@ void BaseScript< T >::closeScript()
     }
 
     // cleanup the method entries
-    std::vector< MethodDescriptor* >::iterator p_beg = _methods.begin(), p_end = _methods.end();
+    typename std::vector< MethodDescriptor* >::iterator p_beg = _methods.begin(), p_end = _methods.end();
     for ( ; p_beg != p_end; ++p_beg )
         delete ( *p_beg );
 
@@ -218,7 +218,7 @@ template< class T >
 int BaseScript< T >::exposedMethodProxy( lua_State* p_state )
 {
     // get number of arguments passed from script on function call
-    int nargs = lua_gettop( p_state );
+    std::size_t nargs = lua_gettop( p_state );
 
     int res = lua_islightuserdata( p_state, lua_upvalueindex( 1 ) );
     assert( res && "missing user data" );
@@ -234,24 +234,24 @@ int BaseScript< T >::exposedMethodProxy( lua_State* p_state )
     {
         if ( nargs != arguments.size() )
         {
-            log_error << "script error: exposed method called with wrong parameter count, file: " << p_instance->getScriptFileName() 
+            log_error << "script error: exposed method called with wrong parameter count, file: " << p_instance->getScriptFileName()
                 << ", method name: " << p_entry->_methodName;
 
             p_instance->printParamsInfo( arguments );
             log_error << std::endl;
             return 0;
         }
-        for ( int cnt = 1; cnt <= nargs; cnt++ )
+        for ( std::size_t cnt = 1; cnt <= nargs; ++cnt )
         {
             // get the param type
-            const type_info& typeinfo = arguments.getTypeInfo( cnt - 1 );
+            const std::type_info& typeinfo = arguments.getTypeInfo( cnt - 1 );
 
             if ( lua_isnumber( p_state, cnt ) )
-            {            
+            {
                 if ( typeinfo == typeid( float ) )
-                    arguments.setValue< float >( cnt - 1, lua_tonumber( p_state, cnt ) );
+                    arguments.setValue< float >( cnt - 1, static_cast< float >( lua_tonumber( p_state, cnt ) ) );
                 else if ( typeinfo == typeid( int ) )
-                    arguments.setValue< int >( cnt - 1, lua_tonumber( p_state, cnt ) );
+                    arguments.setValue< int >( cnt - 1, static_cast< int >( lua_tonumber( p_state, cnt ) ) );
                 else if ( typeinfo == typeid( double ) )
                     arguments.setValue< double >( cnt - 1, lua_tonumber( p_state, cnt ) );
                 else
@@ -277,14 +277,14 @@ int BaseScript< T >::exposedMethodProxy( lua_State* p_state )
 
     // call method
     ( p_instance->*( p_entry->_ptrMethod ) )( arguments, returnvalues );
-    
+
     // push return values onto Lua stack
     {
         Params::iterator p_beg = returnvalues.begin(), p_end = returnvalues.end();
         for ( unsigned int index = 0; p_beg != p_end; ++p_beg, ++index )
         {
-            const type_info& tinfo = ( *p_beg )->getTypeInfo();
-            
+            const std::type_info& tinfo = ( *p_beg )->getTypeInfo();
+
             if ( tinfo == typeid( float ) )
                 lua_pushnumber( p_instance->_p_state, GET_SCRIPT_PARAMVALUE( returnvalues, index, float ) );
             else if ( tinfo == typeid( int ) )
@@ -332,8 +332,8 @@ void BaseScript< T >::callScriptFunction( const std::string& fcnname, Params* co
         Params::iterator p_beg = p_arguments->begin(), p_end = p_arguments->end();
         for ( unsigned int index = 0; p_beg != p_end; ++p_beg, ++index )
         {
-            const type_info& tinfo = ( *p_beg )->getTypeInfo();
-            
+            const std::type_info& tinfo = ( *p_beg )->getTypeInfo();
+
             if ( tinfo == typeid( float ) )
                 lua_pushnumber( _p_state, GET_SCRIPT_PARAMVALUE( *p_arguments, index, float ) );
             else if ( tinfo == typeid( int ) )
@@ -350,18 +350,18 @@ void BaseScript< T >::callScriptFunction( const std::string& fcnname, Params* co
 
     // get return values
     if ( numret > 0 )
-    {        
+    {
         int sindex = -numret;
         for ( int cnt = 0; cnt < numret; ++cnt, ++sindex )
         {
             // get the param type
-            const type_info& typeinfo = p_returnvalues->getTypeInfo( cnt );            
+            const std::type_info& typeinfo = p_returnvalues->getTypeInfo( cnt );
             if ( lua_isnumber( _p_state, sindex ) )
-            {            
+            {
                 if ( typeinfo == typeid( float ) )
-                    p_returnvalues->setValue< float >( cnt, lua_tonumber( _p_state, sindex ) );
+                    p_returnvalues->setValue< float >( cnt, static_cast< float >( lua_tonumber( _p_state, sindex ) ) );
                 else if ( typeinfo == typeid( int ) )
-                    p_returnvalues->setValue< int >( cnt, lua_tonumber( _p_state, sindex ) );
+                    p_returnvalues->setValue< int >( cnt, static_cast< int >( lua_tonumber( _p_state, sindex ) ) );
                 else if ( typeinfo == typeid( double ) )
                     p_returnvalues->setValue< double >( cnt, lua_tonumber( _p_state, sindex ) );
                 else
@@ -392,7 +392,7 @@ void BaseScript< T >::execute()
 {
     if ( !_valid )
     {
-        log_error << "script error: cannot execute invalid script" << std::endl; 
+        log_error << "script error: cannot execute invalid script" << std::endl;
         return;
     }
 

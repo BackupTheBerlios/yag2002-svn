@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  06/16/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -189,7 +189,7 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
         //! Return the list of remote players supporting voice chat
         inline const std::vector< yaf3d::BaseEntity* >&   getRemotePlayersVoiceChat();
 
-        //! Class used for getting notified whenever the player list ( also those supporting voice chat ) changed 
+        //! Class used for getting notified whenever the player list ( also those supporting voice chat ) changed
         class FunctorPlayerListChange
         {
             public:
@@ -245,7 +245,7 @@ class GenericInputHandler : public osgGA::GUIEventHandler
 {
     public:
 
-        explicit                                  GenericInputHandler( T* p_obj = NULL ) : 
+        explicit                                  GenericInputHandler( T* p_obj = NULL ) :
                                                    _p_userObject( p_obj ),
                                                    _destroyed( false )
                                                   {
@@ -253,7 +253,7 @@ class GenericInputHandler : public osgGA::GUIEventHandler
                                                       yaf3d::Application::get()->getViewer()->addEventHandler( this );
                                                   }
 
-        virtual                                   ~GenericInputHandler() 
+        virtual                                   ~GenericInputHandler()
                                                   {
                                                       if ( !_destroyed )
                                                           destroyHandler();
@@ -282,8 +282,8 @@ class GenericInputHandler : public osgGA::GUIEventHandler
 };
 
 //! Single instance providing GUI-related utility services
-class GuiUtils : 
-    public yaf3d::Singleton< vrc::gameutils::GuiUtils >, 
+class GuiUtils :
+    public yaf3d::Singleton< vrc::gameutils::GuiUtils >,
     public yaf3d::GameState::CallbackStateChange,
     public yaf3d::GameState::CallbackAppWindowStateChange
 {
@@ -331,7 +331,7 @@ class GuiUtils :
     protected:
 
         //! The main window instance
-        CEGUI::Window*                              _p_mainWindow;        
+        CEGUI::Window*                              _p_mainWindow;
 
         //! yaf3d::Application's root window
         CEGUI::Window*                              _p_rootWindow;
@@ -388,7 +388,7 @@ class EyeTransform : public osg::Transform
     public:
 
         /** Get the transformation matrix which moves from local coords to world coords.*/
-        virtual bool                        computeLocalToWorldMatrix( osg::Matrix& matrix, osg::NodeVisitor* p_nv ) const 
+        virtual bool                        computeLocalToWorldMatrix( osg::Matrix& matrix, osg::NodeVisitor* p_nv ) const
                                             {
                                                 osgUtil::CullVisitor* p_cv = dynamic_cast< osgUtil::CullVisitor* >( p_nv );
                                                 if ( p_cv )
@@ -425,7 +425,7 @@ class TransformationVisitor : public osg::NodeVisitor
 
         virtual                             ~TransformationVisitor() {}
 
-        void                                apply( osg::PositionAttitudeTransform& node )
+        void                                apply( osg::PositionAttitudeTransform& /*node*/ )
                                             {
                                                 _matrix *= osg::computeLocalToWorld( getNodePath() );
                                             }
@@ -445,11 +445,11 @@ class TexMatCallback : public osg::NodeCallback
 {
     public:
 
-        explicit                            TexMatCallback( osg::TexMat& tex ) : 
+        explicit                            TexMatCallback( osg::TexMat& tex ) :
                                              _texMat( tex ),
-                                             _R( 
+                                             _R(
                                                 osg::Matrix::rotate( osg::DegreesToRadians( 90.0f ), 0.0f, 0.0f, 1.0f ) *
-                                                osg::Matrix::rotate( osg::DegreesToRadians( 90.0f ), 1.0f, 0.0f, 0.0f ) 
+                                                osg::Matrix::rotate( osg::DegreesToRadians( 90.0f ), 1.0f, 0.0f, 0.0f )
                                                )
                                             {
                                             }

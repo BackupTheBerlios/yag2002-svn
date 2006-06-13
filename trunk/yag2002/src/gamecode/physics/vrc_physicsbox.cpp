@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  02/24/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -93,43 +93,43 @@ void EnPhysicsBox::initializePhysicsMaterials()
     NewtonMaterialSetDefaultElasticity( _p_world, boxID, boxID, 0.3f );
     NewtonMaterialSetDefaultSoftness( _p_world, boxID, boxID, 0.3f );
     NewtonMaterialSetDefaultFriction( _p_world, boxID, boxID, 0.6f, 0.5f );
-    NewtonMaterialSetCollisionCallback( _p_world, boxID, boxID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
+    NewtonMaterialSetCollisionCallback( _p_world, boxID, boxID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd );
 
     // set the material properties for box on default
     NewtonMaterialSetDefaultElasticity( _p_world, boxID, defaultID, 0.3f );
     NewtonMaterialSetDefaultSoftness( _p_world, boxID, defaultID, 0.8f );
     NewtonMaterialSetDefaultFriction( _p_world, boxID, defaultID, 0.8f, 0.7f );
-    NewtonMaterialSetCollisionCallback( _p_world, boxID, defaultID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
+    NewtonMaterialSetCollisionCallback( _p_world, boxID, defaultID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd );
 
     // set the material properties for box on level
     NewtonMaterialSetDefaultElasticity( _p_world, boxID, levelID, 0.3f );
     NewtonMaterialSetDefaultSoftness( _p_world, boxID, levelID, 0.8f );
     NewtonMaterialSetDefaultFriction( _p_world, boxID, levelID, 0.8f, 0.7f );
-    NewtonMaterialSetCollisionCallback( _p_world, boxID, levelID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
+    NewtonMaterialSetCollisionCallback( _p_world, boxID, levelID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd );
 
     // set the material properties for box on wood
     NewtonMaterialSetDefaultElasticity( _p_world, boxID, woodID, 0.5f );
     NewtonMaterialSetDefaultSoftness( _p_world, boxID, woodID, 0.5f );
     NewtonMaterialSetDefaultFriction( _p_world, boxID, woodID, 0.6f, 0.4f);
-    NewtonMaterialSetCollisionCallback( _p_world, boxID, woodID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
+    NewtonMaterialSetCollisionCallback( _p_world, boxID, woodID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd );
 
     // set the material properties for box on metal
     NewtonMaterialSetDefaultElasticity( _p_world, boxID, metalID, 0.7f );
     NewtonMaterialSetDefaultSoftness( _p_world, boxID, metalID, 0.9f );
     NewtonMaterialSetDefaultFriction( _p_world, boxID, metalID, 0.8f, 0.6f );
-    NewtonMaterialSetCollisionCallback( _p_world, boxID, metalID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
+    NewtonMaterialSetCollisionCallback( _p_world, boxID, metalID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd );
 
     // set the material properties for box on grass
     NewtonMaterialSetDefaultElasticity( _p_world, boxID, grassID, 0.2f );
     NewtonMaterialSetDefaultSoftness( _p_world, boxID, grassID, 0.3f );
     NewtonMaterialSetDefaultFriction( _p_world, boxID, grassID, 0.8f, 0.7f );
-    NewtonMaterialSetCollisionCallback( _p_world, boxID, grassID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
+    NewtonMaterialSetCollisionCallback( _p_world, boxID, grassID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd );
 
     // set the material properties for box on stone
     NewtonMaterialSetDefaultElasticity( _p_world, boxID, stoneID, 0.45f );
     NewtonMaterialSetDefaultSoftness( _p_world, boxID, stoneID, 0.9f );
     NewtonMaterialSetDefaultFriction( _p_world, boxID, stoneID, 0.9f, 0.7f );
-    NewtonMaterialSetCollisionCallback( _p_world, boxID, stoneID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd ); 
+    NewtonMaterialSetCollisionCallback( _p_world, boxID, stoneID, &s_boxCollStruct, entityContactBegin, entityContactProcessLevel< EnPhysicsBox >, entityContactEnd );
 }
 
 // some physics system callback functions
@@ -168,7 +168,7 @@ void EnPhysicsBox::physicsApplyForceAndTorque( const NewtonBody* p_body )
 void EnPhysicsBox::initialize()
 {
     osg::Node* p_mesh = yaf3d::LevelManager::get()->loadMesh( _meshFile );
-    if ( !p_mesh ) 
+    if ( !p_mesh )
     {
         log_error << "*** error loading mesh file" << std::endl;
         return;
@@ -177,13 +177,13 @@ void EnPhysicsBox::initialize()
     addToTransformationNode( p_mesh );
     setPosition( _position );
 
-    // create the collision 
-    NewtonCollision* p_col = NewtonCreateBox( yaf3d::Physics::get()->getWorld(), _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL ); 
-    NewtonCollision* p_collision = p_collision = NewtonCreateConvexHullModifier( yaf3d::Physics::get()->getWorld(), p_col );
+    // create the collision
+    NewtonCollision* p_col       = NewtonCreateBox( yaf3d::Physics::get()->getWorld(), _dimensions._v[ 0 ], _dimensions._v[ 1 ], _dimensions._v[ 2 ], NULL );
+    NewtonCollision* p_collision = NewtonCreateConvexHullModifier( yaf3d::Physics::get()->getWorld(), p_col );
     NewtonReleaseCollision( yaf3d::Physics::get()->getWorld(), p_col );
 
     osg::Matrixf mat;
-    mat.setTrans( _position ); 
+    mat.setTrans( _position );
 
     //create the rigid p_body
     _p_body = NewtonCreateBody( yaf3d::Physics::get()->getWorld(), p_collision );
@@ -235,7 +235,7 @@ void EnPhysicsBox::postInitialize()
         log_warning << "* grass sound is not defined. it will be disabled " << std::endl;
 
     // register entity in order to get updated per simulation step
-    yaf3d::EntityManager::get()->registerUpdate( this ); 
+    yaf3d::EntityManager::get()->registerUpdate( this );
 }
 
 void EnPhysicsBox::updateEntity( float deltaTime )

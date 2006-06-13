@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -27,7 +27,7 @@
  #
  #   date of creation:  05/28/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  # change history:
@@ -62,7 +62,7 @@ class EnPlayerAnimation;
 class PlayerInputHandler;
 
 //! Player implementation base class
-/** 
+/**
  * For a concrete implementation you have to derive from this class and override necessary methods.
  */
 class BasePlayerImplementation
@@ -84,7 +84,7 @@ class BasePlayerImplementation
         virtual void                                update( float deltaTime ) = 0;
 
         //! Implementation's notification callback
-        virtual void                                handleNotification( const yaf3d::EntityNotification& notification ) {}
+        virtual void                                handleNotification( const yaf3d::EntityNotification& /*notification*/ ) {}
 
         //! Get player name
         const std::string&                          getPlayerName() const;
@@ -170,7 +170,7 @@ class BasePlayerImplementation
         //! Set camera mode to Spheric or Ego
         void                                        setCameraMode( unsigned int mode );
 
-        //! Set camera's pitch and yaw angles given the mouse position [-1..1, -1..1] for looking around 
+        //! Set camera's pitch and yaw angles given the mouse position [-1..1, -1..1] for looking around
         void                                        setCameraPitchYaw( float pitch, float yaw );
 
         //! Set next available camera mode
@@ -223,13 +223,13 @@ class BasePlayerImplementation
 };
 
 // inlines
-inline void BasePlayerImplementation::setPlayerPosition( const osg::Vec3f& pos ) 
-{ 
+inline void BasePlayerImplementation::setPlayerPosition( const osg::Vec3f& pos )
+{
     _currentPos = pos;
 }
 
 inline void BasePlayerImplementation::setPlayerRotation( const osg::Quat& rot )
-{ 
+{
     _currentRot = rot;
 }
 
@@ -239,75 +239,75 @@ inline const osg::Vec3f& BasePlayerImplementation::getPlayerPosition() const
 }
 
 inline const osg::Quat& BasePlayerImplementation::getPlayerRotation() const
-{ 
-    return _currentRot; 
+{
+    return _currentRot;
 }
 
 inline float BasePlayerImplementation::getPlayerRotationZ() const
-{ 
-    return _rotZ; 
+{
+    return _rotZ;
 }
 
 inline const osg::Vec3f& BasePlayerImplementation::getPlayerMoveDirection() const
-{ 
-    return _moveDir; 
+{
+    return _moveDir;
 }
 
-inline EnPlayerAnimation* BasePlayerImplementation::getPlayerAnimation() 
-{ 
-    return _p_playerAnimation; 
+inline EnPlayerAnimation* BasePlayerImplementation::getPlayerAnimation()
+{
+    return _p_playerAnimation;
 }
 
 inline void BasePlayerImplementation::setPlayerAnimation( EnPlayerAnimation* p_anim )
-{ 
-    _p_playerAnimation = p_anim; 
+{
+    _p_playerAnimation = p_anim;
 }
 
-inline EnPlayerPhysics* BasePlayerImplementation::getPlayerPhysics() 
-{ 
-    return _p_playerPhysics; 
+inline EnPlayerPhysics* BasePlayerImplementation::getPlayerPhysics()
+{
+    return _p_playerPhysics;
 }
 
-inline void BasePlayerImplementation::setPlayerPhysics( EnPlayerPhysics*  p_phys ) 
-{ 
-    _p_playerPhysics = p_phys; 
+inline void BasePlayerImplementation::setPlayerPhysics( EnPlayerPhysics*  p_phys )
+{
+    _p_playerPhysics = p_phys;
 }
 
-inline EnPlayerSound* BasePlayerImplementation::getPlayerSound() 
-{ 
-    return _p_playerSound; 
+inline EnPlayerSound* BasePlayerImplementation::getPlayerSound()
+{
+    return _p_playerSound;
 }
 
-inline void BasePlayerImplementation::setPlayerSound( EnPlayerSound* p_snd ) 
-{ 
-    _p_playerSound = p_snd; 
+inline void BasePlayerImplementation::setPlayerSound( EnPlayerSound* p_snd )
+{
+    _p_playerSound = p_snd;
 }
 
-inline PlayerNetworking* BasePlayerImplementation::getPlayerNetworking() 
-{ 
-    return _p_playerNetworking; 
+inline PlayerNetworking* BasePlayerImplementation::getPlayerNetworking()
+{
+    return _p_playerNetworking;
 }
 
-inline void BasePlayerImplementation::setPlayerNetworking( PlayerNetworking* p_net ) 
-{ 
-    _p_playerNetworking = p_net; 
+inline void BasePlayerImplementation::setPlayerNetworking( PlayerNetworking* p_net )
+{
+    _p_playerNetworking = p_net;
 }
 
-inline EnCamera* BasePlayerImplementation::getPlayerCamera() 
-{ 
-    return _p_camera; 
+inline EnCamera* BasePlayerImplementation::getPlayerCamera()
+{
+    return _p_camera;
 }
 
-inline EnPlayer* BasePlayerImplementation::getPlayerEntity() 
-{ 
-    return _p_player; 
+inline EnPlayer* BasePlayerImplementation::getPlayerEntity()
+{
+    return _p_player;
 }
 
 inline void BasePlayerImplementation::setLoadingPostfix( const std::string& postFix )
 {
     _loadingPostFix = postFix;
 }
-        
+
 inline unsigned int BasePlayerImplementation::getCameraMode() const
 {
     return _cameraMode;

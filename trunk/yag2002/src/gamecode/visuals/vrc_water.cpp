@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,22 +11,22 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
  # entity water
  #
- # the water shader is basing on RenderMonkey's Reflection/Refraction 
+ # the water shader is basing on RenderMonkey's Reflection/Refraction
  #  example
  #
  #   date of creation:  03/26/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -129,7 +129,7 @@ static const char glsl_fp[] =
 class DeltaWaveUpdateCallback: public osg::Uniform::Callback
 {
     public:
-        
+
         explicit                            DeltaWaveUpdateCallback( const EnWater* p_ent ) :
                                              _p_waterEntity( p_ent )
                                             {}
@@ -151,7 +151,7 @@ class DeltaWaveUpdateCallback: public osg::Uniform::Callback
 class DeltaNoiseUpdateCallback: public osg::Uniform::Callback
 {
     public:
-        
+
          explicit                           DeltaNoiseUpdateCallback( const EnWater* p_ent ) :
                                              _p_waterEntity( p_ent )
                                             {}
@@ -173,15 +173,15 @@ class DeltaNoiseUpdateCallback: public osg::Uniform::Callback
 class ViewPositionUpdateCallback: public osg::Uniform::Callback
 {
     public:
-        
-                                            ViewPositionUpdateCallback() 
+
+                                            ViewPositionUpdateCallback()
                                             {
                                                 _p_sceneView = yaf3d::Application::get()->getSceneView();
                                             }
 
         virtual                             ~ViewPositionUpdateCallback() {}
 
-        virtual void                        operator() ( osg::Uniform* p_uniform, osg::NodeVisitor* p_nv )
+        virtual void                        operator() ( osg::Uniform* p_uniform, osg::NodeVisitor* /*p_nv*/ )
                                             {
                                                 // get current camera position and feed it into shader
                                                 osg::Vec3f viewpos;
@@ -263,7 +263,7 @@ void EnWater::handleNotification( const yaf3d::EntityNotification& notification 
         // disable water rendering when in menu
         case YAF3D_NOTIFY_MENU_ENTER:
 
-            if ( _usedInMenu ) 
+            if ( _usedInMenu )
             {
                 addToTransformationNode( _water.get() );
                 // refresh the shader parameters
@@ -343,7 +343,7 @@ void EnWater::initialize()
 osg::Image* make3DNoiseImage(int texSize)
 {
     osg::Image* image = new osg::Image;
-    image->setImage( 
+    image->setImage(
                      texSize, texSize, texSize,
                      4, GL_RGBA, GL_UNSIGNED_BYTE,
                      new unsigned char[4 * texSize * texSize * texSize],
@@ -382,11 +382,11 @@ osg::Image* make3DNoiseImage(int texSize)
         }
     }
 
-    return image;        
+    return image;
 }
 
 osg::Node* EnWater::setupWater()
-{    
+{
     osg::Node* p_node = NULL;
 
     // check if a water mesh is given, if so load it and place it into level
@@ -427,7 +427,7 @@ osg::Node* EnWater::setupWater()
         p_polyGeom->setVertexArray( new osg::Vec3Array( 4, coords ) );
         p_polyGeom->setNormalArray( new osg::Vec3Array( 4, normals ) );
 
-        osg::DrawArrays* p_drawarray = new osg::DrawArrays( osg::PrimitiveSet::QUADS, 0, 4 );        
+        osg::DrawArrays* p_drawarray = new osg::DrawArrays( osg::PrimitiveSet::QUADS, 0, 4 );
         p_polyGeom->addPrimitiveSet( p_drawarray );
 
         p_geode->addDrawable( p_polyGeom );
@@ -436,7 +436,7 @@ osg::Node* EnWater::setupWater()
 
     // check if glsl is supported before setting up the shaders ( gl context 0  is assumed )
     const osg::GL2Extensions* p_extensions = osg::GL2Extensions::Get( 0, true );
-    if ( !p_extensions->isGlslSupported() ) 
+    if ( !p_extensions->isGlslSupported() )
         return p_node;
 
     // create skybox cube map texture
@@ -499,7 +499,7 @@ osg::Node* EnWater::setupWater()
 
         s_stateSet->setTextureAttribute( LOCATION_NOISE_SAMPLER, p_noiseTexture );
         s_stateSet->addUniform( new osg::Uniform( "samplerNoise", LOCATION_NOISE_SAMPLER ) );
-        
+
         s_stateSet->setTextureAttribute( LOCATION_CUBEMAP_SAMPLER, _reflectmap.get() );
         s_stateSet->addUniform( new osg::Uniform( "samplerSkyBox", LOCATION_CUBEMAP_SAMPLER ) );
 
@@ -511,7 +511,7 @@ osg::Node* EnWater::setupWater()
         s_stateSet->setMode( GL_DEPTH, osg::StateAttribute::OFF );
 
         // set up transparency
-        s_stateSet->setMode( GL_BLEND, osg::StateAttribute::ON );      
+        s_stateSet->setMode( GL_BLEND, osg::StateAttribute::ON );
         s_stateSet->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
         // make sure that the water is rendered at first, then all other transparent primitives
         s_stateSet->setBinNumber( WATER_RENDERBIN_NUMBER );

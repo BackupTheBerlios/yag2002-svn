@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,21 +11,21 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
  # class providing base mechanisms for loading and executing scripts
- #  currently Lua ( http://www.lua.org ) is supported as scripting 
+ #  currently Lua ( http://www.lua.org ) is supported as scripting
  #  language.
  #
  #   date of creation:  04/15/2006
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -52,7 +52,7 @@ namespace vrc
 * 'type'   is the type of parameter at specified index. Supported types are: float, double, int, std::string
 * 'value'  is the value to be set at given index in params object.
 *
-* Note: there are no typechecks provided. Make sure that you use these macros -- in particular 'index' and 'type' -- according to 
+* Note: there are no typechecks provided. Make sure that you use these macros -- in particular 'index' and 'type' -- according to
 *       specifications of your exposed methods.
 */
 #define GET_SCRIPT_PARAMVALUE( params, index, type  )           const_cast< Params& >( params ).getValue< type >( index )
@@ -106,7 +106,7 @@ class Param : public BaseParam
 
                                                 Param() {}
 
-                                                Param( TypeT value ) : 
+                                                Param( TypeT value ) :
                                                  _value( value )
                                                 {}
 
@@ -160,7 +160,7 @@ class Params: protected std::vector< BaseParam* >
         void                                    setValue( unsigned int index, TypeT value );
 
         //! Get type info of param at index 'index'
-        inline const type_info&                 getTypeInfo( unsigned int index );
+        inline const std::type_info&            getTypeInfo( unsigned int index );
 
         //! Get count of parameters
         inline std::size_t                      size();
@@ -187,7 +187,7 @@ class BaseScript
             LOADLIB   = 0x02,
             STRING    = 0x04,
             TABLE     = 0x08,
-            DEBUG     = 0x10,
+            DBG       = 0x10,
             MATH      = 0x20,
             IO        = 0x40,
 
@@ -210,7 +210,7 @@ class BaseScript
 
         //! The script can access entity's exposed interface using 'luaModuleName.'
         /**
-        * Create a Script object given the script as string. 
+        * Create a Script object given the script as string.
         * The script can access entity's exposed interface using 'luaModuleName.'
         * Set appropriate flags for 'usedlibs' in order to get those Lua libs set up during creation.
         */
@@ -279,7 +279,7 @@ class BaseScript
 
             //! Method arguments in right order
             Params*                                 _p_arguments;
-            
+
             //! Method's return values in right order
             Params*                                 _p_returnValues;
 
@@ -315,4 +315,4 @@ class BaseScript
 
 }
 
-#endif _VRC_SCRIPT_H_
+#endif //_VRC_SCRIPT_H_

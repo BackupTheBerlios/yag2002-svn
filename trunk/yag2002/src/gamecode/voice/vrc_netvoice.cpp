@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  01/28/2006
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -355,9 +355,9 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
     }
 }
 
-void EnNetworkVoice::operator()( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity )
+void EnNetworkVoice::operator()( bool /*localplayer*/, bool joining, yaf3d::BaseEntity* p_entity )
 {
-    // let the voice network manager update its internal client list when a new client is joining 
+    // let the voice network manager update its internal client list when a new client is joining
     if ( joining )
     {
         _p_voiceNetwork->updateVoiceClients( p_entity, true );
@@ -377,7 +377,7 @@ void EnNetworkVoice::operator()( bool localplayer, bool joining, yaf3d::BaseEnti
         else
         {
             log_error << "VoiceNetwork: leaving player could not be found in sender map" << std::endl;
-        }    
+        }
     }
 }
 

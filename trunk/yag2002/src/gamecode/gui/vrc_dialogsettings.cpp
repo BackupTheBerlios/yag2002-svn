@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  04/05/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -91,7 +91,7 @@ DialogGameSettings::~DialogGameSettings()
 }
 
 bool DialogGameSettings::initialize( const std::string& layoutfile )
-{    
+{
     _p_settingsDialog = yaf3d::GuiManager::get()->loadLayout( layoutfile, NULL, SDLG_PREFIX );
     if ( !_p_settingsDialog )
     {
@@ -401,7 +401,7 @@ void DialogGameSettings::setupControls()
 
         if ( fxenable )
             yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupFX, _volumeFX );
-        else                        
+        else
             yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupFX, 0.0f );
 
         _p_volumeFX->setEnabled( fxenable );
@@ -478,7 +478,7 @@ void DialogGameSettings::setupControls()
 
 // dialog callbacks
 //-----------------
-bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& /*arg*/ )
 {
     // set player name
     {
@@ -488,7 +488,7 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
         CEGUI::String::const_iterator p_beg = _p_playerName->getText().begin(), p_end = _p_playerName->getText().end();
         for ( ; p_beg != p_end; ++p_beg )
             playername += ( isalnum( *p_beg ) ) ? static_cast< char >( *p_beg ) : '!';
-        
+
         yaf3d::Configuration::get()->setSettingValue( VRC_GS_PLAYER_NAME, playername );
     }
 
@@ -519,7 +519,7 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
 
     // set mouse settings
     {
-        yaf3d::Configuration::get()->setSettingValue( VRC_GS_MOUSESENS, _mouseSensitivity );    
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_MOUSESENS, _mouseSensitivity );
         bool mouseInvert  = _p_mouseInvert->isSelected();
         yaf3d::Configuration::get()->setSettingValue( VRC_GS_INVERTMOUSE, mouseInvert );
     }
@@ -606,7 +606,7 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
     yaf3d::Configuration::get()->store();
 
     // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
     // let the menu know that we are finish
     _p_menuEntity->onSettingsDialogClose();
@@ -614,7 +614,7 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool DialogGameSettings::onClickedPlayerConfig( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onClickedPlayerConfig( const CEGUI::EventArgs& /*arg*/ )
 {
     // store the settings changes ( in particular the player name, as the player dialog also can change the player name )
     std::string playername = _p_playerName->getText().c_str();
@@ -637,10 +637,10 @@ void DialogGameSettings::onPlayerConfigDialogClose()
     _p_playerName->setText( playername.c_str() );
 }
 
-bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
     if ( !isDirty() )
         return true;
@@ -685,17 +685,17 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
                                         _p_dialogSettings->_p_settingsDialog->enable();
 
                                         // play mouse click sound
-                                        vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+                                        vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
                                     }
 
             DialogGameSettings*     _p_dialogSettings;
-        };    
-        p_msg->setClickCallback( new MsgYesNoClick( this ) );    
+        };
+        p_msg->setClickCallback( new MsgYesNoClick( this ) );
         p_msg->show();
 
         // play attention sound
-        vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_ATTENTION );    
+        vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_ATTENTION );
     }
 
     // release micro input object
@@ -708,14 +708,14 @@ bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool DialogGameSettings::onTabChanged( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onTabChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
     return true;
 }
 
-bool DialogGameSettings::onMouseSensitivityChanged( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onMouseSensitivityChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play scroll sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_SCROLLBAR );
@@ -724,8 +724,8 @@ bool DialogGameSettings::onMouseSensitivityChanged( const CEGUI::EventArgs& arg 
     return true;
 }
 
-bool DialogGameSettings::onKeyboardEnglishChanged( const CEGUI::EventArgs& arg )
-{    
+bool DialogGameSettings::onKeyboardEnglishChanged( const CEGUI::EventArgs& /*arg*/ )
+{
     // play mouse click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
@@ -737,8 +737,8 @@ bool DialogGameSettings::onKeyboardEnglishChanged( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool DialogGameSettings::onKeyboardGermanChanged( const CEGUI::EventArgs& arg )
-{    
+bool DialogGameSettings::onKeyboardGermanChanged( const CEGUI::EventArgs& /*arg*/ )
+{
     // play mouse click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
@@ -750,63 +750,63 @@ bool DialogGameSettings::onKeyboardGermanChanged( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool DialogGameSettings::onClickedForward( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onClickedForward( const CEGUI::EventArgs& /*arg*/ )
 {
     // begin key sensing for "move forward"
     senseKeybinding( _p_keyMoveForward );
     return true;
 }
 
-bool DialogGameSettings::onClickedBackward( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onClickedBackward( const CEGUI::EventArgs& /*arg*/ )
 {
     // begin key sensing for "move backward"
     senseKeybinding( _p_keyMoveBackward );
     return true;
 }
 
-bool DialogGameSettings::onClickedLeft( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onClickedLeft( const CEGUI::EventArgs& /*arg*/ )
 {
     // begin key sensing for "move left"
     senseKeybinding( _p_keyMoveLeft );
     return true;
 }
 
-bool DialogGameSettings::onClickedRight( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onClickedRight( const CEGUI::EventArgs& /*arg*/ )
 {
     // begin key sensing for "move right"
     senseKeybinding( _p_keyMoveRight );
     return true;
 }
 
-bool DialogGameSettings::onClickedJump( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onClickedJump( const CEGUI::EventArgs& /*arg*/ )
 {
     // begin key sensing for "jump"
     senseKeybinding( _p_keyJump );
     return true;
 }
 
-bool DialogGameSettings::onClickedCameraMode( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onClickedCameraMode( const CEGUI::EventArgs& /*arg*/ )
 {
     // begin key sensing for "camera mode"
     senseKeybinding( _p_keyCameraMode );
     return true;
 }
 
-bool DialogGameSettings::onClickedChatMode( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onClickedChatMode( const CEGUI::EventArgs& /*arg*/ )
 {
     // begin key sensing for "chat mode"
     senseKeybinding( _p_keyChatMode );
     return true;
 }
 
-bool DialogGameSettings::onFullscreenChanged( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onFullscreenChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
     return true;
 }
 
-bool DialogGameSettings::onEnableMusicChanged( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onEnableMusicChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
@@ -829,7 +829,7 @@ bool DialogGameSettings::onEnableMusicChanged( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool DialogGameSettings::onMusicVolumeChanged( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onMusicVolumeChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play scroll sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_SCROLLBAR );
@@ -843,7 +843,7 @@ bool DialogGameSettings::onMusicVolumeChanged( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool DialogGameSettings::onEnableFXChanged( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onEnableFXChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
@@ -861,7 +861,7 @@ bool DialogGameSettings::onEnableFXChanged( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool DialogGameSettings::onFXVolumeChanged( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onFXVolumeChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play scroll sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_SCROLLBAR );
@@ -872,7 +872,7 @@ bool DialogGameSettings::onFXVolumeChanged( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool DialogGameSettings::onEnableVoiceChatChanged( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onEnableVoiceChatChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
@@ -892,7 +892,7 @@ bool DialogGameSettings::onEnableVoiceChatChanged( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool DialogGameSettings::onVoiceInputDeviceChanged( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onVoiceInputDeviceChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
@@ -910,7 +910,7 @@ bool DialogGameSettings::onVoiceInputDeviceChanged( const CEGUI::EventArgs& arg 
     return true;
 }
 
-bool DialogGameSettings::onVoiceInputGainChanged( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onVoiceInputGainChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play scroll sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_SCROLLBAR );
@@ -924,7 +924,7 @@ bool DialogGameSettings::onVoiceInputGainChanged( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool DialogGameSettings::onVoiceTestClicked( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onVoiceTestClicked( const CEGUI::EventArgs& /*arg*/ )
 {
     if ( !_p_microInput )
     {
@@ -951,7 +951,7 @@ bool DialogGameSettings::onVoiceTestClicked( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool DialogGameSettings::onVoiceOutputGainChanged( const CEGUI::EventArgs& arg )
+bool DialogGameSettings::onVoiceOutputGainChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play scroll sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_SCROLLBAR );
@@ -980,8 +980,8 @@ void BtnInputHandler::updateBindings( const std::string newkey )
 {
     // look for overriding key binding
     //--------------------------------
-    DialogGameSettings::tBindingLookup::iterator 
-        p_beg = _p_dlg->_keyBindingLookup.begin(), 
+    DialogGameSettings::tBindingLookup::iterator
+        p_beg = _p_dlg->_keyBindingLookup.begin(),
         p_end = _p_dlg->_keyBindingLookup.end(),
         p_we;
 
@@ -995,7 +995,7 @@ void BtnInputHandler::updateBindings( const std::string newkey )
         if ( p_beg->first == newkey )
         {
             p_beg->second->setText( "..." );
-            p_beg->first = "...";                    
+            p_beg->first = "...";
         }
     }
     p_we->first = newkey;
@@ -1003,7 +1003,7 @@ void BtnInputHandler::updateBindings( const std::string newkey )
     getUserObject()->setText( newkey );
 }
 
-bool BtnInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+bool BtnInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*aa*/ )
 {
     // we take only the first event for key sensing
     if ( _lockInput )
@@ -1018,7 +1018,7 @@ bool BtnInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAction
     if ( eventType == osgGA::GUIEventAdapter::KEYDOWN )
     {
         if ( key != yaf3d::KeyMap::get()->getKeyCode( "Esc" ) )
-        {            
+        {
             std::string curkey = yaf3d::KeyMap::get()->getKeyName( key );
             updateBindings( curkey ); // update all bindings, handle overriding exsiting binding
             _p_dlg->_p_settingsDialog->enable();
@@ -1031,11 +1031,11 @@ bool BtnInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAction
     // check for mouse buttons
     unsigned int buttonMask = p_eventAdapter->getButtonMask();
     // left mouse button
-    if ( buttonMask & 
-        ( 
+    if ( buttonMask &
+        (
         osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON   |
         osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON |
-        osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON 
+        osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON
         ) )
 
     {
@@ -1050,7 +1050,7 @@ bool BtnInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAction
 
 //-----------------
 
-void DialogGameSettings::update( float deltaTime )
+void DialogGameSettings::update( float /*deltaTime*/ )
 {
 }
 

@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -26,7 +26,7 @@
  #
  #   date of creation:  12/25/2004
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -137,7 +137,7 @@ void PlayerNetworking::PostObjectCreate()
         // setup new connected client
         if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
         {
-            // send intialization data            
+            // send intialization data
             osg::Vec3f pos = _loadedPlayerEntity->getPlayerImplementation()->getPlayerPosition();
             _positionX = pos.x();
             _positionY = pos.y();
@@ -206,7 +206,7 @@ void PlayerNetworking::RPC_ServerGrantsAccess( tInitializationData initData )
         // reset physics body transformation
         osg::Matrixf mat;
         mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
-        mat.setTrans( _p_playerImpl->getPlayerPosition() ); 
+        mat.setTrans( _p_playerImpl->getPlayerPosition() );
         _p_playerImpl->getPlayerPhysics()->setTransformation( mat );
 
         _positionX = initData._posX;
@@ -234,7 +234,7 @@ void PlayerNetworking::RPC_Initialize( tInitializationData initData )
 { // this method is called on replicas of new connected client
 
     // this rpc is also called on server, skip it in this case!
-    if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Client ) 
+    if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Client )
         return;
 
     // init remote player
@@ -246,7 +246,7 @@ void PlayerNetworking::RPC_Initialize( tInitializationData initData )
         // reset physics body transformation
         osg::Matrixf mat;
         mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
-        mat.setTrans( _p_playerImpl->getPlayerPosition() ); 
+        mat.setTrans( _p_playerImpl->getPlayerPosition() );
         _p_playerImpl->getPlayerPhysics()->setTransformation( mat );
 
         _positionX = initData._posX;
@@ -300,7 +300,7 @@ void PlayerNetworking::createPlayer()
     // load player related entities
     if ( !yaf3d::LevelManager::get()->loadEntities( playerconfig, &_loadedEntities, postfix.str() ) )
     {
-        log_error << "cannot find player configuration file: " << playerconfig << std::endl;            
+        log_error << "cannot find player configuration file: " << playerconfig << std::endl;
         return;
     }
 
@@ -314,7 +314,7 @@ void PlayerNetworking::createPlayer()
         }
         if ( p_beg == p_end )
         {
-            log_error << "cannot find player entity in file: " << playerconfig << std::endl;            
+            log_error << "cannot find player entity in file: " << playerconfig << std::endl;
             return;
         }
         _loadedPlayerEntity = static_cast< vrc::EnPlayer* >( *p_beg );
@@ -356,7 +356,7 @@ void PlayerNetworking::createPlayer()
 
 void PlayerNetworking::initialize( const osg::Vec3f& pos, const std::string& playerName, const std::string& cfgFile )
 {
-    _positionX = pos._v[ 0 ]; 
+    _positionX = pos._v[ 0 ];
     _positionY = pos._v[ 1 ];
     _positionZ = pos._v[ 2 ];
     strcpy( _p_playerName, playerName.c_str() );
@@ -386,7 +386,7 @@ bool PlayerNetworking::isEnabledVoiceChat()
     return _voiceChat;
 }
 
-void PlayerNetworking::DataBlockPacketDataReceived( const RNReplicaNet::DataBlock* p_datablock )
+void PlayerNetworking::DataBlockPacketDataReceived( const RNReplicaNet::DataBlock* /*p_datablock*/ )
 {
     if ( !_p_playerImpl )
         return;

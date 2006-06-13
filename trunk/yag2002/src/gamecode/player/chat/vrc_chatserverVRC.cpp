@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  02/18/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -67,7 +67,7 @@ void EnChatServerVRC::initialize()
     BaseChatProtocol* p_inst = p_protVRC->createInstance();
     p_inst->registerProtocolCallback( this, "*" );
 
-    // create a timestamp for log file name    
+    // create a timestamp for log file name
     std::string tmp( yaf3d::getFormatedDate() );
     std::string datestamp;
     for ( std::size_t cnt = 0; cnt < tmp.length(); ++cnt )
@@ -95,7 +95,7 @@ void EnChatServerVRC::onLeftChannel( const ChatConnectionConfig& config )
     _chatLog << yaf3d::getFormatedDateAndTime() << " " << config._nickname << " left chat channel" << std::endl;
 }
 
-void EnChatServerVRC::onReceive( const std::string& channel, const std::string& sender, const std::string& msg )
+void EnChatServerVRC::onReceive( const std::string& /*channel*/, const std::string& sender, const std::string& msg )
 {
     _chatLog << "[" + yaf3d::getFormatedTime() + "] " + sender << ": " << msg << std::endl;
 }
@@ -107,7 +107,7 @@ void EnChatServerVRC::onNicknameChanged( const std::string& newname, const std::
 
 void EnChatServerVRC::onKicked( const std::string& channel, const std::string& kicker, const std::string& kicked )
 {
-    _chatLog << yaf3d::getFormatedDateAndTime() << " " << kicker << " kicked " << kicked << " from channel " << std::endl;
+    _chatLog << yaf3d::getFormatedDateAndTime() << " " << kicker << " kicked " << kicked << " from channel '" << channel << "'" << std::endl;
 }
 
 } // namespace vrc
