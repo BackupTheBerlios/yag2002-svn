@@ -55,8 +55,8 @@ namespace vrc
 * Note: there are no typechecks provided. Make sure that you use these macros -- in particular 'index' and 'type' -- according to
 *       specifications of your exposed methods.
 */
-#define GET_SCRIPT_PARAMVALUE( params, index, type  )           const_cast< Params& >( params ).getValue< type >( index )
-#define SET_SCRIPT_PARAMVALUE( params, index, type, value )     const_cast< Params& >( params ).setValue< type >( index, value )
+#define GET_SCRIPT_PARAMVALUE( params, index, type  )           const_cast< Params& >( params ).template getValue< type >( index )
+#define SET_SCRIPT_PARAMVALUE( params, index, type, value )     const_cast< Params& >( params ).template setValue< type >( index, value )
 
 
 //! Class for scripting related exceptions

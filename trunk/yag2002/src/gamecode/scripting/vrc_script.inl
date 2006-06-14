@@ -249,11 +249,11 @@ int BaseScript< T >::exposedMethodProxy( lua_State* p_state )
             if ( lua_isnumber( p_state, cnt ) )
             {
                 if ( typeinfo == typeid( float ) )
-                    arguments.setValue< float >( cnt - 1, static_cast< float >( lua_tonumber( p_state, cnt ) ) );
+                    arguments.template setValue< float >( cnt - 1, static_cast< float >( lua_tonumber( p_state, cnt ) ) );
                 else if ( typeinfo == typeid( int ) )
-                    arguments.setValue< int >( cnt - 1, static_cast< int >( lua_tonumber( p_state, cnt ) ) );
+                    arguments.template setValue< int >( cnt - 1, static_cast< int >( lua_tonumber( p_state, cnt ) ) );
                 else if ( typeinfo == typeid( double ) )
-                    arguments.setValue< double >( cnt - 1, lua_tonumber( p_state, cnt ) );
+                    arguments.template setValue< double >( cnt - 1, lua_tonumber( p_state, cnt ) );
                 else
                 {
                     log_error << "script error: exposed method called with unsupported or wrong parameter type, file: " << p_instance->getScriptFileName() << ", method name: " << p_entry->_methodName;
@@ -264,7 +264,7 @@ int BaseScript< T >::exposedMethodProxy( lua_State* p_state )
             else if ( lua_isstring( p_state, cnt ) )
             {
                 if ( typeinfo == typeid( std::string ) )
-                    arguments.setValue< std::string >( cnt - 1, lua_tostring( p_state, cnt ) );
+                    arguments.template setValue< std::string >( cnt - 1, lua_tostring( p_state, cnt ) );
                 else
                 {
                     log_error << "script error: exposed method called with unsupported or wrong parameter type, file: " << p_instance->getScriptFileName() << ", method name: " << p_entry->_methodName;
@@ -359,11 +359,11 @@ void BaseScript< T >::callScriptFunction( const std::string& fcnname, Params* co
             if ( lua_isnumber( _p_state, sindex ) )
             {
                 if ( typeinfo == typeid( float ) )
-                    p_returnvalues->setValue< float >( cnt, static_cast< float >( lua_tonumber( _p_state, sindex ) ) );
+                    p_returnvalues->template setValue< float >( cnt, static_cast< float >( lua_tonumber( _p_state, sindex ) ) );
                 else if ( typeinfo == typeid( int ) )
-                    p_returnvalues->setValue< int >( cnt, static_cast< int >( lua_tonumber( _p_state, sindex ) ) );
+                    p_returnvalues->template setValue< int >( cnt, static_cast< int >( lua_tonumber( _p_state, sindex ) ) );
                 else if ( typeinfo == typeid( double ) )
-                    p_returnvalues->setValue< double >( cnt, lua_tonumber( _p_state, sindex ) );
+                    p_returnvalues->template setValue< double >( cnt, lua_tonumber( _p_state, sindex ) );
                 else
                 {
                     log_error << "script error: return value(s) mismatch occured during calling script function: " << fcnname << std::endl;
@@ -372,7 +372,7 @@ void BaseScript< T >::callScriptFunction( const std::string& fcnname, Params* co
             else if ( lua_isstring( _p_state, sindex ) )
             {
                 if ( typeinfo == typeid( std::string ) )
-                    p_returnvalues->setValue< std::string >( cnt, lua_tostring( _p_state, sindex ) );
+                    p_returnvalues->template setValue< std::string >( cnt, lua_tostring( _p_state, sindex ) );
                 else
                 {
                     log_error << "script error: return value(s) mismatch occured during calling script function: " << fcnname << std::endl;
