@@ -133,7 +133,7 @@ static char * libirc_colorparser_irc2code (const char * source, int strip)
 		if ( destlen > 0 )
 		{
 			/* This is the 2nd pass; allocate memory. */
-			if ( (destline = reinterpret_cast<char*>(malloc (destlen))) == 0 )
+			if ( (destline = (char*)(malloc (destlen))) == 0 )
 				return 0;
 
 			d = destline;
