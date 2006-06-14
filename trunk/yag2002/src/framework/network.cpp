@@ -576,7 +576,7 @@ void NetworkDevice::getObjects( std::vector< RNReplicaNet::ReplicaObject* >& obj
     _p_session->ObjectListFinishIterate();
 }
 
-void NetworkDevice::updateServer( float deltaTime )
+void NetworkDevice::updateServer( float /*deltaTime*/ )
 {
     // poll the netwroking core
     _p_session->Poll();
@@ -602,7 +602,7 @@ void NetworkDevice::updateServer( float deltaTime )
     }
 }
 
-void NetworkDevice::updateClient( float fDeltaTime )
+void NetworkDevice::updateClient( float /*fDeltaTime*/ )
 {
     // poll the netwroking core
     if ( _p_session )

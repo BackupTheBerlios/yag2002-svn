@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,19 +11,19 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
- # physics system 
+ # physics system
  #
  #   date of creation:  02/20/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -64,12 +64,12 @@ static CollisionStruct* s_colStruct;
 
 // this callback is used for visualizing colliding faces, for definition see below
 void levelCollisionCallback (
-                                const NewtonBody*   p_bodyWithTreeCollision, 
+                                const NewtonBody*   p_bodyWithTreeCollision,
                                 const NewtonBody*   p_body,
-                                const float*        p_vertex, 
-                                int                 vertexstrideInBytes, 
-                                int                 indexCount, 
-                                const int*          p_indexArray 
+                                const float*        p_vertex,
+                                int                 vertexstrideInBytes,
+                                int                 indexCount,
+                                const int*          p_indexArray
                             );
 
 
@@ -107,7 +107,7 @@ Physics::~Physics()
 bool Physics::initialize()
 {
     // init physics engine
-    _p_world = NewtonCreate( physicsAlloc, physicsFree );   
+    _p_world = NewtonCreate( physicsAlloc, physicsFree );
     assert( _p_world );
 
     // set minimum frame rate
@@ -124,11 +124,11 @@ bool Physics::initialize()
 bool Physics::reinitialize()
 {
     // free up bodies
-    NewtonDestroyAllBodies( _p_world ); 
+    NewtonDestroyAllBodies( _p_world );
     // free all materials
     NewtonMaterialDestroyAllGroupID( _p_world );
     // destroy the existing physics world and initialize things again
-    NewtonDestroy( _p_world ); 
+    NewtonDestroy( _p_world );
     _p_world = NULL;
 
     // clear the material cache
@@ -140,7 +140,7 @@ bool Physics::reinitialize()
 }
 
 void Physics::update( float deltaTime )
-{ 
+{
     if ( !_p_world )
         return;
 
@@ -163,7 +163,7 @@ void Physics::shutdown()
     if ( _p_world )
     {
         // free up bodies
-        NewtonDestroyAllBodies( _p_world ); 
+        NewtonDestroyAllBodies( _p_world );
         // free all materials
         NewtonMaterialDestroyAllGroupID( _p_world );
         // destroy the existing physics world and initialize things again
@@ -224,7 +224,7 @@ bool Physics::serialize( const std::string& meshFile, const std::string& outputF
     log_debug << "Physics:  total num of vertices: " << physVisitor.getNumVertices() << std::endl;
 
     //--------------------------
-    // finalize tree building 
+    // finalize tree building
     NewtonTreeCollisionEndBuild( p_collision, 0 );
 
     // write out the serialization data
@@ -234,7 +234,7 @@ bool Physics::serialize( const std::string& meshFile, const std::string& outputF
     serializationoutput.open( file.c_str(), std::ios_base::binary | std::ios_base::out );
     if ( !serializationoutput )
     {
-        log_error << "Physics: cannot write to serialization file '" << file << "'" << std::endl;        
+        log_error << "Physics: cannot write to serialization file '" << file << "'" << std::endl;
         serializationoutput.close();
         return false;
     }
@@ -246,7 +246,7 @@ bool Physics::serialize( const std::string& meshFile, const std::string& outputF
 
 bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelFile )
 {
-    NewtonCollision* p_collision = NULL; 
+    NewtonCollision* p_collision = NULL;
 
     // check if a serialization file exists, if so then load it. otherwise build the static geometry on the fly.
     assert( levelFile.length() && "internal error: missing levelFile name!" );
@@ -262,7 +262,7 @@ bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelF
 
         p_collision = NewtonCreateTreeCollision( _p_world, levelCollisionCallback );
         NewtonTreeCollisionBeginBuild( p_collision );
-        
+
         // build the collision faces
         //--------------------------
         // start timer
@@ -277,7 +277,7 @@ bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelF
         log_debug << "Physics:  total num of vertices: " << physVisitor.getNumVertices() << std::endl;
 
         //--------------------------
-        // finalize tree building with optimization off ( because the meshes are already optimized by 
+        // finalize tree building with optimization off ( because the meshes are already optimized by
         //  osg _and_ Newton has currently problems with optimization )
         NewtonTreeCollisionEndBuild( p_collision, 0 /* 1 */);
     }
@@ -308,7 +308,7 @@ bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelF
 
     osg::Matrixf mat;
     mat.identity();
-    NewtonBodySetMatrix( _p_body, mat.ptr() ); 
+    NewtonBodySetMatrix( _p_body, mat.ptr() );
 
     // calculate the world bbox and world size
     float  bmin[ 4 ], bmax[ 4 ];
@@ -324,7 +324,7 @@ bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelF
     NewtonSetWorldSize( _p_world, bmin, bmax );
 
     return true;
-} 
+}
 
 void Physics::setupMaterials()
 {
@@ -369,7 +369,7 @@ void Physics::setupMaterials()
     // set the material properties for level on wood
     NewtonMaterialSetDefaultElasticity( _p_world, levelID, woodID, 0.5f );
     NewtonMaterialSetDefaultFriction  ( _p_world, levelID, woodID, 0.7f, 0.6f);
-    NewtonMaterialSetCollisionCallback( _p_world, levelID, woodID, &level_woodCollStruct, genericContactBegin, levelContactProcess, genericContactEnd ); 
+    NewtonMaterialSetCollisionCallback( _p_world, levelID, woodID, &level_woodCollStruct, genericContactBegin, levelContactProcess, genericContactEnd );
 
     // set the material properties for level on metal
     NewtonMaterialSetDefaultElasticity( _p_world, levelID, metalID, 0.5f );
@@ -391,7 +391,7 @@ void Physics::setupMaterials()
     // set the material properties for wood on wood
     NewtonMaterialSetDefaultElasticity( _p_world, woodID, woodID, 0.3f );
     NewtonMaterialSetDefaultFriction  ( _p_world, woodID, woodID, 1.1f, 0.7f);
-    NewtonMaterialSetCollisionCallback( _p_world, woodID, woodID, &wood_woodCollStruct, genericContactBegin, genericContactProcess, genericContactEnd ); 
+    NewtonMaterialSetCollisionCallback( _p_world, woodID, woodID, &wood_woodCollStruct, genericContactBegin, genericContactProcess, genericContactEnd );
 
     // set the material properties for wood on metal
     NewtonMaterialSetDefaultElasticity( _p_world, woodID, metalID, 0.5f );
@@ -450,7 +450,7 @@ int Physics::createMaterialID( const std::string& materialType )
     std::map< std::string, int >::iterator id = _materials.find( materialType );
     assert( _p_world && "physics world has not been created, first initialize the physics system" );
     assert( id == _materials.end() && "material already exists!" );
-    
+
     int matID = NewtonMaterialCreateGroupID( _p_world );
     _materials.insert( make_pair( materialType, matID ) );
     return matID;
@@ -487,12 +487,12 @@ void Physics::disableDebugRender()
 
 // this callback is used for visualizing colliding faces
 void levelCollisionCallback (
-                                const NewtonBody*   p_bodyWithTreeCollision, 
-                                const NewtonBody*   p_body,
-                                const float*        p_vertex, 
-                                int                 vertexstrideInBytes, 
-                                int                 indexCount, 
-                                const int*          p_indexArray 
+                                const NewtonBody*   /*p_bodyWithTreeCollision*/,
+                                const NewtonBody*   /*p_body*/,
+                                const float*        /*p_vertex*/,
+                                int                 /*vertexstrideInBytes*/,
+                                int                 /*indexCount*/,
+                                const int*          /*p_indexArray*/
                             )
 {
     //! currently we do not need this funtionality!
@@ -501,13 +501,13 @@ void levelCollisionCallback (
     //int j;
     //int stride = vertexstrideInBytes / 4;
 
-    //if ( debugLinesMode ) 
+    //if ( debugLinesMode )
     //{
-    //    if ( debugCount < 1000 ) 
+    //    if ( debugCount < 1000 )
     //    {
     //        j = p_indexArray[ indexCount - 1 ];
     //        Vec3f p0( p_vertex[ j * stride + 0 ], p_vertex[ j * stride + 1 ] , p_vertex[ j * stride + 2 ] );
-    //        for ( i = 0; i < indexCount; ++i ) 
+    //        for ( i = 0; i < indexCount; ++i )
     //        {
     //            j = p_indexArray[i];
     //            Vec3f p1( p_vertex[ j * stride + 0 ], p_vertex[ j * stride + 1 ] , p_vertex[ j * stride + 2 ] );
@@ -528,9 +528,9 @@ int Physics::genericContactBegin( const NewtonMaterial* p_material, const Newton
     // save the colliding bodies
     s_colStruct->_p_body0 = const_cast< NewtonBody* >( p_body0 );
     s_colStruct->_p_body1 = const_cast< NewtonBody* >( p_body1 );
-    // clear the contact normal speed 
+    // clear the contact normal speed
     s_colStruct->_contactMaxNormalSpeed  = 0.0f;
-    // clear the contact sliding speed 
+    // clear the contact sliding speed
     s_colStruct->_contactMaxTangentSpeed = 0.0f;
 
     // return one to tell Newton the application wants to proccess this contact
@@ -555,10 +555,10 @@ int Physics::genericContactProcess( const NewtonMaterial* p_material, const Newt
     // get the maximun of the two sliding contact speeds
     speed0 = NewtonMaterialGetContactTangentSpeed( p_material, p_contact, 0 );
     speed1 = NewtonMaterialGetContactTangentSpeed( p_material, p_contact, 1 );
-    if ( speed1 > speed0 ) 
+    if ( speed1 > speed0 )
         speed0 = speed1;
 
-    // get the maximun tangent speed of this contact. this can be used e.g. for particles(sparks) or playing scratch sounds 
+    // get the maximun tangent speed of this contact. this can be used e.g. for particles(sparks) or playing scratch sounds
     if ( speed0 > s_colStruct->_contactMaxTangentSpeed ) {
         // save the position of the contact (for 3d sound or particle effects)
         s_colStruct->_contactMaxTangentSpeed = speed0;
@@ -570,7 +570,7 @@ int Physics::genericContactProcess( const NewtonMaterial* p_material, const Newt
 }
 
 // this function is called affter all collision contacts are proccesed
-void Physics::genericContactEnd( const NewtonMaterial* p_material )
+void Physics::genericContactEnd( const NewtonMaterial* /*p_material*/ )
 {
 }
 
@@ -584,7 +584,7 @@ void Physics::setCollisionStruct( CollisionStruct* p_colStruct )
     s_colStruct = p_colStruct;
 }
 
-int Physics::levelContactProcess( const NewtonMaterial* p_material, const NewtonContact* p_contact )
+int Physics::levelContactProcess( const NewtonMaterial* p_material, const NewtonContact* /*p_contact*/ )
 {
     // handle level submaterials
     unsigned int materialType = static_cast< unsigned int >( NewtonMaterialGetContactFaceAttribute( p_material ) );

@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #	 date of creation:	04/06/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -66,7 +66,7 @@ _autodel( autodelete )
         float lineextend = p_font->getTextExtent( lines[ cnt ] );
         if ( textwidth < lineextend )
             textwidth = lineextend;
-    }    
+    }
     float textheight = p_font->getLineSpacing() * float( lines.size() );
     // now calculate the text width and height in projection screen coords
     float width, height;
@@ -101,12 +101,12 @@ _autodel( autodelete )
     }
     //--------
 
-    // we need a unique windows name for every messagebox, as 
+    // we need a unique windows name for every messagebox, as
     static int s_pf = 0;
     std::stringstream postfix;
     postfix << s_pf;
     ++s_pf;
-    
+
     try
     {
         // create dialog frame
@@ -134,7 +134,7 @@ _autodel( autodelete )
             case MessageBoxDialog::YES_NO:
             {
                 // create 'Yes' button
-                CEGUI::PushButton* p_btnyes = 
+                CEGUI::PushButton* p_btnyes =
                     static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_yes_" + postfix.str() ).c_str() ) );
                 p_btnyes->setAlwaysOnTop( true );
                 p_btnyes->setSize( CEGUI::Size( 0.45f, 0.15f ) );
@@ -145,7 +145,7 @@ _autodel( autodelete )
                 p_btnyes->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &yaf3d::MessageBoxDialog::onClickedYes, this ) );
 
                 // create 'No' button
-                CEGUI::PushButton* p_btnno = 
+                CEGUI::PushButton* p_btnno =
                     static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_no_" + postfix.str() ).c_str() ) );
                 p_btnno->setAlwaysOnTop( true );
                 p_btnno->setSize( CEGUI::Size( 0.45f, 0.15f ) );
@@ -160,7 +160,7 @@ _autodel( autodelete )
             case MessageBoxDialog::OK_CANCEL:
             {
                 // create 'Ok' button
-                CEGUI::PushButton* p_btnok = 
+                CEGUI::PushButton* p_btnok =
                     static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_ok_" + postfix.str() ).c_str() ) );
                 p_btnok->setAlwaysOnTop( true );
                 p_btnok->setSize( CEGUI::Size( 0.45f, 0.15f ) );
@@ -171,7 +171,7 @@ _autodel( autodelete )
                 p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &yaf3d::MessageBoxDialog::onClickedOk, this ) );
 
                 // create 'Cancel' button
-                CEGUI::PushButton* p_btncancel = 
+                CEGUI::PushButton* p_btncancel =
                     static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_cancel_" + postfix.str() ).c_str() ) );
                 p_btncancel->setAlwaysOnTop( true );
                 p_btncancel->setSize( CEGUI::Size( 0.45f, 0.15f ) );
@@ -186,7 +186,7 @@ _autodel( autodelete )
             case MessageBoxDialog::OK:
             {
                 // create 'Ok' button
-                CEGUI::PushButton* p_btnok = 
+                CEGUI::PushButton* p_btnok =
                     static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", ( "_msg_box_btn_ok_" + postfix.str() ).c_str() ) );
                 p_btnok->setAlwaysOnTop( true );
                 p_btnok->setSize( CEGUI::Size( 0.5f, 0.15f ) );
@@ -235,7 +235,7 @@ void MessageBoxDialog::show()
     else
         _p_wnd->setVisible( true );
 }
- 
+
 void MessageBoxDialog::setClickCallback( MessageBoxDialog::ClickCallback* p_clb )
 {
     _p_clb   = p_clb;
@@ -262,27 +262,27 @@ void MessageBoxDialog::processClick( unsigned int btn )
     }
 }
 
-bool MessageBoxDialog::onClickedOk( const CEGUI::EventArgs& arg )
+bool MessageBoxDialog::onClickedOk( const CEGUI::EventArgs& /*arg*/ )
 {
-    processClick( MessageBoxDialog::BTN_OK ); 
+    processClick( MessageBoxDialog::BTN_OK );
     return true;
 }
 
-bool MessageBoxDialog::onClickedCancel( const CEGUI::EventArgs& arg )
+bool MessageBoxDialog::onClickedCancel( const CEGUI::EventArgs& /*arg*/ )
 {
-    processClick( MessageBoxDialog::BTN_CANCEL ); 
+    processClick( MessageBoxDialog::BTN_CANCEL );
     return true;
 }
 
-bool MessageBoxDialog::onClickedYes( const CEGUI::EventArgs& arg )
+bool MessageBoxDialog::onClickedYes( const CEGUI::EventArgs& /*arg*/ )
 {
-    processClick( MessageBoxDialog::BTN_YES ); 
+    processClick( MessageBoxDialog::BTN_YES  );
     return true;
 }
 
-bool MessageBoxDialog::onClickedNo( const CEGUI::EventArgs& arg )
+bool MessageBoxDialog::onClickedNo( const CEGUI::EventArgs& /*arg*/ )
 {
-    processClick( MessageBoxDialog::BTN_NO ); 
+    processClick( MessageBoxDialog::BTN_NO );
     return true;
 }
 

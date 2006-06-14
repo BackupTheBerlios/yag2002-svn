@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -25,7 +25,7 @@
  #
  #   date of creation:  04/04/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -44,13 +44,13 @@ const int GuiRenderer::VERTEX_PER_QUAD           = 6;
 const int GuiRenderer::VERTEX_PER_TRIANGLE       = 3;
 const int GuiRenderer::VERTEXBUFFER_CAPACITY     = OGLRENDERER_VBUFF_CAPACITY;
 
-GuiRenderer::GuiRenderer( CEGUI::uint max_quads ) :
+GuiRenderer::GuiRenderer( CEGUI::uint /*max_quads*/ ) :
 _queueing( true ),
 _currTexture( 0 ),
 _bufferPos( 0 ),
 _maxTextureSize( 0 )
 {
-    GLint vp[4];   
+    GLint vp[4];
 
     // initialise renderer size
     glGetIntegerv(GL_VIEWPORT, vp);
@@ -61,7 +61,7 @@ _maxTextureSize( 0 )
     _display_area.d_bottom  = (float)vp[3];
 }
 
-GuiRenderer::GuiRenderer( CEGUI::uint max_quads, int width, int height ) :
+GuiRenderer::GuiRenderer( CEGUI::uint /*max_quads*/, int width, int height ) :
 _queueing(true),
 _currTexture(0),
 _bufferPos(0)
@@ -125,19 +125,19 @@ void GuiRenderer::doRender()
         const QuadInfo& quad = (*i);
 
         if(_currTexture != quad.texid)
-        {            
-            renderVBuffer();           
+        {
+            renderVBuffer();
             glBindTexture(GL_TEXTURE_2D, quad.texid);
-            _currTexture = quad.texid;          
+            _currTexture = quad.texid;
         }
 
-        //vert0       
+        //vert0
         _buff[_bufferPos].vertex[0] = quad.position.d_left;
         _buff[_bufferPos].vertex[1] = quad.position.d_top;
         _buff[_bufferPos].vertex[2] = quad.z;
         _buff[_bufferPos].color     = quad.topLeftCol;
         _buff[_bufferPos].tex[0]    = quad.texPosition.d_left;
-        _buff[_bufferPos].tex[1]    = quad.texPosition.d_top;         
+        _buff[_bufferPos].tex[1]    = quad.texPosition.d_top;
         ++_bufferPos;
 
         //vert1
@@ -159,7 +159,7 @@ void GuiRenderer::doRender()
             _buff[_bufferPos].vertex[2] = quad.z;
             _buff[_bufferPos].color     = quad.bottomRightCol;
             _buff[_bufferPos].tex[0]    = quad.texPosition.d_right;
-            _buff[_bufferPos].tex[1]    = quad.texPosition.d_bottom;         
+            _buff[_bufferPos].tex[1]    = quad.texPosition.d_bottom;
         }
         // bottom-left to top-right diagonal
         else
@@ -169,7 +169,7 @@ void GuiRenderer::doRender()
             _buff[_bufferPos].vertex[2] = quad.z;
             _buff[_bufferPos].color     = quad.topRightCol;
             _buff[_bufferPos].tex[0]    = quad.texPosition.d_right;
-            _buff[_bufferPos].tex[1]    = quad.texPosition.d_top;         
+            _buff[_bufferPos].tex[1]    = quad.texPosition.d_top;
         }
         ++_bufferPos;
 
@@ -192,7 +192,7 @@ void GuiRenderer::doRender()
             _buff[_bufferPos].vertex[2] = quad.z;
             _buff[_bufferPos].color     = quad.topLeftCol;
             _buff[_bufferPos].tex[0]    = quad.texPosition.d_left;
-            _buff[_bufferPos].tex[1]    = quad.texPosition.d_top;         
+            _buff[_bufferPos].tex[1]    = quad.texPosition.d_top;
         }
         // bottom-left to top-right diagonal
         else
@@ -202,7 +202,7 @@ void GuiRenderer::doRender()
             _buff[_bufferPos].vertex[2] = quad.z;
             _buff[_bufferPos].color     = quad.bottomLeftCol;
             _buff[_bufferPos].tex[0]    = quad.texPosition.d_left;
-            _buff[_bufferPos].tex[1]    = quad.texPosition.d_bottom;         
+            _buff[_bufferPos].tex[1]    = quad.texPosition.d_bottom;
         }
         ++_bufferPos;
 
@@ -212,11 +212,11 @@ void GuiRenderer::doRender()
         _buff[_bufferPos].vertex[2] = quad.z;
         _buff[_bufferPos].color     = quad.bottomRightCol;
         _buff[_bufferPos].tex[0]    = quad.texPosition.d_right;
-        _buff[_bufferPos].tex[1]    = quad.texPosition.d_bottom;         
+        _buff[_bufferPos].tex[1]    = quad.texPosition.d_bottom;
         ++_bufferPos;
 
         if(_bufferPos > (VERTEXBUFFER_CAPACITY - VERTEX_PER_QUAD))
-        {          
+        {
             renderVBuffer();
         }
     }
@@ -228,7 +228,7 @@ void GuiRenderer::doRender()
 
 void GuiRenderer::clearRenderList()
 {
-    _quadlist.clear();  
+    _quadlist.clear();
 }
 
 CEGUI::Texture* GuiRenderer::createTexture()
@@ -261,7 +261,7 @@ void GuiRenderer::destroyTexture( CEGUI::Texture* p_texture )
     if ( p_texture )
     {
         GuiTexture* p_tex = static_cast< GuiTexture* >( p_texture );
-        //log_debug << "GuiRenderer: deleting texture, id " << p_tex->getOGLTexid() << std::endl;       
+        //log_debug << "GuiRenderer: deleting texture, id " << p_tex->getOGLTexid() << std::endl;
         _texturelist.remove( p_tex );
         delete p_tex;
     }
@@ -290,7 +290,7 @@ void GuiRenderer::initPerFrameStates()
 
     glMatrixMode( GL_MODELVIEW );
     glPushMatrix();
-    glLoadIdentity();   
+    glLoadIdentity();
 
     // setup the texture units
     //------------------------
@@ -314,7 +314,7 @@ void GuiRenderer::initPerFrameStates()
 
     // setup alpha-blending
     glEnable( GL_BLEND );
-    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA ); 
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
     // disable depth testing and lighting
@@ -325,9 +325,9 @@ void GuiRenderer::initPerFrameStates()
 void GuiRenderer::exitPerFrameStates()
 {
     glDisable( GL_TEXTURE_2D );
-    glPopMatrix(); 
+    glPopMatrix();
     glMatrixMode( GL_PROJECTION );
-    glPopMatrix(); 
+    glPopMatrix();
     glMatrixMode( GL_MODELVIEW );
 
     //restore former attributes
@@ -391,7 +391,7 @@ void GuiRenderer::renderQuadDirect(const CEGUI::Rect& dest_rect, float z, const 
     myquad[1].vertex[0] = quad.position.d_left;
     myquad[1].vertex[1] = quad.position.d_bottom;
     myquad[1].vertex[2] = z;
-    myquad[1].color     = quad.bottomLeftCol;     
+    myquad[1].color     = quad.bottomLeftCol;
     myquad[1].tex[0]    = quad.texPosition.d_left;
     myquad[1].tex[1]    = quad.texPosition.d_bottom;
 
@@ -422,7 +422,7 @@ void GuiRenderer::renderQuadDirect(const CEGUI::Rect& dest_rect, float z, const 
     myquad[3].vertex[0] = quad.position.d_right;
     myquad[3].vertex[1] = quad.position.d_top;
     myquad[3].vertex[2] = z;
-    myquad[3].color     = quad.topRightCol;      
+    myquad[3].color     = quad.topRightCol;
     myquad[3].tex[0]    = quad.texPosition.d_right;
     myquad[3].tex[1]    = quad.texPosition.d_top;
 

@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -24,7 +24,7 @@
  #
  #   date of creation:  04/09/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -51,7 +51,7 @@ GameState::InputHandler::~InputHandler()
     Application::get()->getViewer()->removeEventHandler( this );
 }
 
-bool GameState::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+bool GameState::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*aa*/ )
 {
     const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
     assert( p_eventAdapter && "invalid event adapter received" );
@@ -81,7 +81,7 @@ bool GameState::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::G
             else
                 state = GameState::GainedFocus;
         }
-                
+
         _p_gameState->setAppWindowState( state );
     }
 
@@ -108,16 +108,16 @@ void GameState::shutdown()
 //! Set new state
 void GameState::setState( unsigned int state )
 {
-    assert( 
-            ( state == GameState::UnknownState ) || 
-            ( state == GameState::Initializing ) || 
+    assert(
+            ( state == GameState::UnknownState ) ||
+            ( state == GameState::Initializing ) ||
             ( state == GameState::Menu         ) ||
             ( state == GameState::Running      ) ||
             ( state == GameState::Pausing      ) ||
             ( state == GameState::Leaving      ) ||
             ( state == GameState::Quitting     ) ||
             ( state == GameState::Shutdown     ) &&
-            "GameState: trying to set an invalid game state!" 
+            "GameState: trying to set an invalid game state!"
           );
 
     if ( _curState == state )
@@ -127,7 +127,7 @@ void GameState::setState( unsigned int state )
 
     // call all registered callbacks
     std::vector< CallbackStateChange* >::iterator p_beg = _cbsStateChange.begin(), p_end = _cbsStateChange.end();
-    for ( ; p_beg != p_end; ++p_beg )        
+    for ( ; p_beg != p_end; ++p_beg )
         ( *p_beg )->onStateChange( _curState );
 }
 
@@ -158,12 +158,12 @@ void GameState::registerCallbackStateChange( CallbackStateChange* p_cb, bool reg
 
 void GameState::setMode( unsigned int mode )
 {
-    assert( 
-            ( mode == GameState::UnknownMode ) || 
-            ( mode == GameState::Standalone  ) || 
-            ( mode == GameState::Client      ) || 
-            ( mode == GameState::Server      ) && 
-            "GameState: invalid game mode!" 
+    assert(
+            ( mode == GameState::UnknownMode ) ||
+            ( mode == GameState::Standalone  ) ||
+            ( mode == GameState::Client      ) ||
+            ( mode == GameState::Server      ) &&
+            "GameState: invalid game mode!"
           );
 
     if ( _gameMode == mode )
@@ -173,7 +173,7 @@ void GameState::setMode( unsigned int mode )
 
     // call all registered callbacks
     std::vector< CallbackModeChange* >::iterator p_beg = _cbsModeChange.begin(), p_end = _cbsModeChange.end();
-    for ( ; p_beg != p_end; ++p_beg )        
+    for ( ; p_beg != p_end; ++p_beg )
         ( *p_beg )->onModeChange( _gameMode );
 }
 
@@ -204,18 +204,18 @@ void GameState::registerCallbackModeChange( CallbackModeChange* p_cb, bool reg )
 
 void GameState::setAppWindowState( unsigned int state )
 {
-    assert( 
-            ( state == GameState::UnknownAppWindowState ) || 
-            ( state == GameState::Minimized             ) || 
-            ( state == GameState::Restored              ) || 
-            ( state == GameState::GainedFocus           ) || 
-            ( state == GameState::LostFocus             ) && 
-            "GameState: invalid application window state!" 
+    assert(
+            ( state == GameState::UnknownAppWindowState ) ||
+            ( state == GameState::Minimized             ) ||
+            ( state == GameState::Restored              ) ||
+            ( state == GameState::GainedFocus           ) ||
+            ( state == GameState::LostFocus             ) &&
+            "GameState: invalid application window state!"
           );
 
     if ( _appWindowState == state )
         return;
-        
+
     _appWindowState = state;
 
     // call all registered callbacks

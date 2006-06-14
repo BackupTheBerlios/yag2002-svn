@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -25,7 +25,7 @@
  #
  #   date of creation:  04/04/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -59,13 +59,13 @@ class GuiRenderer : public CEGUI::Renderer
 
         //! Interface methods ( for mode details look into CEGUI::OpenGLRenderer )
         //----------------------------------------------------------------------//
-        virtual void                            addQuad( 
-                                                        const CEGUI::Rect& dest_rect, 
-                                                        float z, 
-                                                        const CEGUI::Texture* p_tex, 
-                                                        const CEGUI::Rect& texture_rect, 
-                                                        const CEGUI::ColourRect& colours, 
-                                                        CEGUI::QuadSplitMode quad_split_mode 
+        virtual void                            addQuad(
+                                                        const CEGUI::Rect& dest_rect,
+                                                        float z,
+                                                        const CEGUI::Texture* p_tex,
+                                                        const CEGUI::Rect& texture_rect,
+                                                        const CEGUI::ColourRect& colours,
+                                                        CEGUI::QuadSplitMode quad_split_mode
                                                         );
 
         virtual void                            doRender();
@@ -109,12 +109,12 @@ class GuiRenderer : public CEGUI::Renderer
 
     protected:
 
-        const static int                        VERTEX_PER_QUAD;                            //!< number of vertices per quad
+        static const int                        VERTEX_PER_QUAD;                            //!< number of vertices per quad
 
-        const static int                        VERTEX_PER_TRIANGLE;                        //!< number of vertices for a triangle
+        static const int                        VERTEX_PER_TRIANGLE;                        //!< number of vertices for a triangle
 
-        const static int                        VERTEXBUFFER_CAPACITY;                      //!< capacity of the allocated vertex buffer
-        
+        static const int                        VERTEXBUFFER_CAPACITY;                      //!< capacity of the allocated vertex buffer
+
         struct MyQuad
         {
             float tex[2];
@@ -124,7 +124,7 @@ class GuiRenderer : public CEGUI::Renderer
 
         struct QuadInfo
         {
-            CEGUI::uint texid;  
+            CEGUI::uint texid;
             CEGUI::Rect position;
             float       z;
             CEGUI::Rect texPosition;
@@ -157,12 +157,12 @@ class GuiRenderer : public CEGUI::Renderer
 
         // render a quad directly to the display
         void                                    renderQuadDirect(
-                                                                const CEGUI::Rect& dest_rect, 
-                                                                float z, 
-                                                                const CEGUI::Texture* p_tex, 
-                                                                const CEGUI::Rect& texture_rect, 
-                                                                const CEGUI::ColourRect& colours, 
-                                                                CEGUI::QuadSplitMode quad_split_mode 
+                                                                const CEGUI::Rect& dest_rect,
+                                                                float z,
+                                                                const CEGUI::Texture* p_tex,
+                                                                const CEGUI::Rect& texture_rect,
+                                                                const CEGUI::ColourRect& colours,
+                                                                CEGUI::QuadSplitMode quad_split_mode
                                                                 );
 
         // convert colour value to whatever the OpenGL system is expecting.
@@ -183,7 +183,7 @@ class GuiRenderer : public CEGUI::Renderer
         int                                     _bufferPos;         //!< index into buffer where next vertex should be put.
 
         std::list< GuiTexture* >                _texturelist;       //!< List used to track textures.
-        
+
         int                                     _maxTextureSize;    //!< Holds maximum supported texture size (in pixels).
 };
 

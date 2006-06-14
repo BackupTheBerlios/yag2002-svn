@@ -50,7 +50,7 @@ class GuiViewerInitCallback : public osgSDL::Viewer::ViewerInitCallback
 {
     public:
 
-        virtual void                                operator()( const osgSDL::Viewport* p_vp )
+        virtual void                                operator()( const osgSDL::Viewport* /*p_vp*/ )
                                                     {
                                                         GuiManager::get()->doInitialize();
                                                     }
@@ -66,7 +66,7 @@ class GuiPostDrawCallback : public osgSDL::Viewer::DrawCallback
 {
     public:
 
-       virtual void                                 operator()( const osgSDL::Viewport* p_vp )
+       virtual void                                 operator()( const osgSDL::Viewport* /*p_vp*/ )
                                                     {
                                                         GuiManager::get()->doRender();
                                                     }
@@ -101,7 +101,7 @@ GuiManager::InputHandler::~InputHandler()
     Application::get()->getViewer()->removeEventHandler( this );
 }
 
-void GuiResourceProvider::loadRawDataContainer( const CEGUI::String& filename, CEGUI::RawDataContainer& output, const CEGUI::String& resourceGroup )
+void GuiResourceProvider::loadRawDataContainer( const CEGUI::String& filename, CEGUI::RawDataContainer& output, const CEGUI::String& /*resourceGroup*/ )
 {
     std::auto_ptr< std::fstream > p_stream( new std::fstream );
 
@@ -386,7 +386,7 @@ void GuiManager::doRender()
         CEGUI::System::getSingleton().renderGUI();
 }
 
-bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*aa*/ )
 {
     if ( !_p_guiMgr->_active )
         return false;

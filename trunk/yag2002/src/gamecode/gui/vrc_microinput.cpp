@@ -82,6 +82,27 @@ bool MicrophoneInput::getInputDevices( MicrophoneInput::InputDeviceMap& devices 
         return false;
     }
 
+#ifdef LINUX
+    result = _p_soundSystem->setOutput( FMOD_OUTPUTTYPE_ALSA );
+    if ( result != FMOD_OK )
+    {
+        log_error << "Mirophone input cannot use ALSA driver" << std::endl;
+        return false;
+    }
+    result = _p_soundSystem->setSoftwareChannels( 1 );
+    if ( result != FMOD_OK )
+    {
+        log_error << "Mirophone cannot allocate software mixing channel" << std::endl;
+        return false;
+    }
+    result = _p_soundSystem->setHardwareChannels( 0, 0, 0, 0 );
+    if ( result != FMOD_OK )
+    {
+        log_error << "Mirophone input cannot disable hardware channel mixing" << std::endl;
+        return false;
+    }
+#endif
+
     // we need only one single channel in sound system
     result = p_system->init( 1, FMOD_INIT_NORMAL, 0 );
     if ( result != FMOD_OK )

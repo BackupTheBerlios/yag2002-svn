@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -25,7 +25,7 @@
  #
  #   date of creation:  04/03/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -63,7 +63,7 @@ GuiTexture::~GuiTexture()
 
 void GuiTexture::loadFromFile( const CEGUI::String& filename, const CEGUI::String& resourceGroup )
 {
-    glBindTexture( GL_TEXTURE_2D, _ogltexture );        
+    glBindTexture( GL_TEXTURE_2D, _ogltexture );
 
     // load file to memory via resource provider
     CEGUI::RawDataContainer texFile;
@@ -84,7 +84,7 @@ void GuiTexture::loadFromFile( const CEGUI::String& filename, const CEGUI::Strin
         glTexImage2D(GL_TEXTURE_2D, 0, textureType, _width, _height, 0, textureType, GL_UNSIGNED_BYTE, img->data);
 
         // Free texture data, we don't need it anymore
-        if ( img->data )                          
+        if ( img->data )
         {
             delete[] img->data;
         }
@@ -156,7 +156,7 @@ void GuiTexture::flipImageTGA(GuiTexture::tImageTGA* img)
     }
 }
 
-GuiTexture::tImageTGA* GuiTexture::LoadTGA( const unsigned char* buffer, size_t buffer_size )
+GuiTexture::tImageTGA* GuiTexture::LoadTGA( const unsigned char* buffer, size_t /*buffer_size*/ )
 {
     tImageTGA *pImageData = NULL;       // This stores our important image data
     short width = 0, height = 0;        // The dimensions of the image
@@ -279,7 +279,7 @@ GuiTexture::tImageTGA* GuiTexture::LoadTGA( const unsigned char* buffer, size_t 
                 pImageData->data[i * 3 + 1] = g;
                 pImageData->data[i * 3 + 2] = b;
             }
-        }   
+        }
         // Else return a NULL for a bad or unsupported pixel format
         else
         {
@@ -290,10 +290,10 @@ GuiTexture::tImageTGA* GuiTexture::LoadTGA( const unsigned char* buffer, size_t 
     // Else, it must be Run-Length Encoded (RLE)
     else
     {
-        // First, let me explain real quickly what RLE is.  
-        // For further information, check out Paul Bourke's intro article at: 
+        // First, let me explain real quickly what RLE is.
+        // For further information, check out Paul Bourke's intro article at:
         // http://astronomy.swin.edu.au/~pbourke/dataformats/rle/
-        // 
+        //
         // Anyway, we know that RLE is a basic type compression.  It takes
         // colors that are next to each other and then shrinks that info down
         // into the color and a integer that tells how much of that color is used.
