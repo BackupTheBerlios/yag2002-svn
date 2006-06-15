@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  02/25/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -49,7 +49,7 @@ namespace yaf3d
 
 #ifdef LINUX
 
-// used for Copy & Paste 
+// used for Copy & Paste
 static Display* SDL_Display = NULL;
 static Window   SDL_Window;
 static void ( *Lock_Display   )( void );
@@ -91,7 +91,7 @@ bool copyToClipboard( const std::string& text )
     // copy to clipboard data
     EmptyClipboard();
     HGLOBAL hmem = GlobalAlloc( GMEM_MOVEABLE, text.length() + 1 );
-    char*   p_text = ( char* )GlobalLock( hmem ); 
+    char*   p_text = ( char* )GlobalLock( hmem );
     memcpy( p_text, text.c_str(), text.length() );
     p_text[ text.length() ] = ( char )0;
     GlobalUnlock( hmem );
@@ -223,7 +223,7 @@ std::string getFormatedDate()
     std::string datestamp( p_buf );
     return datestamp;
 }
- 
+
 std::string getFormatedTime()
 {
     char p_buf[ 128 ];
@@ -391,9 +391,9 @@ void getDirectoryListing( std::vector< std::string >& listing, const std::string
         directory = ".";
 
     directory += "/";
-    std::string search = directory + "*" + extension; 
+    std::string search = directory + "*" + extension;
 
-    // check if the directory exists  
+    // check if the directory exists
     if ( opendir( directory.c_str() ) == NULL )
         return;
 
@@ -401,7 +401,7 @@ void getDirectoryListing( std::vector< std::string >& listing, const std::string
     for ( size_t cnt = 0; cnt < ff_glob.gl_pathc; ++cnt )
     {
         std::string filename( ff_glob.gl_pathv[ cnt ] );
-        filename.erase( 0, directory.size() ); 
+        filename.erase( 0, directory.size() );
         std::string details;
         // check for directories
         stat( std::string( directory + filename ).c_str(), &fileInfo );
@@ -474,7 +474,7 @@ YAF3D_SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string&
     shellInfo.lpParameters = params.c_str();
     shellInfo.nShow = SW_SHOWMINIMIZED;
     if( ::ShellExecuteEx( &shellInfo ) )
-    { 
+    {
         hProc = shellInfo.hProcess;
     }
     return hProc;
@@ -482,7 +482,6 @@ YAF3D_SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string&
 #endif
 #ifdef LINUX
 
-    // TODO: implementation
     pid_t pid = -1;
     posix_spawn_file_actions_t* p_fileactions = NULL;
     posix_spawnattr_t attr;
@@ -545,7 +544,7 @@ class DispSettings
                                     // we compare the areas of two screen resolutions here
                                     if ( ( ds.height * ds.width ) < ( height * width ) )
                                         return true;
-                                    else 
+                                    else
                                         return false;
                                 }
 
@@ -553,7 +552,7 @@ class DispSettings
                                 {
                                     if ( ds.height == height && ds.width == width && ds.colorbits == colorbits )
                                         return true;
-                                    else 
+                                    else
                                         return false;
                                 }
 };
@@ -581,7 +580,7 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
         }
     }
 
-#endif 
+#endif
 #ifdef LINUX
 
     SDL_Rect** pp_modes;
@@ -601,7 +600,7 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
         // all resolutions available, what to do here?
     }
     else
-    {  
+    {
         for( int i = 0; pp_modes[ i ]; ++i )
         {
 
@@ -623,7 +622,7 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
     sortedsettings.unique();
 
     std::list< DispSettings >::iterator p_beg = sortedsettings.begin(), p_end = sortedsettings.end();
-    for ( ; p_beg != p_end; ++p_beg ) 
+    for ( ; p_beg != p_end; ++p_beg )
     {
         std::stringstream resstring;
         resstring << p_beg->width << "x" << p_beg->height << "@" << p_beg->colorbits;
