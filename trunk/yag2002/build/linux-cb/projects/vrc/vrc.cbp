@@ -38,6 +38,7 @@
 					<Add directory="../../../../src/gamecode"/>
 				</Compiler>
 				<Linker>
+					<Add library="pthread"/>
 					<Add library="OpenThreads"/>
 					<Add library="osg"/>
 					<Add library="osgDB"/>
@@ -53,10 +54,10 @@
 					<Add library="SDLmain"/>
 					<Add library="RNReplicaNet"/>
 					<Add library="RNXPSession"/>
-					<Add library="RNXPSockets"/>
 					<Add library="RNXPURL"/>
-					<Add library="RNPlatform"/>
 					<Add library="RNXPCompression"/>
+					<Add library="RNXPSockets"/>
+					<Add library="RNPlatform"/>
 					<Add library="Newton"/>
 					<Add library="CEGUIBase"/>
 					<Add library="CEGUITaharezLook"/>
@@ -78,10 +79,11 @@
 				<Option compiler="0"/>
 				<Option projectResourceIncludeDirsRelation="1"/>
 				<Compiler>
+					<Add option="-O3"/>
 					<Add option="-pedantic"/>
 					<Add option="-W"/>
 					<Add option="-g"/>
-					<Add option="-pipe -fomit-frame-pointer -fexceptions"/>
+					<Add option="-ansi -pipe -fomit-frame-pointer -fexceptions"/>
 					<Add option="-DLINUX"/>
 					<Add directory="/usr/local/include/"/>
 					<Add directory="/usr/local/include/OpenThreads"/>
@@ -95,6 +97,7 @@
 					<Add directory="../../../../src/gamecode"/>
 				</Compiler>
 				<Linker>
+					<Add library="pthread"/>
 					<Add library="OpenThreads"/>
 					<Add library="osg"/>
 					<Add library="osgDB"/>
@@ -110,10 +113,10 @@
 					<Add library="SDLmain"/>
 					<Add library="RNReplicaNet"/>
 					<Add library="RNXPSession"/>
-					<Add library="RNXPSockets"/>
 					<Add library="RNXPURL"/>
-					<Add library="RNPlatform"/>
 					<Add library="RNXPCompression"/>
+					<Add library="RNXPSockets"/>
+					<Add library="RNPlatform"/>
 					<Add library="Newton"/>
 					<Add library="CEGUIBase"/>
 					<Add library="CEGUITaharezLook"/>
