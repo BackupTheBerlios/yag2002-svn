@@ -236,11 +236,13 @@ bool Physics::serialize( const std::string& meshFile, const std::string& outputF
     {
         log_error << "Physics: cannot write to serialization file '" << file << "'" << std::endl;
         serializationoutput.close();
+        NewtonReleaseCollision( _p_world, p_collision );
         return false;
     }
     NewtonTreeCollisionSerialize( p_collision, serializationCallback, &serializationoutput );
     serializationoutput.close();
-
+    NewtonReleaseCollision( _p_world, p_collision );
+    
     return true;
 }
 
