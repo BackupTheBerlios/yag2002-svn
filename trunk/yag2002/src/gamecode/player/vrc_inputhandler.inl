@@ -203,15 +203,18 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     if ( _moveForward )
     {
         getPlayerImpl()->getPlayerPhysics()->setDirection( getPlayerImpl()->_moveDir._v[ 0 ], getPlayerImpl()->_moveDir._v[ 1 ] );
-        if ( !getPlayerImpl()->getPlayerPhysics()->isJumping() )
+        if ( getPlayerImpl()->getPlayerPhysics()->onGround() )
             getPlayerImpl()->getPlayerAnimation()->animWalk();
+        else
+            getPlayerImpl()->getPlayerAnimation()->animIdle();
     }
-
-    if ( _moveBackward )
+    else if ( _moveBackward )
     {
         getPlayerImpl()->getPlayerPhysics()->setDirection( -getPlayerImpl()->_moveDir._v[ 0 ], -getPlayerImpl()->_moveDir._v[ 1 ] );
-        if ( !getPlayerImpl()->getPlayerPhysics()->isJumping() )
+        if ( getPlayerImpl()->getPlayerPhysics()->onGround() )
             getPlayerImpl()->getPlayerAnimation()->animWalk();
+        else
+            getPlayerImpl()->getPlayerAnimation()->animIdle();
     }
 
     if ( _right )

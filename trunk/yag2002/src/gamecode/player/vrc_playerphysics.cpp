@@ -300,7 +300,6 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     p_phys->_isStopped = ( p_phys->_lastPosition - pos ).length2() < p_phys->_moveDetectThreshold2;
     p_phys->_lastPosition = pos;
 
-    //const float* matelems = matrix.ptr();
     const float* matelems = matrix.ptr();
     osg::Vec3f front( matelems[ 4 ] , matelems[ 5 ], matelems[ 6 ] );
     // move direction must be normalized
@@ -310,7 +309,7 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     steerAngle = asinf( steerAngle );
     osg::Vec3f omega;
     NewtonBodyGetOmega( p_phys->_p_body, &omega._v[ 0 ] );
-    osg::Vec3f torque( 0.0f, 0.0f, 0.5f * Izz * ( steerAngle * timestepInv - omega._v[ 2 ] ) * timestepInv );
+    osg::Vec3f torque( 0.0f, 0.0f, 0.7f * Izz * ( steerAngle * timestepInv - omega._v[ 2 ] ) * timestepInv );
     NewtonBodySetTorque( p_phys->_p_body, &torque._v[ 0 ] );
 
     // add gravity to force, when on ground then reduce the applied gravity
@@ -383,6 +382,8 @@ _upVectorJoint( NULL ),
 _playerHeight( 1.8f ),
 _isStopped( true ),
 _isAirBorne( false ),
+_onAirTimer( 0.0f ),
+_isOnAir( false ),
 _wallCollision( false ),
 _soundTimer( 0.0f ),
 _isJumping( false ),
@@ -578,11 +579,30 @@ void EnPlayerPhysics::postInitialize()
 
 void EnPlayerPhysics::updateEntity( float deltaTime )
 {
+    // on air detection, i.e. if the player is not on ground for a period of time
+    {
+        if ( _isAirBorne )
+        {
+            _onAirTimer += deltaTime;
+        }
+        else
+        {
+            _onAirTimer = 0.0f;
+            _isOnAir = false;
+        }
+
+        if ( _onAirTimer > 0.1f )
+            _isOnAir = true;
+    }
+
+    // reset air-borne and wall collision flags for next physics upate
     _isAirBorne     = true;
     _wallCollision  = false;
 
+    // store delta time for usage in static member functions
     _deltaTime      = deltaTime;
 
+    // update sound timer
     if ( _soundTimer > 0.0f )
         _soundTimer -= deltaTime;
 }

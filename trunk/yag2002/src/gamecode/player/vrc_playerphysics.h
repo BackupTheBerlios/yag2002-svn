@@ -144,7 +144,7 @@ class EnPlayerPhysics : public yaf3d::BaseEntity
         /**
         * Indicates whether we are on ground or in air
         */
-        bool                                        onGround() const { return !_isAirBorne; }
+        bool                                        onGround() const { return !_isOnAir; }
 
         //! Internal callbacks and methods for static functions
         //-------------------------------------------------------------------------------------------------//
@@ -242,8 +242,14 @@ class EnPlayerPhysics : public yaf3d::BaseEntity
         //! Shows that there is no force for movement
         bool                                        _isStopped;
 
-        //! Indicates whether we are on ground or in air
+        //! Internal flag for OnAir detection
         bool                                        _isAirBorne;
+
+        //! Timer for OnAir detection
+        float                                        _onAirTimer;
+
+        //! Indicates whether we are on ground or in air
+        bool                                        _isOnAir;
 
         //! Indicates a collision with special material "wall"
         bool                                        _wallCollision;
