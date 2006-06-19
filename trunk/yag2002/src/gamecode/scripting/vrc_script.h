@@ -34,6 +34,8 @@
 #ifndef _VRC_SCRIPT_H_
 #define _VRC_SCRIPT_H_
 
+#include <vrc_main.h>
+
 // Lua headers
 extern "C"
 {

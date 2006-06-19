@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  02/19/2006
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -70,7 +70,7 @@ bool MicrophoneInput::getInputDevices( MicrophoneInput::InputDeviceMap& devices 
     result = FMOD::System_Create( &p_system );
     if ( result != FMOD_OK )
     {
-        log_error << "+gui MicrophoneInput: cannot create sound system!" << std::endl;
+        log_error << "MicrophoneInput: cannot create sound system!" << std::endl;
         return false;
     }
 
@@ -78,7 +78,7 @@ bool MicrophoneInput::getInputDevices( MicrophoneInput::InputDeviceMap& devices 
     result = p_system->getVersion( &version );
     if ( version < FMOD_VERSION )
     {
-        log_error << "+gui MicrophoneInput: wrong fmod version!" << std::endl;
+        log_error << "MicrophoneInput: wrong fmod version!" << std::endl;
         return false;
     }
 
@@ -107,7 +107,7 @@ bool MicrophoneInput::getInputDevices( MicrophoneInput::InputDeviceMap& devices 
     result = p_system->init( 1, FMOD_INIT_NORMAL, 0 );
     if ( result != FMOD_OK )
     {
-        log_error << "+gui MicrophoneInput: cannot initialize sound system" << std::endl;
+        log_error << "MicrophoneInput: cannot initialize sound system" << std::endl;
         return false;
     }
 
@@ -173,7 +173,7 @@ bool MicrophoneInput::setInputDevice( unsigned int deviceid )
 
         if ( !setupInputCapturing( deviceid ) )
             return false;
-    
+
         beginMicroTest();
 
         return true;
@@ -186,7 +186,7 @@ void MicrophoneInput::setInputGain( float gain )
 {
     // limit the gain to [ 0 ... 2 ]
     _inputGain = std::min( std::max( 0.0f, gain ), 2.0f );
-    
+
     // we simulate separate input / output gains here
     if ( _p_channel )
     {
@@ -227,7 +227,7 @@ void MicrophoneInput::beginMicroTest()
     memset( &createsoundexinfo, 0, sizeof( FMOD_CREATESOUNDEXINFO ) );
     createsoundexinfo.cbsize            = sizeof( FMOD_CREATESOUNDEXINFO );
     createsoundexinfo.decodebuffersize  = 0;
-    createsoundexinfo.length            = MICINPUT_SAMPLE_RATE * sizeof( short ); // buffer for 1 second recording 
+    createsoundexinfo.length            = MICINPUT_SAMPLE_RATE * sizeof( short ); // buffer for 1 second recording
     createsoundexinfo.numchannels       = channels;
     createsoundexinfo.defaultfrequency  = MICINPUT_SAMPLE_RATE;
     createsoundexinfo.format            = MICINPUT_SOUND_FORMAT;
