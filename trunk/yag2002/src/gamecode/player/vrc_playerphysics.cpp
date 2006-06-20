@@ -40,7 +40,9 @@ namespace vrc
 {
 
 // used to avoid playing too short sound
-#define SND_PLAY_RELAX_TIME     0.2f
+#define SND_PLAY_RELAX_TIME             0.2f
+// this determines how smooth the rotation is performed
+#define PHYS_ROTATION_SMOOTHNESS        0.7f
 
 //! Implement and register the player physics entity factory
 YAF3D_IMPL_ENTITYFACTORY( PlayerPhysicsEntityFactory )
@@ -283,7 +285,7 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     float timestep;
     float timestepInv;
     // get the current timestep
-    timestep = p_phys->_deltaTime;
+    timestep = NewtonGetTimeStep( p_phys->_p_world );
     timestepInv = 1.0f / timestep;
 
     // calculate force basing on desired velocity
@@ -309,34 +311,43 @@ void EnPlayerPhysics::physicsApplyForceAndTorque( const NewtonBody* p_body )
     steerAngle = asinf( steerAngle );
     osg::Vec3f omega;
     NewtonBodyGetOmega( p_phys->_p_body, &omega._v[ 0 ] );
-    osg::Vec3f torque( 0.0f, 0.0f, 0.7f * Izz * ( steerAngle * timestepInv - omega._v[ 2 ] ) * timestepInv );
+    osg::Vec3f torque( 0.0f, 0.0f, PHYS_ROTATION_SMOOTHNESS * Izz * ( steerAngle * timestepInv - omega._v[ 2 ] ) * timestepInv );
     NewtonBodySetTorque( p_phys->_p_body, &torque._v[ 0 ] );
 
     // add gravity to force, when on ground then reduce the applied gravity
     force._v[ 2 ] = mass * ( p_phys->_isAirBorne ? p_phys->_airGravity : p_phys->_groundGravity );
+
+    float& jumpforce = p_phys->_jumpForce;
+    float& jumptimer = p_phys->_jumpTimer;
 
     switch ( p_phys->_jumpState )
     {
         case Wait4Jumping:
         {
             if ( p_phys->_isJumping && !p_phys->_wallCollision )
-            {
-                osg::Vec3f veloc( 0.0f, 0.0f, p_phys->_jumpForce );
-                NewtonAddBodyImpulse( p_phys->_p_body, &veloc._v [ 0 ], &pos._v[ 0 ] );
                 p_phys->_jumpState = Wait4Landing;
-            }
         }
         break;
 
         case Wait4Landing:
+        {
+
+            if ( jumptimer > p_phys->_jumpPeriod )
             {
-                if ( !p_phys->_isAirBorne )
-                {
-                    p_phys->_jumpState = Wait4Jumping;
-                    p_phys->_isJumping = false;
-                }
+                p_phys->_jumpState = Wait4Jumping;
+                p_phys->_isJumping = false;
+                jumptimer          = 0.0f;
             }
-            break;
+            else
+            {
+                // jumpForce = mass*( ( MAX_JUMP_VELOCITY - velocity.z ) / ( JUMP_TIME ) - GRAVITY );
+
+                jumptimer += timestep;
+                jumpforce = mass * ( ( p_phys->_jumpVelocity - velocity._v[ 2 ] ) / ( jumptimer ) + p_phys->_airGravity );
+                force._v[ 2 ] = jumpforce;
+            }
+        }
+        break;
 
         default:
             assert( NULL && "invalid jump state" );
@@ -375,6 +386,8 @@ _groundGravity( yaf3d::Physics::get()->getWorldGravity() ),
 _airGravity( yaf3d::Physics::get()->getWorldGravity() ),
 _moveDetectThreshold2( 0.05f ),
 _linearDamping( 0.2f ),
+_jumpVelocity( 9.0f ),
+_jumpPeriod( 1.0f ),
 _p_playerImpl( NULL ),
 _p_world( NULL ),
 _p_body( NULL ),
@@ -387,9 +400,9 @@ _isOnAir( false ),
 _wallCollision( false ),
 _soundTimer( 0.0f ),
 _isJumping( false ),
-_jumpState( Wait4Jumping ),
+_jumpTimer( 0.0f ),
 _jumpForce( 5.0f ),
-_deltaTime( 0.001f ),
+_jumpState( Wait4Jumping ),
 _requestForMovement( false )
 {
     // register entity in order to get notifications about physics building
@@ -399,7 +412,8 @@ _requestForMovement( false )
     getAttributeManager().addAttribute( "dimensions"           , _dimensions           );
     getAttributeManager().addAttribute( "speed"                , _speed                );
     getAttributeManager().addAttribute( "angularSpeed"         , _angularSpeed         );
-    getAttributeManager().addAttribute( "jumpforce"            , _jumpForce            );
+    getAttributeManager().addAttribute( "jumpVelocity"         , _jumpVelocity         );
+    getAttributeManager().addAttribute( "jumpPeriod"           , _jumpPeriod           );
     getAttributeManager().addAttribute( "lineardamping"        , _linearDamping        );
     getAttributeManager().addAttribute( "mass"                 , _mass                 );
     getAttributeManager().addAttribute( "groundGravity"        , _groundGravity        );
@@ -598,9 +612,6 @@ void EnPlayerPhysics::updateEntity( float deltaTime )
     // reset air-borne and wall collision flags for next physics upate
     _isAirBorne     = true;
     _wallCollision  = false;
-
-    // store delta time for usage in static member functions
-    _deltaTime      = deltaTime;
 
     // update sound timer
     if ( _soundTimer > 0.0f )

@@ -225,6 +225,12 @@ class EnPlayerPhysics : public yaf3d::BaseEntity
         //! Linear damping
         float                                       _linearDamping;
 
+        //! Jump velocity
+        float                                       _jumpVelocity;
+
+        //! Period of time applying jump force when jumping, this and '_jumpVelocity' determine the maximal jumping height
+        float                                       _jumpPeriod;
+
         //--------------------------------------------------------//
 
         BasePlayerImplementation*                   _p_playerImpl;
@@ -257,17 +263,20 @@ class EnPlayerPhysics : public yaf3d::BaseEntity
         //! Sound timer
         float                                       _soundTimer;
 
+        //! Shows if the player is in jumping state
         bool                                        _isJumping;
+
+        //! Used for calculating jump force
+        float                                       _jumpTimer;
+
+        //! Internally calculated jump force
+        float                                       _jumpForce;
 
         enum
         {
             Wait4Jumping,
             Wait4Landing
         }                                           _jumpState;
-
-        float                                       _jumpForce;
-
-        float                                       _deltaTime;
 
         //! Body matrix
         osg::Matrixf                                _matrix;
