@@ -85,6 +85,10 @@ void EnPlayer::handleNotification( const yaf3d::EntityNotification& notification
 
 void EnPlayer::initialize()
 {
+    // set initial position and rotation, this will be changed later by server when in client mode
+    setPosition( _attributeContainer._pos );
+    setRotation( osg::Quat( osg::DegreesToRadians( _attributeContainer._rot ), osg::Vec3f( 0.0f, 0.0f, 1.0f ) ) );
+
     // build and init the player implementation
     switch ( _gameMode )
     {
