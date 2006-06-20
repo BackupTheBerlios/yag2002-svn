@@ -92,6 +92,12 @@ _p_listbox( NULL )
             _p_listbox->setFont( YAF3D_GUI_FONT8 );
             _p_tabPane->addChildWindow( _p_listbox );
         }
+
+        // set initial pane size
+        {
+            CEGUI::EventArgs arg;
+            onSizeChanged( arg );
+        }
     }
     catch ( const CEGUI::Exception& e )
     {
