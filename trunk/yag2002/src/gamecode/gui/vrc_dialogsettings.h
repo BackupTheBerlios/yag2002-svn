@@ -96,6 +96,9 @@ class DialogGameSettings
         //! Is asked on canceling dialog
         bool                                        isDirty();
 
+        //! Fill up the input device combo list
+        void                                        updateInputDeviceList();
+
         //! Setup all controls when the dialog is opening ( show( true ) )
         void                                        setupControls();
 
@@ -113,13 +116,7 @@ class DialogGameSettings
 
         //! Dialog callback for mouse sensitivity scrollbar
         bool                                        onMouseSensitivityChanged( const CEGUI::EventArgs& arg );
-       
-        //! Dialog callback for keyboarch checkbox: english
-        bool                                        onKeyboardEnglishChanged( const CEGUI::EventArgs& arg );
-       
-        //! Dialog callback for keyboarch checkbox: german
-        bool                                        onKeyboardGermanChanged( const CEGUI::EventArgs& arg );
-       
+
         //! Dialog callback for move forward button
         bool                                        onClickedForward( const CEGUI::EventArgs& arg );
 
@@ -211,10 +208,6 @@ class DialogGameSettings
         CEGUI::PushButton*                          _p_keyChatMode;
 
         bool                                        _mouseInverted;
-
-        CEGUI::Checkbox*                            _p_keyKeybEnglish;
-
-        CEGUI::Checkbox*                            _p_keyKeybGerman;
 
         CEGUI::Combobox*                            _p_resolution;
 

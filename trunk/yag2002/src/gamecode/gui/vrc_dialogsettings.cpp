@@ -61,8 +61,6 @@ _p_keyJump( NULL ),
 _p_mouseInvert( NULL ),
 _p_keyChatMode( NULL ),
 _mouseInverted( false ),
-_p_keyKeybEnglish( NULL ),
-_p_keyKeybGerman( NULL ),
 _p_resolution( NULL ),
 _p_enableFullscreen( NULL ),
 _p_enableMusic( NULL ),
@@ -167,17 +165,6 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
             _p_mouseInvert = static_cast< CEGUI::Checkbox* >( p_paneControl->getChild( SDLG_PREFIX "cbx_mouseinvert" ) );
         }
 
-        // get contents of pane Keyboard
-        //#############################
-        {
-            CEGUI::TabPane* p_paneKeyboard = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_keyboard" ) );
-
-            _p_keyKeybEnglish = static_cast< CEGUI::Checkbox* >( p_paneKeyboard->getChild( SDLG_PREFIX "cb_english" ) );
-            _p_keyKeybEnglish->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onKeyboardEnglishChanged, this ) );
-
-            _p_keyKeybGerman  = static_cast< CEGUI::Checkbox* >( p_paneKeyboard->getChild( SDLG_PREFIX "cb_german" ) );
-            _p_keyKeybGerman->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onKeyboardGermanChanged, this ) );
-        }
         // get contents of pane Display
         //#############################
         {
@@ -262,6 +249,46 @@ bool DialogGameSettings::isDirty()
     return true;
 }
 
+void DialogGameSettings::updateInputDeviceList()
+{
+    _inputDevices->setEnabled( true );
+    _inputDevices->resetList();
+    _inputDevices->setSortingEnabled( false );
+
+    CEGUI::ListboxTextItem* p_item = NULL;
+
+    // determine all available input devices
+    MicrophoneInput* p_micinput = new MicrophoneInput;
+    MicrophoneInput::InputDeviceMap inputs;
+    if ( p_micinput->getInputDevices( inputs ) )
+    {
+        for ( int numdevs = inputs.size() - 1; numdevs >= 0 ; --numdevs )
+        {
+            p_item = new CEGUI::ListboxTextItem( inputs[ numdevs ].c_str() );
+            _inputDevices->insertItem( p_item, NULL );
+        }
+    }
+    else
+    {
+        log_error << "cannot initialize microphone input detection" << std::endl;
+    }
+    // release the micro input object
+    delete p_micinput;
+
+    // set the right device in drop-down list
+    unsigned int inputdevice;
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_INPUT_DEVICE, inputdevice );
+    if ( inputdevice < inputs.size() )
+    {
+        _inputDevices->setItemSelectState( inputdevice, true );
+        _inputDevices->setText( _inputDevices->getListboxItemFromIndex( inputdevice )->getText() );
+    }
+    else
+    {
+        _inputDevices->setSelection( 0, 0 );
+    }
+}
+
 void DialogGameSettings::setupControls()
 {
     // get current configuration settings
@@ -333,25 +360,6 @@ void DialogGameSettings::setupControls()
         _p_mouseInvert->setSelected( cfg_mouseInverted );
     }
 
-    // get keyboard settings
-    {
-        std::string cfg_keyboard;
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_KEYBOARD, cfg_keyboard );
-
-        if ( cfg_keyboard == YAF3D_GS_KEYBOARD_ENGLISH )
-        {
-            _p_keyKeybEnglish->setSelected( true );
-            _p_keyKeybGerman->setSelected( false );
-        }
-        else if ( cfg_keyboard == YAF3D_GS_KEYBOARD_GERMAN )
-        {
-            _p_keyKeybEnglish->setSelected( false );
-            _p_keyKeybGerman->setSelected( true );
-        }
-        else
-            log_error << "*** DialogGameSettings: invalid keyboard type: " << cfg_keyboard << std::endl;
-    }
-
     // get display settings
     {
         bool fullscreen;
@@ -416,42 +424,7 @@ void DialogGameSettings::setupControls()
         // setup input device combo box
         if ( voiceenable )
         {
-            _inputDevices->setEnabled( true );
-            _inputDevices->resetList();
-            _inputDevices->setSortingEnabled( false );
-
-            CEGUI::ListboxTextItem* p_item = NULL;
-
-            // determine all available input devices
-            MicrophoneInput* p_micinput = new MicrophoneInput;
-            MicrophoneInput::InputDeviceMap inputs;
-            if ( p_micinput->getInputDevices( inputs ) )
-            {
-                for ( int numdevs = inputs.size() - 1; numdevs >= 0 ; --numdevs )
-                {
-                    p_item = new CEGUI::ListboxTextItem( inputs[ numdevs ].c_str() );
-                    _inputDevices->insertItem( p_item, NULL );
-                }
-            }
-            else
-            {
-                log_error << "cannot initialize microphone input detection" << std::endl;
-            }
-            // release the micro input object
-            delete p_micinput;
-
-            // set the right device in drop-down list
-            unsigned int inputdevice;
-            yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_INPUT_DEVICE, inputdevice );
-            if ( inputdevice < inputs.size() )
-            {
-                _inputDevices->setItemSelectState( inputdevice, true );
-                _inputDevices->setText( _inputDevices->getListboxItemFromIndex( inputdevice )->getText() );
-            }
-            else
-            {
-                _inputDevices->setSelection( 0, 0 );
-            }
+            updateInputDeviceList();
         }
         else
         {
@@ -537,22 +510,6 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& /*arg*/ )
         unsigned int serverport = 0;
         portasstring >> serverport;
         yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SERVER_PORT, serverport );
-    }
-
-    // set keyboard type
-    {
-        std::string cfg_keyboard;
-        if ( _p_keyKeybEnglish->isSelected() )
-        {
-            yaf3d::KeyMap::get()->setup( yaf3d::KeyMap::English ); // re-init keyboard
-            cfg_keyboard = YAF3D_GS_KEYBOARD_ENGLISH;
-        }
-        else
-        {
-            yaf3d::KeyMap::get()->setup( yaf3d::KeyMap::German ); // re-init keyboard
-            cfg_keyboard = YAF3D_GS_KEYBOARD_GERMAN;
-        }
-        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_KEYBOARD, cfg_keyboard );
     }
 
     // set the display setting
@@ -724,32 +681,6 @@ bool DialogGameSettings::onMouseSensitivityChanged( const CEGUI::EventArgs& /*ar
     return true;
 }
 
-bool DialogGameSettings::onKeyboardEnglishChanged( const CEGUI::EventArgs& /*arg*/ )
-{
-    // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
-
-    if ( _p_keyKeybEnglish->isSelected() )
-        _p_keyKeybGerman->setSelected( false );
-    else
-        _p_keyKeybGerman->setSelected( true );
-
-    return true;
-}
-
-bool DialogGameSettings::onKeyboardGermanChanged( const CEGUI::EventArgs& /*arg*/ )
-{
-    // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
-
-    if ( _p_keyKeybGerman->isSelected() )
-        _p_keyKeybEnglish->setSelected( false );
-    else
-        _p_keyKeybEnglish->setSelected( true );
-
-    return true;
-}
-
 bool DialogGameSettings::onClickedForward( const CEGUI::EventArgs& /*arg*/ )
 {
     // begin key sensing for "move forward"
@@ -882,6 +813,7 @@ bool DialogGameSettings::onEnableVoiceChatChanged( const CEGUI::EventArgs& /*arg
         _p_voiceInputGain->setEnabled( true );
         _p_voiceOutputGain->setEnabled( true );
         _inputDevices->setEnabled( true );
+        updateInputDeviceList();
     }
     else
     {
