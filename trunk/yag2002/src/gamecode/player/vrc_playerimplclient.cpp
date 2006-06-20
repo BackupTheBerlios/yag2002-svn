@@ -43,7 +43,7 @@
 // some networking related thresholds
 #define NW_POS_CORRECTION_THRESHOLD 5.0f
 #define NW_JUMP_THRESHOLD           0.3f
-#define NW_WALK_THRESHOLD           0.01f
+#define NW_WALK_THRESHOLD           0.05f
 #define NW_ROT_THRESHOLD            0.002f
 
 namespace vrc
@@ -365,6 +365,7 @@ void PlayerImplClient::update( float deltaTime )
 
         // calculate the current velocity
         osg::Vec3f vel( clientpos - lastpos );
+
         // do we need a hard position correction?
         if ( vel.length2() > NW_POS_CORRECTION_THRESHOLD )
         {

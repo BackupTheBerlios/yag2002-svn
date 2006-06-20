@@ -113,12 +113,21 @@ void EnPlayer::initialize()
         break;
 
         case yaf3d::GameState::Server:
+        {
             // player entity is created in networking component for server
             spawn();
-            break;
+        }
+        break;
 
         default:
             assert( NULL && "unsupported game mode" );
+    }
+
+    // set initial position and rotation in player implementation
+    if ( _p_playerImpl )
+    {
+        _p_playerImpl->setPlayerPosition( getPosition() );
+        _p_playerImpl->setPlayerRotation( getRotation() );
     }
 
     yaf3d::EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
