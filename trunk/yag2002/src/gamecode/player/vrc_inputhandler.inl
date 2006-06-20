@@ -144,6 +144,12 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 // store current pitch / yaw and restore the old values
                 _p_mouseData->pushbackPitchYaw();
                 _p_mouseData->popfrontPitchYaw();
+
+                // synchronize the mouse data yaw on switching to ego mode, as in spheric mode
+				//  the player rotation can also be changed
+                if ( getPlayerImpl()->_cameraMode == vrc::BasePlayerImplementation::Ego )
+			        _p_mouseData->_yaw = getPlayerImpl()->_rotZ;
+
                 // after cam mode switching and restoring the pitch / yaw we have also to update the player pitch / yaw
                 updatePlayerPitchYaw( _p_mouseData->_pitch, _p_mouseData->_yaw );
             }
@@ -349,6 +355,15 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         // update the player pitch / yaw
         updatePlayerPitchYaw( _p_mouseData->_pitch, _p_mouseData->_yaw );
 
+        // calculate yaw and change player direction when in ego mode
+        if ( getPlayerImpl()->_cameraMode == vrc::BasePlayerImplementation::Ego )
+        {
+			float& rotZ = getPlayerImpl()->_rotZ;
+			rotZ = _p_mouseData->_yaw;
+			getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
+			getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
+        }
+
         // reset mouse position in order to avoid leaving the app window
         yaf3d::Application::get()->getViewer()->requestWarpPointer( _p_mouseData->_screenMiddleX, _p_mouseData->_screenMiddleY );
     }
@@ -367,12 +382,6 @@ void PlayerIHCharacterCameraCtrl< PlayerImplT >::updatePlayerPitchYaw( float& pi
             pitch = LIMIT_PITCH_ANGLE;
         else if ( pitch < -LIMIT_PITCH_ANGLE )
             pitch = -LIMIT_PITCH_ANGLE;
-
-        // calculate yaw and change player direction when in ego mode
-        float& rotZ = getPlayerImpl()->_rotZ;
-        rotZ = yaw;
-        getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
-        getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
 
         // set pitch
         getPlayerImpl()->setCameraPitchYaw( pitch, 0 );
