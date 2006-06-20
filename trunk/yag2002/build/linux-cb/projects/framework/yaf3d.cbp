@@ -11,6 +11,37 @@
 		<Option active_target="1"/>
 		<Option compiler="0"/>
 		<Build>
+			<Target title="Release">
+				<Option output="../../../../lib/framework/libframework.a"/>
+				<Option working_dir=""/>
+				<Option object_output="../../../linux-cb/obj/framework/release"/>
+				<Option deps_output=".deps"/>
+				<Option type="2"/>
+				<Option compiler="0"/>
+				<Option createDefFile="1"/>
+				<Option projectResourceIncludeDirsRelation="2"/>
+				<Compiler>
+					<Add option="-O2"/>
+					<Add option="-pedantic"/>
+					<Add option="-W"/>
+					<Add option="-Wall"/>
+					<Add option="-g"/>
+					<Add option="-ansi -fomit-frame-pointer -pipe -fexceptions -fpic"/>
+					<Add option="-DLINUX"/>
+					<Add option="-DTIXML_USE_STL"/>
+					<Add option="-DYAF3D_HAS_CONSOLE"/>
+					<Add option="-DPIC"/>
+					<Add directory="/usr/local/include/"/>
+					<Add directory="/usr/local/include/OpenThreads"/>
+					<Add directory="/usr/local/include/osg"/>
+					<Add directory="/usr/local/include/fmodex"/>
+					<Add directory="/usr/local/include/osgSDL"/>
+					<Add directory="/usr/include/SDL"/>
+					<Add directory="/usr/local/include/CEGUI"/>
+					<Add directory="/usr/local/include/CEGUI/elements"/>
+					<Add directory="../../../../src/framework"/>
+				</Compiler>
+			</Target>
 			<Target title="Debug">
 				<Option output="../../../../lib/framework/libframeworkd.a"/>
 				<Option working_dir=""/>
@@ -26,41 +57,12 @@
 					<Add option="-W"/>
 					<Add option="-Wall"/>
 					<Add option="-g"/>
-					<Add option="-O0 -ansi"/>
+					<Add option="-O0 -ansi -fpic"/>
 					<Add option="-DLINUX"/>
 					<Add option="-DTIXML_USE_STL"/>
 					<Add option="-DDEBUG"/>
 					<Add option="-DYAF3D_HAS_CONSOLE"/>
-					<Add directory="/usr/local/include/"/>
-					<Add directory="/usr/local/include/OpenThreads"/>
-					<Add directory="/usr/local/include/osg"/>
-					<Add directory="/usr/local/include/fmodex"/>
-					<Add directory="/usr/local/include/osgSDL"/>
-					<Add directory="/usr/include/SDL"/>
-					<Add directory="/usr/local/include/CEGUI"/>
-					<Add directory="/usr/local/include/CEGUI/elements"/>
-					<Add directory="../../../../src/framework"/>
-				</Compiler>
-			</Target>
-			<Target title="Release">
-				<Option output="../../../../lib/framework/libframework.a"/>
-				<Option working_dir=""/>
-				<Option object_output="../../../linux-cb/obj/framework/release"/>
-				<Option deps_output=".deps"/>
-				<Option type="2"/>
-				<Option compiler="0"/>
-				<Option createDefFile="1"/>
-				<Option projectResourceIncludeDirsRelation="2"/>
-				<Compiler>
-					<Add option="-O3"/>
-					<Add option="-pedantic"/>
-					<Add option="-W"/>
-					<Add option="-Wall"/>
-					<Add option="-g"/>
-					<Add option="-ansi -fomit-frame-pointer -pipe -fexceptions"/>
-					<Add option="-DLINUX"/>
-					<Add option="-DTIXML_USE_STL"/>
-					<Add option="-DYAF3D_HAS_CONSOLE"/>
+					<Add option="-DPIC"/>
 					<Add directory="/usr/local/include/"/>
 					<Add directory="/usr/local/include/OpenThreads"/>
 					<Add directory="/usr/local/include/osg"/>

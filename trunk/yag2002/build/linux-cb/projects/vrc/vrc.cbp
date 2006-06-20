@@ -10,6 +10,68 @@
 		<Option active_target="1"/>
 		<Option compiler="0"/>
 		<Build>
+			<Target title="Release">
+				<Option output="../../../../bin/linux/vrc"/>
+				<Option working_dir="../../../../bin/linux/"/>
+				<Option object_output="../../../linux-cb/obj/vrc/release"/>
+				<Option deps_output=".deps"/>
+				<Option external_deps="../../../../lib/framework/libframework.a;"/>
+				<Option type="1"/>
+				<Option compiler="0"/>
+				<Option projectResourceIncludeDirsRelation="1"/>
+				<Compiler>
+					<Add option="-O2"/>
+					<Add option="-pedantic"/>
+					<Add option="-W"/>
+					<Add option="-g"/>
+					<Add option="-ansi -pipe -fomit-frame-pointer -fexceptions -fpic"/>
+					<Add option="-DLINUX"/>
+					<Add option="-DPIC"/>
+					<Add directory="/usr/local/include/"/>
+					<Add directory="/usr/local/include/OpenThreads"/>
+					<Add directory="/usr/local/include/osg"/>
+					<Add directory="/usr/local/include/fmodex"/>
+					<Add directory="/usr/local/include/osgSDL"/>
+					<Add directory="/usr/include/SDL"/>
+					<Add directory="/usr/local/include/CEGUI"/>
+					<Add directory="/usr/local/include/CEGUI/elements"/>
+					<Add directory="../../../../src/framework"/>
+					<Add directory="../../../../src/gamecode"/>
+				</Compiler>
+				<Linker>
+					<Add library="pthread"/>
+					<Add library="m"/>
+					<Add library="dl"/>
+					<Add library="OpenThreads"/>
+					<Add library="osg"/>
+					<Add library="osgDB"/>
+					<Add library="osgGA"/>
+					<Add library="osgUtil"/>
+					<Add library="osgFX"/>
+					<Add library="osgText"/>
+					<Add library="osgSim"/>
+					<Add library="osgCal"/>
+					<Add library="cal3d"/>
+					<Add library="osgSDL"/>
+					<Add library="SDL"/>
+					<Add library="SDLmain"/>
+					<Add library="RNReplicaNet"/>
+					<Add library="RNXPSession"/>
+					<Add library="RNXPURL"/>
+					<Add library="RNXPCompression"/>
+					<Add library="RNXPSockets"/>
+					<Add library="RNPlatform"/>
+					<Add library="Newton"/>
+					<Add library="lua"/>
+					<Add library="CEGUIBase"/>
+					<Add library="CEGUITaharezLook"/>
+					<Add library="libpng"/>
+					<Add library="fmodex"/>
+					<Add library="libspeex"/>
+					<Add library="libframework.a"/>
+					<Add directory="../../../../lib/framework"/>
+				</Linker>
+			</Target>
 			<Target title="Debug">
 				<Option output="../../../../bin/linux/vrc_debug"/>
 				<Option working_dir="../../../../bin/linux/"/>
@@ -23,9 +85,10 @@
 					<Add option="-pedantic"/>
 					<Add option="-W"/>
 					<Add option="-g"/>
-					<Add option="-O0 -ansi"/>
+					<Add option="-O0 -ansi -fpic"/>
 					<Add option="-DLINUX"/>
 					<Add option="-DDEBUG"/>
+					<Add option="-DPIC"/>
 					<Add directory="/usr/local/include/"/>
 					<Add directory="/usr/local/include/OpenThreads"/>
 					<Add directory="/usr/local/include/osg"/>
@@ -39,6 +102,8 @@
 				</Compiler>
 				<Linker>
 					<Add library="pthread"/>
+					<Add library="m"/>
+					<Add library="dl"/>
 					<Add library="OpenThreads"/>
 					<Add library="osg"/>
 					<Add library="osgDB"/>
@@ -59,72 +124,13 @@
 					<Add library="RNXPSockets"/>
 					<Add library="RNPlatform"/>
 					<Add library="Newton"/>
+					<Add library="lua"/>
 					<Add library="CEGUIBase"/>
 					<Add library="CEGUITaharezLook"/>
 					<Add library="libpng"/>
-					<Add library="lua5.1"/>
 					<Add library="fmodex"/>
 					<Add library="libspeex"/>
 					<Add library="libframeworkd.a"/>
-					<Add directory="../../../../lib/framework"/>
-				</Linker>
-			</Target>
-			<Target title="Release">
-				<Option output="../../../../bin/linux/vrc"/>
-				<Option working_dir="../../../../bin/linux/"/>
-				<Option object_output="../../../linux-cb/obj/vrc/release"/>
-				<Option deps_output=".deps"/>
-				<Option external_deps="../../../../lib/framework/libframework.a;"/>
-				<Option type="1"/>
-				<Option compiler="0"/>
-				<Option projectResourceIncludeDirsRelation="1"/>
-				<Compiler>
-					<Add option="-O3"/>
-					<Add option="-pedantic"/>
-					<Add option="-W"/>
-					<Add option="-g"/>
-					<Add option="-ansi -pipe -fomit-frame-pointer -fexceptions"/>
-					<Add option="-DLINUX"/>
-					<Add directory="/usr/local/include/"/>
-					<Add directory="/usr/local/include/OpenThreads"/>
-					<Add directory="/usr/local/include/osg"/>
-					<Add directory="/usr/local/include/fmodex"/>
-					<Add directory="/usr/local/include/osgSDL"/>
-					<Add directory="/usr/include/SDL"/>
-					<Add directory="/usr/local/include/CEGUI"/>
-					<Add directory="/usr/local/include/CEGUI/elements"/>
-					<Add directory="../../../../src/framework"/>
-					<Add directory="../../../../src/gamecode"/>
-				</Compiler>
-				<Linker>
-					<Add library="pthread"/>
-					<Add library="OpenThreads"/>
-					<Add library="osg"/>
-					<Add library="osgDB"/>
-					<Add library="osgGA"/>
-					<Add library="osgUtil"/>
-					<Add library="osgFX"/>
-					<Add library="osgText"/>
-					<Add library="osgSim"/>
-					<Add library="osgCal"/>
-					<Add library="cal3d"/>
-					<Add library="osgSDL"/>
-					<Add library="SDL"/>
-					<Add library="SDLmain"/>
-					<Add library="RNReplicaNet"/>
-					<Add library="RNXPSession"/>
-					<Add library="RNXPURL"/>
-					<Add library="RNXPCompression"/>
-					<Add library="RNXPSockets"/>
-					<Add library="RNPlatform"/>
-					<Add library="Newton"/>
-					<Add library="CEGUIBase"/>
-					<Add library="CEGUITaharezLook"/>
-					<Add library="libpng"/>
-					<Add library="lua5.1"/>
-					<Add library="fmodex"/>
-					<Add library="libspeex"/>
-					<Add library="libframework.a"/>
 					<Add directory="../../../../lib/framework"/>
 				</Linker>
 			</Target>
@@ -715,18 +721,6 @@
 			<Option target="Release"/>
 		</Unit>
 		<Unit filename="../../../../src/gamecode/scripting/vrc_script.inl">
-			<Option compilerVar="CPP"/>
-			<Option compile="0"/>
-			<Option link="0"/>
-			<Option target="Debug"/>
-			<Option target="Release"/>
-		</Unit>
-		<Unit filename="../../../../src/gamecode/scripting/vrc_testscript.cpp">
-			<Option compilerVar="CPP"/>
-			<Option target="Debug"/>
-			<Option target="Release"/>
-		</Unit>
-		<Unit filename="../../../../src/gamecode/scripting/vrc_testscript.h">
 			<Option compilerVar="CPP"/>
 			<Option compile="0"/>
 			<Option link="0"/>
