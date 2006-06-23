@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -25,7 +25,7 @@
  #
  #   date of creation:  03/13/2005
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -105,7 +105,7 @@ _IdAnimRun( -1 ),
 _IdAnimJump( -1 ),
 _IdAnimLand( -1 ),
 _IdAnimTurn( -1 )
-{ 
+{
     // register attributes
     getAttributeManager().addAttribute( "animconfig"   , _animCfgFile );
     getAttributeManager().addAttribute( "position"     , _position    );
@@ -128,7 +128,7 @@ void EnPlayerAnimation::initialize()
         log_error << "*** missing animation config file parameter" << std::endl;
         return;
     }
-    
+
     // setup and create a new model
     std::string file     = yaf3d::Application::get()->getMediaPath() + _animCfgFile;
     std::string rootDir  = yaf3d::extractPath( file );
@@ -147,7 +147,7 @@ void EnPlayerAnimation::initialize()
     // create a transform node in order to set position and rotation offsets
     _animNode = new osg::PositionAttitudeTransform;
     _animNode->setPosition( _position );
-    osg::Quat quat( 
+    osg::Quat quat(
         _rotation.x() * osg::PI / 180.0f, osg::Vec3f( 1, 0, 0 ),
         _rotation.y() * osg::PI / 180.0f, osg::Vec3f( 0, 1, 0 ),
         _rotation.z() * osg::PI / 180.0f, osg::Vec3f( 0, 0, 1 )
@@ -156,10 +156,10 @@ void EnPlayerAnimation::initialize()
     _animNode->addChild( _model.get() );
 
     // setup the shaders for ( currently just disable glsl usage )
-        
+
     // first check if glsl is supported before setting up the shaders ( gl context 0  is assumed )
     const osg::GL2Extensions* p_extensions = osg::GL2Extensions::Get( 0, true );
-    if ( p_extensions->isGlslSupported() ) 
+    if ( p_extensions->isGlslSupported() )
     {
         if ( !s_program.valid() )
         {
@@ -170,7 +170,7 @@ void EnPlayerAnimation::initialize()
         }
         osg::StateSet* p_stateSet = _animNode->getOrCreateStateSet();
         p_stateSet->setAttributeAndModes( s_program.get(), osg::StateAttribute::ON );
-        _animNode->setStateSet( p_stateSet );    
+        _animNode->setStateSet( p_stateSet );
     }
 
     log << "  initializing player animation instance completed" << std::endl;
@@ -216,7 +216,7 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
 
 
     // set cal3d's texture coord loading mode
-    CalLoader::setLoadingMode( LOADER_INVERT_V_COORD | LOADER_ROTATE_X_AXIS );
+    CalLoader::setLoadingMode( LOADER_INVERT_V_COORD );
 
     // create a core model instance
     std::string modelname = "character_" + configfilename;
@@ -249,7 +249,7 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
         if( ( pos == std::string::npos) || ( textBuffer[ pos ] == '\n' ) || ( textBuffer[ pos ] == '\r' ) || ( textBuffer[ pos ] == 0 ) ) continue;
 
         // check for comment lines
-        if( textBuffer[ pos ] == '#' ) 
+        if( textBuffer[ pos ] == '#' )
         {
             continue;
         }
@@ -280,22 +280,22 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
         if( strKey == "skeleton" )
         {
             if ( !p_calCoreModel->loadCoreSkeleton( destFileName ) )
-                log_error << "***  line " << line << ", problem loading skeleton: " << destFileName << std::endl;                      
+                log_error << "***  line " << line << ", problem loading skeleton: " << destFileName << std::endl;
         }
         else if( strKey == "mesh" )
         {
             if ( p_calCoreModel->loadCoreMesh( destFileName ) < 0 )
-                log_error << "***  line " << line << ", problem loading mesh: " << destFileName << std::endl;                      
+                log_error << "***  line " << line << ", problem loading mesh: " << destFileName << std::endl;
         }
         else if( strKey == "material" )
         {
             int materialId = p_calCoreModel->loadCoreMaterial( destFileName );
-            if( materialId < 0 ) 
-            {                
-                log_error << "***  line " << line << ", problem loading material: " << destFileName;                      
+            if( materialId < 0 )
+            {
+                log_error << "***  line " << line << ", problem loading material: " << destFileName;
                 log_error << "   reason: " << CalError::getLastErrorDescription() << std::endl;
-            } 
-            else 
+            }
+            else
             {
                 p_calCoreModel->createCoreMaterialThread( materialId );
                 p_calCoreModel->setCoreMaterialId( materialId, 0, materialId );
@@ -315,36 +315,36 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
         {
             _IdAnimIdle = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimIdle < 0 )
-                log_error << "***  line " << line << ", problem loading animation: " << destFileName << std::endl; 
+                log_error << "***  line " << line << ", problem loading animation: " << destFileName << std::endl;
         }
         else if( strKey == "animation_walk" )
         {
             _IdAnimWalk = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimWalk < 0 )
-                log_error << "***  line " << line << ", problem loading animation: " << destFileName << std::endl; 
+                log_error << "***  line " << line << ", problem loading animation: " << destFileName << std::endl;
         }
         else if( strKey == "animation_run" )
         {
             _IdAnimRun = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimRun < 0 )
-                log_error << "***  line " << line << ", problem loading animation: " << destFileName << std::endl; 
+                log_error << "***  line " << line << ", problem loading animation: " << destFileName << std::endl;
         }
         else if( strKey == "animation_turn" )
         {
             _IdAnimTurn = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimTurn < 0 )
-                log_error << "***  line"  << line << ", problem loading animation: " << destFileName << std::endl; 
+                log_error << "***  line"  << line << ", problem loading animation: " << destFileName << std::endl;
         }
         else if( strKey == "animation_jump" )
         {
             _IdAnimJump = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimJump < 0 )
-                log_error << "***  line"  << line << ", problem loading animation: " << destFileName << std::endl; 
+                log_error << "***  line"  << line << ", problem loading animation: " << destFileName << std::endl;
         }        else if( strKey == "animation_landing" )
         {
             _IdAnimLand = p_calCoreModel->loadCoreAnimation( destFileName );
             if ( _IdAnimLand < 0 )
-                log_error << "***  line " << line << ", problem loading animation: " << destFileName << std::endl; 
+                log_error << "***  line " << line << ", problem loading animation: " << destFileName << std::endl;
         }
         else if( strKey == "animation" )
         {
@@ -372,7 +372,7 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
     // create the model
     _model = new osgCal::Model();
     _model->create( _coreModel.get() );
-    
+
     return true;
 }
 
@@ -386,25 +386,25 @@ void EnPlayerAnimation::setAnimation( unsigned char flags )
     switch( flags )
     {
         case eIdle:
-            
+
             animIdle();
             break;
 
         case eWalk:
-            
+
             animWalk();
             break;
 
         case eJump:
-            
+
             animJump();
             break;
 
         case eTurn:
-            
+
             animTurn();
             break;
-    }    
+    }
 }
 
 void EnPlayerAnimation::animIdle()
