@@ -36,6 +36,12 @@ void errormsg();
 
 int main( int argc, char *argv[] )
 {
+
+// on linux activate the verbose termination handler
+#ifdef LINUX
+    std::set_terminate( __gnu_cxx::__verbose_terminate_handler );
+#endif
+
     yaf3d::Application* p_app = NULL;
     try
     {
