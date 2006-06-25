@@ -1,4 +1,4 @@
-/* Auto-generated with RNROLCompiler V2.3.0.0 don't edit */
+/* Auto-generated with RNROLCompiler V2.4.0.0 don't edit */
 #ifndef ___RO_PlayerNetworking_h__
 #define ___RO_PlayerNetworking_h__
 #include "RNReplicaNet/Inc/ReplicaObject.h"
@@ -20,10 +20,13 @@ class _RO_PlayerNetworking : public RNReplicaNet::ReplicaObject
 	_RO_STD_FRAMEWORK(PlayerNetworking)
 	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_ServerGrantsAccess)
 	void Call_RPC_ServerGrantsAccess(tInitializationData);
+	typedef void(tDBFV_RPC_ServerGrantsAccess)(tInitializationData);
 	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_Initialize)
 	void Call_RPC_Initialize(tInitializationData);
+	typedef void(tDBFV_RPC_Initialize)(tInitializationData);
 	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_EnableVoiceChat)
 	void Call_RPC_EnableVoiceChat(bool);
+	typedef void(tDBFV_RPC_EnableVoiceChat)(bool);
 	_RO_DEF_REGISTERDATABLOCKS(PlayerNetworking)
 };
 #endif
