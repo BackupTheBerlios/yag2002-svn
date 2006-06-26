@@ -252,6 +252,12 @@ void EnNetworkVoice::destroyVoiceChat()
         log_error << "  reason: " << e.what() << std::endl;
     }
 
+    // deregister from getting periodic updates
+    yaf3d::EntityManager::get()->registerUpdate( this, false );
+
+    // deregister from getting notifications on changed voice chat list
+    vrc::gameutils::PlayerUtils::get()->registerFunctorVoiceChatPlayerListChanged( this, false );
+
     // reset active flag
     _active = false;
 }
