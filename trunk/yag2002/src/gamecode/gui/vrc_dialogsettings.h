@@ -102,14 +102,17 @@ class DialogGameSettings
         //! Setup all controls when the dialog is opening ( show( true ) )
         void                                        setupControls();
 
-        //! Dialog callback for config player button
-        bool                                        onClickedPlayerConfig( const CEGUI::EventArgs& arg );
-
         //! Dialog callback for Ok button
         bool                                        onClickedOk( const CEGUI::EventArgs& arg );
 
         //! Dialog callback for Cancel button
         bool                                        onClickedCancel( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for keydown events, used for checking for Enter key
+        bool                                        onKeyDown( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for config player button
+        bool                                        onClickedPlayerConfig( const CEGUI::EventArgs& arg );
 
         //! Dialog callback for changing the tab
         bool                                        onTabChanged( const CEGUI::EventArgs& arg );

@@ -108,7 +108,10 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
         CEGUI::PushButton* p_btnok = static_cast< CEGUI::PushButton* >( _p_settingsDialog->getChild( SDLG_PREFIX "btn_ok" ) );
         p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedOk, this ) );
 
-        // setup ok button
+        // set a keydown callback for handling Return key ( the action is the same as clicking on Ok button )
+        _p_settingsDialog->subscribeEvent( CEGUI::PushButton::EventKeyDown, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onKeyDown, this ) );
+
+        // setup player configuration button
         CEGUI::PushButton* p_btnplayercfg = static_cast< CEGUI::PushButton* >( _p_settingsDialog->getChild( SDLG_PREFIX "btn_playercfg" ) );
         p_btnplayercfg->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedPlayerConfig, this ) );
 
@@ -571,6 +574,18 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& /*arg*/ )
     return true;
 }
 
+bool DialogGameSettings::onKeyDown( const CEGUI::EventArgs& arg )
+{
+    // check for 'Return' key
+    CEGUI::KeyEventArgs& ke = static_cast< CEGUI::KeyEventArgs& >( const_cast< CEGUI::EventArgs& >( arg ) );
+    if ( ( ke.codepoint == SDLK_RETURN ) || ( ke.scancode == CEGUI::Key::Return ) )
+    {
+        onClickedOk( arg );
+    }
+
+    return true;
+}
+
 bool DialogGameSettings::onClickedPlayerConfig( const CEGUI::EventArgs& /*arg*/ )
 {
     // store the settings changes ( in particular the player name, as the player dialog also can change the player name )
@@ -991,7 +1006,7 @@ void DialogGameSettings::show( bool visible )
     if ( visible )
     {
         setupControls();
-        _p_settingsDialog->enable();
+        _p_settingsDialog->activate();
         _p_settingsDialog->show();
     }
     else
