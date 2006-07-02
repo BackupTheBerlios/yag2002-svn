@@ -63,8 +63,14 @@ class EnMesh :  public yaf3d::BaseEntity
         //! Setup a node using LOD
         osg::Node*                                  setupLODObject( osg::Node* p_node );
 
+        //! Add transformation node to scenegraph
+        void                                        addToSceneGraph();
+
         //! Setup the mesh
         osg::Node*                                  setupMesh();
+
+        //! Remove transformation node from scenegraph
+        void                                        removeFromSceneGraph();
 
         //! Entity attributes
 
@@ -77,6 +83,8 @@ class EnMesh :  public yaf3d::BaseEntity
         bool                                        _enable;
 
         bool                                        _usedInMenu;
+
+        bool                                        _shadowEnable;
 
         bool                                        _useLOD;
 
