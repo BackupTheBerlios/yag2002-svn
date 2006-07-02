@@ -31,8 +31,7 @@
 #ifndef _VRC_GAMEUTILS_H_
 #define _VRC_GAMEUTILS_H_
 
-#include <base.h>
-#include <singleton.h>
+#include <vrc_main.h>
 
 namespace vrc
 {
@@ -69,11 +68,20 @@ namespace gameutils
 #define VRC_GS_VOICE_INPUT_GAIN             "voiceInputGain"
 #define VRC_GS_VOICE_OUTPUT_GAIN            "voiceOutputGain"
 #define VRC_GS_VOICECHAT_CHANNEL            "voiceChatChannel"
-#define VRC_GS_DEFAULT_VOICE_CHANNEL        32200
+#define VRC_GS_SHADOW_ENABLE                "shadowEnable"
+#define VRC_GS_SHADOW_TEXSIZEX              "shadowTexSizeX"
+#define VRC_GS_SHADOW_TEXSIZEY              "shadowTexSizeY"
+#define VRC_GS_SHADOW_TEXCHANNEL            "shadowTexChannel"
+
+//! Settings default values
+#define VRC_GS_DEFAULT_SHADOW_TEXSIZEX      1024
+#define VRC_GS_DEFAULT_SHADOW_TEXSIZEY      1024
+#define VRC_GS_DEFAULT_SHADOW_TEXCHANNEL    1
+
+#define VRC_GS_DEFAULT_VOICE_CHANNEL        31200
 #define VRC_GS_DEFAULT_SOUND_VOLUME         1.0f
 // Input device not ready
 #define VRC_GS_VOICECHAT_INPUT_DEVICE_NA    0
-
 
 //! Game code settings' defaults
 #define VRC_GS_MAX_MOUSESENS                3.0f                // maximal mouse sensitivity
@@ -97,15 +105,15 @@ namespace gameutils
 #define IMAGE_NAME_SOUND_OFF                "SoundOff"
 
 
-//! This class is responsible for registration of all game code (VRC) related configuration settings
-class VRCConfigRegistry : public yaf3d::GameState::CallbackStateChange
+//! This class handles game state changes
+class VRCStateHandler : public yaf3d::GameState::CallbackStateChange
 {
     public:
-                                                    VRCConfigRegistry();
+                                                    VRCStateHandler();
 
-        virtual                                     ~VRCConfigRegistry();
+        virtual                                     ~VRCStateHandler();
 
-        //! Callback method ( we register the settings during 'Initializing' state )
+        //! Callback method for state changes
         void                                        onStateChange( unsigned int state );
 
     protected:
@@ -151,6 +159,14 @@ class VRCConfigRegistry : public yaf3d::GameState::CallbackStateChange
         float                                       _voiceOutputGain;
 
         unsigned int                                _voiceChatChannel;
+
+        bool                                        _shadowEnable;
+
+        unsigned int                                _shadowTexSizeX;
+
+        unsigned int                                _shadowTexSizeY;
+
+        unsigned int                                _shadowTexChannel;
 };
 
 //! Single instance providing player-related utility services

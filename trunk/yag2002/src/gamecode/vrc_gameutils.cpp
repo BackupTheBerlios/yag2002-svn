@@ -29,7 +29,8 @@
  ################################################################*/
 
 #include <vrc_main.h>
-#include <vrc_gameutils.h>
+#include "vrc_gameutils.h"
+#include "vrc_shadowmanager.h"
 
 
 YAF3D_SINGLETON_IMPL( vrc::gameutils::PlayerUtils )
@@ -49,11 +50,11 @@ namespace vrc
 namespace gameutils
 {
 
-//! Auto-instance for registering game code config settings at startup
-std::auto_ptr< VRCConfigRegistry > _autoptr_VRCConfigRegistry = std::auto_ptr< VRCConfigRegistry >( new VRCConfigRegistry );
+//! Auto-instance for game state handler
+std::auto_ptr< VRCStateHandler > _autoptr_VRCStateHandler = std::auto_ptr< VRCStateHandler >( new VRCStateHandler );
 
-// Implementation of configuration settings registry
-VRCConfigRegistry::VRCConfigRegistry() :
+// Implementation of game state handler
+VRCStateHandler::VRCStateHandler() :
 _playerName( "NoName" ),
 _playerConfig( "player.cfg" ),
 _playerConfigDir( "player" ),
@@ -74,47 +75,75 @@ _voiceChatEnable( true ),
 _voiceChatInputDev( 0 ),
 _voiceInputGain( VRC_GS_DEFAULT_SOUND_VOLUME ),
 _voiceOutputGain( VRC_GS_DEFAULT_SOUND_VOLUME ),
-_voiceChatChannel( VRC_GS_DEFAULT_VOICE_CHANNEL )
+_voiceChatChannel( VRC_GS_DEFAULT_VOICE_CHANNEL ),
+_shadowEnable( true ),
+_shadowTexSizeX( VRC_GS_DEFAULT_SHADOW_TEXSIZEX ),
+_shadowTexSizeY( VRC_GS_DEFAULT_SHADOW_TEXSIZEY ),
+_shadowTexChannel( VRC_GS_DEFAULT_SHADOW_TEXCHANNEL )
 {
     // register this instance for getting game state changes
     yaf3d::GameState::get()->registerCallbackStateChange( this );
 }
 
-VRCConfigRegistry::~VRCConfigRegistry()
+VRCStateHandler::~VRCStateHandler()
 {
 }
 
-void VRCConfigRegistry::onStateChange( unsigned int state )
+void VRCStateHandler::onStateChange( unsigned int state )
 {
-    // we register the settings only once during application 'Initializing'
-    if ( state != yaf3d::GameState::Initializing )
-        return;
+    switch ( state )
+    {
+        // we register the settings only once during application 'Initializing'
+        case yaf3d::GameState::Initializing :
+        {
+            // register settings
+            yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_NAME,            _playerName        );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_CONFIG_DIR,      _playerConfigDir   );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_CONFIG,          _playerConfig      );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_FORWARD,       _moveForward       );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_BACKWARD,      _moveBackward      );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_LEFT,          _moveLeft          );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_RIGHT,         _moveRight         );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_JUMP,               _jump              );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CAMERAMODE,         _cameramode        );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CHATMODE,           _chatmode          );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_MOUSESENS,              _mouseSensitivity  );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_INVERTMOUSE,            _mouseInverted     );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_MUSIC_ENABLE,           _musicEnable       );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_MUSIC_VOLUME,           _musicVolume       );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_FX_ENABLE,              _fxEnable          );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_FX_VOLUME,              _fxVolume          );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_ENABLE,       _voiceChatEnable   );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_INPUT_DEVICE, _voiceChatInputDev );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_VOICE_INPUT_GAIN,       _voiceInputGain    );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_VOICE_OUTPUT_GAIN,      _voiceOutputGain   );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_CHANNEL,      _voiceChatChannel  );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_SHADOW_ENABLE,          _shadowEnable      );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_SHADOW_TEXSIZEX,        _shadowTexSizeX    );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_SHADOW_TEXSIZEY,        _shadowTexSizeY    );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_SHADOW_TEXCHANNEL,      _shadowTexChannel  );
 
-    // register settings
-    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_NAME,            _playerName        );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_CONFIG_DIR,      _playerConfigDir   );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_CONFIG,          _playerConfig      );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_FORWARD,       _moveForward       );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_BACKWARD,      _moveBackward      );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_LEFT,          _moveLeft          );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_RIGHT,         _moveRight         );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_JUMP,               _jump              );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CAMERAMODE,         _cameramode        );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CHATMODE,           _chatmode          );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_MOUSESENS,              _mouseSensitivity  );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_INVERTMOUSE,            _mouseInverted     );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_MUSIC_ENABLE,           _musicEnable       );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_MUSIC_VOLUME,           _musicVolume       );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_FX_ENABLE,              _fxEnable          );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_FX_VOLUME,              _fxVolume          );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_ENABLE,       _voiceChatEnable   );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_INPUT_DEVICE, _voiceChatInputDev );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICE_INPUT_GAIN,       _voiceInputGain    );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICE_OUTPUT_GAIN,      _voiceOutputGain   );
-    yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_CHANNEL,      _voiceChatChannel  );
+            // now load the setting values from config file
+            yaf3d::Configuration::get()->load();
+        }
+        break;
 
-    // now load the setting values from config file
-    yaf3d::Configuration::get()->load();
+        case yaf3d::GameState::GraphicsInitialized :
+        {
+            if ( _shadowEnable )
+                ShadowManager::get()->setup( _shadowTexSizeX, _shadowTexSizeY, _shadowTexChannel );
+        }
+        break;
+
+        case yaf3d::GameState::Shutdown :
+        {
+            ShadowManager::get()->shutdown();
+        }
+        break;
+
+        default :
+            ;
+    }
 }
 
 // Implementation of player utils
