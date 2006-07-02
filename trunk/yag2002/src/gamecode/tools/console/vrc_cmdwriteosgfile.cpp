@@ -61,14 +61,17 @@ const std::string& CmdWriteOSGFile::execute( const std::vector< std::string >& a
         _cmdResult = getUsage();
         return _cmdResult;
     }
-    else if ( ( arguments.size() > 2 ) && ( arguments[ 0 ] == "-i" ) )
+    else if ( arguments.size() > 2 )
     {
-        hasinputfile = true;
-    }
-    else
-    {
-        _cmdResult = getUsage();
-        return _cmdResult;
+        if ( arguments[ 0 ] == "-i" )
+        {
+            hasinputfile = true;
+        }
+        else
+        {
+            _cmdResult = getUsage();
+            return _cmdResult;
+        }
     }
 
     EnConsole* p_console = static_cast< EnConsole* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_CONSOLE ) );
