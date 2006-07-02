@@ -130,20 +130,20 @@ _staticMesh( NULL ),
 _firstLoading( true ),
 _levelHasMap( false )
 {
-    _topGroup    = new osg::Group();
-    _nodeGroup   = new osg::Group();
-    _entityGroup = new osg::Group();
+    _topGroup        = new osg::Group();
+    _staticMeshGroup = new osg::Group();
+    _entityGroup     = new osg::Group();
 
     // set name of top group
     _topGroup->setName( YAF3D_TOP_GROUP_NAME );
 
     // set name of node group
-    _nodeGroup->setName( YAF3D_NODE_GROUP_NAME );
+    _staticMeshGroup->setName( YAF3D_NODE_GROUP_NAME );
 
     // all entities with transformation node are placed in this entity group
     _entityGroup->setName( YAF3D_ENTITY_GROUP_NAME );
 
-    _topGroup->addChild( _nodeGroup.get() );
+    _topGroup->addChild( _staticMeshGroup.get() );
     _topGroup->addChild( _entityGroup.get() );
 }
 
@@ -204,10 +204,10 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
     if ( clearPhysics )
     {
         // (re-)create static geom node group
-        _topGroup->removeChild( _nodeGroup.get() );
-        _nodeGroup = new osg::Group();
-        _nodeGroup->setName( YAF3D_NODE_GROUP_NAME );
-        _topGroup->addChild( _nodeGroup.get() );
+        _topGroup->removeChild( _staticMeshGroup.get() );
+        _staticMeshGroup = new osg::Group();
+        _staticMeshGroup->setName( YAF3D_NODE_GROUP_NAME );
+        _topGroup->addChild( _staticMeshGroup.get() );
 
         bool reinitphysics = Physics::get()->reinitialize();
         assert( reinitphysics && "could not re-init physics" );
@@ -317,7 +317,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
             if ( p_staticnode )
             {
                 p_staticnode->setName( p_bufName );
-                _nodeGroup->addChild( p_staticnode );
+                _staticMeshGroup->addChild( p_staticnode );
                 _staticMesh = p_staticnode;
                 _staticMesh->setName( staticNodeName );
             }
@@ -523,6 +523,8 @@ void LevelManager::initializeFirstTime()
         Application::get()->getViewer()->init();
         // call draw in order to clear the screen during loading
         Application::get()->getViewer()->draw();
+        // set game state
+        GameState::get()->setState( GameState::GraphicsInitialized );
     }
 }
 
@@ -548,7 +550,7 @@ void LevelManager::buildPhysicsStaticGeometry( const std::string& levelFile )
 
     startTick  = timer.tick();
     // build static geoms for physics collision nodes
-    bool buildphysics = Physics::get()->buildStaticGeometry( _nodeGroup.get(), levelFile );
+    bool buildphysics = Physics::get()->buildStaticGeometry( _staticMeshGroup.get(), levelFile );
     assert( buildphysics && "could not build physics" );
 
     curTick    = timer.tick();

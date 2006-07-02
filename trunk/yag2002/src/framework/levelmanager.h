@@ -93,6 +93,15 @@ class LevelManager : public Singleton< LevelManager >
         //! Replace the current static world node and return the old one.
         inline osg::Node*                           setStaticMesh( osg::Node* p_newnode );
 
+        //! Get top node group where all entity transformation nodes reside
+        inline osg::ref_ptr< osg::Group >           getTopNodeGroup();
+
+        //! Get entiy node group ( child of top node group )
+        inline osg::ref_ptr< osg::Group >           getEntityNodeGroup();
+
+        //! Get node group of map's static mesh ( child of top node group )
+        inline osg::ref_ptr< osg::Group >           getStaticMeshNodeGroup();
+
     protected:
 
 
@@ -116,8 +125,8 @@ class LevelManager : public Singleton< LevelManager >
         //! Static level mesh
         osg::Node*                                  _staticMesh;
 
-        //! The node group where all nodes reside
-        osg::ref_ptr< osg::Group >                  _nodeGroup;
+        //! The node group where map's static mesh reside
+        osg::ref_ptr< osg::Group >                  _staticMeshGroup;
 
         //! Entity group for all those entities with transformation node
         osg::ref_ptr< osg::Group >                  _entityGroup;
@@ -149,6 +158,21 @@ inline osg::Node* LevelManager::getStaticMesh()
     return _staticMesh;
 }
 
+inline osg::ref_ptr< osg::Group > LevelManager::getTopNodeGroup()
+{
+    return _topGroup;
+}
+
+inline osg::ref_ptr< osg::Group > LevelManager::getEntityNodeGroup()
+{
+    return _entityGroup;
+}
+
+inline osg::ref_ptr< osg::Group > LevelManager::getStaticMeshNodeGroup()
+{
+    return _staticMeshGroup;
+}
+
 inline osg::Node* LevelManager::setStaticMesh( osg::Node* p_newnode )
 {
     osg::Node* p_oldnode = _staticMesh;
@@ -157,7 +181,7 @@ inline osg::Node* LevelManager::setStaticMesh( osg::Node* p_newnode )
     if ( !p_newnode )
     {
         if ( p_oldnode )
-            _nodeGroup->removeChild( p_oldnode );
+            _staticMeshGroup->removeChild( p_oldnode );
 
         _staticMesh = NULL;
         return NULL;
@@ -168,10 +192,10 @@ inline osg::Node* LevelManager::setStaticMesh( osg::Node* p_newnode )
         return p_newnode;
 
     if ( p_oldnode )
-        _nodeGroup->removeChild( p_oldnode );
+        _staticMeshGroup->removeChild( p_oldnode );
 
     _staticMesh = p_newnode;
-    _nodeGroup->addChild( p_newnode );
+    _staticMeshGroup->addChild( p_newnode );
     return p_oldnode;
 }
 
