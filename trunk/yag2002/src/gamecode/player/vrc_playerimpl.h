@@ -167,6 +167,12 @@ class BasePlayerImplementation
 
     protected:
 
+        //! Add the entity transformation node to scenegraph
+        void                                        addToSceneGraph();
+
+        //! Remove the entity transformation node from scenegraph
+        void                                        removeFromSceneGraph();
+
         //! Set camera mode to Spheric or Ego
         void                                        setCameraMode( unsigned int mode );
 

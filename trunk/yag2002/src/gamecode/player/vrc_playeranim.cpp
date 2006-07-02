@@ -37,60 +37,6 @@
 namespace vrc
 {
 
-static const char glsl_vp[] =
-    "/*                                                                             \n"
-    "* Vertex shader for rendering the player                                       \n"
-    "* http://yag2002.sf.net                                                        \n"
-    "* 11/28/2005                                                                   \n"
-    "*/                                                                             \n"
-    "varying vec4 diffuse,ambient;                                                  \n"
-    "varying vec3 normal,lightDir,halfVector;                                       \n"
-    "                                                                               \n"
-    "void main()                                                                    \n"
-    "{                                                                              \n"
-    "   normal      = normalize(gl_NormalMatrix * gl_Normal);                       \n"
-    "   lightDir    = normalize(vec3(gl_LightSource[0].position));                  \n"
-    "   halfVector  = normalize(gl_LightSource[0].halfVector.xyz);                  \n"
-    "   diffuse     = gl_FrontMaterial.diffuse * gl_LightSource[0].diffuse;         \n"
-    "   ambient     = gl_FrontMaterial.ambient * gl_LightSource[0].ambient;         \n"
-    "   ambient     += gl_LightModel.ambient * gl_FrontMaterial.ambient;            \n"
-    "   gl_Position = ftransform();                                                 \n"
-    "}                                                                              \n"
-;
-static const char glsl_fp[] =
-    "/*                                                                             \n"
-    "* Fragment shader for rendering the player                                     \n"
-    "* http://yag2002.sf.net                                                        \n"
-    "* 11/28/2005                                                                   \n"
-    "*/                                                                             \n"
-    "varying vec4 diffuse,ambient;                                                  \n"
-    "varying vec3 normal,lightDir,halfVector;                                       \n"
-    "uniform sampler2D tex;                                                         \n"
-    "                                                                               \n"
-    "void main()                                                                    \n"
-    "{                                                                              \n"
-    "   vec3 n,halfV;                                                               \n"
-    "   float NdotL,NdotHV;                                                         \n"
-    "                                                                               \n"
-    "   vec4 color = ambient;                                                       \n"
-    "   n = normalize(normal);                                                      \n"
-    "   NdotL = max(dot(n,lightDir),0.0);                                           \n"
-    "    if (NdotL > 0.0) {                                                         \n"
-    "       color += diffuse * NdotL;                                               \n"
-    "       halfV = normalize(halfVector);                                          \n"
-    "       NdotHV = max(dot(n,halfV),0.0);                                         \n"
-    "       color += gl_FrontMaterial.specular *                                    \n"
-    "               gl_LightSource[0].specular *                                    \n"
-    "               pow(NdotHV, gl_FrontMaterial.shininess);                        \n"
-    "   }                                                                           \n"
-    "                                                                               \n"
-    "   vec4 texcolor = texture2D(tex,gl_TexCoord[0].st);                           \n"
-    "   gl_FragColor = color * texcolor;                                            \n"
-    "}                                                                              \n"
-;
-
-static osg::ref_ptr< osg::Program > s_program;
-
 //! "Implement and register the player animation entity factory
 YAF3D_IMPL_ENTITYFACTORY( PlayerAnimationEntityFactory )
 
@@ -146,6 +92,7 @@ void EnPlayerAnimation::initialize()
 
     // create a transform node in order to set position and rotation offsets
     _animNode = new osg::PositionAttitudeTransform;
+    _animNode->setName( "_playerAnimationNode_" );
     _animNode->setPosition( _position );
     osg::Quat quat(
         _rotation.x() * osg::PI / 180.0f, osg::Vec3f( 1, 0, 0 ),
@@ -154,24 +101,6 @@ void EnPlayerAnimation::initialize()
         );
     _animNode->setAttitude( quat );
     _animNode->addChild( _model.get() );
-
-    // setup the shaders for ( currently just disable glsl usage )
-
-    // first check if glsl is supported before setting up the shaders ( gl context 0  is assumed )
-    const osg::GL2Extensions* p_extensions = osg::GL2Extensions::Get( 0, true );
-    if ( p_extensions->isGlslSupported() )
-    {
-        if ( !s_program.valid() )
-        {
-            s_program = new osg::Program;
-            s_program->setName( "_playerAnim_" );
-            s_program->addShader( new osg::Shader( osg::Shader::VERTEX, glsl_vp ) );
-            s_program->addShader( new osg::Shader( osg::Shader::FRAGMENT, glsl_fp ) );
-        }
-        osg::StateSet* p_stateSet = _animNode->getOrCreateStateSet();
-        p_stateSet->setAttributeAndModes( s_program.get(), osg::StateAttribute::ON );
-        _animNode->setStateSet( p_stateSet );
-    }
 
     log << "  initializing player animation instance completed" << std::endl;
 }

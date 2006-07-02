@@ -33,6 +33,7 @@
  ################################################################*/
 
 #include <vrc_main.h>
+#include <vrc_shadowmanager.h>
 #include "vrc_playerimpl.h"
 #include "vrc_playerphysics.h"
 #include "vrc_playeranim.h"
@@ -67,6 +68,32 @@ _rotZ( 0 )
 
 BasePlayerImplementation::~BasePlayerImplementation()
 {
+}
+
+void BasePlayerImplementation::removeFromSceneGraph()
+{
+    unsigned int parents = getPlayerEntity()->getTransformationNode()->getNumParents();
+    for ( unsigned int cnt = 0; cnt < parents; ++cnt )        
+        getPlayerEntity()->getTransformationNode()->getParent( cnt )->removeChild( getPlayerEntity()->getTransformationNode() );
+}
+
+void BasePlayerImplementation::addToSceneGraph()
+{
+    // first remove the entity transformation node from its parent(s) ( default entity group of level manager or shadow manager )
+    removeFromSceneGraph();
+
+    bool shadow;
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_SHADOW_ENABLE, shadow );
+    if ( shadow )
+    {
+        // add it to shadow manager
+        vrc::ShadowManager::get()->addShadowNode( getPlayerEntity()->getTransformationNode() );
+    }
+    else
+    {
+        // add it to level manager's entity node
+        yaf3d::EntityManager::get()->addToScene( getPlayerEntity() );
+    }
 }
 
 // get the shared chat manager
@@ -162,6 +189,7 @@ void BasePlayerImplementation::setCameraMode( unsigned int mode )
                 );
             _p_camera->setCameraOffsetRotation( rot );
             _p_playerAnimation->enableRendering( true );
+            addToSceneGraph();
         }
         break;
 
@@ -176,6 +204,7 @@ void BasePlayerImplementation::setCameraMode( unsigned int mode )
                 );
             _p_camera->setCameraOffsetRotation( rot );
             _p_playerAnimation->enableRendering( false );
+            removeFromSceneGraph();
         }
         break;
 

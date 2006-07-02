@@ -30,6 +30,7 @@
 
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
+#include <vrc_shadowmanager.h>
 #include "vrc_player.h"
 #include "chat/vrc_chatmgr.h"
 #include "vrc_playersound.h"
@@ -69,6 +70,9 @@ PlayerImplClient::~PlayerImplClient()
         vrc::gameutils::PlayerUtils::get()->removeRemotePlayer( getPlayerEntity() );
     }
 
+    // remove playder node from scenegraph
+    removeFromSceneGraph();    
+
     if ( _p_playerNetworking )
         delete _p_playerNetworking;
 
@@ -99,6 +103,7 @@ void PlayerImplClient::handleNotification( const yaf3d::EntityNotification& noti
 
                 // players are all rendered in menu, regardless their camera mode
                 _p_playerAnimation->enableRendering( true );
+                addToSceneGraph();
             }
             break;
 
@@ -117,7 +122,10 @@ void PlayerImplClient::handleNotification( const yaf3d::EntityNotification& noti
 
                 // if we are in ego mode then disable player avatar rendering
                 if ( _cameraMode == Ego )
+                {
                     _p_playerAnimation->enableRendering( false );
+                    removeFromSceneGraph();
+                }
             }
         }
         break;

@@ -52,6 +52,9 @@ _p_inputHandler( NULL )
 
 PlayerImplStandalone::~PlayerImplStandalone()
 {
+    // remove playder node from scenegraph
+    removeFromSceneGraph();    
+
     // destroy input handler
     _p_inputHandler->destroyHandler();
 
@@ -84,6 +87,7 @@ void PlayerImplStandalone::handleNotification( const yaf3d::EntityNotification& 
 
             // players are all rendered in menu, regardless their camera mode
             _p_playerAnimation->enableRendering( true );
+            addToSceneGraph();
 
             break;
 
@@ -104,7 +108,10 @@ void PlayerImplStandalone::handleNotification( const yaf3d::EntityNotification& 
 
             // if we are in ego mode then disable player avatar rendering
             if ( _cameraMode == Ego )
+            {
                 _p_playerAnimation->enableRendering( false );
+                removeFromSceneGraph();
+            }
         }
         break;
 
