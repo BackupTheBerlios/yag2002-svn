@@ -1145,6 +1145,12 @@
 		<File
 			RelativePath="..\..\..\..\src\gamecode\vrc_main.h">
 		</File>
+		<File
+			RelativePath="..\..\..\..\src\gamecode\vrc_shadowmanager.cpp">
+		</File>
+		<File
+			RelativePath="..\..\..\..\src\gamecode\vrc_shadowmanager.h">
+		</File>
 	</Files>
 	<Globals>
 		<Global
