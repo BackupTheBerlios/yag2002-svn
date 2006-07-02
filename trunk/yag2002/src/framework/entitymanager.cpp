@@ -30,7 +30,7 @@
  ################################################################*/
 
 #include <base.h>
-#include "application.h"
+#include "levelmanager.h"
 #include "entitymanager.h"
 #include "log.h"
 #include "utils.h"
@@ -351,7 +351,7 @@ void EntityManager::deregisterUpdate( BaseEntity* p_entity )
 void EntityManager::addToScene( BaseEntity* p_entity, osg::Group *p_scenegr )
 {
     assert( p_entity && p_entity->_p_transformNode.valid() && "adding to scene requires a transformation node in entity!" );
-    osg::Group *p_grp = p_scenegr ? p_scenegr : Application::get()->getSceneRootNode();
+    osg::Group *p_grp = p_scenegr ? p_scenegr : LevelManager::get()->getEntityNodeGroup().get();
     p_grp->addChild( p_entity->_p_transformNode.get() );
 }
 
