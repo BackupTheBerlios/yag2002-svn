@@ -7,6 +7,7 @@ vrc_LDADD = -lpthread -lYAF3D $(CEGUI_LIBS) $(SDL_LIBS) $(OPENAL_LIBS) $(VORBIS_
 $(OSGCAL_LIBS) $(CAL3D_LIBS) -losgCal -lNewton -lRNReplicaNet -lRNXPSession -lRNXPSockets -lRNXPURL -lRNPlatform -lRNXPCompression -lfmodex -lspeex 
 
 vrc_SOURCES = vrc_gameutils.cpp \
+			vrc_shadowmanager.cpp \
 			vrc_main.cpp \
 			extern/Noise.cpp \
 			networking/_Def_replicaregs.cpp \
