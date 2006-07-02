@@ -648,14 +648,20 @@ void EnInspector::handleNotification( const yaf3d::EntityNotification& notificat
     switch( notification.getId() )
     {
         case YAF3D_NOTIFY_NEW_LEVEL_INITIALIZED:
-            break;
+        // emulate leaving menu as some entities need it for activating their meshes
+        {
+            yaf3d::EntityNotification ennotify( YAF3D_NOTIFY_MENU_LEAVE );
+            yaf3d::EntityManager::get()->sendNotification( ennotify );
+        }
+        break;
 
         // we have to trigger the deletion ourselves! ( this entity can be peristent )
         case YAF3D_NOTIFY_SHUTDOWN:
-
+        {
             if ( _isPersistent )
                 yaf3d::EntityManager::get()->deleteEntity( this );
-            break;
+        }
+        break;
 
         default:
             ;
