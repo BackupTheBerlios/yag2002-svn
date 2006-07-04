@@ -109,14 +109,15 @@ void GameState::shutdown()
 void GameState::setState( unsigned int state )
 {
     assert(
-            ( state == GameState::UnknownState ) ||
-            ( state == GameState::Initializing ) ||
-            ( state == GameState::Menu         ) ||
-            ( state == GameState::Running      ) ||
-            ( state == GameState::Pausing      ) ||
-            ( state == GameState::Leaving      ) ||
-            ( state == GameState::Quitting     ) ||
-            ( state == GameState::Shutdown     ) &&
+            ( state == GameState::UnknownState        ) ||
+            ( state == GameState::Initializing        ) ||
+            ( state == GameState::GraphicsInitialized ) ||
+            ( state == GameState::Menu                ) ||
+            ( state == GameState::Running             ) ||
+            ( state == GameState::Pausing             ) ||
+            ( state == GameState::Leaving             ) ||
+            ( state == GameState::Quitting            ) ||
+            ( state == GameState::Shutdown            ) &&
             "GameState: trying to set an invalid game state!"
           );
 
