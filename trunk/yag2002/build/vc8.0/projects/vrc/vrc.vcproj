@@ -383,6 +383,14 @@
 		<Filter
 			Name="gamecode"
 			>
+			<File
+				RelativePath="..\..\..\..\src\gamecode\vrc_shadowmanager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\gamecode\vrc_shadowmanager.h"
+				>
+			</File>
 			<Filter
 				Name="player"
 				>
