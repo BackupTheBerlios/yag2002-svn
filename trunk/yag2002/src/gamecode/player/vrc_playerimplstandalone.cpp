@@ -52,9 +52,6 @@ _p_inputHandler( NULL )
 
 PlayerImplStandalone::~PlayerImplStandalone()
 {
-    // remove playder node from scenegraph
-    removeFromSceneGraph();    
-
     // destroy input handler
     _p_inputHandler->destroyHandler();
 

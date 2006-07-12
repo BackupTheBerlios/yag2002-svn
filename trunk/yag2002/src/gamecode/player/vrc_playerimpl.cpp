@@ -74,7 +74,7 @@ void BasePlayerImplementation::removeFromSceneGraph()
 {
     unsigned int parents = getPlayerEntity()->getTransformationNode()->getNumParents();
     for ( unsigned int cnt = 0; cnt < parents; ++cnt )        
-        getPlayerEntity()->getTransformationNode()->getParent( cnt )->removeChild( getPlayerEntity()->getTransformationNode() );
+        getPlayerEntity()->getTransformationNode()->getParent( 0 )->removeChild( getPlayerEntity()->getTransformationNode() );
 }
 
 void BasePlayerImplementation::addToSceneGraph()

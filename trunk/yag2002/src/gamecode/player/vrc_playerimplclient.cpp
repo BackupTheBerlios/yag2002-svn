@@ -70,9 +70,6 @@ PlayerImplClient::~PlayerImplClient()
         vrc::gameutils::PlayerUtils::get()->removeRemotePlayer( getPlayerEntity() );
     }
 
-    // remove playder node from scenegraph
-    removeFromSceneGraph();    
-
     if ( _p_playerNetworking )
         delete _p_playerNetworking;
 
