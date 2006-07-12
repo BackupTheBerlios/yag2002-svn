@@ -60,8 +60,8 @@ _lodErrorThreshold( 0.05f )
     getAttributeManager().addAttribute( "position"              , _position          );
     getAttributeManager().addAttribute( "rotation"              , _rotation          );
     getAttributeManager().addAttribute( "shadowEnable"          , _shadowEnable      );
-    getAttributeManager().addAttribute( "useLOD"                , _useLOD            );
-    getAttributeManager().addAttribute( "lodErrorThreshold"     , _lodErrorThreshold );
+    //getAttributeManager().addAttribute( "useLOD"                , _useLOD            );
+    //getAttributeManager().addAttribute( "lodErrorThreshold"     , _lodErrorThreshold );
 }
 
 EnMesh::~EnMesh()
@@ -84,13 +84,11 @@ void EnMesh::handleNotification( const yaf3d::EntityNotification& notification )
             {
                 if ( _usedInMenu )
                 {
-//                    addToTransformationNode( _mesh.get() );
                     // re-setup shadow
                     addToSceneGraph();
                 }
                 else
                 {
-//                    removeFromTransformationNode( _mesh.get() );
                     removeFromSceneGraph();
                 }
             }
@@ -103,12 +101,10 @@ void EnMesh::handleNotification( const yaf3d::EntityNotification& notification )
             {
                 if ( _usedInMenu )
                 {
-//                    removeFromTransformationNode( _mesh.get() );
                     removeFromSceneGraph();
                 }
                 else
                 {
-//                    addToTransformationNode( _mesh.get() );
                     // re-setup shadow
                     addToSceneGraph();
                 }
@@ -118,14 +114,11 @@ void EnMesh::handleNotification( const yaf3d::EntityNotification& notification )
 
         case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
         {
-//            removeFromTransformationNode( _mesh.get() );
             // re-setup mesh
             removeFromSceneGraph();
             _mesh = setupMesh();
             if ( _mesh.valid() && _enable )
                 addToSceneGraph();
-//                addToTransformationNode( _mesh.get() );
-
         }
         break;
 
@@ -163,14 +156,20 @@ void EnMesh::initialize()
 
 void EnMesh::removeFromSceneGraph()
 {
+    if ( !_mesh.valid() )
+        return;
+
     // remove the transformation node from its parents
     unsigned int parents = getTransformationNode()->getNumParents();
     for ( unsigned int cnt = 0; cnt < parents; ++cnt )        
-        getTransformationNode()->getParent( cnt )->removeChild( getTransformationNode() );
+        getTransformationNode()->getParent( 0 )->removeChild( getTransformationNode() );
 }
 
 void EnMesh::addToSceneGraph()
 {
+    if ( !_mesh.valid() )
+        return;
+
     // get the shadow flag in configuration
     bool shadow;
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_SHADOW_ENABLE, shadow );
