@@ -54,6 +54,10 @@ class EnNPCFish : public BaseScript< EnNPCFish >, public yaf3d::BaseEntity
         //! This entity needs updating
         void                                    updateEntity( float deltaTime );
 
+        //! Let the fishes be persistent so we can use them in menu and level
+        //! This may be changed in future.
+        const bool                                  isPersistent() const { return true; }
+
         // Exposed methods to Lua
         // ######################
 

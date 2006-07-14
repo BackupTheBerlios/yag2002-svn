@@ -170,7 +170,9 @@ void EnNPCFish::handleNotification( const yaf3d::EntityNotification& notificatio
         case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
             break;
 
+        // we have to trigger the deletion ourselves as it is persistent
         case YAF3D_NOTIFY_SHUTDOWN:
+            yaf3d::EntityManager::get()->deleteEntity( this );
             break;
 
         default:
