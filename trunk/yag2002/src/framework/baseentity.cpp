@@ -47,18 +47,19 @@ BaseEntity::~BaseEntity()
 {
     try
     {
+		// remove transformation node from its parents
         if ( _p_transformNode.valid() )
         {
-            size_t parents = _p_transformNode->getParents().size();
+            unsigned int parents = _p_transformNode->getNumParents();
             if ( parents == 0 )
             {
                 log_warning << "the transformation node of entity '" << getInstanceName() << "' has no parent!" << std::endl;
             }
             else
             {
-                for ( size_t p = 0; p < parents; p++ )
+                for ( unsigned int p = 0; p < parents; ++p )
                 {
-                    _p_transformNode->getParent( p )->removeChild( _p_transformNode.get() );
+                    _p_transformNode->getParent( 0 )->removeChild( _p_transformNode.get() );
                 }
             }
         }
