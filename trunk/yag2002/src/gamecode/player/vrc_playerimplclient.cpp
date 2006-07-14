@@ -294,6 +294,7 @@ void PlayerImplClient::postInitialize()
             _p_playerAnimation->setPlayer( this );
             // enable rendering for remote clients
             _p_playerAnimation->enableRendering( true );
+			addToSceneGraph();
             _p_playerAnimation->setAnimation( EnPlayerAnimation::eIdle );
 
             log_debug << "   -  animation entity successfully attached" << std::endl;

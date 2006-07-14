@@ -189,6 +189,8 @@ void BasePlayerImplementation::setCameraMode( unsigned int mode )
                 );
             _p_camera->setCameraOffsetRotation( rot );
             _p_playerAnimation->enableRendering( true );
+            // re-add to scenegraph ( actually we remove it first just to be on safe side )
+            removeFromSceneGraph();
             addToSceneGraph();
         }
         break;
