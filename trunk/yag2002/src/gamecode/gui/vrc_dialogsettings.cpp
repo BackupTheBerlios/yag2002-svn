@@ -63,6 +63,7 @@ _p_keyChatMode( NULL ),
 _mouseInverted( false ),
 _p_resolution( NULL ),
 _p_enableFullscreen( NULL ),
+_p_enableDynShadow( NULL ),
 _p_enableMusic( NULL ),
 _p_volumeMusic( NULL ),
 _volumeMusic( 1.0f ),
@@ -173,9 +174,6 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
         {
             CEGUI::TabPane* p_paneDisplay = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_display" ) );
 
-            // get fullscreen and windowed checkboxes
-            _p_enableFullscreen = static_cast< CEGUI::Checkbox* >( p_paneDisplay->getChild( SDLG_PREFIX "rb_fullscreen" ) );
-            _p_enableFullscreen->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onFullscreenChanged, this ) );
             // get resolution combobox
             _p_resolution = static_cast< CEGUI::Combobox* >( p_paneDisplay->getChild( SDLG_PREFIX "cbox_resolution" ) );
             // enumerate possible screen resolutions
@@ -186,6 +184,14 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
                 CEGUI::ListboxTextItem* p_item = new CEGUI::ListboxTextItem( settings[ cnt ].c_str() );
                 _p_resolution->addItem( p_item );
             }
+
+            // get fullscreen checkbox
+            _p_enableFullscreen = static_cast< CEGUI::Checkbox* >( p_paneDisplay->getChild( SDLG_PREFIX "cb_fullscreen" ) );
+            _p_enableFullscreen->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onFullscreenChanged, this ) );
+
+            // get dynamic shadow checkbox
+            _p_enableDynShadow = static_cast< CEGUI::Checkbox* >( p_paneDisplay->getChild( SDLG_PREFIX "cb_shadows" ) );
+            _p_enableDynShadow->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onDynShadowChanged, this ) );
         }
 
         // get contents of pane Sound/Voice
@@ -372,6 +378,23 @@ void DialogGameSettings::setupControls()
         else
             _p_enableFullscreen->setSelected( false );
 
+        // dynamic shadows need glsl
+        bool shadow;
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_SHADOW_ENABLE, shadow );
+        const osg::GL2Extensions* p_extensions = osg::GL2Extensions::Get( 0, true );
+        if ( p_extensions->isGlslSupported() )
+        {
+            if ( shadow )
+                _p_enableDynShadow->setSelected( true );
+            else
+                _p_enableDynShadow->setSelected( false );
+        }
+        else
+        {
+            _p_enableDynShadow->setSelected( false );
+            _p_enableDynShadow->disable();
+        }
+
         unsigned int width, height, colorbits;
         std::stringstream resolution;
         yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SCREENWIDTH, width );
@@ -519,6 +542,9 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& /*arg*/ )
     {
         bool fullscreen = _p_enableFullscreen->isSelected();
         yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_FULLSCREEN, fullscreen );
+        bool shadow = _p_enableDynShadow->isSelected();
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_SHADOW_ENABLE, shadow );
+
         unsigned int width, height, colorbits;
         // get the resolution out of the combobox string
         std::string  resstring( _p_resolution->getText().c_str() );
@@ -746,6 +772,13 @@ bool DialogGameSettings::onClickedChatMode( const CEGUI::EventArgs& /*arg*/ )
 }
 
 bool DialogGameSettings::onFullscreenChanged( const CEGUI::EventArgs& /*arg*/ )
+{
+    // play sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+    return true;
+}
+
+bool DialogGameSettings::onDynShadowChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
