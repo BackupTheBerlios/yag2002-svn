@@ -59,7 +59,7 @@ const std::string& CmdConfigSet::execute( const std::vector< std::string >& argu
     }
 
     // set the token using value string
-    yaf3d::Configuration::get()->setSettingValue( arguments[ 0 ], arguments[ 1 ] );
+    yaf3d::Configuration::get()->setSettingValueAsString( arguments[ 0 ], arguments[ 1 ] );
     
     // store changes
     yaf3d::Configuration::get()->store();
