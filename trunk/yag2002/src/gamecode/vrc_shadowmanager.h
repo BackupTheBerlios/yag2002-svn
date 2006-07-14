@@ -81,6 +81,9 @@ class ShadowManager : public yaf3d::Singleton< vrc::ShadowManager >
         //! get shadow's gain and bias 
         inline void                                 getShadowColorGainAndBias( float& gain, float& bias );
 
+        //! Enable / disable shadow map display ( used for debugging )
+        void                                        displayShadowMap( bool enable );
+
     protected:
 
                                                     ShadowManager();
@@ -89,6 +92,9 @@ class ShadowManager : public yaf3d::Singleton< vrc::ShadowManager >
 
         //! Shutdown the shadow manager
         void                                        shutdown();
+
+        //! Create a windget for showing the shadow map texture
+        osg::Node*                                  createDebugDisplay( osg::Texture* p_texture );
 
         unsigned int                                _shadowTextureWidth;
 
@@ -113,6 +119,10 @@ class ShadowManager : public yaf3d::Singleton< vrc::ShadowManager >
         CameraCullCallback*                         _p_cullCallback;
 
         osg::Uniform*                               _p_colorGainAndBiasParam;
+
+        osg::Texture2D*                             _p_shadowMapTexture;
+
+        osg::ref_ptr< osg::Node >                   _debugDisplay;
 
     friend class yaf3d::Singleton< vrc::ShadowManager >;
     friend class gameutils::VRCStateHandler;

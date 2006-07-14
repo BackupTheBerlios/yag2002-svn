@@ -59,6 +59,7 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
                                                 _farZ( 0.0f ),
                                                 _frustomCorner( 0.0f )
                                                 {
+                                                    _texgenNode->getTexGen()->setMode( osg::TexGen::EYE_LINEAR );
                                                 }
        
         void                                    setLightPosition( const osg::Vec3f& pos )
@@ -79,8 +80,8 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
                                                     traverse( p_node, p_nv );
 
                                                     if ( _updateNodes )
-                                                    {
-                                                        
+                                                    {          
+                                                        _shadowBB.init();
                                                         // now compute the camera's view and projection matrix to point at the shadower (the camera's children)
                                                         for( unsigned int i = 0; i < _cameraNode->getNumChildren(); ++i )
                                                             _shadowBB.expandBy( _cameraNode->getChild(i)->getBound() );
@@ -110,19 +111,18 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
                                                         _cameraNode->setViewMatrixAsLookAt( _lightPosition, _shadowBB.center(), osg::Vec3( 0.0f, 1.0f, 0.0f ) );
 
                                                         // compute the matrix which takes a vertex from local coords into tex coords
-                                                        // will use this later to specify osg::TexGen..
+                                                        // will use this later to specify osg::TexGen
                                                         _MVPT = _cameraNode->getViewMatrix() * 
                                                                 _cameraNode->getProjectionMatrix() *
                                                                 osg::Matrix::translate( 1.0, 1.0, 1.0 ) *
                                                                 osg::Matrix::scale( 0.5f, 0.5f, 0.5f );
-                                                                           
-                                                        _texgenNode->getTexGen()->setMode( osg::TexGen::EYE_LINEAR );
+                                                                                                                                   
                                                         _updateLightPosition = false;
                                                     }
 
                                                     _texgenNode->getTexGen()->setPlanesFromMatrix( _MVPT );
                                                 }
-        
+
     protected:
             
         virtual                                 ~UpdateCameraAndTexGenCallback() {}
@@ -163,6 +163,9 @@ class CameraCullCallback : public osg::NodeCallback
         virtual                                 ~CameraCullCallback() {}
 };
 
+
+//TODO: substitude shadow channel and shadow texture size in shader code given the params in setup
+
 // vertex shader
 static const char glsl_vp[] =
     "/*                                                                                 \n"
@@ -192,7 +195,7 @@ static const char glsl_vp[] =
     "              dot( vert, gl_EyePlaneQ[ shadowTexChannel ] ) );                     \n"
     "                                                                                   \n"
     "   gl_Position   = ftransform();                                                   \n"
-    "   baseTexCoords = gl_MultiTexCoord0.xy;                                           \n"
+    "   baseTexCoords = gl_MultiTexCoord0.st;                                           \n"
     "}                                                                                  \n"
 ;
 
@@ -266,15 +269,53 @@ _shadowTextureWidth( 1024 ),
 _shadowTextureHeight( 1024 ),
 _shadowTextureUnit( 1 ),
 _enable( false ),
-_lightPosition( osg::Vec3f( 0.0f, 0.0f, 100.0f ) ),
+_lightPosition( osg::Vec3f( 20.0f, 20.0f, 280.0f ) ),
 _shadowAmbientBias( osg::Vec2f( 0.3, 0.9f ) ),
 _p_updateCallback( NULL ),
-_p_colorGainAndBiasParam( NULL )
+_p_colorGainAndBiasParam( NULL ),
+_p_shadowMapTexture( NULL )
 {
 }
 
 ShadowManager::~ShadowManager()
 {
+}
+
+osg::Node* ShadowManager::createDebugDisplay( osg::Texture* p_texture )
+{
+    // position and size of overlay on screen
+    osg::Vec2f pos( 20.0f, 20.0f );
+    osg::Vec2f size( 200.0f, 200.0f );
+
+    osg::Geode* p_geode = new osg::Geode;
+    p_geode->setName( "_shadowMapOverlay" );
+    osg::Geometry* p_geom = osg::createTexturedQuadGeometry( osg::Vec3( 0, 0, 0 ), osg::Vec3( size.x(), 0.0, 0.0 ), osg::Vec3( 0.0, size.y(), 0.0 ) );
+    osg::StateSet* p_stateset = p_geom->getOrCreateStateSet();
+    p_stateset->setTextureAttributeAndModes( 0, p_texture,osg::StateAttribute::ON );
+    p_stateset->setTextureAttributeAndModes( 1, p_texture, osg::StateAttribute::ON );
+    p_stateset->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
+    p_geode->addDrawable( p_geom );
+
+    osg::CameraNode* p_camera = new osg::CameraNode;
+
+    // set the projection matrix
+    p_camera->setProjectionMatrix(osg::Matrix::ortho2D( 0, size.x(), 0, size.y() ) );
+
+    // set the view matrix    
+    p_camera->setReferenceFrame( osg::Transform::ABSOLUTE_RF );
+    p_camera->setViewMatrix( osg::Matrix::identity() );
+
+    p_camera->setViewport( pos.x(), pos.y(), size.x(), size.y() );
+
+    // only clear the depth buffer
+    p_camera->setClearMask( GL_DEPTH_BUFFER_BIT );
+
+    // draw subgraph after main camera view.
+    p_camera->setRenderOrder( osg::CameraNode::POST_RENDER );
+
+    p_camera->addChild( p_geode );
+
+    return p_camera;
 }
 
 void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowTextureHeight, unsigned int shadowTextureUnit )
@@ -328,15 +369,15 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
         float factor = 2.0f;
         float units  = 2.0f;
 
-        osg::ref_ptr< osg::PolygonOffset > polygonoffset = new osg::PolygonOffset;
-        polygonoffset->setFactor( factor );
-        polygonoffset->setUnits( units );
-        p_localstateset->setAttribute( polygonoffset.get(), osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
+        osg::ref_ptr< osg::PolygonOffset > p_polygonoffset = new osg::PolygonOffset;
+        p_polygonoffset->setFactor( factor );
+        p_polygonoffset->setUnits( units );
+        p_localstateset->setAttribute( p_polygonoffset.get(), osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
         p_localstateset->setMode( GL_POLYGON_OFFSET_FILL, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
 
-        osg::ref_ptr< osg::CullFace > cullface = new osg::CullFace;
-        cullface->setMode( osg::CullFace::FRONT );
-        p_localstateset->setAttribute( cullface.get(), osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
+        osg::ref_ptr< osg::CullFace > p_cullface = new osg::CullFace;
+        p_cullface->setMode( osg::CullFace::FRONT );
+        p_localstateset->setAttribute( p_cullface.get(), osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
         p_localstateset->setMode( GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
 
 
@@ -350,16 +391,9 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
         _shadowCameraGroup->attach( osg::CameraNode::DEPTH_BUFFER, p_texture );
 
         _shadowSceneGroup->addChild( _shadowCameraGroup.get() );
-        
-        // create the texgen node to project the tex coords onto the subgraph
-        osg::TexGenNode* p_texgenNode = new osg::TexGenNode;
-        p_texgenNode->setTextureUnit( shadowTextureUnit );
 
-        _shadowSceneGroup->addChild( p_texgenNode );
-
-        // set an update callback to keep moving the camera and tex gen in the right direction.
-        _p_updateCallback = new UpdateCameraAndTexGenCallback( _lightPosition, _shadowCameraGroup.get(), p_texgenNode );
-        _shadowSceneGroup->setUpdateCallback( _p_updateCallback );
+        // store the shadow map texture for debug display
+        _p_shadowMapTexture = p_texture;
 
         // set camera's cull callback
         //_p_cullCallback = new CameraCullCallback;
@@ -373,7 +407,7 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
         _shadowSceneGroup->addChild( _shadowedGroup.get() );
                 
         osg::StateSet* p_stateset = _shadowedGroup->getOrCreateStateSet();
-        p_stateset->setTextureAttributeAndModes( shadowTextureUnit, p_texture, osg::StateAttribute::ON );
+        p_stateset->setTextureAttributeAndModes( shadowTextureUnit, p_texture, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
 
         osg::Program* p_program = new osg::Program;
         p_stateset->setAttribute( p_program );
@@ -392,6 +426,15 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
         
         _p_colorGainAndBiasParam = new osg::Uniform( "ambientBias", _shadowAmbientBias );
         p_stateset->addUniform( _p_colorGainAndBiasParam );
+
+        // create the texgen node to project the tex coords onto the subgraph
+        osg::TexGenNode* p_texgenNode = new osg::TexGenNode;
+        p_texgenNode->setTextureUnit( shadowTextureUnit );
+        _shadowedGroup->addChild( p_texgenNode );
+
+        // set an update callback to keep moving the camera and tex gen in the right direction.
+        _p_updateCallback = new UpdateCameraAndTexGenCallback( _lightPosition, _shadowCameraGroup.get(), p_texgenNode );
+        _shadowedGroup->setUpdateCallback( _p_updateCallback );
     }
 
     // append the shadow group to top node group
@@ -427,6 +470,33 @@ void ShadowManager::shutdown()
 
     // destroy singleton
     destroy();
+}
+
+void ShadowManager::displayShadowMap( bool enable )
+{
+    // first check if the shadow manager is enabled
+    if ( !_enable ) 
+        return;
+
+    //! FIXME: the display does not work properly, there is a problem with assigning
+    //         the shadow texture to the display quad!
+    if ( enable )
+    {
+        if ( !_debugDisplay.valid() )
+        {
+            _debugDisplay = createDebugDisplay( _p_shadowMapTexture );
+            // add the preview pic for shadow map
+            _shadowedGroup->addChild( _debugDisplay.get() );
+        }
+    }
+    else
+    {
+        if ( !_debugDisplay.valid() )
+            return;
+
+        _shadowedGroup->removeChild( _debugDisplay.get() );
+        _debugDisplay = NULL;
+    }
 }
 
 void ShadowManager::addShadowNode( osg::Node* p_node )
