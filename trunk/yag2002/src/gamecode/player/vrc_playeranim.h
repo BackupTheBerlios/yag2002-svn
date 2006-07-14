@@ -110,6 +110,9 @@ class EnPlayerAnimation  : public yaf3d::BaseEntity
 
     protected:
 
+        //! Override this method of yaf3d::BaseEntity to get notifications
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
+
         //! Read config file and setup animation
         /**
         * \param rootDir                            The relative directory path to media directory which must contain all animation files and textures

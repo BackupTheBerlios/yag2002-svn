@@ -31,6 +31,7 @@
  ################################################################*/
 
 #include <vrc_main.h>
+#include <vrc_gameutils.h>
 #include "vrc_playeranim.h"
 #include "vrc_playerimpl.h"
 
@@ -39,6 +40,63 @@ namespace vrc
 
 //! "Implement and register the player animation entity factory
 YAF3D_IMPL_ENTITYFACTORY( PlayerAnimationEntityFactory )
+
+static const char glsl_vp[] =
+    "/*                                                                             \n"
+    "* Vertex shader for rendering the player                                       \n"
+    "* http://yag2002.sf.net                                                        \n"
+    "* 11/28/2005                                                                   \n"
+    "*/                                                                             \n"
+    "varying vec4 diffuse,ambient;                                                  \n"
+    "varying vec3 normal,lightDir,halfVector;                                       \n"
+    "varying vec2 texCoords;                                                        \n"
+    "                                                                               \n"
+    "void main()                                                                    \n"
+    "{                                                                              \n"
+    "   normal      = normalize(gl_NormalMatrix * gl_Normal);                       \n"
+    "   lightDir    = normalize(vec3(gl_LightSource[0].position));                  \n"
+    "   halfVector  = normalize(gl_LightSource[0].halfVector.xyz);                  \n"
+    "   diffuse     = gl_FrontMaterial.diffuse * gl_LightSource[0].diffuse;         \n"
+    "   ambient     = gl_FrontMaterial.ambient * gl_LightSource[0].ambient;         \n"
+    "   ambient     += gl_LightModel.ambient * gl_FrontMaterial.ambient;            \n"
+    "   gl_Position = ftransform();                                                 \n"
+    "   texCoords   = gl_MultiTexCoord0.st;                                         \n"
+    "}                                                                              \n"
+;
+static const char glsl_fp[] =
+    "/*                                                                             \n"
+    "* Fragment shader for rendering the player                                     \n"
+    "* http://yag2002.sf.net                                                        \n"
+    "* 11/28/2005                                                                   \n"
+    "*/                                                                             \n"
+    "varying vec4 diffuse,ambient;                                                  \n"
+    "varying vec3 normal,lightDir,halfVector;                                       \n"
+    "varying vec2 texCoords;                                                        \n"
+    "uniform sampler2D tex;                                                         \n"
+    "                                                                               \n"
+    "void main()                                                                    \n"
+    "{                                                                              \n"
+    "   vec3 n,halfV;                                                               \n"
+    "   float NdotL,NdotHV;                                                         \n"
+    "                                                                               \n"
+    "   vec4 color = ambient;                                                       \n"
+    "   n = normalize(normal);                                                      \n"
+    "   NdotL = max(dot(n,lightDir),0.0);                                           \n"
+    "    if (NdotL > 0.0) {                                                         \n"
+    "       color += diffuse * NdotL;                                               \n"
+    "       halfV = normalize(halfVector);                                          \n"
+    "       NdotHV = max(dot(n,halfV),0.0);                                         \n"
+    "       color += gl_FrontMaterial.specular *                                    \n"
+    "               gl_LightSource[0].specular *                                    \n"
+    "               pow(NdotHV, gl_FrontMaterial.shininess);                        \n"
+    "   }                                                                           \n"
+    "                                                                               \n"
+    "   vec4 texcolor = texture2D(tex,texCoords);                                   \n"
+    "   gl_FragColor = color * texcolor;                                            \n"
+    "}                                                                              \n"
+;
+
+static osg::ref_ptr< osg::Program > s_program;
 
 EnPlayerAnimation::EnPlayerAnimation() :
 _anim( eIdle ),
@@ -102,7 +160,59 @@ void EnPlayerAnimation::initialize()
     _animNode->setAttitude( quat );
     _animNode->addChild( _model.get() );
 
+   // register entity in order to get notifications (e.g. from menu entity)
+    yaf3d::EntityManager::get()->registerNotification( this, true );
+
     log << "  initializing player animation instance completed" << std::endl;
+}
+
+void EnPlayerAnimation::handleNotification( const yaf3d::EntityNotification& notification )
+{
+    // handle some notifications
+    switch( notification.getId() )
+    {
+        case YAF3D_NOTIFY_MENU_LEAVE:
+        {
+            // if shadow has been enabled then remove the player shader from state set
+            bool shadow;
+            yaf3d::Configuration::get()->getSettingValue( VRC_GS_SHADOW_ENABLE, shadow );
+            osg::StateSet* p_stateSet = _animNode->getStateSet();
+            if ( shadow )
+            {
+                if ( p_stateSet )
+                {
+                    p_stateSet->clear();
+                    _animNode->setStateSet( NULL );
+                }
+            }
+            else
+            {
+                // setup the shader if glsl is supported
+                const osg::GL2Extensions* p_extensions = osg::GL2Extensions::Get( 0, true );
+                if ( p_extensions->isGlslSupported() )
+                {
+                    if ( !s_program.valid() )
+                    {
+                        s_program = new osg::Program;
+                        s_program->setName( "_playerAnim_" );
+                        s_program->addShader( new osg::Shader( osg::Shader::VERTEX, glsl_vp ) );
+                        s_program->addShader( new osg::Shader( osg::Shader::FRAGMENT, glsl_fp ) );
+                    }
+                    // add shader if it does not already exist
+                    if ( !p_stateSet )
+                    {
+                        p_stateSet = _animNode->getOrCreateStateSet();
+                        p_stateSet->setAttributeAndModes( s_program.get(), osg::StateAttribute::ON );
+                        _animNode->setStateSet( p_stateSet );
+                    }
+                }
+            }
+        }
+        break;
+
+        default:
+            ;
+    }
 }
 
 void EnPlayerAnimation::enableRendering( bool render )
