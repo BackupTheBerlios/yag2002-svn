@@ -422,7 +422,8 @@ void EnMenu::createMenuScene()
     _p_cameraControl = p_camEntity;
     // our camera must be persistent, as it must survive every subsequent level loading
     _p_cameraControl->setPersistent( true );
-
+    osg::Vec3f campos( 0.0f, 0.0f, -10000.0f );
+    p_camEntity->getAttributeManager().setAttributeValue( "position",        campos                 );
     p_camEntity->getAttributeManager().setAttributeValue( "backgroundColor", _cameraBackgroundColor );
     p_camEntity->getAttributeManager().setAttributeValue( "fov",             _cameraFov             );
     p_camEntity->getAttributeManager().setAttributeValue( "nearClip",        _cameraNearClip        );
