@@ -280,7 +280,7 @@ void EnNetworkVoice::updateEntity( float deltaTime )
             _sendersMap.erase( p_beg );
             p_beg = _sendersMap.begin();
             p_end = _sendersMap.end();
-            continue;
+            break;
         }
         else
         {
@@ -314,26 +314,26 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
 {
     assert( p_entity && "invalid entity" );
 
-    SenderMap::iterator hit = _sendersMap.find( p_entity );
+    SenderMap::iterator p_hit = _sendersMap.find( p_entity );
     if ( joining )
     {
-        if ( hit != _sendersMap.end() )
+        if ( p_hit != _sendersMap.end() )
         {
             log_warning << "EnNetworkVoice: entity is already in internal hotspot map!" << std::endl;
             return;
         }
 
         // determine receiver's ip
-        VoiceNetwork::VoiceClientMap::const_iterator vmapend = _p_voiceNetwork->getHotspot().end();
-        VoiceNetwork::VoiceClientMap::const_iterator vmapent = _p_voiceNetwork->getHotspot().find( p_entity );
-        if ( vmapent == vmapend )
+        VoiceNetwork::VoiceClientMap::const_iterator p_vmapend = _p_voiceNetwork->getHotspot().end();
+        VoiceNetwork::VoiceClientMap::const_iterator p_vmapent = _p_voiceNetwork->getHotspot().find( p_entity );
+        if ( p_vmapent == p_vmapend )
         {
             log_error << " EnNetworkVoice: internal error, voice client's receiver ip cannot be determined." << std::endl;
         }
         else
         {
             // create a new sender
-            std::string receiverIP = vmapent->second;
+            std::string receiverIP = p_vmapent->second;
             BaseNetworkSoundImplementation* p_sender = new VoiceSender( receiverIP, _p_soundInput );
             p_sender->initialize();
             _sendersMap[ p_entity ] = p_sender;
@@ -345,16 +345,16 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
     }
     else
     {
-        if ( hit == _sendersMap.end() )
+        if ( p_hit == _sendersMap.end() )
         {
-            log_warning << "EnNetworkVoice: entity is not in internal hotspot map!" << std::endl;
+            log_verbose << "EnNetworkVoice: entity is not in internal hotspot map!" << std::endl;
             return;
         }
 
         // destroy the sender
-        hit->second->shutdown();
-        delete hit->second;
-        _sendersMap.erase( hit );
+        p_hit->second->shutdown();
+        delete p_hit->second;
+        _sendersMap.erase( p_hit );
         // stop input grabbing when no senders exist
         if ( _sendersMap.size() == 0 )
             _p_soundInput->stop( true );

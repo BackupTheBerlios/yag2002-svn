@@ -107,9 +107,12 @@ void VoiceSender::initialize() throw( NetworkSoundExpection )
 
         _p_udpTransport = xpurl.FindTransport( "UDP@" )->Allocate();
         std::stringstream assembledUrl;
-        assembledUrl << "UDP@" << _receiverIP << ":" << channel << "/" << VOICE_SERVER_NAME;
-        _p_udpTransport->Connect( assembledUrl.str() );
-        log_debug << "  -> trying to connect the receiver: " << assembledUrl.str() << " ..." << std::endl;
+        assembledUrl << "UDP@" << _receiverIP << ":" << channel;// << "/" << VOICE_SERVER_NAME;
+        RNReplicaNet::Transport::Error res = _p_udpTransport->Connect( assembledUrl.str() );
+        if ( res != RNReplicaNet::Transport::kTransport_EOK )
+            log_error << "  -> cannot connect to receiver on channel: " << assembledUrl.str() << std::endl;
+        else
+            log_debug << "  -> trying to connect the receiver: " << assembledUrl.str() << " ..." << std::endl;
     }
 }
 
@@ -126,8 +129,19 @@ void VoiceSender::update( float deltaTime )
     if ( _senderState == Initial )
     {
         // check if connection is established
-        if ( _p_udpTransport->GetStatus() != RNReplicaNet::Transport::kTransport_EOK )
+        RNReplicaNet::Transport::Error res = _p_udpTransport->GetStatus();
+        if ( res != RNReplicaNet::Transport::kTransport_EOK )
+        {
+            // check the transport connection timeout
+            _pongTimer += deltaTime;
+            if ( _pongTimer > VOICE_LIFESIGN_PERIOD )
+            {
+                log_debug << "  -> receiver does not respond, giving up! " << std::endl;
+                _isAlive = false;
+            }
             return;
+        }
+        _pongTimer = 0.0f;
 
         _p_voicePaket->_typeId    = NETWORKSOUND_PAKET_TYPE_CON_REQ;
         _p_voicePaket->_length    = 0;
@@ -200,7 +214,7 @@ void VoiceSender::update( float deltaTime )
 
     // check for receiver's pong
     _pongTimer += deltaTime;
-    if ( _pongTimer > ( VOICE_LIFESIGN_PERIOD ) )
+    if ( _pongTimer > VOICE_LIFESIGN_PERIOD )
     {
         // lost the receiver
         log_verbose << "  -> voice chat receiver does not respond, going dead ..." << std::endl;

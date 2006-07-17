@@ -233,7 +233,7 @@ FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, 
     }
     else
     {
-//        log_verbose << "." << std::endl;
+        memset( p_sndbuffer, 0, datalen );
     }
 
     return FMOD_OK;
@@ -308,7 +308,7 @@ void VoiceReceiver::update( float deltaTime )
         p_sender = p_beg->first;
 
         // first check for dead senders
-        if ( ( p_sendernode->_pingTimer += deltaTime ) > ( VOICE_LIFESIGN_PERIOD ) )
+        if ( ( p_sendernode->_pingTimer += deltaTime ) > VOICE_LIFESIGN_PERIOD )
         {
             // removing sender 
             log_verbose << "  <- remove sender from receiver list!" << std::endl;
@@ -317,9 +317,7 @@ void VoiceReceiver::update( float deltaTime )
             delete p_sendernode;
             delete p_sender;
             _soundNodeMap.erase( p_beg );
-            p_beg = _soundNodeMap.begin();
-            p_end = _soundNodeMap.end();
-            continue;
+            break;
         }
 
         // poll incoming data from senders
@@ -375,7 +373,7 @@ void VoiceReceiver::update( float deltaTime )
                 _soundNodeMap.erase( p_beg );
                 p_beg = _soundNodeMap.begin(), p_end = _soundNodeMap.end();
                 log_debug << "  <- voice sender leaves ( " << _soundNodeMap.size() << " )" << std::endl;
-                continue;
+                break;
             }
             break;
 
