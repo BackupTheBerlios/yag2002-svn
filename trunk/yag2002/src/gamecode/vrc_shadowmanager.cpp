@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  06/27/2006
  #
- #   author:            ali botorabi (boto) 
+ #   author:            ali botorabi (boto)
  #      e-mail:         botorabi@gmx.net
  #
  ################################################################*/
@@ -48,7 +48,7 @@ namespace vrc
 class UpdateCameraAndTexGenCallback : public osg::NodeCallback
 {
     public:
-    
+
                                                 UpdateCameraAndTexGenCallback( osg::Vec3f lightpos, osg::CameraNode* p_cameraNode, osg::TexGenNode* p_texgenNode ):
                                                 _lightPosition( lightpos ),
                                                 _cameraNode( p_cameraNode ),
@@ -61,7 +61,7 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
                                                 {
                                                     _texgenNode->getTexGen()->setMode( osg::TexGen::EYE_LINEAR );
                                                 }
-       
+
         void                                    setLightPosition( const osg::Vec3f& pos )
                                                 {
                                                     _lightPosition = pos;
@@ -80,21 +80,21 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
                                                     traverse( p_node, p_nv );
 
                                                     if ( _updateNodes )
-                                                    {          
+                                                    {
                                                         _shadowBB.init();
                                                         // now compute the camera's view and projection matrix to point at the shadower (the camera's children)
                                                         for( unsigned int i = 0; i < _cameraNode->getNumChildren(); ++i )
                                                             _shadowBB.expandBy( _cameraNode->getChild(i)->getBound() );
-                                                        
+
                                                         if ( !_shadowBB.valid() )
                                                             return;
-                                                        
+
                                                         float centerDistance = ( _lightPosition - _shadowBB.center() ).length();
 
                                                         _nearZ = centerDistance - _shadowBB.radius();
                                                         _farZ  = centerDistance + _shadowBB.radius();
                                                         float zNearRatio = 0.001f;
-                                                        if ( _nearZ < _farZ * zNearRatio ) 
+                                                        if ( _nearZ < _farZ * zNearRatio )
                                                             _nearZ = _farZ * zNearRatio;
 
                                                         _frustomCorner   = ( _shadowBB.radius() / centerDistance ) * _nearZ;
@@ -112,11 +112,11 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
 
                                                         // compute the matrix which takes a vertex from local coords into tex coords
                                                         // will use this later to specify osg::TexGen
-                                                        _MVPT = _cameraNode->getViewMatrix() * 
+                                                        _MVPT = _cameraNode->getViewMatrix() *
                                                                 _cameraNode->getProjectionMatrix() *
                                                                 osg::Matrix::translate( 1.0, 1.0, 1.0 ) *
                                                                 osg::Matrix::scale( 0.5f, 0.5f, 0.5f );
-                                                                                                                                   
+
                                                         _updateLightPosition = false;
                                                     }
 
@@ -124,13 +124,13 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
                                                 }
 
     protected:
-            
+
         virtual                                 ~UpdateCameraAndTexGenCallback() {}
 
         osg::Vec3f                              _lightPosition;
 
         osg::ref_ptr< osg::CameraNode >         _cameraNode;
-        
+
         osg::ref_ptr< osg::TexGenNode >         _texgenNode;
 
         osg::BoundingSphere                     _shadowBB;
@@ -199,7 +199,7 @@ static const char glsl_vp[] =
     "}                                                                                  \n"
 ;
 
-static char glsl_fp[] = 
+static char glsl_fp[] =
     "/*                                                                                 \n"
     "* Fragment shader for shadow mapping                                               \n"
     "* http://yag2002.sf.net                                                            \n"
@@ -301,11 +301,11 @@ osg::Node* ShadowManager::createDebugDisplay( osg::Texture* p_texture )
     // set the projection matrix
     p_camera->setProjectionMatrix(osg::Matrix::ortho2D( 0, size.x(), 0, size.y() ) );
 
-    // set the view matrix    
+    // set the view matrix
     p_camera->setReferenceFrame( osg::Transform::ABSOLUTE_RF );
     p_camera->setViewMatrix( osg::Matrix::identity() );
 
-    p_camera->setViewport( pos.x(), pos.y(), size.x(), size.y() );
+    p_camera->setViewport( static_cast< int >( pos.x() ), static_cast< int >( pos.y() ), static_cast< int >( size.x() ), static_cast< int >( size.y() ) );
 
     // only clear the depth buffer
     p_camera->setClearMask( GL_DEPTH_BUFFER_BIT );
@@ -327,7 +327,7 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
     }
 
     const osg::GL2Extensions* p_extensions = osg::GL2Extensions::Get( 0, true );
-    if ( !p_extensions->isGlslSupported() ) 
+    if ( !p_extensions->isGlslSupported() )
     {
         log_info << "ShadowManager: GLSL is not available, dynamic shadows are disabled." << std::endl;
         _enable = false;
@@ -340,7 +340,7 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
 
     _shadowSceneGroup = new osg::Group;
     _shadowSceneGroup->setName( "_shadowGroup" );
-    
+
     osg::Texture2D* p_texture = new osg::Texture2D;
     p_texture->setTextureSize( shadowTextureWidth, shadowTextureHeight );
 
@@ -399,13 +399,13 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
         //_p_cullCallback = new CameraCullCallback;
         //_shadowSceneGroup->setCullCallback( _p_cullCallback );
     }
-   
-    // set the shadowed subgraph so that it uses the p_texture and tex gen settings.    
+
+    // set the shadowed subgraph so that it uses the p_texture and tex gen settings.
     {
         _shadowedGroup = new osg::Group;
         _shadowedGroup->setName( "_shadowedNodesGroup" );
         _shadowSceneGroup->addChild( _shadowedGroup.get() );
-                
+
         osg::StateSet* p_stateset = _shadowedGroup->getOrCreateStateSet();
         p_stateset->setTextureAttributeAndModes( shadowTextureUnit, p_texture, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
 
@@ -423,7 +423,7 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
 
         osg::Uniform* p_shadowTextureSampler = new osg::Uniform( "shadowTexture", static_cast< int >( shadowTextureUnit ) );
         p_stateset->addUniform( p_shadowTextureSampler );
-        
+
         _p_colorGainAndBiasParam = new osg::Uniform( "ambientBias", _shadowAmbientBias );
         p_stateset->addUniform( _p_colorGainAndBiasParam );
 
@@ -475,7 +475,7 @@ void ShadowManager::shutdown()
 void ShadowManager::displayShadowMap( bool enable )
 {
     // first check if the shadow manager is enabled
-    if ( !_enable ) 
+    if ( !_enable )
         return;
 
     //! FIXME: the display does not work properly, there is a problem with assigning
@@ -501,7 +501,7 @@ void ShadowManager::displayShadowMap( bool enable )
 
 void ShadowManager::addShadowNode( osg::Node* p_node )
 {
-    if ( !_enable ) 
+    if ( !_enable )
         return;
 
     _shadowedGroup->addChild( p_node );
@@ -523,7 +523,7 @@ void ShadowManager::removeShadowNode( osg::Node* p_node )
 
 void ShadowManager::setLightPosition( const osg::Vec3f& position )
 {
-    if ( !_enable ) 
+    if ( !_enable )
         return;
 
     _lightPosition = position;
@@ -532,7 +532,7 @@ void ShadowManager::setLightPosition( const osg::Vec3f& position )
 
 void ShadowManager::setShadowColorGainAndBias( float gain, float bias )
 {
-    if ( !_enable ) 
+    if ( !_enable )
         return;
 
     _shadowAmbientBias._v[ 0 ] = gain;
