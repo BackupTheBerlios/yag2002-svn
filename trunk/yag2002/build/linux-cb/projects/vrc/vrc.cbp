@@ -434,20 +434,6 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/VRC/networkingRoles/_RO_PlayerChat.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/VRC/vrc_chatprotVRC.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
 		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguibox.cpp">
 			<Option compilerVar="CPP" />
 			<Option target="Debug" />
@@ -1064,6 +1050,18 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshadowdisplaymap.cpp">
+			<Option compilerVar="CPP" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshadowdisplaymap.h">
+			<Option compilerVar="CPP" />
+			<Option compile="0" />
+			<Option link="0" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshowfps.cpp">
 			<Option compilerVar="CPP" />
 			<Option target="Debug" />
@@ -1494,6 +1492,18 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="../../../../src/gamecode/vrc_main.h">
+			<Option compilerVar="CPP" />
+			<Option compile="0" />
+			<Option link="0" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../../../../src/gamecode/vrc_shadowmanager.cpp">
+			<Option compilerVar="CPP" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../../../../src/gamecode/vrc_shadowmanager.h">
 			<Option compilerVar="CPP" />
 			<Option compile="0" />
 			<Option link="0" />
