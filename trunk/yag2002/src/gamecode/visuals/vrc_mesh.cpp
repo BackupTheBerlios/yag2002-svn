@@ -144,12 +144,6 @@ void EnMesh::initialize()
     if ( _mesh.valid() )
         addToTransformationNode( _mesh.get() );
 
-    if ( _usedInMenu )
-    {
-        // we may use this entity also in menu loader, so add it to scenegraph in this case during initialization
-        addToSceneGraph();        
-    }
-
     // register entity in order to get menu notifications
     yaf3d::EntityManager::get()->registerNotification( this, true );
 }

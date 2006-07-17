@@ -110,10 +110,6 @@ void EnSkyBox::initialize()
 
     // setup the skybox
     _p_skyGrp = setupSkybox();
-
-    // if this entity is used in menu then add it immediately to trasformation node
-    if ( _usedInMenu )
-        addToTransformationNode( _p_skyGrp.get() );
 }
 
 osg::ref_ptr< osg::Group > EnSkyBox::setupSkybox()

@@ -332,10 +332,6 @@ void EnWater::initialize()
     // the water is added to entity's transform node in notification call-back, when entering game ( leaving menu )!
     _water = setupWater();
 
-    // we may use this entity also in menu loader, so add it to scenegraph in this case during initialization
-    if ( _usedInMenu )
-        addToTransformationNode( _water.get() );
-
     yaf3d::EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 }
 

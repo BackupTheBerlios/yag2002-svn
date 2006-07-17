@@ -133,11 +133,6 @@ void EnPointLight::initialize()
     osg::ref_ptr< LightCallback > cullcallback = new LightCallback( this );
     _lightSource->setCullCallback( cullcallback.get() );
 
-    // now add light to entity's transform node if this entity is used in menu system, otherwise on "leve menu" event
-    //  the light source is added -- see notification handler
-    if ( _usedInMenu )
-        addToTransformationNode( _lightSource.get() );
-
     // set mesh if one defined
     if ( _meshFile.length() )
     {
