@@ -457,10 +457,13 @@ bool Application::initialize( int argc, char **argv )
         // complete level loading
         LevelManager::get()->finalizeLoading();
 
-        // if we directly start a client with cmd line option then we must send a leave-menu notification to entities
+        // if we directly start a level with cmd line option then we must send a leave-menu notification to entities
         //  as many entities do special steps when leaving the menu
-        EntityNotification notification( YAF3D_NOTIFY_MENU_LEAVE );
-        EntityManager::get()->sendNotification( notification );
+        if ( arg_levelname.length() )
+        {
+            EntityNotification notification( YAF3D_NOTIFY_MENU_LEAVE );
+            EntityManager::get()->sendNotification( notification );
+        }
     }
 
     return true;
