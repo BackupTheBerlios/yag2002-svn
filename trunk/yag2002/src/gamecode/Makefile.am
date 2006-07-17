@@ -90,6 +90,7 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			tools/console/vrc_consoleiocin.cpp \
 			tools/console/vrc_consoleiogui.cpp \
 			tools/console/vrc_cmdrenderingmode.cpp \
+			tools/console/vrc_cmdshadowdisplaymap.cpp \
 			visuals/vrc_camera.cpp \
 			visuals/vrc_candle.cpp \
 			visuals/vrc_fog.cpp \
