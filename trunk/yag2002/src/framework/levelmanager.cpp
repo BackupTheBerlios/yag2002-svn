@@ -189,6 +189,7 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
         _topGroup->addChild( _entityGroup.get() );
 
         // save the persistent entities which need transformation. they must be copied into new created entity group.
+        EntityNotification ennotify( YAF3D_NOTIFY_ENTITY_TRANSNODE_CHANGED );
         std::vector< BaseEntity* > perentities;
         EntityManager::get()->getPersistentEntities( perentities );
         std::vector< BaseEntity* >::iterator p_entity = perentities.begin(), p_entityEnd = perentities.end();
@@ -197,6 +198,7 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
             if ( ( *p_entity )->isTransformable() )
             {
                 _entityGroup->addChild( ( *p_entity )->getTransformationNode() );
+                EntityManager::get()->sendNotification( ennotify, *p_entity );
             }
         }
     }
