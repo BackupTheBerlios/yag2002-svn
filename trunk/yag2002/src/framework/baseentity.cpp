@@ -65,8 +65,7 @@ BaseEntity::~BaseEntity()
         log_error << "exception occured in destructor of '" << getInstanceName() << "'" << std::endl;
     }
 
-    // remove all attributes
-    _p_attributeManager->removeAllAttributes();
+    // delete attribute manager
     delete _p_attributeManager;
 }
 

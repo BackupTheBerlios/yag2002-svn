@@ -81,6 +81,7 @@ class EntityNotification
 #define     YAF3D_NOTIFY_MENU_ENTER                   0xF0000030  // sent when entering menu system
 #define     YAF3D_NOTIFY_MENU_LEAVE                   0xF0000031  // sent when leaving menu system
 #define     YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED     0xF0000040  // sent when an entity attribute has been changed ( e.g. by an level editor )
+#define     YAF3D_NOTIFY_ENTITY_TRANSNODE_CHANGED     0xF0000050  // sent when entity's transformation node had been manipulated ( e.g. re-arranged in scenegraph ), this is sent out in level manager on unloading a level
 #define     YAF3D_NOTIFY_SHUTDOWN                     0xF00000FF  // sent when shutting down the system
 
 
