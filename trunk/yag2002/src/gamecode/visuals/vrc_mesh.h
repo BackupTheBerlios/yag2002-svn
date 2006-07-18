@@ -44,7 +44,7 @@ class EnMesh :  public yaf3d::BaseEntity
     public:
                                                     EnMesh();
 
-        virtual                                   ~EnMesh();
+        virtual                                     ~EnMesh();
 
         //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();

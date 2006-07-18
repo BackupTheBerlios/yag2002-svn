@@ -75,7 +75,7 @@ EnMesh::~EnMesh()
 
 void EnMesh::handleNotification( const yaf3d::EntityNotification& notification )
 {
-    // handle notifications, add and remove the mesh to / from scenegraph on menu entring / leaving
+    // handle notifications, add and remove the transformation node to / from scenegraph on menu entring / leaving
     switch( notification.getId() )
     {
         case YAF3D_NOTIFY_MENU_ENTER:
@@ -84,7 +84,6 @@ void EnMesh::handleNotification( const yaf3d::EntityNotification& notification )
             {
                 if ( _usedInMenu )
                 {
-                    // re-setup shadow
                     addToSceneGraph();
                 }
                 else
@@ -105,10 +104,18 @@ void EnMesh::handleNotification( const yaf3d::EntityNotification& notification )
                 }
                 else
                 {
-                    // re-setup shadow
                     addToSceneGraph();
                 }
             }
+        }
+        break;
+
+        //! Note: by default the level manager re-adds persistent entity transformation nodes to its entity group while unloading a level.
+        //        thus we have to remove shadow nodes from that entity group on unloading a level; addToSceneGraph() does this job.
+        case YAF3D_NOTIFY_ENTITY_TRANSNODE_CHANGED:
+        {
+            if ( _usedInMenu )
+                addToSceneGraph();
         }
         break;
 
@@ -157,6 +164,10 @@ void EnMesh::removeFromSceneGraph()
     unsigned int parents = getTransformationNode()->getNumParents();
     for ( unsigned int cnt = 0; cnt < parents; ++cnt )        
         getTransformationNode()->getParent( 0 )->removeChild( getTransformationNode() );
+        
+    // update the shadow area; we manually manipulate the shadow nodes in scenegraph, so let the 
+    //  shadow manager know about it! if shadow manager is not enabled the call has no effect.
+    vrc::ShadowManager::get()->updateShadowArea();
 }
 
 void EnMesh::addToSceneGraph()
@@ -171,7 +182,7 @@ void EnMesh::addToSceneGraph()
     // first remove the transformation node from scenegraph
     removeFromSceneGraph();
 
-    // enable shadow only if it is enabled
+    // enable shadow only if it is enabled in configuration
     if ( shadow && _shadowEnable )
     {
         vrc::ShadowManager::get()->addShadowNode( getTransformationNode() );
@@ -243,11 +254,11 @@ void EnMesh::enable( bool en )
     {
         if ( en )
         {
-            addToTransformationNode( _mesh.get() );
+            addToSceneGraph();
         }
         else
         {
-            removeFromTransformationNode( _mesh.get() );
+            removeFromSceneGraph();
         }
 
         _enable = en;
