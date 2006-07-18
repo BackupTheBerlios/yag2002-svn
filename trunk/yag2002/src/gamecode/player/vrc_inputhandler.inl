@@ -56,7 +56,8 @@ _mouseSensitivity( 1.0f )
 {
     // initialize the mouse data considering initial yaw
     _p_mouseData = new MouseData( 0.0f, getPlayerImpl()->_rotZ );
-    getPlayerImpl()->setCameraPitchYaw( 0, getPlayerImpl()->_rotZ );
+    // initialize the player pitch / yaw
+    updatePlayerPitchYaw( _p_mouseData->_pitch, _p_mouseData->_yaw );
 }
 
 template< class PlayerImplT >
