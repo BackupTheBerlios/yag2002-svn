@@ -164,7 +164,7 @@ class AttributeManager
 
                                                     AttributeManager() {} 
 
-        virtual                                     ~AttributeManager() {}
+        virtual                                     ~AttributeManager();
 
 
         /**

@@ -34,6 +34,11 @@
 namespace yaf3d
 {
 
+AttributeManager::~AttributeManager()
+{ 
+    removeAllAttributes(); 
+}
+
 void AttributeManager::getAttributesAsString( std::vector< std::pair< std::string, std::string > >& attributes )
 {
     std::vector< BaseEntityAttribute* >::iterator p_beg = _attributes.begin(), p_end = _attributes.end();
