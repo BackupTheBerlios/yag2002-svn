@@ -69,6 +69,9 @@ class ShadowManager : public yaf3d::Singleton< vrc::ShadowManager >
         //! Remove p_node from the list of shadow throwing / receiving nodes
         void                                        removeShadowNode( osg::Node* p_node );
 
+        //! Call this if you manually modify shadow nodes in scenegraph without calling addShadowNode() or removeShadowNode()
+        void                                        updateShadowArea();
+
         //! Set light source position. Currently only one single light source can be used.
         void                                        setLightPosition( const osg::Vec3f& position );
 

@@ -521,6 +521,15 @@ void ShadowManager::removeShadowNode( osg::Node* p_node )
     _p_updateCallback->updateNodes();
 }
 
+void ShadowManager::updateShadowArea()
+{
+    if ( !_enable )
+        return;
+
+    // force updating shadow nodes in next callback
+    _p_updateCallback->updateNodes();
+}
+
 void ShadowManager::setLightPosition( const osg::Vec3f& position )
 {
     if ( !_enable )
