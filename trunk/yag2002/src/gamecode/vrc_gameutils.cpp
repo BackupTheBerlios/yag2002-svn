@@ -125,6 +125,19 @@ void VRCStateHandler::onStateChange( unsigned int state )
 
             // now load the setting values from config file
             yaf3d::Configuration::get()->load();
+
+            // check glsl availability for dynamic shadow
+            {
+                const osg::GL2Extensions* p_extensions = osg::GL2Extensions::Get( 0, true );
+                // if glsl is not available then disable dynamic shadow flag in configuration
+                if ( _shadowEnable && !p_extensions->isGlslSupported() )
+                {
+                    log_info << "Dynamic shadows disabled as GLSL is not available!" << std::endl;
+                    bool shadow = false;
+                    yaf3d::Configuration::get()->setSettingValue( VRC_GS_SHADOW_ENABLE, shadow );
+                    yaf3d::Configuration::get()->store();
+                }
+            }
         }
         break;
 
