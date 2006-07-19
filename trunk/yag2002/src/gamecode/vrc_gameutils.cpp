@@ -125,7 +125,11 @@ void VRCStateHandler::onStateChange( unsigned int state )
 
             // now load the setting values from config file
             yaf3d::Configuration::get()->load();
+        }
+        break;
 
+        case yaf3d::GameState::GraphicsInitialized :
+        {
             // check glsl availability for dynamic shadow
             {
                 const osg::GL2Extensions* p_extensions = osg::GL2Extensions::Get( 0, true );
@@ -136,13 +140,11 @@ void VRCStateHandler::onStateChange( unsigned int state )
                     bool shadow = false;
                     yaf3d::Configuration::get()->setSettingValue( VRC_GS_SHADOW_ENABLE, shadow );
                     yaf3d::Configuration::get()->store();
+
+                    _shadowEnable = false;
                 }
             }
-        }
-        break;
 
-        case yaf3d::GameState::GraphicsInitialized :
-        {
             if ( _shadowEnable )
                 ShadowManager::get()->setup( _shadowTexSizeX, _shadowTexSizeY, _shadowTexChannel );
         }
