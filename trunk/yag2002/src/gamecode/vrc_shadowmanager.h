@@ -57,7 +57,8 @@ class ShadowManager : public yaf3d::Singleton< vrc::ShadowManager >
         void                                        setup( 
                                                            unsigned int shadowTextureWidth  = 1024, 
                                                            unsigned int shadowTextureHeight = 1024, 
-                                                           unsigned int shadowTextureUnit   = 1
+                                                           unsigned int shadowTextureUnit   = 1,
+                                                           float        shadowAmbient       = 0.2f
                                                           );
 
         //! Enable / disable the shadow management
@@ -104,6 +105,8 @@ class ShadowManager : public yaf3d::Singleton< vrc::ShadowManager >
         unsigned int                                _shadowTextureHeight;
         
         unsigned int                                _shadowTextureUnit;
+
+        float                                       _shadowAmbient;
 
         bool                                        _enable;
 

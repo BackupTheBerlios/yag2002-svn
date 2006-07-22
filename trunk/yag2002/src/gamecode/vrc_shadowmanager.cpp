@@ -268,6 +268,7 @@ ShadowManager::ShadowManager() :
 _shadowTextureWidth( 1024 ),
 _shadowTextureHeight( 1024 ),
 _shadowTextureUnit( 1 ),
+_shadowAmbient( 0.2f ),
 _enable( false ),
 _lightPosition( osg::Vec3f( 20.0f, 20.0f, 280.0f ) ),
 _shadowAmbientBias( osg::Vec2f( 0.3, 0.9f ) ),
@@ -318,7 +319,7 @@ osg::Node* ShadowManager::createDebugDisplay( osg::Texture* p_texture )
     return p_camera;
 }
 
-void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowTextureHeight, unsigned int shadowTextureUnit )
+void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowTextureHeight, unsigned int shadowTextureUnit, float shadowAmbient )
 {
     if ( _enable )
     {
@@ -337,6 +338,7 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
     _shadowTextureWidth  = shadowTextureWidth;
     _shadowTextureHeight = shadowTextureHeight;
     _shadowTextureUnit   = shadowTextureUnit;
+    _shadowAmbient       = shadowAmbient;
 
     _shadowSceneGroup = new osg::Group;
     _shadowSceneGroup->setName( "_shadowGroup" );
@@ -346,6 +348,7 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
 
     p_texture->setInternalFormat( GL_DEPTH_COMPONENT );
     p_texture->setShadowComparison( true );
+    p_texture->setShadowAmbient( _shadowAmbient );
     p_texture->setShadowTextureMode( osg::Texture::LUMINANCE );
     p_texture->setFilter( osg::Texture2D::MIN_FILTER, osg::Texture2D::LINEAR );
     p_texture->setFilter( osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR );
