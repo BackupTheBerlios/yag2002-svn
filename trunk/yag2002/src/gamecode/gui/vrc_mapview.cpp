@@ -124,17 +124,20 @@ void EnMapView::operator()( bool localplayer, bool joining, yaf3d::BaseEntity* p
 
 void EnMapView::destroyMapView()
 {
-    try
+    if ( _p_wnd )
     {
-        // destroy imageset
-        CEGUI::ImagesetManager::getSingleton().destroyImageset( std::string( MAPVIEW_WND ) + _minMapFile );
-        vrc::gameutils::GuiUtils::get()->getMainGuiWindow()->removeChildWindow( _p_wnd );
-        CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
-    }
-    catch ( const CEGUI::Exception& e )
-    {
-        log_error << "EnMapView: problem cleaning up entity." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        try
+        {
+            // destroy imageset
+            CEGUI::ImagesetManager::getSingleton().destroyImageset( std::string( MAPVIEW_WND ) + _minMapFile );
+            vrc::gameutils::GuiUtils::get()->getMainGuiWindow()->removeChildWindow( _p_wnd );
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
+        }
+        catch ( const CEGUI::Exception& e )
+        {
+            log_error << "EnMapView: problem cleaning up entity." << std::endl;
+            log << "      reason: " << e.getMessage().c_str() << std::endl;
+        }
     }
 }
 
