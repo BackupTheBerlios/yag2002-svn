@@ -378,7 +378,6 @@ void PlayerImplClient::update( float deltaTime )
         {
             osg::Matrix mat;
             mat.makeRotate( _currentRot );
-            //mat.setTrans( lastpos + vel * deltaTime );
             mat.setTrans( clientpos );
             getPlayerPhysics()->setTransformation( mat );
             getPlayerPhysics()->setDirection( 0.0f, 0.0f );
@@ -386,10 +385,6 @@ void PlayerImplClient::update( float deltaTime )
         else
         {
             vel._v[ 2 ] = 0.0f;
-            // limit velocity
-            if ( vel.length2() > 1.0f )
-                vel.normalize();
-
             getPlayerPhysics()->setDirection( vel.x(), vel.y() );
         }
 
@@ -411,6 +406,7 @@ void PlayerImplClient::update( float deltaTime )
 
         if ( fabs( lastrot - _rotZ ) > NW_ROT_THRESHOLD )
             getPlayerAnimation()->setAnimation( EnPlayerAnimation::eTurn );
+
     }
 
     // now update the physics entity
