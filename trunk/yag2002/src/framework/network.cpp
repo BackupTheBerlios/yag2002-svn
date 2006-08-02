@@ -36,7 +36,22 @@
 #include <RNPlatform/Inc/FreewareCode.h>
 #include <RNXPSockets/Inc/XPSocket.h>
 #include <RNXPSession/Inc/XPSession.h>
+#include <RNXPURL/Inc/XPURL.h>
+#include <RNXPURL/Inc/DebugHandler.h>
 
+// Visual debugger interface
+class ApplicationDebugHandler : public RNReplicaNet::DebugHandler
+{
+    public:
+                            ApplicationDebugHandler() {}
+
+        virtual             ~ApplicationDebugHandler() {}
+
+        void                DebugPrint( const char* p_text )
+                            {
+                                RNReplicaNet::DebugHandler::DebugPrint( p_text );
+                            }
+};
 
 namespace yaf3d
 {
@@ -299,6 +314,11 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
 {
     log_info << "NetworkDevice: starting client, time: " << yaf3d::getTimeStamp() << std::endl;
     log_info << "NetworkDevice: networking protocol version: " << getProtocolVersionAsString( YAF3D_NETWORK_PROT_VERSION ) << std::endl;
+
+#ifdef REPLICANET_VISUALDEBUGGER
+    RNReplicaNet::XPURL::RegisterDebugHandler( new ApplicationDebugHandler() );
+    RNReplicaNet::XPURL::GetDebugHandler()->EnableVisualDebuggerSocket( channel );
+#endif
 
     // do we already have a session created?
     assert( _p_session == NULL && "there is already a running session!" );
