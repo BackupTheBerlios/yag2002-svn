@@ -570,7 +570,7 @@ void EnPlayerPhysics::initialize()
     NewtonBodySetMassMatrix( _p_body, _mass, Ixx, Iyy, Izz );
 
     // create an up vector joint, this way we constraint the body to keep up
-    osg::Vec3f upDirection (0.0f, 0.0f, 1.0f);
+    osg::Vec3f upDirection( 0.0f, 0.0f, 1.0f );
     _upVectorJoint = NewtonConstraintCreateUpVector( _p_world, &upDirection._v[ 0 ], _p_body );
 }
 
