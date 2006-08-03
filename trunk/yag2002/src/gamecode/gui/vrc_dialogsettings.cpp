@@ -481,13 +481,7 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& /*arg*/ )
 {
     // set player name
     {
-        std::string playername;
-
-        // convert the utf8 string to std::string replacing special chatacters by '!'
-        CEGUI::String::const_iterator p_beg = _p_playerName->getText().begin(), p_end = _p_playerName->getText().end();
-        for ( ; p_beg != p_end; ++p_beg )
-            playername += ( isalnum( *p_beg ) ) ? static_cast< char >( *p_beg ) : '!';
-
+        std::string playername( _p_playerName->getText().c_str() );
         yaf3d::Configuration::get()->setSettingValue( VRC_GS_PLAYER_NAME, playername );
     }
 
@@ -615,7 +609,7 @@ bool DialogGameSettings::onKeyDown( const CEGUI::EventArgs& arg )
 bool DialogGameSettings::onClickedPlayerConfig( const CEGUI::EventArgs& /*arg*/ )
 {
     // store the settings changes ( in particular the player name, as the player dialog also can change the player name )
-    std::string playername = _p_playerName->getText().c_str();
+    std::string playername( _p_playerName->getText().c_str() );
     yaf3d::Configuration::get()->setSettingValue( VRC_GS_PLAYER_NAME, playername );
     yaf3d::Configuration::get()->store();
 
