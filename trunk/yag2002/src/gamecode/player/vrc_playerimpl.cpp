@@ -133,8 +133,8 @@ bool BasePlayerImplementation::createChatManager()
     // create VRC protocol only for client and server mode, not for standalone!
     if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Standalone )
     {
-        ChatNetworkingVRC* p_protVRC = new ChatNetworkingVRC;
-        s_chatMgr->registerChatProtocol( VRC_PROTOCOL_NAME, p_protVRC );        
+        ChatNetworkingVRC* p_chatProtocolVRC = new ChatNetworkingVRC;
+        s_chatMgr->registerChatProtocol( VRC_PROTOCOL_NAME, p_chatProtocolVRC );        
     }
 
     // build the chat system

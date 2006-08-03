@@ -44,6 +44,7 @@ namespace vrc
 #define APP_WINDOW_NOTIFY_COUNT     6
 
 ChatManager::ChatManager() :
+_p_chatNetworkingVRC( NULL ),
 _p_chatGuiCtrl( NULL ),
 _p_chatGuiBox( NULL ),
 _activeBox( false ),
@@ -118,6 +119,15 @@ bool ChatManager::registerChatProtocol( const std::string& prot, BaseChatProtoco
 ChatManager::ProtocolMap& ChatManager::getRegisteredProtocols()
 {
     return _availableProtocols;
+}
+
+BaseChatProtocol* ChatManager::getRegisteredProtocol( const std::string& prot )
+{
+    // check if the protocol is already registered
+    if ( _availableProtocols.find( prot ) == _availableProtocols.end() )
+        return NULL;
+
+    return _availableProtocols[ prot ];
 }
 
 void ChatManager::activateBox( bool en )
@@ -196,6 +206,11 @@ void ChatManager::closeConnections()
     _connections.clear();
 }
 
+void ChatManager::setVRCNickName( const std::string& nick )
+{
+    _p_chatNetworkingVRC->send( "/nick " + nick, "" );
+}
+
 void ChatManager::onConnection( const ChatConnectionConfig& config )
 {
     // VRC connection is handled special
@@ -203,6 +218,10 @@ void ChatManager::onConnection( const ChatConnectionConfig& config )
     {
         // store the new created connection for internal housekeeping
         _connections.push_back( std::make_pair( config, config._p_protocolHandler ) );
+    }
+    else
+    {
+        _p_chatNetworkingVRC = config._p_protocolHandler;
     }
 
     // check the app window state and animate it if minimized

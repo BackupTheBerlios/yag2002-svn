@@ -150,6 +150,12 @@ class ChatManager : public ChatProtocolCallback, public yaf3d::GameState::Callba
         //! Note: Registered protocol instances must be deleted by user(s) of this manager.
         bool                                        registerChatProtocol( const std::string& prot, BaseChatProtocol* p_prot );
 
+        //! Get all registered chat protocols
+        ProtocolMap&                                getRegisteredProtocols();
+
+        //! Return a chat protocol given its name, returns NULL if not found.
+        BaseChatProtocol*                           getRegisteredProtocol( const std::string& prot );
+
         //! Build the chat system for client or standalone mode
         void                                        buildClient() throw ( ChatExpection );
 
@@ -164,6 +170,9 @@ class ChatManager : public ChatProtocolCallback, public yaf3d::GameState::Callba
 
         //! Update the chat manager
         void                                        update( float deltaTime );
+
+        //! Set the VRC nick name
+        void                                        setVRCNickName( const std::string& nick );
 
         //! Overridden protocol handler callback method for getting connection notification
         void                                        onConnection( const ChatConnectionConfig& config );
@@ -180,9 +189,6 @@ class ChatManager : public ChatProtocolCallback, public yaf3d::GameState::Callba
         //! Overridden protocol handler callback method for receiving the chat traffic.
         void                                        onReceive( const std::string& channel, const std::string& sender, const std::string& msg );
 
-        //! Get all registered chat protocols
-        ProtocolMap&                                getRegisteredProtocols();
-
     protected:
 
         //! Callback for application window changes
@@ -193,6 +199,9 @@ class ChatManager : public ChatProtocolCallback, public yaf3d::GameState::Callba
 
         //! Map of chat protocols
         ProtocolMap                                 _availableProtocols;
+
+        //! VRC chat networking
+        BaseChatProtocol*                           _p_chatNetworkingVRC;
 
         //! Type for housekeeping of created chats
         typedef std::vector< std::pair< ChatConnectionConfig, BaseChatProtocol* > >  ChatConnections;

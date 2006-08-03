@@ -110,6 +110,13 @@ void PlayerImplClient::handleNotification( const yaf3d::EntityNotification& noti
             if ( !_isRemoteClient )
             {
                 getChatManager()->show( true );
+
+                // update the player name in VRC chat in the case that the player changed the nick name in menu
+                std::string playername;
+                yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, playername );
+                if ( getPlayerName() != playername )
+                    getChatManager()->setVRCNickName( playername );
+
                 _p_inputHandler->setMenuEnabled( false );
 
                 // refresh our configuration settings

@@ -270,6 +270,9 @@ void ImplChatNetworkingVRC::RPC_ChangedNickname( tChatData chatdata )
         // if _we_ changed our nick name then change also the player name ( only on client )
         vrc::EnPlayer* p_player = dynamic_cast< vrc::EnPlayer* >( vrc::gameutils::PlayerUtils::get()->getLocalPlayer() );
         p_player->setPlayerName( newname );
+
+        // change the nick also in menu settings
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_PLAYER_NAME, newname );
     }
     else // another one has changed nickname
     {
@@ -414,7 +417,6 @@ vrc::BaseChatProtocol* ChatNetworkingVRC::createInstance()
     // create and setup VRC protocol handler, this is used on server
     // on clients the instance is created by ReplicaNet
     _p_nwImpl = new ImplChatNetworkingVRC( this );
-    setNetworkingImpl( _p_nwImpl );
     // publish the chat networking agent in net
     _p_nwImpl->Publish();
 
