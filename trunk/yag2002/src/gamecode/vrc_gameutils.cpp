@@ -56,7 +56,7 @@ std::auto_ptr< VRCStateHandler > _autoptr_VRCStateHandler = std::auto_ptr< VRCSt
 // Implementation of game state handler
 VRCStateHandler::VRCStateHandler() :
 _playerName( "NoName" ),
-_playerConfig( "player.cfg" ),
+_playerConfig( VRC_GS_DEFAULT_PLAYER_CONFIG ),
 _playerConfigDir( "player" ),
 _mouseSensitivity( 1.0f ),
 _mouseInverted( false ),
@@ -387,14 +387,27 @@ _p_localPlayer( NULL )
 {
 }
 
-bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile )
+bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& levelfile, const std::string& cfgfile )
 {
+    std::string cfg;
+
     std::string playercfgdir;
-    std::string playercfgfile;
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_CONFIG_DIR, playercfgdir );
-    yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_CONFIG, playercfgfile );
-    // assemble full path of player cfg file
-    std::string cfg = yaf3d::Application::get()->getMediaPath() + playercfgdir + "/" + playercfgfile;
+    cfg = yaf3d::Application::get()->getMediaPath() + playercfgdir + "/";
+    // if no cfgfile given then get the settings
+    if ( !cfgfile.length() )
+    {
+        std::string playercfgfile;
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_CONFIG, playercfgfile );
+        // assemble full path of player cfg file
+        cfg += playercfgfile;
+    }
+    else
+    {
+        // assemble full path of player cfg file
+        cfg += cfgfile;
+    }
+
     // load player config
     std::string profile( cfg );
     yaf3d::Settings* p_settings = yaf3d::SettingsManager::get()->createProfile( profile, cfg );
@@ -426,7 +439,7 @@ bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& 
     }
     p_settings->registerSetting( key, value );
     yaf3d::SettingsManager::get()->loadProfile( profile );
-    p_settings->getValue( key, cfgfile );
+    p_settings->getValue( key, levelfile );
     yaf3d::SettingsManager::get()->destroyProfile( profile );
 
     return true;

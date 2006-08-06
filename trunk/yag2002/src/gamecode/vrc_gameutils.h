@@ -74,6 +74,7 @@ namespace gameutils
 #define VRC_GS_SHADOW_TEXCHANNEL            "shadowTexChannel"
 
 //! Settings default values
+#define VRC_GS_DEFAULT_PLAYER_CONFIG        "default_cfg"
 #define VRC_GS_DEFAULT_SHADOW_TEXSIZEX      1024
 #define VRC_GS_DEFAULT_SHADOW_TEXSIZEY      1024
 #define VRC_GS_DEFAULT_SHADOW_TEXCHANNEL    1
@@ -177,9 +178,9 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
                                                     PlayerUtils();
 
         //! Retrieve player configuration file path depending on game settings and given game mode ( Server, Client, Standalone ) and
-        //! in case of Client the remote flag determines local or remote client.
+        //! in case of Client the remote flag determines local or remote client. If 'cfgfile' is not empty then that file is used for getting the names of the palyer config files.
         //! Returns false if something went wrong.
-        bool                                        getPlayerConfig( unsigned int mode, bool remote, std::string& cfgfile );
+        bool                                        getPlayerConfig( unsigned int mode, bool remote, std::string& levelfile, const std::string& cfgfile = "" );
 
         //! Store a pointer to local player entity
         void                                        setLocalPlayer( yaf3d::BaseEntity* p_entity );
