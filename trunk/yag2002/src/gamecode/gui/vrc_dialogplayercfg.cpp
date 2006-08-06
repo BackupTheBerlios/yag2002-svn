@@ -228,12 +228,17 @@ void DialogPlayerConfig::setupControls()
         if ( _players.size() > 0 )
         {
             CEGUI::ListboxItem* p_sel = _p_listbox->findItemWithText( playertype.c_str(), NULL );
-            assert( p_sel && "cannot find the player type in list!" );
-
-            p_sel->setSelected( true );
-            _p_lastListSelection = p_sel;
-            // set preview image
-            setPreviewPic( p_sel );
+            if ( p_sel )
+            {
+                p_sel->setSelected( true );
+                _p_lastListSelection = p_sel;
+                // set preview image
+                setPreviewPic( p_sel );
+            }
+            else
+            {
+                log_error << "cannot find the player type in list!" << std::endl;
+            }
         }
     }
 }
