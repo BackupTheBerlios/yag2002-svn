@@ -297,11 +297,21 @@ void PlayerNetworking::createPlayer()
     static unsigned int postcnt = 0;
     postfix << "_" << postcnt;
     ++postcnt;
+
     // load player related entities
     if ( !yaf3d::LevelManager::get()->loadEntities( playerconfig, &_loadedEntities, postfix.str() ) )
     {
         log_error << "cannot find player configuration file: " << playerconfig << std::endl;
-        return;
+
+        // get the default player config
+        vrc::gameutils::PlayerUtils::get()->getPlayerConfig( yaf3d::GameState::get()->getMode(), true, playerconfig, VRC_GS_DEFAULT_PLAYER_CONFIG );
+        log_error << "loading the default player configuration: " << playerconfig << std::endl;
+        if ( !yaf3d::LevelManager::get()->loadEntities( playerconfig, &_loadedEntities, postfix.str() ) )
+        {
+            log_error << "cannot load default player configuration! shutting down the application" << std::endl;
+            yaf3d::Application::get()->stop();
+            return;
+        }
     }
 
     // search for player entity and set it up
