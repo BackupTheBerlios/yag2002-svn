@@ -5,4 +5,5 @@
 _RO_DO_PREREGISTER_FUNC();
 _RO_DEF_DO_PREDEF(ImplChatNetworkingVRC);
 _RO_DEF_DO_PREDEF(PlayerNetworking);
+_RO_DEF_DO_PREDEF(UpdateNotifierNetworking);
 _RO_DO_PREREGISTER_FUNC_END()
