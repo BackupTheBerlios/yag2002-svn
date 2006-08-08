@@ -220,6 +220,30 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../../../../src/gamecode/maintenance/networkingRoles/_RO_UpdateNotifier.cpp">
+			<Option compilerVar="CPP" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../../../../src/gamecode/maintenance/networkingRoles/_RO_UpdateNotifier.h">
+			<Option compilerVar="CPP" />
+			<Option compile="0" />
+			<Option link="0" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../../../../src/gamecode/maintenance/vrc_updatenotifier.cpp">
+			<Option compilerVar="CPP" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../../../../src/gamecode/maintenance/vrc_updatenotifier.h">
+			<Option compilerVar="CPP" />
+			<Option compile="0" />
+			<Option link="0" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../../../../src/gamecode/networking/_Def_replicaregs.cpp">
 			<Option compilerVar="CPP" />
 			<Option target="Debug" />
