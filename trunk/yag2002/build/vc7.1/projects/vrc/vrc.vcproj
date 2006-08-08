@@ -1103,6 +1103,54 @@
 					</File>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="maintenance"
+				Filter="">
+				<File
+					RelativePath="..\..\..\..\src\gamecode\maintenance\vrc_updatenotifier.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\maintenance\vrc_updatenotifier.h">
+				</File>
+				<Filter
+					Name="NetworkingRoles"
+					Filter="">
+					<File
+						RelativePath="..\..\..\..\src\gamecode\maintenance\networkingRoles\_RO_UpdateNotifier.cpp">
+						<FileConfiguration
+							Name="Debug|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug-Server|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release-Server|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\maintenance\networkingRoles\_RO_UpdateNotifier.h">
+					</File>
+				</Filter>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\VRC.rc">
