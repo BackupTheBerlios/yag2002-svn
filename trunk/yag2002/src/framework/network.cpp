@@ -384,11 +384,6 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
                 errtxt = "Networking session has been abnormally terminated due to a transport timeout.";
                break;
 
-            //! TODO: tn lib mismatch. this will come with rn version 5.5
-            //case RNReplicaNet::ReplicaNet::kXPSession_?:
-            //    errtxt = "?";
-            //   break;
-
             default:
                 ;
         }
