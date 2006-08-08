@@ -1,0 +1,18 @@
+/* The update notification object */
+object UpdateNotifierNetworking
+{    
+    datablock NData;
+    
+    networking
+    {
+        NData _p_versionInfo
+        { 
+            Reliable();
+        }
+
+        NData _p_message
+        { 
+            Reliable();
+        }        
+    }
+}
