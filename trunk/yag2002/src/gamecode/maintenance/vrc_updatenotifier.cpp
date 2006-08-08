@@ -122,10 +122,9 @@ void EnUpdateNotifier::initialize()
                 // convert the line feeds to real line feeds
                 std::string msgod( getMsgOfDay() );
                 std::size_t pos = 1;
-                while ( ( pos = msgod.find( "\\n" ) ) != std::string::npos  )
+                while ( ( pos = msgod.find( "|" ) ) != std::string::npos  )
                 {
                     msgod.replace( pos, 1, "\n" );
-                    msgod.erase( pos + 1, 1 );
                 }
                 text += msgod;
                 text += "\n";
