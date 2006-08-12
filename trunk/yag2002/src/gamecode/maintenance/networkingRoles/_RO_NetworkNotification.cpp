@@ -3,7 +3,7 @@
 #ifdef _WIN32
 #pragma warning(disable : 4786)
 #endif
-#include "../vrc_networkNotification.h"
+#include "../vrc_networknotification.h"
 
 _RO_DO_STD_FRAMEWORK(NetworkNotificationNetworking)
 #include "RNReplicaNet/Inc/DataBlock_NData.h"
