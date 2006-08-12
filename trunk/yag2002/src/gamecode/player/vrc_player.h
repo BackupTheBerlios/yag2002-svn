@@ -81,6 +81,9 @@ class EnPlayer : public yaf3d::BaseEntity
         //! Get player's IP address, used for remote clients
         inline std::string                          getIPAdress();
 
+        //! Returns the netword id. -1 means no valid id exists.
+        inline int                                  getNetworkID();
+
         //! Is voice chat enabled for this player?
         inline bool                                 isVoiceChatEnabled();
 
@@ -155,6 +158,9 @@ class EnPlayer : public yaf3d::BaseEntity
         //! Set the network ip address for this player. It is used by networking component for remote clients.
         inline void                                 setIPAdress( const std::string& ip );
 
+        //! Set the network id ( session id )
+        inline void                                 setNetworkID( int );
+
         //! Set the voice chat flag for this player. It is used by networking component for remote clients.
         inline void                                 setVoiceChatEnabled( bool en );
 
@@ -169,6 +175,9 @@ class EnPlayer : public yaf3d::BaseEntity
 
         //! Network IP address, used for getting remote clients' ip address
         std::string                                 _ipAddress;
+
+        //! Network ID
+        int                                         _networkID;
 
         //! Indicated whether voice chat is enabled for this player ( including remote clients )
         bool                                        _voiceChatEnabled;
@@ -227,6 +236,16 @@ inline void EnPlayer::setIPAdress( const std::string& ip )
 inline std::string EnPlayer::getIPAdress()
 {
     return _ipAddress;
+}
+
+inline void EnPlayer::setNetworkID( int id )
+{
+    _networkID = id;
+}
+
+inline int EnPlayer::getNetworkID()
+{
+    return _networkID;
 }
 
 inline bool EnPlayer::isVoiceChatEnabled()

@@ -48,6 +48,7 @@ YAF3D_IMPL_ENTITYFACTORY( PlayerEntityFactory )
 EnPlayer::EnPlayer() :
 _gameMode( yaf3d::GameState::get()->getMode() ),
 _p_playerImpl( NULL ),
+_networkID( -1 ),
 _voiceChatEnabled( false ),
 _deltaTime( 0.03f )
 {

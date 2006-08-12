@@ -169,6 +169,9 @@ void PlayerNetworking::PostObjectCreate()
             // set ip address in player entity
             _loadedPlayerEntity->setIPAdress( ip );
 
+            // set session if in player entity
+            _loadedPlayerEntity->setNetworkID( sid );
+
             // grant new connected client to session with initialization data
             MASTER_FUNCTION_CALL( RPC_ServerGrantsAccess( init ) );
         }
