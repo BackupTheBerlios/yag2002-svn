@@ -20,6 +20,8 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			gui/vrc_mapview.cpp \
 			npc/fish/vrc_npcfish.cpp \
 			scripting/vrc_script.cpp \
+			maintenance/vrc_networknotification.cpp \
+			maintenance/networkingRoles/_RO_NetworkNotification.cpp \
 			physics/vrc_geomemitter.cpp \
 			physics/vrc_physicsbase.cpp \
 			physics/vrc_physicsbox.cpp \
@@ -91,6 +93,7 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			tools/console/vrc_consoleiogui.cpp \
 			tools/console/vrc_cmdrenderingmode.cpp \
 			tools/console/vrc_cmdshadowdisplaymap.cpp \
+			tools/console/vrc_cmdnetworknotification.cpp \
 			visuals/vrc_camera.cpp \
 			visuals/vrc_candle.cpp \
 			visuals/vrc_fog.cpp \
