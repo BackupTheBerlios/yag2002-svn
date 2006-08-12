@@ -220,12 +220,36 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../../../../src/gamecode/maintenance/networkingRoles/_RO_NetworkNotification.cpp">
+			<Option compilerVar="CPP" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../../../../src/gamecode/maintenance/networkingRoles/_RO_NetworkNotification.h">
+			<Option compilerVar="CPP" />
+			<Option compile="0" />
+			<Option link="0" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../../../../src/gamecode/maintenance/networkingRoles/_RO_UpdateNotifier.cpp">
 			<Option compilerVar="CPP" />
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="../../../../src/gamecode/maintenance/networkingRoles/_RO_UpdateNotifier.h">
+			<Option compilerVar="CPP" />
+			<Option compile="0" />
+			<Option link="0" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../../../../src/gamecode/maintenance/vrc_networknotification.cpp">
+			<Option compilerVar="CPP" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../../../../src/gamecode/maintenance/vrc_networknotification.h">
 			<Option compilerVar="CPP" />
 			<Option compile="0" />
 			<Option link="0" />
@@ -996,6 +1020,18 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdls.h">
+			<Option compilerVar="CPP" />
+			<Option compile="0" />
+			<Option link="0" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdnetworksendnotify.cpp">
+			<Option compilerVar="CPP" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdnetworksendnotify.h">
 			<Option compilerVar="CPP" />
 			<Option compile="0" />
 			<Option link="0" />
