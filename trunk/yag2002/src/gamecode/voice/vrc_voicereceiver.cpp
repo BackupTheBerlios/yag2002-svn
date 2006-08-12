@@ -33,6 +33,7 @@
 #include <vrc_gameutils.h>
 #include "vrc_voicereceiver.h"
 #include "vrc_codec.h"
+#include "../player/vrc_player.h"
 #include "RNXPURL/Inc/XPURL.h"
 
 #include "vrc_voicetestutils.h"
@@ -42,6 +43,9 @@ namespace vrc
 
 // codec samples per frame
 #define CODEC_FRAME_SIZE            320
+
+// maximal allowed senders connected to the receiver
+#define MAX_SENDERS_CONNECTED       5
 
 //**************************************************************
 //! TODO remove this test ripper
@@ -59,6 +63,7 @@ class SoundNode
                                      {
                                          _p_sound        = NULL;
                                          _p_channel      = NULL;
+                                         _p_senderPlayer = NULL;
                                          _pingTimer      = 0.0f;
                                          _senderID       = 0;
                                          _lastPaketStamp = 0;
@@ -98,13 +103,18 @@ class SoundNode
 
         //! Last received valid voice paket stamp
         unsigned int                 _lastPaketStamp;
+
+        //! Ghost of sending sound data
+        EnPlayer*                   _p_senderPlayer;
 };
 
 VoiceReceiver::VoiceReceiver() :
 _senderID( 0 ),
 _p_udpTransport( NULL ),
 _p_soundSystem( NULL ),
-_outputGain( 1.0f )
+_outputGain( 1.0f ),
+_spotRange( 20.0f ),
+_cutoffRange( 0.0f )
 {
     // setup sender ID enumeration
     srand( static_cast< unsigned int >( time( NULL ) ) );
@@ -175,6 +185,13 @@ void VoiceReceiver::initialize() throw( NetworkSoundExpection )
 void VoiceReceiver::setOutputGain( float gain )
 {
     _outputGain = gain;
+}
+
+void VoiceReceiver::setSpotRange( float range )
+{
+    _spotRange = range;
+    // we take a cut--off range of 1/3 of the spot range
+    _cutoffRange = _spotRange * 0.333f;
 }
 
 void VoiceReceiver::setupSound() throw( NetworkSoundExpection )
@@ -337,16 +354,38 @@ void VoiceReceiver::update( float deltaTime )
             log_error << "internal error on voice paket receiver! sender id mismatch" << std::endl;
             continue;
         }
-
         switch( p_data->_typeId )
         {
             case NETWORKSOUND_PAKET_TYPE_CON_REQ:
             {
-                // send back a GRANT
-                //!TODO: currently we always grant!
-                //       we may deny e.g. when too much senders are already connected
+                // get the network id of connecting sender
+                int sid = *( reinterpret_cast< int* >( p_data->_p_buffer ) );
+
+                // find the ghost of the sender in voice enabled player list using its network id
+                EnPlayer* p_player = NULL;
+                EnPlayer* p_senderplayer = NULL;
+                const std::vector< yaf3d::BaseEntity* >& players = gameutils::PlayerUtils::get()->getRemotePlayersVoiceChat();
+                std::vector< yaf3d::BaseEntity* >::const_iterator p_beg = players.begin(), p_end = players.end();
+                for ( ; p_beg != p_end; ++p_beg )
+                {
+                    p_player = dynamic_cast< EnPlayer* >( *p_beg );
+                    if ( p_player->getNetworkID() == sid )
+                    {
+                        p_senderplayer = p_player;
+                    }
+                }
+                p_sendernode->_p_senderPlayer = p_senderplayer;
+
                 p_data->_length   = 0;
-                p_data->_typeId   = NETWORKSOUND_PAKET_TYPE_CON_GRANT;
+                // send back a GRANT if less senders exit then the max allowed
+                if ( _soundNodeMap.size() > MAX_SENDERS_CONNECTED )
+                {
+                    p_data->_typeId   = NETWORKSOUND_PAKET_TYPE_CON_DENY;
+                } 
+                else
+                {
+                    p_data->_typeId   = NETWORKSOUND_PAKET_TYPE_CON_GRANT;
+                }
 
                 // assign a unique ID to new sender
                 ++_senderID;
@@ -394,8 +433,15 @@ void VoiceReceiver::update( float deltaTime )
                 // udpate sound node's stamp
                 p_sendernode->_lastPaketStamp = p_data->_paketStamp;
 
+                // attenuate the voice volume considering a cutoff area where the volume is at maximum
+                yaf3d::BaseEntity* p_localplayer = gameutils::PlayerUtils::get()->getLocalPlayer();
+                assert( p_localplayer && "local player is not set in PlayerUtils!" );
+                osg::Vec3f diff = p_sendernode->_p_senderPlayer->getPosition() - p_localplayer->getPosition();
+                float distance = diff.length();
+                float attenuation = ( distance < _cutoffRange ) ? 1.0f : std::max( 1.0f - ( ( distance - _cutoffRange ) / ( _spotRange - _cutoffRange ) ), 0.0f );
+
                 // decode and enqueue the samples
-                if ( !p_sendernode->_p_codec->decode( p_data->_p_buffer, p_data->_length, *p_sendernode->_p_sampleQueue, _outputGain ) )
+                if ( !p_sendernode->_p_codec->decode( p_data->_p_buffer, p_data->_length, *p_sendernode->_p_sampleQueue, _outputGain * attenuation ) )
                 {
                     log_debug << "decoder queue overrun, flushing queue!" << std::endl;
                     delete p_sendernode->_p_sampleQueue;

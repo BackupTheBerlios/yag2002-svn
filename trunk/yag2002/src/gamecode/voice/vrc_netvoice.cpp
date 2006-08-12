@@ -146,6 +146,7 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
         _p_receiver = new VoiceReceiver();
         _p_receiver->initialize();
         _p_receiver->setOutputGain( outputgain );
+        _p_receiver->setSpotRange( _spotRange );
 
         // create the network manager for voice chat clients
         _p_voiceNetwork = new VoiceNetwork;

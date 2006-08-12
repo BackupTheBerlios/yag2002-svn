@@ -144,7 +144,12 @@ void VoiceSender::update( float deltaTime )
         _pongTimer = 0.0f;
 
         _p_voicePaket->_typeId    = NETWORKSOUND_PAKET_TYPE_CON_REQ;
-        _p_voicePaket->_length    = 0;
+        _p_voicePaket->_length    = 4;
+
+        // put the player network id into data buffer
+        int sid = yaf3d::NetworkDevice::get()->getSessionID();
+        *( reinterpret_cast< int* >( _p_voicePaket->_p_buffer ) ) = sid;
+
         _p_udpTransport->SendReliable( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE + _p_voicePaket->_length );
         _senderState = RequestConnection;
 
@@ -190,6 +195,15 @@ void VoiceSender::update( float deltaTime )
                 {
                     _pongTimer = 0.0f;
                 }
+            }
+            break;
+
+            case ConnectionDenied:
+            {
+                // kill this sender
+                _isAlive = false;
+                // set the state to Initial so the input functor gets inactive too
+                _senderState = Initial;
             }
             break;
 

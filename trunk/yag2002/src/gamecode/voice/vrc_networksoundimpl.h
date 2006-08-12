@@ -75,7 +75,11 @@ class BaseNetworkSoundImplementation
         //! Initialize
         virtual void                    initialize() throw( NetworkSoundExpection ) = 0;
 
-        virtual void                    setOutputGain( float /*gain*/ ) {}
+        //! Set output volume
+        virtual void                    setOutputGain( float /* gain */ ) {}
+
+        //! Set voice spot range
+        virtual void                    setSpotRange( float /* range */ ) {}
 
         //! Update
         virtual void                    update( float deltaTime ) = 0;

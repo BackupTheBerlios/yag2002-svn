@@ -59,6 +59,9 @@ class VoiceReceiver : public BaseNetworkSoundImplementation
         //! Set output gain
         void                                        setOutputGain( float gain );
 
+        //! Set the spot range
+        void                                        setSpotRange( float range );
+
         //! Shutdown the voice server
         void                                        shutdown();
 
@@ -89,6 +92,12 @@ class VoiceReceiver : public BaseNetworkSoundImplementation
     
         //! Output gain
         float                                       _outputGain;
+
+        //! Sport range is used for calculating the voice volume attenuation depending on player distance to each other
+        float                                       _spotRange;
+
+        //! Cut-off range
+        float                                       _cutoffRange;
 };
 
 } // namespace vrc
