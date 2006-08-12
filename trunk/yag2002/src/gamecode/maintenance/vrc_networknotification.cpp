@@ -19,7 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # entity for notifying the player if a new version is available
+ # entity for network notifications
  #  ( used only in networked mode )
  #
  #   date of creation:  08/08/2006
@@ -30,18 +30,18 @@
  ################################################################*/
 
 #include <vrc_main.h>
-#include "vrc_updatenotifier.h"
+#include "vrc_networknotification.h"
 
 namespace vrc
 {
 
 //! Default destruction timeout for messagebox in seconds
-#define MSGBOX_DESTRUCTION_TIMEOUT      15.0f
+#define MSGBOX_DESTRUCTION_TIMEOUT      10.0f
 
 //! Implement and register the entity factory
-YAF3D_IMPL_ENTITYFACTORY( UpdateNotifierEntityFactory )
+YAF3D_IMPL_ENTITYFACTORY( NetworkNotificationEntityFactory )
 
-EnUpdateNotifier::EnUpdateNotifier() :
+EnNetworkNotification::EnNetworkNotification() :
 _p_msgBox( NULL ),
 _p_networking( NULL ),
 _destructionTimeOut( MSGBOX_DESTRUCTION_TIMEOUT ),
@@ -52,7 +52,7 @@ _cnt( 0.0f )
     getAttributeManager().addAttribute( "msgOfDay",            _msgOfDay           );
 }
 
-EnUpdateNotifier::~EnUpdateNotifier()
+EnNetworkNotification::~EnNetworkNotification()
 {
     if ( _p_msgBox )
     {
@@ -64,7 +64,7 @@ EnUpdateNotifier::~EnUpdateNotifier()
         delete _p_networking;
 }
 
-void EnUpdateNotifier::handleNotification( const yaf3d::EntityNotification& notification )
+void EnNetworkNotification::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle some notifications
     switch( notification.getId() )
@@ -94,11 +94,11 @@ void EnUpdateNotifier::handleNotification( const yaf3d::EntityNotification& noti
     }
 }
 
-void EnUpdateNotifier::initialize()
+void EnNetworkNotification::initialize()
 {
     if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
     {
-        _p_networking = new UpdateNotifierNetworking( this );
+        _p_networking = new NetworkNotificationNetworking( this );
         _p_networking->Publish();
         log_info << "VRC version info: " << getVersionInfo() << std::endl;
         log_info << "VRC version info: " << getMsgOfDay() << std::endl;
@@ -131,11 +131,8 @@ void EnUpdateNotifier::initialize()
             }
             if ( text.length() )
             {
-                _p_msgBox = new yaf3d::MessageBoxDialog( "Attention", text, yaf3d::MessageBoxDialog::OK, true );
-                _p_msgBox->setClickCallback( new ClickClb( this ) );
-                _p_msgBox->show();
+                createMessagBox( "Attention", text );
             }
-
             // register entity in order to get notifications
             yaf3d::EntityManager::get()->registerNotification( this, true );
             // register entity in order to get updated
@@ -143,26 +140,77 @@ void EnUpdateNotifier::initialize()
         }
         catch ( const CEGUI::Exception& e )
         {
-            log_error << "EnUpdateNotifier: problem creating gui" << std::endl;
+            log_error << "EnNetworkNotification: problem creating gui" << std::endl;
             log << "      reason: " << e.getMessage().c_str() << std::endl;
         }
     }
 }
 
-void EnUpdateNotifier::updateEntity( float deltaTime )
+void EnNetworkNotification::sendNotification( const std::string& title, const std::string& text, float destructionTimeout )
 {
-    _cnt += deltaTime;
-    if ( _cnt > _destructionTimeOut )
-    {
-        // this entity is not longer needed
-        yaf3d::EntityManager::get()->deleteEntity( this );
+   if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Server )
+   {
+       log_error << "EnNetworkNotification: the method 'sendNotification' has been called in a non-server mode! ignoring." << std::endl;
+       return;
+   }
+
+   // convert the line feeds to real line feeds
+   std::string textln( text );
+   std::size_t pos = 1;
+   while ( ( pos = textln.find( "|" ) ) != std::string::npos  )
+   {
+       textln.replace( pos, 1, "\n" );
+   }
+
+   // fill the notification data struct and send it over net
+   tNotificationData notify;
+   notify._destructionTimeout = destructionTimeout;
+   strncpy( notify._text, textln.c_str(), std::min( sizeof( notify._text ), textln.length() + 1 ) );
+   strncpy( notify._title, title.c_str(), std::min( sizeof( notify._title ), title.length() + 1 ) );
+
+   _p_networking->notifyClients( notify );
+}
+
+void EnNetworkNotification::createMessagBox( const std::string& title, const std::string& text, float destructionTimeout )
+{
+   if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Client )
+   {
+       log_error << "EnNetworkNotification: the method 'createMessagBox' has been called in a non-client mode! ignoring." << std::endl;
+       return;
+   }
+ 
+    if ( _p_msgBox )
+        _p_msgBox->destroy();
+
+    _p_msgBox = new yaf3d::MessageBoxDialog( title, text, yaf3d::MessageBoxDialog::OK, true );
+    _p_msgBox->setClickCallback( new ClickClb( this ) );
+    _p_msgBox->show();
+
+    if ( destructionTimeout > 0.0f )
+        _destructionTimeOut = destructionTimeout;
+    else
+        _destructionTimeOut = MSGBOX_DESTRUCTION_TIMEOUT;
+}
+
+void EnNetworkNotification::updateEntity( float deltaTime )
+{
+    if ( _p_msgBox )    
+    {       
+        _cnt += deltaTime;
+        if ( _cnt > _destructionTimeOut )
+        {
+            _p_msgBox->destroy();
+            _p_msgBox = NULL;
+            _cnt      = 0.0f;
+        }
     }
 }
 
 } // namespace vrc
 
 
-UpdateNotifierNetworking::UpdateNotifierNetworking( vrc::EnUpdateNotifier* p_entity )
+NetworkNotificationNetworking::NetworkNotificationNetworking( vrc::EnNetworkNotification* p_entity ) :
+_p_entity( p_entity )
 {
     memset( _p_versionInfo, 0, sizeof( _p_versionInfo ) );
     memset( _p_message, 0, sizeof( _p_message ) );
@@ -175,26 +223,26 @@ UpdateNotifierNetworking::UpdateNotifierNetworking( vrc::EnUpdateNotifier* p_ent
     }
 }
 
-UpdateNotifierNetworking::~UpdateNotifierNetworking()
+NetworkNotificationNetworking::~NetworkNotificationNetworking()
 {
 }
 
-void UpdateNotifierNetworking::PostObjectCreate()
-{
-    vrc::EnUpdateNotifier* p_entity = dynamic_cast< vrc::EnUpdateNotifier* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_UPDATENOTIFIER ) );
-    if ( !p_entity )
+void NetworkNotificationNetworking::PostObjectCreate()
+{ // this method is called only on ghosts
+    _p_entity = dynamic_cast< vrc::EnNetworkNotification* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_NETWORKNOTIFICATION ) );
+    if ( !_p_entity )
     {
-        log_error << "UpdateNotifierNetworking: cannot create entity type '" << ENTITY_NAME_UPDATENOTIFIER << "'" << std::endl;
+        log_error << "NetworkNotificationNetworking: cannot create entity type '" << ENTITY_NAME_NETWORKNOTIFICATION << "'" << std::endl;
         return;
     }
 
-    p_entity->setMsgOfDay( _p_message );
-    p_entity->setVersionInfo( _p_versionInfo );
-    p_entity->initialize();
-    p_entity->postInitialize();
+    _p_entity->setMsgOfDay( _p_message );
+    _p_entity->setVersionInfo( _p_versionInfo );
+    _p_entity->initialize();
+    _p_entity->postInitialize();
 }
 
-void UpdateNotifierNetworking::setVersionInfo( const std::string& version )
+void NetworkNotificationNetworking::setVersionInfo( const std::string& version )
 {
     if ( version.length() )
         strcpy( _p_versionInfo, version.c_str() );
@@ -202,7 +250,7 @@ void UpdateNotifierNetworking::setVersionInfo( const std::string& version )
         _p_versionInfo[ 0 ] = 0;
 }
 
-void UpdateNotifierNetworking::setMsgOfDay( const std::string& msg )
+void NetworkNotificationNetworking::setMsgOfDay( const std::string& msg )
 {
     if ( msg.length() < 255 )
     {
@@ -210,10 +258,28 @@ void UpdateNotifierNetworking::setMsgOfDay( const std::string& msg )
     }
     else if ( msg.length() >= 255  )
     {
-        log_error << "UpdateNotifierNetworking: message of the day is too long. max characters is 255!" << std::endl;
+        log_error << "NetworkNotificationNetworking: message of the day is too long. max characters is 255!" << std::endl;
     }
     else if ( msg.length() == 0 )
     {
         _p_message[ 0 ] = 0;
     }
+}
+
+void NetworkNotificationNetworking::RPC_RecvNotification( tNotificationData notify )
+{
+    // trim the strings for being on safe side
+    notify._text[ sizeof( notify._text ) - 1 ] = 0;
+    notify._title[ sizeof( notify._title ) - 1 ] = 0;
+    log_info << "got network notification:" << std::endl;
+    log      << " title: " << notify._title << std::endl;
+    log      << " text:  " << notify._text << std::endl;
+
+    _p_entity->createMessagBox( notify._title, notify._text, notify._destructionTimeout );
+}
+
+void NetworkNotificationNetworking::notifyClients( tNotificationData notify )
+{
+    // call the function on all replicas
+    ALL_REPLICAS_FUNCTION_CALL( RPC_RecvNotification( notify ) );
 }

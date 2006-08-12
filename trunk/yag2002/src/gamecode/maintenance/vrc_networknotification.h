@@ -19,7 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # entity for notifying the player if a new version is available
+ # entity for network notifications
  #  ( used only in networked mode )
  #
  #   date of creation:  08/08/2006
@@ -29,27 +29,27 @@
  #
  ################################################################*/
 
-#ifndef _VRC_UPDATENOTIFIER_H_
-#define _VRC_UPDATENOTIFIER_H_
+#ifndef _VRC_NETWORKNOTIFICATION_H_
+#define _VRC_NETWORKNOTIFICATION_H_
 
 #include <vrc_main.h>
-#include "networkingRoles/_RO_UpdateNotifier.h"
+#include "networkingRoles/_RO_NetworkNotification.h"
 
 //! Networking class
-class UpdateNotifierNetworking;
+class NetworkNotificationNetworking;
 
 namespace vrc
 {
 
-#define ENTITY_NAME_UPDATENOTIFIER    "UpdateNotifier"
+#define ENTITY_NAME_NETWORKNOTIFICATION    "NetworkNotification"
 
-//! Entity UpdateNotifier
-class EnUpdateNotifier :  public yaf3d::BaseEntity
+//! Entity NetworkNotifier
+class EnNetworkNotification :  public yaf3d::BaseEntity
 {
     public:
-                                                    EnUpdateNotifier();
+                                                    EnNetworkNotification();
 
-        virtual                                     ~EnUpdateNotifier();
+        virtual                                     ~EnNetworkNotification();
 
         //! Initialize entity
         void                                        initialize();
@@ -69,6 +69,13 @@ class EnUpdateNotifier :  public yaf3d::BaseEntity
         //! Set the message of the day string
         inline void                                 setMsgOfDay( const std::string& msg );
 
+        //! Send a notification to clients. This method can be used only on server!
+        void                                        sendNotification( const std::string& title, const std::string& text, float destructionTimeout = 0.0f );
+
+        //! Create a notification message box, the box is destroyed after given timeout. if zero timeout given then the default timeout is used.
+        //! Only used in clients, on server the method has no effect
+        void                                        createMessagBox( const std::string& title, const std::string& text, float destructionTimeout = 0.0f );
+
     protected:
 
         //! Update entity
@@ -82,7 +89,7 @@ class EnUpdateNotifier :  public yaf3d::BaseEntity
         {
             public:
 
-                explicit                                ClickClb( EnUpdateNotifier* p_entity ) : 
+                explicit                                ClickClb( EnNetworkNotification* p_entity ) : 
                                                          _p_entity( p_entity )
                                                         {
                                                         }
@@ -94,7 +101,7 @@ class EnUpdateNotifier :  public yaf3d::BaseEntity
 
             protected:
 
-                EnUpdateNotifier*                       _p_entity;
+                EnNetworkNotification*                       _p_entity;
         };
 
         //! Version information       
@@ -107,49 +114,50 @@ class EnUpdateNotifier :  public yaf3d::BaseEntity
         yaf3d::MessageBoxDialog*                    _p_msgBox;
 
         //! Networking
-        UpdateNotifierNetworking*                   _p_networking;
+        NetworkNotificationNetworking*              _p_networking;
 
         //! Timeout for destruction of messagebox if the user not already done by clicking on Ok button
         float                                       _destructionTimeOut;
+
         //! Messagebox destruction counter
         float                                       _cnt;
 };
 
 //! Entity type definition used for type registry
-class UpdateNotifierEntityFactory : public yaf3d::BaseEntityFactory
+class NetworkNotificationEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
-                                                    UpdateNotifierEntityFactory() : 
-                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_UPDATENOTIFIER, yaf3d::BaseEntityFactory::Server | yaf3d::BaseEntityFactory::Client )
+                                                    NetworkNotificationEntityFactory() : 
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_NETWORKNOTIFICATION, yaf3d::BaseEntityFactory::Server | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
-        virtual                                     ~UpdateNotifierEntityFactory() {}
+        virtual                                     ~NetworkNotificationEntityFactory() {}
 
-        Macro_CreateEntity( EnUpdateNotifier );
+        Macro_CreateEntity( EnNetworkNotification );
 };
 
 //! Inline methods
-inline const bool EnUpdateNotifier::isTransformable() const 
+inline const bool EnNetworkNotification::isTransformable() const 
 { 
     return false; 
 }
 
-inline const std::string& EnUpdateNotifier::getVersionInfo() 
+inline const std::string& EnNetworkNotification::getVersionInfo() 
 { 
     return _version; 
 }
 
-inline void EnUpdateNotifier::setVersionInfo( const std::string& version )
+inline void EnNetworkNotification::setVersionInfo( const std::string& version )
 { 
     _version = version; 
 }
 
-inline const std::string& EnUpdateNotifier::getMsgOfDay()
+inline const std::string& EnNetworkNotification::getMsgOfDay()
 { 
     return _msgOfDay; 
 }
 
-inline void EnUpdateNotifier::setMsgOfDay( const std::string& msg ) 
+inline void EnNetworkNotification::setMsgOfDay( const std::string& msg ) 
 { 
     _msgOfDay = msg; 
 }
@@ -157,15 +165,15 @@ inline void EnUpdateNotifier::setMsgOfDay( const std::string& msg )
 } // namespace vrc
 
 
-//! Networking class for update notifier
-class UpdateNotifierNetworking : _RO_DO_PUBLIC_RO( UpdateNotifierNetworking )
+//! Networking class for network notification
+class NetworkNotificationNetworking : _RO_DO_PUBLIC_RO( NetworkNotificationNetworking )
 {
 
     public:
 
-        explicit                                    UpdateNotifierNetworking( vrc::EnUpdateNotifier* p_entity = NULL );
+        explicit                                    NetworkNotificationNetworking( vrc::EnNetworkNotification* p_entity = NULL );
 
-        virtual                                     ~UpdateNotifierNetworking();
+        virtual                                     ~NetworkNotificationNetworking();
 
         //! Set the version info string
         void                                        setVersionInfo( const std::string& version );
@@ -173,11 +181,17 @@ class UpdateNotifierNetworking : _RO_DO_PUBLIC_RO( UpdateNotifierNetworking )
         //! Set the message of the day string
         void                                        setMsgOfDay( const std::string& msg );
 
+        //! Notify all clients, call this only on server
+        void                                        notifyClients( tNotificationData notify );
+
         // ReplicaNet overrides
         //-----------------------------------------------------------------------------------//
 
         //! Object can now be initialized in scene ( on clients )
         void                                        PostObjectCreate();
+
+        //! Receive network notification, server sends and clients receive
+        void                                        RPC_RecvNotification( tNotificationData notify );
 
     protected:
 
@@ -185,7 +199,9 @@ class UpdateNotifierNetworking : _RO_DO_PUBLIC_RO( UpdateNotifierNetworking )
 
         char                                        _p_message[ 256 ];
 
-    friend class _MAKE_RO( UpdateNotifierNetworking );
+        vrc::EnNetworkNotification*                 _p_entity;
+
+    friend class _MAKE_RO( NetworkNotificationNetworking );
 };
 
-#endif // _VRC_UPDATENOTIFIER_H_
+#endif // _VRC_NETWORKNOTIFICATION_H_
