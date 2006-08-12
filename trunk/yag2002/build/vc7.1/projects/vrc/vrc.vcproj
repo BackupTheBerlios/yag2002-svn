@@ -866,6 +866,12 @@
 							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdls.h">
 						</File>
 						<File
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdnetworksendnotify.cpp">
+						</File>
+						<File
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdnetworksendnotify.h">
+						</File>
+						<File
 							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdphysicsrender.cpp">
 						</File>
 						<File
@@ -1107,16 +1113,16 @@
 				Name="maintenance"
 				Filter="">
 				<File
-					RelativePath="..\..\..\..\src\gamecode\maintenance\vrc_updatenotifier.cpp">
+					RelativePath="..\..\..\..\src\gamecode\maintenance\vrc_networknotification.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\maintenance\vrc_updatenotifier.h">
+					RelativePath="..\..\..\..\src\gamecode\maintenance\vrc_networknotification.h">
 				</File>
 				<Filter
 					Name="NetworkingRoles"
 					Filter="">
 					<File
-						RelativePath="..\..\..\..\src\gamecode\maintenance\networkingRoles\_RO_UpdateNotifier.cpp">
+						RelativePath="..\..\..\..\src\gamecode\maintenance\networkingRoles\_RO_NetworkNotification.cpp">
 						<FileConfiguration
 							Name="Debug|Win32">
 							<Tool
@@ -1147,7 +1153,7 @@
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath="..\..\..\..\src\gamecode\maintenance\networkingRoles\_RO_UpdateNotifier.h">
+						RelativePath="..\..\..\..\src\gamecode\maintenance\networkingRoles\_RO_NetworkNotification.h">
 					</File>
 				</Filter>
 			</Filter>
