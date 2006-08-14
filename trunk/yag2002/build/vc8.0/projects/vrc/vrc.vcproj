@@ -1173,6 +1173,14 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdnetworksendnotify.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdnetworksendnotify.h"
+							>
+						</File>
+						<File
 							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdphysicsrender.cpp"
 							>
 						</File>
@@ -1478,6 +1486,66 @@
 					RelativePath="..\..\..\..\src\gamecode\voice\vrc_voicetestutils.inl"
 					>
 				</File>
+			</Filter>
+			<Filter
+				Name="maintenance"
+				>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\maintenance\vrc_networknotification.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\maintenance\vrc_networknotification.h"
+					>
+				</File>
+				<Filter
+					Name="networkingRoles"
+					>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\maintenance\networkingRoles\_RO_NetworkNotification.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug-Server|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release-Server|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\maintenance\networkingRoles\_RO_NetworkNotification.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<File
