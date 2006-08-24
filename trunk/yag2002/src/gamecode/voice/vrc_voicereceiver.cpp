@@ -374,6 +374,10 @@ void VoiceReceiver::update( float deltaTime )
                         p_senderplayer = p_player;
                     }
                 }
+
+                if ( !p_senderplayer )
+                    log_error << "Voice Receiver cannot find sending player!" << std::endl;
+
                 p_sendernode->_p_senderPlayer = p_senderplayer;
 
                 p_data->_length   = 0;
@@ -434,11 +438,15 @@ void VoiceReceiver::update( float deltaTime )
                 p_sendernode->_lastPaketStamp = p_data->_paketStamp;
 
                 // attenuate the voice volume considering a cutoff area where the volume is at maximum
-                yaf3d::BaseEntity* p_localplayer = gameutils::PlayerUtils::get()->getLocalPlayer();
-                assert( p_localplayer && "local player is not set in PlayerUtils!" );
-                osg::Vec3f diff = p_sendernode->_p_senderPlayer->getPosition() - p_localplayer->getPosition();
-                float distance = diff.length();
-                float attenuation = ( distance < _cutoffRange ) ? 1.0f : std::max( 1.0f - ( ( distance - _cutoffRange ) / ( _spotRange - _cutoffRange ) ), 0.0f );
+                float attenuation = 1.0;
+                if ( p_sendernode->_p_senderPlayer )
+                {
+                    yaf3d::BaseEntity* p_localplayer = gameutils::PlayerUtils::get()->getLocalPlayer();
+                    assert( p_localplayer && "local player is not set in PlayerUtils!" );
+                    osg::Vec3f diff = p_sendernode->_p_senderPlayer->getPosition() - p_localplayer->getPosition();
+                    float distance = diff.length();
+                    attenuation = ( distance < _cutoffRange ) ? 1.0f : std::max( 1.0f - ( ( distance - _cutoffRange ) / ( _spotRange - _cutoffRange ) ), 0.0f );
+                }
 
                 // decode and enqueue the samples
                 if ( !p_sendernode->_p_codec->decode( p_data->_p_buffer, p_data->_length, *p_sendernode->_p_sampleQueue, _outputGain * attenuation ) )
