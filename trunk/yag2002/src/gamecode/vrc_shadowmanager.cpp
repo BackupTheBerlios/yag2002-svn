@@ -49,17 +49,16 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
 {
     public:
 
-                                                UpdateCameraAndTexGenCallback( osg::Vec3f lightpos, osg::CameraNode* p_cameraNode, osg::TexGenNode* p_texgenNode ):
-                                                _lightPosition( lightpos ),
-                                                _cameraNode( p_cameraNode ),
-                                                _texgenNode( p_texgenNode ),
-                                                _updateNodes( true ),
-                                                _updateLightPosition( true ),
-                                                _nearZ( 0.0f ),
-                                                _farZ( 0.0f ),
-                                                _frustomCorner( 0.0f )
+                                                UpdateCameraAndTexGenCallback( osg::Vec3f lightpos, osg::CameraNode* p_cameraNode, osg::Uniform* p_texgenMatrix ):
+                                                 _lightPosition( lightpos ),
+                                                 _cameraNode( p_cameraNode ),
+                                                 _p_texgenMatrix( p_texgenMatrix ),
+                                                 _updateNodes( true ),
+                                                 _updateLightPosition( true ),
+                                                 _nearZ( 0.0f ),
+                                                 _farZ( 0.0f ),
+                                                 _frustomCorner( 0.0f )
                                                 {
-                                                    _texgenNode->getTexGen()->setMode( osg::TexGen::EYE_LINEAR );
                                                 }
 
         void                                    setLightPosition( const osg::Vec3f& pos )
@@ -76,7 +75,7 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
 
         void                                    operator()( osg::Node* p_node, osg::NodeVisitor* p_nv )
                                                 {
-                                                    // first update subgraph to make sure objects are all moved into postion
+                                                    // first update subgraph to make sure objects are all moved into position
                                                     traverse( p_node, p_nv );
 
                                                     if ( _updateNodes )
@@ -117,10 +116,12 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
                                                                 osg::Matrix::translate( 1.0, 1.0, 1.0 ) *
                                                                 osg::Matrix::scale( 0.5f, 0.5f, 0.5f );
 
-                                                        _updateLightPosition = false;
+                                                        
+                                                         _updateLightPosition = false;                                                        
                                                     }
 
-                                                    _texgenNode->getTexGen()->setPlanesFromMatrix( _MVPT );
+                                                    // update the texture generation matrix
+                                                    _p_texgenMatrix->set( osg::Matrixf::inverse( yaf3d::Application::get()->getSceneView()->getViewMatrix() )* _MVPT );
                                                 }
 
     protected:
@@ -131,7 +132,7 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
 
         osg::ref_ptr< osg::CameraNode >         _cameraNode;
 
-        osg::ref_ptr< osg::TexGenNode >         _texgenNode;
+        osg::Uniform*                           _p_texgenMatrix;
 
         osg::BoundingSphere                     _shadowBB;
 
@@ -173,6 +174,7 @@ static const char glsl_vp[] =
     "* http://yag2002.sf.net                                                            \n"
     "* 06/27/2006                                                                       \n"
     "*/                                                                                 \n"
+    "uniform mat4 texgenMatrix;                                                         \n"
     "varying vec4 diffuse, ambient;                                                     \n"
     "varying vec3 normal, lightDir, halfVector;                                         \n"
     "varying vec2 baseTexCoords;                                                        \n"
@@ -187,14 +189,9 @@ static const char glsl_vp[] =
     "   ambient     = gl_FrontMaterial.ambient * gl_LightSource[ 0 ].ambient;           \n"
     "   ambient     += gl_LightModel.ambient * gl_FrontMaterial.ambient;                \n"
     "                                                                                   \n"
-    "   vec4 vert   = gl_ModelViewMatrix * gl_Vertex;                                   \n"
-    "   gl_TexCoord[ shadowTexChannel ] =                                               \n"
-    "       vec4(  dot( vert, gl_EyePlaneS[ shadowTexChannel ] ),                       \n"
-    "              dot( vert, gl_EyePlaneT[ shadowTexChannel ] ),                       \n"
-    "              dot( vert, gl_EyePlaneR[ shadowTexChannel ] ),                       \n"
-    "              dot( vert, gl_EyePlaneQ[ shadowTexChannel ] ) );                     \n"
-    "                                                                                   \n"
-    "   gl_Position   = ftransform();                                                   \n"
+    "   vec4 pos    =  gl_ModelViewMatrix * gl_Vertex;                                  \n"
+    "   gl_TexCoord[ shadowTexChannel ] = texgenMatrix * pos;                           \n"
+    "   gl_Position   = gl_ModelViewProjectionMatrix * gl_Vertex;                       \n"
     "   baseTexCoords = gl_MultiTexCoord0.st;                                           \n"
     "}                                                                                  \n"
 ;
@@ -212,12 +209,13 @@ static char glsl_fp[] =
     "varying vec3            normal, lightDir, halfVector;                              \n"
     "varying vec2            baseTexCoords;                                             \n"
     "const   int             shadowTexChannel = 1;                                      \n"
+    "const   float           shadowTexSize    = 1024.0;                                 \n"
     "                                                                                   \n"
     "void main(void)                                                                    \n"
     "{                                                                                  \n"
     "   vec3 n,halfV;                                                                   \n"
     "   float NdotL,NdotHV;                                                             \n"
-    "                                                                                   \n"
+    "   // calculate lighting                                                           \n"
     "   vec4 color = ambient;                                                           \n"
     "   n = normalize( normal );                                                        \n"
     "   NdotL = max(dot( n, lightDir ), 0.0 );                                          \n"
@@ -234,7 +232,7 @@ static char glsl_fp[] =
     "   // number of neighboring textels                                                \n"
     "   float cells = 1.0 / 9.0;                                                        \n"
     "   // coordinate offset depending on shadow texture size                           \n"
-    "   float co = 1.0 / 1024.0;                                                        \n"
+    "   float co = 1.0 / shadowTexSize;                                                 \n"
     "   vec3 shadowCoord0 =                                                             \n"
     "      gl_TexCoord[ shadowTexChannel ].xyz / gl_TexCoord[ shadowTexChannel ].w;     \n"
     "                                                                                   \n"
@@ -430,13 +428,13 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
         _p_colorGainAndBiasParam = new osg::Uniform( "ambientBias", _shadowAmbientBias );
         p_stateset->addUniform( _p_colorGainAndBiasParam );
 
-        // create the texgen node to project the tex coords onto the subgraph
-        osg::TexGenNode* p_texgenNode = new osg::TexGenNode;
-        p_texgenNode->setTextureUnit( shadowTextureUnit );
-        _shadowedGroup->addChild( p_texgenNode );
+        // the texture generation matrix and its uniform are updated in camera callback
+        osg::Matrixf   texgenMatrix;
+        osg::Uniform* p_texgenMatrix = new osg::Uniform( "texgenMatrix", texgenMatrix );
+        p_stateset->addUniform( p_texgenMatrix );
 
         // set an update callback to keep moving the camera and tex gen in the right direction.
-        _p_updateCallback = new UpdateCameraAndTexGenCallback( _lightPosition, _shadowCameraGroup.get(), p_texgenNode );
+        _p_updateCallback = new UpdateCameraAndTexGenCallback( _lightPosition, _shadowCameraGroup.get(), p_texgenMatrix );
         _shadowedGroup->setUpdateCallback( _p_updateCallback );
     }
 
