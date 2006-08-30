@@ -130,6 +130,9 @@ void VRCStateHandler::onStateChange( unsigned int state )
 
         case yaf3d::GameState::GraphicsInitialized :
         {
+            // set app window title
+            yaf3d::Application::get()->setWindowTitle( "VRC " VRC_VERSION );
+
             // check glsl availability for dynamic shadow
             {
                 const osg::GL2Extensions* p_extensions = osg::GL2Extensions::Get( 0, true );
