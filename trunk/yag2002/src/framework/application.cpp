@@ -49,7 +49,7 @@
 //#define YAF3D_HAS_CONSOLE
 
 // app icon and tile
-#define YAF3D_APP_TITLE             "VRC"
+#define YAF3D_APP_TITLE             "Yaf3D"
 #define YAF3D_APP_ICON              "icon.bmp"
 
 // environment variable for media directory
