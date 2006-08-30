@@ -110,9 +110,9 @@ void EnNetworkNotification::initialize()
             std::string text;
             if ( getVersionInfo() != VRC_VERSION )
             {
-                text += "A new VRC version is available: ";
+                text += "Server runs VRC version: ";
                 text += getVersionInfo() + "\n";
-                text += "Visit the project site for download.\nhttp://yag2002.sf.net\n";
+                text += "Visit the project site for updates.\nhttp://yag2002.sf.net\n";
                 text += "\n";
             }
             if ( getMsgOfDay().length() )
