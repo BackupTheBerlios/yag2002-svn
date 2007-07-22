@@ -44,7 +44,7 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.11.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include&quot;;&quot;$(YAF3D_DEP_DIR)\LOD\glod\include&quot;;&quot;$(YAF3D_DEP_DIR)\Scripting\lua5.1\include&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="_DEBUG;WIN32;_CONSOLE"
-				MinimalRebuild="false"
+				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				BufferSecurityCheck="false"
@@ -71,12 +71,12 @@
 				OutputFile="../../../../bin/win32/vrc_debug.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)\LibDotNet2005&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs-vc8.0&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
-				IgnoreDefaultLibraryNames="msvcrt"
+				IgnoreDefaultLibraryNames="msvcrt;libcmtd"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				HeapCommitSize="0"
 				StackCommitSize="0"
-				LinkTimeCodeGeneration="1"
+				LinkTimeCodeGeneration="0"
 				EntryPointSymbol=""
 			/>
 			<Tool
@@ -334,7 +334,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib glu32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgUtil.lib osgFX.lib osgText.lib osgSim.lib osgCal.lib cal3d.lib osgSDL.lib SDL.lib SDLmain.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib RNPlatformRMDLL.lib RNXPCompressionRMDLL.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib libpng.lib lua51.lib fmodex_vc.lib libspeex.lib glod.lib framework-server.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsWin32.lib osg.lib osgDB.lib osgGA.lib osgUtil.lib osgcal.lib cal3d.lib osgSDL.lib SDL.lib SDLmain.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib RNPlatformRMDLL.lib RNXPCompressionRMDLL.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib libpng.lib fmodex_vc.lib lua51.lib libspeex.lib glod.lib framework-server.lib"
 				OutputFile="../../../../bin/win32/vrc-server.exe"
 				LinkIncremental="0"
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)\LibDotNet2005&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs-vc8.0&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
