@@ -42,8 +42,11 @@ namespace yaf3d
 {
 
 // used for copy and paste functionality
-#define TYPE_EDITBOX            "TaharezLook/Editbox"
-#define TYPE_MULITLINEBOX       "TaharezLook/MultiLineEditbox"
+#define TYPE_EDITBOX                    "TaharezLook/Editbox"
+#define TYPE_MULITLINEBOX               "TaharezLook/MultiLineEditbox"
+
+// maximal length of the string getting from clipboard
+#define MAX_GET_CLIPBOARD_TEXT_SIZE     255
 
 //! Viewer's init callback. Here we initialize CEGUI's renderer.
 class GuiViewerInitCallback : public osgSDL::Viewer::ViewerInitCallback
@@ -565,7 +568,18 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
                                 CEGUI::Editbox* p_editbox = static_cast< CEGUI::Editbox* >( p_active );
                                 CEGUI::String::size_type beg = p_editbox->getSelectionStartIndex();
                                 CEGUI::String::size_type len = p_editbox->getSelectionLength();
-                                std::string seltext = p_editbox->getText().substr( beg, len ).c_str();
+
+                                // copy the selected text to clipboard
+                                {
+                                    std::wstring seltext;
+                                    CEGUI::String cpytext( p_editbox->getText().substr( beg, len ) ); // get selected text
+                                    // convert the text to std::wstring
+                                    std::size_t stringlen = cpytext.length();
+                                    for ( std::size_t cnt = 0; cnt < stringlen; ++cnt )
+                                        seltext += cpytext[ cnt ];
+                                    
+                                    copyToClipboard( seltext );
+                                }
 
                                 // are we cutting or just copying?
                                 if ( cuttext && !p_editbox->isReadOnly() )
@@ -573,9 +587,6 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
                                     CEGUI::String newtext = p_editbox->getText();
                                     p_editbox->setText( newtext.erase( beg, len ) );
                                 }
-
-                                // copy to clipboard
-                                copyToClipboard( seltext );
                             }
                             else if ( wintype == TYPE_MULITLINEBOX )
                             {
@@ -583,7 +594,18 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
                                 CEGUI::MultiLineEditbox* p_mleditbox = static_cast< CEGUI::MultiLineEditbox* >( p_active );
                                 CEGUI::String::size_type beg = p_mleditbox->getSelectionStartIndex();
                                 CEGUI::String::size_type len = p_mleditbox->getSelectionLength();
-                                std::string seltext = p_mleditbox->getText().substr( beg, len ).c_str();
+
+                                // copy the selected text to clipboard
+                                {
+                                    std::wstring seltext;
+                                    CEGUI::String cpytext( p_mleditbox->getText().substr( beg, len ) ); // get selected text
+                                    // convert the text to std::wstring
+                                    std::size_t stringlen = cpytext.length();
+                                    for ( std::size_t cnt = 0; cnt < stringlen; ++cnt )
+                                        seltext += cpytext[ cnt ];
+                                    
+                                    copyToClipboard( seltext );
+                                }
 
                                 // are we cutting or just copying?
                                 if ( cuttext && !p_mleditbox->isReadOnly() )
@@ -591,9 +613,6 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
                                     CEGUI::String newtext = p_mleditbox->getText();
                                     p_mleditbox->setText( newtext.erase( beg, len ) );
                                 }
-
-                                // copy to clipboard
-                                copyToClipboard( seltext );
                             }
                         }
                     }
@@ -605,12 +624,12 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
             {
                 if ( _ctrl )
                 {
-                    std::string text;
-                    if ( getFromClipboard( text ) )
+                    std::wstring text;
+                    if ( getFromClipboard( text, MAX_GET_CLIPBOARD_TEXT_SIZE ) )
                     {
-                        CEGUI::String utf32str = text;
-                        for ( std::size_t len = utf32str.length(), cnt = 0; cnt < len; ++cnt )
-                            CEGUI::System::getSingleton().injectChar( static_cast< CEGUI::utf32 >( utf32str[ cnt ] ) );
+                        std::size_t stringlen = text.length();
+                        for ( std::size_t cnt = 0; cnt < stringlen; ++cnt )
+                            CEGUI::System::getSingleton().injectChar( static_cast< CEGUI::utf32 >( text[ cnt ] ) );
                     }
                 }
             }

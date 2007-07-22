@@ -310,7 +310,7 @@ void ImplChatNetworkingVRC::RPC_RecvChatText( tChatMsg chatMsg )
         return;
 
     chatMsg._text[ 255 ] = 0; // limit text length
-    _p_protVRC->recvMessage( "", _nickNames[ chatMsg._sessionID ], reinterpret_cast< char* >( chatMsg._text ) );
+    _p_protVRC->recvMessage( "", _nickNames[ chatMsg._sessionID ], CEGUI::String( reinterpret_cast< CEGUI::utf8* >( chatMsg._text ) ) );
 }
 
 void ImplChatNetworkingVRC::RPC_PostChatText( tChatMsg chatMsg )
@@ -320,7 +320,7 @@ void ImplChatNetworkingVRC::RPC_PostChatText( tChatMsg chatMsg )
     // here some text filtering can be done before distributing new post to all clients
     ALL_REPLICAS_FUNCTION_CALL( RPC_RecvChatText( chatMsg ) );
 
-    _p_protVRC->recvMessage( "", _nickNames[ chatMsg._sessionID ], reinterpret_cast< char* >( chatMsg._text ) );
+    _p_protVRC->recvMessage( "", _nickNames[ chatMsg._sessionID ], reinterpret_cast< CEGUI::utf8* >( chatMsg._text ) );
 }
 
 void ImplChatNetworkingVRC::leave()
@@ -384,8 +384,14 @@ void ImplChatNetworkingVRC::postChatText( const CEGUI::String& text )
     {
         // prepare the telegram
         tChatMsg textdata;
-        memset( textdata._text, 0, sizeof( tChatMsg ) ); // zero out the text buffer
-        text.copy( textdata._text );
+        memset( textdata._text, 0, sizeof( textdata._text ) ); // zero out the text buffer
+        // determine the length of utf8 string and copy the content into send buffer
+        CEGUI::String lenstr( text );
+        memcpy( textdata._text, lenstr.data(), std::min( ( std::size_t )lenstr.utf8_stream_len( sizeof( textdata._text ) - 1, 0 ), ( std::size_t )sizeof( textdata._text ) - 2 ) );
+        assert( sizeof( textdata._text ) > 3 );
+        textdata._text[ sizeof( textdata._text ) - 1 ] = 0; // terminate the string to be on the safe side
+        textdata._text[ sizeof( textdata._text ) - 2 ] = 0; // terminate the string to be on the safe side
+        textdata._text[ sizeof( textdata._text ) - 3 ] = 0; // terminate the string to be on the safe side
         textdata._sessionID = _clientSID;
         NOMINATED_REPLICAS_FUNCTION_CALL( 1, &_serverSID, RPC_PostChatText( textdata ) );
     }
@@ -436,7 +442,7 @@ void ChatNetworkingVRC::destroyConnection()
     }
 }
 
-void ChatNetworkingVRC::send( const std::string& msg, const std::string& /*channel*/ )
+void ChatNetworkingVRC::send( const CEGUI::String& msg, const std::string& /*channel*/ )
 {
     if ( _p_nwImpl )
         _p_nwImpl->postChatText( msg );
@@ -494,7 +500,7 @@ void ChatNetworkingVRC::recvNicknameChange( const std::string& newname, const st
             p_beg->second->onNicknameChanged( newname, oldname );
 }
 
-void ChatNetworkingVRC::recvMessage( const std::string& channel, const std::string& sender, const std::string& msg )
+void ChatNetworkingVRC::recvMessage( const std::string& channel, const std::string& sender, const CEGUI::String& msg )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
     for ( ; p_beg != p_end; ++p_beg )

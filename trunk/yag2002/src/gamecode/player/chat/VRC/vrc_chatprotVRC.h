@@ -170,7 +170,7 @@ class ChatNetworkingVRC : public vrc::BaseChatProtocol
         void                                        destroyConnection();
 
         //! Send a chat message to a channel
-        void                                        send( const std::string& msg, const std::string& channel );
+        void                                        send( const CEGUI::String& msg, const std::string& channel );
 
         //! Set networking implementation instance, is needed for creating new protocol handler instances
         void                                        setNetworkingImpl( ImplChatNetworkingVRC* p_nwImpl )
@@ -185,7 +185,7 @@ class ChatNetworkingVRC : public vrc::BaseChatProtocol
 
         //! Method for distributing new incoming message to all registered callbacks.
         //! In normal case only internal functions make use of this method.
-        void                                        recvMessage( const std::string& channel, const std::string& sender, const std::string& msg );
+        void                                        recvMessage( const std::string& channel, const std::string& sender, const CEGUI::String& msg );
 
         //! Method for distributing a nickname change in channel to all registered callbacks.
         //! In normal case only internal functions make use of this method.

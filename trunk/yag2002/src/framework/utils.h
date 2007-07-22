@@ -37,11 +37,11 @@
 namespace yaf3d
 {
 
-//! Copy text to system clipboard, return false if text could not be copied.
-bool copyToClipboard( const std::string& text );
+//! Copy text to system clipboard in uniform format, return false if text could not be copied.
+bool copyToClipboard( const std::wstring& text );
 
-//! Get text from system clipboard, return false if no data in clipboard available.
-bool getFromClipboard( std::string& text );
+//! Get text from system clipboard in uniform format up to 'maxcnt' code points, return false if no data in clipboard available.
+bool getFromClipboard( std::wstring& text, unsigned int maxcnt );
 
 //! Returns a string with current date and time
 std::string getTimeStamp();

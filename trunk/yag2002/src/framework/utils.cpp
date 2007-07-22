@@ -33,6 +33,7 @@
 #include "application.h"
 #include "log.h"
 #include <errno.h>
+#include <SDL_syswm.h>
 
 #ifdef LINUX
  #include <sys/types.h>
@@ -40,7 +41,6 @@
  #include <glob.h>
  #include <dirent.h>
  #include <spawn.h>
- #include <SDL_syswm.h>
 #endif
 
 
@@ -81,21 +81,42 @@ void initCopyPaste()
 
 #endif
 
-bool copyToClipboard( const std::string& text )
+bool copyToClipboard( const std::wstring& text )
 {
 #ifdef WIN32
 
-    if ( !OpenClipboard( NULL ) )
+    // get the HWND of our app
+    SDL_SysWMinfo sysinfo;
+    SDL_VERSION( &sysinfo.version );
+    SDL_GetWMInfo( &sysinfo );
+
+    // open clipboard
+    if ( !OpenClipboard( sysinfo.window ) )
         return false;
 
     // copy to clipboard data
     EmptyClipboard();
-    HGLOBAL hmem = GlobalAlloc( GMEM_MOVEABLE, text.length() + 1 );
-    char*   p_text = ( char* )GlobalLock( hmem );
-    memcpy( p_text, text.c_str(), text.length() );
-    p_text[ text.length() ] = ( char )0;
+    std::size_t stringlen = text.length();
+    HGLOBAL  hmem         = GlobalAlloc( GMEM_MOVEABLE, sizeof( wchar_t ) * ( stringlen + 1 ) );
+    wchar_t* p_text       = ( wchar_t* )GlobalLock( hmem );
+
+    // copy a save null-terminated string to clipboard buffer
+    {
+        unsigned int cnt = 0;
+        for ( ; cnt < stringlen; cnt++ )
+            p_text[ cnt ] = text[ cnt ];
+
+        p_text[ cnt ] = 0;
+    }
+
     GlobalUnlock( hmem );
-    SetClipboardData( CF_TEXT, hmem );
+
+    if ( !SetClipboardData( CF_UNICODETEXT, hmem ) )
+    {
+        CloseClipboard();
+        return false;
+    }
+
     CloseClipboard();
 
 #endif
@@ -121,21 +142,29 @@ bool copyToClipboard( const std::string& text )
     return true;
 }
 
-bool getFromClipboard( std::string& text )
+bool getFromClipboard( std::wstring& text, unsigned int maxcnt )
 {
 #ifdef WIN32
     if ( !OpenClipboard( NULL ) )
         return false;
 
-    HANDLE data  = GetClipboardData( CF_TEXT );
+    HANDLE data  = GetClipboardData( CF_UNICODETEXT );
     if ( !data )
        return false;
 
-    char* p_text = NULL;
-    p_text = ( char* )GlobalLock( data );
+    wchar_t* p_text = NULL;
+    p_text = ( wchar_t* )GlobalLock( data );
+    if ( !p_text )
+        return false;
+
     GlobalUnlock( data );
     CloseClipboard();
     text = p_text;
+
+    // limit the text
+    if ( text.length() > maxcnt )
+        text[ 255 ] = 0;
+
 #endif
 #ifdef LINUX
 

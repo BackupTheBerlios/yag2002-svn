@@ -86,7 +86,7 @@ class ChatProtocolCallback
         virtual void                                onKicked( const std::string& /*channel*/, const std::string& /*kicker*/, const std::string& /*kicked*/ ) {}
 
         //! Override this method in derived classes in order to receive the chat traffic.
-        virtual void                                onReceive( const std::string& /*channel*/, const std::string& /*sender*/, const std::string& /*msg*/ ) {}
+        virtual void                                onReceive( const std::string& /*channel*/, const std::string& /*sender*/, const CEGUI::String& /*msg*/ ) {}
 
         //! Override this to get a callback whenever a nickname changed in channel.
         //! If oldname is empty then newname is the initial one.
@@ -124,7 +124,7 @@ class BaseChatProtocol
         virtual void                                destroyConnection() = 0;
 
         //! Send a chat message to a channel
-        virtual void                                send( const std::string& msg, const std::string& channel ) = 0;
+        virtual void                                send( const CEGUI::String& msg, const std::string& channel ) = 0;
 
         //! Request for getting list of chat members in given channel.
         virtual void                                requestMemberList( const std::string& channel ) = 0;

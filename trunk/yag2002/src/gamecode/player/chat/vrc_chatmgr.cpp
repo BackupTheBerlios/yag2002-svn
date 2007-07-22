@@ -208,7 +208,9 @@ void ChatManager::closeConnections()
 
 void ChatManager::setVRCNickName( const std::string& nick )
 {
-    _p_chatNetworkingVRC->send( "/nick " + nick, "" );
+    std::string cmd( "/nick " );
+    cmd += nick;
+    _p_chatNetworkingVRC->send( cmd, "" );
 }
 
 void ChatManager::onConnection( const ChatConnectionConfig& config )
@@ -265,10 +267,11 @@ void ChatManager::onReceiveSystemMessage( const std::string& msg )
         _p_chatGuiBox->outputText( "*", msg );
 }
 
-void ChatManager::onReceive( const std::string& channel, const std::string& sender, const std::string& msg )
+void ChatManager::onReceive( const std::string& channel, const std::string& sender, const CEGUI::String& msg )
 {
+    std::string smsg( reinterpret_cast< const char* >( msg.c_str() ) );
     if ( !_serverMode )
-        notifyAppWindow( channel + " [" + sender + "] " + msg );
+        notifyAppWindow( channel + " [" + sender + "] " + smsg );
 }
 
 void ChatManager::onAppWindowStateChange( unsigned int state )

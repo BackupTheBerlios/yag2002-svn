@@ -75,7 +75,7 @@ class ChannelTabPane : public ChatProtocolCallback
         void                                        setEditBoxFocus( bool en );
 
         //! Overridden method for receiving the chat traffic.
-        void                                        onReceive( const std::string& channel, const std::string& sender, const std::string& msg );
+        void                                        onReceive( const std::string& channel, const std::string& sender, const CEGUI::String& msg );
 
         //! Overridden method for getting nickname changes in channel.
         //! If oldname is empty then newname is the initial one.

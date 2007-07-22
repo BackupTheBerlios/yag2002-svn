@@ -459,7 +459,8 @@ static void libirc_process_incoming_data (irc_session_t * session, int process_l
                  */
 				if ( params[1][0] == 0x01 && params[1][msglen-1] == 0x01 )
 				{
-					char ctcp_buf[128];
+					char ctcp_buf[ 128 ];
+                    memset( ctcp_buf, 0, 128 );
 
 					msglen -= 2;
 					if ( msglen > sizeof(ctcp_buf) - 1 )

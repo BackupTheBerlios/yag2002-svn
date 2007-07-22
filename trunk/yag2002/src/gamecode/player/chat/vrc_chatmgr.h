@@ -187,7 +187,7 @@ class ChatManager : public ChatProtocolCallback, public yaf3d::GameState::Callba
         void                                        onReceiveSystemMessage( const std::string& msg );
         
         //! Overridden protocol handler callback method for receiving the chat traffic.
-        void                                        onReceive( const std::string& channel, const std::string& sender, const std::string& msg );
+        void                                        onReceive( const std::string& channel, const std::string& sender, const CEGUI::String& msg );
 
     protected:
 

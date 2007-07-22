@@ -221,7 +221,7 @@ bool ChannelTabPane::onEditboxTextChanged( const CEGUI::EventArgs& arg )
             return true;
 
         // send the msg over net
-        _configuration._p_protocolHandler->send( _p_editbox->getText().c_str(), _configuration._channel );
+        _configuration._p_protocolHandler->send( _p_editbox->getText(), _configuration._channel );
 
         // add the msg to local chat box ( if it was not a command )
         if ( _p_editbox->getText().compare( 0, 1, "/" ) )
@@ -271,9 +271,9 @@ void ChannelTabPane::setEditBoxFocus( bool en )
     }
 }
 
-void ChannelTabPane::onReceive( const std::string& /*channel*/, const std::string& sender, const std::string& msg )
+void ChannelTabPane::onReceive( const std::string& /*channel*/, const std::string& sender, const CEGUI::String& msg )
 {
-    addMessage( msg, sender );
+    addMessage( reinterpret_cast< const CEGUI::utf8* >( msg.c_str() ), sender );
 }
 
 void ChannelTabPane::onNicknameChanged( const std::string& newname, const std::string& oldname )

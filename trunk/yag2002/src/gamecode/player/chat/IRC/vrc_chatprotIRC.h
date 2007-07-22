@@ -65,7 +65,7 @@ class ChatNetworkingIRC : public OpenThreads::Thread, public BaseChatProtocol
         void                                        destroyConnection();
 
         //! Send a chat message
-        void                                        send( const std::string& msg, const std::string& channel );
+        void                                        send( const CEGUI::String& msg, const std::string& channel );
 
         //! This method is called uppon successful connection
         void                                        connected();
@@ -90,7 +90,7 @@ class ChatNetworkingIRC : public OpenThreads::Thread, public BaseChatProtocol
 
         //! Method for distributing new incoming message to all registered callbacks.
         //! In normal case only internal functions make use of this method.
-        void                                        recvMessage( const std::string& channel, const std::string& sender, const std::string& msg );
+        void                                        recvMessage( const std::string& channel, const std::string& sender, const CEGUI::String& msg );
 
         //! Method for distributing a nickname change in channel to all registered callbacks.
         //! In normal case only internal functions make use of this method.

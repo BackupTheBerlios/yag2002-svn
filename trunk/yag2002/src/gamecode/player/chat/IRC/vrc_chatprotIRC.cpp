@@ -36,6 +36,10 @@
 #include "libIRC/libircclient.h"
 #include "libIRC/libirc_rfcnumeric.h"
 
+
+//! Maximal length of incoming text characters
+#define MAX_INCOMING_TEXT_LEN   128
+
 namespace vrc
 {
 
@@ -220,9 +224,24 @@ void event_channel( irc_session_t * session, const char * /*event*/, const char 
     if ( count != 2 )
         return;
 
-    std::string sender( origin ? origin : "someone" );
+    std::string sender( origin ? origin : "{someone}" );
     IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
-    p_ctx->_p_handler->recvMessage( params[ 0 ], sender, params[1] );
+    
+    // the string conversion in CEGUI can fail, we skip the message in this situation
+    try
+    {        
+        // a hack for getting utf8 into cegui string
+        const CEGUI::utf8* p_buf = reinterpret_cast< const CEGUI::utf8* >( params[ 1 ] );
+        std::size_t len = strlen( params[ 1 ] );
+        CEGUI::String  msg( len, 0 );
+        msg.replace( 0, len, p_buf , len );
+
+        p_ctx->_p_handler->recvMessage( params[ 0 ], sender, msg );
+    }
+    catch ( ... )
+    {
+        p_ctx->_p_handler->recvMessage( params[ 0 ], sender, "*** {cannot deliver text!}" );
+    }
 
     if ( !origin )
         return;
@@ -253,7 +272,7 @@ BaseChatProtocol* ChatNetworkingIRC::createInstance()
     return p_inst;
 }
 
-void ChatNetworkingIRC::send( const std::string& msg, const std::string& channel )
+void ChatNetworkingIRC::send( const CEGUI::String& msg, const std::string& channel )
 {
     // ignore input if no valid session exists
     if ( !_p_session )
@@ -262,10 +281,11 @@ void ChatNetworkingIRC::send( const std::string& msg, const std::string& channel
     if ( !msg.length() )
         return;
 
-    if ( msg[ 0 ] == '/' )
+    std::string smsg( reinterpret_cast< const char* >( msg.c_str() ) );
+    if ( smsg[ 0 ] == '/' )
     {
         std::vector< std::string > args;
-        yaf3d::explode( msg, " ", &args );
+        yaf3d::explode( smsg, " ", &args );
 
         // check for /msg commands, send them raw
         if ( ( args.size() > 2 ) && ( args[ 0 ] == "/msg" ) )
@@ -320,7 +340,7 @@ void ChatNetworkingIRC::send( const std::string& msg, const std::string& channel
     }
     else
     {
-        irc_cmd_msg( _p_session, channel.c_str(), msg.c_str() );
+        irc_cmd_msg( _p_session, channel.c_str(), reinterpret_cast< const char* >( msg.c_str() ) );
     }
 }
 
@@ -385,7 +405,7 @@ void ChatNetworkingIRC::joined( const std::string& channel, const std::string& n
     requestMemberList( channel );
 }
 
-void ChatNetworkingIRC::recvMessage( const std::string& channel, const std::string& sender, const std::string& msg )
+void ChatNetworkingIRC::recvMessage( const std::string& channel, const std::string& sender, const CEGUI::String& msg )
 {
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
     for ( ; p_beg != p_end; ++p_beg )
@@ -471,7 +491,7 @@ void ChatNetworkingIRC::createConnection( const ChatConnectionConfig& conf ) thr
     // store the context information
     IRCSessionContext* p_ctx = new IRCSessionContext;
     p_ctx->_p_handler = this;
-    p_ctx->_channel      = conf._channel;
+    p_ctx->_channel   = conf._channel;
     irc_set_ctx( p_session, p_ctx );
     _p_session = p_session;
 
@@ -511,7 +531,13 @@ void ChatNetworkingIRC::run()
     catch ( ... )
     {
         log_error << "*** internal error occured in ChatNetworkingIRC::run" << std::endl;
+
+        // notify about the problem
+        recvSystemMessage( std::string( "Lost connection to Server '" ) + _p_config->_serverURL + "' because of an unexpected failure!" );
+
         irc_destroy_session( _p_session );
+        _p_session = NULL;
+        return;
     }
     delete p_ctx;
     irc_destroy_session( _p_session );
