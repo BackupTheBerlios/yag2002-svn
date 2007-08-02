@@ -58,7 +58,7 @@ namespace yaf3d
 
 //! Network protocol version, use getProtocolVersionAsString to convert it to a string
 // Format: 0 x 00 - Current - Revision - Age
-#define YAF3D_NETWORK_PROT_VERSION      0x00010200
+#define YAF3D_NETWORK_PROT_VERSION      0x00010201
 //! Helper function for converting the protocol version to a string
 std::string getProtocolVersionAsString( unsigned int version );
 

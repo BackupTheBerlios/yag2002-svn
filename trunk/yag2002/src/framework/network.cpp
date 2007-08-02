@@ -623,6 +623,7 @@ void NetworkDevice::updateClient( float /*fDeltaTime*/ )
     if ( _p_session )
         _p_session->Poll();
 }
+
 void NetworkDevice::lockObjects()
 {
     if ( _p_session )
