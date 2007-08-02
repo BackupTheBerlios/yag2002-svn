@@ -32,6 +32,7 @@
 #include "application.h"
 #include "entitymanager.h"
 #include "configuration.h"
+#include "terrainmanager.h"
 #include "levelmanager.h"
 #include "soundmanager.h"
 #include "guimanager.h"
@@ -147,6 +148,7 @@ void Application::shutdown()
     delete _p_appWindowStateHandler;
     _p_gameState->shutdown();
 
+    TerrainManager::get()->shutdown();
     SettingsManager::get()->shutdown();
     KeyMap::get()->shutdown();
 
