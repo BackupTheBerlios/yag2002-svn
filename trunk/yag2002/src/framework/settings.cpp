@@ -262,7 +262,6 @@ bool Settings::store( const std::string& filename )
             write( p_setting->getTokenName(), static_cast< Setting< osg::Vec3f >* >( p_setting )->_value );
         } else
             assert( NULL && "unsupported setting type" );
-
     }
 
     // write the buffer into file
@@ -284,7 +283,6 @@ bool Settings::read( const std::string& token, std::string& value )
         {
             log_debug << "*** settings manager could not read requested token '" << token << "', skipping..." << std::endl;
             return false;
-
         }
 
     } while ( _fileBuffer[ curpos + token.length() ] != '=' );
@@ -296,6 +294,14 @@ bool Settings::read( const std::string& token, std::string& value )
         value += _fileBuffer[ curpos ];
         ++curpos;
     }
+
+    // clean up the string! some utf8 or unicode strings may be in the settings file.
+    std::string cleanstr;
+    for ( std::size_t cnt = 0; cnt < value.length(); cnt++ )
+        if ( static_cast< unsigned char >( value[ cnt ] ) < 0x7f )
+            cleanstr += value[ cnt ];
+
+    value = cleanstr;
 
     return true;
 }
@@ -356,7 +362,14 @@ bool Settings::read( const std::string& token, osg::Vec3f& value )
 
 bool Settings::write( const std::string& token, const std::string& value )
 {
-    _fileBuffer += std::string( token + "=" + value + "\r\n" );
+    // clean up the string first! some utf8 or unicode strings may be in the settings file.
+    std::string cleanstr;
+    for ( std::size_t cnt = 0; cnt < value.length(); cnt++ )
+        if ( static_cast< unsigned char >( value[ cnt ] ) < 0x7f )
+            cleanstr += value[ cnt ];
+
+    _fileBuffer += std::string( token + "=" + cleanstr + "\r\n" );
+
     return true;
 }
 
