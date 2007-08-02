@@ -67,6 +67,47 @@ std::string extractFileName( const std::string& fullpath );
 //! Given a path this functions replaces the backslashes by slashes
 std::string cleanPath( const std::string& path );
 
+/*! TGA file reader
+    This code is basing on a TGA reader sample from http://www.gametutorials.com
+*/
+class ImageTGA
+{
+    public:
+
+                            ImageTGA();
+
+                            ~ImageTGA();
+
+        //! Load a TGA file. Return false if not succesful.
+        bool                load( const std::string& filename );
+
+        //! Get the raw uncompressed pixel data at given column and row position. Returns NULL if column or row are not in image size range.
+        unsigned char*      getData( unsigned int row = 0, unsigned int column = 0 );
+
+        //! Flip the image in vertical direction
+        void                flipY();
+
+        //! Get the count of channels (3 = RGB : 4 = RGBA)
+        unsigned int        getNumChannels() const;
+
+        //! Get the image size
+        void                getSize( unsigned int& sizeX, unsigned int& sizeY );
+
+    protected:
+                        
+        //! The channels in the image (3 = RGB : 4 = RGBA)
+        unsigned int        _channels;
+
+        //! The width of the image in pixels
+        unsigned int        _sizeX;
+
+        //! The height of the image in pixels
+        unsigned int        _sizeY;
+
+        //! The image pixel data
+        unsigned char*      _p_data;
+};
+
 // functions with platform dependent implementations
 //--------------------------------------------------
 

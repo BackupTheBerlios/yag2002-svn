@@ -334,6 +334,292 @@ std::string cleanPath( const std::string& path )
     return cleanpath;
 }
 
+ImageTGA::ImageTGA() :
+_channels( 0 ),
+_sizeX( 0 ),
+_sizeY( 0 ),
+_p_data( NULL )
+{
+}
+
+ImageTGA::~ImageTGA()
+{
+    if ( _p_data )
+        delete[] _p_data;
+}
+
+bool ImageTGA::load( const std::string& filename )
+{
+    // try to read in the file
+    FILE* p_file = fopen( filename.c_str(), "rb" );
+    if ( !p_file )
+        return false;
+
+    long filesize = 0;
+    fseek( p_file, 0, SEEK_END );
+    filesize = ftell( p_file );
+    fseek( p_file, 0, SEEK_SET );
+
+    if ( !filesize )
+    {
+        fclose( p_file );
+        return false;
+    }
+
+    unsigned char* p_buffer = new unsigned char[ filesize ];
+    unsigned char* p_orgbuffer = p_buffer;
+    fread( p_buffer, 1, filesize, p_file );
+    fclose( p_file );
+
+    short width = 0, height = 0;        // The dimensions of the image
+    char  length = 0;                  // The length in bytes to the pixels
+    char  imageType = 0;               // The image type (RLE, RGB, Alpha...)
+
+    char bits = 0;                    // The bits per pixel for the image (16, 24, 32)
+    int  channels = 0;                   // The channels of the image (3 = RGA : 4 = RGBA)
+    int  stride = 0;                     // The stride (channels * width)
+    int  i = 0;                          // A counter
+
+    // Read in the length in bytes from the header to the pixel data
+    memcpy(&length, p_buffer, sizeof(char));
+    p_buffer += sizeof(char);
+
+    // Jump over one byte
+    ++p_buffer;
+
+    // Read in the imageType (RLE, RGB, etc...)
+    memcpy(&imageType, p_buffer, sizeof(char));
+    p_buffer += sizeof(char);
+
+    // Skip past general information we don't care about
+    p_buffer += 9;
+
+    // Read the width, height and bits per pixel (16, 24 or 32)
+    memcpy(&width, p_buffer, sizeof(short));
+    p_buffer += sizeof(short);
+    memcpy(&height, p_buffer, sizeof(short));
+    p_buffer += sizeof(short);
+    memcpy(&bits, p_buffer, sizeof(char));
+    p_buffer += sizeof(char);
+
+    // Now we move the file pointer to the pixel data
+    p_buffer += length + 1;
+
+    // These defines are used to tell us about the type of TARGA file it is
+    #define TGA_RGB       2      // This tells us it's a normal RGB (really BGR) file
+    #define TGA_A         3      // This tells us it's a ALPHA file
+    #define TGA_RLE      10      // This tells us that the targa is Run-Length Encoded (RLE)
+
+    // Check if the image is RLE compressed or not
+    if( imageType != TGA_RLE )
+    {
+        // Check if the image is a 24 or 32-bit image
+        if( bits == 24 || bits == 32 )
+        {
+            // Calculate the channels (3 or 4) - (use bits >> 3 for more speed).
+            // Next, we calculate the stride and allocate enough memory for the pixels.
+            channels = bits / 8;
+            stride = channels * width;
+            _p_data = new unsigned char[ stride * height ];
+
+            // Load in all the pixel data line by line
+            for( int y = 0; y < height; ++y )
+            {
+                // Store a pointer to the current line of pixels
+                unsigned char *pLine = &( _p_data[ stride * y ] );
+
+                // Read in the current line of pixels
+                memcpy( pLine, p_buffer, stride );
+                p_buffer += stride;
+
+                // Go through all of the pixels and swap the B and R values since TGA
+                // files are stored as BGR instead of RGB (or use GL_BGR_EXT verses GL_RGB)
+                for( i = 0; i < stride; i += channels )
+                {
+                    unsigned char temp = pLine[ i ];
+                    pLine[i]     = pLine[i + 2];
+                    pLine[i + 2] = temp;
+                }
+            }
+        }
+        // Check if the image is a 16 bit image (RGB stored in 1 unsigned short)
+        else if( bits == 16 )
+        {
+            unsigned short pixels = 0;
+            unsigned char r=0, g=0, b=0;
+
+            // Since we convert 16-bit images to 24 bit, we hardcode the channels to 3.
+            // We then calculate the stride and allocate memory for the pixels.
+            channels = 3;
+            stride = channels * width;
+            _p_data = new unsigned char[ stride * height ];
+
+            // Load in all the pixel data pixel by pixel
+            for( i = 0; i < width*height; ++i )
+            {
+                // Read in the current pixel
+                memcpy(&pixels, p_buffer, sizeof(unsigned short));
+                p_buffer += sizeof(unsigned short);
+
+                // To convert a 16-bit pixel into an R, G, B, we need to
+                // do some masking and such to isolate each color value.
+                // 0x1f = 11111 in binary, so since 5 bits are reserved in
+                // each unsigned short for the R, G and B, we bit shift and mask
+                // to find each value.  We then bit shift up by 3 to get the full color.
+                b = static_cast<unsigned char>((pixels & 0x1f) << 3);
+                g = static_cast<unsigned char>(((pixels >> 5) & 0x1f) << 3);
+                r = static_cast<unsigned char>(((pixels >> 10) & 0x1f) << 3);
+
+                // This essentially assigns the color to our array and swaps the
+                // B and R values at the same time.
+                _p_data[i * 3 + 0] = r;
+                _p_data[i * 3 + 1] = g;
+                _p_data[i * 3 + 2] = b;
+            }
+        }
+        // Else return a NULL for a bad or unsupported pixel format
+        else
+        {
+            delete[] p_orgbuffer;
+            return false;
+        }
+    }
+    // Else, it must be Run-Length Encoded (RLE)
+    else
+    {
+        // Create some variables to hold the rleID, current colors read, channels, & stride.
+        unsigned char rleID = 0;
+        int colorsRead = 0;
+        channels = bits / 8;
+        stride = channels * width;
+
+        // Next we want to allocate the memory for the pixels and create an array,
+        // depending on the channel count, to read in for each pixel.
+        _p_data = new unsigned char[ stride * height ];
+        char *pColors = new char [ channels ];
+
+        // Load in all the pixel data
+        while( i < width*height )
+        {
+            // Read in the current color count + 1
+            memcpy( &rleID, p_buffer, sizeof( unsigned char ) );
+            p_buffer += sizeof( unsigned char );
+
+            // Check if we don't have an encoded string of colors
+            if( rleID < 128 )
+            {
+                // Increase the count by 1
+                ++rleID;
+
+                // Go through and read all the unique colors found
+                while( rleID )
+                {
+                    // Read in the current color
+                    memcpy( pColors, p_buffer, sizeof(char) * channels );
+                    p_buffer += sizeof(char) * channels;
+
+                    // Store the current pixel in our image array
+                    _p_data[colorsRead + 0] = pColors[2];
+                    _p_data[colorsRead + 1] = pColors[1];
+                    _p_data[colorsRead + 2] = pColors[0];
+
+                    // If we have a 4 channel 32-bit image, assign one more for the alpha
+                    if(bits == 32)
+                        _p_data[colorsRead + 3] = pColors[3];
+
+                    // Increase the current pixels read, decrease the amount
+                    // of pixels left, and increase the starting index for the next pixel.
+                    ++i;
+                    rleID--;
+                    colorsRead += channels;
+                }
+            }
+            // Else, let's read in a string of the same character
+            else
+            {
+                // Minus the 128 ID + 1 (127) to get the color count that needs to be read
+                rleID -= 127;
+
+                // Read in the current color, which is the same for a while
+                memcpy(pColors, p_buffer, sizeof(char) * channels);
+                p_buffer += sizeof(char) * channels;
+
+                // Go and read as many pixels as are the same
+                while(rleID)
+                {
+                    // Assign the current pixel to the current index in our pixel array
+                    _p_data[colorsRead + 0] = pColors[2];
+                    _p_data[colorsRead + 1] = pColors[1];
+                    _p_data[colorsRead + 2] = pColors[0];
+
+                    // If we have a 4 channel 32-bit image, assign one more for the alpha
+                    if(bits == 32)
+                        _p_data[colorsRead + 3] = pColors[3];
+
+                    // Increase the current pixels read, decrease the amount
+                    // of pixels left, and increase the starting index for the next pixel.
+                    ++i;
+                    rleID--;
+                    colorsRead += channels;
+                }
+
+            }
+
+        }
+
+        // Free up pColors
+        delete[] pColors;
+    }
+
+    // Fill in our tImageTGA structure to pass back
+    _channels = channels;
+    _sizeX    = width;
+    _sizeY    = height;
+
+    delete[] p_orgbuffer;
+
+    return true;
+}
+
+unsigned char* ImageTGA::getData( unsigned int row, unsigned int column )
+{
+    if ( ( column > _sizeY ) || ( row > _sizeX ) )
+        return NULL;
+
+    return &_p_data[ _channels * ( column * _sizeX + row ) ];
+}
+
+void ImageTGA::flipY()
+{
+    int pitch = _sizeX * _channels;
+
+    // flip the image bits...
+    for ( unsigned int line = 0; line < _sizeY / 2; ++line )
+    {
+        int srcOffset = ( line * pitch );
+        int dstOffest = ( ( _sizeY - line - 1 ) * pitch );
+
+        for ( int colBit = 0; colBit < pitch; ++colBit )
+        {
+            unsigned char tmp = _p_data[ dstOffest + colBit ];
+            _p_data[ dstOffest + colBit ] = _p_data[ srcOffset + colBit ];
+            _p_data[ srcOffset + colBit ] = tmp;
+        }
+    }
+}
+
+unsigned int ImageTGA::getNumChannels() const
+{
+    return _channels;
+}
+
+void ImageTGA::getSize( unsigned int& sizeX, unsigned int& sizeY )
+{
+    sizeX = _sizeX;
+    sizeY = _sizeY;
+}
+
+
 std::string getCurrentWorkingDirectory()
 {
 #ifdef WIN32
