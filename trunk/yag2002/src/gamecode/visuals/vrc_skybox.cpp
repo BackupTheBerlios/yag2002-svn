@@ -136,7 +136,7 @@ osg::ref_ptr< osg::Group > EnSkyBox::setupSkybox()
 
 void EnSkyBox::enable( bool en )
 {
-    if ( ( en && _enable ) || ( !en && !_enable ) )
+    if ( en == _enable )
         return;
 
     _enable = en;
