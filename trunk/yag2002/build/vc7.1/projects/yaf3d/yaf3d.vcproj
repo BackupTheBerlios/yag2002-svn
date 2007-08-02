@@ -366,6 +366,24 @@
 				RelativePath="..\..\..\..\src\framework\soundmanager.h">
 			</File>
 			<File
+				RelativePath="..\..\..\..\src\framework\terrainmanager.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\terrainmanager.h">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\terrainpatch.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\terrainpatch.h">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\terraintesselator.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\terraintesselator.h">
+			</File>
+			<File
 				RelativePath="..\..\..\..\src\framework\utils.cpp">
 			</File>
 			<File
