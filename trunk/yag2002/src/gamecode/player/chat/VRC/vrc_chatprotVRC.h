@@ -49,8 +49,8 @@ class ImplChatNetworkingVRC : _RO_DO_PUBLIC_RO( ImplChatNetworkingVRC ), public 
 
         virtual                                     ~ImplChatNetworkingVRC();
 
-        //! Post new chat text
-        void                                        postChatText( const CEGUI::String& text );
+        //! Post new chat text. If 'recipient' is not empty then the message will be private ( whisper )
+        void                                        postChatText( const CEGUI::String& text, const std::string& recipient );
 
         //! Leave chat
         void                                        leave();
@@ -170,7 +170,7 @@ class ChatNetworkingVRC : public vrc::BaseChatProtocol
         void                                        destroyConnection();
 
         //! Send a chat message to a channel
-        void                                        send( const CEGUI::String& msg, const std::string& channel );
+        void                                        send( const CEGUI::String& msg, const std::string& channel, const std::string& recipient );
 
         //! Set networking implementation instance, is needed for creating new protocol handler instances
         void                                        setNetworkingImpl( ImplChatNetworkingVRC* p_nwImpl )

@@ -272,7 +272,7 @@ BaseChatProtocol* ChatNetworkingIRC::createInstance()
     return p_inst;
 }
 
-void ChatNetworkingIRC::send( const CEGUI::String& msg, const std::string& channel )
+void ChatNetworkingIRC::send( const CEGUI::String& msg, const std::string& channel, const std::string& recipient )
 {
     // ignore input if no valid session exists
     if ( !_p_session )
@@ -340,7 +340,16 @@ void ChatNetworkingIRC::send( const CEGUI::String& msg, const std::string& chann
     }
     else
     {
-        irc_cmd_msg( _p_session, channel.c_str(), reinterpret_cast< const char* >( msg.c_str() ) );
+        CEGUI::String message( msg );
+
+        // are we whispering?
+        if ( recipient.length() )
+        {
+            CEGUI::String whisperTo( recipient );
+            message = "/msg " + whisperTo + " " + msg;
+        }
+
+        irc_cmd_msg( _p_session, channel.c_str(), reinterpret_cast< const char* >( message.c_str() ) );
     }
 }
 

@@ -123,8 +123,8 @@ class BaseChatProtocol
         //! Destroy connection
         virtual void                                destroyConnection() = 0;
 
-        //! Send a chat message to a channel
-        virtual void                                send( const CEGUI::String& msg, const std::string& channel ) = 0;
+        //! Send a chat message to a channel, if 'recipient' is not empty then the chat message will be a private one to the given recipient
+        virtual void                                send( const CEGUI::String& msg, const std::string& channel, const std::string& recipient ) = 0;
 
         //! Request for getting list of chat members in given channel.
         virtual void                                requestMemberList( const std::string& channel ) = 0;

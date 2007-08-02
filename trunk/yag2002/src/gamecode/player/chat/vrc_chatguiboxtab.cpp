@@ -42,12 +42,14 @@ namespace vrc
 
 ChannelTabPane::ChannelTabPane( CEGUI::TabControl* p_tabcontrol, ChatGuiBox* p_guibox, bool isSystemIO ) :
 _isSystemIO( isSystemIO ),
+_whisperMode( false ),
 _p_tabCtrl( p_tabcontrol ),
 _p_guibox( p_guibox ),
 _p_tabPane( NULL ),
 _p_messagebox( NULL ),
 _p_editbox( NULL ),
-_p_listbox( NULL )
+_p_listbox( NULL ),
+_p_whisper( NULL )
 {
     try
     {
@@ -85,12 +87,24 @@ _p_listbox( NULL )
         // nickname list, needed only for channel panes, not for system IO panes
         if ( !_isSystemIO )
         {
+            // setup the body listbox
             _p_listbox = static_cast< CEGUI::Listbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Listbox", std::string( CHATLAYOUTPANE_PREFIX "tabpane_nicklist" ) + postfix ) );
             _p_listbox->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &vrc::ChannelTabPane::onListItemSelChanged, this ) );
             _p_listbox->setSortingEnabled( true );
             _p_listbox->setMetricsMode( CEGUI::Absolute );
             _p_listbox->setFont( YAF3D_GUI_FONT8 );
             _p_tabPane->addChildWindow( _p_listbox );
+
+            // setup whisper checkbox
+            _p_whisper = static_cast< CEGUI::Checkbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Checkbox", std::string( CHATLAYOUTPANE_PREFIX "tabpane_whisper" ) + postfix ) );;
+            _p_whisper->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::ChannelTabPane::onWhisperChanged, this ) );
+            _p_whisper->setText( "Whisper" );
+            _p_whisper->setSelected( false );
+            _p_whisper->setMetricsMode( CEGUI::Absolute );
+            _p_whisper->setFont( YAF3D_GUI_FONT8 );
+            _p_tabPane->addChildWindow( _p_whisper );
+
+            _whisperMode = _p_whisper->isSelected();
         }
 
         // set initial pane size
@@ -143,6 +157,7 @@ void ChannelTabPane::updateMemberList( std::vector< std::string >& list )
         _p_listbox->insertItem( p_item, NULL );
     }
 
+    //! TODO: select the last whispered persion!
     if ( list.size() > 0 )
     {
         _p_listbox->getListboxItemFromIndex( 0 )->setSelected( true );
@@ -184,10 +199,19 @@ bool ChannelTabPane::onListItemSelChanged( const CEGUI::EventArgs& /*arg*/ )
     return true;
 }
 
+bool ChannelTabPane::onWhisperChanged( const CEGUI::EventArgs& /*arg*/ )
+{
+    // play click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
+    _whisperMode = _p_whisper->isSelected();
+
+    return true;
+}
+
 bool ChannelTabPane::onSizeChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // recalculate gui elements
-
     CEGUI::Size size = _p_tabPane->getSize( CEGUI::Absolute );
 
     _p_messagebox->setPosition( CEGUI::Point( GUI_PANE_SPACING, GUI_PANE_SPACING ) );
@@ -199,7 +223,10 @@ bool ChannelTabPane::onSizeChanged( const CEGUI::EventArgs& /*arg*/ )
     if ( !_isSystemIO )
     {
         _p_listbox->setPosition( CEGUI::Point( size.d_width - GUI_PANE_MSG_OFFSET_RIGHT + 2.0f * GUI_PANE_SPACING, GUI_PANE_SPACING ) );
-        _p_listbox->setSize( CEGUI::Size( GUI_PANE_MSG_OFFSET_RIGHT - 3.0f * GUI_PANE_SPACING, size.d_height - 2.0f * GUI_PANE_SPACING ) );
+        _p_listbox->setSize( CEGUI::Size( GUI_PANE_MSG_OFFSET_RIGHT - 3.0f * GUI_PANE_SPACING, size.d_height - GUI_PANE_MSG_OFFSET_BUTTOM - GUI_PANE_SPACING ) );
+
+        _p_whisper->setPosition( CEGUI::Point( size.d_width - GUI_PANE_MSG_OFFSET_RIGHT + 2.0f * GUI_PANE_SPACING, size.d_height - GUI_PANE_MSG_OFFSET_BUTTOM - GUI_PANE_SPACING ) );
+        _p_whisper->setSize( CEGUI::Size( GUI_PANE_MSG_OFFSET_RIGHT - 3.0f * GUI_PANE_SPACING, GUI_PANE_MSG_OFFSET_BUTTOM - 2.0f * GUI_PANE_SPACING ) );
     }
 
     return true;
@@ -220,8 +247,17 @@ bool ChannelTabPane::onEditboxTextChanged( const CEGUI::EventArgs& arg )
         if ( !_p_editbox->getText().length() )
             return true;
 
+        // check if we are in whisper mode
+        std::string recipient;
+        if ( _whisperMode )
+        {
+            CEGUI::ListboxItem* p_sel = _p_listbox->getFirstSelectedItem();
+            if ( p_sel && p_sel->getText().length() )
+                recipient = p_sel->getText().c_str();
+        }
+
         // send the msg over net
-        _configuration._p_protocolHandler->send( _p_editbox->getText(), _configuration._channel );
+        _configuration._p_protocolHandler->send( _p_editbox->getText(), _configuration._channel, recipient );
 
         // add the msg to local chat box ( if it was not a command )
         if ( _p_editbox->getText().compare( 0, 1, "/" ) )

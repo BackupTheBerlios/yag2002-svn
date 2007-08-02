@@ -210,7 +210,7 @@ void ChatManager::setVRCNickName( const std::string& nick )
 {
     std::string cmd( "/nick " );
     cmd += nick;
-    _p_chatNetworkingVRC->send( cmd, "" );
+    _p_chatNetworkingVRC->send( cmd, "", "" );
 }
 
 void ChatManager::onConnection( const ChatConnectionConfig& config )

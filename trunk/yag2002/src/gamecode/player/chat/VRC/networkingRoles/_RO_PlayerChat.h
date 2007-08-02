@@ -7,8 +7,13 @@
 //! Attention, 256 bytes is the maximum what ReplicaNet allows to send in an RPC call
 typedef struct _tChatMsg
 {
-    unsigned char    _text[ 251 ];
+    //! Message text
+    unsigned char    _text[ 255 - 2 * sizeof( int ) ];
 
+    //! Used for private message ( whisper ), 0 if publich message, session ID of recipient if private
+    int              _recipientID;
+
+    //! Sender session ID
     int              _sessionID;
 
 } tChatMsg;

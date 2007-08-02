@@ -69,7 +69,7 @@ _p_btnConnectIRC( NULL ),
 _p_btnOpen( NULL ),
 _p_btnMsgArrived( NULL ),
 _p_tabCtrl( NULL ),
-_shortMsgBox( NULL ),
+_p_shortMsgBox( NULL ),
 _shortMsgBoxAcceccCounter( SHORTMESSAGE_DELETION_DELAY ),
 _editBoxActivationCounter( 0.0f ),
 _editBoxActivationTab( NULL ),
@@ -94,8 +94,8 @@ ChatGuiBox::~ChatGuiBox()
         CEGUI::WindowManager::getSingleton().destroyWindow( _p_btnOpen );
         CEGUI::WindowManager::getSingleton().destroyWindow( _p_frame );
 
-        if ( _shortMsgBox )
-            CEGUI::WindowManager::getSingleton().destroyWindow( _shortMsgBox );
+        if ( _p_shortMsgBox )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_shortMsgBox );
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -166,7 +166,7 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
 
     try
     {
-        // setup chat box hide button with ctd specific image set
+        // setup chat box hide button with vrc specific image set
         _p_btnOpen = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", CHATLAYOUT_PREFIX "_btn_openbox_" ) );
         _p_btnOpen->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onClickedOpen, this ) );
         _p_btnOpen->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onHoverOpen, this ) );
@@ -217,14 +217,14 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
 
         // create a message area for posting messages when the box is closed
         CEGUI::Window* p_rootwnd = yaf3d::GuiManager::get()->getRootWindow();
-        _shortMsgBox = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", "_chatbox_msgbox_" ) );
-        _shortMsgBox->setPosition( CEGUI::Point( 0.0f, 0.9f ) );
-        _shortMsgBox->setSize( CEGUI::Size( 0.9f, 0.1f ) );
-        _shortMsgBox->setFont( YAF3D_GUI_FONT8 );
-        _shortMsgBox->setBackgroundEnabled( false );
-        _shortMsgBox->setFrameEnabled( false );
-        _shortMsgBox->show();
-        p_rootwnd->addChildWindow( _shortMsgBox );
+        _p_shortMsgBox = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", "_chatbox_msgbox_" ) );
+        _p_shortMsgBox->setPosition( CEGUI::Point( 0.0f, 0.9f ) );
+        _p_shortMsgBox->setSize( CEGUI::Size( 0.9f, 0.1f ) );
+        _p_shortMsgBox->setFont( YAF3D_GUI_FONT8 );
+        _p_shortMsgBox->setBackgroundEnabled( false );
+        _p_shortMsgBox->setFrameEnabled( false );
+        _p_shortMsgBox->show();
+        p_rootwnd->addChildWindow( _p_shortMsgBox );
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -270,7 +270,7 @@ ChannelTabPane* ChatGuiBox::getTabPane( const ChatConnectionConfig& cfg )
 CEGUI::StaticText* ChatGuiBox::getShortMsgBox()
 {
     _shortMsgBoxAcceccCounter = SHORTMESSAGE_DELETION_DELAY;
-    return _shortMsgBox;
+    return _p_shortMsgBox;
 }
 
 void ChatGuiBox::destroyChannelPane( const ChatConnectionConfig& cfg )
@@ -373,7 +373,7 @@ void ChatGuiBox::update( float deltaTime )
                 _p_btnOpen->hide();
                 setEditBoxFocus( true );
                 // let the short message box disappear
-                _shortMsgBox->hide();
+                _p_shortMsgBox->hide();
                 _boxState = BoxVisible;
                 break;
             }
@@ -399,7 +399,7 @@ void ChatGuiBox::update( float deltaTime )
                 _p_frame->hide();
                 setEditBoxFocus( false );
                 // let the short message box appear
-                _shortMsgBox->show();
+                _p_shortMsgBox->show();
                 _boxState = BoxHidden;
                 break;
             }
@@ -448,7 +448,7 @@ void ChatGuiBox::update( float deltaTime )
         _shortMsgBoxAcceccCounter -= deltaTime;
         if ( _shortMsgBoxAcceccCounter < 0.0 )
         {
-            _shortMsgBox->setText( "" );
+            _p_shortMsgBox->setText( "" );
         }
     }
 
@@ -467,18 +467,18 @@ void ChatGuiBox::show( bool visible )
         if ( _boxState != BoxHidden )
         {
             _p_frame->show();
-            _shortMsgBox->hide();
+            _p_shortMsgBox->hide();
         }
         else if ( _boxState == BoxHidden )
         {
-            _shortMsgBox->show();
+            _p_shortMsgBox->show();
         }
     }
     else
     {
         _p_btnOpen->hide();
         _p_frame->hide();
-        _shortMsgBox->hide();
+        _p_shortMsgBox->hide();
     }
 }
 
@@ -529,7 +529,7 @@ bool ChatGuiBox::onClickedCloseChannelPane( const CEGUI::EventArgs& /*arg*/ )
     else
     {
         // trigger leaving the channel in the same way as the user would do via command
-        p_beg->first._p_protocolHandler->send( "/part", p_beg->first._channel );
+        p_beg->first._p_protocolHandler->send( "/part", p_beg->first._channel, "" );
     }
 
     return true;

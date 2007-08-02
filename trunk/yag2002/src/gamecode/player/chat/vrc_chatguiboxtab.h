@@ -101,6 +101,9 @@ class ChannelTabPane : public ChatProtocolCallback
         //! Callback for changing nickname selection in list
         bool                                        onListItemSelChanged( const CEGUI::EventArgs& arg );
 
+        //! Callback for changing the whisper mode
+        bool                                        onWhisperChanged( const CEGUI::EventArgs& arg );
+
         //! Callback for resizing the pane
         bool                                        onSizeChanged( const CEGUI::EventArgs& arg );
 
@@ -110,7 +113,11 @@ class ChannelTabPane : public ChatProtocolCallback
         //! Update the member
         void                                        updateMemberList( std::vector< std::string >& list );
 
+        //! Is the tab a system io info tab?
         bool                                        _isSystemIO;
+
+        //! Whisper mode
+        bool                                        _whisperMode;
 
         CEGUI::TabControl*                          _p_tabCtrl;
 
@@ -125,6 +132,8 @@ class ChannelTabPane : public ChatProtocolCallback
         CEGUI::Editbox*                             _p_editbox;
 
         CEGUI::Listbox*                             _p_listbox;
+
+        CEGUI::Checkbox*                            _p_whisper;
 
         ChatConnectionConfig                        _configuration;
 

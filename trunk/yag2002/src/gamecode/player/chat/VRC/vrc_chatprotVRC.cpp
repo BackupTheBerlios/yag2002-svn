@@ -304,13 +304,25 @@ void ImplChatNetworkingVRC::RPC_RecvMemberList( tChatData chatdata )
 }
 
 void ImplChatNetworkingVRC::RPC_RecvChatText( tChatMsg chatMsg )
-{
+{// this method is called only on clients
+
     // cancel echos
     if ( chatMsg._sessionID == _clientSID )
         return;
 
+    std::string sender( _nickNames[ chatMsg._sessionID ] );
+
+    // check for private message ( whisper )
+    if ( chatMsg._recipientID != 0 ) 
+    {
+        if ( chatMsg._recipientID != _clientSID )
+            return;
+        else
+            sender = std::string( "[" ) + sender + " whispers]: ";
+    }
+
     chatMsg._text[ 255 ] = 0; // limit text length
-    _p_protVRC->recvMessage( "", _nickNames[ chatMsg._sessionID ], CEGUI::String( reinterpret_cast< CEGUI::utf8* >( chatMsg._text ) ) );
+    _p_protVRC->recvMessage( "", sender , CEGUI::String( reinterpret_cast< CEGUI::utf8* >( chatMsg._text ) ) );
 }
 
 void ImplChatNetworkingVRC::RPC_PostChatText( tChatMsg chatMsg )
@@ -332,7 +344,7 @@ void ImplChatNetworkingVRC::leave()
     NOMINATED_REPLICAS_FUNCTION_CALL( 1, &_serverSID, RPC_RequestLeave( chatdata ) );
 }
 
-void ImplChatNetworkingVRC::postChatText( const CEGUI::String& text )
+void ImplChatNetworkingVRC::postChatText( const CEGUI::String& text, const std::string& recipient )
 {
     // check for commands
     if ( !text.compare( 0, 1, "/" ) )
@@ -384,7 +396,8 @@ void ImplChatNetworkingVRC::postChatText( const CEGUI::String& text )
     {
         // prepare the telegram
         tChatMsg textdata;
-        memset( textdata._text, 0, sizeof( textdata._text ) ); // zero out the text buffer
+        memset( textdata._text, 0, sizeof( textdata._text ) );  // zero out the text buffer
+        textdata._recipientID = 0 ;                             // init to non-whisper message
         // determine the length of utf8 string and copy the content into send buffer
         CEGUI::String lenstr( text );
         memcpy( textdata._text, lenstr.data(), std::min( ( std::size_t )lenstr.utf8_stream_len( sizeof( textdata._text ) - 1, 0 ), ( std::size_t )sizeof( textdata._text ) - 2 ) );
@@ -393,6 +406,23 @@ void ImplChatNetworkingVRC::postChatText( const CEGUI::String& text )
         textdata._text[ sizeof( textdata._text ) - 2 ] = 0; // terminate the string to be on the safe side
         textdata._text[ sizeof( textdata._text ) - 3 ] = 0; // terminate the string to be on the safe side
         textdata._sessionID = _clientSID;
+
+        // are we whispering to somebody?
+        if ( recipient.length() )
+        {
+            // try to find the session ID of recipient
+            std::map< int, std::string >::iterator p_recipientID = _nickNames.begin(), p_end = _nickNames.end();
+            for ( ; p_recipientID != p_end; ++p_recipientID )
+            {
+                if ( p_recipientID->second == recipient )
+                {
+                    // set the recipient session ID
+                    textdata._recipientID = p_recipientID->first;
+                    break;
+                }
+            }
+        }
+
         NOMINATED_REPLICAS_FUNCTION_CALL( 1, &_serverSID, RPC_PostChatText( textdata ) );
     }
 }
@@ -421,7 +451,7 @@ ChatNetworkingVRC::~ChatNetworkingVRC()
 vrc::BaseChatProtocol* ChatNetworkingVRC::createInstance()
 {
     // create and setup VRC protocol handler, this is used on server
-    // on clients the instance is created by ReplicaNet
+    // on clients the instance, is created by ReplicaNet
     _p_nwImpl = new ImplChatNetworkingVRC( this );
     // publish the chat networking agent in net
     _p_nwImpl->Publish();
@@ -442,10 +472,10 @@ void ChatNetworkingVRC::destroyConnection()
     }
 }
 
-void ChatNetworkingVRC::send( const CEGUI::String& msg, const std::string& /*channel*/ )
+void ChatNetworkingVRC::send( const CEGUI::String& msg, const std::string& /*channel*/, const std::string& recipient )
 {
     if ( _p_nwImpl )
-        _p_nwImpl->postChatText( msg );
+        _p_nwImpl->postChatText( msg, recipient );
 }
 
 void ChatNetworkingVRC::connected()

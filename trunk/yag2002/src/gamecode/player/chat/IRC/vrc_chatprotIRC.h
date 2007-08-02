@@ -65,7 +65,7 @@ class ChatNetworkingIRC : public OpenThreads::Thread, public BaseChatProtocol
         void                                        destroyConnection();
 
         //! Send a chat message
-        void                                        send( const CEGUI::String& msg, const std::string& channel );
+        void                                        send( const CEGUI::String& msg, const std::string& channel, const std::string& recipient );
 
         //! This method is called uppon successful connection
         void                                        connected();

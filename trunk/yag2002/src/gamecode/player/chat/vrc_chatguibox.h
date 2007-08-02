@@ -178,7 +178,7 @@ class ChatGuiBox
 
         CEGUI::TabControl*                          _p_tabCtrl;
 
-        CEGUI::StaticText*                          _shortMsgBox;
+        CEGUI::StaticText*                          _p_shortMsgBox;
 
         float                                       _shortMsgBoxAcceccCounter;
 
