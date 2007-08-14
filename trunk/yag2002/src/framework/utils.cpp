@@ -581,7 +581,7 @@ bool ImageTGA::load( const std::string& filename )
     return true;
 }
 
-unsigned char* ImageTGA::getData( unsigned int row, unsigned int column )
+const unsigned char* ImageTGA::getData( unsigned int row, unsigned int column ) const
 {
     if ( ( column > _sizeY ) || ( row > _sizeX ) )
         return NULL;
@@ -613,7 +613,7 @@ unsigned int ImageTGA::getNumChannels() const
     return _channels;
 }
 
-void ImageTGA::getSize( unsigned int& sizeX, unsigned int& sizeY )
+void ImageTGA::getSize( unsigned int& sizeX, unsigned int& sizeY ) const
 {
     sizeX = _sizeX;
     sizeY = _sizeY;

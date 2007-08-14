@@ -74,38 +74,38 @@ class ImageTGA
 {
     public:
 
-                            ImageTGA();
+                             ImageTGA();
 
-                            ~ImageTGA();
+                             ~ImageTGA();
 
         //! Load a TGA file. Return false if not succesful.
-        bool                load( const std::string& filename );
+        bool                 load( const std::string& filename );
 
         //! Get the raw uncompressed pixel data at given column and row position. Returns NULL if column or row are not in image size range.
-        unsigned char*      getData( unsigned int row = 0, unsigned int column = 0 );
+        const unsigned char* getData( unsigned int row = 0, unsigned int column = 0 ) const;
 
         //! Flip the image in vertical direction
-        void                flipY();
+        void                 flipY();
 
         //! Get the count of channels (3 = RGB : 4 = RGBA)
-        unsigned int        getNumChannels() const;
+        unsigned int         getNumChannels() const;
 
         //! Get the image size
-        void                getSize( unsigned int& sizeX, unsigned int& sizeY );
+        void                 getSize( unsigned int& sizeX, unsigned int& sizeY ) const;
 
     protected:
                         
         //! The channels in the image (3 = RGB : 4 = RGBA)
-        unsigned int        _channels;
+        unsigned int         _channels;
 
         //! The width of the image in pixels
-        unsigned int        _sizeX;
+        unsigned int         _sizeX;
 
         //! The height of the image in pixels
-        unsigned int        _sizeY;
+        unsigned int         _sizeY;
 
         //! The image pixel data
-        unsigned char*      _p_data;
+        unsigned char*       _p_data;
 };
 
 // functions with platform dependent implementations
