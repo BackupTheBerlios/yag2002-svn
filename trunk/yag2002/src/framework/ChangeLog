@@ -1,8 +1,14 @@
 
 
+boto ( 08/08/2007 )
 
+- added terrain manager
 
+boto ( 08/14/2006 )
 
+- added dynamic shadows (shadow maps)
+
+- added lua support
 
 boto ( 12/27/2005 )
 
