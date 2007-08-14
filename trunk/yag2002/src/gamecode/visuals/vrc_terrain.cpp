@@ -48,7 +48,6 @@ _scale( osg::Vec3f( 100.0f, 100.0f, 100.0f ) )
     getAttributeManager().addAttribute( "scale"            , _scale            );
     getAttributeManager().addAttribute( "heightmap"        , _fileHeightmap    );
     getAttributeManager().addAttribute( "basemap"          , _fileBasemap      );
-    getAttributeManager().addAttribute( "basemapRepeat"    , _basemapRepeat    );
     getAttributeManager().addAttribute( "detailmap0"       , _fileDetailmap0   );
     getAttributeManager().addAttribute( "detailmap0Repeat" , _detailmap0Repeat );
     getAttributeManager().addAttribute( "detailmap1"       , _fileDetailmap1   );
@@ -104,9 +103,6 @@ void EnTerrain::initialize()
 
     // setup the terrain
     _p_terrainGrp = setup();
-
-//! TODO remove this later! we need the coupling to menu system!
-addToTransformationNode( _p_terrainGrp.get() );
 }
 
 osg::ref_ptr< osg::Group > EnTerrain::setup()
@@ -117,11 +113,10 @@ osg::ref_ptr< osg::Group > EnTerrain::setup()
     conf._scale             = _scale;
     conf._fileHeightmap     = _fileHeightmap;
     conf._fileBasemap       = _fileBasemap;
-    conf._basemapRepeat     = _basemapRepeat;
     conf._fileDetailmap0    = _fileDetailmap0;
     conf._detailmap0Repeat  = _detailmap0Repeat;
-    conf._fileDetailmap1    = _fileDetailmap0;
-    conf._detailmap1Repeat  = _detailmap0Repeat;
+    conf._fileDetailmap1    = _fileDetailmap1;
+    conf._detailmap1Repeat  = _detailmap1Repeat;
 
     try
     {
