@@ -648,10 +648,7 @@ void EnInspector::handleNotification( const yaf3d::EntityNotification& notificat
     switch( notification.getId() )
     {
         case YAF3D_NOTIFY_NEW_LEVEL_INITIALIZED:
-        // emulate leaving menu as some entities need it for activating their meshes
         {
-            yaf3d::EntityNotification ennotify( YAF3D_NOTIFY_MENU_LEAVE );
-            yaf3d::EntityManager::get()->sendNotification( ennotify );
         }
         break;
 
@@ -772,6 +769,10 @@ void EnInspector::postInitialize()
 
     // the default is info window is disabled ( press F1 to activate it )
     enableInfoWindow( false );
+
+    // emulate leaving menu as some entities need it for activating their meshes
+    yaf3d::EntityNotification ennotify( YAF3D_NOTIFY_MENU_LEAVE );
+    yaf3d::EntityManager::get()->sendNotification( ennotify );
 }
 
 // main gui callbacks
