@@ -72,6 +72,51 @@ osg::ref_ptr< osg::Group > TerrainManager::setup( TerrainConfig& config ) throw 
     unsigned int sizeX = 0, sizeY = 0;
     tga.getSize( sizeX, sizeY );
 
+    // base texture map
+    osg::Texture2D* p_basetex = new osg::Texture2D;
+
+    {
+        osg::Image* p_baseimage = osgDB::readImageFile( mediapath + config._fileBasemap );
+
+        if ( !p_baseimage )
+        {
+            log_warning << "Terrain Manager: cannot load basemap image" << std::endl;
+        }
+        p_basetex->setImage( p_baseimage );
+        p_basetex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
+        p_basetex->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
+    }
+
+    // detailed texture map 0
+    osg::Texture2D* p_detailtex0 = new osg::Texture2D;
+
+    {
+        osg::Image* p_detailimage0 = osgDB::readImageFile( mediapath + config._fileDetailmap0 );
+
+        if ( !p_detailimage0 )
+        {
+            log_warning << "Terrain Manager: cannot load detail map 0 image" << std::endl;
+        }
+        p_detailtex0->setImage( p_detailimage0 );
+        p_detailtex0->setWrap( osg::Texture::WRAP_S, osg::Texture::REPEAT );
+        p_detailtex0->setWrap( osg::Texture::WRAP_T, osg::Texture::REPEAT );
+    }
+
+    // detailed texture map 1
+    osg::Texture2D* p_detailtex1 = new osg::Texture2D;
+
+    {
+        osg::Image* p_detailimage1 = osgDB::readImageFile( mediapath + config._fileDetailmap1 );
+
+        if ( !p_detailimage1 )
+        {
+            log_warning << "Terrain Manager: cannot load detail map 1 image" << std::endl;
+        }
+        p_detailtex1->setImage( p_detailimage1 );
+        p_detailtex1->setWrap( osg::Texture::WRAP_S, osg::Texture::REPEAT );
+        p_detailtex1->setWrap( osg::Texture::WRAP_T, osg::Texture::REPEAT );
+    }
+
     osg::ref_ptr< osg::Group > group = new osg::Group();
     group->setName( "_terrain_" );
 
@@ -85,6 +130,18 @@ osg::ref_ptr< osg::Group > TerrainManager::setup( TerrainConfig& config ) throw 
                 delete p_patch;
                 continue;
             }
+
+            // build the base texture map
+            if ( p_patch->buildTexCoords( 0 ) )
+                p_patch->getStateSet()->setTextureAttributeAndModes( 0, p_basetex, osg::StateAttribute::ON );
+
+            // build the detail texture map 0
+            if ( p_patch->buildTexCoords( 1, config._detailmap0Repeat ) )
+                p_patch->getStateSet()->setTextureAttributeAndModes( 1, p_detailtex0, osg::StateAttribute::ON );
+
+            // build the detail texture map 1
+            if ( p_patch->buildTexCoords( 2, config._detailmap1Repeat ) )
+                p_patch->getStateSet()->setTextureAttributeAndModes( 2, p_detailtex1, osg::StateAttribute::ON );
 
             patchlist.push_back( p_patch );
             group->addChild( p_patch->getSceneNode().get() );

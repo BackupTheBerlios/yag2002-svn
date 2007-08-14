@@ -37,6 +37,9 @@
 namespace yaf3d
 {
 
+//! Max number of texture channels for a patch
+#define MAX_TEX_CHANNELS    3
+
 class TerrainManager;
 class BasePatchTesselator;
 
@@ -56,7 +59,14 @@ class TerrainPatch
         virtual                                         ~TerrainPatch();
 
         //! Build the patch given the height data as Image, return false if the patch could not be built.
-        bool                                            build( ImageTGA& image, const osg::Vec3f& scale, unsigned int column , unsigned int row, unsigned int sizeS, unsigned int sizeT );
+        bool                                            build( const ImageTGA& image, const osg::Vec3f& scale, unsigned int column , unsigned int row, unsigned int sizeS, unsigned int sizeT );
+
+        //! Build texture coordinates for given channel. Let scale be 0,0 in order to automatically span the texture over the whole terrain ( e.g. useful for base map ).
+        //! sizeS and SizeT are the texture dimensions in pixels.
+        bool                                            buildTexCoords( unsigned int channel, const osg::Vec2f& scale = osg::Vec2f( 0.0f, 0.0f ) );
+
+        //! Get the state set
+        osg::ref_ptr< osg::StateSet >                   getStateSet();
 
         //! Reset the patch freeing up the allocated resources
         void                                            reset();
@@ -81,6 +91,21 @@ class TerrainPatch
         //! Scenegraph's patch node
         osg::ref_ptr< osg::PositionAttitudeTransform >  _p_node;
 
+        //! Patch geometry object
+        osg::ref_ptr< osg::Geometry >                   _p_drawable;
+
+        //! Draw elements array
+        osg::ref_ptr< osg::DrawElementsUByte >          _p_drawElements;
+
+        //! State set
+        osg::ref_ptr< osg::StateSet >                   _p_stateSet;
+
+        //! Patch size in x/y direction relative to the total hight map extends
+        osg::Vec2f                                      _relativeSize;
+
+        //! Relative patch position in terrain
+        osg::Vec2f                                      _relativePosition;
+        
         //! Patch tesselator
         BasePatchTesselator*                            _p_tesselator;
 

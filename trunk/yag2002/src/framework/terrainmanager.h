@@ -49,19 +49,16 @@ class TerrainConfig
         //!Height map file (grey scale)
         std::string                                 _fileHeightmap;
 
-        //! Base map file
+        //! Base map file. This map is spanned over the entire terrain.
         std::string                                 _fileBasemap;
 
-        //! Repeat factor in X/Y direction for basemap
-        osg::Vec2f                                  _basemapRepeat;
-
-        //! Detail map 0 file
+        //! Detail map 0 file. This map is repeated over the terrain patches.
         std::string                                 _fileDetailmap0;
 
         //! Repeat factor in X/Y direction for detailmap 0
         osg::Vec2f                                  _detailmap0Repeat;
 
-        //! Detail map 1 file
+        //! Detail map 1 file. This map is repeated over the terrain patches.
         std::string                                 _fileDetailmap1;
 
         //! Repeat factor in X/Y direction for detailmap 1

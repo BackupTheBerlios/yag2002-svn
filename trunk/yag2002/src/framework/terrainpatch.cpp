@@ -33,10 +33,13 @@
 #include "terrainpatch.h"
 #include "terraintesselator.h"
 
+//! Patch subdivisions in X and Y direction
+#define L0_SUBDIV_X 4
+#define L0_SUBDIV_Y 4
+
 
 namespace yaf3d
 {
-
 
 TerrainPatch::TerrainPatch( unsigned int tesselatortype ) :
  _p_tesselator( NULL )
@@ -69,7 +72,7 @@ osg::ref_ptr< osg::PositionAttitudeTransform > TerrainPatch::getSceneNode()
     return _p_node;
 }
 
-bool TerrainPatch::build( ImageTGA& image, const osg::Vec3f& scale, unsigned int column , unsigned int row, unsigned int sizeS, unsigned int sizeT )
+bool TerrainPatch::build( const ImageTGA& image, const osg::Vec3f& scale, unsigned int column , unsigned int row, unsigned int sizeS, unsigned int sizeT )
 {
     unsigned int imgSizeX = 0, imgSizeY = 0;
     image.getSize( imgSizeX, imgSizeY );
@@ -81,69 +84,27 @@ bool TerrainPatch::build( ImageTGA& image, const osg::Vec3f& scale, unsigned int
     if ( imgSizeY < row + sizeT )
         sizeT = imgSizeY - row;
 
-    unsigned char* p_data     = NULL;
-    unsigned int   pixelsize  = image.getNumChannels();
-    unsigned int   height     = 0;
+    // store relative patch position in terrain
+    _relativePosition._v[ 0 ] = float( column ) / float( imgSizeX );
+    _relativePosition._v[ 1 ] = float( row )    / float( imgSizeY );
+
+    const unsigned char* p_data    = NULL;
+    unsigned int         pixelsize = image.getNumChannels();
 
     // calc the subdivision in the patch element
-    unsigned int   vertsX = sizeS / 4;
-    unsigned int   vertsY = sizeT / 4;
+    unsigned int vertsX = sizeS / L0_SUBDIV_X;
+    unsigned int vertsY = sizeT / L0_SUBDIV_Y;
 
     // check the patch subdivision, in particular for size 2^N + 1 images
     if ( vertsX < 2 )
     {
-        log_verbose << "cannot subdevide the patch in Y direction, skipping the patch" << std::endl;
+        log_verbose << "Terrain Patch: cannot subdevide the patch in Y direction, skipping the patch" << std::endl;
         return false;
     }
     if ( vertsY < 2 )
     {
-        log_verbose << "cannot subdevide the patch in X direction, skipping the patch" << std::endl;
+        log_verbose << "Terrain Patch: cannot subdevide the patch in X direction, skipping the patch" << std::endl;
         return false;
-    }
-
-    osg::ref_ptr< osg::Geometry >  p_drawable  = new osg::Geometry();
-    osg::Vec3Array*                p_vertarray = new osg::Vec3Array();
-
-    log_info << "new patch" << std::endl;
-
-    float inv24bits = 1.0f / float( 0x10000000 );
-    for ( unsigned int cntY = 0; cntY <= sizeT; cntY += vertsY )
-    {
-        // for the case that the image has not the size 2^N + 1
-        if ( column + cntY >=  imgSizeY )
-        {
-            log_verbose << "height map image Y size is not 2^N + 1, correcting last column!" << std::endl;
-            cntY = imgSizeY - column - 1;
-        }
-
-        // go to next line in the image data
-        p_data = image.getData( row, column + cntY );
-        assert( p_data && "internal error while creating a terrain patch!" );        
-
-        for ( unsigned int cntX = 0; cntX <= sizeS; cntX += vertsX )
-        {
-            // for the case that the image has not the size 2^N + 1
-            if ( row + cntX >= imgSizeX )
-            {
-                log_verbose << "height map image X size is not 2^N + 1, correcting last row!" << std::endl;
-                cntX = imgSizeX - row - 1;
-            }
-
-            // build the height value out of rgb ( 24 bits )
-            height = ( ( unsigned int )p_data[ cntX * pixelsize ] << 16 )  | ( ( unsigned int )p_data[ cntX * pixelsize + 1 ] << 8 ) | ( ( unsigned int )p_data[ cntX * pixelsize + 2 ] );
-
-            osg::Vec3f pos;
-            pos._v[ 0 ] = ( float( row )    + float( cntX ) ) * scale.x();
-            pos._v[ 1 ] = ( float( column ) + float( cntY ) ) * scale.y();
-            pos._v[ 2 ] = ( float( height ) * inv24bits )     * scale.z();
-
-            // add the point to vertex array
-            p_vertarray->push_back( pos );
-
-            log_verbose << pos.x() << "," << pos.y() << "," << pos.z() << " ";
-        }
-
-        log_info << std::endl;
     }
 
     // create the geode
@@ -154,61 +115,189 @@ bool TerrainPatch::build( ImageTGA& image, const osg::Vec3f& scale, unsigned int
     osg::Geode* p_geode = new osg::Geode();
     _p_node->addChild( p_geode );
 
-    p_geode->addDrawable( p_drawable.get() );
-    p_drawable->setVertexArray( p_vertarray );
+    // setup the drawable
+    _p_drawable = new osg::Geometry();
+    osg::Vec3Array* p_vertarray = new osg::Vec3Array();
+    _p_drawable->setVertexArray( p_vertarray );
+
+    // setup the colour binding
+    _p_drawable->setColorBinding( osg::Geometry::BIND_OVERALL );
+
+    log_info << "new patch" << std::endl;
+
+    float inv24bits = scale.z() / float( 0x10000000 );
+    float minheight = float( 0xffffffff );
+    float height    = 0.0f;
+
+    for ( unsigned int cntY = 0; cntY <= sizeT; cntY += vertsY )
+    {
+        // for the case that the image has not the size 2^N + 1
+        if ( column + cntY >=  imgSizeY )
+        {
+           log_verbose << "Terrain Patch: height map image Y size is not 2^N + 1, correcting last column!" << std::endl;
+            cntY = imgSizeY - column - 1;
+        }
+
+        // go to next line in the image data
+        p_data = image.getData( row, column + cntY );
+        assert( p_data && "Terrain Patch: internal error while creating a terrain patch!" );        
+
+        for ( unsigned int cntX = 0; cntX <= sizeS; cntX += vertsX )
+        {
+            // for the case that the image has not the size 2^N + 1
+            if ( row + cntX >= imgSizeX )
+            {
+                log_verbose << "Terrain Patch: height map image X size is not 2^N + 1, correcting last row!" << std::endl;
+                cntX = imgSizeX - row - 1;
+            }
+
+            // build the height value out of rgb ( 24 bits )
+            height = float( ( ( unsigned int )p_data[ cntX * pixelsize ] << 16 )  | ( ( unsigned int )p_data[ cntX * pixelsize + 1 ] << 8 ) | ( ( unsigned int )p_data[ cntX * pixelsize + 2 ] ) );
+            height *= inv24bits;
+
+            osg::Vec3f pos;
+            pos._v[ 0 ] = float( cntX ) * scale.x();
+            pos._v[ 1 ] = float( cntY ) * scale.y();
+            pos._v[ 2 ] = height;
+
+            // store the minimal height for later calculation of proper transformation
+            if ( height < minheight )
+                minheight = height;
+
+            // add the point to vertex array
+            p_vertarray->push_back( pos );
+
+            log_verbose << pos.x() << "," << pos.y() << "," << pos.z() << " ";
+        }
+
+        log_info << std::endl;
+    }
+
+    // adjust the z values
+    {
+        osg::Vec3Array::iterator vert = p_vertarray->begin(), vertEnd = p_vertarray->end();
+        for ( ; vert != vertEnd; ++vert )
+            vert->_v[ 2 ] -= minheight;
+    }
 
     //set the patch transformation
-    //! TODO: do we need a positioning at all? we can use absolute vertex positions
-    //_p_node->setPosition( osg::Vec3f( float( column ) * scale._v[ 0 ], float( row )  * scale._v[ 1 ], 0.0f ) );  
+    _p_node->setPosition( osg::Vec3f( float( row ) * scale.x(), float( column ) * scale.y(), minheight ) );  
 
-    //! TODO: setup the index array
-    osg::UByteArray* p_indexarray = new osg::UByteArray;
-    p_drawable->setVertexIndices( p_indexarray );
+    // setup the draw elements array
+    _p_drawElements = new osg::DrawElementsUByte( osg::PrimitiveSet::TRIANGLE_STRIP );
 
     // create triangle strips
     unsigned int indexdist = vertsX + 1;
     for ( unsigned int indexY = 0; indexY < vertsY; indexY++ )
     {
-        for ( unsigned int indexX = 0; indexX < vertsX + 1; indexX++ )
+        for ( int indexX = vertsX; indexX >= 0; indexX-- )
         {
             if ( indexY % 2 )  // odd rows
             {
-                p_indexarray->push_back( indexdist * ( indexY + 1 ) - indexX - 1 );
-                p_indexarray->push_back( indexdist * ( indexY + 2 ) - indexX - 1 );
+                _p_drawElements->push_back( indexdist * ( indexY + 1 ) - ( indexX + 1 ) );
+                _p_drawElements->push_back( indexdist * ( indexY + 2 ) - ( indexX + 1 ) );
             }
             else               // even rows
             {
-                p_indexarray->push_back( indexdist * indexY + indexX );
-                p_indexarray->push_back( indexdist * indexY + indexdist + indexX );
+                _p_drawElements->push_back( indexdist * indexY + ( indexX ) );
+                _p_drawElements->push_back( indexdist * ( indexY + 1 ) + ( indexX ) );
             }
         }
-
+//! TODO: the degenerated vertices are not correct! fix it
         // create a degenerated triangle in order to continue with next row, but not for last vertex
         if ( indexY < vertsY )
         {
             if ( indexY % 2 )  // odd rows
-                p_indexarray->push_back( ( indexY + 1 ) * indexdist );
+                _p_drawElements->push_back( ( indexY + 1 ) * indexdist - 1 );
             else               // even rows
-                p_indexarray->push_back( ( indexY + 2 ) * indexdist - 1 );
+                _p_drawElements->push_back( ( indexY + 2 ) * indexdist - 1 );
         }
     }
-    p_drawable->addPrimitiveSet( new osg::DrawArrays( osg::PrimitiveSet::TRIANGLE_STRIP, 0, p_indexarray->size() ) );
 
-    //! TODO: check why the polys are two sided!
-    osg::StateSet* p_stateset = new osg::StateSet;
-    p_stateset->setDataVariance( osg::Object::STATIC );
-    p_stateset->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
-    p_stateset->setGlobalDefaults();
+    _p_drawable->addPrimitiveSet( _p_drawElements.get() );
 
-    p_drawable->setStateSet( p_stateset );
+    _p_stateSet = new osg::StateSet;
+    _p_stateSet->setGlobalDefaults();
+    _p_stateSet->setDataVariance( osg::Object::DYNAMIC );
+    _p_stateSet->setRenderingHint( osg::StateSet::OPAQUE_BIN/*TRANSPARENT_BIN*/ );
+    _p_stateSet->setMode( GL_CULL_FACE, osg::StateAttribute::ON );
+
+    _p_drawable->setStateSet( _p_stateSet.get() );
+
+    p_geode->addDrawable( _p_drawable.get() );
+
+    // store the patch x/y dimensions
+    _relativeSize._v[ 0 ] = float( sizeS ) / float( imgSizeX );
+    _relativeSize._v[ 1 ] = float( sizeT ) / float( imgSizeY );
 
     return true;
 }
 
+bool TerrainPatch::buildTexCoords( unsigned int channel, const osg::Vec2f& scale )
+{
+    if ( !_relativeSize.x() || !_relativeSize.y() )
+    {
+        log_error << "Terrain Patch: invalid terrain size! Has the patch been already built?" << std::endl;
+        return false;
+    }
+
+    if ( channel >= MAX_TEX_CHANNELS )
+    {
+        log_error << "Terrain Patch: invalid texture channel. Supporting max channels: " << MAX_TEX_CHANNELS << std::endl;
+        return false;
+    }
+
+    float coordS = 0.0f;
+    float coordT = 1.0f;
+    float coordStrideS = -1.0f / float( L0_SUBDIV_X );
+    float coordStrideT =  1.0f / float( L0_SUBDIV_Y );
+
+    // span over the entire terrain?
+    if ( !scale.x() || !scale.y() )
+    {
+        coordStrideS *= -_relativeSize.x();
+        coordStrideT *=  _relativeSize.y();
+        coordS        =  _relativePosition.x();
+        coordT        =  1.0f - _relativePosition.y() - _relativeSize.y();
+    }
+    else
+    {
+        coordStrideS *= scale.x();
+        coordStrideT *= scale.y();
+    }
+
+    osg::Vec2Array* p_coordarray = new osg::Vec2Array();
+
+    // calculate the texture coordinates of all patch vertices
+    for ( unsigned int stepY = 0; stepY <= L0_SUBDIV_Y; stepY++ )
+    {
+        for ( unsigned int stepX = 0; stepX <= L0_SUBDIV_X; stepX++ )
+        {
+            osg::Vec2f coord( coordStrideS * float( L0_SUBDIV_X - stepX ), coordStrideT * float( stepY ) );
+            // rotate the local texture coordinates by -90 degree
+            p_coordarray->push_back( osg::Vec2f( coordS + coord.y(), coordT + coord.x() ) );
+        }
+    }
+
+    _p_drawable->setTexCoordArray( channel, p_coordarray );
+
+    return true;
+}
+
+osg::ref_ptr< osg::StateSet > TerrainPatch::getStateSet()
+{
+    return _p_stateSet;
+}
+
 void TerrainPatch::reset()
 {
-    // release the node
-    _p_node = NULL;
+    //!TODO: check this
+    
+    // release the resources
+    _p_node         = NULL;
+    _p_drawable     = NULL;
+    _p_drawElements = NULL;
+    _p_stateSet     = NULL;
 }
 
 void TerrainPatch::update( osg::CameraNode* p_cam )
