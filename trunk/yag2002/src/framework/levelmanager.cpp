@@ -81,7 +81,11 @@ class GLResourceCompiler : public osg::NodeVisitor
 
         void                            apply( osg::Geode& node )
                                         {
-                                            node.compileDrawables( *_p_state );
+                                            //setup render info
+                                            osg::RenderInfo renderinfo;
+                                            renderinfo.setState( _p_state );
+                                            node.compileDrawables( renderinfo );
+
                                             osg::Geode::DrawableList drawableList = node.getDrawableList();
                                             int listsize = drawableList.size();
                                             for ( int cnt = 0; cnt < listsize; ++cnt )
