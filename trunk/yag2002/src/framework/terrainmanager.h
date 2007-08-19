@@ -88,19 +88,23 @@ class TerrainException : public std::runtime_error
         TerrainException&                           operator = ( const TerrainException& );
 };
 
+//! Class declarations
+class TerrainPatch;
+class TerrainSection;
+
 /*! Terrain manager */
 class TerrainManager : public Singleton< TerrainManager >
 {
     public:
 
-        //! Setup the terrain and return a group containing the entire terrain
-        osg::ref_ptr< osg::Group >                  setup( TerrainConfig& config ) throw ( TerrainException );
+        //! Setup a terrain section and return its ID. The IDs begin with 1 and are incremented for every new section.
+        unsigned int                                addSection( TerrainConfig& config ) throw ( TerrainException );
 
-        //! Update the patch tesselation and visibility
-        void                                        update( osg::CameraNode* p_cam );
+        //! Given a section ID return its scenegraph node.
+        osg::ref_ptr< osg::Group >                  getSectionNode( unsigned int id ) throw ( TerrainException );
 
-        //! Render the patch
-        void                                        render();
+        //! Release a terrain section given its ID.
+        void                                        releaseSection( unsigned int id ) throw ( TerrainException );
 
     protected:
 
@@ -111,6 +115,30 @@ class TerrainManager : public Singleton< TerrainManager >
 
         //! Shutdown level manager
         void                                        shutdown();
+
+        //! Setup the shaders
+        osg::ref_ptr<osg::StateSet >                setupShaders();
+
+        //! Build a quad tree for the given list of patches
+        osg::ref_ptr< osg::Group >                  buildQuadTree( std::vector< TerrainPatch* >& patches );
+
+        //! Recursively split the node into a quad tree
+        void                                        split( unsigned int maxdepth, unsigned int depth, osg::Group* p_node, std::vector< TerrainPatch* >& patches, unsigned int& tileX, unsigned int& tileY );
+
+        //! Count of sections
+        unsigned int                                _sections;
+
+        //! Count of tiles in a row
+        unsigned int                                _tilesX;
+        
+        //! Count of tiles in a column
+        unsigned int                                _tilesY;
+
+        //! The depth of quad tree
+        unsigned int                                _quadTreeDepth;
+
+        //! Internal map of < terrain ID / section object >
+        std::map< unsigned int, TerrainSection* >   _sectionMap;
 
     friend class Singleton< TerrainManager >;
     friend class Application;

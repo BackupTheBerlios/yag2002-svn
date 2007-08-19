@@ -31,36 +31,18 @@
 #include "base.h"
 #include "log.h"
 #include "terrainpatch.h"
-#include "terraintesselator.h"
 
 //! Patch subdivisions in X and Y direction
-#define L0_SUBDIV_X 4
-#define L0_SUBDIV_Y 4
+//! TODO: make these parameters of a patch
+#define L0_SUBDIV_X 8
+#define L0_SUBDIV_Y 8
 
 
 namespace yaf3d
 {
 
-TerrainPatch::TerrainPatch( unsigned int tesselatortype ) :
- _p_tesselator( NULL )
+TerrainPatch::TerrainPatch()
 {
-    switch ( tesselatortype )
-    {
-        case eTesselatorScreenSpace:
-
-            _p_tesselator = new TesselatorScreenSpace;
-            break;
-
-        case eTesselatorWorldSpace:
-
-            _p_tesselator = new TesselatorWorldSpace;
-            break;
-
-        default:
-
-            log_error << "unknown tesselator type! set to screen space tesselator." << std::endl;
-            _p_tesselator = new TesselatorScreenSpace;
-    }
 }
 
 TerrainPatch::~TerrainPatch()
@@ -91,17 +73,17 @@ bool TerrainPatch::build( const ImageTGA& image, const osg::Vec3f& scale, unsign
     const unsigned char* p_data    = NULL;
     unsigned int         pixelsize = image.getNumChannels();
 
-    // calc the subdivision in the patch element
-    unsigned int vertsX = sizeS / L0_SUBDIV_X;
-    unsigned int vertsY = sizeT / L0_SUBDIV_Y;
+    // calc the pixel distance in the patch element
+    unsigned int pixdiffX = sizeS / L0_SUBDIV_X;
+    unsigned int pixdiffY = sizeT / L0_SUBDIV_Y;
 
     // check the patch subdivision, in particular for size 2^N + 1 images
-    if ( vertsX < 2 )
+    if ( pixdiffX < 2 )
     {
         log_verbose << "Terrain Patch: cannot subdevide the patch in Y direction, skipping the patch" << std::endl;
         return false;
     }
-    if ( vertsY < 2 )
+    if ( pixdiffY < 2 )
     {
         log_verbose << "Terrain Patch: cannot subdevide the patch in X direction, skipping the patch" << std::endl;
         return false;
@@ -123,18 +105,16 @@ bool TerrainPatch::build( const ImageTGA& image, const osg::Vec3f& scale, unsign
     // setup the colour binding
     _p_drawable->setColorBinding( osg::Geometry::BIND_OVERALL );
 
-    log_info << "new patch" << std::endl;
-
     float inv24bits = scale.z() / float( 0x10000000 );
     float minheight = float( 0xffffffff );
     float height    = 0.0f;
 
-    for ( unsigned int cntY = 0; cntY <= sizeT; cntY += vertsY )
+    for ( unsigned int cntY = 0; cntY <= sizeT; cntY += pixdiffY )
     {
         // for the case that the image has not the size 2^N + 1
         if ( column + cntY >=  imgSizeY )
         {
-           log_verbose << "Terrain Patch: height map image Y size is not 2^N + 1, correcting last column!" << std::endl;
+            log_verbose << "Terrain Patch: height map image Y size is not 2^N + 1, correcting last column!" << std::endl;
             cntY = imgSizeY - column - 1;
         }
 
@@ -142,7 +122,7 @@ bool TerrainPatch::build( const ImageTGA& image, const osg::Vec3f& scale, unsign
         p_data = image.getData( row, column + cntY );
         assert( p_data && "Terrain Patch: internal error while creating a terrain patch!" );        
 
-        for ( unsigned int cntX = 0; cntX <= sizeS; cntX += vertsX )
+        for ( unsigned int cntX = 0; cntX <= sizeS; cntX += pixdiffX )
         {
             // for the case that the image has not the size 2^N + 1
             if ( row + cntX >= imgSizeX )
@@ -155,7 +135,7 @@ bool TerrainPatch::build( const ImageTGA& image, const osg::Vec3f& scale, unsign
             height = float( ( ( unsigned int )p_data[ cntX * pixelsize ] << 16 )  | ( ( unsigned int )p_data[ cntX * pixelsize + 1 ] << 8 ) | ( ( unsigned int )p_data[ cntX * pixelsize + 2 ] ) );
             height *= inv24bits;
 
-            osg::Vec3f pos;
+            osg::Vec3f pos; 
             pos._v[ 0 ] = float( cntX ) * scale.x();
             pos._v[ 1 ] = float( cntY ) * scale.y();
             pos._v[ 2 ] = height;
@@ -166,11 +146,7 @@ bool TerrainPatch::build( const ImageTGA& image, const osg::Vec3f& scale, unsign
 
             // add the point to vertex array
             p_vertarray->push_back( pos );
-
-            log_verbose << pos.x() << "," << pos.y() << "," << pos.z() << " ";
         }
-
-        log_info << std::endl;
     }
 
     // adjust the z values
@@ -184,37 +160,36 @@ bool TerrainPatch::build( const ImageTGA& image, const osg::Vec3f& scale, unsign
     _p_node->setPosition( osg::Vec3f( float( row ) * scale.x(), float( column ) * scale.y(), minheight ) );  
 
     // setup the draw elements array
-    _p_drawElements = new osg::DrawElementsUByte( osg::PrimitiveSet::TRIANGLE_STRIP );
+    osg::DrawElementsUByte* p_drawElements = new osg::DrawElementsUByte( osg::PrimitiveSet::TRIANGLE_STRIP );
 
     // create triangle strips
-    unsigned int indexdist = vertsX + 1;
-    for ( unsigned int indexY = 0; indexY < vertsY; indexY++ )
+    unsigned int indexdist = L0_SUBDIV_X + 1;
+    for ( unsigned int indexY = 0; indexY < L0_SUBDIV_Y; indexY++ )
     {
-        for ( int indexX = vertsX; indexX >= 0; indexX-- )
+        for ( int indexX = L0_SUBDIV_X; indexX >= 0; indexX-- )
         {
             if ( indexY % 2 )  // odd rows
             {
-                _p_drawElements->push_back( indexdist * ( indexY + 1 ) - ( indexX + 1 ) );
-                _p_drawElements->push_back( indexdist * ( indexY + 2 ) - ( indexX + 1 ) );
+                p_drawElements->push_back( indexdist * ( indexY + 1 ) - ( indexX + 1 ) );
+                p_drawElements->push_back( indexdist * ( indexY + 2 ) - ( indexX + 1 ) );
             }
             else               // even rows
             {
-                _p_drawElements->push_back( indexdist * indexY + ( indexX ) );
-                _p_drawElements->push_back( indexdist * ( indexY + 1 ) + ( indexX ) );
+                p_drawElements->push_back( indexdist * indexY + ( indexX ) );
+                p_drawElements->push_back( indexdist * ( indexY + 1 ) + ( indexX ) );
             }
         }
-//! TODO: the degenerated vertices are not correct! fix it
-        // create a degenerated triangle in order to continue with next row, but not for last vertex
-        if ( indexY < vertsY )
+        // create a degenerated triangle in order to continue with next row, but not for last row
+        if ( indexY < L0_SUBDIV_Y - 1 )
         {
             if ( indexY % 2 )  // odd rows
-                _p_drawElements->push_back( ( indexY + 1 ) * indexdist - 1 );
+                p_drawElements->push_back( ( indexY + 2 ) * indexdist - 1 );
             else               // even rows
-                _p_drawElements->push_back( ( indexY + 2 ) * indexdist - 1 );
+                p_drawElements->push_back( ( indexY + 1 ) * indexdist );
         }
     }
 
-    _p_drawable->addPrimitiveSet( _p_drawElements.get() );
+    _p_drawable->addPrimitiveSet( p_drawElements );
 
     _p_stateSet = new osg::StateSet;
     _p_stateSet->setGlobalDefaults();
@@ -287,33 +262,6 @@ bool TerrainPatch::buildTexCoords( unsigned int channel, const osg::Vec2f& scale
 osg::ref_ptr< osg::StateSet > TerrainPatch::getStateSet()
 {
     return _p_stateSet;
-}
-
-void TerrainPatch::reset()
-{
-    //!TODO: check this
-    
-    // release the resources
-    _p_node         = NULL;
-    _p_drawable     = NULL;
-    _p_drawElements = NULL;
-    _p_stateSet     = NULL;
-}
-
-void TerrainPatch::update( osg::CameraNode* p_cam )
-{
-    //! TODO
-}
-
-bool TerrainPatch::isVisible()
-{
-    //! TODO
-    return true;
-}
-
-void TerrainPatch::render()
-{
-    //! TODO
 }
 
 } // namespace yaf3d

@@ -41,7 +41,7 @@ namespace yaf3d
 #define MAX_TEX_CHANNELS    3
 
 class TerrainManager;
-class BasePatchTesselator;
+class TerrainSection;
 
 /*! Terrain patch */
 class TerrainPatch
@@ -53,8 +53,8 @@ class TerrainPatch
 
     protected:
 
-        //! Create a patch with given tesselator type, one of PatchTesselatorType enums
-                                                        TerrainPatch( unsigned int tesselatortype );
+        //! Create a patch
+                                                        TerrainPatch();
 
         virtual                                         ~TerrainPatch();
 
@@ -72,30 +72,13 @@ class TerrainPatch
         void                                            reset();
 
         //! Update the patch tesselation and visibility
-        void                                            update( osg::CameraNode* p_cam );
-
-        //! Is the patch visible to camera?
-        bool                                            isVisible();
-
-        //! Render the patch
-        void                                            render();
-
-        //! Tesselator types
-        enum PatchTesselatorType
-        {
-            eTesselatorScreenSpace = 0x10,
-
-            eTesselatorWorldSpace
-        };
+        void                                            update( osg::Camera* p_cam );
 
         //! Scenegraph's patch node
         osg::ref_ptr< osg::PositionAttitudeTransform >  _p_node;
 
         //! Patch geometry object
         osg::ref_ptr< osg::Geometry >                   _p_drawable;
-
-        //! Draw elements array
-        osg::ref_ptr< osg::DrawElementsUByte >          _p_drawElements;
 
         //! State set
         osg::ref_ptr< osg::StateSet >                   _p_stateSet;
@@ -105,11 +88,9 @@ class TerrainPatch
 
         //! Relative patch position in terrain
         osg::Vec2f                                      _relativePosition;
-        
-        //! Patch tesselator
-        BasePatchTesselator*                            _p_tesselator;
 
     friend class TerrainManager;
+    friend class TerrainSection;
 };
 
 } // namespace yaf3d
