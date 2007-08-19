@@ -37,14 +37,15 @@
 namespace vrc
 {
 
-#define ENTITY_NAME_TERRAIN    "Terrain"
+#define ENTITY_NAME_TERRAINSECTION    "TerrainSection"
 
-class EnTerrain :  public yaf3d::BaseEntity
+//! Terrain section entity
+class EnTerrainSection :  public yaf3d::BaseEntity
 {
     public:
-                                                    EnTerrain();
+                                                    EnTerrainSection();
 
-        virtual                                     ~EnTerrain();
+        virtual                                     ~EnTerrainSection();
         
         //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
@@ -63,6 +64,15 @@ class EnTerrain :  public yaf3d::BaseEntity
 
         // Entity parameters
         //------------------
+
+        //! Section ID
+        unsigned int                                _sectionID;
+
+        //! Position of the terrain section
+        osg::Vec3f                                  _position;
+
+        //! Rotation of the terrain section
+        osg::Vec3f                                  _rotation;
 
         //! Scaling the height and X/Y
         osg::Vec3f                                  _scale;
@@ -100,12 +110,12 @@ class TerrainEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     TerrainEntityFactory() : 
-                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_TERRAIN, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_TERRAINSECTION, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
                                                     {}
 
         virtual                                     ~TerrainEntityFactory() {}
 
-        Macro_CreateEntity( EnTerrain );
+        Macro_CreateEntity( EnTerrainSection );
 };
 
 } // namespace vrc
