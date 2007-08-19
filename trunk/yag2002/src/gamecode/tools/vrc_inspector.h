@@ -115,6 +115,12 @@ class EnInspector :  public yaf3d::BaseEntity
         //! Observer's camera
         EnCamera*                                   _p_cameraEntity;
 
+        //! Camera's far clip distance
+        float                                       _farClip;
+
+        //! Camera's fov in degrees
+        float                                       _fov;
+
         //! Input handler
         osg::ref_ptr< InspectorIH >                 _inputHandler;
 

@@ -269,10 +269,11 @@ bool InspectorIH::pick( float x, float y )
     inverseMVPW.invert( vum );
     osg::Vec3 start = osg::Vec3( x, y, -1.0f ) * inverseMVPW;
     osg::Vec3 end   = osg::Vec3( x, y, 1.0f ) * inverseMVPW;
+
     // update line segment for intersection test
     _p_lineSegment->set( start, end );
 
-    // reset mulit-click checking if the mouse pointer moved to far since last picking
+    // reset multi-click checking if the mouse pointer moved too far since last picking
     bool resetMultiClick = false;
     if ( ( fabs( _lastX - x ) > 0.2 ) || ( fabs( _lastY - y ) > 0.2 ) )
     {
@@ -342,6 +343,7 @@ bool InspectorIH::pick( float x, float y )
     osg::Vec3Array* p_ivertices = static_cast< osg::Vec3Array* >( _p_linesIntersect->getVertexArray() );
     ( *p_ivertices )[ 0 ] = start;
     ( *p_ivertices )[ 1 ] = end;
+
     _p_linesIntersect->setVertexArray( p_ivertices );
 
     if ( p_pickedHit )
@@ -611,6 +613,8 @@ _deltaTime( 0.03f ),
 _isPersistent( false ),
 _needUpdate ( false ),
 _p_cameraEntity( NULL ),
+_farClip( 1000.0f ),
+_fov( 60.0f ),
 _p_wndMain( NULL ),
 _p_outputTextMain( NULL ),
 _p_speedBarMain( NULL ),
@@ -627,6 +631,8 @@ _fps( 0 )
     getAttributeManager().addAttribute( "position", _position );
     getAttributeManager().addAttribute( "rotation", _rotation );
     getAttributeManager().addAttribute( "maxSpeed", _maxSpeed );
+    getAttributeManager().addAttribute( "farClip",  _farClip );
+    getAttributeManager().addAttribute( "fov",      _fov );
 }
 
 EnInspector::~EnInspector()
@@ -752,11 +758,14 @@ void EnInspector::postInitialize()
     }
 
     // create a camera instance
-    _p_cameraEntity = dynamic_cast< EnCamera* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_CAMERA, "_inpectorCamera_" ) );
+    _p_cameraEntity = dynamic_cast< EnCamera* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_CAMERA, "_inspectorCamera_" ) );
     assert( _p_cameraEntity && "error creating observer camera" );
 
     // set any camera attributes before initializing it
     _p_cameraEntity->getAttributeManager().setAttributeValue( "backgroundColor", osg::Vec3f( 0, 0, 0 ) );
+    _p_cameraEntity->getAttributeManager().setAttributeValue( "farClip", _farClip );
+    _p_cameraEntity->getAttributeManager().setAttributeValue( "fov", _fov );
+
     // setup camera entity
     _p_cameraEntity->initialize();
     _p_cameraEntity->postInitialize();
