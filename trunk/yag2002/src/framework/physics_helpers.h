@@ -39,7 +39,7 @@ namespace yaf3d
 {
 
 //! Class used for rendering physics debug info
-class PhysicsDebugDrawable : public osg::Drawable
+class PhysicsDebugDrawable : public osg::Geometry
 {
     public :
 
@@ -47,7 +47,7 @@ class PhysicsDebugDrawable : public osg::Drawable
 
         // Copy constructor using CopyOp to manage deep vs shallow copy.
                                         PhysicsDebugDrawable( const PhysicsDebugDrawable& drawable, const osg::CopyOp& copyop = osg::CopyOp::SHALLOW_COPY ) :
-                                         Drawable( drawable, copyop )
+                                         Geometry( drawable, copyop )
                                         {};
 
         osg::Object*                    cloneType() const { return new PhysicsDebugDrawable(); }

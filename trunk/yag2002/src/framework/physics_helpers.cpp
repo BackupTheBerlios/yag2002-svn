@@ -103,9 +103,9 @@ void PhysicsVisitor::apply( osg::Geode& node )
         // evaluate the geom and generate an appropriate collision geometry
         if ( p_geom )
         {
-            osg::Array*  p_verts   = p_geom->getVertexArray();
-            osg::IndexArray* p_indices  = p_geom->getVertexIndices();
-            unsigned int numPrims = p_geom->getNumPrimitiveSets();
+            osg::Array*      p_verts   = p_geom->getVertexArray();
+            osg::IndexArray* p_indices = p_geom->getVertexIndices();
+            unsigned int     numPrims  = p_geom->getNumPrimitiveSets();
             {
                 for ( unsigned int primcnt = 0; primcnt < numPrims; ++primcnt )
                 {
