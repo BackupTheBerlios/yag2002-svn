@@ -114,7 +114,7 @@ class ShadowManager : public yaf3d::Singleton< vrc::ShadowManager >
 
         osg::Vec2f                                  _shadowAmbientBias;
 
-        osg::ref_ptr< osg::CameraNode >             _shadowCameraGroup;
+        osg::ref_ptr< osg::Camera >                 _shadowCameraGroup;
 
         osg::ref_ptr< osg::Group >                  _shadowedGroup;
 

@@ -35,7 +35,7 @@
 #include <osg/TexEnvCombine>
 #include <osg/TexEnv>
 #include <osg/TexGenNode>
-#include <osg/CameraNode>
+#include <osg/Camera>
 #include <osg/PolygonOffset>
 
 // Implementation of ShadowManager
@@ -49,9 +49,9 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
 {
     public:
 
-                                                UpdateCameraAndTexGenCallback( osg::Vec3f lightpos, osg::CameraNode* p_cameraNode, osg::Uniform* p_texgenMatrix ):
+                                                UpdateCameraAndTexGenCallback( osg::Vec3f lightpos, osg::Camera* p_camera, osg::Uniform* p_texgenMatrix ):
                                                  _lightPosition( lightpos ),
-                                                 _cameraNode( p_cameraNode ),
+                                                 _camera( p_camera ),
                                                  _p_texgenMatrix( p_texgenMatrix ),
                                                  _updateNodes( true ),
                                                  _updateLightPosition( true ),
@@ -82,8 +82,8 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
                                                     {
                                                         _shadowBB.init();
                                                         // now compute the camera's view and projection matrix to point at the shadower (the camera's children)
-                                                        for( unsigned int i = 0; i < _cameraNode->getNumChildren(); ++i )
-                                                            _shadowBB.expandBy( _cameraNode->getChild(i)->getBound() );
+                                                        for( unsigned int i = 0; i < _camera->getNumChildren(); ++i )
+                                                            _shadowBB.expandBy( _camera->getChild(i)->getBound() );
 
                                                         if ( !_shadowBB.valid() )
                                                             return;
@@ -105,14 +105,14 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
 
                                                     if ( _updateLightPosition )
                                                     {
-                                                        _cameraNode->setReferenceFrame( osg::CameraNode::ABSOLUTE_RF );
-                                                        _cameraNode->setProjectionMatrixAsFrustum( -_frustomCorner, _frustomCorner, -_frustomCorner, _frustomCorner, _nearZ, _farZ );
-                                                        _cameraNode->setViewMatrixAsLookAt( _lightPosition, _shadowBB.center(), osg::Vec3( 0.0f, 1.0f, 0.0f ) );
+                                                        _camera->setReferenceFrame( osg::Camera::ABSOLUTE_RF );
+                                                        _camera->setProjectionMatrixAsFrustum( -_frustomCorner, _frustomCorner, -_frustomCorner, _frustomCorner, _nearZ, _farZ );
+                                                        _camera->setViewMatrixAsLookAt( _lightPosition, _shadowBB.center(), osg::Vec3( 0.0f, 1.0f, 0.0f ) );
 
                                                         // compute the matrix which takes a vertex from local coords into tex coords
                                                         // will use this later to specify osg::TexGen
-                                                        _MVPT = _cameraNode->getViewMatrix() *
-                                                                _cameraNode->getProjectionMatrix() *
+                                                        _MVPT = _camera->getViewMatrix() *
+                                                                _camera->getProjectionMatrix() *
                                                                 osg::Matrix::translate( 1.0, 1.0, 1.0 ) *
                                                                 osg::Matrix::scale( 0.5f, 0.5f, 0.5f );
 
@@ -130,7 +130,7 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
 
         osg::Vec3f                              _lightPosition;
 
-        osg::ref_ptr< osg::CameraNode >         _cameraNode;
+        osg::ref_ptr< osg::Camera >             _camera;
 
         osg::Uniform*                           _p_texgenMatrix;
 
@@ -156,7 +156,13 @@ class CameraCullCallback : public osg::NodeCallback
 
         void                                    operator()( osg::Node* p_node, osg::NodeVisitor* p_nv )
                                                 {
+                                                    //! TODO: specify a node mask for this manager so only meshes with that mask are used for shadowing
+                                                    osg::Node::NodeMask mask = 0x1;//0xffffffff;
+                                                    //osg::NodeVisitor visitor( *p_nv );
+                                                    
+                                                    p_nv->setTraversalMask( mask );
 
+                                                    traverse( p_node, p_nv );
                                                 }
 
     protected:
@@ -295,7 +301,7 @@ osg::Node* ShadowManager::createDebugDisplay( osg::Texture* p_texture )
     p_stateset->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
     p_geode->addDrawable( p_geom );
 
-    osg::CameraNode* p_camera = new osg::CameraNode;
+    osg::Camera* p_camera = new osg::Camera;
 
     // set the projection matrix
     p_camera->setProjectionMatrix(osg::Matrix::ortho2D( 0, size.x(), 0, size.y() ) );
@@ -310,7 +316,7 @@ osg::Node* ShadowManager::createDebugDisplay( osg::Texture* p_texture )
     p_camera->setClearMask( GL_DEPTH_BUFFER_BIT );
 
     // draw subgraph after main camera view.
-    p_camera->setRenderOrder( osg::CameraNode::POST_RENDER );
+    p_camera->setRenderOrder( osg::Camera::POST_RENDER );
 
     p_camera->addChild( p_geode );
 
@@ -354,12 +360,12 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
     // set up the render to texture camera.
     {
         // create the camera node
-        _shadowCameraGroup = new osg::CameraNode;
+        _shadowCameraGroup = new osg::Camera;
         _shadowCameraGroup->setName( "_shadowCameraGroup" );
 
         _shadowCameraGroup->setClearMask( GL_DEPTH_BUFFER_BIT );
         _shadowCameraGroup->setClearColor( osg::Vec4( 1.0f, 1.0f, 1.0f, 1.0f ) );
-        _shadowCameraGroup->setComputeNearFarMode( osg::CameraNode::DO_NOT_COMPUTE_NEAR_FAR );
+        _shadowCameraGroup->setComputeNearFarMode( osg::Camera::DO_NOT_COMPUTE_NEAR_FAR );
 
         // set viewport
         _shadowCameraGroup->setViewport( 0, 0, shadowTextureWidth, shadowTextureHeight );
@@ -367,7 +373,7 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
         osg::StateSet* p_localstateset = _shadowCameraGroup->getOrCreateStateSet();
         p_localstateset->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
 
-        float factor = 2.0f;
+        float factor = 0.0f;
         float units  = 2.0f;
 
         osg::ref_ptr< osg::PolygonOffset > p_polygonoffset = new osg::PolygonOffset;
@@ -383,13 +389,13 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
 
 
         // set the camera to render before the main camera.
-        _shadowCameraGroup->setRenderOrder( osg::CameraNode::PRE_RENDER );
+        _shadowCameraGroup->setRenderOrder( osg::Camera::PRE_RENDER );
 
         // tell the camera to use OpenGL frame buffer object where supported.
-        _shadowCameraGroup->setRenderTargetImplementation( osg::CameraNode::FRAME_BUFFER_OBJECT );
+        _shadowCameraGroup->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER_OBJECT );
 
         // attach the texture and use it as the depth buffer.
-        _shadowCameraGroup->attach( osg::CameraNode::DEPTH_BUFFER, p_texture );
+        _shadowCameraGroup->attach( osg::Camera::DEPTH_BUFFER, p_texture );
 
         _shadowSceneGroup->addChild( _shadowCameraGroup.get() );
 
@@ -397,8 +403,8 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
         _p_shadowMapTexture = p_texture;
 
         // set camera's cull callback
-        //_p_cullCallback = new CameraCullCallback;
-        //_shadowSceneGroup->setCullCallback( _p_cullCallback );
+        _p_cullCallback = new CameraCullCallback;
+        _shadowSceneGroup->setCullCallback( _p_cullCallback );
     }
 
     // set the shadowed subgraph so that it uses the p_texture and tex gen settings.
