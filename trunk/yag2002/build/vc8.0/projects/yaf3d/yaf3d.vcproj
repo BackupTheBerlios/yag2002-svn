@@ -532,14 +532,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\framework\terraintesselator.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\framework\terraintesselator.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\..\src\framework\utils.cpp"
 				>
 			</File>
