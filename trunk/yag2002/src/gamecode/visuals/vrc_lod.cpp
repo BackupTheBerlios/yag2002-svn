@@ -30,6 +30,12 @@
 
 #include <vrc_main.h>
 #include "vrc_lod.h"
+
+
+// should glod be used?
+#if VRC_USE_GLOD
+
+
 #include <glod.h>
 
 
@@ -353,3 +359,5 @@ void LODVisitor::apply( osg::Geode& node )
 }
 
 } // namespace vrc
+
+#endif // VRC_USE_GLOD

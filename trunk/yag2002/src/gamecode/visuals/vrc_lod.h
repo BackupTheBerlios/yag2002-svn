@@ -33,6 +33,13 @@
 #ifndef _VRC_LOD_H_
 #define _VRC_LOD_H_
 
+//! Disable glod related stuff
+#define VRC_USE_GLOD 0
+
+
+#if VRC_USE_GLOD
+
+
 #include <vrc_main.h>
 
 namespace vrc
@@ -252,5 +259,8 @@ class LODUpdateCallback : public osg::Drawable::UpdateCallback
 #include "vrc_lod.inl"
 
 } // namespace vrc
+
+
+#endif // VRC_USE_GLOD
 
 #endif // _VRC_LOD_H_
