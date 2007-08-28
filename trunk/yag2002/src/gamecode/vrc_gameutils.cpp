@@ -135,9 +135,8 @@ void VRCStateHandler::onStateChange( unsigned int state )
 
             // check glsl availability for dynamic shadow
             {
-                const osg::GL2Extensions* p_extensions = osg::GL2Extensions::Get( 0, true );
                 // if glsl is not available then disable dynamic shadow flag in configuration
-                if ( _shadowEnable && !p_extensions->isGlslSupported() )
+                if ( _shadowEnable && !yaf3d::isGlslAvailable() )
                 {
                     log_info << "Dynamic shadows disabled as GLSL is not available!" << std::endl;
                     bool shadow = false;
