@@ -381,8 +381,7 @@ void DialogGameSettings::setupControls()
         // dynamic shadows need glsl
         bool shadow;
         yaf3d::Configuration::get()->getSettingValue( VRC_GS_SHADOW_ENABLE, shadow );
-        const osg::GL2Extensions* p_extensions = osg::GL2Extensions::Get( 0, true );
-        if ( p_extensions->isGlslSupported() )
+        if ( yaf3d::isGlslAvailable() )
         {
             if ( shadow )
                 _p_enableDynShadow->setSelected( true );
