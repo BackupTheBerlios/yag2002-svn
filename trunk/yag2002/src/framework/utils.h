@@ -108,6 +108,9 @@ class ImageTGA
         unsigned char*       _p_data;
 };
 
+//! Return true if GLSL is available. Call this function in a valid GL context!
+bool isGlslAvailable();
+
 // functions with platform dependent implementations
 //--------------------------------------------------
 

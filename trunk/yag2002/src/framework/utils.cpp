@@ -619,6 +619,16 @@ void ImageTGA::getSize( unsigned int& sizeX, unsigned int& sizeY ) const
     sizeY = _sizeY;
 }
 
+bool isGlslAvailable()
+{
+    const osg::GL2Extensions* p_extensions = osg::GL2Extensions::Get( 0, true );
+    bool  glslavailable = false;
+
+    if ( p_extensions )
+        glslavailable = p_extensions->isGlslSupported();
+
+    return glslavailable;
+}
 
 std::string getCurrentWorkingDirectory()
 {
