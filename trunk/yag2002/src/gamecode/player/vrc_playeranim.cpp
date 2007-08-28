@@ -188,8 +188,7 @@ void EnPlayerAnimation::handleNotification( const yaf3d::EntityNotification& not
             else
             {
                 // setup the shader if glsl is supported
-                const osg::GL2Extensions* p_extensions = osg::GL2Extensions::Get( 0, true );
-                if ( p_extensions->isGlslSupported() )
+                if ( yaf3d::isGlslAvailable() )
                 {
                     if ( !s_program.valid() )
                     {
