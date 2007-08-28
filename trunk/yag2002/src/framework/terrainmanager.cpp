@@ -118,7 +118,7 @@ void TerrainManager::shutdown()
     destroy();
 }
 
-unsigned int TerrainManager::addSection( TerrainConfig& config ) throw ( TerrainException )
+unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( TerrainException )
 {
     std::string mediapath = Application::get()->getMediaPath();
 
@@ -129,20 +129,9 @@ unsigned int TerrainManager::addSection( TerrainConfig& config ) throw ( Terrain
         throw TerrainException( "Terrain Manager: quad tree depth is too high!" );
 
     // check for GLSL extension
-    bool glslavailable = false;
-    {
-        static const osg::GL2Extensions* p_extensions = NULL;
-        if ( !p_extensions )
-        {
-            p_extensions = osg::GL2Extensions::Get( 0, true );
-            if ( p_extensions )
-            {
-                glslavailable = p_extensions->isGlslSupported();
-                if ( !glslavailable )
-                    log_verbose << "Terrain Manager: GLSL not available, using base map only!" << std::endl;
-            }
-        }
-    }
+    bool glslavailable = isGlslAvailable();
+    if ( !glslavailable )
+        log_verbose << "Terrain Manager: GLSL not available, using base map only!" << std::endl;
 
     // currently we accept only tga files as heightmap
     ImageTGA tga;
@@ -174,6 +163,28 @@ unsigned int TerrainManager::addSection( TerrainConfig& config ) throw ( Terrain
         }
     }
 
+    // layer mask
+    osg::Texture2D* p_layermask = new osg::Texture2D;
+
+    {
+        osg::Image* p_maskimage = osgDB::readImageFile( mediapath + config._fileLayerMask );
+
+        if ( !p_maskimage )
+        {
+            log_warning << "Terrain Manager: cannot load layer mask image" << std::endl;
+        }
+        else
+        {
+            p_layermask->setImage( p_maskimage );
+            p_layermask->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
+            p_layermask->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
+            p_layermask->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR );
+            p_layermask->setFilter( osg::Texture::MAG_FILTER, osg::Texture::LINEAR );            
+            p_layermask->setInternalFormatMode( osg::Texture::USE_IMAGE_DATA_FORMAT );
+            p_layermask->setUnRefImageDataAfterApply( true );
+        }
+    }
+
     // detailed texture map 0
     osg::Texture2D* p_detailtex0 = new osg::Texture2D;
 
@@ -190,10 +201,6 @@ unsigned int TerrainManager::addSection( TerrainConfig& config ) throw ( Terrain
             p_detailtex0->setWrap( osg::Texture::WRAP_S, osg::Texture::REPEAT );
             p_detailtex0->setWrap( osg::Texture::WRAP_T, osg::Texture::REPEAT );
             p_detailtex0->setUnRefImageDataAfterApply( true );
-
-            unsigned int channels = p_detailimage0->computeNumComponents( p_detailimage0->getPixelFormat() );
-            if ( channels != 4 )
-                log_error << "Terrain Manager: no alpha channel in detail tex map 0!" << std::endl;
         }
     }
 
@@ -213,10 +220,25 @@ unsigned int TerrainManager::addSection( TerrainConfig& config ) throw ( Terrain
             p_detailtex1->setWrap( osg::Texture::WRAP_S, osg::Texture::REPEAT );
             p_detailtex1->setWrap( osg::Texture::WRAP_T, osg::Texture::REPEAT );
             p_detailtex1->setUnRefImageDataAfterApply( true );
+        }
+    }
 
-            unsigned int channels = p_detailimage1->computeNumComponents( p_detailimage1->getPixelFormat() );
-            if ( channels != 4 )
-                log_error << "Terrain Manager: no alpha channel in detail tex map 1!" << std::endl;
+    // detailed texture map 2
+    osg::Texture2D* p_detailtex2 = new osg::Texture2D;
+
+    {
+        osg::Image* p_detailimage2 = osgDB::readImageFile( mediapath + config._fileDetailmap2 );
+
+        if ( !p_detailimage2 )
+        {
+            log_warning << "Terrain Manager: cannot load detail map 2 image" << std::endl;
+        }
+        else
+        {
+            p_detailtex2->setImage( p_detailimage2 );
+            p_detailtex2->setWrap( osg::Texture::WRAP_S, osg::Texture::REPEAT );
+            p_detailtex2->setWrap( osg::Texture::WRAP_T, osg::Texture::REPEAT );
+            p_detailtex2->setUnRefImageDataAfterApply( true );
         }
     }
 
@@ -248,6 +270,14 @@ unsigned int TerrainManager::addSection( TerrainConfig& config ) throw ( Terrain
                 // build the detail texture map 1 coordinates
                 if ( p_patch->buildTexCoords( 2, config._detailmap1Repeat ) )
                     p_patch->getStateSet()->setTextureAttributeAndModes( 2, p_detailtex1, osg::StateAttribute::ON );
+
+                // build the detail texture map 2 coordinates
+                if ( p_patch->buildTexCoords( 3, config._detailmap2Repeat ) )
+                    p_patch->getStateSet()->setTextureAttributeAndModes( 3, p_detailtex2, osg::StateAttribute::ON );
+
+                // setup the layer mask
+                if ( p_layermask )
+                    p_patch->getStateSet()->setTextureAttributeAndModes( 4, p_layermask, osg::StateAttribute::ON );
             }
 
             // add the patch to list
@@ -266,7 +296,12 @@ unsigned int TerrainManager::addSection( TerrainConfig& config ) throw ( Terrain
 
     // setup the terrain shaders
     if ( glslavailable )
-        group->setStateSet( setupShaders().get() );
+    {
+        if ( !_p_stateSet.valid() )
+            _p_stateSet = setupShaders( config );
+
+        group->setStateSet( _p_stateSet.get() );
+    }
 
     // store the terrain section into internal map
     p_section->setID( _sections );
@@ -408,11 +443,84 @@ void TerrainManager::releaseSection( unsigned int id ) throw ( TerrainException 
     _sectionMap.erase( _sectionMap.find( id ) );
 }
 
-osg::ref_ptr<osg::StateSet > TerrainManager::setupShaders()
+void TerrainManager::setBlendBasemap( float blend )
+{
+    if ( _p_baseTextureBlend.valid() )
+        _p_baseTextureBlend->set( blend );
+}
+
+float TerrainManager::getBlendBasemap() const
+{
+    float blend = 0.0f;
+
+    if ( _p_baseTextureBlend.valid() )
+    {
+        _p_baseTextureBlend->get( blend );
+        return blend;
+    }
+
+    return blend;
+}
+
+
+// Terrain shader
+
+// vertex shader
+static const char glsl_vp[] =
+    "/*                                                                                 \n"
+    "* Vertex shader for terrain renderer                                               \n"
+    "* http://yag2002.sf.net                                                            \n"
+    "* 08/28/2007                                                                       \n"
+    "*/                                                                                 \n"
+    "varying vec2 baseTexCoords;                                                        \n"
+    "varying vec2 detail0TexCoords;                                                     \n"
+    "varying vec2 detail1TexCoords;                                                     \n"
+    "varying vec2 detail2TexCoords;                                                     \n"
+    "                                                                                   \n"
+    "void main()                                                                        \n"
+    "{                                                                                  \n"
+    "   gl_Position      = gl_ModelViewProjectionMatrix * gl_Vertex;                    \n"
+    "   baseTexCoords    = gl_MultiTexCoord0.st;                                        \n"
+    "   detail0TexCoords = gl_MultiTexCoord1.st;                                        \n"
+    "   detail1TexCoords = gl_MultiTexCoord2.st;                                        \n"
+    "   detail2TexCoords = gl_MultiTexCoord3.st;                                        \n"
+    "}                                                                                  \n"
+;
+
+// fragment shader
+static char glsl_fp[] =
+    "/*                                                                                 \n"
+    "* Fragment shader for terrain renderer                                             \n"
+    "* http://yag2002.sf.net                                                            \n"
+    "* 08/28/2007                                                                       \n"
+    "*/                                                                                 \n"
+    "uniform sampler2D baseTexture;                                                     \n"
+    "uniform sampler2D detailTexture0;                                                  \n"
+    "uniform sampler2D detailTexture1;                                                  \n"
+    "uniform sampler2D detailTexture2;                                                  \n"
+    "uniform sampler2D layerMask;                                                       \n"
+    "uniform float     baseTextureBlend;                                                \n"
+    "varying vec2      baseTexCoords;                                                   \n"
+    "varying vec2      detail0TexCoords;                                                \n"
+    "varying vec2      detail1TexCoords;                                                \n"
+    "varying vec2      detail2TexCoords;                                                \n"
+    "                                                                                   \n"
+    "void main(void)                                                                    \n"
+    "{                                                                                  \n"
+    "   vec4 color = texture2D( baseTexture, baseTexCoords );                           \n"
+    "   color *= baseTextureBlend;                                                      \n"
+    "   vec3 mask  = texture2D( layerMask, baseTexCoords ).rgb;                         \n"
+    "   color += mask.r * texture2D( detailTexture0, detail0TexCoords );                \n"
+    "   color += mask.g * texture2D( detailTexture1, detail1TexCoords );                \n"
+    "   color += mask.b * texture2D( detailTexture2, detail2TexCoords );                \n"
+    "   gl_FragColor  = color;                                                          \n"
+    "}                                                                                  \n"
+;
+
+osg::ref_ptr<osg::StateSet > TerrainManager::setupShaders( const TerrainConfig& config )
 {
     osg::ref_ptr<osg::StateSet > p_stateset = new osg::StateSet;
 
-#if 0
     osg::Program* p_program = new osg::Program;
     p_stateset->setAttribute( p_program );
 
@@ -425,13 +533,20 @@ osg::ref_ptr<osg::StateSet > TerrainManager::setupShaders()
     osg::Uniform* p_baseTextureSampler = new osg::Uniform( "baseTexture", 0 );
     p_stateset->addUniform( p_baseTextureSampler );
 
-    osg::Uniform* p_detialTexture0Sampler = new osg::Uniform( "detailTexture0", 1 );
-    p_stateset->addUniform( p_detialTexture0Sampler );
+    osg::Uniform* p_detailTexture0Sampler = new osg::Uniform( "detailTexture0", 1 );
+    p_stateset->addUniform( p_detailTexture0Sampler );
 
-    osg::Uniform* p_detialTexture1Sampler = new osg::Uniform( "detailTexture1", 2 );
-    p_stateset->addUniform( p_detialTexture1Sampler );
+    osg::Uniform* p_detailTexture1Sampler = new osg::Uniform( "detailTexture1", 2 );
+    p_stateset->addUniform( p_detailTexture1Sampler );
 
-#endif
+    osg::Uniform* p_detailTexture2Sampler = new osg::Uniform( "detailTexture2", 3 );
+    p_stateset->addUniform( p_detailTexture2Sampler );
+
+    osg::Uniform* p_layerMaskSampler = new osg::Uniform( "layerMask", 4 );
+    p_stateset->addUniform( p_layerMaskSampler );
+
+    _p_baseTextureBlend = new osg::Uniform( "baseTextureBlend", config._blendBasemap );
+    p_stateset->addUniform( _p_baseTextureBlend.get() );
 
     return p_stateset;
 }

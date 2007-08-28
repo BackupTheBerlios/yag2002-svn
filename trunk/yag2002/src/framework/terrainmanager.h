@@ -43,6 +43,15 @@ class TerrainConfig
 {
     public:
 
+                                                    TerrainConfig() :
+                                                      _scale( osg::Vec3f( 1.0f, 1.0f, 1.0f ) ),
+                                                      _blendBasemap( 0.3f ),
+                                                      _detailmap0Repeat( osg::Vec2f( 1.0f, 1.0f ) ),
+                                                      _detailmap1Repeat( osg::Vec2f( 1.0f, 1.0f ) ),
+                                                      _detailmap2Repeat( osg::Vec2f( 1.0f, 1.0f ) )
+                                                    {
+                                                    }
+
         //! Scale the terrain
         osg::Vec3f                                  _scale;
 
@@ -51,6 +60,12 @@ class TerrainConfig
 
         //! Base map file. This map is spanned over the entire terrain.
         std::string                                 _fileBasemap;
+
+        //! Blend factor for mixing the base map and detail maps
+        float                                       _blendBasemap;
+
+        //! Layer mask file. This file contains the mask of the detail maps (Red Detail 0, Green Detail 1, etc).
+        std::string                                 _fileLayerMask;
 
         //! Detail map 0 file. This map is repeated over the terrain patches.
         std::string                                 _fileDetailmap0;
@@ -63,6 +78,12 @@ class TerrainConfig
 
         //! Repeat factor in X/Y direction for detailmap 1
         osg::Vec2f                                  _detailmap1Repeat;
+
+        //! Detail map 2 file. This map is repeated over the terrain patches.
+        std::string                                 _fileDetailmap2;
+
+        //! Repeat factor in X/Y direction for detailmap 2
+        osg::Vec2f                                  _detailmap2Repeat;
 };
 
 //! Class for terrain related exceptions
@@ -98,13 +119,19 @@ class TerrainManager : public Singleton< TerrainManager >
     public:
 
         //! Setup a terrain section and return its ID. The IDs begin with 1 and are incremented for every new section.
-        unsigned int                                addSection( TerrainConfig& config ) throw ( TerrainException );
+        unsigned int                                addSection( const TerrainConfig& config ) throw ( TerrainException );
 
         //! Given a section ID return its scenegraph node.
         osg::ref_ptr< osg::Group >                  getSectionNode( unsigned int id ) throw ( TerrainException );
 
         //! Release a terrain section given its ID.
         void                                        releaseSection( unsigned int id ) throw ( TerrainException );
+
+        //! Set base map blend factor. It takes effect, only when shaders active.
+        void                                        setBlendBasemap( float blend );
+
+        //! Get the currend base map blend factor.
+        float                                       getBlendBasemap() const;
 
     protected:
 
@@ -117,7 +144,7 @@ class TerrainManager : public Singleton< TerrainManager >
         void                                        shutdown();
 
         //! Setup the shaders
-        osg::ref_ptr<osg::StateSet >                setupShaders();
+        osg::ref_ptr<osg::StateSet >                setupShaders( const TerrainConfig& config );
 
         //! Build a quad tree for the given list of patches
         osg::ref_ptr< osg::Group >                  buildQuadTree( std::vector< TerrainPatch* >& patches );
@@ -139,6 +166,12 @@ class TerrainManager : public Singleton< TerrainManager >
 
         //! Internal map of < terrain ID / section object >
         std::map< unsigned int, TerrainSection* >   _sectionMap;
+
+        //! Terrain's stateset containing the shaders
+        osg::ref_ptr<osg::StateSet >                _p_stateSet;
+
+        //! Shader parameter for blending base texture
+        osg::ref_ptr< osg::Uniform >                 _p_baseTextureBlend;
 
     friend class Singleton< TerrainManager >;
     friend class Application;
