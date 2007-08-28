@@ -83,6 +83,12 @@ class EnTerrainSection :  public yaf3d::BaseEntity
         //! Basemap
         std::string                                 _fileBasemap;
 
+        //! Blend factor for mixing base map and detail maps ( only when using shaders )
+        float                                       _blendBasemap;
+
+        //! Layer mask file. This file contains the mask of the detail maps (Red Detail 0, Green Detail 1, etc).
+        std::string                                 _fileLayerMask;
+
         //! Repeat factor in X/Y direction for basemap
         osg::Vec2f                                  _basemapRepeat;
 
@@ -97,6 +103,12 @@ class EnTerrainSection :  public yaf3d::BaseEntity
 
         //! Repeat factor in X/Y direction for detailmap 1
         osg::Vec2f                                  _detailmap1Repeat;
+
+        //! Detail map 2 file
+        std::string                                 _fileDetailmap2;
+
+        //! Repeat factor in X/Y direction for detailmap 2
+        osg::Vec2f                                  _detailmap2Repeat;
 
         //------------------
            

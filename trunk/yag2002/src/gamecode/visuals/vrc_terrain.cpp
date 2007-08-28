@@ -42,7 +42,8 @@ YAF3D_IMPL_ENTITYFACTORY( TerrainEntityFactory )
 EnTerrainSection::EnTerrainSection() :
 _sectionID( 0 ),
 _enable( true ),
-_scale( osg::Vec3f( 1.0f, 1.0f, 1.0f ) )
+_scale( osg::Vec3f( 1.0f, 1.0f, 1.0f ) ),
+_blendBasemap( 0.3f )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "enable"           , _enable           );
@@ -51,10 +52,14 @@ _scale( osg::Vec3f( 1.0f, 1.0f, 1.0f ) )
     getAttributeManager().addAttribute( "scale"            , _scale            );
     getAttributeManager().addAttribute( "heightmap"        , _fileHeightmap    );
     getAttributeManager().addAttribute( "basemap"          , _fileBasemap      );
+    getAttributeManager().addAttribute( "blendBasemap"     , _blendBasemap     );
+    getAttributeManager().addAttribute( "layerMask"        , _fileLayerMask    );
     getAttributeManager().addAttribute( "detailmap0"       , _fileDetailmap0   );
     getAttributeManager().addAttribute( "detailmap0Repeat" , _detailmap0Repeat );
     getAttributeManager().addAttribute( "detailmap1"       , _fileDetailmap1   );
     getAttributeManager().addAttribute( "detailmap1Repeat" , _detailmap1Repeat );
+    getAttributeManager().addAttribute( "detailmap2"       , _fileDetailmap2   );
+    getAttributeManager().addAttribute( "detailmap2Repeat" , _detailmap2Repeat );
 }
 
 EnTerrainSection::~EnTerrainSection()
@@ -144,10 +149,14 @@ osg::ref_ptr< osg::Group > EnTerrainSection::setup()
     conf._scale             = _scale;
     conf._fileHeightmap     = _fileHeightmap;
     conf._fileBasemap       = _fileBasemap;
+    conf._blendBasemap      = _blendBasemap;
+    conf._fileLayerMask     = _fileLayerMask;
     conf._fileDetailmap0    = _fileDetailmap0;
     conf._detailmap0Repeat  = _detailmap0Repeat;
     conf._fileDetailmap1    = _fileDetailmap1;
     conf._detailmap1Repeat  = _detailmap1Repeat;
+    conf._fileDetailmap2    = _fileDetailmap2;
+    conf._detailmap2Repeat  = _detailmap2Repeat;
 
     try
     {
