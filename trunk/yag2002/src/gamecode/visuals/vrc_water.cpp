@@ -431,8 +431,7 @@ osg::Node* EnWater::setupWater()
     }
 
     // check if glsl is supported before setting up the shaders ( gl context 0  is assumed )
-    const osg::GL2Extensions* p_extensions = osg::GL2Extensions::Get( 0, true );
-    if ( !p_extensions->isGlslSupported() )
+    if ( !yaf3d::isGlslAvailable() )
         return p_node;
 
     // create skybox cube map texture
