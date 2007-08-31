@@ -302,6 +302,8 @@ void GeomVisitor::exportTrianlges( const std::string& name, const osg::Primitive
     osg::Vec3Array*   p_norms     = dynamic_cast< osg::Vec3Array* >( p_normals );
     unsigned int      numVerts    = p_vertVecs->size();
     unsigned int      numIndices  = p_set->getNumIndices();
+    unsigned int      numTexCoords = p_texCoords ? p_texCoords->size() : 0;
+    unsigned int      numNormals   = p_norms ? p_norms->size() : 0;
     osg::Vec3f        triVert;
 
     // write out the vertices
@@ -318,9 +320,9 @@ void GeomVisitor::exportTrianlges( const std::string& name, const osg::Primitive
         *_p_output << "g" << std::endl;
 
         osg::Vec2f coord;
-        for( unsigned int vindex = 0; vindex < numVerts; vindex++ )
+        for( unsigned int cnt = 0; cnt < numTexCoords; cnt++ )
         {
-            coord = ( *p_texCoords )[ vindex ];
+            coord = ( *p_texCoords )[ cnt ];
             *_p_output << "vt " << coord.x() << " " << coord.y() << std::endl;
         }
     }
@@ -332,9 +334,9 @@ void GeomVisitor::exportTrianlges( const std::string& name, const osg::Primitive
         *_p_output << "g" << std::endl;
 
         osg::Vec3f normal;
-        for( unsigned int vindex = 0; vindex < numVerts; vindex++ )
+        for( unsigned int cnt = 0; cnt < numNormals; cnt++ )
         {
-            normal = ( *p_norms )[ vindex ];
+            normal = ( *p_norms )[ cnt ];
             *_p_output << "vn " << normal.x() << " " << normal.y() << " " << normal.z() << std::endl;
         }
     }
@@ -393,8 +395,10 @@ void GeomVisitor::exportTrianlgeStrip( const std::string& name, const osg::Primi
     osg::Vec3Array*   p_vertVecs  = dynamic_cast< osg::Vec3Array* >( p_verts );
     osg::Vec2Array*   p_texCoords = dynamic_cast< osg::Vec2Array* >( p_tcoords );
     osg::Vec3Array*   p_norms     = dynamic_cast< osg::Vec3Array* >( p_normals );
-    unsigned int      numVerts   = p_vertVecs->size();
-    unsigned int      numIndices = p_set->getNumIndices();
+    unsigned int      numVerts     = p_vertVecs->size();
+    unsigned int      numIndices   = p_set->getNumIndices();
+    unsigned int      numTexCoords = p_texCoords ? p_texCoords->size() : 0;
+    unsigned int      numNormals   = p_norms ? p_norms->size() : 0;
     osg::Vec3f        triVert;
 
     // output the vertices
@@ -411,9 +415,9 @@ void GeomVisitor::exportTrianlgeStrip( const std::string& name, const osg::Primi
         *_p_output << "g" << std::endl;
 
         osg::Vec2f coord;
-        for( unsigned int vindex = 0; vindex < numVerts; vindex++ )
+        for( unsigned int cnt = 0; cnt < numTexCoords; cnt++ )
         {
-            coord = ( *p_texCoords )[ vindex ];
+            coord = ( *p_texCoords )[ cnt ];
             *_p_output << "vt " << coord.x() << " " << coord.y() << std::endl;
         }
     }
@@ -425,9 +429,9 @@ void GeomVisitor::exportTrianlgeStrip( const std::string& name, const osg::Primi
         *_p_output << "g" << std::endl;
 
         osg::Vec3f normal;
-        for( unsigned int vindex = 0; vindex < numVerts; vindex++ )
+        for( unsigned int cnt = 0; cnt < numNormals; cnt++ )
         {
-            normal = ( *p_norms )[ vindex ];
+            normal = ( *p_norms )[ cnt ];
             *_p_output << "vn " << normal.x() << " " << normal.y() << " " << normal.z() << std::endl;
         }
     }
