@@ -35,6 +35,13 @@
 #include "application.h"
 #include "utils.h"
 
+
+//! Patch subdivisions in X and Y direction for different lod levels
+#define L0_SUBDIV_X     8
+#define L0_SUBDIV_Y     8
+#define L1_SUBDIV_X     4
+#define L1_SUBDIV_Y     4
+
 namespace yaf3d
 {
 
@@ -50,20 +57,7 @@ class TerrainSection
                                                      _id ( 0 )
                                                     {}
 
-        virtual                                     ~TerrainSection()
-                                                    {
-                                                        // delete the patches
-                                                        std::vector< TerrainPatch* >::iterator pp_patch    = _patches.begin(),
-                                                                                               pp_patchEnd = _patches.end();
-                                                        for ( ; pp_patch != pp_patchEnd; ++pp_patch )
-                                                            delete ( *pp_patch );
-                                                    }
-
-        //! Get the patch list.
-        std::vector< TerrainPatch* >&               getPatchList()
-                                                    {
-                                                        return _patches;
-                                                    }
+        virtual                                     ~TerrainSection() {}                                                    
 
         //! Set section ID.
         void                                        setID( unsigned int id )
@@ -72,15 +66,21 @@ class TerrainSection
                                                     }
 
         //! Set scenegraph node.
-        void                                        setNode( osg::Group* p_node )
+        void                                        setMainNode( osg::Group* p_node )
                                                     {
                                                         _node = p_node;
                                                     }
 
         //! Get scenegraph node.
-        osg::ref_ptr< osg::Group >                  getNode()
+        osg::ref_ptr< osg::Group >                  getMainNode()
                                                     {
                                                         return _node;
+                                                    }
+
+        //! Get the patch list.
+        std::vector< osg::ref_ptr< osg::LOD > >&    getLodNodes()
+                                                    {
+                                                        return _lodNodes;
                                                     }
 
     protected:
@@ -88,8 +88,8 @@ class TerrainSection
         //! Section ID
         unsigned int                                _id;
 
-        //! List of patches
-        std::vector< TerrainPatch* >                _patches;
+        //! List of patches organized as LOD nodes
+        std::vector< osg::ref_ptr< osg::LOD > >     _lodNodes;
 
         //! Scenegraph node
         osg::ref_ptr< osg::Group >                  _node; 
@@ -156,8 +156,6 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
             p_basetex->setImage( p_baseimage );
             p_basetex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
             p_basetex->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
-            p_basetex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR );
-            p_basetex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::LINEAR );            
             p_basetex->setInternalFormatMode( osg::Texture::USE_IMAGE_DATA_FORMAT );
             p_basetex->setUnRefImageDataAfterApply( true );
         }
@@ -178,8 +176,8 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
             p_layermask->setImage( p_maskimage );
             p_layermask->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
             p_layermask->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
-            p_layermask->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR );
-            p_layermask->setFilter( osg::Texture::MAG_FILTER, osg::Texture::LINEAR );            
+            p_layermask->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
+            p_layermask->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );            
             p_layermask->setInternalFormatMode( osg::Texture::USE_IMAGE_DATA_FORMAT );
             p_layermask->setUnRefImageDataAfterApply( true );
         }
@@ -242,77 +240,142 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
         }
     }
 
+    // create the state set
+    _p_stateSet = new osg::StateSet;
+    _p_stateSet->setGlobalDefaults();
+    _p_stateSet->setDataVariance( osg::Object::STATIC );
+    _p_stateSet->setRenderingHint( osg::StateSet::OPAQUE_BIN );
+    _p_stateSet->setMode( GL_CULL_FACE, osg::StateAttribute::ON );
+
+    // set base texture
+    _p_stateSet->setTextureAttributeAndModes( 0, p_basetex, osg::StateAttribute::ON );
+    // set detail textures only when glsl is available
+    if ( glslavailable )
+    {
+        _p_stateSet->setTextureAttributeAndModes( 1, p_detailtex0, osg::StateAttribute::ON );
+        _p_stateSet->setTextureAttributeAndModes( 2, p_detailtex1, osg::StateAttribute::ON );
+        _p_stateSet->setTextureAttributeAndModes( 3, p_detailtex2, osg::StateAttribute::ON );
+        // setup the layer mask
+        if ( p_layermask )
+            _p_stateSet->setTextureAttributeAndModes( 4, p_layermask, osg::StateAttribute::ON );
+    }
+                    
     // create a new terrain section
     TerrainSection* p_section = new TerrainSection;
 
-    for ( unsigned int cntY = 0; cntY < sizeY; cntY += sizeY / _tilesY )
+    unsigned short patchPixelsX = sizeX / _tilesX;
+    unsigned short patchPixelsY = sizeY / _tilesY;
+
+    // create a patch object for building the section patches
+    TerrainPatch*  p_patch = new TerrainPatch();
+
+    for ( unsigned int cntY = 0; cntY < sizeY; cntY += patchPixelsY )
     {
-        for ( unsigned int cntX = 0; cntX < sizeX; cntX += sizeX / _tilesX )
+        for ( unsigned int cntX = 0; cntX < sizeX; cntX += patchPixelsX )
         {
-            TerrainPatch* p_patch = new TerrainPatch();
-            if ( !p_patch->build( tga, config._scale, cntX, cntY, sizeX / _tilesX, sizeY / _tilesY ) )
+            // create a lod node
+            osg::LOD* p_lod = new osg::LOD;
+
+            // build LOD 0
+            if ( !p_patch->build( tga, config._scale, cntX, cntY, patchPixelsX, patchPixelsY, L0_SUBDIV_X, L0_SUBDIV_Y ) )
             {
-                delete p_patch;
+                log_error << "Terrain Manager: could not build patch LOD level 0!" << std::endl;
                 continue;
             }
 
             // build the base texture map coordinates
-            if ( p_patch->buildTexCoords( 0 ) )
-                p_patch->getStateSet()->setTextureAttributeAndModes( 0, p_basetex, osg::StateAttribute::ON );
+            if ( !p_patch->buildTexCoords( 0 ) )
+                log_error << "Terrain Manager: could not build base texture coordinates!" << std::endl;
 
             // build detail maps only when glsl is available
             if ( glslavailable )
             {
                 // build the detail texture map 0 coordinates
-                if ( p_patch->buildTexCoords( 1, config._detailmap0Repeat ) )
-                p_patch->getStateSet()->setTextureAttributeAndModes( 1, p_detailtex0, osg::StateAttribute::ON );
+                if ( !p_patch->buildTexCoords( 1, config._detailmap0Repeat ) )
+                    log_error << "Terrain Manager: could not build deatial texture 0 coordinates!" << std::endl;
 
                 // build the detail texture map 1 coordinates
-                if ( p_patch->buildTexCoords( 2, config._detailmap1Repeat ) )
-                    p_patch->getStateSet()->setTextureAttributeAndModes( 2, p_detailtex1, osg::StateAttribute::ON );
+                if ( !p_patch->buildTexCoords( 2, config._detailmap1Repeat ) )
+                    log_error << "Terrain Manager: could not build deatial texture 1 coordinates!" << std::endl;
 
                 // build the detail texture map 2 coordinates
-                if ( p_patch->buildTexCoords( 3, config._detailmap2Repeat ) )
-                    p_patch->getStateSet()->setTextureAttributeAndModes( 3, p_detailtex2, osg::StateAttribute::ON );
-
-                // setup the layer mask
-                if ( p_layermask )
-                    p_patch->getStateSet()->setTextureAttributeAndModes( 4, p_layermask, osg::StateAttribute::ON );
+                if ( !p_patch->buildTexCoords( 3, config._detailmap2Repeat ) )
+                    log_error << "Terrain Manager: could not build deatial texture 2 coordinates!" << std::endl;
             }
 
+//! TODO: set proper lod params
+            p_lod->addChild( p_patch->getSceneNode().get(), 0.0f, 200.0f );
+
+            // reset the patch for next lod creation
+            p_patch->reset();
+
+            // build LOD 1
+            if ( !p_patch->build( tga, config._scale, cntX, cntY, patchPixelsX, patchPixelsY, L1_SUBDIV_X, L1_SUBDIV_Y ) )
+            {
+                log_error << "Terrain Manager: could not build patch LOD level 1!" << std::endl;
+                continue;
+            }
+
+            // build the base texture map coordinates
+            if ( !p_patch->buildTexCoords( 0 ) )
+                log_error << "Terrain Manager: could not build base texture coordinates!" << std::endl;
+
+            // build detail maps only when glsl is available
+            if ( glslavailable )
+            {
+                // build the detail texture map 0 coordinates
+                if ( !p_patch->buildTexCoords( 1, config._detailmap0Repeat ) )
+                    log_error << "Terrain Manager: could not build deatial texture 0 coordinates!" << std::endl;
+
+                // build the detail texture map 1 coordinates
+                if ( !p_patch->buildTexCoords( 2, config._detailmap1Repeat ) )
+                    log_error << "Terrain Manager: could not build deatial texture 1 coordinates!" << std::endl;
+
+                // build the detail texture map 2 coordinates
+                if ( !p_patch->buildTexCoords( 3, config._detailmap2Repeat ) )
+                    log_error << "Terrain Manager: could not build deatial texture 2 coordinates!" << std::endl;
+            }
+
+//! TODO: set proper lod params
+            p_lod->addChild( p_patch->getSceneNode().get(), 180.0f, 800.0f );
+
             // add the patch to list
-            p_section->getPatchList().push_back( p_patch );            
+            p_section->getLodNodes().push_back( p_lod );
+
+            // reset the patch
+            p_patch->reset();
         }
     }
+
+    // delete the patch object
+    delete p_patch;
 
     // increment the count of terrain sections
     _sections++;
 
     // build quad tree
-    osg::ref_ptr< osg::Group > group = buildQuadTree( p_section->getPatchList() );
+    osg::ref_ptr< osg::Group > group = buildQuadTree( p_section->getLodNodes() );
     std::stringstream secname;
     secname << "_terrainSection" << _sections << "_";
     group->setName( secname.str() );
 
-    // setup the terrain shaders
+    // setup the terrain shaders if glsl is available
     if ( glslavailable )
-    {
-        if ( !_p_stateSet.valid() )
-            _p_stateSet = setupShaders( config );
+        setupShaders( config, _p_stateSet.get() );
 
-        group->setStateSet( _p_stateSet.get() );
-    }
+    // set the group state set
+    group->setStateSet( _p_stateSet.get() );
 
     // store the terrain section into internal map
     p_section->setID( _sections );
-    p_section->setNode( group.get() );
+    p_section->setMainNode( group.get() );
     assert( ( _sectionMap.find( _sections ) == _sectionMap.end() ) && "section ID already exists in map!" );
     _sectionMap[ _sections ] = p_section;
 
     return _sections;
 }
 
-osg::ref_ptr< osg::Group > TerrainManager::buildQuadTree( std::vector< TerrainPatch* >& patches )
+osg::ref_ptr< osg::Group > TerrainManager::buildQuadTree( std::vector< osg::ref_ptr< osg::LOD > >& patches )
 {
     osg::ref_ptr< osg::Group > group = new osg::Group();
 
@@ -323,7 +386,7 @@ osg::ref_ptr< osg::Group > TerrainManager::buildQuadTree( std::vector< TerrainPa
     return group;
 }
 
-void TerrainManager::split( unsigned int maxdepth, unsigned int depth, osg::Group* p_node, std::vector< TerrainPatch* >& patches, unsigned int& tileX, unsigned int& tileY )
+void TerrainManager::split( unsigned int maxdepth, unsigned int depth, osg::Group* p_node, std::vector< osg::ref_ptr< osg::LOD > >& patches, unsigned int& tileX, unsigned int& tileY )
 {
     if ( depth > maxdepth )
         return;
@@ -350,7 +413,7 @@ void TerrainManager::split( unsigned int maxdepth, unsigned int depth, osg::Grou
         // append the patch nodes into leave A
         for ( unsigned int cntY = tileY; cntY < tileY + numpatchesY; cntY++ )
             for ( unsigned int cntX = tileX; cntX < tileX + numpatchesX; cntX++ )
-                p_nodeA->addChild( patches[ cntX + cntY * _tilesY ]->getSceneNode().get() );
+                p_nodeA->addChild( patches[ cntX + cntY * _tilesY ].get() );
 
         // set leave node name
         {
@@ -365,7 +428,7 @@ void TerrainManager::split( unsigned int maxdepth, unsigned int depth, osg::Grou
         // append the patch nodes into leave B
         for ( unsigned int cntY = tileY; cntY < tileY + numpatchesY; cntY++ )
             for ( unsigned int cntX = tileX; cntX < tileX + numpatchesX; cntX++ )
-                p_nodeB->addChild( patches[ cntX + cntY * _tilesY ]->getSceneNode().get() );
+                p_nodeB->addChild( patches[ cntX + cntY * _tilesY ].get() );
 
         // set leave node name
         {
@@ -380,7 +443,7 @@ void TerrainManager::split( unsigned int maxdepth, unsigned int depth, osg::Grou
         // append the patch nodes into leave C
         for ( unsigned int cntY = tileY; cntY < tileY + numpatchesY; cntY++ )
             for ( unsigned int cntX = tileX; cntX < tileX + numpatchesX; cntX++ )
-                p_nodeC->addChild( patches[ cntX + cntY * _tilesY ]->getSceneNode().get() );
+                p_nodeC->addChild( patches[ cntX + cntY * _tilesY ].get() );
 
         // set leave node name
         {
@@ -395,7 +458,7 @@ void TerrainManager::split( unsigned int maxdepth, unsigned int depth, osg::Grou
         // append the patch nodes into leave D
         for ( unsigned int cntY = tileY; cntY < tileY + numpatchesY; cntY++ )
             for ( unsigned int cntX = tileX; cntX < tileX + numpatchesX; cntX++ )
-                p_nodeD->addChild( patches[ cntX + cntY * _tilesY ]->getSceneNode().get() );
+                p_nodeD->addChild( patches[ cntX + cntY * _tilesY ].get() );
 
         // set leave node name
         {
@@ -429,7 +492,7 @@ osg::ref_ptr< osg::Group > TerrainManager::getSectionNode( unsigned int id ) thr
     if ( _sectionMap.find( id ) == _sectionMap.end() )
         throw TerrainException( "Terrain Manager: Section ID does not exist!" );
 
-    return _sectionMap[ id ]->getNode();
+    return _sectionMap[ id ]->getMainNode();
 }
 
 void TerrainManager::releaseSection( unsigned int id ) throw ( TerrainException )
@@ -517,10 +580,8 @@ static char glsl_fp[] =
     "}                                                                                  \n"
 ;
 
-osg::ref_ptr<osg::StateSet > TerrainManager::setupShaders( const TerrainConfig& config )
+void TerrainManager::setupShaders( const TerrainConfig& config, osg::StateSet* p_stateset )
 {
-    osg::ref_ptr<osg::StateSet > p_stateset = new osg::StateSet;
-
     osg::Program* p_program = new osg::Program;
     p_stateset->setAttribute( p_program );
 
@@ -547,8 +608,6 @@ osg::ref_ptr<osg::StateSet > TerrainManager::setupShaders( const TerrainConfig& 
 
     _p_baseTextureBlend = new osg::Uniform( "baseTextureBlend", config._blendBasemap );
     p_stateset->addUniform( _p_baseTextureBlend.get() );
-
-    return p_stateset;
 }
 
 } // namespace yaf3d
