@@ -64,7 +64,7 @@ class TerrainConfig
         //! Blend factor for mixing the base map and detail maps
         float                                       _blendBasemap;
 
-        //! Layer mask file. This file contains the mask of the detail maps (Red Detail 0, Green Detail 1, etc).
+        //! Layer mask file. This file contains the mask of the detail maps (Red: Detail 0, Green: Detail 1, Blue: Detail 2).
         std::string                                 _fileLayerMask;
 
         //! Detail map 0 file. This map is repeated over the terrain patches.
@@ -144,13 +144,13 @@ class TerrainManager : public Singleton< TerrainManager >
         void                                        shutdown();
 
         //! Setup the shaders
-        osg::ref_ptr<osg::StateSet >                setupShaders( const TerrainConfig& config );
+        void                                       setupShaders( const TerrainConfig& config, osg::StateSet* p_stateset );
 
         //! Build a quad tree for the given list of patches
-        osg::ref_ptr< osg::Group >                  buildQuadTree( std::vector< TerrainPatch* >& patches );
+        osg::ref_ptr< osg::Group >                  buildQuadTree( std::vector< osg::ref_ptr< osg::LOD > >& patches );
 
         //! Recursively split the node into a quad tree
-        void                                        split( unsigned int maxdepth, unsigned int depth, osg::Group* p_node, std::vector< TerrainPatch* >& patches, unsigned int& tileX, unsigned int& tileY );
+        void                                        split( unsigned int maxdepth, unsigned int depth, osg::Group* p_node, std::vector< osg::ref_ptr< osg::LOD > >& patches, unsigned int& tileX, unsigned int& tileY );
 
         //! Count of sections
         unsigned int                                _sections;

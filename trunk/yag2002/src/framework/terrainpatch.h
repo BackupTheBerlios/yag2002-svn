@@ -59,20 +59,23 @@ class TerrainPatch
         virtual                                         ~TerrainPatch();
 
         //! Build the patch given the height data as Image, return false if the patch could not be built.
-        bool                                            build( const ImageTGA& image, const osg::Vec3f& scale, unsigned int column , unsigned int row, unsigned int sizeS, unsigned int sizeT );
+        bool                                            build( 
+                                                               const ImageTGA&   image,   // heightmap image
+                                                               const osg::Vec3f& scale,   // scale
+                                                               unsigned short    column,  // column in image
+                                                               unsigned short    row,     // row in image
+                                                               unsigned short    sizeX,   // patch size X in pixels 
+                                                               unsigned short    sizeY,   // patch size Y in pixels 
+                                                               unsigned short    subdivX, // count of subdivisions in X direction, e.g. 8
+                                                               unsigned short    subdivY  // count of subdivisions in Y direction, e.g. 8
+                                                              );
 
         //! Build texture coordinates for given channel. Let scale be 0,0 in order to automatically span the texture over the whole terrain ( e.g. useful for base map ).
         //! sizeS and SizeT are the texture dimensions in pixels.
         bool                                            buildTexCoords( unsigned int channel, const osg::Vec2f& scale = osg::Vec2f( 0.0f, 0.0f ) );
 
-        //! Get the state set
-        osg::ref_ptr< osg::StateSet >                   getStateSet();
-
         //! Reset the patch freeing up the allocated resources
         void                                            reset();
-
-        //! Update the patch tesselation and visibility
-        void                                            update( osg::Camera* p_cam );
 
         //! Scenegraph's patch node
         osg::ref_ptr< osg::PositionAttitudeTransform >  _p_node;
@@ -80,14 +83,20 @@ class TerrainPatch
         //! Patch geometry object
         osg::ref_ptr< osg::Geometry >                   _p_drawable;
 
-        //! State set
-        osg::ref_ptr< osg::StateSet >                   _p_stateSet;
-
         //! Patch size in x/y direction relative to the total hight map extends
         osg::Vec2f                                      _relativeSize;
 
         //! Relative patch position in terrain
         osg::Vec2f                                      _relativePosition;
+
+        //! Subdivision in X direction
+        unsigned short                                  _subDivX;
+
+        //! Subdivision in Y direction
+        unsigned short                                  _subDivY;
+
+        //! Flag indicating that the patch has been successfully built
+        bool                                            _built;
 
     friend class TerrainManager;
     friend class TerrainSection;
