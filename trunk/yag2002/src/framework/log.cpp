@@ -204,6 +204,9 @@ std::basic_ios< char >::int_type Log::LogStreamBuf::overflow( int_type c )
                 }
             }
 
+            // add a carriage return to end of line
+            _msg[ _msg.length() - 1 ] = '\r';
+            _msg += "\n";
             _p_log->out( severity + _msg );
             _msg = "";
         }

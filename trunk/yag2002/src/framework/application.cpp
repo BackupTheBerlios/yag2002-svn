@@ -258,30 +258,30 @@ bool Application::initialize( int argc, char **argv )
 
         // create log sinks with configured log level
         if ( GameState::get()->getMode() != GameState::Server )
-            log.addSink( "file", getMediaPath() + std::string( LOG_FILE_NAME ), level );
+            log_out.addSink( "file", getMediaPath() + std::string( LOG_FILE_NAME ), level );
         else
-            log.addSink( "file", getMediaPath() + std::string( LOG_FILE_NAME_SERVER ), level );
+            log_out.addSink( "file", getMediaPath() + std::string( LOG_FILE_NAME_SERVER ), level );
 
         // only the server needs an console stdout
 #ifdef YAF3D_HAS_CONSOLE
-        log.addSink( "stdout", std::cout, level );
+        log_out.addSink( "stdout", std::cout, level );
 #endif
 
     }
 
-    log.enableSeverityLevelPrinting( false );
+    log_out.enableSeverityLevelPrinting( false );
     log_info << std::endl;
-    log << " *******************************************"    << std::endl;
-    log << " * yaf3d -- Yet another Framework 3D       *"    << std::endl;
-    log << " * version: " << std::string( YAF3D_VERSION ) << "                          *"  << std::endl;
-    log << " * project: Yag2002                        *"    << std::endl;
-    log << " * site:    http://yag2002.sourceforge.net *"    << std::endl;
-    log << " * contact: botorabi@gmx.net               *"    << std::endl;
-    log << " *******************************************"    << std::endl;
-    log << "" << std::endl;
-    log.enableSeverityLevelPrinting( true );
+    log_out << " *******************************************"    << std::endl;
+    log_out << " * yaf3d -- Yet another Framework 3D       *"    << std::endl;
+    log_out << " * version: " << std::string( YAF3D_VERSION ) << "                          *"  << std::endl;
+    log_out << " * project: Yag2002                        *"    << std::endl;
+    log_out << " * site:    http://yag2002.sourceforge.net *"    << std::endl;
+    log_out << " * contact: botorabi@gmx.net               *"    << std::endl;
+    log_out << " *******************************************"    << std::endl;
+    log_out << "" << std::endl;
+    log_out.enableSeverityLevelPrinting( true );
 
-    log << "Application: time " << yaf3d::getTimeStamp();
+    log_out << "Application: time " << yaf3d::getTimeStamp();
 
     // print cpu info
     {
@@ -304,11 +304,11 @@ bool Application::initialize( int argc, char **argv )
         if ( SDL_HasAltiVec() )
             cpuinfo << "AltiVec ";
 
-        log << cpuinfo.str() << std::endl;
+        log_out << cpuinfo.str() << std::endl;
     }
 
-    log << "Application: initializing viewer" << std::endl;
-    log << "Application: using media path: " << _mediaPath << std::endl;
+    log_out << "Application: initializing viewer" << std::endl;
+    log_out << "Application: using media path: " << _mediaPath << std::endl;
 
     // setup the viewer
     //----------

@@ -34,7 +34,7 @@
 #include <base.h>
 
 // convenient macros for logging
-#define log             yaf3d::yaf3dlog
+#define log_out         yaf3d::yaf3dlog
 #define log_verbose     yaf3d::yaf3dlog << yaf3d::Log::LogLevel( yaf3d::Log::L_VERBOSE )
 #define log_error       yaf3d::yaf3dlog << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR   )
 #define log_warning     yaf3d::yaf3dlog << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING )
@@ -49,8 +49,8 @@ class Log;
 
 //! This is the default system log instance
 /** Usage:
-*            log << Log::LogLevel( Log::L_INFO ) << " this is an info log" << endl;
-*            log << " number: " << mynum << " string: " << mystring << endl;
+*            log_out << Log::LogLevel( Log::L_INFO ) << " this is an info log" << endl;
+*            log_out << " number: " << mynum << " string: " << mystring << endl;
 */
 extern Log yaf3dlog;
 

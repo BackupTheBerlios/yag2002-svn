@@ -425,8 +425,8 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
                 if ( p_data->_protocolVersion != YAF3D_NETWORK_PROT_VERSION )
                 {
                     log_warning << "*** NetworkDevice: network protocol mismatch" << std::endl;
-                    log << " version server: " << getProtocolVersionAsString( p_data->_protocolVersion ) << std::endl;
-                    log << " version client: " << getProtocolVersionAsString( YAF3D_NETWORK_PROT_VERSION ) << std::endl;
+                    log_out << " version server: " << getProtocolVersionAsString( p_data->_protocolVersion ) << std::endl;
+                    log_out << " version client: " << getProtocolVersionAsString( YAF3D_NETWORK_PROT_VERSION ) << std::endl;
 
                     _p_session->Disconnect();
                     delete _p_session;
@@ -500,9 +500,9 @@ void NetworkDevice::startClient() throw ( NetworkException )
         RNReplicaNet::CurrentThread::Sleep( 200 );
         ++tryCounter;
 
-        log.enableSeverityLevelPrinting( false );
-        log << ".";
-        log.enableSeverityLevelPrinting( true );
+        log_out.enableSeverityLevelPrinting( false );
+        log_out << ".";
+        log_out.enableSeverityLevelPrinting( true );
 
         // try up to 10 seconds
         if ( tryCounter > 50 )

@@ -241,13 +241,13 @@ bool EntityManager::registerUpdate( yaf3d::BaseEntity* p_entity, bool reg )
     if ( !reg && ( p_beg == p_end ) )
     {
         log_warning << "EntityManager: the entity was previousely not registered for updating!, ignoring deregister request" << std::endl;
-        log << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << std::endl;
+        log_out << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << std::endl;
         return false;
     }
     else if ( reg && ( p_beg != p_end ) )
     {
         log_warning << "EntityManager: the entity is already registered for updating!, ignoring register request" << std::endl;
-        log << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << std::endl;
+        log_out << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << std::endl;
         return false;
     }
 
@@ -279,13 +279,13 @@ bool EntityManager::registerNotification( BaseEntity* p_entity, bool reg )
     if ( !reg && ( p_beg == p_end ) )
     {
         log_warning << "EntityManager: the entity was previousely not registered for getting notification!, ignoring deregister request" << std::endl;
-        log << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << std::endl;
+        log_out << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << std::endl;
         return false;
     }
     else if ( reg && ( p_beg != p_end ) )
     {
         log_warning << "EntityManager: the entity is already registered for getting notification!, ignoring register request" << std::endl;
-        log << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << std::endl;
+        log_out << "    entity type:" << p_entity->getTypeName() << ", instance name: " << p_entity->getInstanceName() << std::endl;
         return false;
     }
 
