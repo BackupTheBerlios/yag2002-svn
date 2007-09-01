@@ -136,7 +136,7 @@ void EnMapView::destroyMapView()
         catch ( const CEGUI::Exception& e )
         {
             log_error << "EnMapView: problem cleaning up entity." << std::endl;
-            log << "      reason: " << e.getMessage().c_str() << std::endl;
+            log_out << "      reason: " << e.getMessage().c_str() << std::endl;
         }
     }
 }
@@ -227,7 +227,7 @@ void EnMapView::setupMapView()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "EnMapView: problem creating gui" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -285,7 +285,7 @@ osg::Vec2 EnMapView::calcPosition( const std::string& align, const osg::Vec2& ma
     {
         log_error << "EnMapView: invalid aligning '" << align << "'" << std::endl;    
  
-        log       << "           valid values are: " << 
+        log_out       << "           valid values are: " << 
                         ALIGN_TOPLEFT       << ", "  <<
                         ALIGN_TOPMIDDLE     << ", "  <<
                         ALIGN_TOPRIGHT      << ", "  <<
@@ -293,7 +293,7 @@ osg::Vec2 EnMapView::calcPosition( const std::string& align, const osg::Vec2& ma
                         ALIGN_BOTTOMMIDDLE  << ", "  <<
                         ALIGN_BOTTOMRIGHT   << std::endl;    
 
-        log       << "           set to default '" << ALIGN_TOPLEFT << "'" << std::endl;
+        log_out       << "           set to default '" << ALIGN_TOPLEFT << "'" << std::endl;
     }
 
     return pos;
@@ -324,7 +324,7 @@ CEGUI::StaticImage* EnMapView::createMarkerElement( const CEGUI::Image* p_img )
     catch ( const CEGUI::Exception& e )
     {
         log_error << "EnMapView: problem creating marker element" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     return p_staticimg;

@@ -100,7 +100,7 @@ ChatGuiBox::~ChatGuiBox()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "ChatGuiBox: problem cleaning up gui resources" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -160,7 +160,7 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
     catch ( const CEGUI::Exception& e )
     {
         log_error << "*** error setting up chat box gui" << std::endl;
-        log << "   reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "   reason: " << e.getMessage().c_str() << std::endl;
         return;
     }
 
@@ -229,7 +229,7 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
     catch ( const CEGUI::Exception& e )
     {
         log_error << "*** error setting up chat box frame" << std::endl;
-        log << "   reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "   reason: " << e.getMessage().c_str() << std::endl;
         return;
     }
 
@@ -595,7 +595,7 @@ void ChatGuiBox::onConnectionDialogClickedConnect( const ChatConnectionConfig& c
         p_msg->show();
 
         log_error << "exception occured trying to connect to a chat server" << std::endl;
-        log << "   reason: " << e.what() << std::endl;
+        log_out << "   reason: " << e.what() << std::endl;
     }
 
     _connectionState = ConnectionIdle;

@@ -141,7 +141,7 @@ void EnNetworkNotification::initialize()
         catch ( const CEGUI::Exception& e )
         {
             log_error << "EnNetworkNotification: problem creating gui" << std::endl;
-            log << "      reason: " << e.getMessage().c_str() << std::endl;
+            log_out << "      reason: " << e.getMessage().c_str() << std::endl;
         }
     }
 }
@@ -272,8 +272,8 @@ void NetworkNotificationNetworking::RPC_RecvNotification( tNotificationData noti
     notify._text[ sizeof( notify._text ) - 1 ] = 0;
     notify._title[ sizeof( notify._title ) - 1 ] = 0;
     log_info << "got network notification:" << std::endl;
-    log      << " title: " << notify._title << std::endl;
-    log      << " text:  " << notify._text << std::endl;
+    log_out      << " title: " << notify._title << std::endl;
+    log_out      << " text:  " << notify._text << std::endl;
 
     _p_entity->createMessagBox( notify._title, notify._text, notify._destructionTimeout );
 }

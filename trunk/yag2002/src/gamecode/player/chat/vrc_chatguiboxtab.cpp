@@ -116,7 +116,7 @@ _p_whisper( NULL )
     catch ( const CEGUI::Exception& e )
     {
         log_error << "ChannelTabPane: problem creating a new tab pane" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -130,7 +130,7 @@ ChannelTabPane::~ChannelTabPane()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "~ChannelTabPane: problem cleaning up gui resources" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 

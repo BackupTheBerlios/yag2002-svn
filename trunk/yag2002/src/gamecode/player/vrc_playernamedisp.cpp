@@ -65,7 +65,7 @@ EnPlayerNameDisplay::~EnPlayerNameDisplay()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "EnPlayerNameDisplay: problem cleaning up gui resources" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -112,7 +112,7 @@ void EnPlayerNameDisplay::initialize()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "EnPlayerNameDisplay: problem creating gui" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     // register for getting system notifications

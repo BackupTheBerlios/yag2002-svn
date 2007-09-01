@@ -157,7 +157,7 @@ bool DialogPlayerConfig::initialize( const std::string& layoutfile )
     catch ( const CEGUI::Exception& e )
     {
         log_error << "*** DialogPlayerConfig: cannot setup dialog layout." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     return true;

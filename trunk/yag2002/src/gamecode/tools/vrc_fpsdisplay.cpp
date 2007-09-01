@@ -61,7 +61,7 @@ EnFPSDisplay::~EnFPSDisplay()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "EnFPSDisplay: problem cleaning up entity." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -114,7 +114,7 @@ void EnFPSDisplay::initialize()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     // register entity in order to get updated per simulation step

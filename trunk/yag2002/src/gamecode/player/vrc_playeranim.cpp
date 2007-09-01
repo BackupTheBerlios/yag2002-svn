@@ -163,7 +163,7 @@ void EnPlayerAnimation::initialize()
    // register entity in order to get notifications (e.g. from menu entity)
     yaf3d::EntityManager::get()->registerNotification( this, true );
 
-    log << "  initializing player animation instance completed" << std::endl;
+    log_out << "  initializing player animation instance completed" << std::endl;
 }
 
 void EnPlayerAnimation::handleNotification( const yaf3d::EntityNotification& notification )

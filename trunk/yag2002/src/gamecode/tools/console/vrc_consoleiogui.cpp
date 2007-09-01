@@ -82,7 +82,7 @@ _enable( false )
     catch ( const CEGUI::Exception& e )
     {
         log_error << "*** Console GUI: cannot setup dialog layout." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 

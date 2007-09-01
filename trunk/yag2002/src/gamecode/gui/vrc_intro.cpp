@@ -83,7 +83,7 @@ bool IntroControl::initialize( const std::string& intoImage )
     catch ( const CEGUI::Exception& e )
     {
         log_error << "*** Intro: cannot setup layout!" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
         return false;
     }
 
@@ -156,7 +156,7 @@ void IntroControl::stop()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "IntroControl: problem cleaning up gui resources." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     _introState = Stopped;

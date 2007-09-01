@@ -214,7 +214,7 @@ EnMenu::~EnMenu()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "EnMenu: problem cleaning up entity." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     // destroy self-created entities
@@ -357,7 +357,7 @@ void EnMenu::initialize()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "*** Menu: cannot find layout: " << _menuConfig << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
         return;
     }
 

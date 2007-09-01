@@ -210,7 +210,7 @@ void GuiUtils::onStateChange( unsigned int state )
             catch ( const yaf3d::SoundException& e )
             {
                 log_error << "GuiUtils: problem releasing sound resources" << std::endl;
-                log << "      reason: " << e.what() << std::endl;
+                log_out << "      reason: " << e.what() << std::endl;
             }
 
             // release gui resources
@@ -224,7 +224,7 @@ void GuiUtils::onStateChange( unsigned int state )
             catch ( const CEGUI::Exception& e )
             {
                 log_error << "GuiUtils: problem cleaning up gui resources" << std::endl;
-                log << "      reason: " << e.getMessage().c_str() << std::endl;
+                log_out << "      reason: " << e.getMessage().c_str() << std::endl;
             }
         }
         break;
@@ -269,7 +269,7 @@ CEGUI::Window* GuiUtils::getMainGuiWindow()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "*** error setting up main gui window" << std::endl;
-        log << "   reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "   reason: " << e.getMessage().c_str() << std::endl;
         return NULL;
     }
 
@@ -304,7 +304,7 @@ const CEGUI::Image* GuiUtils::getCustomImage( const std::string& name )
     catch ( const CEGUI::Exception& e )
     {
         log_error << "GuiUtils: problem getting image " << VRC_IMAGE_SET << "/" <<  name << std::endl;
-        log << "   reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "   reason: " << e.getMessage().c_str() << std::endl;
         return NULL;
     }
 
@@ -673,7 +673,7 @@ LevelFiles::~LevelFiles()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "DialogLevelSelect: problem cleaning up entity." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 

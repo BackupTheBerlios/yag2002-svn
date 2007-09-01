@@ -257,7 +257,7 @@ EnObserver::~EnObserver()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "EnObserver: problem cleaning up entity." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -335,7 +335,7 @@ void EnObserver::initialize()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "EnPlayerInfoDisplay: problem creating gui" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
 

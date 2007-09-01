@@ -90,10 +90,10 @@ void EnConsole::handleNotification( const yaf3d::EntityNotification& notificatio
             if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
             {
                 log_info << std::endl;
-                log      << "================================" << std::endl;
-                log      << "=== VRC server console ready ===" << std::endl;
-                log      << "================================" << std::endl;
-                log      << "" << std::endl;
+                log_out  << "================================" << std::endl;
+                log_out  << "=== VRC server console ready ===" << std::endl;
+                log_out  << "================================" << std::endl;
+                log_out  << "" << std::endl;
             }
             break;
 

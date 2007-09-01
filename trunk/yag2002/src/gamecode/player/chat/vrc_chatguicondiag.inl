@@ -215,7 +215,7 @@ _p_parent( p_parent )
     catch ( const CEGUI::Exception& e )
     {
         log_error << "ChatGuiCtrl::ConnectionDialog: problem creating connection dialog" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -230,7 +230,7 @@ ConnectionDialog< TypeT >::~ConnectionDialog()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "~ConnectionDialog: problem cleaning up gui resources" << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 

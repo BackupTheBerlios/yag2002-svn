@@ -62,7 +62,7 @@ DialogLevelSelect::~DialogLevelSelect()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "DialogLevelSelect: problem destroying level select dialog." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     destroyResources();
@@ -81,7 +81,7 @@ void DialogLevelSelect::destroyResources()
     catch ( const CEGUI::Exception& e )
     {
         log_error << "DialogLevelSelect: problem cleaning up entity." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 }
 
@@ -115,7 +115,7 @@ bool DialogLevelSelect::initialize( const std::string& layoutfile )
     catch ( const CEGUI::Exception& e )
     {
         log_error << "*** DialogLevelSelect: cannot setup dialog layout." << std::endl;
-        log << "      reason: " << e.getMessage().c_str() << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
 
     return true;
