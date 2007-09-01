@@ -45,6 +45,8 @@ class TerrainConfig
 
                                                     TerrainConfig() :
                                                       _scale( osg::Vec3f( 1.0f, 1.0f, 1.0f ) ),
+                                                      _tilesX( 16 ),
+                                                      _tilesY( 16 ),
                                                       _blendBasemap( 0.3f ),
                                                       _detailmap0Repeat( osg::Vec2f( 1.0f, 1.0f ) ),
                                                       _detailmap1Repeat( osg::Vec2f( 1.0f, 1.0f ) ),
@@ -54,6 +56,12 @@ class TerrainConfig
 
         //! Scale the terrain
         osg::Vec3f                                  _scale;
+
+        //! Count of tiles in X direction 
+        unsigned short                              _tilesX;
+
+        //! Count of tiles in Y direction 
+        unsigned short                              _tilesY;
 
         //!Height map file (grey scale)
         std::string                                 _fileHeightmap;
@@ -84,6 +92,18 @@ class TerrainConfig
 
         //! Repeat factor in X/Y direction for detailmap 2
         osg::Vec2f                                  _detailmap2Repeat;
+
+        //! Type defining LOD ranges
+        typedef std::vector< std::pair< float, float > > ListLodRange;
+            
+        //! List of LOD ranges: min, max distance
+        ListLodRange                                _lodRanges;
+
+        //! Type for defining LOD resolution
+        typedef std::vector< std::pair< unsigned short, unsigned short > >  ListLodResolution;
+
+        //! List of LOD resolution: patch sub-division X, Y
+        ListLodResolution                           _lodResolutions;
 };
 
 //! Class for terrain related exceptions
@@ -110,7 +130,7 @@ class TerrainException : public std::runtime_error
 };
 
 //! Class declarations
-class TerrainPatch;
+class TerrainPatchBuilder;
 class TerrainSection;
 
 /*! Terrain manager */

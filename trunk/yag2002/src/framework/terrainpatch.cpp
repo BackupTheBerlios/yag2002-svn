@@ -36,23 +36,23 @@
 namespace yaf3d
 {
 
-TerrainPatch::TerrainPatch() :
+TerrainPatchBuilder::TerrainPatchBuilder() :
  _subDivX( 0 ),
  _subDivY( 0 ),
  _built( false )
 {
 }
 
-TerrainPatch::~TerrainPatch()
+TerrainPatchBuilder::~TerrainPatchBuilder()
 {
 }
 
-osg::ref_ptr< osg::PositionAttitudeTransform > TerrainPatch::getSceneNode()
+osg::ref_ptr< osg::PositionAttitudeTransform > TerrainPatchBuilder::getSceneNode()
 {
     return _p_node;
 }
 
-void TerrainPatch::reset()
+void TerrainPatchBuilder::reset()
 {
     if ( !_built )
         return;
@@ -61,7 +61,8 @@ void TerrainPatch::reset()
     _p_node = NULL;
 }
 
-bool TerrainPatch::build( const ImageTGA& image, const osg::Vec3f& scale, unsigned short column , unsigned short row, unsigned short sizeX, unsigned short sizeY, unsigned short subdivX, unsigned short subdivY )
+//! TODO: the build method has problems with some resolutions! check it.
+bool TerrainPatchBuilder::build( const ImageTGA& image, const osg::Vec3f& scale, unsigned short column , unsigned short row, unsigned short sizeX, unsigned short sizeY, unsigned short subdivX, unsigned short subdivY )
 {
     if ( _built )
     {
@@ -225,7 +226,7 @@ bool TerrainPatch::build( const ImageTGA& image, const osg::Vec3f& scale, unsign
     return true;
 }
 
-bool TerrainPatch::buildTexCoords( unsigned int channel, const osg::Vec2f& scale )
+bool TerrainPatchBuilder::buildTexCoords( unsigned int channel, const osg::Vec2f& scale )
 {
     if ( !_relativeSize.x() || !_relativeSize.y() )
     {

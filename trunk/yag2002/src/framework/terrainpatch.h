@@ -43,8 +43,8 @@ namespace yaf3d
 class TerrainManager;
 class TerrainSection;
 
-/*! Terrain patch */
-class TerrainPatch
+/*! Terrain patch builder class */
+class TerrainPatchBuilder
 {
     public:
 
@@ -54,9 +54,9 @@ class TerrainPatch
     protected:
 
         //! Create a patch
-                                                        TerrainPatch();
+                                                        TerrainPatchBuilder();
 
-        virtual                                         ~TerrainPatch();
+        virtual                                         ~TerrainPatchBuilder();
 
         //! Build the patch given the height data as Image, return false if the patch could not be built.
         bool                                            build( 

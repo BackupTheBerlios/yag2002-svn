@@ -122,11 +122,17 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
 {
     std::string mediapath = Application::get()->getMediaPath();
 
+    _tilesX = config._tilesX;
+    _tilesY = config._tilesY;
+
     if ( !_tilesX || !_tilesY )
         throw TerrainException( "Terrain Manager: invalid tile count for X or Y!" );
 
-    if ( !( _tilesX >> _quadTreeDepth ) || !( _tilesY >> _quadTreeDepth ) )
-        throw TerrainException( "Terrain Manager: quad tree depth is too high!" );
+    if ( !config._lodResolutions.size() )
+        throw TerrainException( "Terrain Manager: no LOD resolution specified, you need at least 1!" );
+
+    if ( config._lodRanges.size() != config._lodResolutions.size() )
+        throw TerrainException( "Terrain Manager: unequal LOD resolution and lod range count!" );
 
     // check for GLSL extension
     bool glslavailable = isGlslAvailable();
@@ -140,6 +146,12 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
 
     unsigned int sizeX = 0, sizeY = 0;
     tga.getSize( sizeX, sizeY );
+
+    // calculate the quadtree depth
+    _quadTreeDepth = ::log( float( std::min( _tilesX, _tilesY ) ) ) / ::log( float( 2 ) );
+    // check the depth
+    if ( !( _tilesX >> _quadTreeDepth ) || !( _tilesY >> _quadTreeDepth ) )
+        throw TerrainException( "Terrain Manager: quad tree depth is too high!" );
 
     // base texture map
     osg::Texture2D* p_basetex = new osg::Texture2D;
@@ -267,7 +279,7 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
     unsigned short patchPixelsY = sizeY / _tilesY;
 
     // create a patch object for building the section patches
-    TerrainPatch*  p_patch = new TerrainPatch();
+    TerrainPatchBuilder*  p_patch = new TerrainPatchBuilder();
 
     for ( unsigned int cntY = 0; cntY < sizeY; cntY += patchPixelsY )
     {
@@ -276,74 +288,51 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
             // create a lod node
             osg::LOD* p_lod = new osg::LOD;
 
-            // build LOD 0
-            if ( !p_patch->build( tga, config._scale, cntX, cntY, patchPixelsX, patchPixelsY, L0_SUBDIV_X, L0_SUBDIV_Y ) )
+            // build all specified lod nodes
+            // note: the count of resolution and range definitions must match!
+            TerrainConfig::ListLodResolution::const_iterator p_lodresolution = config._lodResolutions.begin(), p_lodresolutionEnd = config._lodResolutions.end();
+            TerrainConfig::ListLodRange::const_iterator      p_lodrange      = config._lodRanges.begin();
+            for ( ; p_lodresolution != p_lodresolutionEnd; ++p_lodresolution, ++p_lodrange )
             {
-                log_error << "Terrain Manager: could not build patch LOD level 0!" << std::endl;
-                continue;
+                // build LOD 0
+                if ( !p_patch->build( tga, config._scale, cntX, cntY, patchPixelsX, patchPixelsY, ( *p_lodresolution ).first, ( *p_lodresolution ).second ) )
+                {
+                    log_error << "Terrain Manager: could not build patch LOD level 0!" << std::endl;
+                    continue;
+                }
+
+                // build the base texture map coordinates
+                if ( !p_patch->buildTexCoords( 0 ) )
+                    log_error << "Terrain Manager: could not build base texture coordinates!" << std::endl;
+
+                // build detail maps only when glsl is available
+                if ( glslavailable )
+                {
+                    // build the detail texture map 0 coordinates
+                    if ( !p_patch->buildTexCoords( 1, config._detailmap0Repeat ) )
+                        log_error << "Terrain Manager: could not build deatial texture 0 coordinates!" << std::endl;
+
+                    // build the detail texture map 1 coordinates
+                    if ( !p_patch->buildTexCoords( 2, config._detailmap1Repeat ) )
+                        log_error << "Terrain Manager: could not build deatial texture 1 coordinates!" << std::endl;
+
+                    // build the detail texture map 2 coordinates
+                    if ( !p_patch->buildTexCoords( 3, config._detailmap2Repeat ) )
+                        log_error << "Terrain Manager: could not build deatial texture 2 coordinates!" << std::endl;
+                }
+
+                // add lod node and set its range
+                p_lod->addChild( p_patch->getSceneNode().get(), ( *p_lodrange ).first, ( *p_lodrange ).second );
+
+                //! NOTE: we may also allow the setting up the range mode. atm, we use a fixed distance from eye mode
+                p_lod->setRangeMode( osg::LOD::DISTANCE_FROM_EYE_POINT /*PIXEL_SIZE_ON_SCREEN*/ );
+
+                // reset the patch for next lod creation
+                p_patch->reset();            
             }
 
-            // build the base texture map coordinates
-            if ( !p_patch->buildTexCoords( 0 ) )
-                log_error << "Terrain Manager: could not build base texture coordinates!" << std::endl;
-
-            // build detail maps only when glsl is available
-            if ( glslavailable )
-            {
-                // build the detail texture map 0 coordinates
-                if ( !p_patch->buildTexCoords( 1, config._detailmap0Repeat ) )
-                    log_error << "Terrain Manager: could not build deatial texture 0 coordinates!" << std::endl;
-
-                // build the detail texture map 1 coordinates
-                if ( !p_patch->buildTexCoords( 2, config._detailmap1Repeat ) )
-                    log_error << "Terrain Manager: could not build deatial texture 1 coordinates!" << std::endl;
-
-                // build the detail texture map 2 coordinates
-                if ( !p_patch->buildTexCoords( 3, config._detailmap2Repeat ) )
-                    log_error << "Terrain Manager: could not build deatial texture 2 coordinates!" << std::endl;
-            }
-
-//! TODO: set proper lod params
-            p_lod->addChild( p_patch->getSceneNode().get(), 0.0f, 200.0f );
-
-            // reset the patch for next lod creation
-            p_patch->reset();
-
-            // build LOD 1
-            if ( !p_patch->build( tga, config._scale, cntX, cntY, patchPixelsX, patchPixelsY, L1_SUBDIV_X, L1_SUBDIV_Y ) )
-            {
-                log_error << "Terrain Manager: could not build patch LOD level 1!" << std::endl;
-                continue;
-            }
-
-            // build the base texture map coordinates
-            if ( !p_patch->buildTexCoords( 0 ) )
-                log_error << "Terrain Manager: could not build base texture coordinates!" << std::endl;
-
-            // build detail maps only when glsl is available
-            if ( glslavailable )
-            {
-                // build the detail texture map 0 coordinates
-                if ( !p_patch->buildTexCoords( 1, config._detailmap0Repeat ) )
-                    log_error << "Terrain Manager: could not build deatial texture 0 coordinates!" << std::endl;
-
-                // build the detail texture map 1 coordinates
-                if ( !p_patch->buildTexCoords( 2, config._detailmap1Repeat ) )
-                    log_error << "Terrain Manager: could not build deatial texture 1 coordinates!" << std::endl;
-
-                // build the detail texture map 2 coordinates
-                if ( !p_patch->buildTexCoords( 3, config._detailmap2Repeat ) )
-                    log_error << "Terrain Manager: could not build deatial texture 2 coordinates!" << std::endl;
-            }
-
-//! TODO: set proper lod params
-            p_lod->addChild( p_patch->getSceneNode().get(), 180.0f, 800.0f );
-
-            // add the patch to list
+            // add the patch to section
             p_section->getLodNodes().push_back( p_lod );
-
-            // reset the patch
-            p_patch->reset();
         }
     }
 
