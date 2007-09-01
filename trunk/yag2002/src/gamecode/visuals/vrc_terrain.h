@@ -34,12 +34,15 @@
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
 
+//! TODO: move this include to vrc_main.h
+#include <terrainmanager.h>
+
 namespace vrc
 {
 
 #define ENTITY_NAME_TERRAINSECTION    "TerrainSection"
 
-//! Terrain section entity
+//! Terrain section entity supporting up to 3 LODs, 1 base texture, and 3 detail maps
 class EnTerrainSection :  public yaf3d::BaseEntity
 {
     public:
@@ -77,6 +80,12 @@ class EnTerrainSection :  public yaf3d::BaseEntity
         //! Scaling the height and X/Y
         osg::Vec3f                                  _scale;
 
+        //! Count of tiles in X direction 
+        int                                         _tilesX;
+
+        //! Count of tiles in Y direction 
+        int                                         _tilesY;
+
         //! Heightmap
         std::string                                 _fileHeightmap;
 
@@ -110,11 +119,48 @@ class EnTerrainSection :  public yaf3d::BaseEntity
         //! Repeat factor in X/Y direction for detailmap 2
         osg::Vec2f                                  _detailmap2Repeat;
 
-        //------------------
-           
-        osg::ref_ptr< osg::Group >                  _p_terrainGrp;
+        //! LOD 0 resolution in X direction
+        int                                         _lod0ResolutionX;
 
+        //! LOD 0 resolution in Y direction
+        int                                         _lod0ResolutionY;
+
+        //! LOD 0 minimal range ( distance to camera )
+        float                                       _lod0RangeMin;
+
+        //! LOD 0 mamimal range ( distance to camera )
+        float                                       _lod0RangeMax;
+
+        //! LOD 1 resolution in X direction
+        int                                         _lod1ResolutionX;
+
+        //! LOD 1 resolution in Y direction
+        int                                         _lod1ResolutionY;
+
+        //! LOD 1 minimal range ( distance to camera )
+        float                                       _lod1RangeMin;
+
+        //! LOD 1 mamimal range ( distance to camera )
+        float                                       _lod1RangeMax;
+
+        //! LOD 2 resolution in X direction
+        int                                         _lod2ResolutionX;
+
+        //! LOD 2 resolution in Y direction
+        int                                         _lod2ResolutionY;
+
+        //! LOD 2 minimal range ( distance to camera )
+        float                                       _lod2RangeMin;
+
+        //! LOD 2 mamimal range ( distance to camera )
+        float                                       _lod2RangeMax;
+
+        //! Enable/disable the terrain section
         bool                                        _enable;
+        
+        //------------------
+        
+        osg::ref_ptr< osg::Group >                  _p_terrainGrp;
 };
 
 //! Entity type definition used for type registry

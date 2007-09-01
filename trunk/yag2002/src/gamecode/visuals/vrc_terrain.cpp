@@ -40,16 +40,32 @@ YAF3D_IMPL_ENTITYFACTORY( TerrainEntityFactory )
 
 
 EnTerrainSection::EnTerrainSection() :
-_sectionID( 0 ),
-_enable( true ),
-_scale( osg::Vec3f( 1.0f, 1.0f, 1.0f ) ),
-_blendBasemap( 0.3f )
+ _sectionID( 0 ),
+ _scale( osg::Vec3f( 1.0f, 1.0f, 1.0f ) ),
+ _tilesX( 16 ),
+ _tilesY( 16 ),
+ _blendBasemap( 0.3f ),
+ _lod0ResolutionX( 8 ),
+ _lod0ResolutionY( 8 ),
+ _lod0RangeMin( 0.0f ),
+ _lod0RangeMax( 200.0f ),
+ _lod1ResolutionX( 4 ),
+ _lod1ResolutionY( 4 ),
+ _lod1RangeMin( 180.0f ),
+ _lod1RangeMax( 400.0f ),
+ _lod2ResolutionX( 1 ),
+ _lod2ResolutionY( 1 ),
+ _lod2RangeMin( 380.0f ),
+ _lod2RangeMax( 100000.0f ),
+ _enable( true )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "enable"           , _enable           );
     getAttributeManager().addAttribute( "position"         , _position         );
     getAttributeManager().addAttribute( "rotation"         , _rotation         );
     getAttributeManager().addAttribute( "scale"            , _scale            );
+    getAttributeManager().addAttribute( "tilesX"           , _tilesX           );
+    getAttributeManager().addAttribute( "tilesY"           , _tilesY           );
     getAttributeManager().addAttribute( "heightmap"        , _fileHeightmap    );
     getAttributeManager().addAttribute( "basemap"          , _fileBasemap      );
     getAttributeManager().addAttribute( "blendBasemap"     , _blendBasemap     );
@@ -60,6 +76,21 @@ _blendBasemap( 0.3f )
     getAttributeManager().addAttribute( "detailmap1Repeat" , _detailmap1Repeat );
     getAttributeManager().addAttribute( "detailmap2"       , _fileDetailmap2   );
     getAttributeManager().addAttribute( "detailmap2Repeat" , _detailmap2Repeat );
+
+    getAttributeManager().addAttribute( "lod0ResolutionX" , _lod0ResolutionX   );
+    getAttributeManager().addAttribute( "lod0ResolutionY" , _lod0ResolutionY   );
+    getAttributeManager().addAttribute( "lod0RangeMin"    , _lod0RangeMin      );
+    getAttributeManager().addAttribute( "lod0RangeMax"    , _lod0RangeMax      );
+
+    getAttributeManager().addAttribute( "lod1ResolutionX" , _lod1ResolutionX   );
+    getAttributeManager().addAttribute( "lod1ResolutionY" , _lod1ResolutionY   );
+    getAttributeManager().addAttribute( "lod1RangeMin"    , _lod1RangeMin      );
+    getAttributeManager().addAttribute( "lod1RangeMax"    , _lod1RangeMax      );
+
+    getAttributeManager().addAttribute( "lod2ResolutionX" , _lod2ResolutionX   );
+    getAttributeManager().addAttribute( "lod2ResolutionY" , _lod2ResolutionY   );
+    getAttributeManager().addAttribute( "lod2RangeMin"    , _lod2RangeMin      );
+    getAttributeManager().addAttribute( "lod2RangeMax"    , _lod2RangeMax      );
 }
 
 EnTerrainSection::~EnTerrainSection()
@@ -147,6 +178,8 @@ osg::ref_ptr< osg::Group > EnTerrainSection::setup()
 
     yaf3d::TerrainConfig conf;
     conf._scale             = _scale;
+    conf._tilesX            = _tilesX;
+    conf._tilesY            = _tilesY;
     conf._fileHeightmap     = _fileHeightmap;
     conf._fileBasemap       = _fileBasemap;
     conf._blendBasemap      = _blendBasemap;
@@ -157,6 +190,26 @@ osg::ref_ptr< osg::Group > EnTerrainSection::setup()
     conf._detailmap1Repeat  = _detailmap1Repeat;
     conf._fileDetailmap2    = _fileDetailmap2;
     conf._detailmap2Repeat  = _detailmap2Repeat;
+
+    // configure the LODs
+    
+    if ( _lod0ResolutionX && _lod0ResolutionY )
+    {
+        conf._lodResolutions.push_back( std::make_pair( _lod0ResolutionX, _lod0ResolutionY ) );
+        conf._lodRanges.push_back( std::make_pair( _lod0RangeMin, _lod0RangeMax ) );
+    }
+
+    if ( _lod1ResolutionX && _lod1ResolutionY )
+    {
+        conf._lodResolutions.push_back( std::make_pair( _lod1ResolutionX, _lod1ResolutionY ) );
+        conf._lodRanges.push_back( std::make_pair( _lod1RangeMin, _lod1RangeMax ) );
+    }
+
+    if ( _lod2ResolutionX && _lod2ResolutionY )
+    {
+        conf._lodResolutions.push_back( std::make_pair( _lod2ResolutionX, _lod2ResolutionY ) );
+        conf._lodRanges.push_back( std::make_pair( _lod2RangeMin, _lod2RangeMax ) );
+    }
 
     try
     {
