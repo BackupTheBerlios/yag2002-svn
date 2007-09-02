@@ -116,6 +116,9 @@ class EnConsole :  public yaf3d::BaseEntity
 
         bool                                        _enable;
 
+        //! Issue initial command on entity initialization
+        std::string                                 _initialCommand;
+
         ConsoleIOBase*                              _p_ioHandler;
 
         std::vector< std::string >                  _cmdHistory;

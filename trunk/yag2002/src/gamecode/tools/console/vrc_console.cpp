@@ -54,6 +54,8 @@ _idleCounter( 0 ),
 _p_log( NULL ),
 _cwd( "/" )
 {
+    // register entity attribute
+    getAttributeManager().addAttribute( "initialCmd", _initialCommand );
 }
 
 EnConsole::~EnConsole()
@@ -125,6 +127,10 @@ void EnConsole::initialize()
     yaf3d::EntityManager::get()->registerUpdate( this, true );
     // register entity in order to get notifications
     yaf3d::EntityManager::get()->registerNotification( this, true );
+
+    // issue initial command if one exists
+    if ( _initialCommand.length() )
+        enqueueCmd( _initialCommand );
 }
 
 void EnConsole::enable( bool en )
