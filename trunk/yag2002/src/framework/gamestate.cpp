@@ -126,8 +126,9 @@ void GameState::setState( unsigned int state )
 
     _curState = state;
 
-    // call all registered callbacks
-    std::vector< CallbackStateChange* >::iterator p_beg = _cbsStateChange.begin(), p_end = _cbsStateChange.end();
+    // call all registered callbacks; allow modifying the registry list during callback
+    std::vector< CallbackStateChange* > templist = _cbsStateChange;
+    std::vector< CallbackStateChange* >::iterator p_beg = templist.begin(), p_end = templist.end();
     for ( ; p_beg != p_end; ++p_beg )
         ( *p_beg )->onStateChange( _curState );
 }
@@ -172,8 +173,9 @@ void GameState::setMode( unsigned int mode )
 
     _gameMode = mode;
 
-    // call all registered callbacks
-    std::vector< CallbackModeChange* >::iterator p_beg = _cbsModeChange.begin(), p_end = _cbsModeChange.end();
+    // call all registered callbacks; allow modifying the registry list during callback
+    std::vector< CallbackModeChange* > templist = _cbsModeChange;
+    std::vector< CallbackModeChange* >::iterator p_beg = templist.begin(), p_end = templist.end();
     for ( ; p_beg != p_end; ++p_beg )
         ( *p_beg )->onModeChange( _gameMode );
 }
@@ -219,8 +221,9 @@ void GameState::setAppWindowState( unsigned int state )
 
     _appWindowState = state;
 
-    // call all registered callbacks
-    std::vector< CallbackAppWindowStateChange* >::iterator p_beg = _cbsAppWindowStateChange.begin(), p_end = _cbsAppWindowStateChange.end();
+    // call all registered callbacks; allow modifying the registry list during callback
+    std::vector< CallbackAppWindowStateChange* > templist = _cbsAppWindowStateChange;
+    std::vector< CallbackAppWindowStateChange* >::iterator p_beg = templist.begin(), p_end = templist.end();
     for ( ; p_beg != p_end; ++p_beg )
         ( *p_beg )->onAppWindowStateChange( _appWindowState );
 }

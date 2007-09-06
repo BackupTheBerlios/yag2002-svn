@@ -42,7 +42,6 @@ namespace yaf3d
 class Application;
 class LevelManager;
 class GuiRenderer;
-class GuiPostDrawCallback;
 class GuiViewerInitCallback;
 
 // some definitions
@@ -168,8 +167,6 @@ class GuiManager : public Singleton< GuiManager >
 
         float                                   _windowHeight;
 
-        osg::ref_ptr< GuiPostDrawCallback >     _guiPostDrawCallback;
-
         osg::ref_ptr< GuiViewerInitCallback >   _guiViewerInitCallback;
 
         //! Root window of cegui where all other windows are placed
@@ -186,7 +183,6 @@ class GuiManager : public Singleton< GuiManager >
 
     friend class Singleton< GuiManager >;
     friend class GuiViewerInitCallback;
-    friend class GuiPostDrawCallback;
     friend class LevelManager;
     friend class Application;
 };

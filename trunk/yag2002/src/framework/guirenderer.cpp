@@ -112,120 +112,6 @@ void GuiRenderer::addQuad( const CEGUI::Rect& dest_rect, float z, const CEGUI::T
     }
 }
 
-void GuiRenderer::doRender()
-{
-    initPerFrameStates();
-    glInterleavedArrays( GL_T2F_C4UB_V3F , 0, _buff );
-
-    _currTexture = 0;
-
-    // iterate over each quad in the list
-    for (QuadList::iterator i = _quadlist.begin(); i != _quadlist.end(); ++i)
-    {
-        const QuadInfo& quad = (*i);
-
-        if(_currTexture != quad.texid)
-        {
-            renderVBuffer();
-            glBindTexture(GL_TEXTURE_2D, quad.texid);
-            _currTexture = quad.texid;
-        }
-
-        //vert0
-        _buff[_bufferPos].vertex[0] = quad.position.d_left;
-        _buff[_bufferPos].vertex[1] = quad.position.d_top;
-        _buff[_bufferPos].vertex[2] = quad.z;
-        _buff[_bufferPos].color     = quad.topLeftCol;
-        _buff[_bufferPos].tex[0]    = quad.texPosition.d_left;
-        _buff[_bufferPos].tex[1]    = quad.texPosition.d_top;
-        ++_bufferPos;
-
-        //vert1
-        _buff[_bufferPos].vertex[0] = quad.position.d_left;
-        _buff[_bufferPos].vertex[1] = quad.position.d_bottom;
-        _buff[_bufferPos].vertex[2] = quad.z;
-        _buff[_bufferPos].color     = quad.bottomLeftCol;
-        _buff[_bufferPos].tex[0]    = quad.texPosition.d_left;
-        _buff[_bufferPos].tex[1]    = quad.texPosition.d_bottom;
-        ++_bufferPos;
-
-        //vert2
-
-        // top-left to bottom-right diagonal
-        if (quad.splitMode == CEGUI::TopLeftToBottomRight)
-        {
-            _buff[_bufferPos].vertex[0] = quad.position.d_right;
-            _buff[_bufferPos].vertex[1] = quad.position.d_bottom;
-            _buff[_bufferPos].vertex[2] = quad.z;
-            _buff[_bufferPos].color     = quad.bottomRightCol;
-            _buff[_bufferPos].tex[0]    = quad.texPosition.d_right;
-            _buff[_bufferPos].tex[1]    = quad.texPosition.d_bottom;
-        }
-        // bottom-left to top-right diagonal
-        else
-        {
-            _buff[_bufferPos].vertex[0] = quad.position.d_right;
-            _buff[_bufferPos].vertex[1] = quad.position.d_top;
-            _buff[_bufferPos].vertex[2] = quad.z;
-            _buff[_bufferPos].color     = quad.topRightCol;
-            _buff[_bufferPos].tex[0]    = quad.texPosition.d_right;
-            _buff[_bufferPos].tex[1]    = quad.texPosition.d_top;
-        }
-        ++_bufferPos;
-
-        //vert3
-        _buff[_bufferPos].vertex[0] = quad.position.d_right;
-        _buff[_bufferPos].vertex[1] = quad.position.d_top;
-        _buff[_bufferPos].vertex[2] = quad.z;
-        _buff[_bufferPos].color     = quad.topRightCol;
-        _buff[_bufferPos].tex[0]    = quad.texPosition.d_right;
-        _buff[_bufferPos].tex[1]    = quad.texPosition.d_top;
-        ++_bufferPos;
-
-        //vert4
-
-        // top-left to bottom-right diagonal
-        if (quad.splitMode == CEGUI::TopLeftToBottomRight)
-        {
-            _buff[_bufferPos].vertex[0] = quad.position.d_left;
-            _buff[_bufferPos].vertex[1] = quad.position.d_top;
-            _buff[_bufferPos].vertex[2] = quad.z;
-            _buff[_bufferPos].color     = quad.topLeftCol;
-            _buff[_bufferPos].tex[0]    = quad.texPosition.d_left;
-            _buff[_bufferPos].tex[1]    = quad.texPosition.d_top;
-        }
-        // bottom-left to top-right diagonal
-        else
-        {
-            _buff[_bufferPos].vertex[0] = quad.position.d_left;
-            _buff[_bufferPos].vertex[1] = quad.position.d_bottom;
-            _buff[_bufferPos].vertex[2] = quad.z;
-            _buff[_bufferPos].color     = quad.bottomLeftCol;
-            _buff[_bufferPos].tex[0]    = quad.texPosition.d_left;
-            _buff[_bufferPos].tex[1]    = quad.texPosition.d_bottom;
-        }
-        ++_bufferPos;
-
-        //vert 5
-        _buff[_bufferPos].vertex[0] = quad.position.d_right;
-        _buff[_bufferPos].vertex[1] = quad.position.d_bottom;
-        _buff[_bufferPos].vertex[2] = quad.z;
-        _buff[_bufferPos].color     = quad.bottomRightCol;
-        _buff[_bufferPos].tex[0]    = quad.texPosition.d_right;
-        _buff[_bufferPos].tex[1]    = quad.texPosition.d_bottom;
-        ++_bufferPos;
-
-        if(_bufferPos > (VERTEXBUFFER_CAPACITY - VERTEX_PER_QUAD))
-        {
-            renderVBuffer();
-        }
-    }
-
-    //Render
-    renderVBuffer();
-    exitPerFrameStates();
-}
-
 void GuiRenderer::clearRenderList()
 {
     _quadlist.clear();
@@ -261,6 +147,8 @@ void GuiRenderer::destroyTexture( CEGUI::Texture* p_texture )
     if ( p_texture )
     {
         GuiTexture* p_tex = static_cast< GuiTexture* >( p_texture );
+        GLuint      texid = p_tex->getOGLTexid();
+        glDeleteTextures( 1, &texid );
         //log_debug << "GuiRenderer: deleting texture, id " << p_tex->getOGLTexid() << std::endl;
         _texturelist.remove( p_tex );
         delete p_tex;
@@ -270,7 +158,7 @@ void GuiRenderer::destroyTexture( CEGUI::Texture* p_texture )
 void GuiRenderer::destroyAllTextures()
 {
     while ( !_texturelist.empty() )
-        this->destroyTexture( *( _texturelist.begin( )) );
+        destroyTexture( *( _texturelist.begin( )) );
 }
 
 void GuiRenderer::initPerFrameStates()
@@ -338,18 +226,128 @@ void GuiRenderer::exitPerFrameStates()
 void GuiRenderer::renderVBuffer()
 {
     // if bufferPos is 0 there is no data in the buffer and nothing to render
-    if (_bufferPos == 0)
-    {
+    if ( !_bufferPos )
         return;
-    }
 
     // render the sprites
-    glDrawArrays(GL_TRIANGLES, 0, _bufferPos);
+    glDrawArrays( GL_TRIANGLES, 0, _bufferPos );
 
-    // reset buffer position to 0...
+    // reset buffer position to 0
     _bufferPos = 0;
 }
 
+void GuiRenderer::doRender()
+{
+    initPerFrameStates();
+    glInterleavedArrays( GL_T2F_C4UB_V3F, 0, _p_buff );
+
+    _currTexture = 0;
+
+    // iterate over each quad in the list
+    for (QuadList::iterator i = _quadlist.begin(); i != _quadlist.end(); ++i)
+    {
+        const QuadInfo& quad = (*i);
+
+        if(_currTexture != quad.texid)
+        {
+            renderVBuffer();
+            glBindTexture(GL_TEXTURE_2D, quad.texid);
+            _currTexture = quad.texid;
+        }
+
+        //vert0
+        _p_buff[_bufferPos].vertex[0] = quad.position.d_left;
+        _p_buff[_bufferPos].vertex[1] = quad.position.d_top;
+        _p_buff[_bufferPos].vertex[2] = quad.z;
+        _p_buff[_bufferPos].color     = quad.topLeftCol;
+        _p_buff[_bufferPos].tex[0]    = quad.texPosition.d_left;
+        _p_buff[_bufferPos].tex[1]    = quad.texPosition.d_top;
+        ++_bufferPos;
+
+        //vert1
+        _p_buff[_bufferPos].vertex[0] = quad.position.d_left;
+        _p_buff[_bufferPos].vertex[1] = quad.position.d_bottom;
+        _p_buff[_bufferPos].vertex[2] = quad.z;
+        _p_buff[_bufferPos].color     = quad.bottomLeftCol;
+        _p_buff[_bufferPos].tex[0]    = quad.texPosition.d_left;
+        _p_buff[_bufferPos].tex[1]    = quad.texPosition.d_bottom;
+        ++_bufferPos;
+
+        //vert2
+
+        // top-left to bottom-right diagonal
+        if (quad.splitMode == CEGUI::TopLeftToBottomRight)
+        {
+            _p_buff[_bufferPos].vertex[0] = quad.position.d_right;
+            _p_buff[_bufferPos].vertex[1] = quad.position.d_bottom;
+            _p_buff[_bufferPos].vertex[2] = quad.z;
+            _p_buff[_bufferPos].color     = quad.bottomRightCol;
+            _p_buff[_bufferPos].tex[0]    = quad.texPosition.d_right;
+            _p_buff[_bufferPos].tex[1]    = quad.texPosition.d_bottom;
+        }
+        // bottom-left to top-right diagonal
+        else
+        {
+            _p_buff[_bufferPos].vertex[0] = quad.position.d_right;
+            _p_buff[_bufferPos].vertex[1] = quad.position.d_top;
+            _p_buff[_bufferPos].vertex[2] = quad.z;
+            _p_buff[_bufferPos].color     = quad.topRightCol;
+            _p_buff[_bufferPos].tex[0]    = quad.texPosition.d_right;
+            _p_buff[_bufferPos].tex[1]    = quad.texPosition.d_top;
+        }
+        ++_bufferPos;
+
+        //vert3
+        _p_buff[_bufferPos].vertex[0] = quad.position.d_right;
+        _p_buff[_bufferPos].vertex[1] = quad.position.d_top;
+        _p_buff[_bufferPos].vertex[2] = quad.z;
+        _p_buff[_bufferPos].color     = quad.topRightCol;
+        _p_buff[_bufferPos].tex[0]    = quad.texPosition.d_right;
+        _p_buff[_bufferPos].tex[1]    = quad.texPosition.d_top;
+        ++_bufferPos;
+
+        //vert4
+        // top-left to bottom-right diagonal
+        if (quad.splitMode == CEGUI::TopLeftToBottomRight)
+        {
+            _p_buff[_bufferPos].vertex[0] = quad.position.d_left;
+            _p_buff[_bufferPos].vertex[1] = quad.position.d_top;
+            _p_buff[_bufferPos].vertex[2] = quad.z;
+            _p_buff[_bufferPos].color     = quad.topLeftCol;
+            _p_buff[_bufferPos].tex[0]    = quad.texPosition.d_left;
+            _p_buff[_bufferPos].tex[1]    = quad.texPosition.d_top;
+        }
+        // bottom-left to top-right diagonal
+        else
+        {
+            _p_buff[_bufferPos].vertex[0] = quad.position.d_left;
+            _p_buff[_bufferPos].vertex[1] = quad.position.d_bottom;
+            _p_buff[_bufferPos].vertex[2] = quad.z;
+            _p_buff[_bufferPos].color     = quad.bottomLeftCol;
+            _p_buff[_bufferPos].tex[0]    = quad.texPosition.d_left;
+            _p_buff[_bufferPos].tex[1]    = quad.texPosition.d_bottom;
+        }
+        ++_bufferPos;
+
+        //vert 5
+        _p_buff[_bufferPos].vertex[0] = quad.position.d_right;
+        _p_buff[_bufferPos].vertex[1] = quad.position.d_bottom;
+        _p_buff[_bufferPos].vertex[2] = quad.z;
+        _p_buff[_bufferPos].color     = quad.bottomRightCol;
+        _p_buff[_bufferPos].tex[0]    = quad.texPosition.d_right;
+        _p_buff[_bufferPos].tex[1]    = quad.texPosition.d_bottom;
+        ++_bufferPos;
+
+        if(_bufferPos > (VERTEXBUFFER_CAPACITY - VERTEX_PER_QUAD))
+        {
+            renderVBuffer();
+        }
+    }
+
+    //Render
+    renderVBuffer();
+    exitPerFrameStates();
+}
 
 /*************************************************************************
     sort quads list according to texture
@@ -373,7 +371,7 @@ void GuiRenderer::renderQuadDirect(const CEGUI::Rect& dest_rect, float z, const 
     quad.bottomLeftCol  = colourToOGL(colours.d_bottom_left);
     quad.bottomRightCol = colourToOGL(colours.d_bottom_right);
 
-    MyQuad myquad[VERTEX_PER_QUAD];
+    static MyQuad myquad[VERTEX_PER_QUAD];
 
     initPerFrameStates();
     glInterleavedArrays(GL_T2F_C4UB_V3F , 0, myquad);
@@ -458,7 +456,6 @@ void GuiRenderer::renderQuadDirect(const CEGUI::Rect& dest_rect, float z, const 
     myquad[5].tex[1]    = quad.texPosition.d_bottom;
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
-
     exitPerFrameStates();
 }
 

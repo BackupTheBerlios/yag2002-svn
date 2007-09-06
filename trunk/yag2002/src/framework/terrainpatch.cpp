@@ -58,7 +58,6 @@ void TerrainPatchBuilder::reset()
         return;
 
     _built  = false;
-    _p_node = NULL;
 }
 
 //! TODO: the build method has problems with some resolutions! check it.
@@ -184,7 +183,7 @@ bool TerrainPatchBuilder::build( const ImageTGA& image, const osg::Vec3f& scale,
     _p_node->setPosition( osg::Vec3f( float( row ) * scale.x(), float( column ) * scale.y(), minheight ) );  
 
     // setup the draw elements array for the patch
-    osg::DrawElementsUByte* p_drawElements = new osg::DrawElementsUByte( osg::PrimitiveSet::TRIANGLE_STRIP );
+    osg::DrawElementsUShort* p_drawElements = new osg::DrawElementsUShort( osg::PrimitiveSet::TRIANGLE_STRIP );
 
     // create triangle strips
     unsigned int indexdist = _subDivX + 1;

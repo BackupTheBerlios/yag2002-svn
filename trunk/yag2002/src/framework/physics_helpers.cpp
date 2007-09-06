@@ -43,38 +43,38 @@ NewtonCollision* PhysicsVisitor::_p_collision   = NULL;
 //----------------------------//
 void DebugShowGeometryCollision( const NewtonBody* /*p_body*/, int vertexCount, const float* p_faceVertec, int /*id*/ )
 {
-	int i = vertexCount - 1;
-	osg::Vec3f p0( p_faceVertec[ i * 3 + 0 ], p_faceVertec[ i * 3 + 1 ], p_faceVertec[ i * 3 + 2 ] );
-	for ( i = 0; i < vertexCount; ++i )
+    int i = vertexCount - 1;
+    osg::Vec3f p0( p_faceVertec[ i * 3 + 0 ], p_faceVertec[ i * 3 + 1 ], p_faceVertec[ i * 3 + 2 ] );
+    for ( i = 0; i < vertexCount; ++i )
     {
-		osg::Vec3f p1( p_faceVertec[ i * 3 + 0 ], p_faceVertec[ i * 3 + 1 ], p_faceVertec[ i * 3 + 2 ] );
-		glVertex3f( p0._v[ 0 ], p0._v[ 1 ], p0._v[ 2 ] );
-		glVertex3f( p1._v[ 0 ], p1._v[ 1 ], p1._v[ 2 ] );
-		p0 = p1;
-	}
+        osg::Vec3f p1( p_faceVertec[ i * 3 + 0 ], p_faceVertec[ i * 3 + 1 ], p_faceVertec[ i * 3 + 2 ] );
+        glVertex3f( p0._v[ 0 ], p0._v[ 1 ], p0._v[ 2 ] );
+        glVertex3f( p1._v[ 0 ], p1._v[ 1 ], p1._v[ 2 ] );
+        p0 = p1;
+    }
 }
 
 void DebugShowBodyCollision( const NewtonBody* p_body )
 {
-	NewtonBodyForEachPolygonDo( p_body, DebugShowGeometryCollision );
+    NewtonBodyForEachPolygonDo( p_body, DebugShowGeometryCollision );
 }
 
-void PhysicsDebugDrawable::drawImplementation( osg::State& /*state*/ ) const
+void PhysicsDebugDrawable::drawImplementation( osg::RenderInfo& /*renderInfo*/ ) const
 {
     glPushClientAttrib( GL_CLIENT_ALL_ATTRIB_BITS );
     glPushAttrib( GL_ALL_ATTRIB_BITS );
 
-	glColor3f( 1.0f, 1.0f, 1.0f );
-	glDisable( GL_LIGHTING );
-	glDisable( GL_TEXTURE_2D );
+    glColor3f( 1.0f, 1.0f, 1.0f );
+    glDisable( GL_LIGHTING );
+    glDisable( GL_TEXTURE_2D );
 
     osg::Matrixf mat;
     mat.identity();
     glPushMatrix();
     glMultMatrixf( ( float* )mat.ptr() );
-	glBegin( GL_LINES );
+    glBegin( GL_LINES );
     NewtonWorldForEachBodyDo( Physics::get()->getWorld(), DebugShowBodyCollision );
-	glEnd();
+    glEnd();
     glPopMatrix();
 
     glPopClientAttrib();

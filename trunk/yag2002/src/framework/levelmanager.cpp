@@ -442,8 +442,12 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         }
 
         // append the transformation node if the entity has one
-        if ( p_entity->isTransformable() ) 
+        if ( p_entity->isTransformable() )
+        {
+            if ( instancename.length() )
+                p_entity->getTransformationNode()->setName( instancename );
             _entityGroup->addChild( p_entity->getTransformationNode() );
+        }
 
         // enqueue entitiy for later setup in finalizeLoading
         _setupQueue.push_back( p_entity );
@@ -457,8 +461,6 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
 
 void LevelManager::finalizeLoading()
 {
-    Application::get()->setSceneRootNode( _topGroup.get() );
-
     // are we loading for first time?
     if ( _firstLoading )
     {
@@ -627,6 +629,9 @@ void LevelManager::shutdown()
         SoundManager::get()->shutdown();
         GuiManager::get()->shutdown();
     }
+
+    // set game state
+    GameState::get()->setState( GameState::Shutdown );
 
     // unload level
     unloadLevel( true, true );

@@ -147,11 +147,11 @@ class TerrainManager : public Singleton< TerrainManager >
         //! Release a terrain section given its ID.
         void                                        releaseSection( unsigned int id ) throw ( TerrainException );
 
-        //! Set base map blend factor. It takes effect, only when shaders active.
-        void                                        setBlendBasemap( float blend );
+        //! Set base map blend factor for given section. It takes effect, only when shaders active.
+        void                                        setBlendBasemap( unsigned int id, float blend );
 
-        //! Get the currend base map blend factor.
-        float                                       getBlendBasemap() const;
+        //! Get the currend base map blend factor for given section.
+        float                                       getBlendBasemap( unsigned int id );
 
     protected:
 
@@ -164,7 +164,7 @@ class TerrainManager : public Singleton< TerrainManager >
         void                                        shutdown();
 
         //! Setup the shaders
-        void                                       setupShaders( const TerrainConfig& config, osg::StateSet* p_stateset );
+        void                                        setupShaders( const TerrainConfig& config, osg::StateSet* p_stateset );
 
         //! Build a quad tree for the given list of patches
         osg::ref_ptr< osg::Group >                  buildQuadTree( std::vector< osg::ref_ptr< osg::LOD > >& patches );
@@ -189,9 +189,6 @@ class TerrainManager : public Singleton< TerrainManager >
 
         //! Terrain's stateset containing the shaders
         osg::ref_ptr<osg::StateSet >                _p_stateSet;
-
-        //! Shader parameter for blending base texture
-        osg::ref_ptr< osg::Uniform >                 _p_baseTextureBlend;
 
     friend class Singleton< TerrainManager >;
     friend class Application;

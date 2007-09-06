@@ -48,16 +48,23 @@ namespace yaf3d
 //! Implement the terrain manager singleton
 YAF3D_SINGLETON_IMPL( TerrainManager )
 
+
 //! Terrain section class for manager's internal house-keeping
 class TerrainSection
 {
     public:
 
-                                                    TerrainSection() :
+        explicit                                    TerrainSection( float basetexblend ) :
                                                      _id ( 0 )
-                                                    {}
+                                                    {
+                                                        _baseTexBlend = new osg::Uniform( "baseTextureBlend", basetexblend );
+                                                    }
 
-        virtual                                     ~TerrainSection() {}                                                    
+        virtual                                     ~TerrainSection()
+                                                    {
+                                                        _baseTexBlend = NULL;
+                                                        _node         = NULL;
+                                                    }
 
         //! Set section ID.
         void                                        setID( unsigned int id )
@@ -83,6 +90,11 @@ class TerrainSection
                                                         return _lodNodes;
                                                     }
 
+        osg::ref_ptr< osg::Uniform >                getBaseTexUniform()
+                                                    {
+                                                        return _baseTexBlend;
+                                                    }
+
     protected:
 
         //! Section ID
@@ -92,7 +104,10 @@ class TerrainSection
         std::vector< osg::ref_ptr< osg::LOD > >     _lodNodes;
 
         //! Scenegraph node
-        osg::ref_ptr< osg::Group >                  _node; 
+        osg::ref_ptr< osg::Group >                  _node;
+
+        //! Shader uniform for blend factor of base texture
+        osg::ref_ptr < osg::Uniform >               _baseTexBlend;
 };
 
 //! Implemention of terrain manager
@@ -188,8 +203,8 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
             p_layermask->setImage( p_maskimage );
             p_layermask->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
             p_layermask->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
-            p_layermask->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
-            p_layermask->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );            
+            p_layermask->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR );
+            p_layermask->setFilter( osg::Texture::MAG_FILTER, osg::Texture::LINEAR );            
             p_layermask->setInternalFormatMode( osg::Texture::USE_IMAGE_DATA_FORMAT );
             p_layermask->setUnRefImageDataAfterApply( true );
         }
@@ -271,22 +286,23 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
         if ( p_layermask )
             _p_stateSet->setTextureAttributeAndModes( 4, p_layermask, osg::StateAttribute::ON );
     }
-                    
+
     // create a new terrain section
-    TerrainSection* p_section = new TerrainSection;
+    TerrainSection* p_section = new TerrainSection( config._blendBasemap );
 
     unsigned short patchPixelsX = sizeX / _tilesX;
     unsigned short patchPixelsY = sizeY / _tilesY;
 
     // create a patch object for building the section patches
-    TerrainPatchBuilder*  p_patch = new TerrainPatchBuilder();
+    TerrainPatchBuilder*  p_patch    = new TerrainPatchBuilder();
+    unsigned int          numPatches = 0;
 
     for ( unsigned int cntY = 0; cntY < sizeY; cntY += patchPixelsY )
     {
         for ( unsigned int cntX = 0; cntX < sizeX; cntX += patchPixelsX )
         {
             // create a lod node
-            osg::LOD* p_lod = new osg::LOD;
+            osg::ref_ptr< osg::LOD > lodnode = new osg::LOD;
 
             // build all specified lod nodes
             // note: the count of resolution and range definitions must match!
@@ -294,7 +310,7 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
             TerrainConfig::ListLodRange::const_iterator      p_lodrange      = config._lodRanges.begin();
             for ( ; p_lodresolution != p_lodresolutionEnd; ++p_lodresolution, ++p_lodrange )
             {
-                // build LOD 0
+                // build LOD
                 if ( !p_patch->build( tga, config._scale, cntX, cntY, patchPixelsX, patchPixelsY, ( *p_lodresolution ).first, ( *p_lodresolution ).second ) )
                 {
                     log_error << "Terrain Manager: could not build patch LOD level 0!" << std::endl;
@@ -322,19 +338,23 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
                 }
 
                 // add lod node and set its range
-                p_lod->addChild( p_patch->getSceneNode().get(), ( *p_lodrange ).first, ( *p_lodrange ).second );
+                lodnode->addChild( p_patch->getSceneNode().get(), ( *p_lodrange ).first, ( *p_lodrange ).second );
 
                 //! NOTE: we may also allow the setting up the range mode. atm, we use a fixed distance from eye mode
-                p_lod->setRangeMode( osg::LOD::DISTANCE_FROM_EYE_POINT /*PIXEL_SIZE_ON_SCREEN*/ );
+                lodnode->setRangeMode( osg::LOD::DISTANCE_FROM_EYE_POINT /*PIXEL_SIZE_ON_SCREEN*/ );
 
                 // reset the patch for next lod creation
-                p_patch->reset();            
+                p_patch->reset();
             }
 
             // add the patch to section
-            p_section->getLodNodes().push_back( p_lod );
+            p_section->getLodNodes().push_back( lodnode.get() );
+
+            numPatches++;
         }
     }
+
+    log_debug << "Terrain Manager: created a total count of " << numPatches << " patches (including LODs)" << std::endl;
 
     // delete the patch object
     delete p_patch;
@@ -350,7 +370,10 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
 
     // setup the terrain shaders if glsl is available
     if ( glslavailable )
+    {
         setupShaders( config, _p_stateSet.get() );
+        _p_stateSet->addUniform( p_section->getBaseTexUniform().get() );
+    }
 
     // set the group state set
     group->setStateSet( _p_stateSet.get() );
@@ -495,21 +518,22 @@ void TerrainManager::releaseSection( unsigned int id ) throw ( TerrainException 
     _sectionMap.erase( _sectionMap.find( id ) );
 }
 
-void TerrainManager::setBlendBasemap( float blend )
+void TerrainManager::setBlendBasemap( unsigned int id, float blend )
 {
-    if ( _p_baseTextureBlend.valid() )
-        _p_baseTextureBlend->set( blend );
+    if ( _sectionMap.find( id ) == _sectionMap.end() )
+        throw TerrainException( "Terrain Manager: cannot set base texture blend; Section ID does not exist!" );
+
+    _sectionMap[ id ]->getBaseTexUniform()->set( blend );
 }
 
-float TerrainManager::getBlendBasemap() const
+float TerrainManager::getBlendBasemap( unsigned int id )
 {
     float blend = 0.0f;
 
-    if ( _p_baseTextureBlend.valid() )
-    {
-        _p_baseTextureBlend->get( blend );
-        return blend;
-    }
+    if ( _sectionMap.find( id ) == _sectionMap.end() )
+        throw TerrainException( "Terrain Manager: cannot set base texture blend; Section ID does not exist!" );
+
+    _sectionMap[ id ]->getBaseTexUniform()->get( blend );
 
     return blend;
 }
@@ -594,9 +618,6 @@ void TerrainManager::setupShaders( const TerrainConfig& config, osg::StateSet* p
 
     osg::Uniform* p_layerMaskSampler = new osg::Uniform( "layerMask", 4 );
     p_stateset->addUniform( p_layerMaskSampler );
-
-    _p_baseTextureBlend = new osg::Uniform( "baseTextureBlend", config._blendBasemap );
-    p_stateset->addUniform( _p_baseTextureBlend.get() );
 }
 
 } // namespace yaf3d

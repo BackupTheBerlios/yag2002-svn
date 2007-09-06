@@ -47,14 +47,15 @@ BaseEntity::~BaseEntity()
 {
     try
     {
-		// remove transformation node from its parents
+        // remove transformation node from its parents
         if ( _p_transformNode.valid() )
         {
             unsigned int parents = _p_transformNode->getNumParents();
             if ( parents > 0 )
-			{
-				for ( unsigned int p = 0; p < parents; ++p )
+            {
+                for ( unsigned int p = 0; p < parents; ++p )
                 {
+                    // every removal of child also removes the parent form parent list! so remove always form index 0.
                     _p_transformNode->getParent( 0 )->removeChild( _p_transformNode.get() );
                 }
             }

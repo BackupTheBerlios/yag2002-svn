@@ -58,7 +58,7 @@ class PhysicsDebugDrawable : public osg::Geometry
 
         const char*                     className() const { return "PhysicsDebugDrawable"; }
 
-        void                            drawImplementation( osg::State& state ) const;
+        void                            drawImplementation( osg::RenderInfo& renderInfo ) const;
 
     protected:
 

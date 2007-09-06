@@ -37,7 +37,6 @@
 #include "log.h"
 #include <CEGUILogger.h>
 
-
 namespace yaf3d
 {
 
@@ -64,21 +63,6 @@ class GuiViewerInitCallback : public osgSDL::Viewer::ViewerInitCallback
 
 };
 
-//! Post-render callback, here the complete gui is initialized and drawn
-class GuiPostDrawCallback : public osgSDL::Viewer::DrawCallback
-{
-    public:
-
-       virtual void                                 operator()( const osgSDL::Viewport* /*p_vp*/ )
-                                                    {
-                                                        GuiManager::get()->doRender();
-                                                    }
-
-    protected:
-
-        virtual                                     ~GuiPostDrawCallback(){}
-};
-
 //! Resource loader for gui resource loading
 class GuiResourceProvider : public CEGUI::ResourceProvider
 {
@@ -90,6 +74,54 @@ class GuiResourceProvider : public CEGUI::ResourceProvider
         void                                        loadRawDataContainer( const CEGUI::String& filename, CEGUI::RawDataContainer& output, const CEGUI::String& resourceGroup );
 
 };
+
+//! OSG Drawable object for rendering the GUI
+class CEGUIDrawable : public osg::Drawable
+{
+    public:
+
+        META_Object( osg,CEGUIDrawable );
+
+
+                                                    CEGUIDrawable()
+                                                    {
+                                                        setSupportsDisplayList( false );
+                                                        _activeContextID = 0;
+                                                        osg::StateSet* p_stateset = new osg::StateSet;
+                                                        p_stateset->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
+                                                        setStateSet( p_stateset );
+                                                    }
+
+        /** Copy constructor using CopyOp to manage deep vs shallow copy.*/
+                                                    CEGUIDrawable( const CEGUIDrawable& drawable, const osg::CopyOp& copyop = osg::CopyOp::SHALLOW_COPY ) :
+                                                        Drawable( drawable, copyop )
+                                                    {
+                                                        osg::StateSet* p_stateset = new osg::StateSet;
+                                                        p_stateset->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
+                                                        setStateSet( p_stateset );
+                                                    }
+
+        //! Draw implementation
+        void                                        drawImplementation( osg::RenderInfo& renderInfo ) const
+                                                    {
+                                                        osg::State* p_state = renderInfo.getState();
+
+                                                        if ( p_state->getContextID()!=_activeContextID )
+                                                            return;
+
+                                                        p_state->disableAllVertexArrays();
+                                                        CEGUI::System::getSingleton().renderGUI();
+                                                    }
+
+    protected:
+
+        virtual                                    ~CEGUIDrawable() {};
+
+        //! Opengl context
+        unsigned int                               _activeContextID;
+};
+
+
 
 GuiManager::InputHandler::InputHandler( GuiManager* p_guimgr ) :
 _p_guiMgr( p_guimgr )
@@ -164,10 +196,13 @@ void GuiManager::shutdown()
 
 void GuiManager::initialize()
 {
-    // register the post render callback where also the CEGUI initialization happens
+    // append the gui node into scenegraph
     osgSDL::Viewer* p_viewer = Application::get()->getViewer();
-    _guiPostDrawCallback = new GuiPostDrawCallback;
-    p_viewer->addPostDrawCallback( _guiPostDrawCallback.get() );
+    osg::ref_ptr< osg::Geode > p_geode = new osg::Geode;
+    osg::ref_ptr< CEGUIDrawable > p_drawble = new CEGUIDrawable();
+    p_geode->addDrawable( p_drawble.get() );
+
+    Application::get()->getSceneRootNode()->addChild( p_geode.get() );
 
     // register a viewer realize callback, here we initialize CEGUI's renderer (using doInitialize)
     _guiViewerInitCallback = new GuiViewerInitCallback;
@@ -185,6 +220,7 @@ void GuiManager::doInitialize()
 
     // create a renderer
     _p_renderer = new GuiRenderer( 0, int( _windowWidth ), int( _windowHeight ) );
+
     // create the gui
     GuiResourceProvider* p_resourceLoader = new GuiResourceProvider;
     new CEGUI::System( _p_renderer, p_resourceLoader );
@@ -283,7 +319,7 @@ void GuiManager::changeDisplayResolution( float width, float height )
     _p_renderer->changeDisplayResolution( _windowWidth, _windowHeight );
 
     CEGUI::FontManager::getSingleton().notifyScreenResolution( CEGUI::Size( _windowWidth, _windowHeight ) );
-	CEGUI::ImagesetManager::getSingleton().notifyScreenResolution( CEGUI::Size( _windowWidth, _windowHeight ) );
+    CEGUI::ImagesetManager::getSingleton().notifyScreenResolution( CEGUI::Size( _windowWidth, _windowHeight ) );
     CEGUI::Rect rect( 0, 0, _windowWidth, _windowHeight );
     CEGUI::MouseCursor::getSingleton().setConstraintArea( &rect );
 }

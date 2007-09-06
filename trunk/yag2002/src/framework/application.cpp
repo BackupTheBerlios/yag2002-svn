@@ -155,6 +155,9 @@ void Application::shutdown()
     // delete viewer
     delete _p_viewer;
 
+    // delete the top scene node
+    _rootSceneNode = NULL;
+
     SDL_Quit();
 
     destroy();
@@ -387,6 +390,9 @@ bool Application::initialize( int argc, char **argv )
         if ( !sceneroot.valid() )
             return false;
 
+        // append the level node to scene root node
+        _rootSceneNode->addChild( sceneroot.get() );
+
         // start networking before setting up entities
         std::string servername;
         Configuration::get()->getSettingValue( YAF3D_GS_SERVER_NAME, servername );
@@ -438,6 +444,10 @@ bool Application::initialize( int argc, char **argv )
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( levelname );
         if ( !sceneroot.valid() )
             return false;
+
+        // append the level node to scene root node
+        _rootSceneNode->addChild( sceneroot.get() );
+
         // complete level loading
         LevelManager::get()->finalizeLoading();
 
@@ -456,6 +466,10 @@ bool Application::initialize( int argc, char **argv )
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( defaultlevel );
         if ( !sceneroot.valid() )
             return false;
+
+        // append the level node to scene root node
+        _rootSceneNode->addChild( sceneroot.get() );
+
         // complete level loading
         LevelManager::get()->finalizeLoading();
 

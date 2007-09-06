@@ -36,7 +36,7 @@
 #include <list>
 #include <set>
 
-#define OGLRENDERER_VBUFF_CAPACITY  4096
+#define OGLRENDERER_VBUFF_CAPACITY  256
 
 namespace yaf3d
 {
@@ -143,6 +143,12 @@ class GuiRenderer : public CEGUI::Renderer
 
         };
 
+        //! OSG node for rendering the gui
+        osg::ref_ptr< osg::Geode >              _guiNode;
+
+        //! Setup the gui node
+        osg::ref_ptr< osg::Geode >              createGuiNode();
+
         // setup states etc
         void                                    initPerFrameStates(void);
 
@@ -174,7 +180,7 @@ class GuiRenderer : public CEGUI::Renderer
 
         CEGUI::Rect                             _display_area;
 
-        MyQuad                                  _buff[ OGLRENDERER_VBUFF_CAPACITY ];
+        MyQuad                                  _p_buff[ OGLRENDERER_VBUFF_CAPACITY ];
 
         bool                                    _queueing;          //!< setting for queuing control.
 
