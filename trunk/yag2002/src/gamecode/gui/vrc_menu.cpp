@@ -39,6 +39,8 @@
 #include "../visuals/vrc_skybox.h"
 #include "../visuals/vrc_fog.h"
 
+#include <osgDB/WriteFile>
+
 // used for starting server process
 static YAF3D_SPAWN_PROC_ID _serverProcHandle = static_cast< YAF3D_SPAWN_PROC_ID >( 0 );
 
@@ -150,7 +152,7 @@ _menuCameraPathFile( MENU_CAMERAPATH ),
 _menuIdleTimeout( 15.0f ),
 _cameraBackgroundColor( osg::Vec3f( 0.0f, 0.0f, 0.0f ) ),
 _cameraFov( 45.0f ),
-_cameraNearClip( 0.5f ),  
+_cameraNearClip( 0.5f ),
 _cameraFarClip( 3000.0f ),
 _menuState( None ),
 _menuSoundState( SoundStopped ),
@@ -276,7 +278,8 @@ void EnMenu::initialize()
     }
 
     // create a scene with camera path animation and world geometry
-    createMenuScene();
+    if ( !createMenuScene() )
+        return;
 
     // load the menu layout
     try
@@ -395,7 +398,7 @@ void EnMenu::initialize()
     yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
-void EnMenu::createMenuScene()
+bool EnMenu::createMenuScene()
 {
     // load the menu scene and camera path
     osg::Node* p_animnode  = yaf3d::LevelManager::get()->loadMesh( _menuCameraPathFile );
@@ -407,7 +410,7 @@ void EnMenu::createMenuScene()
     else
     {
         log_error << "*** EnMenu: cannot setup scene as camera animation is missing" << std::endl;
-        return;
+        return false;
     }
     // add the animation node to root scene
     yaf3d::Application::get()->getSceneRootNode()->addChild( _menuAnimationPath.get() );
@@ -432,6 +435,8 @@ void EnMenu::createMenuScene()
     p_camEntity->setCameraOffsetRotation( rotoffset );    
     p_camEntity->initialize();
     p_camEntity->postInitialize();
+
+    return true;
 }
 
 EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume, bool loop ) const
@@ -467,14 +472,14 @@ EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume, b
 bool EnMenu::onButtonHover( const CEGUI::EventArgs& arg )
 {
     // play mouse over sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_HOVER );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_HOVER );
     return true;
 }
 
 bool EnMenu::onClickedGameSettings( const CEGUI::EventArgs& arg )
 {
     // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
     _settingsDialog->show( true );
     _p_menuWindow->disable();
@@ -485,7 +490,7 @@ bool EnMenu::onClickedGameSettings( const CEGUI::EventArgs& arg )
 bool EnMenu::onClickedQuit( const CEGUI::EventArgs& arg )
 {
     // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
     yaf3d::Application::get()->stop();
 
@@ -495,7 +500,7 @@ bool EnMenu::onClickedQuit( const CEGUI::EventArgs& arg )
 bool EnMenu::onClickedReturnToLevel( const CEGUI::EventArgs& arg )
 {
     // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
     leave();
 
@@ -505,7 +510,7 @@ bool EnMenu::onClickedReturnToLevel( const CEGUI::EventArgs& arg )
 bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
 {
     // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
     // ask user before leaving
     {
@@ -523,7 +528,7 @@ bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
                 void                    onClicked( unsigned int btnId )
                                         {
                                             // did the user clicked yes? if so then store settings
-                                            if ( btnId == yaf3d::MessageBoxDialog::BTN_YES )                                                    
+                                            if ( btnId == yaf3d::MessageBoxDialog::BTN_YES )
                                                 _p_menu->leaveLevel();
 
                                             _p_menu->_p_menuWindow->enable();
@@ -531,7 +536,7 @@ bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
 
                 EnMenu*                 _p_menu;
         };
-        p_msg->setClickCallback( new MsgYesNoClick( this ) );    
+        p_msg->setClickCallback( new MsgYesNoClick( this ) );
         p_msg->show();
         _p_menuWindow->disable();
     }
@@ -632,7 +637,7 @@ bool EnMenu::onClickedServer( const CEGUI::EventArgs& arg )
 bool EnMenu::onClickedWT( const CEGUI::EventArgs& arg )
 {
     // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
     yaf3d::GameState::get()->setMode( yaf3d::GameState::Standalone );
     _p_menuWindow->disable();
@@ -666,7 +671,7 @@ void EnMenu::updateEntity( float deltaTime )
         break;
 
         case Intro:
-        {            
+        {
             _intro->update( deltaTime );
         }
         break;
@@ -676,7 +681,7 @@ void EnMenu::updateEntity( float deltaTime )
         case BeginLoadingLevel:
         {
             _p_loadingWindow->show();
-            // show up the loading window           
+            // show up the loading window
             gameutils::GuiUtils::get()->showMousePointer( false ); // let the mouse disappear 
             _menuState = PrepareLoadingLevel;
         }
@@ -729,7 +734,7 @@ void EnMenu::updateEntity( float deltaTime )
                     yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", e.what(), yaf3d::MessageBoxDialog::OK, true );
                     p_msg->show();
 
-                    _menuState = UnloadLevel;
+                    _menuState = PrepareUnloadLevel;
 
                     // play attention sound
                     vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_ATTENTION );
@@ -747,14 +752,23 @@ void EnMenu::updateEntity( float deltaTime )
         }
         break;
 
+        // unloading a level must be delayed one step due to freeing up graphics objects
+        case PrepareUnloadLevel:
+        {
+            _menuState = UnloadLevel;
+            yaf3d::LevelManager::get()->unloadLevel();
+        }
+        break;
+
         case UnloadLevel:
         {
-            yaf3d::LevelManager::get()->unloadLevel();
             // release the level scene node
-            _levelScene.release();
-            _levelLoaded = false;
+            if ( _levelScene.valid() )
+                _levelScene = NULL;
+
             switchMenuScene( true );
-            _menuState   = Visible;
+
+            _menuState = Visible;
         }
         break;
 
@@ -768,7 +782,7 @@ void EnMenu::updateEntity( float deltaTime )
 
             if ( _menuAnimationPath.get() )
             {
-                // play the camera animation during the user is in menu            
+                // play the camera animation during the user is in menu
                 vrc::gameutils::TransformationVisitor tv( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ); // see vrc_utils.h in framework
                 _menuAnimationPath->accept( tv );
                 const osg::Matrixf&  mat = tv.getMatrix();
@@ -1077,10 +1091,12 @@ void EnMenu::leaveLevel()
     if ( !_levelLoaded )
         return;
 
+    _levelLoaded = false;
+
     // set the proper game state
     yaf3d::GameState::get()->setState( yaf3d::GameState::Leaving );
 
-    _menuState = UnloadLevel;
+    _menuState = PrepareUnloadLevel;
 
     _p_btnStartJoin->show();
     _p_btnStartWT->show();

@@ -179,7 +179,7 @@ class EnMenu :  public yaf3d::BaseEntity
         EnAmbientSound*                             setupSound( const std::string& filename, float volume, bool loop ) const;
 
         //! Create a scene for menu
-        void                                        createMenuScene();
+        bool                                        createMenuScene();
 
         //! Switch the menu and game scenes
         void                                        switchMenuScene( bool tomenu );
@@ -193,6 +193,7 @@ class EnMenu :  public yaf3d::BaseEntity
             BeginLoadingLevel,
             PrepareLoadingLevel,
             LoadingLevel,
+            PrepareUnloadLevel,
             UnloadLevel,
             Visible,
             Hidden
