@@ -64,7 +64,6 @@ class EnTerrainSection :  public yaf3d::BaseEntity
         //! Setup the terrain
         osg::ref_ptr< osg::Group >                  setup();
 
-
         // Entity parameters
         //------------------
 

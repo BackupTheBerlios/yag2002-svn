@@ -164,7 +164,8 @@ void EnCamera::setupCamera()
 
 void EnCamera::setEnable( bool enable )
 {
-    _p_cameraHandler->setEnable( enable );
+    if ( _p_cameraHandler )
+        _p_cameraHandler->setEnable( enable );
 }
 
 void EnCamera::updateCameraView( bool forceupdate )

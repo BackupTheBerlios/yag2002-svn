@@ -55,6 +55,8 @@ _enable( true )
 
 EnSkyBox::~EnSkyBox()
 {
+    if ( _p_skyGrp.get() )
+        _p_skyGrp = NULL;
 }
 
 void EnSkyBox::handleNotification( const yaf3d::EntityNotification& notification )

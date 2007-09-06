@@ -117,7 +117,13 @@ void EnTerrainSection::handleNotification( const yaf3d::EntityNotification& noti
 
             if ( _enable )
             {
-                removeFromTransformationNode( _p_terrainGrp.get() );
+                if ( _p_terrainGrp.valid() )
+                    removeFromTransformationNode( _p_terrainGrp.get() );
+
+                //// remove the transformation node from its parents
+                //unsigned int parents = getTransformationNode()->getNumParents();
+                //for ( unsigned int cnt = 0; cnt < parents; ++cnt )
+                //    getTransformationNode()->getParent( 0 )->removeChild( getTransformationNode() );
             }
             break;
 
@@ -125,7 +131,10 @@ void EnTerrainSection::handleNotification( const yaf3d::EntityNotification& noti
 
             if ( _enable )
             {
-                addToTransformationNode( _p_terrainGrp.get() );
+//                yaf3d::Application::get()->getSceneRootNode()->addChild( getTransformationNode() );
+                if ( _p_terrainGrp.valid() )
+                   addToTransformationNode( _p_terrainGrp.get() );
+
             }
             break;
 
@@ -165,8 +174,8 @@ void EnTerrainSection::handleNotification( const yaf3d::EntityNotification& noti
 
 void EnTerrainSection::initialize()
 {
-    // register entity in order to get notifications   
-    yaf3d::EntityManager::get()->registerNotification( this, true );   
+    // register entity in order to get notifications
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 
     // setup the terrain
     _p_terrainGrp = setup();
