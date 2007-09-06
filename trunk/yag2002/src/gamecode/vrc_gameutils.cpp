@@ -152,6 +152,13 @@ void VRCStateHandler::onStateChange( unsigned int state )
         }
         break;
 
+        case yaf3d::GameState::Quitting :
+        {
+            // deregister this instance for getting game state changes
+            yaf3d::GameState::get()->registerCallbackStateChange( this, false );
+        }
+        break;
+
         case yaf3d::GameState::Shutdown :
         {
             ShadowManager::get()->shutdown();
@@ -199,6 +206,8 @@ void GuiUtils::onStateChange( unsigned int state )
         {
             // deregister for getting application window state changes
             yaf3d::GameState::get()->registerCallbackAppWindowStateChange( this, false );
+            // deregister this instance for getting game state changes, needed for shutdown
+            yaf3d::GameState::get()->registerCallbackStateChange( this, false );
 
             // release sounds
             try
