@@ -175,7 +175,7 @@ void EnPlayerAnimation::handleNotification( const yaf3d::EntityNotification& not
         {
             // if shadow has been enabled then remove the player shader from state set
             bool shadow;
-            yaf3d::Configuration::get()->getSettingValue( VRC_GS_SHADOW_ENABLE, shadow );
+            yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
             osg::StateSet* p_stateSet = _animNode->getStateSet();
             if ( shadow )
             {

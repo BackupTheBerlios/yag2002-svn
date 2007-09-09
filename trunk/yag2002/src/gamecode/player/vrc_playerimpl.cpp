@@ -33,7 +33,6 @@
  ################################################################*/
 
 #include <vrc_main.h>
-#include <vrc_shadowmanager.h>
 #include "vrc_playerimpl.h"
 #include "vrc_playerphysics.h"
 #include "vrc_playeranim.h"
@@ -83,11 +82,11 @@ void BasePlayerImplementation::addToSceneGraph()
     removeFromSceneGraph();
 
     bool shadow;
-    yaf3d::Configuration::get()->getSettingValue( VRC_GS_SHADOW_ENABLE, shadow );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
     if ( shadow )
     {
         // add it to shadow manager
-        vrc::ShadowManager::get()->addShadowNode( getPlayerEntity()->getTransformationNode() );
+        yaf3d::ShadowManager::get()->addShadowNode( getPlayerEntity()->getTransformationNode() );
     }
     else
     {

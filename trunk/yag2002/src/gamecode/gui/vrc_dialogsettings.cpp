@@ -380,7 +380,7 @@ void DialogGameSettings::setupControls()
 
         // dynamic shadows need glsl
         bool shadow;
-        yaf3d::Configuration::get()->getSettingValue( VRC_GS_SHADOW_ENABLE, shadow );
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
         if ( yaf3d::isGlslAvailable() )
         {
             if ( shadow )
@@ -536,7 +536,7 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& /*arg*/ )
         bool fullscreen = _p_enableFullscreen->isSelected();
         yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_FULLSCREEN, fullscreen );
         bool shadow = _p_enableDynShadow->isSelected();
-        yaf3d::Configuration::get()->setSettingValue( VRC_GS_SHADOW_ENABLE, shadow );
+        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
 
         unsigned int width, height, colorbits;
         // get the resolution out of the combobox string

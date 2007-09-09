@@ -30,7 +30,6 @@
 
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
-#include <vrc_shadowmanager.h>
 #include "vrc_player.h"
 #include "chat/vrc_chatmgr.h"
 #include "vrc_playersound.h"
