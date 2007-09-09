@@ -68,16 +68,9 @@ namespace gameutils
 #define VRC_GS_VOICE_INPUT_GAIN             "voiceInputGain"
 #define VRC_GS_VOICE_OUTPUT_GAIN            "voiceOutputGain"
 #define VRC_GS_VOICECHAT_CHANNEL            "voiceChatChannel"
-#define VRC_GS_SHADOW_ENABLE                "shadowEnable"
-#define VRC_GS_SHADOW_TEXSIZEX              "shadowTexSizeX"
-#define VRC_GS_SHADOW_TEXSIZEY              "shadowTexSizeY"
-#define VRC_GS_SHADOW_TEXCHANNEL            "shadowTexChannel"
 
 //! Settings default values
 #define VRC_GS_DEFAULT_PLAYER_CONFIG        "default_cfg"
-#define VRC_GS_DEFAULT_SHADOW_TEXSIZEX      1024
-#define VRC_GS_DEFAULT_SHADOW_TEXSIZEY      1024
-#define VRC_GS_DEFAULT_SHADOW_TEXCHANNEL    1
 
 #define VRC_GS_DEFAULT_VOICE_CHANNEL        31200
 #define VRC_GS_DEFAULT_SOUND_VOLUME         1.0f
@@ -160,14 +153,6 @@ class VRCStateHandler : public yaf3d::GameState::CallbackStateChange
         float                                       _voiceOutputGain;
 
         unsigned int                                _voiceChatChannel;
-
-        bool                                        _shadowEnable;
-
-        unsigned int                                _shadowTexSizeX;
-
-        unsigned int                                _shadowTexSizeY;
-
-        unsigned int                                _shadowTexChannel;
 };
 
 //! Single instance providing player-related utility services

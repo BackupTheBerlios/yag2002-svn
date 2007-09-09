@@ -30,7 +30,6 @@
 
 #include <vrc_main.h>
 #include "vrc_gameutils.h"
-#include "vrc_shadowmanager.h"
 
 
 YAF3D_SINGLETON_IMPL( vrc::gameutils::PlayerUtils )
@@ -75,11 +74,7 @@ _voiceChatEnable( true ),
 _voiceChatInputDev( 0 ),
 _voiceInputGain( VRC_GS_DEFAULT_SOUND_VOLUME ),
 _voiceOutputGain( VRC_GS_DEFAULT_SOUND_VOLUME ),
-_voiceChatChannel( VRC_GS_DEFAULT_VOICE_CHANNEL ),
-_shadowEnable( true ),
-_shadowTexSizeX( VRC_GS_DEFAULT_SHADOW_TEXSIZEX ),
-_shadowTexSizeY( VRC_GS_DEFAULT_SHADOW_TEXSIZEY ),
-_shadowTexChannel( VRC_GS_DEFAULT_SHADOW_TEXCHANNEL )
+_voiceChatChannel( VRC_GS_DEFAULT_VOICE_CHANNEL )
 {
     // register this instance for getting game state changes
     yaf3d::GameState::get()->registerCallbackStateChange( this );
@@ -118,10 +113,6 @@ void VRCStateHandler::onStateChange( unsigned int state )
             yaf3d::Configuration::get()->addSetting( VRC_GS_VOICE_INPUT_GAIN,       _voiceInputGain    );
             yaf3d::Configuration::get()->addSetting( VRC_GS_VOICE_OUTPUT_GAIN,      _voiceOutputGain   );
             yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_CHANNEL,      _voiceChatChannel  );
-            yaf3d::Configuration::get()->addSetting( VRC_GS_SHADOW_ENABLE,          _shadowEnable      );
-            yaf3d::Configuration::get()->addSetting( VRC_GS_SHADOW_TEXSIZEX,        _shadowTexSizeX    );
-            yaf3d::Configuration::get()->addSetting( VRC_GS_SHADOW_TEXSIZEY,        _shadowTexSizeY    );
-            yaf3d::Configuration::get()->addSetting( VRC_GS_SHADOW_TEXCHANNEL,      _shadowTexChannel  );
 
             // now load the setting values from config file
             yaf3d::Configuration::get()->load();
@@ -132,23 +123,6 @@ void VRCStateHandler::onStateChange( unsigned int state )
         {
             // set app window title
             yaf3d::Application::get()->setWindowTitle( "VRC " VRC_VERSION );
-
-            // check glsl availability for dynamic shadow
-            {
-                // if glsl is not available then disable dynamic shadow flag in configuration
-                if ( _shadowEnable && !yaf3d::isGlslAvailable() )
-                {
-                    log_info << "Dynamic shadows disabled as GLSL is not available!" << std::endl;
-                    bool shadow = false;
-                    yaf3d::Configuration::get()->setSettingValue( VRC_GS_SHADOW_ENABLE, shadow );
-                    yaf3d::Configuration::get()->store();
-
-                    _shadowEnable = false;
-                }
-            }
-
-            if ( _shadowEnable )
-                ShadowManager::get()->setup( _shadowTexSizeX, _shadowTexSizeY, _shadowTexChannel );
         }
         break;
 
@@ -161,7 +135,6 @@ void VRCStateHandler::onStateChange( unsigned int state )
 
         case yaf3d::GameState::Shutdown :
         {
-            ShadowManager::get()->shutdown();
         }
         break;
 
