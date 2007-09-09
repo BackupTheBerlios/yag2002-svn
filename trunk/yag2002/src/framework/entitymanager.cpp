@@ -355,6 +355,21 @@ void EntityManager::addToScene( BaseEntity* p_entity, osg::Group *p_scenegr )
     p_grp->addChild( p_entity->_p_transformNode.get() );
 }
 
+
+void EntityManager::removeFromScene( BaseEntity* p_entity )
+{
+    assert( p_entity && p_entity->_p_transformNode.valid() && "removing from the scene requires a transformation node in entity!" );
+    unsigned int parents = p_entity->_p_transformNode->getNumParents();
+    if ( parents > 0 )
+    {
+        for ( unsigned int p = 0; p < parents; ++p )
+        {
+            // every removal of child also removes the parent form parent list! so remove always form index 0.
+            p_entity->_p_transformNode->getParent( 0 )->removeChild( p_entity->_p_transformNode.get() );
+        }
+    }
+}
+
 void EntityManager::addToEntityPool( BaseEntity* p_entity )
 {
     // if entities cause this call ( e.g. by entity cloning or creation ) during setup phase then delay the actual

@@ -89,6 +89,11 @@ class EntityManager : public Singleton< EntityManager >
         */
         void                                        addToScene( BaseEntity* p_entity, osg::Group *p_scenegrp = NULL );
 
+        //! Remove the given entity from the scene.
+        /* \param p_entity                          Entity to remove from the scene
+        */
+        void                                        removeFromScene( BaseEntity* p_entity );
+
         //! Create a new entity given its type and optional instance name.
         /*! If addToPool is true then the entity will be added to entity pool. Set this to false if you are
         *   going to use the entity in a private fashion, so the entity will not be searchable and the destruction will not be managed by EntityManager.
