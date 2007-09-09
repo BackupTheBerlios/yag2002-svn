@@ -33,6 +33,7 @@
 #include "entitymanager.h"
 #include "configuration.h"
 #include "terrainmanager.h"
+#include "shadowmanager.h"
 #include "levelmanager.h"
 #include "soundmanager.h"
 #include "guimanager.h"
@@ -150,6 +151,7 @@ void Application::shutdown()
 
     TerrainManager::get()->shutdown();
     SettingsManager::get()->shutdown();
+    ShadowManager::get()->shutdown();
     KeyMap::get()->shutdown();
 
     // delete viewer
@@ -169,6 +171,19 @@ bool Application::initialize( int argc, char **argv )
 #ifdef YAF3D_ENABLE_HEAPCHECK
     // trigger debugger
     //__asm int 3;
+#endif
+
+    //! NOTE: on multi-core systems running win32, sometimes a noticable performance drop has been observed
+    //        when the application uses more than one cpu for its threads. here we assign only one cpu to the entire app.
+#ifdef WIN32
+    SYSTEM_INFO sysInfo;
+    GetSystemInfo( &sysInfo );
+    if ( sysInfo.dwNumberOfProcessors > 1 )
+    {
+        // take the first cpu for our application
+        DWORD_PTR  processAffinityMask = 0x1;
+        BOOL       res = SetProcessAffinityMask( GetCurrentProcess(), processAffinityMask );
+    }
 #endif
 
     std::string arg_levelname;
@@ -378,6 +393,7 @@ bool Application::initialize( int argc, char **argv )
 
     // get the instance of gui manager
     _p_guiManager = GuiManager::get();
+
     // setup networking
     _p_networkDevice = NetworkDevice::get();
     // avoid creating of remote clients so long we are initializing the system
@@ -479,6 +495,29 @@ bool Application::initialize( int argc, char **argv )
         {
             EntityNotification notification( YAF3D_NOTIFY_MENU_LEAVE );
             EntityManager::get()->sendNotification( notification );
+        }
+    }
+
+    // setup the shadow mananger now
+    if ( GameState::get()->getMode() != GameState::Server )
+    {
+        bool shadow = true;
+        // if glsl is not available then disable dynamic shadow flag in configuration
+        if ( !yaf3d::isGlslAvailable() )
+        {
+            log_info << "Dynamic shadows disabled as GLSL is not available!" << std::endl;
+            shadow = false;
+            yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
+            yaf3d::Configuration::get()->store();
+        }
+
+        if ( shadow )
+        {
+            unsigned int shadowTexSizeX = 0, shadowTexSizeY = 0, shadowTexChannel = 0;
+            yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_TEXSIZEX, shadowTexSizeX );
+            yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_TEXSIZEY, shadowTexSizeY );
+            yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_TEXCHANNEL, shadowTexChannel );
+            ShadowManager::get()->setup( shadowTexSizeX, shadowTexSizeY, shadowTexChannel );
         }
     }
 
