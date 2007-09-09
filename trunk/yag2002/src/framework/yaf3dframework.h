@@ -36,6 +36,7 @@
 #include <attributemanager.h>
 #include <configuration.h>
 #include <entitymanager.h>
+#include <shadowmanager.h>
 #include <levelmanager.h>
 #include <soundmanager.h>
 #include <application.h>
