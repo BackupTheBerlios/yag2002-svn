@@ -30,7 +30,6 @@
 
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
-#include <vrc_shadowmanager.h>
 #include "vrc_basecmd.h"
 #include "vrc_cmdshadowdisplaymap.h"
 
@@ -62,7 +61,7 @@ const std::string& CmdDisplayShadowMap::execute( const std::vector< std::string 
     }
 
     bool shadow;
-    yaf3d::Configuration::get()->getSettingValue( VRC_GS_SHADOW_ENABLE, shadow );
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
     if ( !shadow )
     {
         _cmdResult += "dynamic shadows are not enabled! this command has not effect.";
@@ -70,9 +69,9 @@ const std::string& CmdDisplayShadowMap::execute( const std::vector< std::string 
     }
 
     if ( arguments[ 0 ] == "true" )
-        ShadowManager::get()->displayShadowMap( true );
+        yaf3d::ShadowManager::get()->displayShadowMap( true );
     else
-        ShadowManager::get()->displayShadowMap( false );
+        yaf3d::ShadowManager::get()->displayShadowMap( false );
 
     return _cmdResult;
 }
