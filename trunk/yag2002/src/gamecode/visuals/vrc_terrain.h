@@ -53,6 +53,9 @@ class EnTerrainSection :  public yaf3d::BaseEntity
         //! Initializing function, this is called after all engine modules are initialized and a map is loaded.
         void                                        initialize();
 
+        //! If this entity is used in menu system then we want it to be persistent
+        const bool                                  isPersistent() const { return _usedInMenu; }
+
         //! Enable / disable terrain rendering
         void                                        enable( bool en );
 
@@ -64,8 +67,23 @@ class EnTerrainSection :  public yaf3d::BaseEntity
         //! Setup the terrain
         osg::ref_ptr< osg::Group >                  setup();
 
+        //! Add transformation node to scenegraph
+        void                                        addToSceneGraph();
+
+        //! Remove transformation node from scenegraph
+        void                                        removeFromSceneGraph();
+
         // Entity parameters
         //------------------
+
+        //! Enable/disable the terrain section
+        bool                                        _enable;
+
+        //! Used in menu scene?
+        bool                                        _usedInMenu;
+
+        //! Is dynamic shadow enabled?
+        bool                                        _shadowEnable;
 
         //! Section ID
         unsigned int                                _sectionID;
@@ -154,9 +172,6 @@ class EnTerrainSection :  public yaf3d::BaseEntity
         //! LOD 2 mamimal range ( distance to camera )
         float                                       _lod2RangeMax;
 
-        //! Enable/disable the terrain section
-        bool                                        _enable;
-        
         //------------------
         
         osg::ref_ptr< osg::Group >                  _p_terrainGrp;

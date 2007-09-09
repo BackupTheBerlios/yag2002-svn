@@ -40,6 +40,9 @@ YAF3D_IMPL_ENTITYFACTORY( TerrainEntityFactory )
 
 
 EnTerrainSection::EnTerrainSection() :
+ _enable( true ),
+ _usedInMenu( false ),
+ _shadowEnable( true ),
  _sectionID( 0 ),
  _scale( osg::Vec3f( 1.0f, 1.0f, 1.0f ) ),
  _tilesX( 16 ),
@@ -56,11 +59,12 @@ EnTerrainSection::EnTerrainSection() :
  _lod2ResolutionX( 1 ),
  _lod2ResolutionY( 1 ),
  _lod2RangeMin( 380.0f ),
- _lod2RangeMax( 100000.0f ),
- _enable( true )
+ _lod2RangeMax( 100000.0f )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "enable"           , _enable           );
+    getAttributeManager().addAttribute( "usedInMenu"       , _usedInMenu       );
+    getAttributeManager().addAttribute( "shadowEnable"     , _shadowEnable     );
     getAttributeManager().addAttribute( "position"         , _position         );
     getAttributeManager().addAttribute( "rotation"         , _rotation         );
     getAttributeManager().addAttribute( "scale"            , _scale            );
@@ -95,6 +99,12 @@ EnTerrainSection::EnTerrainSection() :
 
 EnTerrainSection::~EnTerrainSection()
 {
+    // remove shadow from shadow manager
+    if ( ( _shadowEnable ) && getTransformationNode() )
+    {
+        yaf3d::ShadowManager::get()->removeShadowNode( getTransformationNode() );
+    }
+
     try
     {
         // note: 0 is an invalid terrain section ID
@@ -114,58 +124,71 @@ void EnTerrainSection::handleNotification( const yaf3d::EntityNotification& noti
     switch( notification.getId() )
     {
         case YAF3D_NOTIFY_MENU_ENTER:
-
+        {
             if ( _enable )
             {
-                if ( _p_terrainGrp.valid() )
-                    removeFromTransformationNode( _p_terrainGrp.get() );
-
-                //// remove the transformation node from its parents
-                //unsigned int parents = getTransformationNode()->getNumParents();
-                //for ( unsigned int cnt = 0; cnt < parents; ++cnt )
-                //    getTransformationNode()->getParent( 0 )->removeChild( getTransformationNode() );
+                if ( _usedInMenu )
+                {
+                    addToSceneGraph();
+                }
+                else
+                {
+                    removeFromSceneGraph();
+                }
             }
-            break;
+        }
+        break;
 
         case YAF3D_NOTIFY_MENU_LEAVE:
-
+        {
             if ( _enable )
             {
-//                yaf3d::Application::get()->getSceneRootNode()->addChild( getTransformationNode() );
-                if ( _p_terrainGrp.valid() )
-                   addToTransformationNode( _p_terrainGrp.get() );
-
+                if ( _usedInMenu )
+                {
+                    removeFromSceneGraph();
+                }
+                else
+                {
+                    addToSceneGraph();
+                }
             }
-            break;
+        }
+        break;
 
-        // re-build the terrain whenever an attribute changed
+        //! Note: by default the level manager re-adds persistent entity transformation nodes to its entity group while unloading a level.
+        //        thus we have to remove shadow nodes from that entity group on unloading a level; addToSceneGraph() does this job.
+        case YAF3D_NOTIFY_ENTITY_TRANSNODE_CHANGED:
+        {
+            if ( _usedInMenu )
+            {
+                removeFromSceneGraph();
+                addToSceneGraph();
+            }
+        }
+        break;
+
         case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
-
-            if ( _sectionID )
-                yaf3d::TerrainManager::get()->releaseSection( _sectionID );
-
-            // reset the section id
-            _sectionID = 0;
-
+        {
+            // re-setup mesh
             if ( _p_terrainGrp.valid() )
                 removeFromTransformationNode( _p_terrainGrp.get() );
 
-            _p_terrainGrp = NULL;
+            _p_terrainGrp = setup();
 
-            if ( _enable )
-            {
-                _p_terrainGrp = setup();
+            if ( _p_terrainGrp.valid() && _enable )
                 addToTransformationNode( _p_terrainGrp.get() );
-            }
+        }
+        break;
 
-            break;
-
-        // remove the node on shutdown. in normal case the removal happens when entering the menu, however
-        //  the entity can also be in the menu itself.
+        // if used in menu then this entity is persisten, so we have to trigger its deletion on shutdown
         case YAF3D_NOTIFY_SHUTDOWN:
-
+        {
             removeFromTransformationNode( _p_terrainGrp.get() );
-            break;
+
+            if ( _usedInMenu )
+                yaf3d::EntityManager::get()->deleteEntity( this );
+        }
+        break;
 
         default:
             ;
@@ -174,11 +197,17 @@ void EnTerrainSection::handleNotification( const yaf3d::EntityNotification& noti
 
 void EnTerrainSection::initialize()
 {
-    // register entity in order to get notifications
-    yaf3d::EntityManager::get()->registerNotification( this, true );
-
     // setup the terrain
     _p_terrainGrp = setup();
+
+    if ( _p_terrainGrp.valid() )
+        addToTransformationNode( _p_terrainGrp.get() );
+
+    // the node is added and removed by notification callback!
+    removeFromSceneGraph();
+
+    // register entity in order to get notifications
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 osg::ref_ptr< osg::Group > EnTerrainSection::setup()
@@ -257,6 +286,35 @@ void EnTerrainSection::enable( bool en )
         addToTransformationNode( _p_terrainGrp.get() );
     else
         removeFromTransformationNode( _p_terrainGrp.get() );
+}
+
+void EnTerrainSection::removeFromSceneGraph()
+{
+    if ( !_p_terrainGrp.valid() )
+        return;
+
+    yaf3d::EntityManager::get()->removeFromScene( this );
+}
+
+void EnTerrainSection::addToSceneGraph()
+{
+    if ( !_p_terrainGrp.valid() )
+        return;
+
+    // get the shadow flag in configuration
+    bool shadow;
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
+
+    // enable shadow only if it is enabled in configuration
+    if ( shadow && _shadowEnable )
+    {
+        yaf3d::ShadowManager::get()->addShadowNode( getTransformationNode() );
+        yaf3d::ShadowManager::get()->updateShadowArea();
+    }
+    else
+    {
+        yaf3d::EntityManager::get()->addToScene( this );
+    }
 }
 
 } // namespace vrc

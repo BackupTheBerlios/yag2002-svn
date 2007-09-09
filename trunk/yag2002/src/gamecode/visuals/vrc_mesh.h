@@ -63,11 +63,11 @@ class EnMesh :  public yaf3d::BaseEntity
         //! Setup a node using LOD
         osg::Node*                                  setupLODObject( osg::Node* p_node );
 
-        //! Add transformation node to scenegraph
-        void                                        addToSceneGraph();
-
         //! Setup the mesh
         osg::Node*                                  setupMesh();
+
+        //! Add transformation node to scenegraph
+        void                                        addToSceneGraph();
 
         //! Remove transformation node from scenegraph
         void                                        removeFromSceneGraph();

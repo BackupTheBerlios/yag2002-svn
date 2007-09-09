@@ -30,7 +30,6 @@
 
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
-#include <vrc_shadowmanager.h>
 #include "vrc_mesh.h"
 
 //GLOD is currently disabled as we have no actual use for it
@@ -54,12 +53,12 @@ _useLOD( false ),
 _lodErrorThreshold( 0.05f )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "usedInMenu"            , _usedInMenu        );
-    getAttributeManager().addAttribute( "enable"                , _enable            );
-    getAttributeManager().addAttribute( "meshFile"              , _meshFile          );
-    getAttributeManager().addAttribute( "position"              , _position          );
-    getAttributeManager().addAttribute( "rotation"              , _rotation          );
-    getAttributeManager().addAttribute( "shadowEnable"          , _shadowEnable      );
+    getAttributeManager().addAttribute( "enable"       , _enable            );
+    getAttributeManager().addAttribute( "usedInMenu"   , _usedInMenu        );
+    getAttributeManager().addAttribute( "meshFile"     , _meshFile          );
+    getAttributeManager().addAttribute( "position"     , _position          );
+    getAttributeManager().addAttribute( "rotation"     , _rotation          );
+    getAttributeManager().addAttribute( "shadowEnable" , _shadowEnable      );
     //getAttributeManager().addAttribute( "useLOD"                , _useLOD            );
     //getAttributeManager().addAttribute( "lodErrorThreshold"     , _lodErrorThreshold );
 }
@@ -69,7 +68,7 @@ EnMesh::~EnMesh()
     // remove shadow from shadow manager
     if ( ( _shadowEnable ) && getTransformationNode() )
     {
-        vrc::ShadowManager::get()->removeShadowNode( getTransformationNode() );
+        yaf3d::ShadowManager::get()->removeShadowNode( getTransformationNode() );
     }
 }
 
@@ -115,17 +114,23 @@ void EnMesh::handleNotification( const yaf3d::EntityNotification& notification )
         case YAF3D_NOTIFY_ENTITY_TRANSNODE_CHANGED:
         {
             if ( _usedInMenu )
+            {
+                removeFromSceneGraph();
                 addToSceneGraph();
+            }
         }
         break;
 
         case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
         {
             // re-setup mesh
-            removeFromSceneGraph();
+            if ( _mesh.valid() )
+                removeFromTransformationNode( _mesh.get() );
+
             _mesh = setupMesh();
+
             if ( _mesh.valid() && _enable )
-                addToSceneGraph();
+                addToTransformationNode( _mesh.get() );
         }
         break;
 
@@ -151,6 +156,9 @@ void EnMesh::initialize()
     if ( _mesh.valid() )
         addToTransformationNode( _mesh.get() );
 
+    // the node is added and removed by notification callback!
+    removeFromSceneGraph();
+
     // register entity in order to get menu notifications
     yaf3d::EntityManager::get()->registerNotification( this, true );
 }
@@ -160,14 +168,7 @@ void EnMesh::removeFromSceneGraph()
     if ( !_mesh.valid() )
         return;
 
-    // remove the transformation node from its parents
-    unsigned int parents = getTransformationNode()->getNumParents();
-    for ( unsigned int cnt = 0; cnt < parents; ++cnt )        
-        getTransformationNode()->getParent( 0 )->removeChild( getTransformationNode() );
-        
-    // update the shadow area; we manually manipulate the shadow nodes in scenegraph, so let the 
-    //  shadow manager know about it! if shadow manager is not enabled the call has no effect.
-    vrc::ShadowManager::get()->updateShadowArea();
+    yaf3d::EntityManager::get()->removeFromScene( this );
 }
 
 void EnMesh::addToSceneGraph()
@@ -177,19 +178,16 @@ void EnMesh::addToSceneGraph()
 
     // get the shadow flag in configuration
     bool shadow;
-    yaf3d::Configuration::get()->getSettingValue( VRC_GS_SHADOW_ENABLE, shadow );
-
-    // first remove the transformation node from scenegraph
-    removeFromSceneGraph();
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
 
     // enable shadow only if it is enabled in configuration
     if ( shadow && _shadowEnable )
     {
-        vrc::ShadowManager::get()->addShadowNode( getTransformationNode() );
+        yaf3d::ShadowManager::get()->addShadowNode( getTransformationNode() );
+        yaf3d::ShadowManager::get()->updateShadowArea();
     }
     else
     {
-        // if no shadowing is desired then add our transformation node to entity group
         yaf3d::EntityManager::get()->addToScene( this );
     }
 }
