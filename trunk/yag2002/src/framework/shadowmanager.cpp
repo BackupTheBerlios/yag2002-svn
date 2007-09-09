@@ -28,8 +28,10 @@
  #
  ################################################################*/
 
-#include <vrc_main.h>
-#include "vrc_shadowmanager.h"
+#include <base.h>
+#include "shadowmanager.h"
+#include "log.h"
+#include "levelmanager.h"
 
 #include <osg/CullFace>
 #include <osg/TexEnvCombine>
@@ -39,9 +41,9 @@
 #include <osg/PolygonOffset>
 
 // Implementation of ShadowManager
-YAF3D_SINGLETON_IMPL( vrc::ShadowManager )
+YAF3D_SINGLETON_IMPL( yaf3d::ShadowManager )
 
-namespace vrc
+namespace yaf3d
 {
 
 // Update callback class for camera and tex generation
@@ -572,4 +574,4 @@ void ShadowManager::setShadowColorGainAndBias( float gain, float bias )
     _p_colorGainAndBiasParam->set( _shadowAmbientBias );
 }
 
-} // namespace vrc
+} // namespace yaf3d

@@ -31,20 +31,18 @@
 #ifndef _SHADOWMANAGER_H_
 #define _SHADOWMANAGER_H_
 
-#include <vrc_main.h>
+#include <base.h>
+#include <singleton.h>
+#include <application.h>
 
-namespace vrc
+namespace yaf3d
 {
 
-namespace gameutils 
-{
-    class VRCStateHandler;
-}
 class CameraCullCallback;
 class UpdateCameraAndTexGenCallback;
 
 //! Shadow manager handles shadowers and shadowed geometries and the light source
-class ShadowManager : public yaf3d::Singleton< vrc::ShadowManager >
+class ShadowManager : public yaf3d::Singleton< yaf3d::ShadowManager >
 {
     public:
 
@@ -139,8 +137,8 @@ class ShadowManager : public yaf3d::Singleton< vrc::ShadowManager >
 
         osg::ref_ptr< osg::Node >                   _debugDisplay;
 
-    friend class yaf3d::Singleton< vrc::ShadowManager >;
-    friend class gameutils::VRCStateHandler;
+    friend class yaf3d::Singleton< yaf3d::ShadowManager >;
+    friend class yaf3d::Application;
 };
 
 
@@ -167,6 +165,6 @@ inline void ShadowManager::getShadowColorGainAndBias( float& gain, float& bias )
     bias = _shadowAmbientBias._v[ 1 ];
 }
 
-} // namespace vrc
+} // namespace yaf3d
 
 #endif // _SHADOWMANAGER_H_
