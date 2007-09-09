@@ -500,6 +500,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\src\framework\shadowmanager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\shadowmanager.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\src\framework\singleton.h"
 				>
 			</File>
