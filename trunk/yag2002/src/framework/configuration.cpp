@@ -33,6 +33,7 @@
 #include "application.h"
 #include "settings.h"
 
+
 namespace yaf3d
 {
 
@@ -45,22 +46,30 @@ _screenWidth( 600 ),
 _screenHeight( 400 ),
 _colorBits( 24 ),
 _fullScreen( true ),
+_shadowEnable( true ),
+_shadowTexSizeX( 1024 ),
+_shadowTexSizeY( 1024 ),
+_shadowTexChannel( 1 ),
 _keyboardType( YAF3D_GS_KEYBOARD_ENGLISH ),
 _guiScheme( YAF3D_GS_GUI_DEFUALT_SCHEME ),
 _serverPort( YAF3D_GS_DEFAULT_SERVERPORT )
 {
     // register standard settings
-    _p_settings->registerSetting( YAF3D_GS_LOG_LEVEL,    _logLevel     );
-    _p_settings->registerSetting( YAF3D_GS_KEYBOARD,     _keyboardType );
-    _p_settings->registerSetting( YAF3D_GS_SCREENWIDTH,  _screenWidth  );
-    _p_settings->registerSetting( YAF3D_GS_SCREENHEIGHT, _screenHeight );
-    _p_settings->registerSetting( YAF3D_GS_COLORBITS,    _colorBits    );
-    _p_settings->registerSetting( YAF3D_GS_FULLSCREEN,   _fullScreen   );
-    _p_settings->registerSetting( YAF3D_GS_GUISCHEME,    _guiScheme    );
-    _p_settings->registerSetting( YAF3D_GS_SERVER_NAME,  _serverName   );
-    _p_settings->registerSetting( YAF3D_GS_SERVER_IP,    _serverIP     );
-    _p_settings->registerSetting( YAF3D_GS_SERVER_PORT,  _serverPort   );
-    _p_settings->registerSetting( YAF3D_GS_PUBLIC_HOST,  _publicHost   );
+    _p_settings->registerSetting( YAF3D_GS_LOG_LEVEL,         _logLevel         );
+    _p_settings->registerSetting( YAF3D_GS_KEYBOARD,          _keyboardType     );
+    _p_settings->registerSetting( YAF3D_GS_SCREENWIDTH,       _screenWidth      );
+    _p_settings->registerSetting( YAF3D_GS_SCREENHEIGHT,      _screenHeight     );
+    _p_settings->registerSetting( YAF3D_GS_COLORBITS,         _colorBits        );
+    _p_settings->registerSetting( YAF3D_GS_FULLSCREEN,        _fullScreen       );
+    _p_settings->registerSetting( YAF3D_GS_SHADOW_ENABLE,     _shadowEnable     );
+    _p_settings->registerSetting( YAF3D_GS_SHADOW_TEXSIZEX,   _shadowTexSizeX   );
+    _p_settings->registerSetting( YAF3D_GS_SHADOW_TEXSIZEY,   _shadowTexSizeY   );
+    _p_settings->registerSetting( YAF3D_GS_SHADOW_TEXCHANNEL, _shadowTexChannel );
+    _p_settings->registerSetting( YAF3D_GS_GUISCHEME,         _guiScheme        );
+    _p_settings->registerSetting( YAF3D_GS_SERVER_NAME,       _serverName       );
+    _p_settings->registerSetting( YAF3D_GS_SERVER_IP,         _serverIP         );
+    _p_settings->registerSetting( YAF3D_GS_SERVER_PORT,       _serverPort       );
+    _p_settings->registerSetting( YAF3D_GS_PUBLIC_HOST,       _publicHost       );
 }
 
 Configuration::~Configuration()

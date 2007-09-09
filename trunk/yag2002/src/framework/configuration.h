@@ -58,6 +58,10 @@ namespace yaf3d
 #define YAF3D_GS_SCREENHEIGHT             "screenHeight"
 #define YAF3D_GS_COLORBITS                "colorBits"
 #define YAF3D_GS_FULLSCREEN               "fullScreen"
+#define YAF3D_GS_SHADOW_ENABLE            "shadowEnable"
+#define YAF3D_GS_SHADOW_TEXSIZEX          "shadowTexSizeX"
+#define YAF3D_GS_SHADOW_TEXSIZEY          "shadowTexSizeY"
+#define YAF3D_GS_SHADOW_TEXCHANNEL        "shadowTexChannel"
 
 // gui
 #define YAF3D_GS_GUISCHEME                "guiScheme"
@@ -123,6 +127,14 @@ class Configuration : public Singleton< Configuration >
         unsigned int                            _colorBits;
 
         bool                                    _fullScreen;
+
+        bool                                    _shadowEnable;
+
+        unsigned int                            _shadowTexSizeX;
+
+        unsigned int                            _shadowTexSizeY;
+
+        unsigned int                            _shadowTexChannel;
 
         std::string                             _keyboardType;
 
