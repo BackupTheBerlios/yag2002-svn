@@ -221,6 +221,9 @@ bool LevelManager::unloadLevel( bool clearPhysics, bool clearEntities )
         _staticMesh = NULL;
     }
 
+    // clear the mesh cache now
+    _meshCache.clear();
+
     return true;
 }
 
