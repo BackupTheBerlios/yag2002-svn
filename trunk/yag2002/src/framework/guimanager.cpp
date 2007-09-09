@@ -85,10 +85,11 @@ class CEGUIDrawable : public osg::Drawable
 
                                                     CEGUIDrawable()
                                                     {
+                                                        // setup drawable
                                                         setSupportsDisplayList( false );
                                                         _activeContextID = 0;
                                                         osg::StateSet* p_stateset = new osg::StateSet;
-                                                        p_stateset->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
+                                                        p_stateset->setRenderBinDetails( 1000, "GUI Bin", osg::StateSet::USE_RENDERBIN_DETAILS );
                                                         setStateSet( p_stateset );
                                                     }
 
@@ -96,9 +97,6 @@ class CEGUIDrawable : public osg::Drawable
                                                     CEGUIDrawable( const CEGUIDrawable& drawable, const osg::CopyOp& copyop = osg::CopyOp::SHALLOW_COPY ) :
                                                         Drawable( drawable, copyop )
                                                     {
-                                                        osg::StateSet* p_stateset = new osg::StateSet;
-                                                        p_stateset->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
-                                                        setStateSet( p_stateset );
                                                     }
 
         //! Draw implementation
