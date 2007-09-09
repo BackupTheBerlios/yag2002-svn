@@ -117,7 +117,7 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
                                                                 osg::Matrix::scale( 0.5f, 0.5f, 0.5f );
 
                                                         
-                                                         _updateLightPosition = false;                                                        
+                                                         _updateLightPosition = false;
                                                     }
 
                                                     // update the texture generation matrix
@@ -152,22 +152,33 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
 class CameraCullCallback : public osg::NodeCallback
 {
     public:
-                                                CameraCullCallback() {}
+
+                                                CameraCullCallback() :
+                                                 _nodeMask( 0xffffffff )
+                                                {
+                                                }
 
         void                                    operator()( osg::Node* p_node, osg::NodeVisitor* p_nv )
                                                 {
-                                                    //! TODO: specify a node mask for this manager so only meshes with that mask are used for shadowing
-                                                    osg::Node::NodeMask mask = 0x1;//0xffffffff;
-                                                    //osg::NodeVisitor visitor( *p_nv );
-                                                    
+                                                    // traverse the shadow throwing nodes
+                                                    osg::Node::NodeMask mask = _nodeMask;
                                                     p_nv->setTraversalMask( mask );
 
                                                     traverse( p_node, p_nv );
                                                 }
 
+        //! Set node mask for shadow throwing nodes.
+        void                                    setNodeMask( unsigned int mask )
+                                                {
+                                                    _nodeMask = mask;
+                                                }
+
     protected:
 
         virtual                                 ~CameraCullCallback() {}
+
+        //! Shadow throwing node mask
+        unsigned int                            _nodeMask;
 };
 
 
@@ -269,6 +280,7 @@ static char glsl_fp[] =
 ;
 
 ShadowManager::ShadowManager() :
+_nodeMaskThrowShadow( 0xffffffff ),
 _shadowTextureWidth( 1024 ),
 _shadowTextureHeight( 1024 ),
 _shadowTextureUnit( 1 ),
@@ -404,6 +416,7 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
 
         // set camera's cull callback
         _p_cullCallback = new CameraCullCallback;
+        _p_cullCallback->setNodeMask( _nodeMaskThrowShadow );
         _shadowSceneGroup->setCullCallback( _p_cullCallback );
     }
 
@@ -459,7 +472,9 @@ void ShadowManager::enable( bool en )
         if ( _shadowSceneGroup.valid() )
         {
             yaf3d::LevelManager::get()->getTopNodeGroup()->removeChild( _shadowSceneGroup.get() );
-            _shadowSceneGroup = NULL;
+            _shadowCameraGroup = NULL;
+            _shadowedGroup     = NULL;
+            _shadowSceneGroup  = NULL;
         }
     }
     else if ( en && !_enable )

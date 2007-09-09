@@ -64,6 +64,12 @@ class ShadowManager : public yaf3d::Singleton< vrc::ShadowManager >
         //! Enable / disable the shadow management
         void                                        enable( bool en );
 
+        //! Nodes with this mask throw shadow and receive shadow. Nodes not matching to this mask only receive shadow.
+        void                                        setShadowerNodeMask( unsigned int mask );
+
+        //! Get shadower node mask
+        unsigned int                                getShadowerNodeMask() const;
+
         //! Add p_node to the list of shadow throwing / receiving nodes
         void                                        addShadowNode( osg::Node* p_node );
 
@@ -100,6 +106,9 @@ class ShadowManager : public yaf3d::Singleton< vrc::ShadowManager >
         //! Create a windget for showing the shadow map texture
         osg::Node*                                  createDebugDisplay( osg::Texture* p_texture );
 
+        //! Nodes matching to this mask throw shadow
+        unsigned int                                _nodeMaskThrowShadow;
+
         unsigned int                                _shadowTextureWidth;
 
         unsigned int                                _shadowTextureHeight;
@@ -133,6 +142,19 @@ class ShadowManager : public yaf3d::Singleton< vrc::ShadowManager >
     friend class yaf3d::Singleton< vrc::ShadowManager >;
     friend class gameutils::VRCStateHandler;
 };
+
+
+// Inline methods
+
+inline void ShadowManager::setShadowerNodeMask( unsigned int mask )
+{
+    _nodeMaskThrowShadow = mask;
+}
+
+inline unsigned int ShadowManager::getShadowerNodeMask() const
+{
+    return _nodeMaskThrowShadow;
+}
 
 inline const osg::Vec3f& ShadowManager::getLightPosition()
 {
