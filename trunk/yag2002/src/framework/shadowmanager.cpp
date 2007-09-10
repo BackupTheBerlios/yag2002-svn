@@ -29,9 +29,10 @@
  ################################################################*/
 
 #include <base.h>
-#include "shadowmanager.h"
 #include "log.h"
 #include "levelmanager.h"
+#include "shadowmanager.h"
+#include "shadercontainer.h"
 
 #include <osg/CullFace>
 #include <osg/TexEnvCombine>
@@ -183,103 +184,6 @@ class CameraCullCallback : public osg::NodeCallback
         unsigned int                            _nodeMask;
 };
 
-
-//TODO: substitude shadow channel and shadow texture size in shader code given the params in setup
-
-// vertex shader
-static const char glsl_vp[] =
-    "/*                                                                                 \n"
-    "* Vertex shader for shadow mapping                                                 \n"
-    "* http://yag2002.sf.net                                                            \n"
-    "* 06/27/2006                                                                       \n"
-    "*/                                                                                 \n"
-    "uniform mat4 texgenMatrix;                                                         \n"
-    "varying vec4 diffuse, ambient;                                                     \n"
-    "varying vec3 normal, lightDir, halfVector;                                         \n"
-    "varying vec2 baseTexCoords;                                                        \n"
-    "const   int  shadowTexChannel = 1;                                                 \n"
-    "                                                                                   \n"
-    "void main()                                                                        \n"
-    "{                                                                                  \n"
-    "   normal      = normalize( gl_NormalMatrix * gl_Normal );                         \n"
-    "   lightDir    = normalize( vec3( gl_LightSource[ 0 ].position ) );                \n"
-    "   halfVector  = normalize( gl_LightSource[ 0 ].halfVector.xyz );                  \n"
-    "   diffuse     = gl_FrontMaterial.diffuse * gl_LightSource[ 0 ].diffuse;           \n"
-    "   ambient     = gl_FrontMaterial.ambient * gl_LightSource[ 0 ].ambient;           \n"
-    "   ambient     += gl_LightModel.ambient * gl_FrontMaterial.ambient;                \n"
-    "                                                                                   \n"
-    "   vec4 pos    =  gl_ModelViewMatrix * gl_Vertex;                                  \n"
-    "   gl_TexCoord[ shadowTexChannel ] = texgenMatrix * pos;                           \n"
-    "   gl_Position   = gl_ModelViewProjectionMatrix * gl_Vertex;                       \n"
-    "   baseTexCoords = gl_MultiTexCoord0.st;                                           \n"
-    "}                                                                                  \n"
-;
-
-static char glsl_fp[] =
-    "/*                                                                                 \n"
-    "* Fragment shader for shadow mapping                                               \n"
-    "* http://yag2002.sf.net                                                            \n"
-    "* 06/27/2006                                                                       \n"
-    "*/                                                                                 \n"
-    "uniform sampler2D       baseTexture;                                               \n"
-    "uniform sampler2DShadow shadowTexture;                                             \n"
-    "uniform vec2            ambientBias;                                               \n"
-    "varying vec4            diffuse, ambient;                                          \n"
-    "varying vec3            normal, lightDir, halfVector;                              \n"
-    "varying vec2            baseTexCoords;                                             \n"
-    "const   int             shadowTexChannel = 1;                                      \n"
-    "const   float           shadowTexSize    = 1024.0;                                 \n"
-    "                                                                                   \n"
-    "void main(void)                                                                    \n"
-    "{                                                                                  \n"
-    "   vec3 n,halfV;                                                                   \n"
-    "   float NdotL,NdotHV;                                                             \n"
-    "   // calculate lighting                                                           \n"
-    "   vec4 color = ambient;                                                           \n"
-    "   n = normalize( normal );                                                        \n"
-    "   NdotL = max(dot( n, lightDir ), 0.0 );                                          \n"
-    "   if ( NdotL > 0.0 )                                                              \n"
-    "   {                                                                               \n"
-    "       color += diffuse * NdotL;                                                   \n"
-    "       halfV = normalize( halfVector );                                            \n"
-    "       NdotHV = max( dot( n,halfV ), 0.0 );                                        \n"
-//  "       color += gl_FrontMaterial.specular *                                        \n"
-//  "               gl_LightSource[0].specular *                                        \n"
-//  "               pow(NdotHV, gl_FrontMaterial.shininess);                            \n"
-    "   }                                                                               \n"
-    "   // smooth the shadow texel                                                      \n"
-    "   // number of neighboring textels                                                \n"
-    "   float cells = 1.0 / 9.0;                                                        \n"
-    "   // coordinate offset depending on shadow texture size                           \n"
-    "   float co = 1.0 / shadowTexSize;                                                 \n"
-    "   vec3 shadowCoord0 =                                                             \n"
-    "      gl_TexCoord[ shadowTexChannel ].xyz / gl_TexCoord[ shadowTexChannel ].w;     \n"
-    "                                                                                   \n"
-    "   vec3 shadowCoord1 = shadowCoord0 + vec3( -co,  co, 0.0 );                       \n"
-    "   vec3 shadowCoord2 = shadowCoord0 + vec3(   0,  co, 0.0 );                       \n"
-    "   vec3 shadowCoord3 = shadowCoord0 + vec3(  co,  co, 0.0 );                       \n"
-    "   vec3 shadowCoord4 = shadowCoord0 + vec3(  co,   0, 0.0 );                       \n"
-    "   vec3 shadowCoord5 = shadowCoord0 + vec3(  co, -co, 0.0 );                       \n"
-    "   vec3 shadowCoord6 = shadowCoord0 + vec3( 0.0, -co, 0.0 );                       \n"
-    "   vec3 shadowCoord7 = shadowCoord0 + vec3( -co, -co, 0.0 );                       \n"
-    "   vec3 shadowCoord8 = shadowCoord0 + vec3( -co,   0, 0.0 );                       \n"
-    "   vec3 shadowColor  = shadow2D( shadowTexture, shadowCoord0 ).rgb * cells +       \n"
-    "                       shadow2D( shadowTexture, shadowCoord1 ).rgb * cells +       \n"
-    "                       shadow2D( shadowTexture, shadowCoord2 ).rgb * cells +       \n"
-    "                       shadow2D( shadowTexture, shadowCoord3 ).rgb * cells +       \n"
-    "                       shadow2D( shadowTexture, shadowCoord4 ).rgb * cells +       \n"
-    "                       shadow2D( shadowTexture, shadowCoord5 ).rgb * cells +       \n"
-    "                       shadow2D( shadowTexture, shadowCoord6 ).rgb * cells +       \n"
-    "                       shadow2D( shadowTexture, shadowCoord7 ).rgb * cells +       \n"
-    "                       shadow2D( shadowTexture, shadowCoord8 ).rgb * cells;        \n"
-    "                                                                                   \n"
-    "   vec4 texcolor = color * texture2D( baseTexture, baseTexCoords );                \n"
-    "   gl_FragColor  = vec4(                                                                 \n"
-    "                         texcolor.rgb * ( ambientBias.x + shadowColor * ambientBias.y ), \n"
-    "                         step( 0.5, texcolor.a )                                         \n"
-    "                       );                                                                \n"
-    "}                                                                                  \n"
-;
 
 ShadowManager::ShadowManager() :
 _nodeMaskThrowShadow( 0xffffffff ),
@@ -434,11 +338,17 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
         osg::Program* p_program = new osg::Program;
         p_stateset->setAttribute( p_program );
 
-        osg::Shader* p_vertexshader = new osg::Shader( osg::Shader::VERTEX, glsl_vp );
-        p_program->addShader( p_vertexshader );
+        // setup the vertex shaders
+        osg::Shader* p_vcommon = ShaderContainer::get()->getVertexShader( ShaderContainer::eCommonV );
+        p_program->addShader( p_vcommon );
+        osg::Shader* p_vshadowmap = ShaderContainer::get()->getVertexShader( ShaderContainer::eShadowMapV );
+        p_program->addShader( p_vshadowmap );
 
-        osg::Shader* p_fragmentshader = new osg::Shader( osg::Shader::FRAGMENT, glsl_fp );
-        p_program->addShader( p_fragmentshader );
+        // setup the fragment shaders
+        osg::Shader* p_fcommon = ShaderContainer::get()->getFragmentShader( ShaderContainer::eCommonF );
+        p_program->addShader( p_fcommon );
+        osg::Shader* p_fshadowmap = ShaderContainer::get()->getFragmentShader( ShaderContainer::eShadowMapF );
+        p_program->addShader( p_fshadowmap );
 
         osg::Uniform* p_baseTextureSampler = new osg::Uniform( "baseTexture", 0 );
         p_stateset->addUniform( p_baseTextureSampler );

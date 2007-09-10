@@ -33,6 +33,7 @@
 #include "terrainmanager.h"
 #include "terrainpatch.h"
 #include "application.h"
+#include "shadercontainer.h"
 #include "utils.h"
 
 
@@ -538,71 +539,22 @@ float TerrainManager::getBlendBasemap( unsigned int id )
     return blend;
 }
 
-
-// Terrain shader
-
-// vertex shader
-static const char glsl_vp[] =
-    "/*                                                                                 \n"
-    "* Vertex shader for terrain renderer                                               \n"
-    "* http://yag2002.sf.net                                                            \n"
-    "* 08/28/2007                                                                       \n"
-    "*/                                                                                 \n"
-    "varying vec2 baseTexCoords;                                                        \n"
-    "varying vec2 detail0TexCoords;                                                     \n"
-    "varying vec2 detail1TexCoords;                                                     \n"
-    "varying vec2 detail2TexCoords;                                                     \n"
-    "                                                                                   \n"
-    "void main()                                                                        \n"
-    "{                                                                                  \n"
-    "   gl_Position      = gl_ModelViewProjectionMatrix * gl_Vertex;                    \n"
-    "   baseTexCoords    = gl_MultiTexCoord0.st;                                        \n"
-    "   detail0TexCoords = gl_MultiTexCoord1.st;                                        \n"
-    "   detail1TexCoords = gl_MultiTexCoord2.st;                                        \n"
-    "   detail2TexCoords = gl_MultiTexCoord3.st;                                        \n"
-    "}                                                                                  \n"
-;
-
-// fragment shader
-static char glsl_fp[] =
-    "/*                                                                                 \n"
-    "* Fragment shader for terrain renderer                                             \n"
-    "* http://yag2002.sf.net                                                            \n"
-    "* 08/28/2007                                                                       \n"
-    "*/                                                                                 \n"
-    "uniform sampler2D baseTexture;                                                     \n"
-    "uniform sampler2D detailTexture0;                                                  \n"
-    "uniform sampler2D detailTexture1;                                                  \n"
-    "uniform sampler2D detailTexture2;                                                  \n"
-    "uniform sampler2D layerMask;                                                       \n"
-    "uniform float     baseTextureBlend;                                                \n"
-    "varying vec2      baseTexCoords;                                                   \n"
-    "varying vec2      detail0TexCoords;                                                \n"
-    "varying vec2      detail1TexCoords;                                                \n"
-    "varying vec2      detail2TexCoords;                                                \n"
-    "                                                                                   \n"
-    "void main(void)                                                                    \n"
-    "{                                                                                  \n"
-    "   vec4 color = texture2D( baseTexture, baseTexCoords );                           \n"
-    "   color *= baseTextureBlend;                                                      \n"
-    "   vec3 mask  = texture2D( layerMask, baseTexCoords ).rgb;                         \n"
-    "   color += mask.r * texture2D( detailTexture0, detail0TexCoords );                \n"
-    "   color += mask.g * texture2D( detailTexture1, detail1TexCoords );                \n"
-    "   color += mask.b * texture2D( detailTexture2, detail2TexCoords );                \n"
-    "   gl_FragColor  = color;                                                          \n"
-    "}                                                                                  \n"
-;
-
 void TerrainManager::setupShaders( const TerrainConfig& config, osg::StateSet* p_stateset )
 {
     osg::Program* p_program = new osg::Program;
     p_stateset->setAttribute( p_program );
 
-    osg::Shader* p_vertexshader = new osg::Shader( osg::Shader::VERTEX, glsl_vp );
-    p_program->addShader( p_vertexshader );
+    osg::Shader* p_vcommon = ShaderContainer::get()->getVertexShader( ShaderContainer::eCommonV );
+    p_program->addShader( p_vcommon );
 
-    osg::Shader* p_fragmentshader = new osg::Shader( osg::Shader::FRAGMENT, glsl_fp );
-    p_program->addShader( p_fragmentshader );
+    osg::Shader* p_vterrain = ShaderContainer::get()->getVertexShader( ShaderContainer::eTerrainV );
+    p_program->addShader( p_vterrain );
+
+    osg::Shader* p_fcommon = ShaderContainer::get()->getFragmentShader( ShaderContainer::eCommonF );
+    p_program->addShader( p_fcommon );
+
+    osg::Shader* p_fterrain = ShaderContainer::get()->getFragmentShader( ShaderContainer::eTerrainF );
+    p_program->addShader( p_fterrain );
 
     osg::Uniform* p_baseTextureSampler = new osg::Uniform( "baseTexture", 0 );
     p_stateset->addUniform( p_baseTextureSampler );
