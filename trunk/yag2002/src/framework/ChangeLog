@@ -1,4 +1,9 @@
 
+boto ( 09/09/2007 )
+
+- moved the shadow manager to the framework
+
+- added a shader container
 
 boto ( 08/08/2007 )
 
