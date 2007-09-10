@@ -500,6 +500,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\src\framework\shadercontainer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\framework\shadercontainer.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\src\framework\shadowmanager.cpp"
 				>
 			</File>
