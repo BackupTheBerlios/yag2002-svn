@@ -36,9 +36,9 @@
 // convenient macros for logging
 #define log_out         yaf3d::yaf3dlog
 #define log_verbose     yaf3d::yaf3dlog << yaf3d::Log::LogLevel( yaf3d::Log::L_VERBOSE )
+#define log_debug       yaf3d::yaf3dlog << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG   )
 #define log_error       yaf3d::yaf3dlog << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR   )
 #define log_warning     yaf3d::yaf3dlog << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING )
-#define log_debug       yaf3d::yaf3dlog << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG   )
 #define log_info        yaf3d::yaf3dlog << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO    )
 
 
@@ -63,9 +63,9 @@ class Log : public std::basic_ostream< char >
         enum Level 
         {
             L_VERBOSE = 0x1,
-            L_ERROR   = 0x2,
-            L_WARNING = 0x3,
-            L_DEBUG   = 0x4,
+            L_DEBUG   = 0x2,
+            L_ERROR   = 0x3,
+            L_WARNING = 0x4,
             L_INFO    = 0x5
         };
 
@@ -74,10 +74,10 @@ class Log : public std::basic_ostream< char >
         virtual                                     ~Log();
 
         //! Add a file sink
-		bool                                        addSink( const std::string& sinkname, const std::string& filename, unsigned int loglevel = Log::L_DEBUG );
+        bool                                        addSink( const std::string& sinkname, const std::string& filename, unsigned int loglevel = Log::L_DEBUG );
 
         //! Add standard sink such as cout
-		bool                                        addSink( const std::string& sinkname, std::ostream& sink = std::cout, unsigned int loglevel = Log::L_DEBUG );
+        bool                                        addSink( const std::string& sinkname, std::ostream& sink = std::cout, unsigned int loglevel = Log::L_DEBUG );
 
         //! Remove a sink given its name
         void                                        removeSink( const std::string& sinkname );
