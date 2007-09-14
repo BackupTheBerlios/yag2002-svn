@@ -48,6 +48,8 @@ ShaderContainer::~ShaderContainer()
 
 void ShaderContainer::shutdown()
 {
+    // destroy the singleton
+    destroy();
 }
 
 
@@ -250,7 +252,7 @@ osg::Shader* ShaderContainer::getVertexShader( unsigned int type )
 {
     // look up the cache first
     if ( _vsCache.find( type ) != _vsCache.end() )
-        return _vsCache[ type ];
+        return _vsCache[ type ].get();
 
     std::string code;
     switch( type )
@@ -286,7 +288,7 @@ osg::Shader* ShaderContainer::getFragmentShader( unsigned int type )
 {
     // look up the cache first
     if ( _fsCache.find( type ) != _fsCache.end() )
-        return _fsCache[ type ];
+        return _fsCache[ type ].get();
 
     std::string code;
     switch( type )

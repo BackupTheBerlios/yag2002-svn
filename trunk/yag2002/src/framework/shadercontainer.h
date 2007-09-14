@@ -78,10 +78,10 @@ class ShaderContainer : public yaf3d::Singleton< yaf3d::ShaderContainer >
         void                                        shutdown();
 
         //! Fragment shader cache
-        std::map< unsigned int, osg::Shader* >      _fsCache;
+        std::map< unsigned int, osg::ref_ptr< osg::Shader > >      _fsCache;
 
         //! Vertex shader cache
-        std::map< unsigned int, osg::Shader* >      _vsCache;
+        std::map< unsigned int, osg::ref_ptr< osg::Shader > >      _vsCache;
 
     friend class yaf3d::Singleton< yaf3d::ShaderContainer >;
     friend class yaf3d::Application;
