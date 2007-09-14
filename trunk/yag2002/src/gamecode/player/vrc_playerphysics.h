@@ -87,6 +87,11 @@ class EnPlayerPhysics : public yaf3d::BaseEntity
         const bool                                  isTransformable() const { return false; }
 
         /**
+        * Initialize the physics translation and rotation. Call this before the first update.
+        */
+        void                                        initializePhysics( const osg::Vec3f& pos, const osg::Quat& rot );
+
+        /**
         * Set moving direction
         */
         inline void                                 setDirection( float x, float y );

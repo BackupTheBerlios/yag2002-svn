@@ -231,6 +231,11 @@ void PlayerNetworking::RPC_ServerGrantsAccess( tInitializationData initData )
 
     // distribute our initial data to all other replicas
     ALL_REPLICAS_FUNCTION_CALL( RPC_Initialize( initData ) );
+
+    vrc::PlayerImplClient* p_playerClient = dynamic_cast< vrc::PlayerImplClient* >( _p_playerImpl );
+    assert( p_playerClient && "the player object must be a client implementation if this function is called!" );
+
+    p_playerClient->setNetworkInitialized( true );
 }
 
 void PlayerNetworking::RPC_Initialize( tInitializationData initData )
@@ -269,6 +274,12 @@ void PlayerNetworking::RPC_Initialize( tInitializationData initData )
         if ( _voiceChat )
             vrc::gameutils::PlayerUtils::get()->addRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
     }
+
+    // set the connection status
+    vrc::PlayerImplClient* p_playerClient = dynamic_cast< vrc::PlayerImplClient* >( _p_playerImpl );
+    assert( p_playerClient && "the player object must be a client implementation if this function is called!" );
+
+    p_playerClient->setNetworkInitialized( true );
 }
 
 void PlayerNetworking::RPC_EnableVoiceChat( bool en )

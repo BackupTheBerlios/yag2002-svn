@@ -51,6 +51,7 @@ namespace vrc
 
 PlayerImplClient::PlayerImplClient( EnPlayer* player ) :
 BasePlayerImplementation( player ),
+_isNwInitialized( false ),
 _isRemoteClient( false ),
 _p_inputHandler( NULL )
 {
@@ -300,7 +301,7 @@ void PlayerImplClient::postInitialize()
             _p_playerAnimation->setPlayer( this );
             // enable rendering for remote clients
             _p_playerAnimation->enableRendering( true );
-			addToSceneGraph();
+            addToSceneGraph();
             _p_playerAnimation->setAnimation( EnPlayerAnimation::eIdle );
 
             log_debug << "   -  animation entity successfully attached" << std::endl;
@@ -346,8 +347,18 @@ void PlayerImplClient::getConfiguration()
     }
 }
 
+void PlayerImplClient::setNetworkInitialized( bool init )
+{
+    _isNwInitialized = init;
+    getPlayerPhysics()->initializePhysics( _currentPos, _currentRot );
+}
+
 void PlayerImplClient::update( float deltaTime )
 {
+    // if networking not initialized then do not update!
+    if ( !_isNwInitialized )
+        return;
+
     if ( !_isRemoteClient )
     {
         // update player's actual position and rotation once per frame

@@ -40,6 +40,9 @@
 #include <vrc_main.h>
 #include "vrc_playerimpl.h"
 
+//! Class declaration for player networking
+class PlayerNetworking;
+
 namespace vrc
 {
 
@@ -53,7 +56,6 @@ class PlayerImplClient : public BasePlayerImplementation, public yaf3d::SessionN
         explicit                                    PlayerImplClient( EnPlayer* player );
 
         virtual                                     ~PlayerImplClient();
-
 
         //! Initialize
         void                                        initialize();
@@ -75,6 +77,12 @@ class PlayerImplClient : public BasePlayerImplementation, public yaf3d::SessionN
         //! Get the configuration settings
         void                                        getConfiguration();
 
+        //! Set the networking status, used by networking class.
+        void                                        setNetworkInitialized( bool con );
+
+        //! Flag indicating that the player is connected to server and has received its initial data
+        bool                                        _isNwInitialized;
+
         //! Indicated remote / local client
         bool                                        _isRemoteClient;
 
@@ -82,6 +90,7 @@ class PlayerImplClient : public BasePlayerImplementation, public yaf3d::SessionN
         PlayerIHCharacterCameraCtrl< PlayerImplClient >* _p_inputHandler;
 
     friend class PlayerIHCharacterCameraCtrl< PlayerImplClient >;
+    friend class PlayerNetworking;
 };
 
 } // namespace vrc

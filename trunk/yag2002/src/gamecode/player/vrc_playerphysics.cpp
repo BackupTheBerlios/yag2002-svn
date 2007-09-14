@@ -578,13 +578,16 @@ void EnPlayerPhysics::postInitialize()
 {
     // check if the player has already set its association
     assert( _p_playerImpl && "player implementation has to set its association in initialize phase!" );
+}
 
+void EnPlayerPhysics::initializePhysics( const osg::Vec3f& pos, const osg::Quat& rot )
+{
     osg::Matrixf mat;
-    mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
-    mat.setTrans( _p_playerImpl->getPlayerPosition() );
+    mat *= mat.rotate( rot );
+    mat.setTrans( pos );
 
     // find ground under the initial position and adapt body matrix
-    float z = findGround( _p_world, _p_playerImpl->getPlayerPosition(), 1000.0f );
+    float z = findGround( _p_world, pos, 1000.0f );
     mat.ptr()[ 14 ] = z + _dimensions._v[ 2 ] + 0.2f; // add an offset of player height plus 0.2 meters
     // set the matrix for both the rigid body and the entity
     NewtonBodySetMatrix ( _p_body, mat.ptr() );

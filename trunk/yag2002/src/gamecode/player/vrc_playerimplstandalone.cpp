@@ -162,6 +162,7 @@ void PlayerImplStandalone::postInitialize()
     if ( _p_playerPhysics )
     {
         _p_playerPhysics->setPlayer( this );
+        getPlayerPhysics()->initializePhysics( _currentPos, _currentRot );
         log_debug << "   -  physics entity successfully attached" << std::endl;
     }
     else
