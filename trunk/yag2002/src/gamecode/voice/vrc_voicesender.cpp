@@ -100,7 +100,6 @@ void VoiceSender::initialize() throw( NetworkSoundExpection )
         RNReplicaNet::TransportConfig::SetPacketBufferEnable( true );
         RNReplicaNet::TransportConfig::SetPacketBufferTime( 1.0f / 60.0f );
 
-        RNReplicaNet::XPURL::RegisterDefaultTransports();
         RNReplicaNet::XPURL xpurl;
 
         assert( xpurl.FindTransport( "UDP@" ) );

@@ -286,14 +286,11 @@ void VoiceReceiver::setupNetwork() throw( NetworkSoundExpection )
     int channel;
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_CHANNEL, channel );
 
-	RNReplicaNet::XPURL::RegisterDefaultTransports();
-	RNReplicaNet::XPURL xpurl;
+    RNReplicaNet::XPURL xpurl;
 
-	assert( xpurl.FindTransport( "UDP@" ) );
-
-	_p_udpTransport = xpurl.FindTransport( "UDP@" )->Allocate();
+    _p_udpTransport = xpurl.FindTransport( "UDP@" )->Allocate();
     _p_udpTransport->Listen( channel );
-	std::string url = _p_udpTransport->ExportURL();
+    std::string url = _p_udpTransport->ExportURL();
     log_debug << "  <- voice receiver started: " << url << std::endl;
 }
 
