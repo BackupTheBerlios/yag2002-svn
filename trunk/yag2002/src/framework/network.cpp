@@ -273,6 +273,8 @@ void NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  ) throw 
 
     log_info << "NetworkDevice: server is starting network session: " << nodeInfo._nodeName << std::endl;
 
+    RNReplicaNet::XPURL::RegisterDefaultTransports();
+
     _p_session->SetManualPoll();
     _p_session->SetLoadBalancing( true );
     _p_session->SetCanAcceptObjects( true );
@@ -280,6 +282,9 @@ void NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  ) throw 
     _p_session->SetCanSpider( true );
     _p_session->SetDataRetention( true );
     _p_session->SetGameChannel( channel );
+    _p_session->SetAllowConnections( true );
+
+    // create the session
     _p_session->SessionCreate( _nodeInfo._nodeName );
 
     unsigned int tryCounter = 0;
@@ -324,6 +329,8 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
     assert( _p_session == NULL && "there is already a running session!" );
     _nodeInfo  = nodeInfo;
     _p_session = new Networking;
+
+    RNReplicaNet::XPURL::RegisterDefaultTransports();
 
     _p_session->SetManualPoll();
     //_p_session->SetGameChannel( channel );
