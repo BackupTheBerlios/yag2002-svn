@@ -88,8 +88,11 @@ class CEGUIDrawable : public osg::Drawable
                                                         // setup drawable
                                                         setSupportsDisplayList( false );
                                                         _activeContextID = 0;
+                                                        // create a gui renderbin and make the gui drawable to be drawn in this render bin ( last stage of rendering )
+                                                        osgUtil::RenderBin* p_renderbin = new osgUtil::RenderBin( osgUtil::RenderBin::SORT_BACK_TO_FRONT );
+                                                        osgUtil::RenderBin::addRenderBinPrototype( "GUIBin", p_renderbin );
                                                         osg::StateSet* p_stateset = new osg::StateSet;
-                                                        p_stateset->setRenderBinDetails( 1000, "GUI Bin", osg::StateSet::USE_RENDERBIN_DETAILS );
+                                                        p_stateset->setRenderBinDetails( 1000, "GUIBin", osg::StateSet::USE_RENDERBIN_DETAILS );
                                                         setStateSet( p_stateset );
                                                     }
 
