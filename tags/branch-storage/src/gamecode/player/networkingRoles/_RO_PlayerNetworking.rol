@@ -1,0 +1,89 @@
+/* The player object */
+object PlayerNetworking
+{
+
+    datablock Function;
+    extern RPC_ServerGrantsAccess(tInitializationData);
+    extern RPC_Initialize(tInitializationData);
+    extern RPC_EnableVoiceChat(bool);
+    
+    datablock Predict_Float;
+    
+    datablock NData;
+    
+    networking
+    {
+
+        NData _p_playerName
+        { 
+            Reliable();
+        }
+
+        NData _p_configFile
+        { 
+            Reliable();
+        }
+
+        Predict_Float _positionX;
+        {
+            SetMinError(0.1f);
+            SetMinDistance(0.2f);
+            SetMaxError(0.5f);
+            SetMaxDistance(1.0f);
+            Quadratic();
+        }
+        Predict_Float _positionY;
+        {
+            SetMinError(0.1f);
+            SetMinDistance(0.2f);
+            SetMaxError(0.5f);
+            SetMaxDistance(1.0f);
+            Quadratic();
+        }
+        Predict_Float _positionZ;
+        {
+            SetMinError(0.1f);
+            SetMinDistance(0.2f);
+            SetMaxError(0.5f);
+            SetMaxDistance(1.0f);
+            Quadratic();
+        }
+
+        Predict_Float _yaw;
+        {
+            SetMinError(0.05f);
+            SetMaxError(0.1f);
+            Linear();
+        }
+
+        NData _cmdAnimFlags;
+        { 
+            Reliable();
+        }
+
+        NData _voiceChat;
+        { 
+            Reliable();
+        }
+
+        NData _ip;
+        { 
+            Reliable();
+        }
+
+        Function RPC_ServerGrantsAccess;
+        { 
+            Reliable();
+        }
+
+        Function RPC_Initialize;
+        { 
+            Reliable();
+        }
+
+        Function RPC_EnableVoiceChat;
+        { 
+            Reliable();
+        }
+    }
+}

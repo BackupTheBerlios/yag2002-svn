@@ -1,0 +1,25 @@
+/* The network notification object */
+object NetworkNotificationNetworking
+{    
+    datablock NData;
+    datablock Function;
+    extern RPC_RecvNotification(tNotificationData);
+
+    networking
+    {
+        NData _p_versionInfo
+        { 
+            Reliable();
+        }
+
+        NData _p_message
+        { 
+            Reliable();
+        }
+
+        Function RPC_RecvdNotification;
+        { 
+            Reliable();
+        }        
+    }
+}
