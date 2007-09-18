@@ -38,11 +38,12 @@
 #endif
 
 // YAF3D version
-#define YAF3D_VERSION     "1.2.2"
+#define YAF3D_VERSION     "1.2.3"
 
 // STL headers
 #include <string>
 #include <vector>
+#include <map>
 #include <iostream>
 #include <fstream>
 #include <sstream>
