@@ -1,4 +1,4 @@
-/* Auto-generated with RNROLCompiler V2.4.0.0 don't edit */
+/* Auto-generated with RNROLCompiler V2.7.0.0 don't edit */
 #include "_RO_PlayerNetworking.h"
 #ifdef _WIN32
 #pragma warning(disable : 4786)
@@ -17,6 +17,12 @@ tInitializationData value1;
 _RO_DO_MEMBERFUNC_MESSAGE_CRACK(value1)
 _RO_DO_MEMBERFUNC_CRACK_END(PlayerNetworking,RPC_ServerGrantsAccess)
 value1
+_RO_DO_MEMBERFUNC_CRACK_END2()
+_RO_DO_MEMBERFUNC_PRESTAGE_DEF(PlayerNetworking,RPC_RequestInitialization)
+_RO_DO_MEMBERFUNC_PRESTAGE(RPC_RequestInitialization)
+_RO_DO_MEMBERFUNC_POSTSTAGE(RPC_RequestInitialization)
+_RO_DO_MEMBERFUNC_CRACK_START(PlayerNetworking,RPC_RequestInitialization)
+_RO_DO_MEMBERFUNC_CRACK_END(PlayerNetworking,RPC_RequestInitialization)
 _RO_DO_MEMBERFUNC_CRACK_END2()
 _RO_DO_MEMBERFUNC_PRESTAGE_DEF(PlayerNetworking,RPC_Initialize)
 tInitializationData value1
@@ -85,6 +91,9 @@ _RO_DO_REGISTERBLOCK_NDATA_VAR(_ip)
 _RO_DO_DATABLOCK_MAKERELIABLE()
 _RO_DO_REGISTERBLOCK_END()
 _RO_DO_REGISTERBLOCK_FUNCTION_VAR(RPC_ServerGrantsAccess)
+_RO_DO_DATABLOCK_MAKERELIABLE()
+_RO_DO_REGISTERBLOCK_END()
+_RO_DO_REGISTERBLOCK_FUNCTION_VAR(RPC_RequestInitialization)
 _RO_DO_DATABLOCK_MAKERELIABLE()
 _RO_DO_REGISTERBLOCK_END()
 _RO_DO_REGISTERBLOCK_FUNCTION_VAR(RPC_Initialize)
