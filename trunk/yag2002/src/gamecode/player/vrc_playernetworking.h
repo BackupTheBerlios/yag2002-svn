@@ -148,6 +148,8 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
 
         bool                                        _remoteClient;
 
+        bool                                        _remoteClientInitialized;
+
         vrc::BasePlayerImplementation*              _p_playerImpl;
 
         std::vector< yaf3d::BaseEntity* >           _loadedEntities;
