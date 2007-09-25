@@ -46,6 +46,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <map>
 
 // ms windows stuff
 #ifdef WIN32
