@@ -1,0 +1,22 @@
+/* The Storage object */
+object StorageNetworking
+{
+    datablock Function;
+    extern RPC_Authentify(tAuthData);
+    extern RPC_AuthentificationGranted();
+    
+    datablock NData;
+    
+    networking
+    {
+        Function RPC_Authentify;
+        { 
+            Reliable();
+        }
+
+        Function RPC_AuthentificationGranted;
+        { 
+            Reliable();
+        }
+    }
+}
