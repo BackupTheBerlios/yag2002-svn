@@ -1,12 +1,15 @@
 /* The Storage object */
+
+namespace vrc
+{
+
 object StorageNetworking
 {
     datablock Function;
-    extern RPC_Authentify(tAuthData);
-    extern RPC_AuthentificationGranted();
-    
-    datablock NData;
-    
+
+    extern RPC_Authentify( tAuthData );
+    extern RPC_AuthentificationResult( bool );
+
     networking
     {
         Function RPC_Authentify;
@@ -14,9 +17,11 @@ object StorageNetworking
             Reliable();
         }
 
-        Function RPC_AuthentificationGranted;
+        Function RPC_AuthentificationResult;
         { 
             Reliable();
         }
     }
 }
+
+} // namespace vrc
