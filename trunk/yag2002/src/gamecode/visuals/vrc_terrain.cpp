@@ -80,6 +80,8 @@ EnTerrainSection::EnTerrainSection() :
     getAttributeManager().addAttribute( "detailmap1Repeat" , _detailmap1Repeat );
     getAttributeManager().addAttribute( "detailmap2"       , _fileDetailmap2   );
     getAttributeManager().addAttribute( "detailmap2Repeat" , _detailmap2Repeat );
+    getAttributeManager().addAttribute( "detailmap3"       , _fileDetailmap3   );
+    getAttributeManager().addAttribute( "detailmap3Repeat" , _detailmap3Repeat );
 
     getAttributeManager().addAttribute( "lod0ResolutionX" , _lod0ResolutionX   );
     getAttributeManager().addAttribute( "lod0ResolutionY" , _lod0ResolutionY   );
@@ -228,6 +230,8 @@ osg::ref_ptr< osg::Group > EnTerrainSection::setup()
     conf._detailmap1Repeat  = _detailmap1Repeat;
     conf._fileDetailmap2    = _fileDetailmap2;
     conf._detailmap2Repeat  = _detailmap2Repeat;
+    conf._fileDetailmap3    = _fileDetailmap3;
+    conf._detailmap3Repeat  = _detailmap3Repeat;
 
     // configure the LODs
     
