@@ -276,6 +276,7 @@ void NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  ) throw 
     RNReplicaNet::XPURL::RegisterDefaultTransports();
 
     _p_session->SetManualPoll();
+    _p_session->SetPollLayerBelow( true );
     _p_session->SetLoadBalancing( true );
     _p_session->SetCanAcceptObjects( true );
     _p_session->SetCanBecomeMaster( true );
@@ -584,6 +585,8 @@ int NetworkDevice::getSessionID()
 void NetworkDevice::getObjects( std::vector< RNReplicaNet::ReplicaObject* >& objs )
 {
     assert( _p_session && "there is no valid session!" );
+
+    lockObjects();
     _p_session->ObjectListBeginIterate();
 
     RNReplicaNet::ReplicaObject* p_obj = NULL;
@@ -596,6 +599,7 @@ void NetworkDevice::getObjects( std::vector< RNReplicaNet::ReplicaObject* >& obj
     } while( p_obj );
 
     _p_session->ObjectListFinishIterate();
+    unlockObjects();
 }
 
 void NetworkDevice::updateServer( float /*deltaTime*/ )

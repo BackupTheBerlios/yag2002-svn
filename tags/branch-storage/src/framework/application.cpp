@@ -396,8 +396,6 @@ bool Application::initialize( int argc, char **argv )
 
     // setup networking
     _p_networkDevice = NetworkDevice::get();
-    // avoid creating of remote clients so long we are initializing the system
-    _p_networkDevice->lockObjects();
     if ( GameState::get()->getMode() == GameState::Server )
     {
         log_info << "Application: loading level file '" << arg_levelname << "'" << std::endl;
@@ -551,12 +549,6 @@ void Application::run()
             log_error << "Application: error starting client networking, reason: " << e.what() << std::endl;
             _p_gameState->setState( GameState::Quitting );
         }
-
-        _p_networkDevice->unlockObjects();
-    }
-    else if ( GameState::get()->getMode() == GameState::Server )
-    {
-        _p_networkDevice->unlockObjects();
     }
 
     // check heap if enabled ( used for detecting heap corruptions )
