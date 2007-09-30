@@ -38,14 +38,14 @@
 #endif
 
 // YAF3D version
-#define YAF3D_VERSION     "1.2.2"
+#define YAF3D_VERSION     "1.3.0"
 
 // STL headers
-#include <string>
-#include <vector>
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string>
+#include <vector>
 #include <map>
 
 // ms windows stuff
@@ -61,40 +61,40 @@
 
 // SDL header
 #include <SDL.h>
+#include <osgSDL/Viewer>
 
 // osg headers
+#include <osg/PositionAttitudeTransform>
+#include <osg/CoordinateSystemNode>
+#include <osgGA/GUIActionAdapter>
+#include <osgGA/GUIEventAdapter>
+#include <osg/MatrixTransform>
+#include <osg/TextureCubeMap>
+#include <osgUtil/Optimizer>
+#include <osg/TexEnvCombine>
+#include <osg/ShapeDrawable>
+#include <osg/VertexProgram>
+#include <osg/LightSource>
+#include <osgDB/ReadFile>
 #include <osg/AlphaFunc>
 #include <osg/BlendFunc>
 #include <osg/ColorMask>
+#include <osg/Texture2D>
+#include <osg/Transform>
 #include <osg/ClipNode>
-#include <osg/CoordinateSystemNode>
-#include <osg/Depth>
-#include <osg/Fog>
 #include <osg/Material>
-#include <osg/Math>
-#include <osg/Matrix>
-#include <osg/MatrixTransform>
-#include <osg/LightSource>
-#include <osg/ShapeDrawable>
 #include <osg/Stencil>
 #include <osg/Texture>
-#include <osg/Texture2D>
 #include <osg/TexMat>
 #include <osg/TexGen>
-#include <osg/TexEnvCombine>
-#include <osg/TextureCubeMap>
-#include <osg/Transform>
-#include <osg/PositionAttitudeTransform>
+#include <osg/Matrix>
+#include <osg/Depth>
+#include <osg/Math>
 #include <osg/Vec4>
 #include <osg/Vec3>
 #include <osg/Vec2>
-#include <osg/VertexProgram>
-#include <osgDB/ReadFile>
-#include <osgGA/GUIActionAdapter>
-#include <osgGA/GUIEventAdapter>
-#include <osgUtil/Optimizer>
+#include <osg/Fog>
 
-#include <osgSDL/Viewer>
 
 // Physics library header
 #include <Newton.h>
