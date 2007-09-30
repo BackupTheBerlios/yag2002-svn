@@ -5,25 +5,31 @@
 #include "RNReplicaNet/Inc/Define_RO.h"
 namespace vrc
 {
-typedef struct _tAuthData
+
+typedef struct _tAccountInfoData
 {
-    char    _login[ 64 ];
+    unsigned int    _userID;
 
-    char    _passwd[ 64 ];
+    unsigned int    _registrationDate;
 
-} tAuthData;
+    unsigned int    _onlineTime;
+
+    unsigned int    _priviledges;
+
+} tAccountInfoData;
+
 
 _RO_DEF_ALLOCATEFUNC(StorageNetworking)
 class _MAKE_BASE(StorageNetworking);
 class _RO_StorageNetworking : public RNReplicaNet::ReplicaObject
 {
 	_RO_STD_FRAMEWORK(StorageNetworking)
-	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_Authentify)
-	void Call_RPC_Authentify(tAuthData);
-	typedef void(tDBFV_RPC_Authentify)(tAuthData);
-	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_AuthentificationResult)
-	void Call_RPC_AuthentificationResult(bool);
-	typedef void(tDBFV_RPC_AuthentificationResult)(bool);
+	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_RequestAccountInfo)
+	void Call_RPC_RequestAccountInfo(tAccountInfoData);
+	typedef void(tDBFV_RPC_RequestAccountInfo)(tAccountInfoData);
+	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_AccountInfoResult)
+	void Call_RPC_AccountInfoResult(tAccountInfoData);
+	typedef void(tDBFV_RPC_AccountInfoResult)(tAccountInfoData);
 	_RO_DEF_REGISTERDATABLOCKS(StorageNetworking)
 };
 } // namespace vrc

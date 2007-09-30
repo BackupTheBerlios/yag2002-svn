@@ -7,17 +7,17 @@ object StorageNetworking
 {
     datablock Function;
 
-    extern RPC_Authentify( tAuthData );
-    extern RPC_AuthentificationResult( bool );
+    extern RPC_RequestAccountInfo( tAccountInfoData );
+    extern RPC_AccountInfoResult( tAccountInfoData );
 
     networking
     {
-        Function RPC_Authentify;
+        Function RPC_RequestAccountInfo;
         { 
             Reliable();
         }
 
-        Function RPC_AuthentificationResult;
+        Function RPC_AccountInfoResult;
         { 
             Reliable();
         }
