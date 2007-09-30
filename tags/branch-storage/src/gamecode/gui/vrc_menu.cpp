@@ -31,6 +31,7 @@
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
 #include "vrc_menu.h"
+#include "vrc_dialoglogin.h"
 #include "vrc_dialogsettings.h"
 #include "vrc_dialoglevelselect.h"
 #include "vrc_intro.h"
@@ -141,6 +142,7 @@ YAF3D_IMPL_ENTITYFACTORY( MenuEntityFactory )
 EnMenu::EnMenu() :
 _menuConfig( "gui/menu.xml" ),
 _settingsDialogConfig( "gui/settings.xml" ),
+_loginDialogConfig( "gui/login.xml" ),
 _levelSelectDialogConfig( "gui/levelselect.xml" ),
 _introTexture( "gui/intro.tga" ),
 _loadingOverlayTexture( "gui/loading.tga" ),
@@ -179,6 +181,7 @@ _levelLoaded( false )
     // register entity attributes
     getAttributeManager().addAttribute( "menuConfig"                , _menuConfig               );
     getAttributeManager().addAttribute( "settingsDialogConfig"      , _settingsDialogConfig     );
+    getAttributeManager().addAttribute( "loginDialogConfig"         , _loginDialogConfig        );
     getAttributeManager().addAttribute( "levelSelectDialogConfig"   , _levelSelectDialogConfig  );
     getAttributeManager().addAttribute( "intoTexture"               , _introTexture             );
     getAttributeManager().addAttribute( "loadingOverlayTexture"     , _loadingOverlayTexture    );
@@ -369,6 +372,11 @@ void EnMenu::initialize()
     if ( !_settingsDialog->initialize( _settingsDialogConfig ) )
         return;
 
+    // setup dialog for login
+    _loginDialog = std::auto_ptr< DialogLogin >( new DialogLogin( this ) );
+    if ( !_loginDialog->initialize( _loginDialogConfig ) )
+        return;
+
     // setup intro layout
     _intro = std::auto_ptr< IntroControl >( new IntroControl );
     if ( !_intro->initialize( _introTexture ) )
@@ -549,70 +557,8 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
     // play mouse click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
-    std::string url;
-    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_IP, url );
-    std::string clientname;
-    yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, clientname );
-    yaf3d::NodeInfo nodeinfo( "", clientname );
-    unsigned int channel = 0;
-    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
-
-    // try to join
-    try
-    {
-        yaf3d::NetworkDevice::get()->setupClient( url, channel, nodeinfo );
-    }
-    catch ( const yaf3d::NetworkException& e )
-    {
-        log_warning << "cannot setup client networking" << std::endl;
-
-        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", e.what(), yaf3d::MessageBoxDialog::OK, true );
-        // create a call back for Ok button of messagebox
-        class MsgOkClick: public yaf3d::MessageBoxDialog::ClickCallback
-        {
-            public:
-
-                explicit                MsgOkClick( EnMenu* p_menu ) : _p_menu( p_menu ) {}
-
-                virtual                 ~MsgOkClick() {}
-
-                void                    onClicked( unsigned int btnId )
-                                        {
-                                            _p_menu->_p_menuWindow->enable();
-
-                                            // play mouse click sound
-                                            vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
-                                        }
-
-                EnMenu*                 _p_menu;
-        };
-        p_msg->setClickCallback( new MsgOkClick( this ) );
-        p_msg->show();
-
-        // play attention sound
-        vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_ATTENTION );    
-
-        return true;
-    }
-
-    // set the game mode to Client before loading the level
-    yaf3d::GameState::get()->setMode( yaf3d::GameState::Client );
-    // now prepare loading level
-    std::string levelfilename = yaf3d::NetworkDevice::get()->getNodeInfo()->getLevelName();
-    _queuedLevelFile = YAF3D_LEVEL_CLIENT_DIR + levelfilename;
-
-    // release level files object
-    if ( _p_clientLevelFiles )
-        delete _p_clientLevelFiles;
-
-    _p_clientLevelFiles = new gameutils::LevelFiles( YAF3D_LEVEL_CLIENT_DIR );
-    CEGUI::Image* p_img = _p_clientLevelFiles->getImage( levelfilename );
-
-    _p_loadingLevelPic->setImage( p_img );
-    _p_loadingWindow->show();
-    _p_menuWindow->hide();
-
-    _menuState = BeginLoadingLevel;
+    // bring up the login dialog
+    _loginDialog->enable( true );
 
     return true;
 }
@@ -749,6 +695,8 @@ void EnMenu::updateEntity( float deltaTime )
 
             // disable level select dialog now freeing up the resources ( texures )
             _levelSelectDialog->enable( false );
+
+             _p_menuWindow->disable();
         }
         break;
 
@@ -974,9 +922,6 @@ void EnMenu::switchMenuScene( bool tomenu )
 {
     if ( tomenu )
     {
-        // set the proper game state
-        yaf3d::GameState::get()->setState( yaf3d::GameState::Menu );
-
         // replace the level scene node by menu scene node
         yaf3d::LevelManager::get()->setStaticMesh( NULL ); // remove the current mesh node from scene graph
         yaf3d::LevelManager::get()->setStaticMesh( _menuScene.get() );
@@ -986,9 +931,6 @@ void EnMenu::switchMenuScene( bool tomenu )
     }
     else
     {
-        // set the proper game state
-        yaf3d::GameState::get()->setState( yaf3d::GameState::Running );
-
         // replace the menu scene node by level scene node
         yaf3d::LevelManager::get()->setStaticMesh( NULL ); // remove the current mesh node from scene graph
         yaf3d::LevelManager::get()->setStaticMesh( _levelScene.get() );
@@ -1001,6 +943,101 @@ void EnMenu::onSettingsDialogClose()
 {
     _p_menuWindow->enable();
     _settingsDialog->show( false );
+}
+
+void EnMenu::onLoginDialogClose( bool btnlogin )
+{
+    _p_menuWindow->enable();
+    _loginDialog->enable( false );
+
+    // cancel button clicked?
+    if ( !btnlogin )
+        return;
+
+    std::string url;
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_IP, url );
+    std::string clientname;
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, clientname );
+    yaf3d::NodeInfo nodeinfo( "", clientname );
+    unsigned int channel = 0;
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
+
+    // try to join
+    bool accessDenied = false;
+    try
+    {
+        // get the details (login and passwd ) from the login dialog and try to login
+        std::string login;
+        std::string passwd;
+        _loginDialog->getAndErazeDetails( login, passwd );
+
+        // try to connect to server
+        yaf3d::NetworkDevice::get()->setupClient( url, channel, nodeinfo, login, passwd );
+
+        if ( !nodeinfo.getAccessGranted() )
+        {
+            accessDenied = true;
+            throw yaf3d::NetworkException( "Access denied! Check your login." );
+        }
+    }
+    catch ( const yaf3d::NetworkException& e )
+    {
+        log_warning << "cannot connect to server\n reason: " << e.what() << std::endl;
+
+        // create a call back for Ok button of messagebox
+        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", e.what(), yaf3d::MessageBoxDialog::OK, true );
+
+        class MsgOkClick: public yaf3d::MessageBoxDialog::ClickCallback
+        {
+            public:
+
+                explicit                MsgOkClick( EnMenu* p_menu ) : _p_menu( p_menu ) {}
+
+                virtual                 ~MsgOkClick() {}
+
+                void                    onClicked( unsigned int btnId )
+                                        {
+                                            _p_menu->_p_menuWindow->enable();
+
+                                            // play mouse click sound
+                                            vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
+                                        }
+
+                EnMenu*                 _p_menu;
+        };
+        p_msg->setClickCallback( new MsgOkClick( this ) );
+        p_msg->show();
+
+        // play attention sound
+        vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_ATTENTION );
+
+        if ( accessDenied )
+            return;
+    }
+
+    // now prepare loading level
+    std::string levelfilename;
+    if ( nodeinfo.getLevelName().length() )
+    {
+        levelfilename = nodeinfo.getLevelName();
+        _queuedLevelFile = YAF3D_LEVEL_CLIENT_DIR + levelfilename;
+    }
+
+    // set the game mode to Client before loading the level
+    yaf3d::GameState::get()->setMode( yaf3d::GameState::Client );
+
+    // release level files object
+    if ( _p_clientLevelFiles )
+        delete _p_clientLevelFiles;
+
+    _p_clientLevelFiles = new gameutils::LevelFiles( YAF3D_LEVEL_CLIENT_DIR );
+    CEGUI::Image* p_img = _p_clientLevelFiles->getImage( levelfilename );
+
+    _p_loadingLevelPic->setImage( p_img );
+    _p_loadingWindow->show();
+    _p_menuWindow->hide();
+
+    _menuState = BeginLoadingLevel;
 }
 
 void EnMenu::setBkgMusicEnable( bool en )
