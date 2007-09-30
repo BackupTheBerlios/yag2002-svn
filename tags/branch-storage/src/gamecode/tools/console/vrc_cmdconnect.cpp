@@ -107,8 +107,8 @@ const std::string& CmdConnect::execute( const std::vector< std::string >& argume
     // now prepare loading level
     _cmdResult += "unload level ...\n";
     yaf3d::LevelManager::get()->unloadLevel( true, true );
-    _cmdResult += "loading level '" + yaf3d::NetworkDevice::get()->getNodeInfo()->getLevelName() + "' ...\n";
-    yaf3d::LevelManager::get()->loadLevel( YAF3D_LEVEL_CLIENT_DIR + yaf3d::NetworkDevice::get()->getNodeInfo()->getLevelName() );
+    _cmdResult += "loading level '" + nodeinfo.getLevelName() + "' ...\n";
+    yaf3d::LevelManager::get()->loadLevel( YAF3D_LEVEL_CLIENT_DIR + nodeinfo.getLevelName() );
     // now load the player
     std::vector< yaf3d::BaseEntity* > entities;
     _cmdResult += "loading player '" + playerCfgFile + "' ...\n";
