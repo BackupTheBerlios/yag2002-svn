@@ -210,7 +210,8 @@ NetworkDevice::NetworkDevice() :
 _mode( NONE ),
 _p_session( NULL ),
 _clientSessionStable( false ),
-_serverSessionStable( false )
+_serverSessionStable( false ),
+_p_cbAuthentification( NULL )
 {
     FreewareSetRegistrationCode( "64B8EBDH-HJK8L6EA-8EBAC" );
 }
@@ -230,8 +231,6 @@ void NetworkDevice::disconnect()
     _clientSessionStable = false;
     _serverSessionStable = false;
     _mode = NetworkDevice::NONE;
-    _nodeInfo._levelName = "";
-    _nodeInfo._nodeName  = "";
 
     _serverIP            = "";
 
@@ -268,7 +267,6 @@ void NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  ) throw 
     log_info << "NetworkDevice: starting server, time: " << yaf3d::getTimeStamp() << std::endl;
     log_info << "NetworkDevice: networking protocol version: " << getProtocolVersionAsString( YAF3D_NETWORK_PROT_VERSION ) << std::endl;
 
-    _nodeInfo  = nodeInfo;
     _p_session = new Networking;
 
     log_info << "NetworkDevice: server is starting network session: " << nodeInfo._nodeName << std::endl;
@@ -284,9 +282,10 @@ void NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  ) throw 
     _p_session->SetDataRetention( true );
     _p_session->SetGameChannel( channel );
     _p_session->SetAllowConnections( true );
+    _p_session->SetEncryption( true );
 
     // create the session
-    _p_session->SessionCreate( _nodeInfo._nodeName );
+    _p_session->SessionCreate( nodeInfo._nodeName );
 
     unsigned int tryCounter = 0;
     while ( !_p_session->IsStable() )
@@ -314,9 +313,17 @@ void NetworkDevice::setupServer( int channel, const NodeInfo& nodeInfo  ) throw 
     std::string ip( url.substr( url.find( "@" ) + 1 ) );
     ip.erase( ip.find( ":" ) );
     _serverIP = ip;
+
+    // store the server node info
+    _serverNodeInfo = nodeInfo;
 }
 
-void NetworkDevice::setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo ) throw ( NetworkException )
+void NetworkDevice::setAuthCallback( CallbackAuthentification* p_cb )
+{
+    _p_cbAuthentification = p_cb;
+}
+
+void NetworkDevice::setupClient( const std::string& serverIp, int channel, NodeInfo& nodeInfo, const std::string& login, const std::string& passwd ) throw ( NetworkException )
 {
     log_info << "NetworkDevice: starting client, time: " << yaf3d::getTimeStamp() << std::endl;
     log_info << "NetworkDevice: networking protocol version: " << getProtocolVersionAsString( YAF3D_NETWORK_PROT_VERSION ) << std::endl;
@@ -327,8 +334,9 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
 #endif
 
     // do we already have a session created?
-    assert( _p_session == NULL && "there is already a running session!" );
-    _nodeInfo  = nodeInfo;
+    if( _p_session )
+        disconnect();
+
     _p_session = new Networking;
 
     RNReplicaNet::XPURL::RegisterDefaultTransports();
@@ -341,6 +349,7 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
     _p_session->SetCanSpider( false );
     _p_session->SetDataRetention( true );
     _p_session->SetPreConnect( true );
+    _p_session->SetEncryption( true );
 
     //! if the URL is empty or "localhost" then set it to "127.0.0.1"
     std::string Url, ip;
@@ -412,8 +421,19 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
     log_info << "NetworkDevice: client is exchanging pre-connect data ..." << std::endl;
 
     PreconnectDataClient preconnectData;
+    memset( &preconnectData, 0, sizeof( PreconnectDataClient ) );
     preconnectData._typeId = ( unsigned char )YAF3DNW_PRECON_DATA_CLIENT;
+
+    if ( login.length() )
+        strcpy_s( preconnectData._p_login, sizeof( preconnectData._p_login ) - 1, login.c_str() );
+
+    if ( passwd.length() )
+        strcpy_s( preconnectData._p_passwd, sizeof( preconnectData._p_passwd ) - 1, passwd.c_str() );
+
     _p_session->DataSend( RNReplicaNet::kReplicaNetUnknownUniqueID, &preconnectData, sizeof( PreconnectDataClient ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
+
+    // clear the preconnect struct for security reasons
+    memset( &preconnectData, 0, sizeof( PreconnectDataClient ) );
 
     int          sessionId;
     void*        p_buffer[ 512 ];
@@ -426,8 +446,8 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
         RNReplicaNet::CurrentThread::Sleep( 100 );
         while ( _p_session->DataReceive( &sessionId, p_buffer, &bufferLength ) )
         {
-            PreconnectDataServer* p_data = ( PreconnectDataServer* )p_buffer;
-            if ( p_data->_typeId == ( unsigned char )YAF3DNW_PRECON_DATA_SERVER )
+            PreconnectDataServer* p_data = reinterpret_cast< PreconnectDataServer* >( p_buffer );
+            if ( p_data->_typeId == static_cast< unsigned char >( YAF3DNW_PRECON_DATA_SERVER ) )
             {
                 // check network protocol versions
                 if ( p_data->_protocolVersion != YAF3D_NETWORK_PROT_VERSION )
@@ -447,10 +467,24 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
                     throw NetworkException( msg );
                 }
 
-                p_data->_p_levelName[ 63 ]  = 0;
-                p_data->_p_serverName[ 63 ] = 0;
-                _nodeInfo._levelName = p_data->_p_levelName;
-                _nodeInfo._nodeName  = p_data->_p_serverName;
+                // check if server granted access
+                if ( p_data->_accessGranted )
+                {
+                    p_data->_p_levelName[ 63 ]  = 0;
+                    p_data->_p_serverName[ 63 ] = 0;
+                    nodeInfo._accessGranted = true;
+
+                    if ( p_data->_p_levelName[ 0 ] )
+                        nodeInfo._levelName = p_data->_p_levelName;
+                    
+                    if ( p_data->_p_serverName[ 0 ] )
+                        nodeInfo._nodeName  = p_data->_p_serverName;
+                }
+                else
+                {
+                    nodeInfo._accessGranted = false;
+                }
+
                 gotServerInfo = true;
 
                 log_debug << "NetworkDevice: client got preconnect data from server" << std::endl;
@@ -471,10 +505,26 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, const
 
         ++tryCounter;
     }
-    _clientSessionStable = true;
-    _mode = NetworkDevice::CLIENT;
 
-    _serverIP = ip;
+    if ( nodeInfo._accessGranted )
+    {
+        _clientSessionStable = true;
+        _mode = NetworkDevice::CLIENT;
+        _serverIP = ip;
+
+        std::stringstream msg;
+        msg << "NetworkDevice: server name: '" <<
+            nodeInfo._nodeName  <<
+            "', level name: '"   <<
+            nodeInfo._levelName <<
+            "'" << std::endl;
+        log_info << msg.str() << std::endl;
+    }
+    else
+    {
+        log_info << "NetworkDevice: server denied access to session, login '" << login << "'" << std::endl;
+        _p_session->Disconnect();
+    }
 }
 
 void NetworkDevice::startClient() throw ( NetworkException )
@@ -491,14 +541,6 @@ void NetworkDevice::startClient() throw ( NetworkException )
     _p_session->PreConnectHasFinished();
 
     log_info << "NetworkDevice: client successfully integrated to network" << std::endl;
-    std::stringstream msg;
-    msg << "NetworkDevice: server name: '" <<
-        _nodeInfo._nodeName  <<
-        "', level name: '"   <<
-        _nodeInfo._levelName <<
-        "'" << std::endl;
-    log_info << msg.str() << std::endl;
-    //-----------------------------//
 
     unsigned int tryCounter = 0;
     while ( !_p_session->IsStable() )
@@ -568,14 +610,6 @@ void NetworkDevice::getSessionIDs( std::vector< int >& ids )
     _p_session->getSessionIDs( ids );
 }
 
-NodeInfo* NetworkDevice::getNodeInfo()
-{
-    if ( _clientSessionStable || _serverSessionStable )
-        return &_nodeInfo;
-
-    return NULL;
-}
-
 int NetworkDevice::getSessionID()
 {
     assert( _p_session && "no valid session exists!" );
@@ -616,14 +650,61 @@ void NetworkDevice::updateServer( float /*deltaTime*/ )
         PreconnectDataClient* p_data = reinterpret_cast< PreconnectDataClient* >( s_buffer );
         if ( p_data->_typeId == static_cast< unsigned char >( YAF3DNW_PRECON_DATA_CLIENT ) )
         {
-            log_info << "NetworkDevice: server is requested for a new client connection ... " << std::endl;
-            // send server node
+            std::string conurl = _p_session->GetURLFromSessionID( sessionId );
+
+            log_info << "NetworkDevice: server is requested for a new client connection, url  " << conurl << std::endl;
+
+            // check if login and passwd exist
+            std::string login;
+            std::string passwd;
+            if ( p_data->_p_login[ 0 ] )
+            {
+                p_data->_p_login[ sizeof(  p_data->_p_login ) - 1 ] = 0;
+                login =  p_data->_p_login;
+            }
+
+            if ( p_data->_p_passwd[ 0 ] )
+            {
+                p_data->_p_passwd[ sizeof(  p_data->_p_passwd ) - 1 ] = 0;
+                passwd =  p_data->_p_passwd;
+            }
+
+            // send paket
             PreconnectDataServer sendData;
+            memset( &sendData, 0, sizeof( PreconnectDataServer ) );
             sendData._typeId = static_cast< unsigned char >( YAF3DNW_PRECON_DATA_SERVER );
-            strcpy( sendData._p_levelName, _nodeInfo._levelName.c_str() );
-            strcpy( sendData._p_serverName, _nodeInfo._nodeName.c_str() );
             sendData._protocolVersion = YAF3D_NETWORK_PROT_VERSION;
-            _p_session->DataSend( sessionId, reinterpret_cast< void* >( &sendData ), sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
+            strcpy( sendData._p_levelName, _serverNodeInfo._levelName.c_str() );
+            strcpy( sendData._p_serverName, _serverNodeInfo._nodeName.c_str() );
+            sendData._userID = static_cast< unsigned int >( -1 );
+
+            if ( _p_cbAuthentification )
+            {
+                // check the type of user ID!
+                unsigned int userID = static_cast< unsigned int >( -1 );
+                if ( !_p_cbAuthentification->authentify( login, passwd, userID ) )
+                {
+                    // access denied
+                    sendData._accessGranted = false;
+                    _p_session->DataSend( sessionId, reinterpret_cast< void* >( &sendData ), sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
+                    log_info << "NetworkDevice: access denied to user '" << login << "'" << std::endl;
+                }
+                else
+                {
+                    // send server node
+                    sendData._accessGranted = true;
+                    sendData._userID        = userID;
+                    _p_session->DataSend( sessionId, reinterpret_cast< void* >( &sendData ), sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
+                    log_info << "NetworkDevice: access granted to user '" << login << "'" << std::endl;
+                }
+            }
+            else
+            {
+                // send server node
+                sendData._accessGranted = true;
+                _p_session->DataSend( sessionId, reinterpret_cast< void* >( &sendData ), sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
+                log_info << "NetworkDevice: access granted to user '" << login << "'" << std::endl;
+            }
         }
     }
 }

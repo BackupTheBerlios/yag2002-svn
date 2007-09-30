@@ -44,7 +44,9 @@ namespace yaf3d
 #define YAF3DNW_PRECON_DATA_CLIENT      0x01
 struct PreconnectDataClient
 {
-    unsigned char  _typeId;  // set this to YAF3DNW_PRECON_DATA_CLIENT
+    unsigned char  _typeId;           // set this to YAF3DNW_PRECON_DATA_CLIENT
+    char           _p_login[ 64 ];    // login name
+    char           _p_passwd[ 64 ];   // password
 };
 
 
@@ -55,6 +57,8 @@ struct PreconnectDataServer
     unsigned char  _typeId;  // set this to YAF3DNW_PRECON_DATA_SERVER    
     char           _p_levelName[ 64 ];
     char           _p_serverName[ 64 ];
+    bool           _accessGranted;
+    unsigned int   _userID;
     unsigned int   _protocolVersion;
 };
 
