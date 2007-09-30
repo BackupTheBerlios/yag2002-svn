@@ -51,37 +51,32 @@ class StorageNetworking : _RO_DO_PUBLIC_RO( StorageNetworking )
         //! Object can now be initialized in scene
         void                                        PostObjectCreate();
 
-        //! Callback class for authentification
-        class CallbackAuthResult
+        //! Callback class for account info retrieval.
+        //!  Note: only one request can by handled at the same time.
+        class CallbackAccountInfoResult
         {
             public:
 
                 //! If granted is true then the authentification was successfull.
-                virtual void                        authResult( bool granted ) = 0;
+                virtual void                        accountInfoResult( tAccountInfoData& info ) = 0;
         };
 
-        //! Authentify with given login and passwd. The call back is called when the server responses.
-        void                                        authentify( const std::string& login, const std::string& passwd, CallbackAuthResult* p_callback );
+        //! Request the server for account information, used by client. The callback is called when the result arrives.
+        void                                        requestAccountInfo( unsigned int userID, CallbackAccountInfoResult* p_callback );
 
     protected:
 
         // Internal RN Overrides, do not use these methods!
         //-----------------------------------------------------------------------------------//
 
-        //! Request the server for authentification.
-        void                                        RPC_Authentify( tAuthData auth );
+        //! Request the server for account info.
+        void                                        RPC_RequestAccountInfo( tAccountInfoData info );
 
-        //! Result of authentification, if false then the authentification failed.
-        void                                        RPC_AuthentificationResult( bool granted );
+        //! Result of account info called on client.
+        void                                        RPC_AccountInfoResult( tAccountInfoData info );
 
-        //! Flag showing the authentification result
-        bool                                        _isAuthentified;
-
-        //! Authentification callback
-        CallbackAuthResult*                         _p_authCallback;
-
-        //! TODO: remove this
-        int                                         _dummy;
+        //! Account info callback
+        CallbackAccountInfoResult*                  _p_accountInfoCallback;
 
     friend class _MAKE_RO( StorageNetworking );
 };

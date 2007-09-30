@@ -33,6 +33,7 @@
 
 #include <vrc_main.h>
 #include "vrc_storagenetworking.h"
+#include "vrc_storageclient.h"
 #include <RNReplicaNet/Inc/DataBlock_Function.h>
 
 using namespace RNReplicaNet;
@@ -41,77 +42,61 @@ namespace vrc
 {
 
 StorageNetworking::StorageNetworking() :
- _p_authCallback( NULL ),
- _isAuthentified( false )
+ _p_accountInfoCallback( NULL )
 {
 }
 
 StorageNetworking::~StorageNetworking()
 {
+    // unset the networking object in storage client
+    StorageClient::get()->setNetworking( NULL );
 }
 
 void StorageNetworking::PostObjectCreate()
-{
-    // a new client has joined
+{ // a new client has joined
 
-    //! TODO: setup the storage proxy in player utils
-    //        the proxy will be implemented in player utils and provides all necessary methods for authentifying and data exchange
+    // set the networking object in storage client
+    StorageClient::get()->setNetworking( this );
 }
 
-void StorageNetworking::authentify( const std::string& login, const std::string& passwd, CallbackAuthResult* p_callback )
+void StorageNetworking::requestAccountInfo( unsigned int userID, CallbackAccountInfoResult* p_callback )
 { // used by connecting client
-    _p_authCallback = p_callback;
 
-    tAuthData auth;
-    memset( auth._login, 0, sizeof( auth._login ) );
-    memset( auth._passwd, 0, sizeof( auth._passwd ) );
-    strcpy_s( auth._login, login.length(), login.c_str() );
-    strcpy_s( auth._passwd, passwd.length(), passwd.c_str() );
+    assert( p_callback && "a valid callback for account request is needed!" );
+    assert( ( _p_accountInfoCallback == NULL ) && "only one request for account info can be handled at the same time!" );
 
-    // call the authentification rpc on server
-    MASTER_FUNCTION_CALL( RPC_Authentify( auth ) );
+    _p_accountInfoCallback = p_callback;
 
-    memset( auth._login, 0, sizeof( auth._login ) );
-    memset( auth._passwd, 0, sizeof( auth._passwd ) );
+    // call the account info rpc on server
+    tAccountInfoData info;
+    memset( &info, 0, sizeof( info ) );
+    info._userID = userID;
+    MASTER_FUNCTION_CALL( RPC_RequestAccountInfo( info ) );
 }
 
-void StorageNetworking::RPC_Authentify( tAuthData auth )
+void StorageNetworking::RPC_RequestAccountInfo( tAccountInfoData info )
 { // this method is called only on server
 
-    auth._login[ sizeof( auth._login ) - 1 ] = 0;
-    auth._passwd[ sizeof( auth._passwd ) - 1 ] = 0;
-    std::string login( auth._login );
-    std::string passwd( auth._passwd );
+    log_debug << "storage: user ID '" << info._userID << "' requests for account info ..." << std::endl;
 
-    //! TODO: use the account manager for authentification
-    std::string checklogin( "guest" );
-    std::string checkpasswd( "1234" );
+    //! TODO: use the storage server for retrieving account info
+    info._registrationDate = -1;
+    info._onlineTime       = -1;
+    info._priviledges      = -1;
 
-    // sent out the authentification result
-    if ( ( login == checklogin ) && ( passwd == checkpasswd ) )
-    {
-        ALL_REPLICAS_FUNCTION_CALL( RPC_AuthentificationResult( true ) );
-        _isAuthentified = true;
-    }
-    else
-    {
-        ALL_REPLICAS_FUNCTION_CALL( RPC_AuthentificationResult( false ) );
-        _isAuthentified = false;
-    }
-
-    memset( auth._login, 0, sizeof( auth._login ) );
-    memset( auth._passwd, 0, sizeof( auth._passwd ) );
+    // sent out the account info result
+    ALL_REPLICAS_FUNCTION_CALL( RPC_AccountInfoResult( info ) );
 }
 
-void StorageNetworking::RPC_AuthentificationResult( bool granted )
+void StorageNetworking::RPC_AccountInfoResult( tAccountInfoData info )
 {// this method is called on client ( also on remote clients )
 
-    // set the authentification result flag
-    _isAuthentified = granted;
-
     // notify about authentification result
-    if ( _p_authCallback )
-        _p_authCallback->authResult( granted );
+    if ( _p_accountInfoCallback )
+        _p_accountInfoCallback->accountInfoResult( info );
+
+    // reset the callback
+    _p_accountInfoCallback = NULL;
 }
 
 } // namespace vrc
