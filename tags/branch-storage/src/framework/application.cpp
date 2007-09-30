@@ -452,7 +452,7 @@ bool Application::initialize( int argc, char **argv )
         }
 
         // now load level
-        std::string levelname = YAF3D_LEVEL_CLIENT_DIR + _p_networkDevice->getNodeInfo()->getLevelName();
+        std::string levelname = YAF3D_LEVEL_CLIENT_DIR + nodeinfo.getLevelName();
         log_info << "Application: loading level file '" << levelname << "'" << std::endl;
         // load the level and setup things
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( levelname );
@@ -525,7 +525,7 @@ bool Application::initialize( int argc, char **argv )
 void Application::run()
 {
     // set game state
-    _p_gameState->setState( GameState::Running );
+    _p_gameState->setState( GameState::StartRunning );
 
     // store sound manager reference for faster access in loop
     _p_soundManager = SoundManager::get();
