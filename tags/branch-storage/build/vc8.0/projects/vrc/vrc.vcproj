@@ -905,6 +905,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_dialoglogin.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_dialoglogin.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\gui\vrc_dialogplayercfg.cpp"
 					>
 				</File>
@@ -1561,6 +1569,82 @@
 					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\maintenance\networkingRoles\_RO_NetworkNotification.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="storage"
+				>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_storageclient.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_storageclient.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_storagenetworking.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_storagenetworking.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_storageserver.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_storageserver.h"
+					>
+				</File>
+				<Filter
+					Name="nw-roles"
+					>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\networkingRoles\_RO_StorageNetworking.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug-Server|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release-Server|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\networkingRoles\_RO_StorageNetworking.h"
 						>
 					</File>
 				</Filter>
