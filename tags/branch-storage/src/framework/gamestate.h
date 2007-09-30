@@ -64,8 +64,7 @@ class GameState : public Singleton< GameState >
             UnknownState = 0x20,
             Initializing,           // set at startup
             GraphicsInitialized,    // set after initializing the graphics
-            Menu,                   // user is in menu
-            Running,                // running game
+            StartRunning,           // start running game
             Pausing,                // game pausing
             Leaving,                // leaving a level
             Quitting,               // quitting application
