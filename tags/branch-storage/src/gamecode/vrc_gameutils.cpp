@@ -30,7 +30,8 @@
 
 #include <vrc_main.h>
 #include "vrc_gameutils.h"
-
+#include "storage/vrc_storageclient.h"
+#include "storage/vrc_storageserver.h"
 
 YAF3D_SINGLETON_IMPL( vrc::gameutils::PlayerUtils )
 YAF3D_SINGLETON_IMPL( vrc::gameutils::GuiUtils )
@@ -126,6 +127,36 @@ void VRCStateHandler::onStateChange( unsigned int state )
         }
         break;
 
+        case yaf3d::GameState::StartRunning :
+        {
+            // setup the storage server
+            if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
+            {
+                try
+                {
+                    StorageServer::get()->initialize();
+                }
+                catch ( const StorageServerException& e )
+                {
+                    log_error << "could not initialize the storage server!" << std::endl;
+                    log_error << " reason: " << e.what() << std::endl;
+                }
+            }
+            else if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client )
+            {
+                try
+                {
+                    StorageClient::get()->initialize();
+                }
+                catch ( const StorageClientException& e )
+                {
+                    log_error << "could not initialize the storage client!" << std::endl;
+                    log_error << " reason: " << e.what() << std::endl;
+                }
+            }
+        }
+        break;
+
         case yaf3d::GameState::Quitting :
         {
             // deregister this instance for getting game state changes
@@ -135,6 +166,16 @@ void VRCStateHandler::onStateChange( unsigned int state )
 
         case yaf3d::GameState::Shutdown :
         {
+            // shutdown the storage
+            if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
+            {
+                StorageServer::get()->shutdown();
+            }
+            else if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client )
+            {
+                StorageClient::get()->shutdown();
+
+            }
         }
         break;
 
