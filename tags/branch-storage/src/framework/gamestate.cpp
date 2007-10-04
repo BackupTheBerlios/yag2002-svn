@@ -30,6 +30,7 @@
  ################################################################*/
 
 #include <base.h>
+#include "log.h"
 #include "gamestate.h"
 #include "application.h"
 
@@ -88,12 +89,35 @@ bool GameState::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::G
     return false;
 }
 
+#if WIN32
+BOOL WINAPI handlerRoutine( DWORD dwCtrlType )  //  control signal type
+{
+    // shutdown or Ctrl-C signal
+    switch ( dwCtrlType )
+    {
+        case CTRL_CLOSE_EVENT:
+        case CTRL_C_EVENT:
+        case CTRL_SHUTDOWN_EVENT:
+        {
+            Application::get()->stop();
+            break;
+        }
+    }
+
+    return TRUE;
+}
+#endif
+
 //! Implementation of GameState
 GameState::GameState() :
 _curState( GameState::UnknownState ),
 _gameMode( GameState::UnknownMode ),
 _appWindowState( GameState::Restored )
 {
+    // set the console event handler in win32
+#if WIN32
+    SetConsoleCtrlHandler( handlerRoutine,  TRUE );
+#endif
 }
 
 GameState::~GameState()
@@ -102,6 +126,8 @@ GameState::~GameState()
 
 void GameState::shutdown()
 {
+    log_info << "GameState: shutting down" << std::endl;
+
     destroy();
 }
 
@@ -113,6 +139,7 @@ void GameState::setState( unsigned int state )
             ( state == GameState::Initializing        ) ||
             ( state == GameState::GraphicsInitialized ) ||
             ( state == GameState::StartRunning        ) ||
+            ( state == GameState::EnterMainLoop       ) ||
             ( state == GameState::Pausing             ) ||
             ( state == GameState::Leaving             ) ||
             ( state == GameState::Quitting            ) ||

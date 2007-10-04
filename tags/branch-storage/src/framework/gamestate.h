@@ -65,6 +65,7 @@ class GameState : public Singleton< GameState >
             Initializing,           // set at startup
             GraphicsInitialized,    // set after initializing the graphics
             StartRunning,           // start running game
+            EnterMainLoop,
             Pausing,                // game pausing
             Leaving,                // leaving a level
             Quitting,               // quitting application
