@@ -30,22 +30,35 @@
  ################################################################*/
 
 #include <vrc_main.h>
+#include <vrc_gameutils.h>
 #include "vrc_storageserver.h"
 #include "vrc_storagenetworking.h"
 #include "database/vrc_mysqlstorage.h"
 #include "database/vrc_account.h"
 #include "database/vrc_connectiondata.h"
 
+//! Multi-platform 'getch()' for reading the db password from console
+#ifdef WIN32
+    #include <conio.h>
+#else
+    #include <termios.h>
+    int getch(void)
+    {
+       int ch;
+       struct termios oldt, newt;
+
+       tcgetattr(STDIN_FILENO, &oldt);
+       newt = oldt;
+       newt.c_lflag &= ~(ICANON | ECHO);
+       tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+       ch = getchar();
+       tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+       return ch;
+    }
+#endif
+
 //! Implement the singleton
 YAF3D_SINGLETON_IMPL( vrc::StorageServer )
-
-//TODO: tbd along with configuration file
-// default values for database connection
-#define SERVER               "localhost"
-#define PORT                 3306
-#define SCHEMA               "demo_account_mgm"
-#define USER                 "demouser"
-#define PASSWD               "demo2007"
 
 //! Actual DB table names
 #define DBTBL_ACCOUNTS       "accounts"
@@ -95,12 +108,38 @@ void StorageServer::initialize() throw ( StorageServerException )
     if ( _p_networking )
         throw StorageServerException( "Storage server is already initialized." );
 
+    std::string  dbip;
+    std::string  dbschema;
+    std::string  dbuser;
+    std::string  dbpasswd;
+    unsigned int dbport;
+
+    // get the password from console
+    std::cout << "################################" << std::endl;
+    std::cout << ">>> enter the database password: ";
+    int c = 0;
+    do
+    {
+        c = _getch();
+        if ( c != 0xd )
+            dbpasswd += c;
+    }
+    while ( c != 0xd );
+    std::cout << std::endl;
+    std::cout << "################################" << std::endl;
+    std::cout << std::endl;
+
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_DB_IP, dbip );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_DB_SCHEMA, dbschema );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_DB_USER, dbuser );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_DB_PORT, dbport );
+
     ConnectionData connData;
-    connData._server = SERVER;
-    connData._port   = PORT;
-    connData._schema = SCHEMA;
-    connData._user   = USER;
-    connData._passwd = PASSWD;
+    connData._server = dbip;
+    connData._port   = dbport;
+    connData._schema = dbschema;
+    connData._user   = dbuser;
+    connData._passwd = dbpasswd;
     connData._content[ TBL_NAME_USERACCOUNTS  ] = DBTBL_ACCOUNTS;
     connData._content[ TBL_NAME_GAMEWORLD     ] = DBTBL_GAMEWORLD;
     connData._content[ TBL_NAME_GAMEITEMS     ] = DBTBL_GAMEITEMS;
