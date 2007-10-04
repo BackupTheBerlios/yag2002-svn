@@ -68,6 +68,10 @@ namespace gameutils
 #define VRC_GS_VOICE_INPUT_GAIN             "voiceInputGain"
 #define VRC_GS_VOICE_OUTPUT_GAIN            "voiceOutputGain"
 #define VRC_GS_VOICECHAT_CHANNEL            "voiceChatChannel"
+#define VRC_GS_DB_IP                        "dbIP"
+#define VRC_GS_DB_PORT                      "dbPort"
+#define VRC_GS_DB_SCHEMA                    "dbSchema"
+#define VRC_GS_DB_USER                      "dbUser"
 
 //! Settings default values
 #define VRC_GS_DEFAULT_PLAYER_CONFIG        "default_cfg"
@@ -153,6 +157,14 @@ class VRCStateHandler : public yaf3d::GameState::CallbackStateChange
         float                                       _voiceOutputGain;
 
         unsigned int                                _voiceChatChannel;
+
+        std::string                                 _dbIp;
+
+        unsigned int                                _dbPort;
+
+        std::string                                 _dbSchema;
+
+        std::string                                 _dbUser;
 };
 
 //! Single instance providing player-related utility services

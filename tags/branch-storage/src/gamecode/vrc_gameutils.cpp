@@ -32,6 +32,7 @@
 #include "vrc_gameutils.h"
 #include "storage/vrc_storageclient.h"
 #include "storage/vrc_storageserver.h"
+#include <conio.h>
 
 YAF3D_SINGLETON_IMPL( vrc::gameutils::PlayerUtils )
 YAF3D_SINGLETON_IMPL( vrc::gameutils::GuiUtils )
@@ -75,7 +76,11 @@ _voiceChatEnable( true ),
 _voiceChatInputDev( 0 ),
 _voiceInputGain( VRC_GS_DEFAULT_SOUND_VOLUME ),
 _voiceOutputGain( VRC_GS_DEFAULT_SOUND_VOLUME ),
-_voiceChatChannel( VRC_GS_DEFAULT_VOICE_CHANNEL )
+_voiceChatChannel( VRC_GS_DEFAULT_VOICE_CHANNEL ),
+_dbIp( "localhost" ),
+_dbPort( 3306 ),
+_dbSchema( "vrc" ),
+_dbUser( "vrcserver" )
 {
     // register this instance for getting game state changes
     yaf3d::GameState::get()->registerCallbackStateChange( this );
@@ -114,6 +119,10 @@ void VRCStateHandler::onStateChange( unsigned int state )
             yaf3d::Configuration::get()->addSetting( VRC_GS_VOICE_INPUT_GAIN,       _voiceInputGain    );
             yaf3d::Configuration::get()->addSetting( VRC_GS_VOICE_OUTPUT_GAIN,      _voiceOutputGain   );
             yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_CHANNEL,      _voiceChatChannel  );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_DB_IP,                  _dbIp              );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_DB_PORT,                _dbPort            );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_DB_SCHEMA,              _dbSchema          );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_DB_USER,                _dbUser            );
 
             // now load the setting values from config file
             yaf3d::Configuration::get()->load();
@@ -157,10 +166,13 @@ void VRCStateHandler::onStateChange( unsigned int state )
         }
         break;
 
+        case yaf3d::GameState::EnterMainLoop :
+        {
+        }
+        break;
+
         case yaf3d::GameState::Quitting :
         {
-            // deregister this instance for getting game state changes
-            yaf3d::GameState::get()->registerCallbackStateChange( this, false );
         }
         break;
 
@@ -174,7 +186,6 @@ void VRCStateHandler::onStateChange( unsigned int state )
             else if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client )
             {
                 StorageClient::get()->shutdown();
-
             }
         }
         break;
