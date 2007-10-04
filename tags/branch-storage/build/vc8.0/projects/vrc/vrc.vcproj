@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm150"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.11.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include&quot;;&quot;$(YAF3D_DEP_DIR)\Scripting\lua5.1\include&quot;;../../../../src/framework;../../../../src/gamecode"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.11.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include&quot;;&quot;$(YAF3D_DEP_DIR)\Scripting\lua5.1\include&quot;;&quot;$(YAF3D_DEP_DIR)\Storage\mysql++-2.3.2\lib&quot;;&quot;$(YAF3D_DEP_DIR)\Storage\mysql-5.0.45\include&quot;;&quot;$(YAF3D_DEP_DIR)\Storage\openssl-0.9.8e\inc32&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="_DEBUG;WIN32;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -67,7 +67,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsd.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgcald.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib RNPlatformDMDLL.lib RNXPCompressionDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib libpng.lib fmodex_vc.lib lua51.lib libspeexd.lib frameworkd.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsd.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgcald.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib RNPlatformDMDLL.lib RNXPCompressionDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib libpng.lib fmodex_vc.lib lua51.lib libspeexd.lib libmysqld.lib mysqlppd.lib libeay32.lib frameworkd.lib"
 				OutputFile="../../../../bin/win32/vrc_debug.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)\LibDotNet2005&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs-vc8.0&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
@@ -223,7 +223,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm150"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.11.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include&quot;;&quot;$(YAF3D_DEP_DIR)\LOD\glod\include&quot;;&quot;$(YAF3D_DEP_DIR)\Scripting\lua5.1\include&quot;;../../../../src/framework;../../../../src/gamecode"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.11.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include&quot;;&quot;$(YAF3D_DEP_DIR)\Scripting\lua5.1\include&quot;;&quot;$(YAF3D_DEP_DIR)\Storage\mysql++-2.3.2\lib&quot;;&quot;$(YAF3D_DEP_DIR)\Storage\mysql-5.0.45\include&quot;;&quot;$(YAF3D_DEP_DIR)\Storage\openssl-0.9.8e\inc32&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="_DEBUG;WIN32;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -248,7 +248,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsd.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgcald.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib RNPlatformDMDLL.lib RNXPCompressionDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib libpng.lib fmodex_vc.lib lua51.lib libspeexd.lib framework-serverd.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsd.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgcald.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib RNPlatformDMDLL.lib RNXPCompressionDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib libpng.lib fmodex_vc.lib lua51.lib libspeexd.lib libmysqld.lib mysqlppd.lib libeay32.lib framework-serverd.lib"
 				OutputFile="../../../../bin/win32/vrc-server_debug.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)\LibDotNet2005&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs-vc8.0&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
@@ -1645,6 +1645,42 @@
 					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\storage\networkingRoles\_RO_StorageNetworking.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="database"
+					>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_account.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_account.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_basestorage.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_basestorage.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_basestorage.inl"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_connectiondata.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_mysqlstorage.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_mysqlstorage.h"
 						>
 					</File>
 				</Filter>
