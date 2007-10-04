@@ -644,6 +644,14 @@ void EnMenu::updateEntity( float deltaTime )
 
         case LoadingLevel:
         {
+            // problems getting level file info?
+            if ( !_queuedLevelFile.length() )
+            {
+                _levelSelectDialog->enable( false );
+                _menuState = Visible;
+                break;
+            }
+
             yaf3d::LevelManager::get()->loadLevel( _queuedLevelFile );
             _queuedLevelFile = ""; // reset the queue
 
