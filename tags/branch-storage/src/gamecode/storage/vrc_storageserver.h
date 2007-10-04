@@ -35,11 +35,15 @@
 #include <vrc_main.h>
 #include "vrc_storagenetworking.h"
 
+
 namespace vrc
 {
 
 //! Class declarations
 class StorageNetworking;
+class BaseStorage;
+class Account;
+
 namespace gameutils
 {
     class VRCStateHandler;
@@ -93,8 +97,17 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >,  public yaf
         //! Override of CallbackAuthentification method for authentification when a client connects
         bool                                        authentify( const std::string& login, const std::string& passwd, unsigned int& userID );
 
+        //! Flag indicating that a connection to storage data base has been established
+        bool                                        _connectionEstablished;
+
         //! Networking for storage
         StorageNetworking*                          _p_networking;
+
+        //! Data base storage
+        BaseStorage*                                _p_storage;
+
+        //! User account
+        Account*                                    _p_account;
 
     friend class StorageNetworking;
     friend class gameutils::VRCStateHandler;
