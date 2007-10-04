@@ -126,6 +126,8 @@ TerrainManager::~TerrainManager()
 
 void TerrainManager::shutdown()
 {
+    log_info << "TerrainManager: shutting down" << std::endl;
+
     //release all patches
     std::map< unsigned int, TerrainSection* >::iterator beg = _sectionMap.begin(), end = _sectionMap.end();
     for ( ; beg != end; ++beg )

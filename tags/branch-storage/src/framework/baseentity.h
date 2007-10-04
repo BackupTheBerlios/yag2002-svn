@@ -221,7 +221,7 @@ class BaseEntity
         inline void                                 setInitialized( bool init );
 
         /**
-        * Returns the information wether the entity is already initialized ( usen by EntityManager ).
+        * Returns the information wether the entity is already initialized ( used by EntityManager ).
         * \return                                   Initialization flag
         */
         inline bool                                 isInitialized();

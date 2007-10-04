@@ -48,6 +48,8 @@ ShaderContainer::~ShaderContainer()
 
 void ShaderContainer::shutdown()
 {
+    log_info << "ShaderContainer: shutting down" << std::endl;
+
     // destroy the singleton
     destroy();
 }

@@ -29,6 +29,7 @@
  ################################################################*/
 
 #include <base.h>
+#include "log.h"
 #include "configuration.h"
 #include "application.h"
 #include "settings.h"
@@ -203,6 +204,8 @@ bool Configuration::setSettingValueAsString( const std::string& name, const std:
 
 void Configuration::shutdown()
 {
+    log_info << "Configuration: shutting down" << std::endl;
+
     // store the latest changes in profile
     SettingsManager::get()->storeProfile( YAF3D_GAMESETTING_PROFILENAME );
     SettingsManager::get()->destroyProfile( YAF3D_GAMESETTING_PROFILENAME );

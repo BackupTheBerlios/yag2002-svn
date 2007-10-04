@@ -399,6 +399,8 @@ void ShadowManager::enable( bool en )
 
 void ShadowManager::shutdown()
 {
+    log_info << "ShadowManager: shutting down" << std::endl;
+
     // clean up resources
     enable( false );
 

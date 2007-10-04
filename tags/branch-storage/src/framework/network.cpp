@@ -239,6 +239,8 @@ void NetworkDevice::disconnect()
 
 void NetworkDevice::shutdown()
 {
+    log_info << "NetworkDevice: shutting down" << std::endl;
+
     if ( _p_session )
     {
         _p_session->Disconnect();
