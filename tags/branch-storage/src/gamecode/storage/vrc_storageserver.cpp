@@ -37,22 +37,22 @@
 #include "database/vrc_account.h"
 #include "database/vrc_connectiondata.h"
 
-//! Multi-platform 'getch()' for reading the db password from console
+//! Multi-platform '_getch()' for reading the db password from console
 #ifdef WIN32
     #include <conio.h>
 #else
     #include <termios.h>
-    int getch(void)
+    int _getch()
     {
        int ch;
        struct termios oldt, newt;
 
-       tcgetattr(STDIN_FILENO, &oldt);
+       tcgetattr( STDIN_FILENO, &oldt );
        newt = oldt;
-       newt.c_lflag &= ~(ICANON | ECHO);
-       tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+       newt.c_lflag &= ~( ICANON | ECHO );
+       tcsetattr( STDIN_FILENO, TCSANOW, &newt );
        ch = getchar();
-       tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+       tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
        return ch;
     }
 #endif
@@ -164,12 +164,15 @@ void StorageServer::initialize() throw ( StorageServerException )
     // set the authentification callback in network device, whenever a client connects then 'authentify' is called.
     yaf3d::NetworkDevice::get()->setAuthCallback( this );
 
+    // register for getting network session notifications ( client left notification )
+    yaf3d::NetworkDevice::get()->registerSessionNotify( this );
+
     _connectionEstablished = true;
 
     log_info << "storage successfully initialized" << std::endl;
 }
 
-bool StorageServer::authentify( const std::string& login, const std::string& passwd, unsigned int& userID )
+bool StorageServer::authentify( int sessionID, const std::string& login, const std::string& passwd, unsigned int& userID )
 {
     if ( !_connectionEstablished )
         return false;
@@ -180,6 +183,15 @@ bool StorageServer::authentify( const std::string& login, const std::string& pas
     if ( !login.length() )
     {
         userID = static_cast< unsigned int >( -1 );
+
+       // cache the user login state
+        AccountData acc;
+        UserState   state;
+        state._sessionID   = sessionID;
+        state._guest       = true;
+        state._userAccount = acc; // empty account info
+        _userCache[ sessionID ] = state;
+
         return true;
     }
 
@@ -194,7 +206,26 @@ bool StorageServer::authentify( const std::string& login, const std::string& pas
 
     userID = acc.getUserId();
 
+    // cache the user login state
+    UserState state;
+    state._sessionID   = sessionID;
+    state._guest       = true;
+    state._userAccount = acc;
+    _userCache[ sessionID ] = state;
+
     return true;
+}
+
+void StorageServer::onSessionLeft( int sessionID )
+{
+    std::map< int, UserState >::iterator p_end = _userCache.end(), p_user = _userCache.find( sessionID );
+    if ( p_user == p_end )
+    {
+        log_error << "StorageServer: internal error, session ID was not cached before!" << std::endl;
+        return;
+    }
+
+    _userCache.erase( p_user );
 }
 
 

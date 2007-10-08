@@ -60,7 +60,7 @@ _lastName( "" ),
 _nickName( "" ),
 _email( "" ),
 _lastLogin( 0 ),
-_userID( 0 )
+_userID( static_cast< unsigned int >( -1 ) )
 {
 }
 
@@ -261,7 +261,7 @@ bool Account::updateAccount( const AccountData& account, const std::string& pass
 
     std::string mdpasswd;
 
-    if ( password.compare( "" ) != 0 )
+    if ( password != "" )
     {
         unsigned char md[ SHA_DIGEST_LENGTH ];
         char          p_buf[ 80 ];
@@ -294,7 +294,7 @@ bool Account::updateAccount( const AccountData& account, const std::string& pass
     tmp.append( ",email='"    ); tmp.append( account.getEmail()     ); tmp.append( "'" );
 
     // check if we have a new password
-    if ( password.compare( "" ) != 0 )
+    if ( password != "" )
     {
         tmp.append( ",password='" ); tmp.append( mdpasswd ); tmp.append( "'" );
     }

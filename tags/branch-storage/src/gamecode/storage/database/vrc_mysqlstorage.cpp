@@ -154,8 +154,6 @@ std::vector< BaseStorage::col_pair > MysqlStorage::getData( const std::string& d
 
 bool MysqlStorage::setData( const std::string& data, const std::string& from, const std::vector< std::string >* p_cond )
 {
-    //TODO: darf nur ausgeführt werden, wenn bereits eine verbindung zur datenbank existiert
-
     try
     {
 

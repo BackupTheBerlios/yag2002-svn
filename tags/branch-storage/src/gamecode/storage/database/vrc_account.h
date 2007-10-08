@@ -74,7 +74,7 @@ class AccountData
 
         void                                    setUserId( const unsigned int userID );
 
-    private:
+    protected:
 
         std::string                             _userName;
 
@@ -96,7 +96,7 @@ class Account
 {
     public:
 
-                                                Account( BaseStorage* p_storage );
+        explicit                                Account( BaseStorage* p_storage );
 
                                                 ~Account();
 

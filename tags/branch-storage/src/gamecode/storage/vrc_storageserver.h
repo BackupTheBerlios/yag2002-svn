@@ -34,7 +34,7 @@
 
 #include <vrc_main.h>
 #include "vrc_storagenetworking.h"
-
+#include "database/vrc_account.h"
 
 namespace vrc
 {
@@ -75,12 +75,15 @@ class StorageServerException : public std::runtime_error
 
 
 //! Storage server
-class StorageServer : public yaf3d::Singleton< vrc::StorageServer >,  public yaf3d::CallbackAuthentification
+class StorageServer : public yaf3d::Singleton< vrc::StorageServer >,  public yaf3d::CallbackAuthentification, public yaf3d::SessionNotifyCallback
 {
     public:
 
         //! Process an authentification
         bool                                        authentify( const std::string& login, const std::string& passwd );
+
+        //! Get the inventory of given user
+//        bool                                        getUserInventory( unsigned int userID, UserInventory& invent );
 
     protected:
 
@@ -95,7 +98,10 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >,  public yaf
         void                                        shutdown();
 
         //! Override of CallbackAuthentification method for authentification when a client connects
-        bool                                        authentify( const std::string& login, const std::string& passwd, unsigned int& userID );
+        bool                                        authentify( int sessionID, const std::string& login, const std::string& passwd, unsigned int& userID );
+
+        //! Override of method for getting notification when a client leaves the network
+        void                                        onSessionLeft( int sessionID );
 
         //! Flag indicating that a connection to storage data base has been established
         bool                                        _connectionEstablished;
@@ -108,6 +114,29 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >,  public yaf
 
         //! User account
         Account*                                    _p_account;
+
+        //! Struct used for user cache
+        class UserState
+        {
+            public:
+                                                UserState() :
+                                                 _sessionID( -1 ),
+                                                 _guest( false )
+                                                {
+                                                }
+
+                //! Client session ID
+                int                             _sessionID;
+
+                //! Logged in as guest?
+                bool                            _guest;
+
+                //! User accout
+                AccountData                     _userAccount;
+        };
+
+        //! User cache < session ID, user state >
+        std::map< int, UserState >                  _userCache;
 
     friend class StorageNetworking;
     friend class gameutils::VRCStateHandler;
