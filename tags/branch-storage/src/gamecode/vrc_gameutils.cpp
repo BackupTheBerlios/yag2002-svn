@@ -141,14 +141,20 @@ void VRCStateHandler::onStateChange( unsigned int state )
             // setup the storage server
             if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
             {
-                try
+                // check if the server is configured to request client authentification
+                bool needsAuth = false;
+                yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_AUTH, needsAuth );
+                if ( needsAuth )
                 {
-                    StorageServer::get()->initialize();
-                }
-                catch ( const StorageServerException& e )
-                {
-                    log_error << "could not initialize the storage server!" << std::endl;
-                    log_error << " reason: " << e.what() << std::endl;
+                    try
+                    {
+                        StorageServer::get()->initialize();
+                    }
+                    catch ( const StorageServerException& e )
+                    {
+                        log_error << "could not initialize the storage server!" << std::endl;
+                        log_error << " reason: " << e.what() << std::endl;
+                    }
                 }
             }
             else if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client )
@@ -181,7 +187,11 @@ void VRCStateHandler::onStateChange( unsigned int state )
             // shutdown the storage
             if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
             {
-                StorageServer::get()->shutdown();
+                // check if the server is configured to request client authentification
+                bool needsAuth = false;
+                yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_AUTH, needsAuth );
+                if ( needsAuth )
+                    StorageServer::get()->shutdown();
             }
             else if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client )
             {
