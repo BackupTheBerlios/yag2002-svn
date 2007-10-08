@@ -255,7 +255,7 @@ void NetworkDevice::shutdown()
 
     _mode = NetworkDevice::NONE;
 
-    _serverIP            = "";
+    _serverIP = "";
 
     // destroy singleton
     destroy();
@@ -425,17 +425,9 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, NodeI
     PreconnectDataClient preconnectData;
     memset( &preconnectData, 0, sizeof( PreconnectDataClient ) );
     preconnectData._typeId = ( unsigned char )YAF3DNW_PRECON_DATA_CLIENT;
-
-    if ( login.length() )
-        strcpy_s( preconnectData._p_login, sizeof( preconnectData._p_login ) - 1, login.c_str() );
-
-    if ( passwd.length() )
-        strcpy_s( preconnectData._p_passwd, sizeof( preconnectData._p_passwd ) - 1, passwd.c_str() );
-
+    preconnectData._state  = eConnecting;
+ 
     _p_session->DataSend( RNReplicaNet::kReplicaNetUnknownUniqueID, &preconnectData, sizeof( PreconnectDataClient ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
-
-    // clear the preconnect struct for security reasons
-    memset( &preconnectData, 0, sizeof( PreconnectDataClient ) );
 
     int          sessionId;
     void*        p_buffer[ 512 ];
@@ -469,27 +461,59 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, NodeI
                     throw NetworkException( msg );
                 }
 
-                // check if server granted access
-                if ( p_data->_accessGranted )
+                switch( p_data->_state )
                 {
-                    p_data->_p_levelName[ 63 ]  = 0;
-                    p_data->_p_serverName[ 63 ] = 0;
-                    nodeInfo._accessGranted = true;
+                    case eLogin:
+                    {
+                        PreconnectDataClient preconnectData;
+                        memset( &preconnectData, 0, sizeof( PreconnectDataClient ) );
+                        preconnectData._typeId = ( unsigned char )YAF3DNW_PRECON_DATA_CLIENT;
+                        preconnectData._state  = eLogin;
 
-                    if ( p_data->_p_levelName[ 0 ] )
-                        nodeInfo._levelName = p_data->_p_levelName;
-                    
-                    if ( p_data->_p_serverName[ 0 ] )
-                        nodeInfo._nodeName  = p_data->_p_serverName;
+                        // check if the server needs authentification
+                        if ( p_data->_needAuthentification )
+                        {
+                            if ( login.length() )
+                                strcpy_s( preconnectData._p_login, sizeof( preconnectData._p_login ) - 1, login.c_str() );
+
+                            if ( passwd.length() )
+                                strcpy_s( preconnectData._p_passwd, sizeof( preconnectData._p_passwd ) - 1, passwd.c_str() );
+                        }
+
+                        _p_session->DataSend( RNReplicaNet::kReplicaNetUnknownUniqueID, &preconnectData, sizeof( PreconnectDataClient ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
+                        
+                        // clear the preconnect struct for security reasons
+                        memset( &preconnectData, 0, sizeof( PreconnectDataClient ) );
+                    }
+                    break;
+
+                    case eLoginResult:
+                    {
+                        // check if server granted access
+                        if ( p_data->_accessGranted )
+                        {
+                            p_data->_p_levelName[ 63 ]  = 0;
+                            p_data->_p_serverName[ 63 ] = 0;
+                            nodeInfo._accessGranted = true;
+
+                            if ( p_data->_p_levelName[ 0 ] )
+                                nodeInfo._levelName = p_data->_p_levelName;
+                            
+                            if ( p_data->_p_serverName[ 0 ] )
+                                nodeInfo._nodeName  = p_data->_p_serverName;
+                        }
+                        else
+                        {
+                            nodeInfo._accessGranted = false;
+                        }
+
+                        gotServerInfo = true;
+                        log_debug << "NetworkDevice: negotiation with server completed" << std::endl;
+                    }
+
+                    default:
+                        log_error << "NetworkDevice: invalid connection state received from server!" << std::endl;
                 }
-                else
-                {
-                    nodeInfo._accessGranted = false;
-                }
-
-                gotServerInfo = true;
-
-                log_debug << "NetworkDevice: client got preconnect data from server" << std::endl;
             }
         }
 
@@ -652,60 +676,101 @@ void NetworkDevice::updateServer( float /*deltaTime*/ )
         PreconnectDataClient* p_data = reinterpret_cast< PreconnectDataClient* >( s_buffer );
         if ( p_data->_typeId == static_cast< unsigned char >( YAF3DNW_PRECON_DATA_CLIENT ) )
         {
-            std::string conurl = _p_session->GetURLFromSessionID( sessionId );
-
-            log_info << "NetworkDevice: server is requested for a new client connection, url  " << conurl << std::endl;
-
-            // check if login and passwd exist
-            std::string login;
-            std::string passwd;
-            if ( p_data->_p_login[ 0 ] )
+            switch ( p_data->_state )
             {
-                p_data->_p_login[ sizeof(  p_data->_p_login ) - 1 ] = 0;
-                login =  p_data->_p_login;
-            }
-
-            if ( p_data->_p_passwd[ 0 ] )
-            {
-                p_data->_p_passwd[ sizeof(  p_data->_p_passwd ) - 1 ] = 0;
-                passwd =  p_data->_p_passwd;
-            }
-
-            // send paket
-            PreconnectDataServer sendData;
-            memset( &sendData, 0, sizeof( PreconnectDataServer ) );
-            sendData._typeId = static_cast< unsigned char >( YAF3DNW_PRECON_DATA_SERVER );
-            sendData._protocolVersion = YAF3D_NETWORK_PROT_VERSION;
-            strcpy( sendData._p_levelName, _serverNodeInfo._levelName.c_str() );
-            strcpy( sendData._p_serverName, _serverNodeInfo._nodeName.c_str() );
-            sendData._userID = static_cast< unsigned int >( -1 );
-
-            if ( _p_cbAuthentification )
-            {
-                // check the type of user ID!
-                unsigned int userID = static_cast< unsigned int >( -1 );
-                if ( !_p_cbAuthentification->authentify( login, passwd, userID ) )
+                case eConnecting:
                 {
-                    // access denied
-                    sendData._accessGranted = false;
+                    std::string conurl = _p_session->GetURLFromSessionID( sessionId );
+                    log_info << "NetworkDevice: server is requested for a new client connection, url  " << conurl << std::endl;
+
+                    // send paket
+                    PreconnectDataServer sendData;
+                    memset( &sendData, 0, sizeof( PreconnectDataServer ) );
+                    sendData._typeId = static_cast< unsigned char >( YAF3DNW_PRECON_DATA_SERVER );
+                    sendData._protocolVersion = YAF3D_NETWORK_PROT_VERSION;
+
+                    // need for auth?
+                    if ( _serverNodeInfo.needAuthentification() )
+                        sendData._needAuthentification = true;
+                    else
+                        sendData._needAuthentification = false;
+
+                    sendData._state = eLogin;
+
                     _p_session->DataSend( sessionId, reinterpret_cast< void* >( &sendData ), sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
-                    log_info << "NetworkDevice: access denied to user '" << login << "'" << std::endl;
                 }
-                else
+                break;
+
+                case eLogin:
                 {
-                    // send server node
-                    sendData._accessGranted = true;
-                    sendData._userID        = userID;
-                    _p_session->DataSend( sessionId, reinterpret_cast< void* >( &sendData ), sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
-                    log_info << "NetworkDevice: access granted to user '" << login << "'" << std::endl;
+                    // check if login and passwd exist
+                    std::string login;
+                    std::string passwd;
+                    if ( p_data->_p_login[ 0 ] )
+                    {
+                        p_data->_p_login[ sizeof(  p_data->_p_login ) - 1 ] = 0;
+                        login =  p_data->_p_login;
+                    }
+
+                    if ( p_data->_p_passwd[ 0 ] )
+                    {
+                        p_data->_p_passwd[ sizeof(  p_data->_p_passwd ) - 1 ] = 0;
+                        passwd =  p_data->_p_passwd;
+                    }
+
+                    // send paket
+                    PreconnectDataServer sendData;
+                    memset( &sendData, 0, sizeof( PreconnectDataServer ) );
+                    sendData._typeId = static_cast< unsigned char >( YAF3DNW_PRECON_DATA_SERVER );
+                    sendData._protocolVersion = YAF3D_NETWORK_PROT_VERSION;
+                    
+                    // need for auth?
+                    if ( _serverNodeInfo.needAuthentification() )
+                        sendData._needAuthentification = true;
+                    else
+                        sendData._needAuthentification = false;
+
+                    sendData._state = eLoginResult;
+
+                    strcpy( sendData._p_levelName, _serverNodeInfo._levelName.c_str() );
+                    strcpy( sendData._p_serverName, _serverNodeInfo._nodeName.c_str() );
+                    sendData._userID = static_cast< unsigned int >( -1 );
+                    sendData._state  = eLoginResult;
+
+                    // need for auth?
+                    if ( _serverNodeInfo.needAuthentification() && _p_cbAuthentification )
+                    {
+                        // check the type of user ID!
+                        unsigned int userID = static_cast< unsigned int >( -1 );
+                        if ( !_p_cbAuthentification->authentify( sessionId, login, passwd, userID ) )
+                        {
+                            // access denied
+                            sendData._accessGranted = false;
+                            _p_session->DataSend( sessionId, reinterpret_cast< void* >( &sendData ), sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
+                            log_info << "NetworkDevice: access denied to user '" << login << "'" << std::endl;
+                        }
+                        else
+                        {
+                            // send server node
+                            sendData._accessGranted = true;
+                            sendData._userID        = userID;
+                            _p_session->DataSend( sessionId, reinterpret_cast< void* >( &sendData ), sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
+                            log_info << "NetworkDevice: access granted to user '" << login << "'" << std::endl;
+                        }
+                    }
+                    else
+                    {
+                        // send server node
+                        sendData._accessGranted = true;
+                        _p_session->DataSend( sessionId, reinterpret_cast< void* >( &sendData ), sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
+                        log_info << "NetworkDevice: access granted to user '" << login << "'" << std::endl;
+                    }
                 }
-            }
-            else
-            {
-                // send server node
-                sendData._accessGranted = true;
-                _p_session->DataSend( sessionId, reinterpret_cast< void* >( &sendData ), sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
-                log_info << "NetworkDevice: access granted to user '" << login << "'" << std::endl;
+                break;
+
+                default:
+
+                    log_error << "NetworkDevice: invalid connection state received from client!" << std::endl;
             }
         }
     }

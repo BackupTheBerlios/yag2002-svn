@@ -75,6 +75,7 @@ class NodeInfo
     public:
                                                     NodeInfo() :
                                                      _accessGranted( false ),
+                                                     _needAuthenfication( false ),
                                                      _protocolVersion( YAF3D_NETWORK_PROT_VERSION )
                                                     {}
 
@@ -82,6 +83,7 @@ class NodeInfo
                                                      _levelName( levelname ),
                                                      _nodeName( nodename ),
                                                      _accessGranted( false ),
+                                                     _needAuthenfication( false ),
                                                      _protocolVersion( YAF3D_NETWORK_PROT_VERSION )
                                                     {}
 
@@ -98,7 +100,19 @@ class NodeInfo
         const std::string&                          getNodeName() const { return _nodeName; }
 
         /**
-        * Returns true if server grants access, otherwise false.
+        * Should the server request connecting clients for authentification?
+        * \needAuth                                 If true, then the server requests clients for authentification.
+        */
+        void                                        setNeedAuthentification( bool needAuth ) { _needAuthenfication = needAuth; }
+
+        /**
+        * Connection to server needs an authentification. Use this method on client.
+        * \return                                   If true then the server requests for authentification.
+        */
+        const bool                                  needAuthentification() const { return _needAuthenfication; }
+
+        /**
+        * Returns true if server grants access, otherwise false. Use this method on client.
         */
         const bool                                  getAccessGranted() const { return _accessGranted; }
 
@@ -109,6 +123,9 @@ class NodeInfo
 
         //! Node name
         std::string                                 _nodeName;
+
+        //! Server requests clients for authentification
+        bool                                        _needAuthenfication;
 
         //! True if the server grants access, otherwise false.
         bool                                        _accessGranted;
@@ -128,12 +145,13 @@ class CallbackAuthentification
 
         /**
         * This method is called when a client requests for authentification on connecting
+        * \sessionID                                Unique session ID of connecting client.
         * \login                                    Login name
         * \passwd                                   Password
         * \userID                                   User's ID which is also sent to client.
         * \return                                   True if the authentification was succesfull, then the userID has a valid value, otherwise false.
         */
-        virtual bool                                authentify( const std::string& login, const std::string& passwd, unsigned int& userID ) = 0;
+        virtual bool                                authentify( int sessionID, const std::string& login, const std::string& passwd, unsigned int& userID ) = 0;
 };
 
 //! Class for registering a callback in order to get notification when clients join / leave the network session.
@@ -247,8 +265,8 @@ class NetworkDevice : public Singleton< NetworkDevice >
         * \param ServerIp                           Server IP address
         * \param channel                            Channel
         * \param nodeInfo                           Client information and some information retrieved from server
-        * \param login                              Login name
-        * \param passwd                             Password
+        * \param login                              Login name, needed only if server needs authentification.
+        * \param passwd                             Password, needed only if server needs authentification.
         */
         void                                        setupClient( const std::string& serverIp, int channel, NodeInfo& nodeInfo, const std::string& login = "", const std::string& passwd = "" ) throw ( NetworkException );
 
