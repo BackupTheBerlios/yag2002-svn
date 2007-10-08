@@ -414,7 +414,9 @@ bool Application::initialize( int argc, char **argv )
         NodeInfo nodeinfo( arg_levelname, servername );
         unsigned int channel = 0;
         Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
-
+        bool needsAuth = false;
+        Configuration::get()->getSettingValue( YAF3D_GS_SERVER_AUTH, needsAuth );
+        nodeinfo.setNeedAuthentification( needsAuth );
 
         // try to setup server
         try
