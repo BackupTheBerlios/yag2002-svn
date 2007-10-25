@@ -137,8 +137,8 @@ class NodeInfo
     friend  class Application;
 };
 
-//! Base callback class used during authentification when a client connects to the server
-//! This callback is used on server.
+//! Base callback class used during authentification when a client connects to the server.
+/* This callback is used on server. It is also used for register new users. */
 class CallbackAuthentification
 {
     public:
@@ -152,6 +152,16 @@ class CallbackAuthentification
         * \return                                   True if the authentification was succesfull, then the userID has a valid value, otherwise false.
         */
         virtual bool                                authentify( int sessionID, const std::string& login, const std::string& passwd, unsigned int& userID ) = 0;
+
+        /**
+        * Register a new user.
+        * \name                                     Real name
+        * \login                                    Login name
+        * \passwd                                   Password
+        * \email                                    E-Mail address
+        * \return                                   Return false if the registration went wrong.
+        */
+        virtual bool                                registerUser( const std::string& name, const std::string& login, const std::string& passwd, const std::string& email ) = 0;
 };
 
 //! Class for registering a callback in order to get notification when clients join / leave the network session.
@@ -261,14 +271,17 @@ class NetworkDevice : public Singleton< NetworkDevice >
         void                                        setAuthCallback( CallbackAuthentification* p_cb );
 
         /**
-        * Setup a client session joining to a server ( throws exception )
+        * Setup a client session joining to a server ( throws exception ). It is also used for authentification and registration of a user.
         * \param ServerIp                           Server IP address
         * \param channel                            Channel
         * \param nodeInfo                           Client information and some information retrieved from server
-        * \param login                              Login name, needed only if server needs authentification.
-        * \param passwd                             Password, needed only if server needs authentification.
+        * \param login                              Login name, needed only if server needs authentification. Fill it for a registration request.
+        * \param passwd                             Password, needed only if server needs authentification. Fill it for a registration request.
+        * \param reguser                            Set to true if an user registration should be processed.
+        * \param name                               Real name, fill it for a registration request.
+        * \param email                              E-Mail address, fill it for a registration request.
         */
-        void                                        setupClient( const std::string& serverIp, int channel, NodeInfo& nodeInfo, const std::string& login = "", const std::string& passwd = "" ) throw ( NetworkException );
+        void                                        setupClient( const std::string& serverIp, int channel, NodeInfo& nodeInfo, const std::string& login = "", const std::string& passwd = "", bool reguser = false, const std::string& name = "", const std::string& email = "" ) throw ( NetworkException );
 
         /**
         * Start the client processing. Call this after SetupClient ( throws exception ).

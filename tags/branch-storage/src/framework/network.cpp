@@ -325,7 +325,8 @@ void NetworkDevice::setAuthCallback( CallbackAuthentification* p_cb )
     _p_cbAuthentification = p_cb;
 }
 
-void NetworkDevice::setupClient( const std::string& serverIp, int channel, NodeInfo& nodeInfo, const std::string& login, const std::string& passwd ) throw ( NetworkException )
+void NetworkDevice::setupClient( const std::string& serverIp, int channel, NodeInfo& nodeInfo, const std::string& login, 
+                                 const std::string& passwd, bool reguser, const std::string& name, const std::string& email ) throw ( NetworkException )
 {
     log_info << "NetworkDevice: starting client, time: " << yaf3d::getTimeStamp() << std::endl;
     log_info << "NetworkDevice: networking protocol version: " << getProtocolVersionAsString( YAF3D_NETWORK_PROT_VERSION ) << std::endl;
@@ -388,7 +389,7 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, NodeI
         switch( errid )
         {
             case RNReplicaNet::XPSession::kXPSession_EOK:
-                errtxt = "Cannot connect to server.";
+                errtxt = "Cannot find the server.";
                break;
 
             case RNReplicaNet::XPSession::kXPSession_EERROR:
@@ -468,22 +469,38 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, NodeI
                         PreconnectDataClient preconnectData;
                         memset( &preconnectData, 0, sizeof( PreconnectDataClient ) );
                         preconnectData._typeId = ( unsigned char )YAF3DNW_PRECON_DATA_CLIENT;
-                        preconnectData._state  = eLogin;
 
-                        // check if the server needs authentification
-                        if ( p_data->_needAuthentification )
+                        if ( !reguser )
                         {
-                            if ( login.length() )
-                                strcpy_s( preconnectData._p_login, sizeof( preconnectData._p_login ) - 1, login.c_str() );
+                            preconnectData._state  = eLogin;
 
-                            if ( passwd.length() )
-                                strcpy_s( preconnectData._p_passwd, sizeof( preconnectData._p_passwd ) - 1, passwd.c_str() );
+                            // check if the server needs authentification
+                            if ( p_data->_needAuthentification )
+                            {
+                                if ( login.length() )
+                                    strcpy_s( preconnectData._p_login, sizeof( preconnectData._p_login ) - 1, login.c_str() );
+
+                                if ( passwd.length() )
+                                    strcpy_s( preconnectData._p_passwd, sizeof( preconnectData._p_passwd ) - 1, passwd.c_str() );
+                            }
+
+                            _p_session->DataSend( RNReplicaNet::kReplicaNetUnknownUniqueID, &preconnectData, sizeof( PreconnectDataClient ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
+                            
+                            // clear the preconnect struct for security reasons
+                            memset( &preconnectData, 0, sizeof( PreconnectDataClient ) );
                         }
-
-                        _p_session->DataSend( RNReplicaNet::kReplicaNetUnknownUniqueID, &preconnectData, sizeof( PreconnectDataClient ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
-                        
-                        // clear the preconnect struct for security reasons
-                        memset( &preconnectData, 0, sizeof( PreconnectDataClient ) );
+                        else
+                        {
+                            preconnectData._state = eRegister;
+                            strcpy_s( preconnectData._p_name, sizeof( preconnectData._p_name ) - 1, name.c_str() );
+                            strcpy_s( preconnectData._p_email, sizeof( preconnectData._p_email ) - 1, email.c_str() );
+                            strcpy_s( preconnectData._p_login, sizeof( preconnectData._p_login ) - 1, login.c_str() );
+                            strcpy_s( preconnectData._p_passwd, sizeof( preconnectData._p_passwd ) - 1, passwd.c_str() );
+                            // send the registration packet
+                            _p_session->DataSend( RNReplicaNet::kReplicaNetUnknownUniqueID, &preconnectData, sizeof( PreconnectDataClient ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
+                            // clear the preconnect struct for security reasons
+                            memset( &preconnectData, 0, sizeof( PreconnectDataClient ) );
+                        }
                     }
                     break;
 
@@ -510,6 +527,23 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, NodeI
                         gotServerInfo = true;
                         log_debug << "NetworkDevice: negotiation with server completed" << std::endl;
                     }
+
+                    case eRegistrationResult:
+                    {
+                        // check if server could process the registration
+                        if ( p_data->_accessGranted )
+                        {
+                            nodeInfo._accessGranted = true;
+                            log_debug << "NetworkDevice: new user successfully registered" << std::endl;
+                        }
+                        else
+                        {
+                            nodeInfo._accessGranted = false;
+                            log_debug << "NetworkDevice: could not register new user" << std::endl;
+                        }
+                        gotServerInfo = true;
+                    }
+                    break;
 
                     default:
                         log_error << "NetworkDevice: invalid connection state received from server!" << std::endl;
@@ -764,6 +798,44 @@ void NetworkDevice::updateServer( float /*deltaTime*/ )
                         sendData._accessGranted = true;
                         _p_session->DataSend( sessionId, reinterpret_cast< void* >( &sendData ), sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
                         log_info << "NetworkDevice: access granted to user '" << login << "'" << std::endl;
+                    }
+                }
+                break;
+
+                case eRegister:
+                {
+                    if ( _p_cbAuthentification )
+                    {
+                        PreconnectDataServer sendData;
+                        memset( &sendData, 0, sizeof( PreconnectDataServer ) );
+                        sendData._typeId = static_cast< unsigned char >( YAF3DNW_PRECON_DATA_SERVER );
+                        sendData._protocolVersion = YAF3D_NETWORK_PROT_VERSION;
+                        
+                        // need for auth?
+                        if ( _serverNodeInfo.needAuthentification() )
+                            sendData._needAuthentification = true;
+                        else
+                            sendData._needAuthentification = false;
+
+                        sendData._state = eRegistrationResult;
+
+                        p_data->_p_login[ sizeof( p_data->_p_login ) - 1 ] = 0;
+                        p_data->_p_passwd[ sizeof( p_data->_p_passwd ) - 1 ] = 0;
+                        p_data->_p_name[ sizeof( p_data->_p_name ) - 1 ] = 0;
+                        p_data->_p_email[ sizeof( p_data->_p_email ) - 1 ] = 0;
+
+                        if ( !_p_cbAuthentification->registerUser( p_data->_p_name, p_data->_p_login, p_data->_p_passwd, p_data->_p_email ) )
+                        {
+                            // registration failed
+                            sendData._accessGranted = false;
+                            log_info << "NetworkDevice: registration failed for user '" << p_data->_p_login << "'" << std::endl;
+                        }
+                        else
+                        {
+                            sendData._accessGranted = true;
+                            log_info << "NetworkDevice: registration successful for user '" << p_data->_p_login << "'" << std::endl;
+                        }
+                        _p_session->DataSend( sessionId, reinterpret_cast< void* >( &sendData ), sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
                     }
                 }
                 break;
