@@ -79,9 +79,6 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >,  public yaf
 {
     public:
 
-        //! Process an authentification
-        bool                                        authentify( const std::string& login, const std::string& passwd );
-
         //! Get the inventory of given user
 //        bool                                        getUserInventory( unsigned int userID, UserInventory& invent );
 
@@ -97,8 +94,11 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >,  public yaf
         //! Shutdown the storage server
         void                                        shutdown();
 
-        //! Override of CallbackAuthentification method for authentification when a client connects
+        //! Override of networking's CallbackAuthentification method for authentification when a client connects
         bool                                        authentify( int sessionID, const std::string& login, const std::string& passwd, unsigned int& userID );
+
+        //! Override of networking's CallbackAuthentification method for registeration of a new user. Returns false if the nickname already exists.
+        bool                                        registerUser( const std::string& name, const std::string& nickname, const std::string& passwd, const std::string& email );
 
         //! Override of method for getting notification when a client leaves the network
         void                                        onSessionLeft( int sessionID );
@@ -111,9 +111,6 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >,  public yaf
 
         //! Data base storage
         BaseStorage*                                _p_storage;
-
-        //! User account
-        Account*                                    _p_account;
 
         //! Struct used for user cache
         class UserState
@@ -132,7 +129,7 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >,  public yaf
                 bool                            _guest;
 
                 //! User accout
-                AccountData                     _userAccount;
+                UserAccount                     _userAccount;
         };
 
         //! User cache < session ID, user state >

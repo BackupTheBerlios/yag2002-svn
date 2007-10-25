@@ -19,7 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # functionalities for account requests from storage
+ # account related data
  #
  #   date of creation:  10/03/2007
  #
@@ -35,16 +35,14 @@
 namespace vrc
 {
 
-class BaseStorage;
-
 //! Account related information
-class AccountData
+class UserAccount
 {
     public:
 
-                                                AccountData();
+                                                UserAccount();
 
-                                                ~AccountData();
+                                                ~UserAccount();
 
         const std::string&                      getUsername() const;
 
@@ -56,62 +54,27 @@ class AccountData
 
         const std::string&                      getEmail() const;
 
-        unsigned int                            getLastLogin() const;
+        const std::string&                      getLastLogin() const;
+
+        const std::string&                      getOnlineTime() const;
 
         unsigned int                            getUserId() const;
 
-        void                                    setUsername( const std::string& username );
-
-        void                                    setFirstname( const std::string& firstname );
-
-        void                                    setLastname( const std::string& lastname );
-
-        void                                    setNickname( const std::string& nickname );
-
-        void                                    setEmail( const std::string& email );
-
-        void                                    setLastLogin( const unsigned int lastlogin );
-
-        void                                    setUserId( const unsigned int userID );
-
-    protected:
+        unsigned int                            getPriviledges() const;
 
         std::string                             _userName;
-
-        std::string                             _firstName;
-
-        std::string                             _lastName;
 
         std::string                             _nickName;
 
         std::string                             _email;
 
-        unsigned int                            _lastLogin;
+        std::string                             _lastLogin;
+
+        std::string                             _onlineTime;
 
         unsigned int                            _userID;
-};
 
-//! Account query functionalities are implemented in this class
-class Account
-{
-    public:
-
-        explicit                                Account( BaseStorage* p_storage );
-
-                                                ~Account();
-
-        //! Login a user; after a successful call account holds the user ID.
-        bool                                    loginUser( AccountData& account, const std::string& password );
-
-        //! Logout a user
-        bool                                    logoutUser( const AccountData& account );
-
-        //! Write back the account data
-        bool                                    updateAccount( const AccountData& account, const std::string& password = "" );
-
-    protected:
-
-        BaseStorage*                            _p_storage;
+        unsigned int                            _priviledges;
 };
 
 } // namespace vrc

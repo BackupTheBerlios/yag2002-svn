@@ -33,7 +33,7 @@
 #include <vrc_gameutils.h>
 #include "vrc_storageserver.h"
 #include "vrc_storagenetworking.h"
-#include "database/vrc_mysqlstorage.h"
+#include "database/vrc_storagepostgres.h"
 #include "database/vrc_account.h"
 #include "database/vrc_connectiondata.h"
 
@@ -72,8 +72,7 @@ namespace vrc
 StorageServer::StorageServer() :
  _connectionEstablished( false ),
  _p_networking( NULL ),
- _p_storage( NULL ),
- _p_account( NULL )
+ _p_storage( NULL )
 {
 }
 
@@ -87,9 +86,6 @@ StorageServer::~StorageServer()
         _p_storage->release();
         delete _p_storage;
     }
-
-    if ( _p_account )
-        delete _p_account;
 }
 
 void StorageServer::shutdown()
@@ -109,7 +105,7 @@ void StorageServer::initialize() throw ( StorageServerException )
         throw StorageServerException( "Storage server is already initialized." );
 
     std::string  dbip;
-    std::string  dbschema;
+    std::string  dbname;
     std::string  dbuser;
     std::string  dbpasswd;
     unsigned int dbport;
@@ -130,30 +126,23 @@ void StorageServer::initialize() throw ( StorageServerException )
     std::cout << std::endl;
 
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_DB_IP, dbip );
-    yaf3d::Configuration::get()->getSettingValue( VRC_GS_DB_SCHEMA, dbschema );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_DB_NAME, dbname );
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_DB_USER, dbuser );
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_DB_PORT, dbport );
 
     ConnectionData connData;
     connData._server = dbip;
     connData._port   = dbport;
-    connData._schema = dbschema;
+    connData._dbname = dbname;
     connData._user   = dbuser;
     connData._passwd = dbpasswd;
-    connData._content[ TBL_NAME_USERACCOUNTS  ] = DBTBL_ACCOUNTS;
-    connData._content[ TBL_NAME_GAMEWORLD     ] = DBTBL_GAMEWORLD;
-    connData._content[ TBL_NAME_GAMEITEMS     ] = DBTBL_GAMEITEMS;
-    connData._content[ TBL_NAME_USERINVENTORY ] = DBTBL_USERINVENTORY;
 
     // setup the storage
-    _p_storage = new MysqlStorage();
+    _p_storage = new StoragePostgreSQL();
 
     // initialize the storage
     if ( !_p_storage->initialize( connData ) )
         throw StorageServerException( "Storage backend could not be initialized." );
-
-    // create the account object
-    _p_account = new Account( _p_storage );
 
     log_info << "setup storage ..." << std::endl;
 
@@ -172,6 +161,21 @@ void StorageServer::initialize() throw ( StorageServerException )
     log_info << "storage successfully initialized" << std::endl;
 }
 
+bool StorageServer::registerUser( const std::string& name, const std::string& nickname, const std::string& passwd, const std::string& email )
+{
+    if ( !_connectionEstablished )
+        return false;
+
+    if ( !_p_storage->registerUser( name, nickname, passwd, email ) )
+    {
+        log_verbose << "user '" << nickname << "' already exists" << std::endl;
+        return false;
+    }
+
+
+    return true;
+}
+
 bool StorageServer::authentify( int sessionID, const std::string& login, const std::string& passwd, unsigned int& userID )
 {
     if ( !_connectionEstablished )
@@ -185,7 +189,7 @@ bool StorageServer::authentify( int sessionID, const std::string& login, const s
         userID = static_cast< unsigned int >( -1 );
 
        // cache the user login state
-        AccountData acc;
+        UserAccount acc;
         UserState   state;
         state._sessionID   = sessionID;
         state._guest       = true;
@@ -196,15 +200,12 @@ bool StorageServer::authentify( int sessionID, const std::string& login, const s
     }
 
     // check the login
-    AccountData acc;
-    acc.setUsername( login );
-    if ( !_p_account->loginUser( acc, passwd ) )
+    UserAccount acc;
+    if ( !_p_storage->loginUser( login, passwd, acc ) )
     {
         log_verbose << "user '" << login << "' failed to login" << std::endl;
         return false;
     }
-
-    userID = acc.getUserId();
 
     // cache the user login state
     UserState state;
@@ -224,6 +225,8 @@ void StorageServer::onSessionLeft( int sessionID )
         log_error << "StorageServer: internal error, session ID was not cached before!" << std::endl;
         return;
     }
+
+    _p_storage->logoutUser( p_user->second._userAccount.getNickname() );
 
     _userCache.erase( p_user );
 }

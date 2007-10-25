@@ -54,16 +54,13 @@ class ConnectionData
         unsigned int                                _port;
 
         // name of database inside the database storage-system
-        std::string                                 _schema;
+        std::string                                 _dbname;
 
         // authentication information for database storages only
         std::string                                 _user;
 
         // authentication information for database storages only
         std::string                                 _passwd;
-
-        // e.g. mapping game content on database tables or xml-files
-        std::map< std::string, std::string >        _content;
 };
 
 } // namespace vrc

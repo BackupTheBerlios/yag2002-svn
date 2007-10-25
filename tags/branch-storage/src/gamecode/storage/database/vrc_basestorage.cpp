@@ -35,15 +35,17 @@
 namespace vrc
 {
 
-BaseStorage::BaseStorage() :
- _p_connectionData( NULL )
+BaseStorage::BaseStorage()
 {
 }
 
 BaseStorage::~BaseStorage()
 {
-    if ( _p_connectionData )
-        delete _p_connectionData;
+}
+
+const std::string& BaseStorage::getType() const
+{
+    return _type;
 }
 
 } // namespace vrc
