@@ -52,10 +52,12 @@ _yaw( 0 ),
 _cmdAnimFlags( 0 ),
 _voiceChat( false ),
 _remoteClient( false ),
-_remoteClientInitialized( false ),
 _p_playerImpl( p_playerImpl ),
 _loadedPlayerEntity( NULL )
 {
+    // we have to lock creation / deletion of network objects during construction
+    yaf3d::NetworkDevice::get()->lockObjects();
+
     _p_configFile[ 0 ] = 0;
     _cmdAnimFlags      = 0;
     _ip[ 0 ]           = 0;
@@ -82,6 +84,8 @@ _loadedPlayerEntity( NULL )
         if ( publichost.length() )
             strcpy( _ip, publichost.c_str() );
     }
+
+    yaf3d::NetworkDevice::get()->unlockObjects();
 }
 
 PlayerNetworking::~PlayerNetworking()
@@ -120,8 +124,7 @@ PlayerNetworking::~PlayerNetworking()
 }
 
 void PlayerNetworking::PostObjectCreate()
-{ // this method is only called for remote clients ( on server and clients )
-
+{
     // complete setting up ghost ( remote client ) or server-side player
     if ( isRemoteClient() )
     {
@@ -170,9 +173,9 @@ void PlayerNetworking::PostObjectCreate()
             _loadedPlayerEntity->setNetworkID( sid );
 
             // grant new connected client to session with initialization data
-            ALL_REPLICAS_FUNCTION_CALL( RPC_ServerGrantsAccess( init ) );
+            MASTER_FUNCTION_CALL( RPC_ServerGrantsAccess( init ) );
         }
-        else // client code
+        else
         {
             // check if we have a valid ip
             if ( _ip[ 0 ] )
@@ -186,35 +189,10 @@ void PlayerNetworking::PostObjectCreate()
                 if ( _voiceChat )
                     vrc::gameutils::PlayerUtils::get()->addRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
             }
-
-            // request initialization data from server
-            MASTER_FUNCTION_CALL( RPC_RequestInitialization() );
         }
     }
 
     log_info << "  remote player created: " << _p_playerName << std::endl;
-}
-
-void PlayerNetworking::RPC_RequestInitialization()
-{ // this method is called only on server
-
-    assert( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client );
-
-    log_info << "  remote player requests for initialization: " << _p_playerName << std::endl;
-
-    static tInitializationData init;
-    init._posX = _positionX;
-    init._posY = _positionY;
-    init._posZ = _positionZ;
-    init._rotZ = _yaw;
-
-    if ( _ip[ 0 ] )
-        strcpy_s( init._ip, sizeof( init._ip ), _ip );
-    else
-        memset( init._ip, 0, sizeof( init._ip ) );
-
-    // call the initialize function on the remote players (ghosts)
-    ALL_REPLICAS_FUNCTION_CALL( RPC_Initialize( init ) );
 }
 
 void PlayerNetworking::RPC_ServerGrantsAccess( tInitializationData initData )
@@ -222,15 +200,13 @@ void PlayerNetworking::RPC_ServerGrantsAccess( tInitializationData initData )
 
     log_info << "  player networking: server grants access to network session" << std::endl;
 
-    assert( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client );
-
     // init player
     {
         // init player position set by server ( it's the job of server to init the player position and rotation )
         _p_playerImpl->setPlayerPosition( osg::Vec3f( initData._posX, initData._posY, initData._posZ ) );
         _p_playerImpl->setPlayerRotation( osg::Quat( initData._rotZ, osg::Vec3f( 0.0f, 0.0f, 1.0f ) ) );
 
-        // set physics body transformation
+        // reset physics body transformation
         osg::Matrixf mat;
         mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
         mat.setTrans( _p_playerImpl->getPlayerPosition() );
@@ -253,58 +229,57 @@ void PlayerNetworking::RPC_ServerGrantsAccess( tInitializationData initData )
         _p_playerImpl->getPlayerEntity()->setIPAdress( _ip );
     }
 
-    // set the connection status
+    // distribute our initial data to all other replicas
+    ALL_REPLICAS_FUNCTION_CALL( RPC_Initialize( initData ) );
+
     vrc::PlayerImplClient* p_playerClient = dynamic_cast< vrc::PlayerImplClient* >( _p_playerImpl );
     assert( p_playerClient && "the player object must be a client implementation if this function is called!" );
+
     p_playerClient->setNetworkInitialized( true );
 }
 
 void PlayerNetworking::RPC_Initialize( tInitializationData initData )
-{ // this method is called on replicas of new connected client, on server and clients
+{ // this method is called on replicas of new connected client
 
-    // init remote or local client player
-    if ( ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Client ) )
+    // this rpc is also called on server, skip it in this case!
+    if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Client )
         return;
 
-    if ( _remoteClientInitialized )
-        return;
+    // init remote player
+    {
+        // init player position set by server ( it's the job of server to init the player position and rotation )
+        _p_playerImpl->setPlayerPosition( osg::Vec3f( initData._posX, initData._posY, initData._posZ ) );
+        _p_playerImpl->setPlayerRotation( osg::Quat( initData._rotZ, osg::Vec3f( 0.0f, 0.0f, 1.0f ) ) );
 
-    // init new client
+        // reset physics body transformation
+        osg::Matrixf mat;
+        mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
+        mat.setTrans( _p_playerImpl->getPlayerPosition() );
+        _p_playerImpl->getPlayerPhysics()->setTransformation( mat );
 
-    // init player position set by server ( it's the job of server to init the player position and rotation )
-    _p_playerImpl->setPlayerPosition( osg::Vec3f( initData._posX, initData._posY, initData._posZ ) );
-    _p_playerImpl->setPlayerRotation( osg::Quat( initData._rotZ, osg::Vec3f( 0.0f, 0.0f, 1.0f ) ) );
+        _positionX = initData._posX;
+        _positionY = initData._posY;
+        _positionZ = initData._posZ;
+        _yaw       = initData._rotZ;
 
-    // reset physics body transformation
-    osg::Matrixf mat;
-    mat *= mat.rotate( _p_playerImpl->getPlayerRotation() );
-    mat.setTrans( _p_playerImpl->getPlayerPosition() );
-    _p_playerImpl->getPlayerPhysics()->setTransformation( mat );
+        unsigned char breaktype = static_cast< unsigned char >( RNReplicaNet::DataBlock::kTeleport | RNReplicaNet::DataBlock::kSuddenChange );
+        ContinuityBreak( _positionX, breaktype );
+        ContinuityBreak( _positionY, breaktype );
+        ContinuityBreak( _positionZ, breaktype );
+        ContinuityBreak( _yaw, breaktype );
 
-    _positionX = initData._posX;
-    _positionY = initData._posY;
-    _positionZ = initData._posZ;
-    _yaw       = initData._rotZ;
-
-    unsigned char breaktype = static_cast< unsigned char >( RNReplicaNet::DataBlock::kTeleport | RNReplicaNet::DataBlock::kSuddenChange );
-    ContinuityBreak( _positionX, breaktype );
-    ContinuityBreak( _positionY, breaktype );
-    ContinuityBreak( _positionZ, breaktype );
-    ContinuityBreak( _yaw, breaktype );
-
-    // is voice chat enabled?
-    _p_playerImpl->getPlayerEntity()->setIPAdress( _ip );
-    _p_playerImpl->getPlayerEntity()->setVoiceChatEnabled( _voiceChat );
-    if ( _voiceChat )
-        vrc::gameutils::PlayerUtils::get()->addRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
+        // is voice chat enabled?
+        _p_playerImpl->getPlayerEntity()->setIPAdress( _ip );
+        _p_playerImpl->getPlayerEntity()->setVoiceChatEnabled( _voiceChat );
+        if ( _voiceChat )
+            vrc::gameutils::PlayerUtils::get()->addRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
+    }
 
     // set the connection status
     vrc::PlayerImplClient* p_playerClient = dynamic_cast< vrc::PlayerImplClient* >( _p_playerImpl );
     assert( p_playerClient && "the player object must be a client implementation if this function is called!" );
-    p_playerClient->setNetworkInitialized( true );
 
-    // set the init flag, this function may be called several times as the server will respond to every remote client which has been joined!
-    _remoteClientInitialized = true;
+    p_playerClient->setNetworkInitialized( true );
 }
 
 void PlayerNetworking::RPC_EnableVoiceChat( bool en )

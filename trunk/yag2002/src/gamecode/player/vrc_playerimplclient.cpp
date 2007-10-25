@@ -351,9 +351,6 @@ void PlayerImplClient::setNetworkInitialized( bool init )
 {
     _isNwInitialized = init;
     getPlayerPhysics()->initializePhysics( _currentPos, _currentRot );
-    // update player's actual position and rotation once per frame
-    getPlayerEntity()->setPosition( _currentPos );
-    getPlayerEntity()->setRotation( _currentRot );
 }
 
 void PlayerImplClient::update( float deltaTime )

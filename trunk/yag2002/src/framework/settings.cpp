@@ -53,6 +53,8 @@ SettingsManager::~SettingsManager()
 
 void SettingsManager::shutdown()
 {
+    log_info << "SettingsManager: shutting down" << std::endl;
+
     // destroy singleton
     destroy();
 }

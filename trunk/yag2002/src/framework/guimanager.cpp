@@ -188,6 +188,8 @@ GuiManager::~GuiManager()
 
 void GuiManager::shutdown()
 {
+    log_info << "GuiManager: shutting down" << std::endl;
+
     delete CEGUI::System::getSingletonPtr();
     delete _p_renderer;
 

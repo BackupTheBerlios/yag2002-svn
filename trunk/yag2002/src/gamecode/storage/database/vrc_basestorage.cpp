@@ -1,6 +1,6 @@
 /****************************************************************
  *  YAG2002 (http://yag2002.sourceforge.net)
- *  Copyright (C) 2005-2006, A. Botorabi
+ *  Copyright (C) 2005-2007, A. Botorabi
  *
  *  This program is free software; you can redistribute it and/or 
  *  modify it under the terms of the GNU Lesser General Public 
@@ -19,35 +19,33 @@
  ****************************************************************/
 
 /*###############################################################
- # source file for building precompiled headers
+ # base class for storage types
  #
- #   date of creation:  04/27/2005
+ #   date of creation:  09/30/2007
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
  #
- #
  ################################################################*/
 
+#include <vrc_main.h>
+#include "vrc_basestorage.h"
 
-#ifndef _VRC_MAIN_H_
-#define _VRC_MAIN_H_
 
-//! VRC version
-#define VRC_VERSION     "1.2.2"
+namespace vrc
+{
 
-// framework's central header for most important dependencies
-#include <base.h>
+BaseStorage::BaseStorage()
+{
+}
 
-// ms windows stuff
-#ifdef WIN32
-#  ifndef WIN32_LEAN_AND_MEAN
-#    define WIN32_LEAN_AND_MEAN
-#  endif
-#  include <windows.h>
-#endif
+BaseStorage::~BaseStorage()
+{
+}
 
-// main header of framework itself
-#include <yaf3dframework.h>
+const std::string& BaseStorage::getType() const
+{
+    return _type;
+}
 
-#endif // _VRC_MAIN_H_
+} // namespace vrc

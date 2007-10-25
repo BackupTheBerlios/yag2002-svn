@@ -29,6 +29,7 @@
  ################################################################*/
 
 #include <base.h>
+#include "log.h"
 #include "configuration.h"
 #include "application.h"
 #include "settings.h"
@@ -52,24 +53,26 @@ _shadowTexSizeY( 1024 ),
 _shadowTexChannel( 1 ),
 _keyboardType( YAF3D_GS_KEYBOARD_ENGLISH ),
 _guiScheme( YAF3D_GS_GUI_DEFUALT_SCHEME ),
-_serverPort( YAF3D_GS_DEFAULT_SERVERPORT )
+_serverPort( YAF3D_GS_DEFAULT_SERVERPORT ),
+_serverAuthentification( YAF3D_GS_DEFAULT_SERVERAUTH )
 {
     // register standard settings
-    _p_settings->registerSetting( YAF3D_GS_LOG_LEVEL,         _logLevel         );
-    _p_settings->registerSetting( YAF3D_GS_KEYBOARD,          _keyboardType     );
-    _p_settings->registerSetting( YAF3D_GS_SCREENWIDTH,       _screenWidth      );
-    _p_settings->registerSetting( YAF3D_GS_SCREENHEIGHT,      _screenHeight     );
-    _p_settings->registerSetting( YAF3D_GS_COLORBITS,         _colorBits        );
-    _p_settings->registerSetting( YAF3D_GS_FULLSCREEN,        _fullScreen       );
-    _p_settings->registerSetting( YAF3D_GS_SHADOW_ENABLE,     _shadowEnable     );
-    _p_settings->registerSetting( YAF3D_GS_SHADOW_TEXSIZEX,   _shadowTexSizeX   );
-    _p_settings->registerSetting( YAF3D_GS_SHADOW_TEXSIZEY,   _shadowTexSizeY   );
-    _p_settings->registerSetting( YAF3D_GS_SHADOW_TEXCHANNEL, _shadowTexChannel );
-    _p_settings->registerSetting( YAF3D_GS_GUISCHEME,         _guiScheme        );
-    _p_settings->registerSetting( YAF3D_GS_SERVER_NAME,       _serverName       );
-    _p_settings->registerSetting( YAF3D_GS_SERVER_IP,         _serverIP         );
-    _p_settings->registerSetting( YAF3D_GS_SERVER_PORT,       _serverPort       );
-    _p_settings->registerSetting( YAF3D_GS_PUBLIC_HOST,       _publicHost       );
+    _p_settings->registerSetting( YAF3D_GS_LOG_LEVEL,         _logLevel               );
+    _p_settings->registerSetting( YAF3D_GS_KEYBOARD,          _keyboardType           );
+    _p_settings->registerSetting( YAF3D_GS_SCREENWIDTH,       _screenWidth            );
+    _p_settings->registerSetting( YAF3D_GS_SCREENHEIGHT,      _screenHeight           );
+    _p_settings->registerSetting( YAF3D_GS_COLORBITS,         _colorBits              );
+    _p_settings->registerSetting( YAF3D_GS_FULLSCREEN,        _fullScreen             );
+    _p_settings->registerSetting( YAF3D_GS_SHADOW_ENABLE,     _shadowEnable           );
+    _p_settings->registerSetting( YAF3D_GS_SHADOW_TEXSIZEX,   _shadowTexSizeX         );
+    _p_settings->registerSetting( YAF3D_GS_SHADOW_TEXSIZEY,   _shadowTexSizeY         );
+    _p_settings->registerSetting( YAF3D_GS_SHADOW_TEXCHANNEL, _shadowTexChannel       );
+    _p_settings->registerSetting( YAF3D_GS_GUISCHEME,         _guiScheme              );
+    _p_settings->registerSetting( YAF3D_GS_SERVER_NAME,       _serverName             );
+    _p_settings->registerSetting( YAF3D_GS_SERVER_IP,         _serverIP               );
+    _p_settings->registerSetting( YAF3D_GS_SERVER_PORT,       _serverPort             );
+    _p_settings->registerSetting( YAF3D_GS_SERVER_AUTH,       _serverAuthentification );
+    _p_settings->registerSetting( YAF3D_GS_PUBLIC_HOST,       _publicHost             );
 }
 
 Configuration::~Configuration()
@@ -203,6 +206,8 @@ bool Configuration::setSettingValueAsString( const std::string& name, const std:
 
 void Configuration::shutdown()
 {
+    log_info << "Configuration: shutting down" << std::endl;
+
     // store the latest changes in profile
     SettingsManager::get()->storeProfile( YAF3D_GAMESETTING_PROFILENAME );
     SettingsManager::get()->destroyProfile( YAF3D_GAMESETTING_PROFILENAME );

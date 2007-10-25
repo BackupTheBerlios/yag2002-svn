@@ -60,6 +60,8 @@ SoundManager::~SoundManager()
 
 void SoundManager::shutdown()
 {
+    log_info << "SoundManager: shutting down" << std::endl;
+
     // shutdown fmod
     if ( _p_system )
     {

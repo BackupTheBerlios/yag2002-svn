@@ -38,7 +38,7 @@ namespace yaf3d
 {
 
 //! Max number of texture channels for a patch
-#define MAX_TEX_CHANNELS    8
+#define MAX_TEX_CHANNELS    4
 
 class TerrainManager;
 class TerrainSection;

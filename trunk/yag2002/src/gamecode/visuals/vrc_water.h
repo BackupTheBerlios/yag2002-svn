@@ -105,7 +105,7 @@ class EnWater :  public yaf3d::BaseEntity
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Set the shader params specified by entity attributes
-        void                                        setShaderParams( osg::Node* p_node );
+        void                                        setShaderParams();
 
         //! Setup water geom, shaders and state sets
         osg::Node*                                  setupWater();

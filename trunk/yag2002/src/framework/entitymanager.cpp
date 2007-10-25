@@ -54,6 +54,8 @@ EntityManager::~EntityManager()
 
 void EntityManager::shutdown()
 {
+    log_info << "EntityManager: shutting down" << std::endl;
+
     // first send out a shutdown notification
     EntityNotification ennotify( YAF3D_NOTIFY_SHUTDOWN );
     sendNotification( ennotify );

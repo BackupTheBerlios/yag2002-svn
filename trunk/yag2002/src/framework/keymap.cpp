@@ -29,6 +29,7 @@
  ################################################################*/
 
 #include <base.h>
+#include "log.h"
 #include "keymap.h"
 
 namespace yaf3d
@@ -259,6 +260,7 @@ void KeyMap::setup( KeyMap::KeyboardType type )
 
 KeyMap::~KeyMap()
 {
+    log_info << "KeyMap: shutting down" << std::endl;
 }
 
 void KeyMap::shutdown()

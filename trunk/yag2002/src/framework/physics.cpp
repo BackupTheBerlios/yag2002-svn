@@ -160,6 +160,8 @@ void Physics::update( float deltaTime )
 
 void Physics::shutdown()
 {
+    log_info << "Physics: shutting down" << std::endl;
+
     if ( _p_world )
     {
         // free up bodies

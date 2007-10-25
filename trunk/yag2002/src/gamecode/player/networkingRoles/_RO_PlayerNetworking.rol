@@ -4,7 +4,6 @@ object PlayerNetworking
 
     datablock Function;
     extern RPC_ServerGrantsAccess(tInitializationData);
-    extern RPC_RequestInitialization();
     extern RPC_Initialize(tInitializationData);
     extern RPC_EnableVoiceChat(bool);
     
@@ -73,11 +72,6 @@ object PlayerNetworking
         }
 
         Function RPC_ServerGrantsAccess;
-        { 
-            Reliable();
-        }
-
-        Function RPC_RequestInitialization;
         { 
             Reliable();
         }

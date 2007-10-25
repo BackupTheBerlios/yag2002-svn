@@ -40,11 +40,26 @@
 namespace yaf3d
 {
 
-// structure for requesting server info during pre-connection ( client side )
+//! Connection states
+enum ConnectionState
+{
+    eConnecting = 0x20,
+    eLogin,
+    eLoginResult,
+    eRegister,
+    eRegistrationResult
+};
+
+//! Structure for requesting server info during pre-connection ( client side )
 #define YAF3DNW_PRECON_DATA_CLIENT      0x01
 struct PreconnectDataClient
 {
-    unsigned char  _typeId;  // set this to YAF3DNW_PRECON_DATA_CLIENT
+    unsigned char  _typeId;           // set this to YAF3DNW_PRECON_DATA_CLIENT
+    unsigned char  _state;            // connection state, one of ConnectionState enums
+    char           _p_login[ 64 ];    // login name
+    char           _p_passwd[ 64 ];   // password
+    char           _p_name[ 64 ];     // real name ( used for registration )
+    char           _p_email[ 64 ];    // e-mail address ( used for registration )
 };
 
 
@@ -52,9 +67,13 @@ struct PreconnectDataClient
 #define YAF3DNW_PRECON_DATA_SERVER      0x02
 struct PreconnectDataServer
 {
-    unsigned char  _typeId;  // set this to YAF3DNW_PRECON_DATA_SERVER    
+    unsigned char  _typeId;             // set this to YAF3DNW_PRECON_DATA_SERVER    
+    unsigned char  _state;              // connection state, one of ConnectionState enums
     char           _p_levelName[ 64 ];
     char           _p_serverName[ 64 ];
+    bool           _needAuthentification;
+    bool           _accessGranted;      // used for authentification and registration result
+    unsigned int   _userID;
     unsigned int   _protocolVersion;
 };
 

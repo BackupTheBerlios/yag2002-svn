@@ -137,6 +137,9 @@ void Application::shutdown()
     log_info << "---------------------------------------" << std::endl;
     log_info << "Application: shutting down, time: " << yaf3d::getTimeStamp() << std::endl;
 
+    // set the game state to shutdown so game code specific singletons get the chance for destruction
+    _p_gameState->setState( GameState::Shutdown );
+
     LevelManager::get()->shutdown();
 
     if ( _p_networkDevice )
@@ -144,8 +147,6 @@ void Application::shutdown()
 
     Configuration::get()->shutdown();
 
-    // set the game state to shutdown so game code specific singletons get the chance for destruction
-    _p_gameState->setState( GameState::Quitting );
     delete _p_appWindowStateHandler;
     _p_gameState->shutdown();
 
@@ -413,6 +414,9 @@ bool Application::initialize( int argc, char **argv )
         NodeInfo nodeinfo( arg_levelname, servername );
         unsigned int channel = 0;
         Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
+        bool needsAuth = false;
+        Configuration::get()->getSettingValue( YAF3D_GS_SERVER_AUTH, needsAuth );
+        nodeinfo.setNeedAuthentification( needsAuth );
 
         // try to setup server
         try
@@ -452,7 +456,7 @@ bool Application::initialize( int argc, char **argv )
         }
 
         // now load level
-        std::string levelname = YAF3D_LEVEL_CLIENT_DIR + _p_networkDevice->getNodeInfo()->getLevelName();
+        std::string levelname = YAF3D_LEVEL_CLIENT_DIR + nodeinfo.getLevelName();
         log_info << "Application: loading level file '" << levelname << "'" << std::endl;
         // load the level and setup things
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( levelname );
@@ -525,7 +529,7 @@ bool Application::initialize( int argc, char **argv )
 void Application::run()
 {
     // set game state
-    _p_gameState->setState( GameState::Running );
+    _p_gameState->setState( GameState::StartRunning );
 
     // store sound manager reference for faster access in loop
     _p_soundManager = SoundManager::get();
@@ -558,6 +562,9 @@ void Application::run()
     osg::Timer_t     curTick   = timer.tick();
     osg::Timer_t     lastTick  = curTick;
     float            deltaTime = LOWER_UPDATE_PERIOD_LIMIT;
+
+    // set game state
+    _p_gameState->setState( GameState::EnterMainLoop );
 
     // begin game loop
     while( _p_gameState->getState() != GameState::Quitting )

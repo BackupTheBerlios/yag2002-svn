@@ -48,6 +48,8 @@ ShaderContainer::~ShaderContainer()
 
 void ShaderContainer::shutdown()
 {
+    log_info << "ShaderContainer: shutting down" << std::endl;
+
     // destroy the singleton
     destroy();
 }
@@ -104,26 +106,24 @@ static char _glslShadowMapV[] =
 
 // Terrain vertex shader without dynamic shadows
 static const char _glslTerrainV[] =
-    "/*\n"
-    "* Vertex shader for terrain renderer\n"
-    "* http://yag2002.sf.net\n"
-    "* 08/28/2007\n"
-    "*/\n"
-    "varying vec2 layerMaskCoords;\n"
-    "varying vec2 detail0TexCoords;\n"
-    "varying vec2 detail1TexCoords;\n"
-    "varying vec2 detail2TexCoords;\n"
-    "varying vec2 detail3TexCoords;\n"
-    "\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position      = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-    "   detail0TexCoords = gl_MultiTexCoord0.st;\n"
-    "   detail1TexCoords = gl_MultiTexCoord1.st;\n"
-    "   detail2TexCoords = gl_MultiTexCoord2.st;\n"
-    "   detail3TexCoords = gl_MultiTexCoord3.st;\n"
-    "   layerMaskCoords  = gl_MultiTexCoord4.st;\n"
-    "}\n"
+    "/*                                                                                 \n"
+    "* Vertex shader for terrain renderer                                               \n"
+    "* http://yag2002.sf.net                                                            \n"
+    "* 08/28/2007                                                                       \n"
+    "*/                                                                                 \n"
+    "varying vec2 baseTexCoords;                                                        \n"
+    "varying vec2 detail0TexCoords;                                                     \n"
+    "varying vec2 detail1TexCoords;                                                     \n"
+    "varying vec2 detail2TexCoords;                                                     \n"
+    "                                                                                   \n"
+    "void main()                                                                        \n"
+    "{                                                                                  \n"
+    "   gl_Position      = gl_ModelViewProjectionMatrix * gl_Vertex;                    \n"
+    "   baseTexCoords    = gl_MultiTexCoord0.st;                                        \n"
+    "   detail0TexCoords = gl_MultiTexCoord1.st;                                        \n"
+    "   detail1TexCoords = gl_MultiTexCoord2.st;                                        \n"
+    "   detail2TexCoords = gl_MultiTexCoord3.st;                                        \n"
+    "}                                                                                  \n"
 ;
 
 // Common fragment shader functions
@@ -222,32 +222,32 @@ static char _glslShadowMapF[] =
 
 // Terrain fragment shader without dynamic shadows
 static const char _glslTerrainF[] =
-    "/*\n"
-    "* Fragment shader for terrain renderer\n"
-    "* http://yag2002.sf.net\n"
-    "* 08/28/2007\n"
-    "*/\n"
-    "uniform sampler2D layerMask;\n"
-    "uniform sampler2D detailTexture0;\n"
-    "uniform sampler2D detailTexture1;\n"
-    "uniform sampler2D detailTexture2;\n"
-    "uniform sampler2D detailTexture3;\n"
-    "varying vec2      layerMaskCoords;\n"
-    "varying vec2      detail0TexCoords;\n"
-    "varying vec2      detail1TexCoords;\n"
-    "varying vec2      detail2TexCoords;\n"
-    "varying vec2      detail3TexCoords;\n"
-    "\n"
-    "void main(void)\n"
-    "{\n"
-    "   vec4 color;\n"
-    "   vec4 mask  = texture2D( layerMask, layerMaskCoords );\n"
-    "   color += mask.r * texture2D( detailTexture0, detail0TexCoords );\n"
-    "   color += mask.g * texture2D( detailTexture1, detail1TexCoords );\n"
-    "   color += mask.b * texture2D( detailTexture2, detail2TexCoords );\n"
-    "   color += mask.a * texture2D( detailTexture3, detail3TexCoords );\n"
-    "   gl_FragColor  = color;\n"
-    "}\n"
+    "/*                                                                                 \n"
+    "* Fragment shader for terrain renderer                                             \n"
+    "* http://yag2002.sf.net                                                            \n"
+    "* 08/28/2007                                                                       \n"
+    "*/                                                                                 \n"
+    "uniform sampler2D baseTexture;                                                     \n"
+    "uniform sampler2D detailTexture0;                                                  \n"
+    "uniform sampler2D detailTexture1;                                                  \n"
+    "uniform sampler2D detailTexture2;                                                  \n"
+    "uniform sampler2D layerMask;                                                       \n"
+    "uniform float     baseTextureBlend;                                                \n"
+    "varying vec2      baseTexCoords;                                                   \n"
+    "varying vec2      detail0TexCoords;                                                \n"
+    "varying vec2      detail1TexCoords;                                                \n"
+    "varying vec2      detail2TexCoords;                                                \n"
+    "                                                                                   \n"
+    "void main(void)                                                                    \n"
+    "{                                                                                  \n"
+    "   vec4 color = texture2D( baseTexture, baseTexCoords );                           \n"
+    "   color *= baseTextureBlend;                                                      \n"
+    "   vec3 mask  = texture2D( layerMask, baseTexCoords ).rgb;                         \n"
+    "   color += mask.r * texture2D( detailTexture0, detail0TexCoords );                \n"
+    "   color += mask.g * texture2D( detailTexture1, detail1TexCoords );                \n"
+    "   color += mask.b * texture2D( detailTexture2, detail2TexCoords );                \n"
+    "   gl_FragColor  = color;                                                          \n"
+    "}                                                                                  \n"
 ;
 
 osg::Shader* ShaderContainer::getVertexShader( unsigned int type )

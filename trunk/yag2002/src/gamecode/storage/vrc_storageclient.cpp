@@ -1,6 +1,6 @@
 /****************************************************************
  *  YAG2002 (http://yag2002.sourceforge.net)
- *  Copyright (C) 2005-2006, A. Botorabi
+ *  Copyright (C) 2005-2007, A. Botorabi
  *
  *  This program is free software; you can redistribute it and/or 
  *  modify it under the terms of the GNU Lesser General Public 
@@ -19,35 +19,62 @@
  ****************************************************************/
 
 /*###############################################################
- # source file for building precompiled headers
+ # storage interface used by a client for authentification and
+ #  user data exchange.
  #
- #   date of creation:  04/27/2005
+ #   date of creation:  09/27/2007
  #
  #   author:            ali botorabi (boto) 
  #      e-mail:         botorabi@gmx.net
  #
- #
  ################################################################*/
 
+#include <vrc_main.h>
+#include "vrc_storageclient.h"
+#include "vrc_storagenetworking.h"
 
-#ifndef _VRC_MAIN_H_
-#define _VRC_MAIN_H_
 
-//! VRC version
-#define VRC_VERSION     "1.2.2"
+//! Implement the singleton
+YAF3D_SINGLETON_IMPL( vrc::StorageClient )
 
-// framework's central header for most important dependencies
-#include <base.h>
 
-// ms windows stuff
-#ifdef WIN32
-#  ifndef WIN32_LEAN_AND_MEAN
-#    define WIN32_LEAN_AND_MEAN
-#  endif
-#  include <windows.h>
-#endif
+namespace vrc
+{
 
-// main header of framework itself
-#include <yaf3dframework.h>
+StorageClient::StorageClient() :
+ _p_networking( NULL )
+{
+}
 
-#endif // _VRC_MAIN_H_
+StorageClient::~StorageClient()
+{
+}
+
+void StorageClient::shutdown()
+{
+    // destroy the singleton
+    destroy();
+}
+
+void StorageClient::initialize() throw ( StorageClientException )
+{
+    // nothing to be initialized atm
+}
+
+void StorageClient::setNetworking( StorageNetworking* p_networking )
+{
+    _p_networking = p_networking;
+}
+
+bool StorageClient::requestAccountInfo( unsigned int userID, class AccountInfoResult* p_cb )
+{
+    if ( !_p_networking )
+        return false;
+
+    //! TODO: ...
+    _p_networking->requestAccountInfo( userID, p_cb );
+
+    return true;
+}
+
+} // namespace vrc

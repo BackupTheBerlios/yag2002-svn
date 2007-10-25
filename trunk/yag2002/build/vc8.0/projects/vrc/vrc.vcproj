@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm150"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.11.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include&quot;;&quot;$(YAF3D_DEP_DIR)\Scripting\lua5.1\include&quot;;../../../../src/framework;../../../../src/gamecode"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.11.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include&quot;;&quot;$(YAF3D_DEP_DIR)\Scripting\lua5.1\include&quot;;&quot;$(YAF3D_DEP_DIR)\Storage\postgreSQL\include&quot;;&quot;$(YAF3D_DEP_DIR)\Storage\libpqxx\include&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="_DEBUG;WIN32;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -223,7 +223,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm150"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.11.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include&quot;;&quot;$(YAF3D_DEP_DIR)\LOD\glod\include&quot;;&quot;$(YAF3D_DEP_DIR)\Scripting\lua5.1\include&quot;;../../../../src/framework;../../../../src/gamecode"
+				AdditionalIncludeDirectories="&quot;$(REPLICANET_INC_DIR)&quot;;&quot;$(YAF3D_DEP_DIR)\OpenScenegraph\include&quot;;&quot;$(YAF3D_DEP_DIR)\OpenThreads\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\SDL-1.2.8\include&quot;;&quot;$(YAF3D_DEP_DIR)\SDL\osgSDL\include&quot;;&quot;$(YAF3D_DEP_DIR)\GUI\cegui_mk2\include&quot;;&quot;$(YAF3D_DEP_DIR)\Physics\Newton&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\cal3d-0.11.0\src&quot;;&quot;$(YAF3D_DEP_DIR)\Animation\osgcal\include&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\include&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\fmod\inc&quot;;&quot;$(YAF3D_DEP_DIR)\Sound\speex\include&quot;;&quot;$(YAF3D_DEP_DIR)\Scripting\lua5.1\include&quot;;&quot;$(YAF3D_DEP_DIR)\Storage\postgreSQL\include&quot;;&quot;$(YAF3D_DEP_DIR)\Storage\libpqxx\include&quot;;../../../../src/framework;../../../../src/gamecode"
 				PreprocessorDefinitions="_DEBUG;WIN32;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -905,6 +905,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_dialoglogin.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gui\vrc_dialoglogin.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\gui\vrc_dialogplayercfg.cpp"
 					>
 				</File>
@@ -1561,6 +1569,122 @@
 					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\maintenance\networkingRoles\_RO_NetworkNotification.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="storage"
+				>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_gameitem.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_gameitem.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_storageclient.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_storageclient.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_storagenetworking.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_storagenetworking.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_storageserver.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_storageserver.h"
+					>
+				</File>
+				<Filter
+					Name="nw-roles"
+					>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\networkingRoles\_RO_StorageNetworking.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug-Server|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release-Server|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\networkingRoles\_RO_StorageNetworking.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="database"
+					>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_account.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_account.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_basestorage.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_basestorage.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_connectiondata.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_storagepostgres.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_storagepostgres.h"
 						>
 					</File>
 				</Filter>

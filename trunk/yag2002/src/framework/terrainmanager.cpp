@@ -126,6 +126,8 @@ TerrainManager::~TerrainManager()
 
 void TerrainManager::shutdown()
 {
+    log_info << "TerrainManager: shutting down" << std::endl;
+
     //release all patches
     std::map< unsigned int, TerrainSection* >::iterator beg = _sectionMap.begin(), end = _sectionMap.end();
     for ( ; beg != end; ++beg )
@@ -169,6 +171,105 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
     if ( !( _tilesX >> _quadTreeDepth ) || !( _tilesY >> _quadTreeDepth ) )
         throw TerrainException( "Terrain Manager: quad tree depth is too high!" );
 
+    // base texture map
+    osg::Texture2D* p_basetex = new osg::Texture2D;
+
+    {
+        osg::Image* p_baseimage = osgDB::readImageFile( mediapath + config._fileBasemap );
+
+        if ( !p_baseimage )
+        {
+            log_warning << "Terrain Manager: cannot load basemap image" << std::endl;
+        }
+        else
+        {
+            p_basetex->setImage( p_baseimage );
+            p_basetex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
+            p_basetex->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
+            p_basetex->setInternalFormatMode( osg::Texture::USE_IMAGE_DATA_FORMAT );
+            p_basetex->setUnRefImageDataAfterApply( true );
+        }
+    }
+
+    // layer mask
+    osg::Texture2D* p_layermask = new osg::Texture2D;
+
+    {
+        osg::Image* p_maskimage = osgDB::readImageFile( mediapath + config._fileLayerMask );
+
+        if ( !p_maskimage )
+        {
+            log_warning << "Terrain Manager: cannot load layer mask image" << std::endl;
+        }
+        else
+        {
+            p_layermask->setImage( p_maskimage );
+            p_layermask->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
+            p_layermask->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
+            p_layermask->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR );
+            p_layermask->setFilter( osg::Texture::MAG_FILTER, osg::Texture::LINEAR );            
+            p_layermask->setInternalFormatMode( osg::Texture::USE_IMAGE_DATA_FORMAT );
+            p_layermask->setUnRefImageDataAfterApply( true );
+        }
+    }
+
+    // detailed texture map 0
+    osg::Texture2D* p_detailtex0 = new osg::Texture2D;
+
+    {
+        osg::Image* p_detailimage0 = osgDB::readImageFile( mediapath + config._fileDetailmap0 );
+
+        if ( !p_detailimage0 )
+        {
+            log_warning << "Terrain Manager: cannot load detail map 0 image" << std::endl;
+        }
+        else
+        {
+            p_detailtex0->setImage( p_detailimage0 );
+            p_detailtex0->setWrap( osg::Texture::WRAP_S, osg::Texture::REPEAT );
+            p_detailtex0->setWrap( osg::Texture::WRAP_T, osg::Texture::REPEAT );
+            p_detailtex0->setUnRefImageDataAfterApply( true );
+        }
+    }
+
+    // detailed texture map 1
+    osg::Texture2D* p_detailtex1 = new osg::Texture2D;
+
+    {
+        osg::Image* p_detailimage1 = osgDB::readImageFile( mediapath + config._fileDetailmap1 );
+
+        if ( !p_detailimage1 )
+        {
+            log_warning << "Terrain Manager: cannot load detail map 1 image" << std::endl;
+        }
+        else
+        {
+            p_detailtex1->setImage( p_detailimage1 );
+            p_detailtex1->setWrap( osg::Texture::WRAP_S, osg::Texture::REPEAT );
+            p_detailtex1->setWrap( osg::Texture::WRAP_T, osg::Texture::REPEAT );
+            p_detailtex1->setUnRefImageDataAfterApply( true );
+        }
+    }
+
+    // detailed texture map 2
+    osg::Texture2D* p_detailtex2 = new osg::Texture2D;
+
+    {
+        osg::Image* p_detailimage2 = osgDB::readImageFile( mediapath + config._fileDetailmap2 );
+
+        if ( !p_detailimage2 )
+        {
+            log_warning << "Terrain Manager: cannot load detail map 2 image" << std::endl;
+        }
+        else
+        {
+            p_detailtex2->setImage( p_detailimage2 );
+            p_detailtex2->setWrap( osg::Texture::WRAP_S, osg::Texture::REPEAT );
+            p_detailtex2->setWrap( osg::Texture::WRAP_T, osg::Texture::REPEAT );
+            p_detailtex2->setUnRefImageDataAfterApply( true );
+        }
+    }
+
     // create the state set
     _p_stateSet = new osg::StateSet;
     _p_stateSet->setGlobalDefaults();
@@ -176,124 +277,17 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
     _p_stateSet->setRenderingHint( osg::StateSet::OPAQUE_BIN );
     _p_stateSet->setMode( GL_CULL_FACE, osg::StateAttribute::ON );
 
-    // set detail textures and layer mask only when glsl is available
+    // set base texture
+    _p_stateSet->setTextureAttributeAndModes( 0, p_basetex, osg::StateAttribute::ON );
+    // set detail textures only when glsl is available
     if ( glslavailable )
     {
-        // layer mask
-        osg::Texture2D* p_layermask = new osg::Texture2D;
-        {
-            osg::Image* p_maskimage = osgDB::readImageFile( mediapath + config._fileLayerMask );
-            if ( !p_maskimage )
-            {
-                log_warning << "Terrain Manager: cannot load layer mask image" << std::endl;
-            }
-            else
-            {
-                p_layermask->setImage( p_maskimage );
-                p_layermask->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
-                p_layermask->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
-                p_layermask->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR );
-                p_layermask->setFilter( osg::Texture::MAG_FILTER, osg::Texture::LINEAR );
-                p_layermask->setInternalFormatMode( osg::Texture::USE_IMAGE_DATA_FORMAT );
-                p_layermask->setUnRefImageDataAfterApply( true );
-            }
-        }
-        // detailed texture map 0
-        osg::Texture2D* p_detailtex0 = new osg::Texture2D;
-        {
-            osg::Image* p_detailimage0 = osgDB::readImageFile( mediapath + config._fileDetailmap0 );
-
-            if ( !p_detailimage0 )
-            {
-                log_warning << "Terrain Manager: cannot load detail map 0 image" << std::endl;
-            }
-            else
-            {
-                p_detailtex0->setImage( p_detailimage0 );
-                p_detailtex0->setWrap( osg::Texture::WRAP_S, osg::Texture::REPEAT );
-                p_detailtex0->setWrap( osg::Texture::WRAP_T, osg::Texture::REPEAT );
-                p_detailtex0->setUnRefImageDataAfterApply( true );
-            }
-        }
-        // detailed texture map 1
-        osg::Texture2D* p_detailtex1 = new osg::Texture2D;
-        {
-            osg::Image* p_detailimage1 = osgDB::readImageFile( mediapath + config._fileDetailmap1 );
-            if ( !p_detailimage1 )
-            {
-                log_warning << "Terrain Manager: cannot load detail map 1 image" << std::endl;
-            }
-            else
-            {
-                p_detailtex1->setImage( p_detailimage1 );
-                p_detailtex1->setWrap( osg::Texture::WRAP_S, osg::Texture::REPEAT );
-                p_detailtex1->setWrap( osg::Texture::WRAP_T, osg::Texture::REPEAT );
-                p_detailtex1->setUnRefImageDataAfterApply( true );
-            }
-        }
-        // detailed texture map 2
-        osg::Texture2D* p_detailtex2 = new osg::Texture2D;
-        {
-            osg::Image* p_detailimage2 = osgDB::readImageFile( mediapath + config._fileDetailmap2 );
-            if ( !p_detailimage2 )
-            {
-                log_warning << "Terrain Manager: cannot load detail map 2 image" << std::endl;
-            }
-            else
-            {
-                p_detailtex2->setImage( p_detailimage2 );
-                p_detailtex2->setWrap( osg::Texture::WRAP_S, osg::Texture::REPEAT );
-                p_detailtex2->setWrap( osg::Texture::WRAP_T, osg::Texture::REPEAT );
-                p_detailtex2->setUnRefImageDataAfterApply( true );
-            }
-        }
-        // detailed texture map 3
-        osg::Texture2D* p_detailtex3 = new osg::Texture2D;
-        {
-            osg::Image* p_detailimage3 = osgDB::readImageFile( mediapath + config._fileDetailmap3 );
-            if ( !p_detailimage3 )
-            {
-                log_warning << "Terrain Manager: cannot load detail map 3 image" << std::endl;
-            }
-            else
-            {
-                p_detailtex3->setImage( p_detailimage3 );
-                p_detailtex3->setWrap( osg::Texture::WRAP_S, osg::Texture::REPEAT );
-                p_detailtex3->setWrap( osg::Texture::WRAP_T, osg::Texture::REPEAT );
-                p_detailtex3->setUnRefImageDataAfterApply( true );
-            }
-        }
-
-        _p_stateSet->setTextureAttributeAndModes( 0, p_detailtex0, osg::StateAttribute::ON );
-        _p_stateSet->setTextureAttributeAndModes( 1, p_detailtex1, osg::StateAttribute::ON );
-        _p_stateSet->setTextureAttributeAndModes( 2, p_detailtex2, osg::StateAttribute::ON );
-        _p_stateSet->setTextureAttributeAndModes( 3, p_detailtex3, osg::StateAttribute::ON );
-
+        _p_stateSet->setTextureAttributeAndModes( 1, p_detailtex0, osg::StateAttribute::ON );
+        _p_stateSet->setTextureAttributeAndModes( 2, p_detailtex1, osg::StateAttribute::ON );
+        _p_stateSet->setTextureAttributeAndModes( 3, p_detailtex2, osg::StateAttribute::ON );
         // setup the layer mask
         if ( p_layermask )
             _p_stateSet->setTextureAttributeAndModes( 4, p_layermask, osg::StateAttribute::ON );
-    }
-    else // fall back to base texture
-    {
-        // base texture map
-        osg::Texture2D* p_basetex = new osg::Texture2D;
-        {
-            osg::Image* p_baseimage = osgDB::readImageFile( mediapath + config._fileBasemap );
-            if ( !p_baseimage )
-            {
-                log_warning << "Terrain Manager: cannot load basemap image" << std::endl;
-            }
-            else
-            {
-                p_basetex->setImage( p_baseimage );
-                p_basetex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
-                p_basetex->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
-                p_basetex->setInternalFormatMode( osg::Texture::USE_IMAGE_DATA_FORMAT );
-                p_basetex->setUnRefImageDataAfterApply( true );
-            }
-        }
-        // set base texture
-        _p_stateSet->setTextureAttributeAndModes( 0, p_basetex, osg::StateAttribute::ON );
     }
 
     // create a new terrain section
@@ -326,33 +320,24 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
                     continue;
                 }
 
+                // build the base texture map coordinates
+                if ( !p_patch->buildTexCoords( 0 ) )
+                    log_error << "Terrain Manager: could not build base texture coordinates!" << std::endl;
+
                 // build detail maps only when glsl is available
                 if ( glslavailable )
                 {
                     // build the detail texture map 0 coordinates
-                    if ( !p_patch->buildTexCoords( 0, config._detailmap0Repeat ) )
+                    if ( !p_patch->buildTexCoords( 1, config._detailmap0Repeat ) )
                         log_error << "Terrain Manager: could not build deatial texture 0 coordinates!" << std::endl;
 
                     // build the detail texture map 1 coordinates
-                    if ( !p_patch->buildTexCoords( 1, config._detailmap1Repeat ) )
+                    if ( !p_patch->buildTexCoords( 2, config._detailmap1Repeat ) )
                         log_error << "Terrain Manager: could not build deatial texture 1 coordinates!" << std::endl;
 
                     // build the detail texture map 2 coordinates
-                    if ( !p_patch->buildTexCoords( 2, config._detailmap2Repeat ) )
+                    if ( !p_patch->buildTexCoords( 3, config._detailmap2Repeat ) )
                         log_error << "Terrain Manager: could not build deatial texture 2 coordinates!" << std::endl;
-
-                    // build the detail texture map 3 coordinates
-                    if ( !p_patch->buildTexCoords( 3, config._detailmap3Repeat ) )
-                        log_error << "Terrain Manager: could not build deatial texture 3 coordinates!" << std::endl;
-
-                    if ( !p_patch->buildTexCoords( 4 ) )
-                        log_error << "Terrain Manager: could not build layer mask coordinates!" << std::endl;
-                }
-                else // if no glsl support exists then fall back to base texture
-                {
-                    // build the base texture map coordinates
-                    if ( !p_patch->buildTexCoords( 0 ) )
-                        log_error << "Terrain Manager: could not build base texture coordinates!" << std::endl;
                 }
 
                 // add lod node and set its range
@@ -573,17 +558,17 @@ void TerrainManager::setupShaders( const TerrainConfig& config, osg::StateSet* p
     osg::Shader* p_fterrain = ShaderContainer::get()->getFragmentShader( ShaderContainer::eTerrainF );
     p_program->addShader( p_fterrain );
 
-    osg::Uniform* p_detailTexture0Sampler = new osg::Uniform( "detailTexture0", 0 );
+    osg::Uniform* p_baseTextureSampler = new osg::Uniform( "baseTexture", 0 );
+    p_stateset->addUniform( p_baseTextureSampler );
+
+    osg::Uniform* p_detailTexture0Sampler = new osg::Uniform( "detailTexture0", 1 );
     p_stateset->addUniform( p_detailTexture0Sampler );
 
-    osg::Uniform* p_detailTexture1Sampler = new osg::Uniform( "detailTexture1", 1 );
+    osg::Uniform* p_detailTexture1Sampler = new osg::Uniform( "detailTexture1", 2 );
     p_stateset->addUniform( p_detailTexture1Sampler );
 
-    osg::Uniform* p_detailTexture2Sampler = new osg::Uniform( "detailTexture2", 2 );
+    osg::Uniform* p_detailTexture2Sampler = new osg::Uniform( "detailTexture2", 3 );
     p_stateset->addUniform( p_detailTexture2Sampler );
-
-    osg::Uniform* p_detailTexture3Sampler = new osg::Uniform( "detailTexture3", 3 );
-    p_stateset->addUniform( p_detailTexture3Sampler );
 
     osg::Uniform* p_layerMaskSampler = new osg::Uniform( "layerMask", 4 );
     p_stateset->addUniform( p_layerMaskSampler );

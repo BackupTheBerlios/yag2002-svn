@@ -58,7 +58,7 @@ namespace yaf3d
 
 //! Network protocol version, use getProtocolVersionAsString to convert it to a string
 // Format: 0 x 00 - Current - Revision - Age
-#define YAF3D_NETWORK_PROT_VERSION      0x00010201
+#define YAF3D_NETWORK_PROT_VERSION      0x00010300
 //! Helper function for converting the protocol version to a string
 std::string getProtocolVersionAsString( unsigned int version );
 
@@ -74,12 +74,16 @@ class NodeInfo
 {
     public:
                                                     NodeInfo() :
+                                                     _accessGranted( false ),
+                                                     _needAuthenfication( false ),
                                                      _protocolVersion( YAF3D_NETWORK_PROT_VERSION )
                                                     {}
 
                                                     NodeInfo( const std::string& levelname, const std::string& nodename ) :
                                                      _levelName( levelname ),
                                                      _nodeName( nodename ),
+                                                     _accessGranted( false ),
+                                                     _needAuthenfication( false ),
                                                      _protocolVersion( YAF3D_NETWORK_PROT_VERSION )
                                                     {}
 
@@ -95,6 +99,23 @@ class NodeInfo
         */
         const std::string&                          getNodeName() const { return _nodeName; }
 
+        /**
+        * Should the server request connecting clients for authentification?
+        * \needAuth                                 If true, then the server requests clients for authentification.
+        */
+        void                                        setNeedAuthentification( bool needAuth ) { _needAuthenfication = needAuth; }
+
+        /**
+        * Connection to server needs an authentification. Use this method on client.
+        * \return                                   If true then the server requests for authentification.
+        */
+        const bool                                  needAuthentification() const { return _needAuthenfication; }
+
+        /**
+        * Returns true if server grants access, otherwise false. Use this method on client.
+        */
+        const bool                                  getAccessGranted() const { return _accessGranted; }
+
     protected:
 
         //! Level name
@@ -103,11 +124,44 @@ class NodeInfo
         //! Node name
         std::string                                 _nodeName;
 
+        //! Server requests clients for authentification
+        bool                                        _needAuthenfication;
+
+        //! True if the server grants access, otherwise false.
+        bool                                        _accessGranted;
+
         //! Network protocol version
         unsigned int                                _protocolVersion;
 
     friend  class NetworkDevice;
     friend  class Application;
+};
+
+//! Base callback class used during authentification when a client connects to the server.
+/* This callback is used on server. It is also used for register new users. */
+class CallbackAuthentification
+{
+    public:
+
+        /**
+        * This method is called when a client requests for authentification on connecting
+        * \sessionID                                Unique session ID of connecting client.
+        * \login                                    Login name
+        * \passwd                                   Password
+        * \userID                                   User's ID which is also sent to client.
+        * \return                                   True if the authentification was succesfull, then the userID has a valid value, otherwise false.
+        */
+        virtual bool                                authentify( int sessionID, const std::string& login, const std::string& passwd, unsigned int& userID ) = 0;
+
+        /**
+        * Register a new user.
+        * \name                                     Real name
+        * \login                                    Login name
+        * \passwd                                   Password
+        * \email                                    E-Mail address
+        * \return                                   Return false if the registration went wrong.
+        */
+        virtual bool                                registerUser( const std::string& name, const std::string& login, const std::string& passwd, const std::string& email ) = 0;
 };
 
 //! Class for registering a callback in order to get notification when clients join / leave the network session.
@@ -210,12 +264,24 @@ class NetworkDevice : public Singleton< NetworkDevice >
         void                                        setupServer( int channel, const NodeInfo& nodeInfo ) throw ( NetworkException );
 
         /**
-        * Setup a client session joining to a server ( throws exception )
+        * Set the authentification callback.
+        * This callback is used when a client connects to server and requests for authentification.
+        * \p_cb                                     Callback object
+        */
+        void                                        setAuthCallback( CallbackAuthentification* p_cb );
+
+        /**
+        * Setup a client session joining to a server ( throws exception ). It is also used for authentification and registration of a user.
         * \param ServerIp                           Server IP address
         * \param channel                            Channel
-        * \param nodeInfo                           Client information
+        * \param nodeInfo                           Client information and some information retrieved from server
+        * \param login                              Login name, needed only if server needs authentification. Fill it for a registration request.
+        * \param passwd                             Password, needed only if server needs authentification. Fill it for a registration request.
+        * \param reguser                            Set to true if an user registration should be processed.
+        * \param name                               Real name, fill it for a registration request.
+        * \param email                              E-Mail address, fill it for a registration request.
         */
-        void                                        setupClient( const std::string& serverIp, int channel, const NodeInfo& nodeInfo ) throw ( NetworkException );
+        void                                        setupClient( const std::string& serverIp, int channel, NodeInfo& nodeInfo, const std::string& login = "", const std::string& passwd = "", bool reguser = false, const std::string& name = "", const std::string& email = "" ) throw ( NetworkException );
 
         /**
         * Start the client processing. Call this after SetupClient ( throws exception ).
@@ -250,12 +316,6 @@ class NetworkDevice : public Singleton< NetworkDevice >
         * Get networking mode: NONE, CLIENT, SERVER
         */
         NetworkingMode                              getMode() const { return _mode; }
-
-        /**
-        * Get server's / client's node info, call this after a a session is established.
-        * \return                                   Node information. NULL if the session is not stable.
-        */
-        NodeInfo*                                   getNodeInfo();
 
         /**
         * Get the local session ID, call this after a successful connection.
@@ -320,8 +380,8 @@ class NetworkDevice : public Singleton< NetworkDevice >
         //! Session instance
         Networking*                                 _p_session;
 
-        //! Server's / client's node information
-        NodeInfo                                    _nodeInfo;
+        //! Server's node information
+        NodeInfo                                    _serverNodeInfo;
 
         //! Flag for indicating a stable client session
         bool                                        _clientSessionStable;
@@ -331,6 +391,9 @@ class NetworkDevice : public Singleton< NetworkDevice >
 
         //! Server IP which can be used in clients, valid after a successful connection to a server
         std::string                                 _serverIP;
+
+        //! Authentification callback used on server
+        CallbackAuthentification*                   _p_cbAuthentification;
 
     friend class Singleton< NetworkDevice >;
     friend class Application;

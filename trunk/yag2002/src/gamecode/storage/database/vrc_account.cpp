@@ -1,6 +1,6 @@
 /****************************************************************
  *  YAG2002 (http://yag2002.sourceforge.net)
- *  Copyright (C) 2005-2006, A. Botorabi
+ *  Copyright (C) 2005-2007, A. Botorabi
  *
  *  This program is free software; you can redistribute it and/or 
  *  modify it under the terms of the GNU Lesser General Public 
@@ -19,35 +19,65 @@
  ****************************************************************/
 
 /*###############################################################
- # source file for building precompiled headers
+ # account related data
  #
- #   date of creation:  04/27/2005
+ #   date of creation:  10/03/2007
  #
- #   author:            ali botorabi (boto) 
- #      e-mail:         botorabi@gmx.net
- #
+ #   author:            mpretz 
  #
  ################################################################*/
 
+#include <vrc_main.h>
+#include "vrc_account.h"
 
-#ifndef _VRC_MAIN_H_
-#define _VRC_MAIN_H_
+namespace vrc
+{
 
-//! VRC version
-#define VRC_VERSION     "1.2.2"
+//! Implementation of class UserAccount
+UserAccount::UserAccount() :
+ _userID( static_cast< unsigned int >( -1 ) ),
+ _priviledges( 0 )
+{
+}
 
-// framework's central header for most important dependencies
-#include <base.h>
+UserAccount::~UserAccount()
+{
+}
 
-// ms windows stuff
-#ifdef WIN32
-#  ifndef WIN32_LEAN_AND_MEAN
-#    define WIN32_LEAN_AND_MEAN
-#  endif
-#  include <windows.h>
-#endif
+const std::string& UserAccount::getUsername() const
+{
+    return _userName;
+}
 
-// main header of framework itself
-#include <yaf3dframework.h>
+const std::string& UserAccount::getNickname() const
+{
+    return _nickName;
+}
 
-#endif // _VRC_MAIN_H_
+const std::string& UserAccount::getEmail() const
+{
+    return _email;
+}
+
+const std::string& UserAccount::getLastLogin() const
+{
+    return _lastLogin;
+}
+
+const std::string& UserAccount::getOnlineTime() const
+{
+    return _onlineTime;
+}
+
+unsigned int UserAccount::getUserId() const
+{
+    return _userID;
+}
+
+unsigned int UserAccount::getPriviledges() const
+{
+    return _priviledges;
+}
+
+
+} // namespace vrc

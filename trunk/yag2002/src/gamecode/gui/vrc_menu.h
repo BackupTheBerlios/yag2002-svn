@@ -40,6 +40,7 @@ namespace vrc
 
 class DialogGameSettings;
 class DialogLevelSelect;
+class DialogLogin;
 class MenuInputHandler;
 class EnAmbientSound;
 class IntroControl;
@@ -103,6 +104,8 @@ class EnMenu :  public yaf3d::BaseEntity
 
         std::string                                 _settingsDialogConfig;
 
+        std::string                                 _loginDialogConfig;
+
         std::string                                 _levelSelectDialogConfig;
 
         std::string                                 _introTexture;
@@ -133,7 +136,12 @@ class EnMenu :  public yaf3d::BaseEntity
 
         //! Interface method used by settings dialog
         //---
+
+        //! This is called when the setings dialog closes.
         void                                        onSettingsDialogClose();
+
+        //! This is called when the login dialog closes. 'login' is false if cancel button has been clicked.
+        void                                        onLoginDialogClose( bool btnlogin );
 
         //! Enable / disable background music
         void                                        setBkgMusicEnable( bool en );
@@ -166,9 +174,6 @@ class EnMenu :  public yaf3d::BaseEntity
         //! Callback for button click "join to chat"  
         bool                                        onClickedJoin( const CEGUI::EventArgs& arg );
 
-        //! Callback for button click "start server"  
-        bool                                        onClickedServer( const CEGUI::EventArgs& arg );
-        
         //! Callback for button click "start walk-through"  
         bool                                        onClickedWT( const CEGUI::EventArgs& arg );
 
@@ -211,7 +216,6 @@ class EnMenu :  public yaf3d::BaseEntity
         //! Internal state used for loading a level for server or standalone mode
         enum
         {
-            ForServer,
             ForStandalone
         }                                           _levelSelectionState;
 
@@ -231,6 +235,8 @@ class EnMenu :  public yaf3d::BaseEntity
 
         std::auto_ptr< DialogGameSettings >         _settingsDialog;
 
+        std::auto_ptr< DialogLogin >                _loginDialog;
+
         std::auto_ptr< DialogLevelSelect >          _levelSelectDialog;
 
         std::auto_ptr< IntroControl >               _intro;
@@ -240,8 +246,6 @@ class EnMenu :  public yaf3d::BaseEntity
         CEGUI::Window*                              _p_loadingWindow;
 
         CEGUI::PushButton*                          _p_btnStartJoin;
-
-        CEGUI::PushButton*                          _p_btnStartServer;
 
         CEGUI::PushButton*                          _p_btnStartWT;
 
@@ -268,6 +272,7 @@ class EnMenu :  public yaf3d::BaseEntity
 
     friend class DialogGameSettings;
     friend class DialogLevelSelect;
+    friend class DialogLogin;
     friend class MenuInputHandler;
     friend class IntroControl;
 };

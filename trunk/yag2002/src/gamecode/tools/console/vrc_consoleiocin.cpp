@@ -80,6 +80,12 @@ void ConsoleIOCin::output( const std::string& text )
 
 void ConsoleIOCin::run()
 {
+    // wait for complete system initialization
+    while ( yaf3d::GameState::get()->getState() != yaf3d::GameState::EnterMainLoop )
+        OpenThreads::Thread::microSleep( 100 );
+
+    std::cout << ">";
+
     std::string* p_input = new std::string;
     while( !_terminate )
     {
