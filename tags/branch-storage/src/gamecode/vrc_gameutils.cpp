@@ -79,7 +79,7 @@ _voiceOutputGain( VRC_GS_DEFAULT_SOUND_VOLUME ),
 _voiceChatChannel( VRC_GS_DEFAULT_VOICE_CHANNEL ),
 _dbIp( "localhost" ),
 _dbPort( 3306 ),
-_dbSchema( "vrc" ),
+_dbName( "vrc" ),
 _dbUser( "vrcserver" )
 {
     // register this instance for getting game state changes
@@ -121,7 +121,7 @@ void VRCStateHandler::onStateChange( unsigned int state )
             yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_CHANNEL,      _voiceChatChannel  );
             yaf3d::Configuration::get()->addSetting( VRC_GS_DB_IP,                  _dbIp              );
             yaf3d::Configuration::get()->addSetting( VRC_GS_DB_PORT,                _dbPort            );
-            yaf3d::Configuration::get()->addSetting( VRC_GS_DB_SCHEMA,              _dbSchema          );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_DB_NAME,                _dbName            );
             yaf3d::Configuration::get()->addSetting( VRC_GS_DB_USER,                _dbUser            );
 
             // now load the setting values from config file

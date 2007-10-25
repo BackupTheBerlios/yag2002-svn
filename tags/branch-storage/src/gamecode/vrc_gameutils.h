@@ -70,7 +70,7 @@ namespace gameutils
 #define VRC_GS_VOICECHAT_CHANNEL            "voiceChatChannel"
 #define VRC_GS_DB_IP                        "dbIP"
 #define VRC_GS_DB_PORT                      "dbPort"
-#define VRC_GS_DB_SCHEMA                    "dbSchema"
+#define VRC_GS_DB_NAME                      "dbName"
 #define VRC_GS_DB_USER                      "dbUser"
 
 //! Settings default values
@@ -162,7 +162,7 @@ class VRCStateHandler : public yaf3d::GameState::CallbackStateChange
 
         unsigned int                                _dbPort;
 
-        std::string                                 _dbSchema;
+        std::string                                 _dbName;
 
         std::string                                 _dbUser;
 };
