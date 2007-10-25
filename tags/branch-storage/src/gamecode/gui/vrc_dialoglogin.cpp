@@ -39,11 +39,19 @@ namespace vrc
 
 // some defines
 #define LOGINDLG_PREFIX             "login_"
+#define REGDLG_PREFIX               "reg_"
+
+#define DLG_REGISTRATION_FILE       "gui/registration.xml"
 
 DialogLogin::DialogLogin( EnMenu* p_menuEntity ) :
 _p_loginDialog( NULL ),
+_p_registrationDialog( NULL ),
 _p_login( NULL ),
 _p_passwd( NULL ),
+_p_regNickName( NULL ),
+_p_regRealName( NULL ),
+_p_regPasswd( NULL ),
+_p_regEmail( NULL ),
 _p_menuEntity( p_menuEntity ),
 _enable( false )
 {
@@ -56,6 +64,10 @@ DialogLogin::~DialogLogin()
     {
         if ( _p_loginDialog )
             CEGUI::WindowManager::getSingleton().destroyWindow( _p_loginDialog );
+
+        if ( _p_registrationDialog )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_registrationDialog );
+
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -80,6 +92,10 @@ bool DialogLogin::initialize( const std::string& layoutfile )
         // setup login button
         CEGUI::PushButton* p_btnlogin = static_cast< CEGUI::PushButton* >( _p_loginDialog->getChild( LOGINDLG_PREFIX "btn_login" ) );
         p_btnlogin->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogLogin::onClickedLogin, this ) );
+
+        // setup create account button
+        CEGUI::PushButton* p_btnreg = static_cast< CEGUI::PushButton* >( _p_loginDialog->getChild( LOGINDLG_PREFIX "btn_create_account" ) );
+        p_btnreg->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogLogin::onClickedRegistration, this ) );
 
         // setup cancel button
         CEGUI::PushButton* p_btncancel = static_cast< CEGUI::PushButton* >( _p_loginDialog->getChild( LOGINDLG_PREFIX "btn_cancel" ) );
@@ -115,6 +131,48 @@ bool DialogLogin::onClickedLogin( const CEGUI::EventArgs& /*arg*/ )
     return true;
 }
 
+bool DialogLogin::onClickedRegistration( const CEGUI::EventArgs& /*arg*/ )
+{
+    // create the registration  dialog
+    if ( !_p_registrationDialog )
+    {
+        try
+        {
+            _p_registrationDialog = yaf3d::GuiManager::get()->loadLayout( DLG_REGISTRATION_FILE, NULL, REGDLG_PREFIX );
+            if ( !_p_registrationDialog )
+            {
+                log_error << "DialogLogin: error creating registration dialog" << std::endl;
+                return true;
+            }
+
+            // setup cancel button
+            CEGUI::PushButton* p_btncancel = static_cast< CEGUI::PushButton* >( _p_registrationDialog->getChild( REGDLG_PREFIX "btn_cancel" ) );
+            p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogLogin::onClickedRegistrationCancel, this ) );
+
+            // setup create registration button
+            CEGUI::PushButton* p_btnregister = static_cast< CEGUI::PushButton* >( _p_registrationDialog->getChild( REGDLG_PREFIX "btn_create_account" ) );
+            p_btnregister->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogLogin::onClickedRegistrationCreate, this ) );
+
+            // get registration edit fields
+            _p_regNickName = static_cast< CEGUI::Editbox* >( _p_registrationDialog->getChild( REGDLG_PREFIX "text_username" ) );
+            _p_regPasswd   = static_cast< CEGUI::Editbox* >( _p_registrationDialog->getChild( REGDLG_PREFIX "text_password" ) );
+            _p_regRealName = static_cast< CEGUI::Editbox* >( _p_registrationDialog->getChild( REGDLG_PREFIX "text_real_name" ) );
+            _p_regEmail    = static_cast< CEGUI::Editbox* >( _p_registrationDialog->getChild( REGDLG_PREFIX "text_email" ) );
+        }
+        catch ( const CEGUI::Exception& e )
+        {
+            log_error << "*** DialogLogin: cannot setup registration dialog layout." << std::endl;
+            log_out << "      reason: " << e.getMessage().c_str() << std::endl;
+        }
+
+    }
+
+    _p_loginDialog->hide();
+    _p_registrationDialog->show();
+
+    return true;
+}
+
 bool DialogLogin::onClickedCancel( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
@@ -122,6 +180,155 @@ bool DialogLogin::onClickedCancel( const CEGUI::EventArgs& /*arg*/ )
 
     // let the menu know that the dialog closes
     _p_menuEntity->onLoginDialogClose( false );
+
+    return true;
+}
+
+bool DialogLogin::onClickedRegistrationCancel( const CEGUI::EventArgs& /*arg*/ )
+{
+    _p_loginDialog->show();
+    _p_registrationDialog->hide();
+    return true;
+}
+
+bool DialogLogin::onClickedRegistrationCreate( const CEGUI::EventArgs& /*arg*/ )
+{
+    std::string nickname;
+    std::string realname;
+    std::string passwd;
+    std::string email;
+
+    if ( _p_regNickName->getText().length() )
+        nickname = _p_regNickName->getText().c_str();
+
+    if ( _p_regRealName->getText().length() )
+        realname = _p_regRealName->getText().c_str();
+
+    if ( _p_regPasswd->getText().length() )
+        passwd = _p_regPasswd->getText().c_str();
+
+    if ( _p_regEmail->getText().length() )
+        email = _p_regEmail->getText().c_str();
+
+    if ( !nickname.length() || !passwd.length() )
+    {
+        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", "You must provide at least your User name and Password!", yaf3d::MessageBoxDialog::OK, true );
+        // create a call back for yes/no buttons of messagebox
+        class MsgOkClick: public yaf3d::MessageBoxDialog::ClickCallback
+        {
+        public:
+
+                                    MsgOkClick(  CEGUI::Window* p_dlg ) : _p_registrationDialog( p_dlg ) {}
+
+            virtual                 ~MsgOkClick() {}
+
+            void                    onClicked( unsigned int btnId )
+                                    {
+                                        _p_registrationDialog->show();
+                                    }
+
+            CEGUI::Window*          _p_registrationDialog;
+        };
+        p_msg->setClickCallback( new MsgOkClick( _p_registrationDialog ) );
+        p_msg->show();
+
+        _p_registrationDialog->hide();
+        _p_regPasswd->setText( "" );
+
+        return true;
+    }
+
+    // try to connect the server and create an account
+    std::string url;
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_IP, url );
+    yaf3d::NodeInfo nodeinfo( "", nickname );
+    unsigned int channel = 0;
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
+
+    bool registrationDenied = false;
+
+    // try to connect the server for a registration
+    try
+    {
+        yaf3d::NetworkDevice::get()->setupClient( url, channel, nodeinfo, nickname, passwd, true, realname, email );
+
+        if ( !nodeinfo.getAccessGranted() )
+        {
+            registrationDenied = true;
+            throw yaf3d::NetworkException( "Registration failed with given user name.\nIt already exists. Try another User name." );
+        }
+    }
+    catch ( const yaf3d::NetworkException& e )
+    {
+        log_info << "registration failed.\n reason: " << e.what() << std::endl;
+
+        // create a call back for Ok button of messagebox
+        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", e.what(), yaf3d::MessageBoxDialog::OK, true );
+
+        class MsgOkClick: public yaf3d::MessageBoxDialog::ClickCallback
+        {
+        public:
+
+                                    MsgOkClick(  CEGUI::Window* p_dlg ) : _p_registrationDialog( p_dlg ) {}
+
+            virtual                 ~MsgOkClick() {}
+
+            void                    onClicked( unsigned int btnId )
+                                    {
+                                        _p_registrationDialog->show();
+                                    }
+
+            CEGUI::Window*          _p_registrationDialog;
+        };
+        p_msg->setClickCallback( new MsgOkClick( _p_registrationDialog ) );
+        p_msg->show();
+
+        _p_registrationDialog->hide();
+        _p_regPasswd->setText( "" );
+
+        // play attention sound
+        vrc::gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_ATTENTION );
+
+        if ( registrationDenied )
+            return true;
+    }
+
+    // registration was successful
+
+    _p_regRealName->setText( "" );
+    _p_regPasswd->setText( "" );
+    _p_regEmail->setText( "" );
+    _p_registrationDialog->hide();
+
+    {
+        // pop up the welcome message
+        yaf3d::MessageBoxDialog* p_msgwelcome = new yaf3d::MessageBoxDialog
+           ( 
+            "Server", 
+            "Congratulation, your account has been created.\nNow, you can login with your User name and Password.", 
+            yaf3d::MessageBoxDialog::OK,
+            true
+           );
+        class MsgOkClick: public yaf3d::MessageBoxDialog::ClickCallback
+        {
+        public:
+
+                                    MsgOkClick(  DialogLogin* p_dlg ) : _p_dialog( p_dlg ) {}
+
+            virtual                 ~MsgOkClick() {}
+
+            void                    onClicked( unsigned int btnId )
+                                    {
+                                        _p_dialog->_p_loginDialog->show();
+                                        // take the fresh registered nick name as login name in login dialog
+                                        _p_dialog->_p_login->setText( _p_dialog->_p_regNickName->getText() );
+                                    }
+
+            DialogLogin*            _p_dialog;
+        };
+        p_msgwelcome->setClickCallback( new MsgOkClick( this ) );
+        p_msgwelcome->show();
+    }
 
     return true;
 }

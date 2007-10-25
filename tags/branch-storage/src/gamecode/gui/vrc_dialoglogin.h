@@ -58,19 +58,38 @@ class DialogLogin
 
     protected:
 
-        //! Dialog callback for Start button        
+        //! Dialog callback for Start button
         bool                                        onClickedLogin( const CEGUI::EventArgs& arg );
 
-        //! Dialog callback for Return button        
+        //! Dialog callback for create account button
+        bool                                        onClickedRegistration( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for cancel button
         bool                                        onClickedCancel( const CEGUI::EventArgs& arg );
-    
+
+        //! Dialog callback for cancel registration button
+        bool                                        onClickedRegistrationCancel( const CEGUI::EventArgs& arg );
+
+        //! Dialog callback for create registration button
+        bool                                        onClickedRegistrationCreate( const CEGUI::EventArgs& arg );
+
         //  internal variables
 
         CEGUI::Window*                              _p_loginDialog;
 
+        CEGUI::Window*                              _p_registrationDialog;
+
         CEGUI::Editbox*                             _p_login;
 
         CEGUI::Editbox*                             _p_passwd;
+
+        CEGUI::Editbox*                             _p_regNickName;
+
+        CEGUI::Editbox*                             _p_regRealName;
+        
+        CEGUI::Editbox*                             _p_regPasswd;
+        
+        CEGUI::Editbox*                             _p_regEmail;
 
         EnMenu*                                     _p_menuEntity;
 

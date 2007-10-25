@@ -174,9 +174,6 @@ class EnMenu :  public yaf3d::BaseEntity
         //! Callback for button click "join to chat"  
         bool                                        onClickedJoin( const CEGUI::EventArgs& arg );
 
-        //! Callback for button click "start server"  
-        bool                                        onClickedServer( const CEGUI::EventArgs& arg );
-        
         //! Callback for button click "start walk-through"  
         bool                                        onClickedWT( const CEGUI::EventArgs& arg );
 
@@ -219,7 +216,6 @@ class EnMenu :  public yaf3d::BaseEntity
         //! Internal state used for loading a level for server or standalone mode
         enum
         {
-            ForServer,
             ForStandalone
         }                                           _levelSelectionState;
 
@@ -250,8 +246,6 @@ class EnMenu :  public yaf3d::BaseEntity
         CEGUI::Window*                              _p_loadingWindow;
 
         CEGUI::PushButton*                          _p_btnStartJoin;
-
-        CEGUI::PushButton*                          _p_btnStartServer;
 
         CEGUI::PushButton*                          _p_btnStartWT;
 

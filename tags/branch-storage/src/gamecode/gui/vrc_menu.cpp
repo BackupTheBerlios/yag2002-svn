@@ -166,7 +166,6 @@ _backgrdSoundVolume( 1.0f ),
 _p_menuWindow( NULL ),
 _p_loadingWindow( NULL ),
 _p_btnStartJoin( NULL ),
-_p_btnStartServer( NULL ),
 _p_btnStartWT( NULL ),
 _p_btnReturn( NULL ),
 _p_btnLeave( NULL ),
@@ -295,11 +294,6 @@ void EnMenu::initialize()
         _p_btnStartJoin->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedJoin, this ) );
         _p_btnStartJoin->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMenu::onButtonHover, this ) );
         _p_btnStartJoin->setFont( YAF3D_GUI_FONT8 );
-
-        _p_btnStartServer = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_startserver" ) );
-        _p_btnStartServer->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedServer, this ) );
-        _p_btnStartServer->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::EnMenu::onButtonHover, this ) );
-        _p_btnStartServer->setFont( YAF3D_GUI_FONT8 );
 
         _p_btnStartWT = static_cast< CEGUI::PushButton* >( _p_menuWindow->getChild( MENU_PREFIX "btn_startwt" ) );
         _p_btnStartWT->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::EnMenu::onClickedWT, this ) );
@@ -560,22 +554,7 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
     // bring up the login dialog
     _loginDialog->enable( true );
 
-    return true;
-}
-
-bool EnMenu::onClickedServer( const CEGUI::EventArgs& arg )
-{
-    // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );    
-
     _p_menuWindow->disable();
-
-    // change search folder in dialog for selecting a level
-    _levelSelectDialog->setSearchDirectory( YAF3D_LEVEL_SERVER_DIR );
-    _levelSelectDialog->enable( true );
-
-    // set level loading state
-    _levelSelectionState = ForServer;
 
     return true;
 }
@@ -859,7 +838,6 @@ void EnMenu::enter()
     {
         _p_btnStartJoin->hide();
         _p_btnStartWT->hide();
-        _p_btnStartServer->hide();
 
         _p_btnReturn->show();
         _p_btnLeave->show();
@@ -868,7 +846,6 @@ void EnMenu::enter()
     {
         _p_btnStartJoin->show();
         _p_btnStartWT->show();
-        _p_btnStartServer->show();
 
         _p_btnReturn->hide();
         _p_btnLeave->hide();
@@ -1094,23 +1071,6 @@ void EnMenu::onLevelSelected( std::string levelfile, CEGUI::Image* p_img )
         // set game mode to standalone
         yaf3d::GameState::get()->setMode( yaf3d::GameState::Standalone );
     }
-    else if ( _levelSelectionState == ForServer ) 
-    {
-        // disable the start server button
-        _p_btnStartServer->disable();
-
-        // get the full binary path and set the server app name
-        std::string cmd = yaf3d::Application::get()->getFullBinPath();
-        cmd += "/" + std::string( VRC_SERVER_APP_NAME );
-
-        std::string arg1( "-server" );
-        std::string arg2( "-level" );
-        std::string arg3( levelfile );
-
-        // use utility function to start the server
-        std::string args = arg1 + "  " + arg2 + "  " + arg3;
-        _serverProcHandle = yaf3d::spawnApplication( cmd, args );
-    }
     else
     {
         assert( NULL && "invalid level select state!" );
@@ -1145,7 +1105,6 @@ void EnMenu::leaveLevel()
 
     _p_btnStartJoin->show();
     _p_btnStartWT->show();
-    _p_btnStartServer->show();
     _p_btnReturn->hide();
     _p_btnLeave->hide();
 
