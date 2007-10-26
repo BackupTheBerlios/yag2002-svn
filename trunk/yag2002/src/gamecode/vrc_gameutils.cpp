@@ -78,7 +78,7 @@ _voiceInputGain( VRC_GS_DEFAULT_SOUND_VOLUME ),
 _voiceOutputGain( VRC_GS_DEFAULT_SOUND_VOLUME ),
 _voiceChatChannel( VRC_GS_DEFAULT_VOICE_CHANNEL ),
 _dbIp( "localhost" ),
-_dbPort( 3306 ),
+_dbPort( 5432 ),
 _dbName( "vrc" ),
 _dbUser( "vrcserver" )
 {
