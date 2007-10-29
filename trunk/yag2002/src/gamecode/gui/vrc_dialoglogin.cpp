@@ -245,7 +245,7 @@ bool DialogLogin::onClickedRegistrationCreate( const CEGUI::EventArgs& /*arg*/ )
     unsigned int channel = 0;
     yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, channel );
 
-    bool registrationDenied = false;
+    bool registrationDenied = true;
 
     // try to connect the server for a registration
     try
@@ -254,9 +254,9 @@ bool DialogLogin::onClickedRegistrationCreate( const CEGUI::EventArgs& /*arg*/ )
 
         if ( !nodeinfo.getAccessGranted() )
         {
-            registrationDenied = true;
             throw yaf3d::NetworkException( "Registration failed with given user name.\nIt already exists. Try another User name." );
         }
+        registrationDenied = false;
     }
     catch ( const yaf3d::NetworkException& e )
     {
