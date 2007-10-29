@@ -211,7 +211,7 @@ bool StoragePostgreSQL::logoutUser( const std::string login )
         std::string query;
 
         // logout the user
-        query = std::string( "SELECT " FCN_USER_LOGOUT "( ' " + login + "' );" );
+        query = std::string( "SELECT " FCN_USER_LOGOUT "( '" + login + "' );" );
         pqxx::result res = transaction.exec( query );
 
         if ( res.size() < 1 )
