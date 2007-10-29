@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
--- Started on 2007-10-26 00:30:10
+-- Started on 2007-10-30 00:03:11
 
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = off;
@@ -30,7 +30,7 @@ CREATE PROCEDURAL LANGUAGE plpgsql;
 SET search_path = public, pg_catalog;
 
 --
--- TOC entry 23 (class 1255 OID 16806)
+-- TOC entry 21 (class 1255 OID 16806)
 -- Dependencies: 278 4
 -- Name: user_delete(character varying, character varying); Type: FUNCTION; Schema: public; Owner: vrcserver
 --
@@ -191,7 +191,7 @@ COMMENT ON COLUMN user_accounts.user_data IS 'Reference to user data';
 
 --
 -- TOC entry 19 (class 1255 OID 16647)
--- Dependencies: 266 278 4
+-- Dependencies: 4 278 266
 -- Name: user_getaccountdata(character varying); Type: FUNCTION; Schema: public; Owner: vrcserver
 --
 
@@ -230,7 +230,7 @@ $$
 ALTER FUNCTION public.user_getaccountdata(login_name character varying) OWNER TO vrcserver;
 
 --
--- TOC entry 20 (class 1255 OID 16648)
+-- TOC entry 22 (class 1255 OID 16648)
 -- Dependencies: 4 278
 -- Name: user_login(character varying, character varying); Type: FUNCTION; Schema: public; Owner: vrcserver
 --
@@ -262,7 +262,7 @@ BEGIN
 
     -- check the banned flag
     IF ( ( user.status & fbanned ) = fbanned ) THEN
-        RETURN -2;
+        RETURN -3;
     END IF;
 
     -- set the online flag
@@ -281,12 +281,12 @@ $$
 ALTER FUNCTION public.user_login(login_name character varying, passwd character varying) OWNER TO vrcserver;
 
 --
--- TOC entry 21 (class 1255 OID 16649)
--- Dependencies: 4 278
+-- TOC entry 23 (class 1255 OID 16649)
+-- Dependencies: 278 4
 -- Name: user_logout(character varying); Type: FUNCTION; Schema: public; Owner: vrcserver
 --
 
-CREATE FUNCTION user_logout(login_name character varying) RETURNS integer
+CREATE FUNCTION user_logout(r_login_name character varying) RETURNS integer
     AS $$
 DECLARE
 
@@ -296,7 +296,7 @@ DECLARE
 
 BEGIN
 
-    SELECT INTO user * FROM user_accounts WHERE user_accounts.login_name = login_name;
+    SELECT INTO user * FROM user_accounts WHERE user_accounts.login_name = r_login_name;
 
     -- check if the user exists
     IF ( user IS NULL ) THEN
@@ -305,11 +305,12 @@ BEGIN
 
     -- reset the online flag
     IF ( user.status & fonline ) THEN
-        UPDATE user_accounts SET status = ( user.status & ~fonline ) WHERE user_accounts.login_name = login_name;
+        UPDATE user_accounts SET status = ( user.status & ~fonline ) WHERE user_accounts.login_name = r_login_name;
+        -- update the "online time"
+        UPDATE user_accounts SET online_time = online_time + now() - last_login WHERE user_accounts.login_name = r_login_name;
+    ELSE
+        RETURN -2;
     END IF;
-
-    -- update the "online time"
-    UPDATE user_accounts SET online_time = online_time + now() - last_login WHERE user_accounts.login_name = login_name;
 
     RETURN 1;
 
@@ -318,10 +319,10 @@ $$
     LANGUAGE plpgsql;
 
 
-ALTER FUNCTION public.user_logout(login_name character varying) OWNER TO vrcserver;
+ALTER FUNCTION public.user_logout(r_login_name character varying) OWNER TO vrcserver;
 
 --
--- TOC entry 22 (class 1255 OID 16650)
+-- TOC entry 20 (class 1255 OID 16650)
 -- Dependencies: 4 278
 -- Name: user_register(character varying, character varying, character varying, character varying); Type: FUNCTION; Schema: public; Owner: vrcserver
 --
@@ -488,7 +489,7 @@ COMMENT ON COLUMN mailboxes.user_data_id IS 'Reference to user data';
 
 --
 -- TOC entry 1285 (class 1259 OID 16672)
--- Dependencies: 4 1284
+-- Dependencies: 1284 4
 -- Name: mailboxes_mailbox_id_seq; Type: SEQUENCE; Schema: public; Owner: vrcserver
 --
 
@@ -544,7 +545,7 @@ COMMENT ON COLUMN skills.user_data_id IS 'Reference to user data';
 
 --
 -- TOC entry 1287 (class 1259 OID 16676)
--- Dependencies: 1286 4
+-- Dependencies: 4 1286
 -- Name: skill_skill_id_seq; Type: SEQUENCE; Schema: public; Owner: vrcserver
 --
 
@@ -832,7 +833,7 @@ GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO vrcserver;
 
 
--- Completed on 2007-10-26 00:30:11
+-- Completed on 2007-10-30 00:03:11
 
 --
 -- PostgreSQL database dump complete
