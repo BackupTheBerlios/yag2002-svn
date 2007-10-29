@@ -50,7 +50,8 @@ class TerrainConfig
                                                       _blendBasemap( 0.3f ),
                                                       _detailmap0Repeat( osg::Vec2f( 1.0f, 1.0f ) ),
                                                       _detailmap1Repeat( osg::Vec2f( 1.0f, 1.0f ) ),
-                                                      _detailmap2Repeat( osg::Vec2f( 1.0f, 1.0f ) )
+                                                      _detailmap2Repeat( osg::Vec2f( 1.0f, 1.0f ) ),
+                                                      _detailmap3Repeat( osg::Vec2f( 1.0f, 1.0f ) )
                                                     {
                                                     }
 
@@ -92,6 +93,12 @@ class TerrainConfig
 
         //! Repeat factor in X/Y direction for detailmap 2
         osg::Vec2f                                  _detailmap2Repeat;
+
+        //! Detail map 3 file. This map is repeated over the terrain patches.
+        std::string                                 _fileDetailmap3;
+
+        //! Repeat factor in X/Y direction for detailmap 3
+        osg::Vec2f                                  _detailmap3Repeat;
 
         //! Type defining LOD ranges
         typedef std::vector< std::pair< float, float > > ListLodRange;
