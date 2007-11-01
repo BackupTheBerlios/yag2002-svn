@@ -1,0 +1,69 @@
+/* The Pickable Objects object */
+
+namespace vrc
+{
+
+object ObjectNetworking
+{
+    datablock Function;
+
+    extern RPC_Respawn( tObjectData );
+    extern RPC_Use( tObjectData );
+
+    datablock NData;
+
+    networking
+    {
+        Function RPC_Respawn;
+        { 
+            Reliable();
+        }
+
+        Function RPC_Use;
+        { 
+            Reliable();
+        }
+
+        NData _objectID;
+        { 
+            Reliable();
+        }
+
+        NData _p_meshFile;
+        { 
+            Reliable();
+        }
+
+        NData _positionX;
+        { 
+            Reliable();
+        }
+
+        NData _positionY;
+        { 
+            Reliable();
+        }
+
+        NData _positionZ;
+        { 
+            Reliable();
+        }
+
+        NData _rotationZ;
+        { 
+            Reliable();
+        }
+
+        NData _maxPickDistance;
+        { 
+            Reliable();
+        }
+
+        NData _maxHeighlightDistance;
+        { 
+            Reliable();
+        }
+    }
+}
+
+} // namespace vrc
