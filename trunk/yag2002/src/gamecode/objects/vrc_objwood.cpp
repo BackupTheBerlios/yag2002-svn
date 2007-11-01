@@ -38,8 +38,12 @@ namespace vrc
 //! Implement and register the wood entity factory
 YAF3D_IMPL_ENTITYFACTORY( ObjectWoodEntityFactory )
 
+//! Register the object type, the registry is needed for networking
+VRC_REGISTER_OBJECT( VRC_OBJECT_ID_WOOD, ENTITY_NAME_OBJWOOD );
 
-EnObjectWood::EnObjectWood()
+
+EnObjectWood::EnObjectWood() :
+ BaseObject( VRC_OBJECT_ID_WOOD, ENTITY_NAME_OBJWOOD )
 {
 }
 
@@ -48,7 +52,7 @@ EnObjectWood::~EnObjectWood()
 
 }
 
-void EnObjectWood::onHitObject()
+void EnObjectWood::onObjectPicked()
 {
 }
 

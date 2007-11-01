@@ -51,8 +51,8 @@ class EnObjectWood : public BaseObject
 
     protected:
 
-        //! Called when the object can be picked up
-        virtual void                                onHitObject();
+        //! Called when the object is picked up
+        virtual void                                onObjectPicked();
 };
 
 //! Entity type definition used for type registry

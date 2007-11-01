@@ -31,13 +31,14 @@
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
 #include "vrc_baseobject.h"
+#include "vrc_objectnetworking.h"
 #include "../player/vrc_playerimpl.h"
 #include "../visuals/vrc_camera.h"
 
 //! Picking angle ( cos alpha, where alpha is the opening angle / 2 )
 #define OBJECT_PICK_ANGLE                   0.965f
 //! Picking's check period (in seconds )
-#define OBJECT_PICK_CHK_PERIOD              1.0f
+#define OBJECT_PICK_CHK_PERIOD              0.5f
 //! Picking's distance update period (in seconds )
 #define OBJECT_PICK_DIST_UPDATE_PERIOD      1.0f
 
@@ -46,26 +47,101 @@ namespace vrc
 {
 
 //! Implementation of distance sorted objects used for internal house-keeping
-std::vector< BaseObject* > BaseObject::_objects;
+std::vector< BaseObject* >              BaseObject::_objects;
 
+//! Implementation of object input handler
+BaseObject::ObjectInputHandler*         BaseObject::_p_inputHandler;
 
-BaseObject::BaseObject() :
+//! Implementation of object type lookup
+std::map< unsigned int, std::string >*  ObjectRegistry::_p_objectTypes = NULL;
+unsigned int                            ObjectRegistry::_refCnt = 0;
+
+//! Implementation of object registry
+void ObjectRegistry::registerEntityType( unsigned int ID, const std::string& entitytype )
+{
+    std::map< unsigned int, std::string >::iterator p_end = ObjectRegistry::_p_objectTypes->end(), p_type;
+    p_type = ObjectRegistry::_p_objectTypes->find( ID );
+
+    if ( p_type != p_end )
+    {
+        log_error << "ObjectRegistry: type with ID " << ID << " is already registered!" << std::endl;
+        return;
+    }
+
+    // register type
+    ( *_p_objectTypes )[ ID ] = entitytype;
+}
+
+std::string ObjectRegistry::getEntityType( unsigned int ID )
+{
+    std::map< unsigned int, std::string >::iterator p_end = ObjectRegistry::_p_objectTypes->end(), p_type;
+    p_type = ObjectRegistry::_p_objectTypes->find( ID );
+    if ( p_type == p_end )
+    {
+        log_error << "ObjectRegistry: invalid object ID: " << ID << std::endl;
+        return std::string( "" );
+    }
+
+    return p_type->second;
+}
+
+//! Implementation of input handler
+BaseObject::ObjectInputHandler::ObjectInputHandler() :
+_p_highlightedObject( NULL ),
+_enable( false ),
+_keyCodePick( 1 )
+{
+    std::string keyname;
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_KEY_OBJECTPICK, keyname );
+    _keyCodePick = yaf3d::KeyMap::get()->getCode( keyname );
+}
+
+bool BaseObject::ObjectInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+{
+    if ( !_p_highlightedObject || !_enable )
+        return false;
+
+    const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
+    assert( p_eventAdapter && "invalid event adapter received" );
+
+    unsigned int eventType  = p_eventAdapter->getEventType();
+    unsigned int mouseBtn   = p_eventAdapter->getButton();
+    bool mouseButtonPush    = ( eventType == osgGA::GUIEventAdapter::PUSH    );
+    bool mouseButtonRelease = ( eventType == osgGA::GUIEventAdapter::RELEASE );
+
+    if ( mouseButtonRelease )
+    {
+        if ( mouseBtn == _keyCodePick )
+            _p_highlightedObject->onObjectPicked();
+    }
+
+    // let the event further process by other handlers
+    return false;
+}
+
+//! Implementation of base object
+BaseObject::BaseObject( unsigned int ID, const std::string& type ) :
  _shadowEnable( false ),
- _maxViewDistance( 10.0f ),
- _maxViewDistance2( 10.0f * 10.0f ),
- _hit( false ),
+ _maxHeighlightDistance( 10.0f ),
+ _maxPickDistance( 1.5f ),
+ _highlight( false ),
  _animTime( 0.0f ),
+ _objectID( ID ),
  _enable( true ),
  _checkPickingPeriod( 0.0f ),
  _sortDistancePeriod( 0.0f ),
+ _maxHeighlightDistance2( 10.0f * 10.0f ),
+ _maxPickDistance2( 1.5f * 1.5f ),
  _p_player( NULL ),
- _p_playercamera( NULL )
+ _p_playercamera( NULL ),
+ _p_networking( NULL )
 {
-    getAttributeManager().addAttribute( "meshFile"        , _meshFile        );
-    getAttributeManager().addAttribute( "position"        , _position        );
-    getAttributeManager().addAttribute( "rotation"        , _rotation        );
-    getAttributeManager().addAttribute( "shadowEnable"    , _shadowEnable    );
-    getAttributeManager().addAttribute( "maxViewDistance" , _maxViewDistance );
+    getAttributeManager().addAttribute( "meshFile"              , _meshFile              );
+    getAttributeManager().addAttribute( "position"              , _position              );
+    getAttributeManager().addAttribute( "rotation"              , _rotation              );
+    getAttributeManager().addAttribute( "shadowEnable"          , _shadowEnable          );
+    getAttributeManager().addAttribute( "maxHeighlightDistance" , _maxHeighlightDistance );
+    getAttributeManager().addAttribute( "maxPickDistance"       , _maxPickDistance       );
 }
 
 BaseObject::~BaseObject()
@@ -75,6 +151,29 @@ BaseObject::~BaseObject()
     {
         yaf3d::ShadowManager::get()->removeShadowNode( getTransformationNode() );
     }
+
+    // remove this object from the object list
+    std::vector< BaseObject* >::iterator p_beg = _objects.begin(), p_end = _objects.end();
+    for ( ; p_beg != p_end; ++p_beg )
+    {
+        if ( *p_beg == this )
+        {
+            _objects.erase( p_beg );
+            break;
+        }
+    }
+
+    // delete the input handler when no objects left in level
+    if ( _p_inputHandler && !_objects.size() )
+    {
+        _p_inputHandler->destroyHandler();
+        _p_inputHandler = NULL;
+    }
+}
+
+unsigned int BaseObject::getObjectID() const
+{
+    return _objectID;
 }
 
 void BaseObject::handleNotification( const yaf3d::EntityNotification& notification )
@@ -84,11 +183,15 @@ void BaseObject::handleNotification( const yaf3d::EntityNotification& notificati
     {
         case YAF3D_NOTIFY_MENU_ENTER:
         {
+            if ( _p_inputHandler )
+                _p_inputHandler->enable( false );
         }
         break;
 
         case YAF3D_NOTIFY_MENU_LEAVE:
         {
+            if ( _p_inputHandler )
+                _p_inputHandler->enable( true );
         }
         break;
 
@@ -113,6 +216,48 @@ void BaseObject::handleNotification( const yaf3d::EntityNotification& notificati
 }
 
 void BaseObject::initialize()
+{
+    // setup picking params
+    _maxHeighlightDistance2 = _maxHeighlightDistance * _maxHeighlightDistance;
+
+    //! TODO ...do game mode specific things
+    switch ( yaf3d::GameState::get()->getMode() )
+    {
+        case yaf3d::GameState::Standalone:
+        case yaf3d::GameState::Client:
+        {
+            if ( !_p_inputHandler )
+                _p_inputHandler = new BaseObject::ObjectInputHandler;
+
+            setupMesh();
+
+            // register entity in order to get updated per simulation step.
+            yaf3d::EntityManager::get()->registerUpdate( this, true );
+           // register entity in order to get notifications (e.g. from menu entity)
+            yaf3d::EntityManager::get()->registerNotification( this, true );
+        }
+        break;
+
+        case yaf3d::GameState::Server:
+        {
+            // create the networking object, this object is replicated on clients
+            _p_networking = new ObjectNetworking( _objectID );
+
+            _p_networking->setPosition( _position );
+            _p_networking->setRotation( _rotation.z() );
+            _p_networking->setMeshFile( _meshFile );
+            _p_networking->setMaxHeighlightDistance( _maxHeighlightDistance );
+            _p_networking->setMaxPickDistance( _maxPickDistance );
+            _p_networking->Publish();
+        }
+        break;
+
+        default:
+            assert( NULL && "unsupported game mode" );
+    }
+}
+
+void BaseObject::setupMesh()
 {
     osg::Node* p_node = yaf3d::LevelManager::get()->loadMesh( _meshFile, true );
 
@@ -150,36 +295,6 @@ void BaseObject::initialize()
 
     // append the mesh node to our transformation node
     addToTransformationNode( p_node );
-
-    // setup picking params
-    _maxViewDistance2 = _maxViewDistance * _maxViewDistance;
-
-    //! TODO ...do game mode specific things
-    switch ( yaf3d::GameState::get()->getMode() )
-    {
-        case yaf3d::GameState::Standalone:
-        {
-        }
-        break;
-
-        case yaf3d::GameState::Client:
-        {
-        }
-        break;
-
-        case yaf3d::GameState::Server:
-        {
-        }
-        break;
-
-        default:
-            assert( NULL && "unsupported game mode" );
-    }
-
-    // register entity in order to get updated per simulation step.
-    yaf3d::EntityManager::get()->registerUpdate( this, true );
-   // register entity in order to get notifications (e.g. from menu entity)
-    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 void BaseObject::postInitialize()
@@ -189,7 +304,7 @@ void BaseObject::postInitialize()
 void BaseObject::updateEntity( float deltaTime )
 {
     // animate the mesh if it is pickable
-    if ( _hit )
+    if ( _highlight )
     {
         _animTime += deltaTime;
         float z = 0.1f + 0.1f * sinf( _animTime );
@@ -247,13 +362,22 @@ bool BaseObject::checkObjectDistance()
     _currCamPosition = _p_playercamera->getCameraPosition() + _p_playercamera->getCameraOffsetPosition();
     _ray = getPosition() - _currCamPosition;
 
+    if ( _ray.length2() > _maxHeighlightDistance2 )
+    {
+        // reset the highlighted object in input handler
+        if ( _p_inputHandler->getHighlightedObject() == this )
+            _p_inputHandler->setHighlightedObject( NULL );
+
+        return false;
+    }
+
     return true;
 }
 
 void BaseObject::checkCameraFocus()
 {
     // reset the hit flag
-    _hit = false;
+    _highlight = false;
 
     // check if the player entity is already available
     if ( !_p_player )
@@ -266,7 +390,7 @@ void BaseObject::checkCameraFocus()
     float dist2 = _ray.length2();
 
     // first do a distance check
-    if ( dist2 > _maxViewDistance2 )
+    if ( dist2 > _maxHeighlightDistance2 )
         return;
 
     // calculate the player look direction
@@ -274,30 +398,31 @@ void BaseObject::checkCameraFocus()
     osg::Vec3f ray( _ray );
     ray.normalize();
 
+    // reset the highlighted object in input handler
+    if ( _p_inputHandler->getHighlightedObject() == this )
+        _p_inputHandler->setHighlightedObject( NULL );
+
     // check if the player is in our view
     if ( ( ray * lookdir ) > OBJECT_PICK_ANGLE )
     {
-        //! TODO: we should maintain a temporal sorted list in order to speed up the nearest-object-test
+        //! TODO: we may maintain a temporal sorted list in order to speed up the nearest-object-test
         std::vector< BaseObject* >::const_iterator p_beg = _objects.begin(), p_end = _objects.end();
         for ( ; p_beg != p_end; ++p_beg )
         {
-            // skip outself
+            // skip ourself in search
             if ( *p_beg == this )
                 continue;
 
             // is there another object more near to camera and in focus?
-            if ( dist2 > ( *p_beg )->_ray.length2() && ( *p_beg )->_hit )
+            if ( dist2 > ( *p_beg )->_ray.length2() && ( *p_beg )->_highlight )
                 return;
         }
 
-        _hit = true;
+        // set the highlight flag
+        _highlight = true;
+        // update the highlighted object in input handler
+        _p_inputHandler->setHighlightedObject( this );
     }
-
-    if ( !_hit )
-        return;
-
-    // we can pick the object, it is the nearest one to camera and it lies in camera focus
-    onHitObject();
 }
 
 } // namespace vrc
