@@ -68,6 +68,7 @@ _moveRight( "D" ),
 _jump( "Space" ),
 _cameramode( "F1" ),
 _chatmode( "RMB" ),
+_objectPick( "LMB" ),
 _musicEnable( true ),
 _musicVolume( VRC_GS_DEFAULT_SOUND_VOLUME ),
 _fxEnable( true ),
@@ -108,6 +109,7 @@ void VRCStateHandler::onStateChange( unsigned int state )
             yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_JUMP,               _jump              );
             yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CAMERAMODE,         _cameramode        );
             yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_CHATMODE,           _chatmode          );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_OBJECTPICK,         _objectPick        );
             yaf3d::Configuration::get()->addSetting( VRC_GS_MOUSESENS,              _mouseSensitivity  );
             yaf3d::Configuration::get()->addSetting( VRC_GS_INVERTMOUSE,            _mouseInverted     );
             yaf3d::Configuration::get()->addSetting( VRC_GS_MUSIC_ENABLE,           _musicEnable       );

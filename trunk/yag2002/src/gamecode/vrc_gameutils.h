@@ -57,6 +57,7 @@ namespace gameutils
 #define VRC_GS_KEY_JUMP                     "jump"
 #define VRC_GS_KEY_CAMERAMODE               "cameraMode"
 #define VRC_GS_KEY_CHATMODE                 "chatMode"
+#define VRC_GS_KEY_OBJECTPICK               "objectPick"
 #define VRC_GS_MOUSESENS                    "mouseSensitivity"
 #define VRC_GS_INVERTMOUSE                  "mouseInverted"
 #define VRC_GS_MUSIC_ENABLE                 "enableMusic"
@@ -139,6 +140,8 @@ class VRCStateHandler : public yaf3d::GameState::CallbackStateChange
         std::string                                 _cameramode;
 
         std::string                                 _chatmode;
+
+        std::string                                 _objectPick;
 
         bool                                        _musicEnable;
 
@@ -259,19 +262,21 @@ class GenericInputHandler : public osgGA::GUIEventHandler
 {
     public:
 
-        explicit                                  GenericInputHandler( T* p_obj = NULL ) :
-                                                   _p_userObject( p_obj ),
-                                                   _destroyed( false )
-                                                  {
-                                                      // register us in viewer to get event callbacks
-                                                      yaf3d::Application::get()->getViewer()->addEventHandler( this );
-                                                  }
+        explicit                                    GenericInputHandler( T* p_obj = NULL ) :
+                                                     _p_userObject( p_obj ),
+                                                     _destroyed( false )
+                                                    {
+                                                        // register us in viewer to get event callbacks
+                                                        yaf3d::Application::get()->getViewer()->addEventHandler( this );
+                                                    }
 
-        virtual                                   ~GenericInputHandler()
-                                                  {
-                                                      if ( !_destroyed )
-                                                          destroyHandler();
-                                                  }
+        //! NOTE: delete such an object only if you have removed it from handler list by yourself!
+        //        In normal case you should use the destroyHandler() method. The object is then deleted automatically at right place and time.
+        virtual                                     ~GenericInputHandler()
+                                                    {
+                                                        if ( !_destroyed )
+                                                            destroyHandler();
+                                                    }
 
         //! Remove handler form viewer's handler list and destroy the object. Don't use the object after calling this method.
         void                                        destroyHandler()
@@ -281,6 +286,7 @@ class GenericInputHandler : public osgGA::GUIEventHandler
                                                         _destroyed = true;
                                                     }
 
+        //! Override this handler method in order to get events.
         virtual bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa ) = 0;
 
         //! Return the user object
