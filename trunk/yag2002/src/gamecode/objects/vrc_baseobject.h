@@ -62,10 +62,13 @@ class BaseObject : public yaf3d::BaseEntity
         //! Get the object ID
         unsigned int                                getObjectID() const;
 
+        //! This method is used by networking on creation of the entity on clients.
+        void                                        setNetworking( ObjectNetworking* p_networking );
+
     protected:
 
-        //! This method is called when the object has been picked up.
-        virtual void                                onObjectPicked() = 0;
+        //! Called when the object is used by user, e.g. by picking
+        virtual void                                onObjectUse() = 0;
 
         //! Initializing function
         void                                        initialize();

@@ -38,62 +38,61 @@ using namespace RNReplicaNet;
 namespace vrc
 {
 
-ObjectNetworking::ObjectNetworking( unsigned int ID ) :
- _objectID( ID ),
+ObjectNetworking::ObjectNetworking( BaseObject* p_objectEntity ) :
+ _objectID( 0 ),
  _positionX( 0.0f ),
  _positionY( 0.0f ),
  _positionZ( 0.0f ),
  _rotationZ( 0.0f ),
  _maxPickDistance( 1.5f ),
- _maxHeighlightDistance( 10 )
+ _maxHeighlightDistance( 10 ),
+ _p_objectEntity( p_objectEntity )
 {
     memset( _p_meshFile, 0, sizeof( _p_meshFile ) );
+
+    if ( p_objectEntity )
+    {
+        // entity is only on the server != NULL
+        assert( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server );
+
+        // get the entity attributes
+        osg::Vec3f pos;
+        osg::Vec3f rot;
+        std::string meshfile;
+
+        p_objectEntity->getAttributeManager().getAttributeValue( "meshFile", meshfile );
+        p_objectEntity->getAttributeManager().getAttributeValue( "position", pos );
+        p_objectEntity->getAttributeManager().getAttributeValue( "rotation", rot );
+        p_objectEntity->getAttributeManager().getAttributeValue( "maxViewDistance", _maxPickDistance );
+        p_objectEntity->getAttributeManager().getAttributeValue( "maxHeighlightDistance", _maxHeighlightDistance );
+
+        _positionX = pos.x();
+        _positionY = pos.y();
+        _positionZ = pos.z();
+        _rotationZ = rot.z();
+        strcpy_s( _p_meshFile, sizeof( _p_meshFile ) - 1, meshfile.c_str() );
+
+        // get also the object ID
+        _objectID = p_objectEntity->getObjectID();
+    }
 }
 
 ObjectNetworking::~ObjectNetworking()
 {
 }
 
-void ObjectNetworking::setPosition( const osg::Vec3f& pos )
-{
-    _positionX = pos.x();
-    _positionY = pos.y();
-    _positionZ = pos.z();
-}
-
-//! Set rotation about Z axis
-void ObjectNetworking::setRotation( float rotZ )
-{
-    _rotationZ = rotZ;
-}
-
-void ObjectNetworking::setMeshFile( const std::string& meshFile )
-{
-    strcpy_s( _p_meshFile, sizeof( _p_meshFile ) - 1, meshFile.c_str() );
-}
-
-void ObjectNetworking::setMaxHeighlightDistance( float maxHeighlightDistance )
-{
-    maxHeighlightDistance = maxHeighlightDistance;
-}
-
-void ObjectNetworking::setMaxPickDistance( float maxPickDistance )
-{
-    _maxPickDistance = maxPickDistance;
-}
-
-
 void ObjectNetworking::PostObjectCreate()
-{ // a new client has joined
+{ // a new client has joined, this is called only on server
 
     // this function is called only on clients
     assert( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client );
 
     // create the object entity
-    yaf3d::BaseEntity* p_entity = yaf3d::EntityManager::get()->createEntity( ObjectRegistry::getEntityType( _objectID ), "_obj_", true );
+    std::string entitytype = ObjectRegistry::getEntityType( _objectID );
+    yaf3d::BaseEntity* p_entity = yaf3d::EntityManager::get()->createEntity( entitytype, "_obj_" + entitytype, true );
     if ( !p_entity )
     {
-        log_error << "ObjectNetworking: entity type does not exist: " << _objectID << " '" << ObjectRegistry::getEntityType( _objectID ) << "'" << std::endl;
+        log_error << "ObjectNetworking: entity type does not exist: " << _objectID << " '" << entitytype << "'" << std::endl;
         return;
     }
 
@@ -110,28 +109,35 @@ void ObjectNetworking::PostObjectCreate()
 
     p_entity->initialize();
     p_entity->postInitialize();
+
+    _p_objectEntity = dynamic_cast< BaseObject* >( p_entity );
+    assert( _p_objectEntity && "wrong entity type!" );
+    // set object networking
+    _p_objectEntity->setNetworking( this );
 }
 
-void ObjectNetworking::RPC_Respawn( tObjectData info )
-{ // used by connecting client
 
-    //assert( p_callback && "a valid callback for account request is needed!" );
-    //assert( ( _p_accountInfoCallback == NULL ) && "only one request for account info can be handled at the same time!" );
+//we need also the functions: drop, pick
 
-    //_p_accountInfoCallback = p_callback;
 
-    //// call the account info rpc on server
-    //tAccountInfoData info;
-    //memset( &info, 0, sizeof( info ) );
-    //info._userID = userID;
-    //MASTER_FUNCTION_CALL( RPC_RequestAccountInfo( info ) );
+void ObjectNetworking::RequestUseObject( unsigned int userID )
+{
+    // make an RPC on server object
+    MASTER_FUNCTION_CALL( RPC_RequestUse( userID ) );
 }
 
-void ObjectNetworking::RPC_Use( tObjectData info )
-{ // this method is called only on server
+void ObjectNetworking::RPC_RequestUse( unsigned int userID )
+{ // this is called on server
 
-    // sent out the account info result
-//    ALL_REPLICAS_FUNCTION_CALL( RPC_AccountInfoResult( info ) );
+
+    //! TODO: use the storage to use the object
+
+    ALL_REPLICAS_FUNCTION_CALL( RPC_Use( userID ) );
+}
+
+void ObjectNetworking::RPC_Use( unsigned int userID )
+{ // this method is called only on client
+
 }
 
 } // namespace vrc

@@ -31,6 +31,9 @@
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
 #include "vrc_objwood.h"
+#include "vrc_objectnetworking.h"
+#include "../storage/vrc_storageclient.h"
+#include "../gamelogic/vrc_gamelogic.h"
 
 namespace vrc
 {
@@ -52,8 +55,29 @@ EnObjectWood::~EnObjectWood()
 
 }
 
-void EnObjectWood::onObjectPicked()
+void EnObjectWood::onObjectUse()
 {
+    // this function is called on client and standalone modes. in client mode the networking object is a valid one.
+    if ( _p_networking )
+    {
+        // request the server for using the object
+        _p_networking->RequestUseObject( StorageClient::get()->getUserID() );
+    }
+    else
+    {
+        //! TODO: what to do in standalone? ...
+        std::vector< float > args;
+        std::vector< float > result;
+
+        args.push_back( 42.0f );
+        args.push_back( 42.0f );
+        args.push_back( 42.0f );
+
+        result.push_back( 0.0f );
+
+        if ( !GameLogic::get()->requestAction( GameLogic::eActionPick, getObjectID(), args, result ) )
+            log_error << getInstanceName() << ": problem executing required action Pick " << std::endl;
+    }
 }
 
 } // namespace vrc

@@ -112,7 +112,7 @@ bool BaseObject::ObjectInputHandler::handle( const osgGA::GUIEventAdapter& ea, o
     if ( mouseButtonRelease )
     {
         if ( mouseBtn == _keyCodePick )
-            _p_highlightedObject->onObjectPicked();
+            _p_highlightedObject->onObjectUse();
     }
 
     // let the event further process by other handlers
@@ -174,6 +174,12 @@ BaseObject::~BaseObject()
 unsigned int BaseObject::getObjectID() const
 {
     return _objectID;
+}
+
+void BaseObject::setNetworking( ObjectNetworking* p_networking )
+{
+    assert( _p_networking == NULL && "networking object already exists!" );
+    _p_networking = p_networking;
 }
 
 void BaseObject::handleNotification( const yaf3d::EntityNotification& notification )
@@ -241,13 +247,7 @@ void BaseObject::initialize()
         case yaf3d::GameState::Server:
         {
             // create the networking object, this object is replicated on clients
-            _p_networking = new ObjectNetworking( _objectID );
-
-            _p_networking->setPosition( _position );
-            _p_networking->setRotation( _rotation.z() );
-            _p_networking->setMeshFile( _meshFile );
-            _p_networking->setMaxHeighlightDistance( _maxHeighlightDistance );
-            _p_networking->setMaxPickDistance( _maxPickDistance );
+            _p_networking = new ObjectNetworking( this );
             _p_networking->Publish();
         }
         break;

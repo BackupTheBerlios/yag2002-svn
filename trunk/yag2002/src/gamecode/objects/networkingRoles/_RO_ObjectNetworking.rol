@@ -7,14 +7,14 @@ object ObjectNetworking
 {
     datablock Function;
 
-    extern RPC_Respawn( tObjectData );
-    extern RPC_Use( tObjectData );
+    extern RPC_RequestUse( unsigned int );
+    extern RPC_Use( unsigned int );
 
     datablock NData;
 
     networking
     {
-        Function RPC_Respawn;
+        Function RPC_RequestUse;
         { 
             Reliable();
         }

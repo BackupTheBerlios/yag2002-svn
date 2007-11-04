@@ -37,29 +37,19 @@
 namespace vrc
 {
 
+class BaseObject;
+
 class ObjectNetworking : _RO_DO_PUBLIC_RO( ObjectNetworking )
 {
     public:
 
-        //! Create network object with given ID. When this object is replicated on clients then the ID will be set automatically.
-        explicit                                   ObjectNetworking( unsigned int ID = 0 );
+        //! Create network object with given object entity (used on server). When this object is replicated on clients then the object entity is created.
+        explicit                                   ObjectNetworking( BaseObject* p_objectEntity = NULL );
 
         virtual                                    ~ObjectNetworking();
 
-        //! Set position, used by server on creation
-        void                                        setPosition( const osg::Vec3f& pos );
-
-        //! Set rotation about Z axis, used by server on creation
-        void                                        setRotation( float rotZ );
-
-        //! Set the object mesh file
-        void                                        setMeshFile( const std::string& meshFile );
-
-        //! Set the max heighlight distance
-        void                                        setMaxHeighlightDistance( float maxHeighlightDistance );
-
-        //! Set the max pick distance
-        void                                        setMaxPickDistance( float maxPickDistance );
+        //! Client requests the server for using the object. userID is the user account ID of client.
+        void                                        RequestUseObject( unsigned int userID );
 
     protected:
 
@@ -69,11 +59,11 @@ class ObjectNetworking : _RO_DO_PUBLIC_RO( ObjectNetworking )
         //! Object can now be initialized in scene
         void                                        PostObjectCreate();
 
-        //! Respawn object
-        void                                        RPC_Respawn( tObjectData info );
+        //! Client requests the server to use the object. clientID is the user account ID of requesting client.
+        void                                        RPC_RequestUse( unsigned int userID );
 
-        //! Use an object, e.g. picking it up
-        void                                        RPC_Use( tObjectData info );
+        //! Server grands client to use the object. clientID is the user account ID of the granted client.
+        void                                        RPC_Use( unsigned int userID );
 
         //-----------------------------------------------------------------------------------//
 
@@ -100,6 +90,9 @@ class ObjectNetworking : _RO_DO_PUBLIC_RO( ObjectNetworking )
 
         //! Max distance for heighlighting the object
         float                                       _maxHeighlightDistance;
+
+        //! Base object
+        BaseObject*                                 _p_objectEntity;
 
     friend class _MAKE_RO( ObjectNetworking );
 };
