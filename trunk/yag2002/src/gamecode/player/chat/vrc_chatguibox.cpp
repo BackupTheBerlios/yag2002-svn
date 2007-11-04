@@ -121,7 +121,7 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
     try
     {
         _p_frame = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", CHATLAYOUT_PREFIX "_charboxframe_" ) );
-		_p_frame->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onCloseFrame, this ) );
+        _p_frame->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onCloseFrame, this ) );
         // note: a minimum size must exist, otherwise cegui may hang during some internal calculations!
         _p_frame->setMinimumSize( CEGUI::Size( 0.2f, 0.2f ) );
         _p_frame->hide();
