@@ -509,8 +509,8 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, NodeI
                         // check if server granted access
                         if ( p_data->_accessGranted )
                         {
-                            p_data->_p_levelName[ 63 ]  = 0;
-                            p_data->_p_serverName[ 63 ] = 0;
+                            p_data->_p_levelName[ sizeof( p_data->_p_levelName ) - 1 ]  = 0;
+                            p_data->_p_serverName[ sizeof( p_data->_p_serverName ) - 1 ] = 0;
                             nodeInfo._accessGranted = true;
 
                             if ( p_data->_p_levelName[ 0 ] )
@@ -518,6 +518,10 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, NodeI
                             
                             if ( p_data->_p_serverName[ 0 ] )
                                 nodeInfo._nodeName  = p_data->_p_serverName;
+
+                            // use the callback if any is set
+                            if ( _p_cbAuthentification )
+                                _p_cbAuthentification->authentificationResult( p_data->_userID );
                         }
                         else
                         {

@@ -138,20 +138,20 @@ class NodeInfo
 };
 
 //! Base callback class used during authentification when a client connects to the server.
-/* This callback is used on server. It is also used for register new users. */
+/* This callback is used on server and client. It is also used for register new users. */
 class CallbackAuthentification
 {
     public:
 
         /**
-        * This method is called when a client requests for authentification on connecting
+        * This method is called on server when a client requests for authentification on connecting.
         * \sessionID                                Unique session ID of connecting client.
         * \login                                    Login name
         * \passwd                                   Password
         * \userID                                   User's ID which is also sent to client.
         * \return                                   True if the authentification was succesfull, then the userID has a valid value, otherwise false.
         */
-        virtual bool                                authentify( int sessionID, const std::string& login, const std::string& passwd, unsigned int& userID ) = 0;
+        virtual bool                                authentify( int sessionID, const std::string& login, const std::string& passwd, unsigned int& userID ) { return false; }
 
         /**
         * Register a new user.
@@ -161,7 +161,13 @@ class CallbackAuthentification
         * \email                                    E-Mail address
         * \return                                   Return false if the registration went wrong.
         */
-        virtual bool                                registerUser( const std::string& name, const std::string& login, const std::string& passwd, const std::string& email ) = 0;
+        virtual bool                                registerUser( const std::string& name, const std::string& login, const std::string& passwd, const std::string& email ) { return false; }
+
+        /**
+        * This method is called on client when successfully authentified on server.
+        * \userID                                   User's unique ID.
+        */
+        virtual void                                authentificationResult( unsigned int userID ) {}
 };
 
 //! Class for registering a callback in order to get notification when clients join / leave the network session.
@@ -265,7 +271,8 @@ class NetworkDevice : public Singleton< NetworkDevice >
 
         /**
         * Set the authentification callback.
-        * This callback is used when a client connects to server and requests for authentification.
+        * This callback is used on server when a client connects to server and requests for authentification.
+        * It is also used on client to get the unique user ID when successfully identified.
         * \p_cb                                     Callback object
         */
         void                                        setAuthCallback( CallbackAuthentification* p_cb );
