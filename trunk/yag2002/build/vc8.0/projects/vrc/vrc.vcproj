@@ -1417,6 +1417,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\scripting\vrc_scripteditor.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\scripting\vrc_scripteditor.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\scripting\vrc_testscript.cpp"
 					>
 				</File>
@@ -1764,6 +1772,26 @@
 						>
 					</File>
 				</Filter>
+			</Filter>
+			<Filter
+				Name="gamelogic"
+				>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_gamelogic.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_gamelogic.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_logicscript.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_logicscript.h"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<File
