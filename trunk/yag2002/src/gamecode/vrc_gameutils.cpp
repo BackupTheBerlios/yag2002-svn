@@ -32,7 +32,7 @@
 #include "vrc_gameutils.h"
 #include "storage/vrc_storageclient.h"
 #include "storage/vrc_storageserver.h"
-#include <conio.h>
+#include "gamelogic/vrc_gamelogic.h"
 
 YAF3D_SINGLETON_IMPL( vrc::gameutils::PlayerUtils )
 YAF3D_SINGLETON_IMPL( vrc::gameutils::GuiUtils )
@@ -45,6 +45,9 @@ YAF3D_SINGLETON_IMPL( vrc::gameutils::GuiUtils )
 #define GUI_SND_VOL_SCROLLBAR               0.2f
 #define GUI_SND_FILE_ATTENTION              "gui/sound/attention.wav"
 #define GUI_SND_VOL_ATTENTION               0.2f
+
+//! The main game logic script file
+#define VRC_LOGIC_SCRIPTFILE                "script/logic/gamelogic.lua"
 
 namespace vrc
 {
@@ -159,7 +162,7 @@ void VRCStateHandler::onStateChange( unsigned int state )
                     }
                 }
             }
-            else if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client )
+            else // register the storage client in standalone and client; the app is always in standalone on startup!
             {
                 try
                 {
@@ -168,6 +171,20 @@ void VRCStateHandler::onStateChange( unsigned int state )
                 catch ( const StorageClientException& e )
                 {
                     log_error << "could not initialize the storage client!" << std::endl;
+                    log_error << " reason: " << e.what() << std::endl;
+                }
+            }
+
+            // setup the game logic
+            if ( yaf3d::GameState::get()->getMode() & ( yaf3d::GameState::Server | yaf3d::GameState::Standalone ) )
+            {
+                try
+                {
+                    GameLogic::get()->initialize( VRC_LOGIC_SCRIPTFILE );
+                }
+                catch ( const GameLogicException& e )
+                {
+                    log_error << "could not initialize the game logic!" << std::endl;
                     log_error << " reason: " << e.what() << std::endl;
                 }
             }
@@ -198,6 +215,12 @@ void VRCStateHandler::onStateChange( unsigned int state )
             else if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client )
             {
                 StorageClient::get()->shutdown();
+            }
+
+            // shutdown the game logic
+            if ( yaf3d::GameState::get()->getMode() & ( yaf3d::GameState::Server | yaf3d::GameState::Standalone ) )
+            {
+                GameLogic::get()->shutdown();
             }
         }
         break;
