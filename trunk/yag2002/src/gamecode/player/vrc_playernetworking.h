@@ -111,6 +111,9 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         //! Granting function called by server on new connected client for getting initial data etc.
         void                                        RPC_ServerGrantsAccess( tInitializationData initData );
 
+        //! Request initialization data from server, used by remote clients.
+        void                                        RPC_RequestInitialization();
+
         //! Initialization function called on a new connected client and its ghosts
         void                                        RPC_Initialize( tInitializationData initData );
 
@@ -144,6 +147,8 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
         //-------
 
         bool                                        _remoteClient;
+
+        bool                                        _remoteClientInitialized;
 
         vrc::BasePlayerImplementation*              _p_playerImpl;
 
