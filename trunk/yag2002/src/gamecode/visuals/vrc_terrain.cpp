@@ -97,7 +97,7 @@ EnTerrainSection::EnTerrainSection() :
     getAttributeManager().addAttribute( "lod2ResolutionY" , _lod2ResolutionY   );
     getAttributeManager().addAttribute( "lod2RangeMin"    , _lod2RangeMin      );
     getAttributeManager().addAttribute( "lod2RangeMax"    , _lod2RangeMax      );
- }
+}
 
 EnTerrainSection::~EnTerrainSection()
 {

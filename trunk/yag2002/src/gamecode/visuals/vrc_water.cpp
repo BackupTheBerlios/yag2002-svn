@@ -269,7 +269,7 @@ void EnWater::handleNotification( const yaf3d::EntityNotification& notification 
             {
                 addToTransformationNode( _water.get() );
                 // refresh the shader parameters
-                setShaderParams();
+                setShaderParams( _water.get() );
             }
             else
             {
@@ -289,7 +289,7 @@ void EnWater::handleNotification( const yaf3d::EntityNotification& notification 
             {
                 addToTransformationNode( _water.get() );
                 // refresh the shader parameters
-                setShaderParams();
+                setShaderParams( _water.get() );
             }
 
             break;
@@ -518,16 +518,13 @@ osg::Node* EnWater::setupWater()
     }
 
     // set shader parameters
-    setShaderParams();
-
-    osg::Group* p_group = new osg::Group;
-    p_group->setCullingActive( false );
-    p_group->addChild( p_node );
-
-    return p_group;
+    setShaderParams( p_node );
+    // disable culling
+    p_node->setCullingActive( false );
+    return p_node;
 }
 
-void EnWater::setShaderParams()
+void EnWater::setShaderParams( osg::Node* p_node )
 {
     if ( !s_stateSet.valid() )
         return;
@@ -541,6 +538,8 @@ void EnWater::setShaderParams()
     s_scale->set( osg::Vec4f( _scale, 1.0f ) );
     s_trans->set( _transparency );
     s_stateSet->setTextureAttribute( LOCATION_CUBEMAP_SAMPLER, _reflectmap.get() );
+
+    p_node->setStateSet( s_stateSet.get() );
 }
 
 }
