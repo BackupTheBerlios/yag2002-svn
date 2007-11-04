@@ -103,7 +103,7 @@ bool ConsoleIOGui::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAda
             _toggleEnable = !_toggleEnable;
             _p_consoleEntity->enable( _toggleEnable );
         }
-        else if ( _toggleEnable && key == _retCode )
+        else if ( _toggleEnable && key == _retCode && _p_inputWindow->hasInputFocus() )
         {
             _p_consoleEntity->issueCmd( _p_inputWindow->getText().c_str() );
         }
@@ -137,6 +137,17 @@ void ConsoleIOGui::resetToggle( bool en )
 
 void ConsoleIOGui::shutdown()
 {
+    try
+    {
+        if ( _p_wnd )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log_error << "ConsoleIOGui: problem destroying console gui." << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
+    }
+
     destroyHandler();
 }
 
