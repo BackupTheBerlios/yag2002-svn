@@ -53,9 +53,9 @@ class GameState : public Singleton< GameState >
         enum GameMode
         {
             UnknownMode  = 0x10,
-            Standalone,
-            Server,
-            Client
+            Standalone   = 0x100,
+            Server       = 0x200,
+            Client       = 0x400
         };
 
         //! Game state
