@@ -73,7 +73,7 @@ const std::type_info& Params::getTypeInfo( unsigned int index )
     return at( index )->getTypeInfo();
 }
 
-std::size_t Params::size()
+const std::size_t Params::size() const
 {
     return std::vector< BaseParam* >::size();
 }
@@ -133,6 +133,8 @@ void BaseScript< T >::setupLuaLibs( lua_State* p_state, unsigned int usedlibs )
 template< class T >
 void BaseScript< T >::loadScript( const std::string& luaModuleName, const std::string& scriptfile, unsigned int usedlibs ) throw ( ScriptingException )
 {
+    _scriptFile = scriptfile;
+
     std::string file( yaf3d::Application::get()->getMediaPath() + scriptfile );
 
     assert( ( _p_state == NULL ) && "script file already created!" );
@@ -142,13 +144,20 @@ void BaseScript< T >::loadScript( const std::string& luaModuleName, const std::s
     setupLuaLibs( _p_state, usedlibs );
 
     int status = luaL_loadfile( _p_state, file.c_str() );
+    std::string errormsg;
+    if ( status != 0 )
+    {
+        errormsg = lua_tostring ( _p_state, -1 );
+        closeScript();
+    }
+
     //! TODO: gather some useful information such as line number when a syntax error occurs
     if ( status == LUA_ERRFILE )
-        throw ScriptingException( std::string( "BaseScript: cannot open Lua file: " ) + scriptfile );
+        throw ScriptingException( std::string( "BaseScript: cannot open Lua file: " ) + scriptfile + "\n  reason: " + errormsg );
     else if ( status == LUA_ERRSYNTAX )
-        throw ScriptingException( std::string( "BaseScript: syntax error in Lua file: " ) + scriptfile );
+        throw ScriptingException( std::string( "BaseScript: syntax error in Lua file: " ) + scriptfile + "\n  reason: " + errormsg );
     else if ( status != 0 )
-        throw ScriptingException( std::string( "BaseScript: error loading Lua file: " ) + scriptfile );
+        throw ScriptingException( std::string( "BaseScript: error loading Lua file: " ) + scriptfile + "\n  reason: " + errormsg );
 
     lua_newtable( _p_state );
     _methodTableIndex = lua_gettop( _p_state );
@@ -165,7 +174,6 @@ void BaseScript< T >::loadScript( const std::string& luaModuleName, const std::s
     lua_settable( _p_state, LUA_GLOBALSINDEX );
 
     _valid = true;
-    _scriptFile = scriptfile;
 }
 
 template< class T >
@@ -184,6 +192,8 @@ void BaseScript< T >::closeScript()
         delete ( *p_beg );
 
     _methods.clear();
+
+    _valid = false;
 }
 
 template< class T >
@@ -203,6 +213,8 @@ void BaseScript< T >::printParamsInfo( const Params& params )
             msg << "float ";
         else if ( ( *p_beg )->getTypeInfo() == typeid( int ) )
             msg << "int ";
+        else if ( ( *p_beg )->getTypeInfo() == typeid( unsigned int ) )
+            msg << "unsigned int ";
         else if ( ( *p_beg )->getTypeInfo() == typeid( double ) )
             msg << "double ";
         else if ( ( *p_beg )->getTypeInfo() == typeid( std::string ) )
@@ -252,6 +264,8 @@ int BaseScript< T >::exposedMethodProxy( lua_State* p_state )
                     arguments.template setValue< float >( cnt - 1, static_cast< float >( lua_tonumber( p_state, cnt ) ) );
                 else if ( typeinfo == typeid( int ) )
                     arguments.template setValue< int >( cnt - 1, static_cast< int >( lua_tonumber( p_state, cnt ) ) );
+                else if ( typeinfo == typeid( unsigned int ) )
+                    arguments.template setValue< unsigned int >( cnt - 1, static_cast< unsigned int >( lua_tonumber( p_state, cnt ) ) );
                 else if ( typeinfo == typeid( double ) )
                     arguments.template setValue< double >( cnt - 1, lua_tonumber( p_state, cnt ) );
                 else
@@ -289,6 +303,8 @@ int BaseScript< T >::exposedMethodProxy( lua_State* p_state )
                 lua_pushnumber( p_instance->_p_state, GET_SCRIPT_PARAMVALUE( returnvalues, index, float ) );
             else if ( tinfo == typeid( int ) )
                 lua_pushnumber( p_instance->_p_state, GET_SCRIPT_PARAMVALUE( returnvalues, index, int ) );
+            else if ( tinfo == typeid( unsigned int ) )
+                lua_pushnumber( p_instance->_p_state, GET_SCRIPT_PARAMVALUE( returnvalues, index, unsigned int ) );
             else if ( tinfo == typeid( double ) )
                 lua_pushnumber( p_instance->_p_state, GET_SCRIPT_PARAMVALUE( returnvalues, index, double ) );
             else if ( tinfo == typeid( std::string ) )
@@ -320,8 +336,14 @@ void BaseScript< T >::exposeMethod( const std::string& name, MethodPtr method, c
 }
 
 template< class T >
-void BaseScript< T >::callScriptFunction( const std::string& fcnname, Params* const p_arguments, Params* p_returnvalues )
+void BaseScript< T >::callScriptFunction( const std::string& fcnname, Params* const p_arguments, Params* p_returnvalues ) throw ( ScriptingException )
 {
+    if ( !_valid )
+    {
+        log_error << "script error: cannot call function of invalid script: " << _scriptFile << std::endl;
+        return;
+    }
+
     // get number of return values
     int numret = p_returnvalues ? p_returnvalues->size() : 0;
 
@@ -338,6 +360,8 @@ void BaseScript< T >::callScriptFunction( const std::string& fcnname, Params* co
                 lua_pushnumber( _p_state, GET_SCRIPT_PARAMVALUE( *p_arguments, index, float ) );
             else if ( tinfo == typeid( int ) )
                 lua_pushnumber( _p_state, GET_SCRIPT_PARAMVALUE( *p_arguments, index, int ) );
+            else if ( tinfo == typeid( unsigned int ) )
+                lua_pushnumber( _p_state, GET_SCRIPT_PARAMVALUE( *p_arguments, index, unsigned int ) );
             else if ( tinfo == typeid( double ) )
                 lua_pushnumber( _p_state, GET_SCRIPT_PARAMVALUE( *p_arguments, index, double ) );
             else if ( tinfo == typeid( std::string ) )
@@ -345,8 +369,23 @@ void BaseScript< T >::callScriptFunction( const std::string& fcnname, Params* co
         }
     }
 
-    // call the Lua function
-    lua_call( _p_state, p_arguments->size(), numret );
+    bool success = true;
+    std::string scripterror;
+    try
+    {
+        // call the Lua function
+        lua_call( _p_state, p_arguments->size(), numret );
+    }
+    catch ( ... )
+    {
+        success = false;
+        scripterror = lua_tostring( _p_state, -1 );
+        log_error << "BaseScript: error executing script function : " << fcnname << ", reason: " << scripterror << std::endl;
+    }
+
+    // throw an scripting exception if the call was not successful
+    if ( !success )
+        throw( ScriptingException( scripterror ) );
 
     // get return values
     if ( numret > 0 )
@@ -362,6 +401,8 @@ void BaseScript< T >::callScriptFunction( const std::string& fcnname, Params* co
                     p_returnvalues->template setValue< float >( cnt, static_cast< float >( lua_tonumber( _p_state, sindex ) ) );
                 else if ( typeinfo == typeid( int ) )
                     p_returnvalues->template setValue< int >( cnt, static_cast< int >( lua_tonumber( _p_state, sindex ) ) );
+                else if ( typeinfo == typeid( unsigned int ) )
+                    p_returnvalues->template setValue< unsigned int >( cnt, static_cast< unsigned int >( lua_tonumber( _p_state, sindex ) ) );
                 else if ( typeinfo == typeid( double ) )
                     p_returnvalues->template setValue< double >( cnt, lua_tonumber( _p_state, sindex ) );
                 else
@@ -388,14 +429,29 @@ void BaseScript< T >::callScriptFunction( const std::string& fcnname, Params* co
 }
 
 template< class T >
-void BaseScript< T >::execute()
+void BaseScript< T >::execute() throw ( ScriptingException )
 {
     if ( !_valid )
     {
-        log_error << "script error: cannot execute invalid script" << std::endl;
+        log_error << "script error: cannot execute invalid script: " << _scriptFile << std::endl;
         return;
     }
 
-    lua_pop( _p_state, 1 );
-    lua_call( _p_state, 0, 0 );
+    bool success = true;
+    std::string scripterror;
+
+    try
+    {
+        lua_pop( _p_state, 1 );
+        lua_call( _p_state, 0, 0 );
+    }
+    catch ( ... )
+    {
+        success = false;
+        scripterror = lua_tostring( _p_state, -1 );
+    }
+
+    // throw an scripting exception
+    if ( !success )
+        throw( ScriptingException( scripterror ) );
 }

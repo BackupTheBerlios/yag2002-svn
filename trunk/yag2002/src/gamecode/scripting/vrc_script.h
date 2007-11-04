@@ -37,12 +37,10 @@
 #include <vrc_main.h>
 
 // Lua headers
-extern "C"
-{
-    #include <lua.h>
-    #include <lauxlib.h>
-    #include <lualib.h>
-}
+//! NOTE: we expect the lua libray built as C++, so no extern C around lua headers!
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
 
 namespace vrc
 {
@@ -165,7 +163,7 @@ class Params: protected std::vector< BaseParam* >
         inline const std::type_info&            getTypeInfo( unsigned int index );
 
         //! Get count of parameters
-        inline std::size_t                      size();
+        inline const std::size_t                size() const;
 
         //! Clear params
         void                                    clear();
@@ -225,14 +223,14 @@ class BaseScript
         */
         void                                    exposeMethod( const std::string& name, MethodPtr method, const Params& arguments, const Params& returnvalues = Params() );
 
-        //! Execute script, call this after loading a script and once when all methods are exposed
-        void                                    execute();
+        //! Execute script, call this after loading a script and once when all methods are exposed. An exception is thrown when something went wrong.
+        void                                    execute() throw ( ScriptingException );
 
         //! Call script function 'fcnname' with given arguments 'p_arguments', let 'p_returnvalues' be NULL for having no return values expected.
         /**
-        * Use this method after calling 'execute'.
+        * Use this method after calling 'execute'.  An exception is thrown when something went wrong, e.g. if scripting errors occured.
         */
-        void                                    callScriptFunction( const std::string& fcnname, Params* const p_arguments, Params* p_returnvalues = NULL );
+        void                                    callScriptFunction( const std::string& fcnname, Params* const p_arguments, Params* p_returnvalues = NULL ) throw ( ScriptingException );
 
         //! Close a loaded script and clean up associated resources.
         void                                    closeScript();
