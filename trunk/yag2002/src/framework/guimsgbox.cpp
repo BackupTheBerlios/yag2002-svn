@@ -179,7 +179,7 @@ _autodel( autodelete )
                 p_btncancel->setText( "Cancel" );
                 _p_wnd->addChildWindow( p_btncancel );
                 // set callback
-			    p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &yaf3d::MessageBoxDialog::onClickedCancel, this ) );
+                p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &yaf3d::MessageBoxDialog::onClickedCancel, this ) );
             }
             break;
 
@@ -194,7 +194,7 @@ _autodel( autodelete )
                 p_btnok->setText( "Ok" );
                 _p_wnd->addChildWindow( p_btnok );
                 // set callback
-			    p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &yaf3d::MessageBoxDialog::onClickedOk, this ) );
+                p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &yaf3d::MessageBoxDialog::onClickedOk, this ) );
             }
             break;
 
