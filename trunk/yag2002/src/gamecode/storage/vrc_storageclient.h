@@ -71,7 +71,7 @@ class StorageClientException : public std::runtime_error
 
 
 //! Storage client
-class StorageClient : public yaf3d::Singleton< vrc::StorageClient >
+class StorageClient : public yaf3d::Singleton< vrc::StorageClient >, public yaf3d::CallbackAuthentification, public yaf3d::SessionNotifyCallback
 {
     public:
 
@@ -85,6 +85,9 @@ class StorageClient : public yaf3d::Singleton< vrc::StorageClient >
 
         //! Request the server for account info
         bool                                        requestAccountInfo( unsigned int userID, class AccountInfoResult* p_cb );
+
+        //! Get the unique user account ID
+        unsigned int                                getUserID() const;
 
     protected:
 
@@ -100,6 +103,12 @@ class StorageClient : public yaf3d::Singleton< vrc::StorageClient >
 
         //! Set the networking object used by storage networking on creation.
         void                                        setNetworking( StorageNetworking* p_networking );
+
+        //! Override of networking's CallbackAuthentification method for getting the user ID when successfully authentified. userID is the unique user ID.
+        void                                        authentificationResult( unsigned int userID );
+
+        //! Unique user ID set when successfully authentified
+        unsigned int                                _userID;
 
         //! Networking for storage
         StorageNetworking*                          _p_networking;

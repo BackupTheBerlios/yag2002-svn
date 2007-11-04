@@ -75,7 +75,7 @@ class StorageServerException : public std::runtime_error
 
 
 //! Storage server
-class StorageServer : public yaf3d::Singleton< vrc::StorageServer >,  public yaf3d::CallbackAuthentification, public yaf3d::SessionNotifyCallback
+class StorageServer : public yaf3d::Singleton< vrc::StorageServer >, public yaf3d::CallbackAuthentification, public yaf3d::SessionNotifyCallback
 {
     public:
 

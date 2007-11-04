@@ -214,6 +214,9 @@ bool StorageServer::authentify( int sessionID, const std::string& login, const s
     state._userAccount = acc;
     _userCache[ sessionID ] = state;
 
+    // set the valid user ID
+    userID = acc._userID;
+
     return true;
 }
 

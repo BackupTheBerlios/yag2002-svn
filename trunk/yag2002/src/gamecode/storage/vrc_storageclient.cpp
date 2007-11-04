@@ -42,6 +42,7 @@ namespace vrc
 {
 
 StorageClient::StorageClient() :
+ _userID( 0 ),
  _p_networking( NULL )
 {
 }
@@ -58,12 +59,18 @@ void StorageClient::shutdown()
 
 void StorageClient::initialize() throw ( StorageClientException )
 {
-    // nothing to be initialized atm
+    // register callback in network device for getting authentification result.
+    yaf3d::NetworkDevice::get()->setAuthCallback( this );
 }
 
 void StorageClient::setNetworking( StorageNetworking* p_networking )
 {
     _p_networking = p_networking;
+}
+
+void StorageClient::authentificationResult( unsigned int userID )
+{ // this is only called when the client has successfully been authentified on server
+    _userID = userID;
 }
 
 bool StorageClient::requestAccountInfo( unsigned int userID, class AccountInfoResult* p_cb )
@@ -75,6 +82,11 @@ bool StorageClient::requestAccountInfo( unsigned int userID, class AccountInfoRe
     _p_networking->requestAccountInfo( userID, p_cb );
 
     return true;
+}
+
+unsigned int StorageClient::getUserID() const
+{
+    return _userID;
 }
 
 } // namespace vrc
