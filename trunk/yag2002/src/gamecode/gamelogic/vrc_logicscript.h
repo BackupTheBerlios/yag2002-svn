@@ -1,6 +1,6 @@
 /****************************************************************
  *  YAG2002 (http://yag2002.sourceforge.net)
- *  Copyright (C) 2005-2006, A. Botorabi
+ *  Copyright (C) 2005-2007, A. Botorabi
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -23,8 +23,7 @@
  #
  #   date of creation:  03/11/2007
  #
- #   author:            ali botorabi (boto)
- #      e-mail:         botorabi@gmx.net
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  ################################################################*/
 

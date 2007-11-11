@@ -23,8 +23,8 @@
  #
  #   date of creation:  05/28/2005
  #
- #   author:            ali botorabi (boto) 
- #      e-mail:         botorabi@gmx.net
+ #   author:            boto (botorabi at users.sourceforge.net) 
+ #
  #
  # change history:
  #

@@ -23,8 +23,8 @@
  #
  #   date of creation:  10/31/2007
  #
- #   author:            ali botorabi (boto) 
- #      e-mail:         botorabi@gmx.net
+ #   author:            boto (botorabi at users.sourceforge.net) 
+ #
  #
  ################################################################*/
 
@@ -226,7 +226,7 @@ void BaseObject::initialize()
     // setup picking params
     _maxHeighlightDistance2 = _maxHeighlightDistance * _maxHeighlightDistance;
 
-    //! TODO ...do game mode specific things
+    //! do game mode specific things
     switch ( yaf3d::GameState::get()->getMode() )
     {
         case yaf3d::GameState::Standalone:
