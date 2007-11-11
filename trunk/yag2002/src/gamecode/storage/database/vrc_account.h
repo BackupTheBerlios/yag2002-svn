@@ -44,22 +44,25 @@ class UserAccount
 
                                                 ~UserAccount();
 
-        const std::string&                      getUsername() const;
-
-        const std::string&                      getFirstname() const;
-
-        const std::string&                      getLastname() const;
-
-        const std::string&                      getNickname() const;
-
-        const std::string&                      getEmail() const;
-
-        const std::string&                      getLastLogin() const;
-
-        const std::string&                      getOnlineTime() const;
-
+        //! Get the user account ID
         unsigned int                            getUserId() const;
 
+        //! Get user name
+        const std::string&                      getUsername() const;
+
+        //! Get nickname (login name)
+        const std::string&                      getNickname() const;
+
+        //! Get e-mail address
+        const std::string&                      getEmail() const;
+
+        //! Get last login time stamp as string
+        const std::string&                      getLastLogin() const;
+
+        //! Get total on-line time as string
+        const std::string&                      getOnlineTime() const;
+
+        //! Get user priviledges
         unsigned int                            getPriviledges() const;
 
         std::string                             _userName;
@@ -75,6 +78,47 @@ class UserAccount
         unsigned int                            _userID;
 
         unsigned int                            _priviledges;
+};
+
+
+//! User data associated with an account. The IDs are references to other tables
+class UserData
+{
+    public:
+
+                                                UserData();
+
+                                                ~UserData();
+
+        //! Get the user account ID
+        unsigned int                            getUserId() const;
+
+        //! Get the data ID
+        unsigned int                            getDataId() const;
+
+        //! Get inventory ID
+        unsigned int                            getInventoryId() const;
+
+        //! Get mailbox ID
+        unsigned int                            getMailboxId() const;
+
+        //! Get skills ID
+        unsigned int                            getSkillsId() const;
+
+        //! Account ID
+        unsigned int                            _userID;
+
+        //! User data ID
+        unsigned int                            _dataID;
+
+        //! Inventory ID
+        unsigned int                            _inventoryID;
+
+        //! Mailbox ID
+        unsigned int                            _mailboxID;
+
+        //! Skills ID
+        unsigned int                            _skillsID;
 };
 
 } // namespace vrc

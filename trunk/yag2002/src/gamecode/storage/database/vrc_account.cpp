@@ -79,5 +79,42 @@ unsigned int UserAccount::getPriviledges() const
     return _priviledges;
 }
 
+UserData::UserData() :
+ _userID( 0 ),
+ _dataID( 0 ),
+ _inventoryID( 0 ),
+ _mailboxID( 0 ),
+ _skillsID( 0 )
+{
+}
+
+UserData::~UserData()
+{
+}
+
+unsigned int UserData::getUserId() const
+{
+    return _userID;
+}
+
+unsigned int UserData::getDataId() const
+{
+    return _dataID;
+}
+
+unsigned int UserData::getInventoryId() const
+{
+    return _inventoryID;
+}
+
+unsigned int UserData::getMailboxId() const
+{
+    return _mailboxID;
+}
+
+unsigned int UserData::getSkillsId() const
+{
+    return _skillsID;
+}
 
 } // namespace vrc

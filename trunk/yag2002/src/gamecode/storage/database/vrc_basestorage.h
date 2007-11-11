@@ -39,6 +39,7 @@ namespace vrc
 {
 
 class StorageServer;
+class UserInventory;
 
 class BaseStorage
 {
@@ -59,6 +60,12 @@ class BaseStorage
 
         //! Update the user account. 'acc' must have a valid user ID and the user must have been successfully logged in before.
         virtual bool                            updateUserAccount( const UserAccount& acc ) = 0;
+
+        //! Get user data for given user ID. The user must be successfully logged in.
+        virtual bool                            getUserData( unsigned int userID, UserData& data ) = 0;
+
+        //! Get user inventory for given data ID ( use getUserData for getting the dataID ). The user must be successfully logged in.
+        virtual bool                            getUserInventory( unsigned int dataID, UserInventory* p_inv ) = 0;
 
         //! Register a new user. Return false if the registration went wrong.
         virtual bool                            registerUser( const std::string& name, const std::string& login, const std::string& passwd, const std::string& email ) = 0;

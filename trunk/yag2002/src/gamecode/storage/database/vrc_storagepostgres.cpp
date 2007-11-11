@@ -23,13 +23,14 @@
  #
  #   date of creation:  10/18/2007
  #
- #   author:            ali botorabi (boto) 
- #      e-mail:         botorabi@gmx.net
+ #   author:            boto (botorabi at users.sourceforge.net) 
+ #
  #
  ################################################################*/
 
 #include <vrc_main.h>
 #include "vrc_storagepostgres.h"
+#include "../vrc_userinventory.h"
 #include <pqxx/transaction.hxx>
 
 
@@ -47,10 +48,17 @@
 #define F_USERACC_PRIV          "priviledges"
 
 //! Stored procesures
-#define FCN_USER_LOGIN        "user_login"
-#define FCN_USER_LOGOUT       "user_logout"
-#define FCN_USER_GET_ACC      "user_getaccountdata"
-#define FCN_USER_REGISTER     "user_register"
+#define FCN_USER_LOGIN          "user_login"
+#define FCN_USER_LOGOUT         "user_logout"
+#define FCN_USER_GET_ACC        "user_getaccountdata"
+#define FCN_USER_REGISTER       "user_register"
+#define FCN_USER_DATA           "user_getdata"
+#define FCN_USER_INV            "user_getinventory"
+
+#define F_USERDATA_DATA_ID      "user_data_id"
+#define F_USERDATA_INV_ID       "user_inventory_id"
+#define F_USERDATA_MAILBOX_ID   "user_mailbox_id"
+#define F_USERDATA_SKILLS_ID    "user_skills_id"
 
 
 namespace vrc
@@ -131,7 +139,7 @@ bool StoragePostgreSQL::loginUser( const std::string login, const std::string pa
         pqxx::work transaction( *_p_databaseConnection, "login" );
         std::string query;
 
-        // call the stored procedure for user login
+        // call the function for user login
         query = std::string( "SELECT " FCN_USER_LOGIN "( '" + login + "', '" + enc_passwd + "' );" );
 
         res = transaction.exec( query );
@@ -142,7 +150,7 @@ bool StoragePostgreSQL::loginUser( const std::string login, const std::string pa
             return false;
         }
 
-        // get the return value of the login procedure
+        // get the return value of the login function
         int retvalue;
         res[ 0 ][ FCN_USER_LOGIN ].to( retvalue );
         switch ( retvalue )
@@ -283,6 +291,95 @@ bool StoragePostgreSQL::updateUserAccount( const UserAccount& acc )
     //! TODO ...
 
     return false;
+}
+
+bool StoragePostgreSQL::getUserData( unsigned int userID, UserData& data )
+{
+    pqxx::result res;
+    try
+    {
+        pqxx::work transaction( *_p_databaseConnection, "userdata" );
+        std::string query;
+        std::stringstream uid;
+        uid << userID;
+
+        // call the function for user data
+        query = std::string( "SELECT * FROM " FCN_USER_DATA "( " + uid.str() + " );" );
+
+        res = transaction.exec( query );
+
+        if ( res.size() < 1 )
+        {
+            log_error << "PostgreSQL: internal error when getting user data: " << userID << std::endl;
+            return false;
+        }
+
+        // check if we got a valid user data row
+        if ( res[ 0 ][ F_USERDATA_DATA_ID ].is_null() )
+        {
+            log_info << "PostgreSQL: could not get user data: '" << userID << std::endl;
+            return false;
+        }
+        else
+        {
+            res[ 0 ][ F_USERDATA_DATA_ID ].to( data._dataID );
+            res[ 0 ][ F_USERDATA_INV_ID ].to( data._inventoryID );
+            res[ 0 ][ F_USERDATA_MAILBOX_ID ].to( data._mailboxID );
+            res[ 0 ][ F_USERDATA_SKILLS_ID ].to( data._skillsID );
+        }
+
+        // commit the transaction
+        transaction.commit();
+    }
+    catch( const std::exception& e )
+    {
+        log_info << "PostgreSQL: problem on getting user data: " << userID << ", reason: " << e.what()  << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool StoragePostgreSQL::getUserInventory( unsigned int dataID, UserInventory* p_inv )
+{
+    pqxx::result res;
+    try
+    {
+        pqxx::work transaction( *_p_databaseConnection, "inventory" );
+        std::string query;
+        std::stringstream dataId;
+        dataId << dataID;
+
+        // call the function for user inventory
+        query = std::string( "SELECT * FROM " FCN_USER_INV "( " + dataId.str() + " );" );
+
+        res = transaction.exec( query );
+
+        if ( res.size() < 1 )
+        {
+            log_error << "PostgreSQL: internal error when getting user inventory: " << dataID << std::endl;
+            return false;
+        }
+
+        // add the inventory items
+        unsigned int inv_id;
+        std::string  jetpack;
+        res[ 0 ][ "inventory_id" ].to( inv_id );
+        {
+            res[ 0 ][ "inv_jetpack" ].to( jetpack );
+            p_inv->addItem( "Jetpack", inv_id, jetpack );
+        }
+
+        // commit the transaction
+        transaction.commit();
+    }
+    catch( const std::exception& e )
+    {
+        log_info << "PostgreSQL: problem on getting user inventory: " << dataID << ", reason: " << e.what()  << std::endl;
+        return false;
+    }
+
+    return true;
 }
 
 } // namespace vrc
