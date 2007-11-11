@@ -26,8 +26,8 @@
  #
  #   date of creation:  04/08/2004
  #
- #   author:            ali botorabi (boto)
- #      e-mail:         botorabi@gmx.net
+ #   author:            boto (botorabi at users.sourceforge.net)
+ #
  #
  # change history:
  #

@@ -23,8 +23,8 @@
  #
  #   date of creation:  01/13/2005
  #
- #   author:            ali botorabi (boto) 
- #      e-mail:         botorabi@gmx.net
+ #   author:            boto (botorabi at users.sourceforge.net) 
+ #
  #
  # change history:
  #
@@ -95,8 +95,6 @@ class BaseEntityAttribute
 template< class TypeT >
 class EntityAttribute : public BaseEntityAttribute
 {
-
-
     public:
 
         /**
