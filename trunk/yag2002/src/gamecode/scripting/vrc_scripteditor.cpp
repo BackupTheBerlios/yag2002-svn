@@ -30,25 +30,25 @@
 
 
 #include <vrc_main.h>
-#include "vrc_scripteditor.h"
+#include "vrc_scriptconsole.h"
 #include <lua.h>
 
 namespace vrc
 {
 
-ScriptEditor::ScriptEditor() :
- _p_seScriptWnd( NULL ),
- _p_seInputWindow( NULL ),
- _p_seOutputWindow( NULL )
+ScriptConsole::ScriptConsole() :
+ _p_scScriptWnd( NULL ),
+ _p_scInputWindow( NULL ),
+ _p_scOutputWindow( NULL )
 {
 }
 
-ScriptEditor::~ScriptEditor()
+ScriptConsole::~ScriptConsole()
 {
     try
     {
-        if ( _p_seScriptWnd )
-            CEGUI::WindowManager::getSingleton().destroyWindow( _p_seScriptWnd );
+        if ( _p_scScriptWnd )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_scScriptWnd );
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -57,41 +57,41 @@ ScriptEditor::~ScriptEditor()
     }
 }
 
-bool ScriptEditor::seInitialize()
+bool ScriptConsole::scInitialize()
 {
     CEGUI::DefaultWindow* p_parent = yaf3d::GuiManager::get()->getRootWindow();
     try
     {
         float framewidth = 0.4f, frameheight = 0.2f;
-        _p_seScriptWnd = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( ( CEGUI::utf8* )"TaharezLook/FrameWindow", "_script_editor_" ) );
-        _p_seScriptWnd->setText( "logic script editor" );
-        _p_seScriptWnd->setPosition( CEGUI::Point( 0.6f, 0.8f ) );
-        _p_seScriptWnd->setSize( CEGUI::Size( framewidth, frameheight ) );
-        _p_seScriptWnd->setSizingEnabled( true );
-        _p_seScriptWnd->setAlpha( 0.7f );
-        _p_seScriptWnd->setMinimumSize( CEGUI::Size( 0.2f, 0.1f ) );
-        _p_seScriptWnd->setFont( YAF3D_GUI_CONSOLE );
-        _p_seScriptWnd->setAlwaysOnTop( true );
-        _p_seScriptWnd->show();
+        _p_scScriptWnd = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( ( CEGUI::utf8* )"TaharezLook/FrameWindow", "_script_editor_" ) );
+        _p_scScriptWnd->setText( "logic script editor" );
+        _p_scScriptWnd->setPosition( CEGUI::Point( 0.6f, 0.8f ) );
+        _p_scScriptWnd->setSize( CEGUI::Size( framewidth, frameheight ) );
+        _p_scScriptWnd->setSizingEnabled( true );
+        _p_scScriptWnd->setAlpha( 0.7f );
+        _p_scScriptWnd->setMinimumSize( CEGUI::Size( 0.2f, 0.1f ) );
+        _p_scScriptWnd->setFont( YAF3D_GUI_CONSOLE );
+        _p_scScriptWnd->setAlwaysOnTop( true );
+        _p_scScriptWnd->show();
 
-        _p_seOutputWindow = static_cast< CEGUI::MultiLineEditbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/MultiLineEditbox", "_script_editor_output_" ) );
-        _p_seOutputWindow->setReadOnly( true );
-        _p_seOutputWindow->setSize( CEGUI::Size( 0.96f, 0.7f ) );
-        _p_seOutputWindow->setPosition( CEGUI::Point( 0.02f, 0.1f ) );
-        _p_seOutputWindow->setFont( YAF3D_GUI_CONSOLE );
-        _p_seOutputWindow->setAlpha( 0.7f );
-        _p_seScriptWnd->addChildWindow( _p_seOutputWindow );
+        _p_scOutputWindow = static_cast< CEGUI::MultiLineEditbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/MultiLineEditbox", "_script_editor_output_" ) );
+        _p_scOutputWindow->setReadOnly( true );
+        _p_scOutputWindow->setSize( CEGUI::Size( 0.96f, 0.7f ) );
+        _p_scOutputWindow->setPosition( CEGUI::Point( 0.02f, 0.1f ) );
+        _p_scOutputWindow->setFont( YAF3D_GUI_CONSOLE );
+        _p_scOutputWindow->setAlpha( 0.7f );
+        _p_scScriptWnd->addChildWindow( _p_scOutputWindow );
 
-        _p_seInputWindow = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", "_script_editor_input_" ) );
-        _p_seInputWindow->subscribeEvent( CEGUI::MultiLineEditbox::EventCharacterKey, CEGUI::Event::Subscriber( &vrc::ScriptEditor::seOnInputTextChanged, this ) );
-        _p_seInputWindow->setSize( CEGUI::Size( 0.96f, 0.15f ) );
-        _p_seInputWindow->setPosition( CEGUI::Point( 0.02f, 0.8f ) );
-        _p_seInputWindow->setAlpha( 0.7f );
-        _p_seOutputWindow->setFont( YAF3D_GUI_FONT8 );
-        _p_seInputWindow->setFont( YAF3D_GUI_CONSOLE );
-        _p_seScriptWnd->addChildWindow( _p_seInputWindow );
+        _p_scInputWindow = static_cast< CEGUI::Editbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", "_script_editor_input_" ) );
+        _p_scInputWindow->subscribeEvent( CEGUI::MultiLineEditbox::EventCharacterKey, CEGUI::Event::Subscriber( &vrc::ScriptConsole::scOnInputTextChanged, this ) );
+        _p_scInputWindow->setSize( CEGUI::Size( 0.96f, 0.15f ) );
+        _p_scInputWindow->setPosition( CEGUI::Point( 0.02f, 0.8f ) );
+        _p_scInputWindow->setAlpha( 0.7f );
+        _p_scOutputWindow->setFont( YAF3D_GUI_FONT8 );
+        _p_scInputWindow->setFont( YAF3D_GUI_CONSOLE );
+        _p_scScriptWnd->addChildWindow( _p_scInputWindow );
 
-        p_parent->addChildWindow( _p_seScriptWnd );
+        p_parent->addChildWindow( _p_scScriptWnd );
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -100,42 +100,42 @@ bool ScriptEditor::seInitialize()
         return false;
     }
 
-    seAddOutput( "Lua script console\n" LUA_VERSION "\n" );
+    scAddOutput( "Lua script console\n" LUA_VERSION "\n" );
     return true;
 }
 
-bool ScriptEditor::seOnInputTextChanged( const CEGUI::EventArgs& arg )
+bool ScriptConsole::scOnInputTextChanged( const CEGUI::EventArgs& arg )
 {
     CEGUI::KeyEventArgs& ke = static_cast< CEGUI::KeyEventArgs& >( const_cast< CEGUI::EventArgs& >( arg ) );
     if ( ke.codepoint == SDLK_RETURN )
     {
         // skip empty lines
-        if ( !_p_seInputWindow->getText().length() )
+        if ( !_p_scInputWindow->getText().length() )
             return true;
 
-        seAddOutput( ">" + std::string( _p_seInputWindow->getText().c_str() ) );
-        seProcessCmd( _p_seInputWindow->getText().c_str() );
-        _p_seInputWindow->setText( "" );
-        _p_seOutputWindow->setCaratIndex( _p_seOutputWindow->getText().length() );
+        scAddOutput( ">" + std::string( _p_scInputWindow->getText().c_str() ) );
+        scProcessCmd( _p_scInputWindow->getText().c_str() );
+        _p_scInputWindow->setText( "" );
+        _p_scOutputWindow->setCaratIndex( _p_scOutputWindow->getText().length() );
     }
 
     return true;
 }
 
-void ScriptEditor::seShow( bool en )
+void ScriptConsole::scShow( bool en )
 {
     if ( en )
-        _p_seScriptWnd->show();
+        _p_scScriptWnd->show();
     else
-        _p_seScriptWnd->hide();
+        _p_scScriptWnd->hide();
 }
 
-void ScriptEditor::seAddOutput( const std::string& msg )
+void ScriptConsole::scAddOutput( const std::string& msg )
 {
-    if ( _p_seOutputWindow )
+    if ( _p_scOutputWindow )
     {
-        _p_seOutputWindow->setText( _p_seOutputWindow->getText() + msg );
-        _p_seOutputWindow->setCaratIndex( _p_seOutputWindow->getText().length() );
+        _p_scOutputWindow->setText( _p_scOutputWindow->getText() + msg );
+        _p_scOutputWindow->setCaratIndex( _p_scOutputWindow->getText().length() );
     }
 }
 

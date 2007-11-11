@@ -19,7 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # Small build-in utility for script debugging
+ # Small build-in console for script debugging
  #
  #   date of creation:  04/11/2007
  #
@@ -29,8 +29,8 @@
  ################################################################*/
 
 
-#ifndef _VRC_SCRIPTEDITOR_H_
-#define _VRC_SCRIPTEDITOR_H_
+#ifndef _VRC_SCRIPTCONSOLE_H_
+#define _VRC_SCRIPTCONSOLE_H_
 
 #include <vrc_main.h>
 
@@ -38,41 +38,41 @@ namespace vrc
 {
 
 //! Build-in script editor which can be derived from in your script classes
-class ScriptEditor
+class ScriptConsole
 {
     public:
 
-                                                    ScriptEditor();
+                                                    ScriptConsole();
 
-        virtual                                     ~ScriptEditor();
+        virtual                                     ~ScriptConsole();
 
         //! Initialize the editor
-        bool                                        seInitialize();
+        bool                                        scInitialize();
 
         //! Show/hide the editor
-        void                                        seShow( bool en );
+        void                                        scShow( bool en );
 
         //! Add message to output
-        void                                        seAddOutput( const std::string& msg );
+        void                                        scAddOutput( const std::string& msg );
 
     protected:
 
         //! Callback for getting cmd line
-        bool                                        seOnInputTextChanged( const CEGUI::EventArgs& arg );
+        bool                                        scOnInputTextChanged( const CEGUI::EventArgs& arg );
 
         //! Override this process input command method
-        virtual void                                seProcessCmd( const std::string& cmd ) = 0;
+        virtual void                                scProcessCmd( const std::string& cmd ) = 0;
 
         //! Script gui object
-        CEGUI::FrameWindow*                         _p_seScriptWnd;
+        CEGUI::FrameWindow*                         _p_scScriptWnd;
 
         //! Script editor's output
-        CEGUI::Editbox*                             _p_seInputWindow;
+        CEGUI::Editbox*                             _p_scInputWindow;
 
         //! Script editor's output
-        CEGUI::MultiLineEditbox*                    _p_seOutputWindow;
+        CEGUI::MultiLineEditbox*                    _p_scOutputWindow;
 };
 
 }
 
-#endif // _VRC_SCRIPTEDITOR_H_
+#endif // _VRC_SCRIPTCONSOLE_H_
