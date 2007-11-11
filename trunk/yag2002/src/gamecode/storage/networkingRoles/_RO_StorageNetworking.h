@@ -8,11 +8,13 @@ namespace vrc
 
 typedef struct _tAccountInfoData
 {
+    unsigned int    _sessionCookie;
+
     unsigned int    _userID;
 
-    unsigned int    _registrationDate;
+    char            _p_lastLogin[ 64 ];
 
-    unsigned int    _onlineTime;
+    char            _p_onlineTime[ 64 ];
 
     unsigned int    _priviledges;
 
