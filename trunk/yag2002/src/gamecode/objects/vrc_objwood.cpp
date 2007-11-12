@@ -34,6 +34,7 @@
 #include "vrc_objectnetworking.h"
 #include "../storage/vrc_storageclient.h"
 #include "../gamelogic/vrc_gamelogic.h"
+#include "../scripting/vrc_scriptconsole.h"
 
 namespace vrc
 {
@@ -57,11 +58,21 @@ EnObjectWood::~EnObjectWood()
 
 void EnObjectWood::onObjectUse()
 {
+    GameLogic::get()->getScriptConsole()->scAddOutput( ObjectRegistry::getEntityType( getObjectID() ) + ": request for picking action", true );
+
     // this function is called on client and standalone modes. in client mode the networking object is a valid one.
     if ( _p_networking )
     {
         // request the server for using the object
-        _p_networking->RequestUseObject( StorageClient::get()->getUserID() );
+        tActionData action;
+        memset( &action, 0, sizeof( action ) );
+        action._sessionCookie   = unsigned int( yaf3d::NetworkDevice::get()->getSessionID() );
+        action._userID          = StorageClient::get()->getUserID();
+        action._actionType      = GameLogic::eActionPick;
+        action._paramUint[ 0 ]  = getObjectID();
+
+        if ( !_p_networking->RequestAction( action, this ) )
+            log_debug << "EnObjectWood: cannot send request, a request is already in progress!" << std::endl;
     }
     else
     {
@@ -69,15 +80,19 @@ void EnObjectWood::onObjectUse()
         std::vector< float > args;
         std::vector< float > result;
 
-        args.push_back( 42.0f );
-        args.push_back( 42.0f );
-        args.push_back( 42.0f );
-
         result.push_back( 0.0f );
 
         if ( !GameLogic::get()->requestAction( GameLogic::eActionPick, getObjectID(), args, result ) )
-            log_error << getInstanceName() << ": problem executing required action Pick " << std::endl;
+            log_error << getInstanceName() << ": problem executing requested action Pick " << std::endl;
     }
+}
+
+void EnObjectWood::actionResult( tActionData& result )
+{
+    std::string res( result._actionResult > 0 ? "SUCCESS" : "FAIL" );
+    GameLogic::get()->getScriptConsole()->scAddOutput( ObjectRegistry::getEntityType( getObjectID() ) + ": got action request result: " + res, true );
+
+    // TODO: handle the action request result
 }
 
 } // namespace vrc

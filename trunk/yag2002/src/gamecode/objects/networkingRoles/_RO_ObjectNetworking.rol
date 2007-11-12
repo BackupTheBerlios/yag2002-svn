@@ -7,19 +7,19 @@ object ObjectNetworking
 {
     datablock Function;
 
-    extern RPC_RequestUse( unsigned int );
-    extern RPC_Use( unsigned int );
+    extern RPC_RequestAction( tActionData );
+    extern RPC_ActionResult( tActionData );
 
     datablock NData;
 
     networking
     {
-        Function RPC_RequestUse;
+        Function RPC_RequestAction;
         { 
             Reliable();
         }
 
-        Function RPC_Use;
+        Function RPC_ActionResult;
         { 
             Reliable();
         }

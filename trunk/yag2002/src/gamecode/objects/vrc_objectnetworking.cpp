@@ -29,8 +29,10 @@
  ################################################################*/
 
 #include <vrc_main.h>
-#include "vrc_objectnetworking.h"
 #include "vrc_baseobject.h"
+#include "vrc_objectnetworking.h"
+#include "../gamelogic/vrc_gamelogic.h"
+#include "../storage/vrc_storageserver.h"
 #include <RNReplicaNet/Inc/DataBlock_Function.h>
 
 using namespace RNReplicaNet;
@@ -46,7 +48,8 @@ ObjectNetworking::ObjectNetworking( BaseObject* p_objectEntity ) :
  _rotationZ( 0.0f ),
  _maxPickDistance( 1.5f ),
  _maxHeighlightDistance( 10 ),
- _p_objectEntity( p_objectEntity )
+ _p_objectEntity( p_objectEntity ),
+ _p_cbResult( NULL )
 {
     memset( _p_meshFile, 0, sizeof( _p_meshFile ) );
 
@@ -116,28 +119,47 @@ void ObjectNetworking::PostObjectCreate()
     _p_objectEntity->setNetworking( this );
 }
 
-
-//we need also the functions: drop, pick
-
-
-void ObjectNetworking::RequestUseObject( unsigned int userID )
+bool ObjectNetworking::RequestAction( tActionData& action, CallbackActionResult* p_cb )
 {
+    if ( _p_cbResult )
+        return false;
+
     // make an RPC on server object
-    MASTER_FUNCTION_CALL( RPC_RequestUse( userID ) );
+    MASTER_FUNCTION_CALL( RPC_RequestAction( action ) );
+
+    // set the callback object
+    _p_cbResult = p_cb;
+
+    return true;
 }
 
-void ObjectNetworking::RPC_RequestUse( unsigned int userID )
+void ObjectNetworking::RPC_RequestAction( tActionData action )
 { // this is called on server
 
+    // let the storage server validate the client first!
+    if ( !StorageServer::get()->validateClient( action._userID, action._sessionCookie ) )
+        return;
 
-    //! TODO: use the storage to use the object
+    std::vector< float > args;
+    std::vector< float > result;
+    result.push_back( 0.0f );
 
-    ALL_REPLICAS_FUNCTION_CALL( RPC_Use( userID ) );
+    if ( !GameLogic::get()->requestAction( action._actionType, action._paramUint[ 0 ], args, result ) )
+        log_error << "ObjectNetworking: problem executing required action: " << action._actionType << std::endl;
+
+    // push the result of action into first uint parameter
+    action._actionResult = int( result[ 0 ] );
+
+    ALL_REPLICAS_FUNCTION_CALL( RPC_ActionResult( action ) );
 }
 
-void ObjectNetworking::RPC_Use( unsigned int userID )
+void ObjectNetworking::RPC_ActionResult( tActionData action )
 { // this method is called only on client
 
+    if ( _p_cbResult )
+        _p_cbResult->actionResult( action );
+
+    _p_cbResult = NULL;
 }
 
 } // namespace vrc

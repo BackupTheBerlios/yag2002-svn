@@ -33,6 +33,7 @@
 
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
+#include "vrc_objectnetworking.h"
 
 namespace vrc
 {
@@ -49,7 +50,7 @@ class ObjectNetworking;
 class ObjectInputHandler;
 
 //! Base of pickable objects
-class BaseObject : public yaf3d::BaseEntity
+class BaseObject : public yaf3d::BaseEntity, public ObjectNetworking::CallbackActionResult
 {
     public:
 

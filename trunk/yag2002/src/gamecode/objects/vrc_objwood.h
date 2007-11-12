@@ -53,6 +53,9 @@ class EnObjectWood : public BaseObject
 
         //! Called when the object is used by user, e.g. by picking
         virtual void                                onObjectUse();
+
+        //! Called when networking delivers the result of requested action
+        virtual void                                actionResult( tActionData& result );
 };
 
 //! Entity type definition used for type registry

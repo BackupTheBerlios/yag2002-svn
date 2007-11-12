@@ -8,34 +8,34 @@
 using namespace vrc;
 _RO_DO_STD_FRAMEWORK(ObjectNetworking)
 #include "RNReplicaNet/Inc/DataBlock_Function.h"
-_RO_DO_MEMBERFUNC_PRESTAGE_DEF(ObjectNetworking,RPC_RequestUse)
-unsigned int /*clientID*/  value1
-_RO_DO_MEMBERFUNC_PRESTAGE(RPC_RequestUse)
-_RO_DO_MEMBERFUNC_ADDVAR2(value1,unsigned int /*clientID*/ )
-_RO_DO_MEMBERFUNC_POSTSTAGE(RPC_RequestUse)
-_RO_DO_MEMBERFUNC_CRACK_START(ObjectNetworking,RPC_RequestUse)
-unsigned int value1;
+_RO_DO_MEMBERFUNC_PRESTAGE_DEF(ObjectNetworking,RPC_RequestAction)
+tActionData value1
+_RO_DO_MEMBERFUNC_PRESTAGE(RPC_RequestAction)
+_RO_DO_MEMBERFUNC_ADDVAR2(value1,tActionData)
+_RO_DO_MEMBERFUNC_POSTSTAGE(RPC_RequestAction)
+_RO_DO_MEMBERFUNC_CRACK_START(ObjectNetworking,RPC_RequestAction)
+tActionData value1;
 _RO_DO_MEMBERFUNC_MESSAGE_CRACK(value1)
-_RO_DO_MEMBERFUNC_CRACK_END(ObjectNetworking,RPC_RequestUse)
+_RO_DO_MEMBERFUNC_CRACK_END(ObjectNetworking,RPC_RequestAction)
 value1
 _RO_DO_MEMBERFUNC_CRACK_END2()
-_RO_DO_MEMBERFUNC_PRESTAGE_DEF(ObjectNetworking,RPC_Use)
-unsigned int /*clientID*/  value1
-_RO_DO_MEMBERFUNC_PRESTAGE(RPC_Use)
-_RO_DO_MEMBERFUNC_ADDVAR2(value1,unsigned int /*clientID*/ )
-_RO_DO_MEMBERFUNC_POSTSTAGE(RPC_Use)
-_RO_DO_MEMBERFUNC_CRACK_START(ObjectNetworking,RPC_Use)
-unsigned int  value1;
+_RO_DO_MEMBERFUNC_PRESTAGE_DEF(ObjectNetworking,RPC_ActionResult)
+tActionData value1
+_RO_DO_MEMBERFUNC_PRESTAGE(RPC_ActionResult)
+_RO_DO_MEMBERFUNC_ADDVAR2(value1,tActionData)
+_RO_DO_MEMBERFUNC_POSTSTAGE(RPC_ActionResult)
+_RO_DO_MEMBERFUNC_CRACK_START(ObjectNetworking,RPC_ActionResult)
+tActionData value1;
 _RO_DO_MEMBERFUNC_MESSAGE_CRACK(value1)
-_RO_DO_MEMBERFUNC_CRACK_END(ObjectNetworking,RPC_Use)
+_RO_DO_MEMBERFUNC_CRACK_END(ObjectNetworking,RPC_ActionResult)
 value1
 _RO_DO_MEMBERFUNC_CRACK_END2()
 #include "RNReplicaNet/Inc/DataBlock_NData.h"
 _RO_DO_BEGINREGISTERDATABLOCKS(ObjectNetworking)
-_RO_DO_REGISTERBLOCK_FUNCTION_VAR(RPC_RequestUse)
+_RO_DO_REGISTERBLOCK_FUNCTION_VAR(RPC_RequestAction)
 _RO_DO_DATABLOCK_MAKERELIABLE()
 _RO_DO_REGISTERBLOCK_END()
-_RO_DO_REGISTERBLOCK_FUNCTION_VAR(RPC_Use)
+_RO_DO_REGISTERBLOCK_FUNCTION_VAR(RPC_ActionResult)
 _RO_DO_DATABLOCK_MAKERELIABLE()
 _RO_DO_REGISTERBLOCK_END()
 _RO_DO_REGISTERBLOCK_NDATA_VAR(_objectID)

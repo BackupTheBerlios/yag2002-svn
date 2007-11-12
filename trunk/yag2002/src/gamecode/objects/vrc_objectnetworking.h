@@ -48,8 +48,19 @@ class ObjectNetworking : _RO_DO_PUBLIC_RO( ObjectNetworking )
 
         virtual                                    ~ObjectNetworking();
 
-        //! Client requests the server for using the object. userID is the user account ID of client.
-        void                                        RequestUseObject( unsigned int userID );
+        //! Callback class for getting action results.
+        //!  Note: only one request can by handled at the same time.
+        class CallbackActionResult
+        {
+            public:
+
+                //! If granted is true then the authentification was successfull.
+                virtual void                        actionResult( tActionData& result ) = 0;
+        };
+
+        //! Client requests the server for performing an action. Use the callback in order to get notified when the result comes in on client.
+        //! Returns false if a request is already in progress.
+        bool                                        RequestAction( tActionData& action, CallbackActionResult* p_cb );
 
     protected:
 
@@ -59,11 +70,11 @@ class ObjectNetworking : _RO_DO_PUBLIC_RO( ObjectNetworking )
         //! Object can now be initialized in scene
         void                                        PostObjectCreate();
 
-        //! Client requests the server to use the object. clientID is the user account ID of requesting client.
-        void                                        RPC_RequestUse( unsigned int userID );
+        //! Client requests the server to perform an action
+        void                                        RPC_RequestAction( tActionData action );
 
-        //! Server grands client to use the object. clientID is the user account ID of the granted client.
-        void                                        RPC_Use( unsigned int userID );
+        //! Action result sent by server
+        void                                        RPC_ActionResult( tActionData action );
 
         //-----------------------------------------------------------------------------------//
 
@@ -93,6 +104,9 @@ class ObjectNetworking : _RO_DO_PUBLIC_RO( ObjectNetworking )
 
         //! Base object
         BaseObject*                                 _p_objectEntity;
+
+        //! Result callback object used by client
+        CallbackActionResult*                       _p_cbResult;
 
     friend class _MAKE_RO( ObjectNetworking );
 };
