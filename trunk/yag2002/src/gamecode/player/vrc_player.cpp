@@ -38,16 +38,18 @@
 #include "vrc_playerimplserver.h"
 #include "vrc_playerimplclient.h"
 #include "vrc_spawnpoint.h"
+#include "properties/vrc_propgui.h"
 
 namespace vrc
 {
 
 //! Implement and register the player entity factory
 YAF3D_IMPL_ENTITYFACTORY( PlayerEntityFactory )
-    
+
 EnPlayer::EnPlayer() :
 _gameMode( yaf3d::GameState::get()->getMode() ),
 _p_playerImpl( NULL ),
+_p_propertyGui( NULL ),
 _networkID( -1 ),
 _voiceChatEnabled( false ),
 _deltaTime( 0.03f )
@@ -76,6 +78,9 @@ EnPlayer::~EnPlayer()
     
     if ( _p_playerImpl )
         delete _p_playerImpl;
+
+    if ( _p_propertyGui )
+        delete _p_propertyGui;
 }
 
 void EnPlayer::handleNotification( const yaf3d::EntityNotification& notification )
@@ -130,6 +135,9 @@ void EnPlayer::initialize()
         _p_playerImpl->setPlayerPosition( getPosition() );
         _p_playerImpl->setPlayerRotation( getRotation() );
     }
+
+    // create the property gui
+    _p_propertyGui = new PropertyGui();
 
     yaf3d::EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 }

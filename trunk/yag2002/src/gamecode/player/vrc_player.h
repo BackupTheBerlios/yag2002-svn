@@ -54,6 +54,7 @@ namespace vrc
 //! Entity name
 #define ENTITY_NAME_PLAYER                "Player"
 
+class PropertyGui;
 class EnPlayerAnimation;
 class BasePlayerImplementation;
 
@@ -172,6 +173,9 @@ class EnPlayer : public yaf3d::BaseEntity
 
         //! Player implementation
         BasePlayerImplementation*                   _p_playerImpl;
+
+        //! Player's property GUI
+        PropertyGui*                                _p_propertyGui;
 
         //! Network IP address, used for getting remote clients' ip address
         std::string                                 _ipAddress;
