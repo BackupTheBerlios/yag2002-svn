@@ -53,7 +53,7 @@ class ScriptConsole
         void                                        scShow( bool en );
 
         //! Add message to output
-        void                                        scAddOutput( const std::string& msg );
+        void                                        scAddOutput( const std::string& msg, bool timestamp = false );
 
     protected:
 

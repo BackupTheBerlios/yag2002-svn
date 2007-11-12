@@ -124,17 +124,25 @@ bool ScriptConsole::scOnInputTextChanged( const CEGUI::EventArgs& arg )
 
 void ScriptConsole::scShow( bool en )
 {
+    if ( !_p_scScriptWnd )
+        return;
+
     if ( en )
         _p_scScriptWnd->show();
     else
         _p_scScriptWnd->hide();
 }
 
-void ScriptConsole::scAddOutput( const std::string& msg )
+void ScriptConsole::scAddOutput( const std::string& msg, bool timestamp )
 {
     if ( _p_scOutputWindow )
     {
-        _p_scOutputWindow->setText( _p_scOutputWindow->getText() + msg );
+        std::string ts;
+        
+        if ( timestamp )
+            ts = "[" + yaf3d::getFormatedTime() + "] ";
+
+        _p_scOutputWindow->setText( _p_scOutputWindow->getText() + ts + msg );
         _p_scOutputWindow->setCaratIndex( _p_scOutputWindow->getText().length() );
     }
 }
