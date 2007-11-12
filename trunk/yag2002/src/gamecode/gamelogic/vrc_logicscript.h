@@ -33,13 +33,13 @@
 
 #include <vrc_main.h>
 #include "../scripting/vrc_script.h"
-#include "../scripting/vrc_scripteditor.h"
+#include "../scripting/vrc_scriptconsole.h"
 
 namespace vrc
 {
 
 //! Game logic scripting interface
-class GameLogicScript : public BaseScript< GameLogicScript >, public ScriptEditor
+class GameLogicScript : public BaseScript< GameLogicScript >, public ScriptConsole
 {
     public:
 
@@ -65,7 +65,7 @@ class GameLogicScript : public BaseScript< GameLogicScript >, public ScriptEdito
         // ############################
 
         //! Script editor's method called when a new command has been issued
-        virtual void                                seProcessCmd( const std::string& cmd );
+        virtual void                                scProcessCmd( const std::string& cmd );
 
         //! Script file name
         std::string                                 _scriptFile;

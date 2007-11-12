@@ -67,6 +67,11 @@ void GameLogic::shutdown()
     destroy();
 }
 
+ScriptConsole* GameLogic::getScriptConsole()
+{
+    return _p_script;
+}
+
 bool GameLogic::requestAction( unsigned int actionType, unsigned int objectID, const std::vector< float >& params, std::vector< float >& returnvalues )
 {
     assert( _p_script && "scripting interface does not exists!" );

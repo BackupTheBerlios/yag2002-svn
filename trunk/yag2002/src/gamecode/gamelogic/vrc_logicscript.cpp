@@ -54,7 +54,7 @@ GameLogicScript::GameLogicScript() :
     //! TODO: setup editor only when in dev mode
     if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Server )
     {
-        seInitialize();
+        scInitialize();
     }
 }
 
@@ -94,7 +94,7 @@ bool GameLogicScript::setupScript( const std::string& file )
         *_p_log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR ) << "error occured during script setup: " << e.what() << std::endl;
 
         // output also to script editor
-        seAddOutput( e.what() );
+        scAddOutput( e.what() );
 
         return false;
     }
@@ -102,7 +102,7 @@ bool GameLogicScript::setupScript( const std::string& file )
     return true;
 }
 
-void GameLogicScript::seProcessCmd( const std::string& cmd )
+void GameLogicScript::scProcessCmd( const std::string& cmd )
 {
     std::vector< std::string > args;
     yaf3d::explode( cmd, " ", &args );
@@ -113,7 +113,7 @@ void GameLogicScript::seProcessCmd( const std::string& cmd )
         cmds += "help\n";
         cmds += "load [ -r | file name ]";
 
-        seAddOutput( "list of valid commands:\n" + cmds );
+        scAddOutput( "list of valid commands:\n" + cmds );
     }
     else if ( args[ 0 ] == "load" )
     {
@@ -135,12 +135,12 @@ void GameLogicScript::seProcessCmd( const std::string& cmd )
         }
         else
         {
-            seAddOutput( "usage: load [ -r | file name ]\nuse -r for reload current script." );
+            scAddOutput( "usage: load [ -r | file name ]\nuse -r for reload current script." );
         }
     }
     else
     {
-        seAddOutput( "invalid command, use the command 'help' for getting valid commands." );
+        scAddOutput( "invalid command, use the command 'help' for getting valid commands." );
     }
 }
 
@@ -149,7 +149,7 @@ bool GameLogicScript::requestAction( unsigned int actiontype, unsigned int objec
     // check if the script has been loaded without errors
     if ( !_valid )
     {
-        seAddOutput( "*** " FCN_REQUEST_ACTION " cannot be executed. script not loaded!" );
+        scAddOutput( "*** " FCN_REQUEST_ACTION " cannot be executed. script not loaded!" );
         return false;
     }
 
@@ -186,7 +186,7 @@ bool GameLogicScript::requestAction( unsigned int actiontype, unsigned int objec
         *_p_log << "reason : " << e.what() << std::endl;
 
         // output also to script editor
-        seAddOutput( std::string( "error on executing function " FCN_REQUEST_ACTION "\n" ) + e.what() );
+        scAddOutput( std::string( "error on executing function " FCN_REQUEST_ACTION "\n" ) + e.what() );
         return false;
     }
 
@@ -216,7 +216,7 @@ void GameLogicScript::llog( const Params& arguments, Params& /*returnvalues*/ )
         _p_log->enableSeverityLevelPrinting( false );
 
         // add the log string also to script editor's output
-        seAddOutput( "# " + str );
+        scAddOutput( "# " + str );
     }
 }
 

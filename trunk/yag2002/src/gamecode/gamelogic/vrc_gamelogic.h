@@ -63,6 +63,7 @@ class GameLogicException : public std::runtime_error
 
 
 class GameLogicScript;
+class ScriptConsole;
 
 //! Game logic class
 class GameLogic : public yaf3d::Singleton< GameLogic >
@@ -79,6 +80,9 @@ class GameLogic : public yaf3d::Singleton< GameLogic >
 
         //! Request the game logic for processing an action on object with ID objectID.
         bool                                        requestAction( unsigned int actionType, unsigned int objectID, const std::vector< float >& params, std::vector< float >& returnvalues );
+
+        //! Get the script console, used for script debugging
+        ScriptConsole*                              getScriptConsole();
 
     protected:
 
