@@ -1,0 +1,75 @@
+/****************************************************************
+ *  YAG2002 (http://yag2002.sourceforge.net)
+ *  Copyright (C) 2005-2006, A. Botorabi
+ *
+ *  This program is free software; you can redistribute it and/or 
+ *  modify it under the terms of the GNU Lesser General Public 
+ *  License version 2.1 as published by the Free Software Foundation.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public 
+ *  License along with this program; if not, write to the Free 
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  MA  02111-1307  USA
+ * 
+ ****************************************************************/
+
+/*###############################################################
+ # player's property gui implementation
+ #
+ #   date of creation:  12/11/2007
+ #
+ #   author:            boto (botorabi at users.sourceforge.net) 
+ #
+ ****************************************************************/
+
+#ifndef _VRC_PROPGUI_H_
+#define _VRC_PROPGUI_H_
+
+#include <vrc_main.h>
+
+
+namespace vrc
+{
+
+//! Class for player's property gui
+class PropertyGui
+{
+    public:
+
+                                                    PropertyGui();
+
+        virtual                                     ~PropertyGui();
+
+
+    protected:
+
+        //! Setup the GUI
+        void                                        setupGui();
+
+        //! Callback for mouse over open button
+        bool                                        onHoverOpen( const CEGUI::EventArgs& arg );
+
+        //! Callback for click on open button
+        bool                                        onClickedOpen( const CEGUI::EventArgs& arg );
+
+        //! Callback for on-close event
+        bool                                        onClickedClose( const CEGUI::EventArgs& arg );
+
+        //! Main GUI window
+        CEGUI::Window*                              _p_mainWnd;
+
+        //! Frame object
+        CEGUI::FrameWindow*                         _p_frame;
+
+        //! Open GUI button
+        CEGUI::PushButton*                          _p_btnOpen;
+};
+
+} // namespace vrc
+
+#endif // _VRC_PROPGUI_H_
