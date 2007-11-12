@@ -24,8 +24,8 @@
  #
  #   date of creation:  09/29/2007
  #
- #   author:            ali botorabi (boto) 
- #      e-mail:         botorabi@gmx.net
+ #   author:            boto (botorabi at users.sourceforge.net) 
+ #
  #
  ################################################################*/
 
@@ -34,6 +34,7 @@
 
 #include <vrc_main.h>
 #include "vrc_storagenetworking.h"
+#include "vrc_userinventory.h"
 #include "database/vrc_account.h"
 
 namespace vrc
@@ -79,8 +80,14 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >, public yaf3
 {
     public:
 
-        //! Get the inventory of given user
-//        bool                                        getUserInventory( unsigned int userID, UserInventory& invent );
+        //! Returns true if the user ID and session ID match.
+        bool                                        validateClient( unsigned int userID, int sessionID );
+
+        //! Get the user account information. The userID and sessionID must both match for any network connection!
+        bool                                        getUserAccount( unsigned int userID, int sessionID, UserAccount* p_account );
+
+        //! Get the inventory of given user. The userID and sessionID must both match for any network connection!
+        bool                                        getUserInventory( unsigned int userID, int sessionID, UserInventory* p_inv );
 
     protected:
 
@@ -118,8 +125,15 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >, public yaf3
             public:
                                                 UserState() :
                                                  _sessionID( -1 ),
-                                                 _guest( false )
+                                                 _guest( false ),
+                                                 _p_userInventory( NULL )
                                                 {
+                                                }
+
+                                                ~UserState()
+                                                {
+                                                    if ( _p_userInventory )
+                                                        delete _p_userInventory;
                                                 }
 
                 //! Client session ID
@@ -130,10 +144,16 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >, public yaf3
 
                 //! User accout
                 UserAccount                     _userAccount;
+
+                //! User data containing the references to inventory, mailbox, skills, etc.
+                UserData                        _userData;
+
+                //! User inventory
+                UserInventory*                  _p_userInventory;
         };
 
         //! User cache < session ID, user state >
-        std::map< int, UserState >                  _userCache;
+        std::map< int, UserState* >             _userCache;
 
     friend class StorageNetworking;
     friend class gameutils::VRCStateHandler;

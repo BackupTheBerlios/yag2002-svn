@@ -26,14 +26,15 @@
  #
  #   date of creation:  09/25/2007
  #
- #   author:            ali botorabi (boto) 
- #      e-mail:         botorabi@gmx.net
+ #   author:            boto (botorabi at users.sourceforge.net) 
+ #
  #
  ################################################################*/
 
 #include <vrc_main.h>
 #include "vrc_storagenetworking.h"
 #include "vrc_storageclient.h"
+#include "vrc_storageserver.h"
 #include <RNReplicaNet/Inc/DataBlock_Function.h>
 
 using namespace RNReplicaNet;
@@ -77,12 +78,26 @@ void StorageNetworking::requestAccountInfo( unsigned int userID, CallbackAccount
 void StorageNetworking::RPC_RequestAccountInfo( tAccountInfoData info )
 { // this method is called only on server
 
-    log_debug << "storage: user ID '" << info._userID << "' requests for account info ..." << std::endl;
+    log_debug << "StorageNetworking: user ID '" << info._userID << "' requests for account info ..." << std::endl;
 
-    //! TODO: use the storage server for retrieving account info
-    info._registrationDate = -1;
-    info._onlineTime       = -1;
-    info._priviledges      = -1;
+    info._p_lastLogin[ 0 ]  = 0;
+    info._p_onlineTime[ 0 ] = 0;
+    info._priviledges       = -1;
+
+    UserAccount acc;
+    if ( !StorageServer::get()->getUserAccount( info._userID, info._sessionCookie, &acc ) )
+    {
+        log_info << "StorageNetworking: could not retrieve account info for user: " << info._userID << std::endl;
+    }
+    else
+    {
+        // fill in the account info
+        memset( info._p_lastLogin, 0, sizeof( info._p_lastLogin ) );
+        memset( info._p_onlineTime, 0, sizeof( info._p_onlineTime ) );
+        strcpy_s( info._p_lastLogin, sizeof( info._p_lastLogin ) - 1, acc.getLastLogin().c_str() );
+        strcpy_s( info._p_onlineTime, sizeof( info._p_onlineTime ) - 1, acc.getOnlineTime().c_str() );
+        info._priviledges = acc.getPriviledges();
+    }
 
     // sent out the account info result
     ALL_REPLICAS_FUNCTION_CALL( RPC_AccountInfoResult( info ) );

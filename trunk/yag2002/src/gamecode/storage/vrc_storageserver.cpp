@@ -24,8 +24,8 @@
  #
  #   date of creation:  09/29/2007
  #
- #   author:            ali botorabi (boto) 
- #      e-mail:         botorabi@gmx.net
+ #   author:            boto (botorabi at users.sourceforge.net) 
+ #
  #
  ################################################################*/
 
@@ -33,9 +33,11 @@
 #include <vrc_gameutils.h>
 #include "vrc_storageserver.h"
 #include "vrc_storagenetworking.h"
+#include "vrc_userinventory.h"
 #include "database/vrc_storagepostgres.h"
 #include "database/vrc_account.h"
 #include "database/vrc_connectiondata.h"
+
 
 //! Multi-platform '_getch()' for reading the db password from console
 #ifdef WIN32
@@ -86,6 +88,11 @@ StorageServer::~StorageServer()
         _p_storage->release();
         delete _p_storage;
     }
+
+    // delete the user cache entries
+    std::map< int, UserState* >::iterator p_beg = _userCache.begin(), p_end = _userCache.end();
+    for ( ; p_beg != p_end; ++p_beg )
+        delete p_beg->second;
 }
 
 void StorageServer::shutdown()
@@ -172,7 +179,6 @@ bool StorageServer::registerUser( const std::string& name, const std::string& ni
         return false;
     }
 
-
     return true;
 }
 
@@ -190,11 +196,11 @@ bool StorageServer::authentify( int sessionID, const std::string& login, const s
 
        // cache the user login state
         UserAccount acc;
-        UserState   state;
-        state._sessionID   = sessionID;
-        state._guest       = true;
-        state._userAccount = acc; // empty account info
-        _userCache[ sessionID ] = state;
+        UserState*  p_state     = new UserState;
+        p_state->_sessionID     = sessionID;
+        p_state->_guest         = true;
+        p_state->_userAccount   = acc; // empty account info
+        _userCache[ sessionID ] = p_state;
 
         return true;
     }
@@ -207,12 +213,21 @@ bool StorageServer::authentify( int sessionID, const std::string& login, const s
         return false;
     }
 
+    UserState* p_state = new UserState;
+
+    // get the user data table
+    if ( !_p_storage->getUserData( acc._userID, p_state->_userData ) )
+    {
+        log_error << "StorageServer: could not retrieve user data, user ID " << acc._userID << std::endl;
+        return false;
+    }
+
     // cache the user login state
-    UserState state;
-    state._sessionID   = sessionID;
-    state._guest       = true;
-    state._userAccount = acc;
-    _userCache[ sessionID ] = state;
+    p_state->_sessionID       = sessionID;
+    p_state->_guest           = true;
+    p_state->_userAccount     = acc;
+    p_state->_p_userInventory = new UserInventory( acc._userID );
+    _userCache[ sessionID ]   = p_state;
 
     // set the valid user ID
     userID = acc._userID;
@@ -222,17 +237,77 @@ bool StorageServer::authentify( int sessionID, const std::string& login, const s
 
 void StorageServer::onSessionLeft( int sessionID )
 {
-    std::map< int, UserState >::iterator p_end = _userCache.end(), p_user = _userCache.find( sessionID );
+    if ( !_connectionEstablished )
+        return;
+
+    std::map< int, UserState* >::iterator p_end = _userCache.end(), p_user = _userCache.find( sessionID );
     if ( p_user == p_end )
     {
-        log_error << "StorageServer: internal error, session ID was not cached before!" << std::endl;
+        log_info << "*** StorageServer: session ID was not cached before, invalid client request!" << std::endl;
         return;
     }
 
-    _p_storage->logoutUser( p_user->second._userAccount.getNickname() );
+    if ( !p_user->second->_guest )
+        _p_storage->logoutUser( p_user->second->_userAccount.getNickname() );
 
+    // delete and remove the cache entry
+    delete p_user->second;
     _userCache.erase( p_user );
 }
 
+bool StorageServer::validateClient( unsigned int userID, int sessionID )
+{
+    std::map< int, UserState* >::iterator p_end = _userCache.end(), p_user = _userCache.find( sessionID );
+    if ( ( p_user == p_end ) || ( p_user->second->_userAccount.getUserId() != userID ) )
+    {
+        log_info << "*** StorageServer: client validation failed: user ID " << userID << ", session ID " << sessionID << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool StorageServer::getUserAccount( unsigned int userID, int sessionID, UserAccount* p_account )
+{
+    if ( !_connectionEstablished )
+        return false;
+
+    std::map< int, UserState* >::iterator p_user = _userCache.find( sessionID );
+    if ( p_user == _userCache.end() )
+    {
+        log_info << "*** StorageServer: request for user inventory cannot be processed, user / session ID mismatch!" << std::endl;
+        return false;
+    }
+
+    *p_account = p_user->second->_userAccount;
+    return true;
+}
+
+bool StorageServer::getUserInventory( unsigned int userID, int sessionID, UserInventory* p_inv )
+{
+    if ( !_connectionEstablished )
+        return false;
+
+    std::map< int, UserState* >::iterator p_user = _userCache.find( sessionID );
+    if ( p_user == _userCache.end() )
+    {
+        log_info << "*** StorageServer: request for user inventory cannot be processed; user / session ID mismatch." << std::endl;
+        return false;
+    }
+
+    if ( !p_user->second->_p_userInventory->isCached() )
+    {
+        // get user inventory
+        if ( !_p_storage->getUserInventory( userID, p_inv ) )
+        {
+            log_error << "StorageServer: could not retrieve user inventory, user ID " << userID << std::endl;
+            return false;
+        }
+
+        p_user->second->_p_userInventory->setCached( true );
+    }
+
+    return true;
+}
 
 } // namespace vrc
