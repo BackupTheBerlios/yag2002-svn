@@ -1417,11 +1417,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\scripting\vrc_scripteditor.cpp"
+					RelativePath="..\..\..\..\src\gamecode\scripting\vrc_scriptconsole.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\scripting\vrc_scripteditor.h"
+					RelativePath="..\..\..\..\src\gamecode\scripting\vrc_scriptconsole.h"
 					>
 				</File>
 				<File
@@ -1585,14 +1585,6 @@
 				Name="storage"
 				>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\storage\vrc_gameitem.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\..\src\gamecode\storage\vrc_gameitem.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\..\..\src\gamecode\storage\vrc_storageclient.cpp"
 					>
 				</File>
@@ -1614,6 +1606,18 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\storage\vrc_storageserver.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_userinventory.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_userinventory.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_userinventory.inl"
 					>
 				</File>
 				<Filter
