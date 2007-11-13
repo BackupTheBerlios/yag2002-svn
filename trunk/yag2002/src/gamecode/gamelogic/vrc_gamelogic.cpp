@@ -73,10 +73,8 @@ ScriptConsole* GameLogic::getScriptConsole()
 }
 
 bool GameLogic::requestAction( unsigned int actionType, unsigned int objectID, const std::vector< float >& params, std::vector< float >& returnvalues )
-{
+{ // in client mode this method is called by object networking, in standalone mode this method is called by objects
     assert( _p_script && "scripting interface does not exists!" );
-
-    //! TODO: implement the networking part here, for now we test the logic in standalone mode!
     return _p_script->requestAction( actionType, objectID, params, returnvalues );
 }
 
