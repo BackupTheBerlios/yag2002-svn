@@ -36,20 +36,27 @@
 namespace vrc
 {
 
+class UserInventory;
+
 //! Class for player's property gui
 class PropertyGui
 {
     public:
 
-                                                    PropertyGui();
+        explicit                                    PropertyGui( UserInventory* p_inv );
 
         virtual                                     ~PropertyGui();
-
 
     protected:
 
         //! Setup the GUI
         void                                        setupGui();
+
+        //! Update the inventory display
+        void                                        updateInventory();
+
+        //! Update the item description
+        void                                        updateItemDescription();
 
         //! Callback for mouse over open button
         bool                                        onHoverOpen( const CEGUI::EventArgs& arg );
@@ -60,6 +67,21 @@ class PropertyGui
         //! Callback for on-close event
         bool                                        onClickedClose( const CEGUI::EventArgs& arg );
 
+        //! Callback for tab-changed event
+        bool                                        onTabChanged( const CEGUI::EventArgs& arg );
+
+        //! Callback for inventory item selection change
+        bool                                        onItemSelChanged( const CEGUI::EventArgs& arg );
+
+        //! Callback for inventory item use button
+        bool                                        onClickedItemUse( const CEGUI::EventArgs& arg );
+
+        //! Callback for inventory item drop button
+        bool                                        onClickedItemDrop( const CEGUI::EventArgs& arg );
+
+        //! User inventory
+        UserInventory*                              _p_userInventory;
+
         //! Main GUI window
         CEGUI::Window*                              _p_mainWnd;
 
@@ -68,6 +90,15 @@ class PropertyGui
 
         //! Open GUI button
         CEGUI::PushButton*                          _p_btnOpen;
+
+        //! Inventory pane: item list
+        CEGUI::Listbox*                             _p_listboxItems;
+
+        //! Inventory pane: image of selected item
+        CEGUI::StaticImage*                         _p_imageItem;
+
+        //! Inventory pane: description field
+        CEGUI::MultiLineEditbox*                    _p_editboxItem;
 };
 
 } // namespace vrc

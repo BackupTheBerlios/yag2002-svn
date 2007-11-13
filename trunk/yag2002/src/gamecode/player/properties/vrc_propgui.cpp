@@ -30,6 +30,7 @@
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
 #include "vrc_propgui.h"
+#include "../../storage/vrc_userinventory.h"
 
 #define PDLG_PREFIX                 "prop_"
 #define PROPERTIES_GUI_LAYOUT       "gui/properties.xml"
@@ -37,10 +38,14 @@
 namespace vrc
 {
 
-PropertyGui::PropertyGui() :
+PropertyGui::PropertyGui( UserInventory* p_inv ) :
+ _p_userInventory( p_inv ),
  _p_mainWnd( NULL ),
  _p_frame( NULL ),
- _p_btnOpen( NULL )
+ _p_btnOpen( NULL ),
+ _p_listboxItems( NULL ),
+ _p_imageItem( NULL ),
+ _p_editboxItem( NULL )
 {
     setupGui();
 }
@@ -61,6 +66,7 @@ PropertyGui::~PropertyGui()
 
 void PropertyGui::setupGui()
 {
+    assert( _p_userInventory && "invalid user inventory!" );
 
     _p_mainWnd = yaf3d::GuiManager::get()->loadLayout( PROPERTIES_GUI_LAYOUT, NULL, PDLG_PREFIX );
     if ( !_p_mainWnd )
@@ -100,6 +106,28 @@ void PropertyGui::setupGui()
         p_rendImage->setImage( p_image );
         _p_btnOpen->setHoverImage( p_rendImage );
         delete p_rendImage;
+
+        // get and setup the item list
+        CEGUI::TabControl* p_tabctrl = static_cast< CEGUI::TabControl* >( _p_frame->getChild( PDLG_PREFIX "tab_ctrl" ) );
+        p_tabctrl->subscribeEvent( CEGUI::TabControl::EventSelectionChanged, CEGUI::Event::Subscriber( &vrc::PropertyGui::onTabChanged, this ) );
+
+        // get content of pane Inventory
+        //#############################
+        {
+            CEGUI::TabPane*    p_paneInventory = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( PDLG_PREFIX "pane_inventory" ) );
+
+            _p_listboxItems = static_cast< CEGUI::Listbox* >( p_paneInventory->getChild( PDLG_PREFIX "listbox_items" ) );
+            _p_listboxItems->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &vrc::PropertyGui::onItemSelChanged, this ) );
+            
+            _p_imageItem    = static_cast< CEGUI::StaticImage* >( p_paneInventory->getChild( PDLG_PREFIX "image_item" ) );
+            _p_editboxItem   = static_cast< CEGUI::MultiLineEditbox* >( p_paneInventory->getChild( PDLG_PREFIX "item_description" ) );
+
+            CEGUI::PushButton* p_btnitemuse = static_cast< CEGUI::PushButton* >( p_paneInventory->getChild( PDLG_PREFIX "btn_item_use" ) );
+            p_btnitemuse->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::PropertyGui::onClickedItemUse, this ) );
+
+            CEGUI::PushButton* p_btnitemdrop = static_cast< CEGUI::PushButton* >( p_paneInventory->getChild( PDLG_PREFIX "btn_item_drop" ) );
+            p_btnitemdrop->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::PropertyGui::onClickedItemDrop, this ) );
+        }
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -115,6 +143,77 @@ void PropertyGui::setupGui()
     _p_mainWnd->activate();
     _p_mainWnd->show();
     _p_frame->hide();
+
+    // update the inventory pane
+    updateInventory();
+}
+
+void PropertyGui::updateInventory()
+{
+    assert( _p_userInventory && "invalid user inventory!" );
+
+    // just to be on the safe side
+    if ( !_p_listboxItems )
+        return;
+
+    // reset the list
+    _p_listboxItems->resetList();
+    _p_listboxItems->setSortingEnabled( true );
+
+    // set selection background color
+    CEGUI::ColourRect col(
+                            CEGUI::colour( 255.0f / 255.0f, 214.0f / 255.0f, 9.0f / 255.0f, 0.8f ),
+                            CEGUI::colour( 12.0f  / 255.0f, 59.0f  / 255.0f, 0.0f         , 0.8f ),
+                            CEGUI::colour( 255.0f / 255.0f, 214.0f / 255.0f, 9.0f / 255.0f, 0.8f ),
+                            CEGUI::colour( 12.0f  / 255.0f, 59.0f  / 255.0f, 0.0f         , 0.8f )
+                          );
+
+    // fill up the list with user inventory items
+    std::vector< InventoryItem* >& invlist = _p_userInventory->getItems();
+    std::vector< InventoryItem* >::iterator p_invitem = invlist.begin(), p_end = invlist.end();
+    CEGUI::ListboxTextItem * p_selitem = NULL;
+    for ( ; p_invitem != p_end; ++p_invitem )
+    {
+        CEGUI::ListboxTextItem * p_item = new CEGUI::ListboxTextItem( ( *p_invitem )->getItemName() );
+        p_item->setSelectionColours( col );
+        p_item->setSelectionBrushImage( "TaharezLook", "ListboxSelectionBrush" );
+        // set the inventory item object as list item object
+        p_item->setUserData( *p_invitem );
+        _p_listboxItems->insertItem( p_item, NULL );
+        // set the selection to first item in list
+        if ( !p_selitem )
+            p_selitem = p_item;
+    }
+
+    if ( p_selitem )
+        _p_listboxItems->setItemSelectState( p_selitem, true );
+
+    // update the description
+    updateItemDescription();
+}
+
+void PropertyGui::updateItemDescription()
+{
+    std::string description;
+
+    if ( !_p_listboxItems->getSelectedCount() )
+    {
+        // erase the description field
+        _p_editboxItem->setText( description );
+        return;
+    }
+
+    // extract the parameter name / value and fill the description field
+    CEGUI::ListboxItem* p_selitem = _p_listboxItems->getNextSelected( NULL );
+    InventoryItem* p_invitem = static_cast< InventoryItem* >( p_selitem->getUserData() );
+    std::map< std::string, std::string >& params = p_invitem->getParams();
+    std::map< std::string, std::string >::iterator p_param = params.begin(), p_end = params.end();
+    for ( ; p_param != p_end; ++p_param )
+    {
+        description += p_param->first + ":   " + p_param->second + "\n";
+    }
+
+    _p_editboxItem->setText( description );
 }
 
 bool PropertyGui::onHoverOpen( const CEGUI::EventArgs& /*arg*/ )
@@ -126,6 +225,10 @@ bool PropertyGui::onHoverOpen( const CEGUI::EventArgs& /*arg*/ )
 
 bool PropertyGui::onClickedOpen( const CEGUI::EventArgs& /*arg*/ )
 {
+    // update inventory
+    updateInventory();
+    // center to screen
+    _p_frame->setPosition( CEGUI::Point( 0.25f, 0.2f ) );
     _p_frame->show();
     _p_btnOpen->hide();
     return true;
@@ -138,4 +241,45 @@ bool PropertyGui::onClickedClose( const CEGUI::EventArgs& /*arg*/ )
     return true;
 }
 
+bool PropertyGui::onTabChanged( const CEGUI::EventArgs& /*arg*/ )
+{
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+    return true;
+}
+
+bool PropertyGui::onItemSelChanged( const CEGUI::EventArgs& /*arg*/ )
+{
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
+    // update inventory
+    updateItemDescription();
+
+    return true;
+}
+
+bool PropertyGui::onClickedItemUse( const CEGUI::EventArgs& /*arg*/ )
+{
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
+
+    // TODO: ...
+
+
+    return true;
+}
+
+bool PropertyGui::onClickedItemDrop( const CEGUI::EventArgs& /*arg*/ )
+{
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
+
+    // TODO: ...
+
+
+    return true;
+}
 } // namespace vrc
