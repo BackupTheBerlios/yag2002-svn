@@ -708,6 +708,18 @@
 						</Filter>
 					</Filter>
 				</Filter>
+				<Filter
+					Name="properties"
+					>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\properties\vrc_propgui.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\properties\vrc_propgui.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="platform"
