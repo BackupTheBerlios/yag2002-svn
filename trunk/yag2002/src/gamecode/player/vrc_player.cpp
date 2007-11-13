@@ -39,6 +39,8 @@
 #include "vrc_playerimplclient.h"
 #include "vrc_spawnpoint.h"
 #include "properties/vrc_propgui.h"
+#include "../storage/vrc_storageclient.h"
+#include "../storage/vrc_userinventory.h"
 
 namespace vrc
 {
@@ -50,6 +52,7 @@ EnPlayer::EnPlayer() :
 _gameMode( yaf3d::GameState::get()->getMode() ),
 _p_playerImpl( NULL ),
 _p_propertyGui( NULL ),
+_p_userInventory( NULL ),
 _networkID( -1 ),
 _voiceChatEnabled( false ),
 _deltaTime( 0.03f )
@@ -103,17 +106,31 @@ void EnPlayer::initialize()
             spawn();
             _p_playerImpl = new PlayerImplStandalone( this );
             _p_playerImpl->initialize();
+
+            // create the player inventory for standalone mode
+            _p_userInventory = new UserInventory( 0 );
+            // create the property gui
+            _p_propertyGui = new PropertyGui( _p_userInventory );
+            // set the inventory in player utils
+            gameutils::PlayerUtils::get()->setPlayerInventory( _p_userInventory );
         }
         break;
 
         case yaf3d::GameState::Client:
         {
             // the client can be local or remote. if it is remote then the player entity has been created
-            //  via player networking component; for remote clients _p_playerImpl ist aready created when we are a this point
+            //  via player networking component; for remote clients _p_playerImpl ist aready created when we are at this point
             if ( !_p_playerImpl )
             {
                 _p_playerImpl = new PlayerImplClient( this );
                 _p_playerImpl->initialize();
+            }
+            else
+            {
+                // create the property gui with given user inventory
+                _p_propertyGui = new PropertyGui( StorageClient::get()->getUserInventory() );
+                // set the inventory in player utils
+                gameutils::PlayerUtils::get()->setPlayerInventory( StorageClient::get()->getUserInventory() );
             }
         }
         break;
@@ -135,9 +152,6 @@ void EnPlayer::initialize()
         _p_playerImpl->setPlayerPosition( getPosition() );
         _p_playerImpl->setPlayerRotation( getRotation() );
     }
-
-    // create the property gui
-    _p_propertyGui = new PropertyGui();
 
     yaf3d::EntityManager::get()->registerNotification( this, true );   // register entity in order to get notifications (e.g. from menu entity)
 }

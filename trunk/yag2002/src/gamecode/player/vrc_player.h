@@ -56,6 +56,7 @@ namespace vrc
 
 class PropertyGui;
 class EnPlayerAnimation;
+class UserInventory;
 class BasePlayerImplementation;
 
 //! Player entity
@@ -176,6 +177,9 @@ class EnPlayer : public yaf3d::BaseEntity
 
         //! Player's property GUI
         PropertyGui*                                _p_propertyGui;
+
+        //! User inventory
+        UserInventory*                              _p_userInventory;
 
         //! Network IP address, used for getting remote clients' ip address
         std::string                                 _ipAddress;
