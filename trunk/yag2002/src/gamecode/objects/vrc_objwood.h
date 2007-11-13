@@ -36,6 +36,8 @@
 
 //! Entity name
 #define ENTITY_NAME_OBJWOOD     "ObjectWood"
+//! Object name used for display
+#define ITEM_NAME_OBJWOOD       "Wood"
 
 namespace vrc
 {

@@ -33,6 +33,7 @@
 #include "vrc_objwood.h"
 #include "vrc_objectnetworking.h"
 #include "../storage/vrc_storageclient.h"
+#include "../storage/vrc_userinventory.h"
 #include "../gamelogic/vrc_gamelogic.h"
 #include "../scripting/vrc_scriptconsole.h"
 
@@ -72,7 +73,10 @@ void EnObjectWood::onObjectUse()
         action._paramUint[ 0 ]  = getObjectID();
 
         if ( !_p_networking->RequestAction( action, this ) )
+        {
             log_debug << "EnObjectWood: cannot send request, a request is already in progress!" << std::endl;
+            return;
+        }
     }
     else
     {
@@ -83,16 +87,48 @@ void EnObjectWood::onObjectUse()
         result.push_back( 0.0f );
 
         if ( !GameLogic::get()->requestAction( GameLogic::eActionPick, getObjectID(), args, result ) )
+        {
             log_error << getInstanceName() << ": problem executing requested action Pick " << std::endl;
+            return;
+        }
+        // get the result of function call
+        int res = int( result[ 0 ] );
+        if ( res > 0 )
+        {
+            UserInventory* p_inv = gameutils::PlayerUtils::get()->getPlayerInventory();
+            //! TODO ...assemble the item string out of entity attributes
+            p_inv->addItem( ITEM_NAME_OBJWOOD, getObjectID(), "test=10,test2=21" );
+        }
     }
 }
 
 void EnObjectWood::actionResult( tActionData& result )
 {
-    std::string res( result._actionResult > 0 ? "SUCCESS" : "FAIL" );
+    std::string res( result._actionResult >= 0 ? "SUCCESS" : "FAIL" );
     GameLogic::get()->getScriptConsole()->scAddOutput( ObjectRegistry::getEntityType( getObjectID() ) + ": got action request result: " + res, true );
 
-    // TODO: handle the action request result
+    if ( result._actionResult < 0 )
+        return;
+
+    // handle the action result
+    switch ( result._actionType )
+    {
+        case GameLogic::eActionPick:
+        {
+            UserInventory* p_inv = gameutils::PlayerUtils::get()->getPlayerInventory();
+            //! TODO ...assemble the item string out of entity attributes
+            p_inv->addItem( ITEM_NAME_OBJWOOD, getObjectID(), "test=10,test2=21" );
+        }
+        break;
+
+        default:
+
+            std::stringstream atype;
+            atype << result._actionType;
+            log_error << "EnObjectWood::actionResult invalid action type received: " << result._actionType << std::endl;
+            GameLogic::get()->getScriptConsole()->scAddOutput( ObjectRegistry::getEntityType( getObjectID() ) + ": got invalid action type in result: " + atype.str(), true );
+            return;
+    }
 }
 
 } // namespace vrc
