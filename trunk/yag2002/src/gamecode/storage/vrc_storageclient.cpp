@@ -32,7 +32,7 @@
 #include <vrc_main.h>
 #include "vrc_storageclient.h"
 #include "vrc_storagenetworking.h"
-
+#include "vrc_userinventory.h"
 
 //! Implement the singleton
 YAF3D_SINGLETON_IMPL( vrc::StorageClient )
@@ -43,7 +43,8 @@ namespace vrc
 
 StorageClient::StorageClient() :
  _userID( 0 ),
- _p_networking( NULL )
+ _p_networking( NULL ),
+ _p_userInventory( NULL )
 {
 }
 
@@ -71,6 +72,8 @@ void StorageClient::setNetworking( StorageNetworking* p_networking )
 void StorageClient::authentificationResult( unsigned int userID )
 { // this is only called when the client has successfully been authentified on server
     _userID = userID;
+    // create the user inventory object
+    _p_userInventory = new UserInventory( userID );
 }
 
 bool StorageClient::requestAccountInfo( unsigned int userID, class AccountInfoResult* p_cb )
@@ -87,6 +90,11 @@ bool StorageClient::requestAccountInfo( unsigned int userID, class AccountInfoRe
 unsigned int StorageClient::getUserID() const
 {
     return _userID;
+}
+
+UserInventory* StorageClient::getUserInventory()
+{
+    return _p_userInventory;
 }
 
 } // namespace vrc

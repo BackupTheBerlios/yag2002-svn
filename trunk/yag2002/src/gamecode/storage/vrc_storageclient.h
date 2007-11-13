@@ -39,6 +39,7 @@ namespace vrc
 {
 
 //! Class declarations
+class UserInventory;
 class StorageNetworking;
 namespace gameutils
 {
@@ -89,6 +90,9 @@ class StorageClient : public yaf3d::Singleton< vrc::StorageClient >, public yaf3
         //! Get the unique user account ID
         unsigned int                                getUserID() const;
 
+        //! Get the inventory of local player
+        UserInventory*                              getUserInventory();
+
     protected:
 
                                                     StorageClient();
@@ -112,6 +116,9 @@ class StorageClient : public yaf3d::Singleton< vrc::StorageClient >, public yaf3
 
         //! Networking for storage
         StorageNetworking*                          _p_networking;
+
+        //! Inventory of local player
+        UserInventory*                              _p_userInventory;
 
     friend class StorageNetworking;
     friend class gameutils::VRCStateHandler;
