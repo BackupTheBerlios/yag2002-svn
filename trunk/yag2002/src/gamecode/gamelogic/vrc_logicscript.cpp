@@ -38,6 +38,9 @@
 //! Exposed logic interface name to scripting
 #define SCRIPT_INTERFACE_NAME       "logic"
 
+//! Script function initialize called on script setup
+#define FCN_INITIALIZE              "initialize"
+
 //! Script function names
 #define FCN_REQUEST_ACTION          "requestAction"
 
@@ -87,6 +90,10 @@ bool GameLogicScript::setupScript( const std::string& file )
 
         // execute the script after exposing methods; after this, all script functions are ready to be called now
         execute();
+
+        // call the initialize function
+        arguments.clear();
+        callScriptFunction( FCN_INITIALIZE, &arguments );
     }
     catch( const ScriptingException& e )
     {
