@@ -86,7 +86,7 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >, public yaf3
         //! Get the user account information. The userID and sessionID must both match for any network connection!
         bool                                        getUserAccount( unsigned int userID, int sessionID, UserAccount* p_account );
 
-        //! Get the inventory of given user. The userID and sessionID must both match for any network connection!
+        //! Get the inventory of given user. The userID and sessionID must both match for any network connection! The inventory is stored in p_inv.
         bool                                        getUserInventory( unsigned int userID, int sessionID, UserInventory* p_inv );
 
     protected:
