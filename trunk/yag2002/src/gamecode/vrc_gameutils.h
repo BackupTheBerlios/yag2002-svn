@@ -35,6 +35,10 @@
 
 namespace vrc
 {
+
+//! Class declarations in vrc namespace
+class UserInventory;
+
 namespace gameutils
 {
 
@@ -188,6 +192,12 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
         //! Return the previousely set local player entity
         yaf3d::BaseEntity*                          getLocalPlayer();
 
+        //! Set the player inventory, used by player entity on initialization
+        void                                        setPlayerInventory( UserInventory* p_inv );
+
+        //! Get the player inventory
+        UserInventory*                              getPlayerInventory();
+
         //! Add a new remote player ( ghost ) into internal list
         void                                        addRemotePlayer( yaf3d::BaseEntity* p_entity );
 
@@ -233,6 +243,8 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
     protected:
 
         yaf3d::BaseEntity*                          _p_localPlayer;
+
+        UserInventory*                              _p_userInventory;
 
         std::vector< yaf3d::BaseEntity* >           _remotePlayers;
 

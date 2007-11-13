@@ -454,7 +454,8 @@ void GuiUtils::playSound( const std::string& name )
 
 // Implementation of player utils
 PlayerUtils::PlayerUtils() :
-_p_localPlayer( NULL )
+_p_localPlayer( NULL ),
+_p_userInventory( NULL )
 {
 }
 
@@ -519,6 +520,16 @@ bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& 
 yaf3d::BaseEntity* PlayerUtils::getLocalPlayer()
 {
     return _p_localPlayer;
+}
+
+UserInventory* PlayerUtils::getPlayerInventory()
+{
+    return _p_userInventory;
+}
+
+void PlayerUtils::setPlayerInventory( UserInventory* p_inv )
+{
+    _p_userInventory = p_inv;
 }
 
 void PlayerUtils::setLocalPlayer( yaf3d::BaseEntity* p_entity )
