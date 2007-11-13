@@ -49,7 +49,10 @@ class InventoryItem
                                                     ~InventoryItem();
 
         //! Get the item name
-        const std::string&                          getItemName() const;
+        inline const std::string&                   getItemName() const;
+
+        //! Get the item ID
+        inline unsigned int                         getItemID() const;
 
         //! Get the value of given parameter
         template< class Type >
@@ -86,6 +89,12 @@ class UserInventory
         //! Get item with given name
         InventoryItem*                              getItem( const std::string& itemName );
 
+        //! Add given item to inventory. The item parameters are encrypted in itemString.
+        bool                                        addItem( const std::string& itemName, unsigned int itemID, const std::string& itemString );
+
+        //! Remove the item with given name and ID
+        bool                                        removeItem( const std::string& itemName, unsigned int itemID );
+
     protected:
 
         //! Returns true if the inventory is cached in server
@@ -99,9 +108,6 @@ class UserInventory
 
         //! Remove all items
         void                                        removeAllItems();
-
-        //! Add given item to inventory. The item parameters are encrypted in itemString.
-        bool                                        addItem( const std::string& itemName, unsigned int itemID, const std::string& itemString );
 
         //! Unique user ID
         unsigned int                                _userID;

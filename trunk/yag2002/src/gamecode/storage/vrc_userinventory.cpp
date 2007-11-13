@@ -48,11 +48,6 @@ InventoryItem::~InventoryItem()
 {
 }
 
-const std::string& InventoryItem::getItemName() const
-{
-    return _name;
-}
-
 // partial specialization of templated method for std::string
 template<>
 bool InventoryItem::getParamValue( const std::string& paramName, std::string& value )
@@ -137,6 +132,22 @@ bool UserInventory::addItem( const std::string& itemName, unsigned int itemID, c
     _items.push_back( p_item );
 
     return true;
+}
+
+bool UserInventory::removeItem( const std::string& itemName, unsigned int itemID )
+{
+    std::vector< InventoryItem* >::iterator p_item = _items.begin(), p_end= _items.end();
+    for ( ; p_item != p_end; ++p_item )
+    {
+        if ( ( ( *p_item )->getItemName() == itemName ) && ( ( *p_item )->getItemID() ) )
+        {
+            _items.erase( p_item );
+            delete ( *p_item );
+            return true;
+        }
+    }
+
+    return false;
 }
 
 } // namespace vrc
