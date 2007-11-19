@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  07/30/2007
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -166,7 +166,7 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
     tga.getSize( sizeX, sizeY );
 
     // calculate the quadtree depth
-    _quadTreeDepth = ::log( float( std::min( _tilesX, _tilesY ) ) ) / ::log( float( 2 ) );
+    _quadTreeDepth = ( unsigned int )( ::log( float( std::min( _tilesX, _tilesY ) ) ) / ::log( float( 2 ) ) );
     // check the depth
     if ( !( _tilesX >> _quadTreeDepth ) || !( _tilesY >> _quadTreeDepth ) )
         throw TerrainException( "Terrain Manager: quad tree depth is too high!" );
@@ -398,7 +398,7 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
     // setup the terrain shaders if glsl is available
     if ( glslavailable )
     {
-        setupShaders( config, _p_stateSet.get() );
+        setupShaders( _p_stateSet.get() );
         _p_stateSet->addUniform( p_section->getBaseTexUniform().get() );
     }
 
@@ -565,7 +565,7 @@ float TerrainManager::getBlendBasemap( unsigned int id )
     return blend;
 }
 
-void TerrainManager::setupShaders( const TerrainConfig& config, osg::StateSet* p_stateset )
+void TerrainManager::setupShaders( osg::StateSet* p_stateset )
 {
     osg::Program* p_program = new osg::Program;
     p_stateset->setAttribute( p_program );

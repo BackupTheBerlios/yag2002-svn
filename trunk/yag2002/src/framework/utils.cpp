@@ -125,14 +125,14 @@ bool copyToClipboard( const std::wstring& text )
     if ( !SDL_Display )
        initCopyPaste();
 
-    char* p_dst = ( char* )malloc( text.length() );
-    strcpy( p_dst, text.c_str() );
+    wchar_t* p_dst = ( wchar_t* )malloc( text.length() );
+    wcscpy( p_dst, text.c_str() );
 
     Lock_Display();
     if ( XGetSelectionOwner( SDL_Display, XA_PRIMARY ) != SDL_Window )
         XSetSelectionOwner( SDL_Display, XA_PRIMARY, SDL_Window, CurrentTime );
 
-    XChangeProperty( SDL_Display, DefaultRootWindow( SDL_Display ), XA_CUT_BUFFER0, XA_STRING, 8, PropModeReplace, ( unsigned char* )p_dst, strlen( p_dst ) );
+    XChangeProperty( SDL_Display, DefaultRootWindow( SDL_Display ), XA_CUT_BUFFER0, XA_STRING, 8, PropModeReplace, ( unsigned char* )p_dst, wcslen( p_dst ) );
     Unlock_Display();
 
     free( p_dst );
@@ -177,7 +177,7 @@ bool getFromClipboard( std::wstring& text, unsigned int maxcnt )
     int            selnformat;
     unsigned long  nbytes;
     unsigned long  overflow;
-    char*          p_src;
+    wchar_t*       p_src;
 
     Lock_Display();
     owner = XGetSelectionOwner( SDL_Display, XA_PRIMARY );
@@ -199,8 +199,9 @@ bool getFromClipboard( std::wstring& text, unsigned int maxcnt )
 
     Lock_Display();
     if ( XGetWindowProperty( SDL_Display, owner, selection, 0, INT_MAX/4, False, XA_STRING, &selntype, &selnformat,
-         &nbytes, &overflow, ( unsigned char ** )&p_src ) == Success )
+         &nbytes, &overflow, reinterpret_cast< unsigned char ** >( &p_src ) ) == Success )
     {
+    	p_src[ maxcnt - 1 ] = 0;
         if ( selntype == XA_STRING )
             text = p_src;
 

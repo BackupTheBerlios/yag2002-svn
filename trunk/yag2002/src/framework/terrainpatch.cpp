@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  07/30/2007
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -73,10 +73,10 @@ bool TerrainPatchBuilder::build( const ImageTGA& image, const osg::Vec3f& scale,
     image.getSize( imgSizeX, imgSizeY );
 
     // auto-correct the exceeding patch size
-    if ( imgSizeX < unsigned int( column + sizeX ) )
+    if ( imgSizeX < ( unsigned int )( column + sizeX ) )
         sizeX = imgSizeX - column;
 
-    if ( imgSizeY < unsigned int( row + sizeY ) )
+    if ( imgSizeY < ( unsigned int )( row + sizeY ) )
         sizeY = imgSizeY - row;
 
     // store relative patch position in terrain
@@ -144,7 +144,7 @@ bool TerrainPatchBuilder::build( const ImageTGA& image, const osg::Vec3f& scale,
 
         // go to next line in the image data
         p_data = image.getData( row, column + cntY );
-        assert( p_data && "Terrain Patch: internal error while creating a terrain patch!" );        
+        assert( p_data && "Terrain Patch: internal error while creating a terrain patch!" );
 
         for ( unsigned int cntX = 0; cntX <= sizeX; cntX += pixdiffX )
         {
@@ -180,7 +180,7 @@ bool TerrainPatchBuilder::build( const ImageTGA& image, const osg::Vec3f& scale,
     }
 
     //set the patch transformation
-    _p_node->setPosition( osg::Vec3f( float( row ) * scale.x(), float( column ) * scale.y(), minheight ) );  
+    _p_node->setPosition( osg::Vec3f( float( row ) * scale.x(), float( column ) * scale.y(), minheight ) );
 
     // setup the draw elements array for the patch
     osg::DrawElementsUShort* p_drawElements = new osg::DrawElementsUShort( osg::PrimitiveSet::TRIANGLE_STRIP );
@@ -203,7 +203,7 @@ bool TerrainPatchBuilder::build( const ImageTGA& image, const osg::Vec3f& scale,
             }
         }
         // create a degenerated triangle in order to continue with next row, but not for last row
-        if ( indexY < unsigned int( _subDivY - 1 ) )
+        if ( indexY < ( unsigned int )( _subDivY - 1 ) )
         {
             if ( indexY % 2 )  // odd rows
                 p_drawElements->push_back( ( indexY + 2 ) * indexdist - 1 );

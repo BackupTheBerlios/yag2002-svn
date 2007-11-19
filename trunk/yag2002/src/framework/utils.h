@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  02/25/2005
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -94,7 +94,7 @@ class ImageTGA
         void                 getSize( unsigned int& sizeX, unsigned int& sizeY ) const;
 
     protected:
-                        
+
         //! The channels in the image (3 = RGB : 4 = RGBA)
         unsigned int         _channels;
 
@@ -126,9 +126,9 @@ void getDirectoryListing( std::vector< std::string >& listing, const std::string
 #ifdef WIN32
     #define YAF3D_SPAWN_PROC_ID   void*
 #endif
-#ifdef LINUX 
+#ifdef LINUX
     #define YAF3D_SPAWN_PROC_ID   int
-#endif	
+#endif
 //! Spawn an appication given its executable file name and its parameters in param ( white space separated )
 YAF3D_SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string& params );
 
@@ -145,14 +145,21 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
   #else
     #define YAF3D_CHECK_HEAP()
   #endif
-  
+
 #endif
-#ifdef LINUX 
+#ifdef LINUX
 
     // heap check is not implemented on Linux
-    #define YAF3D_CHECK_HEAP()   
-	
-#endif
+    #define YAF3D_CHECK_HEAP()
+
+#endif // LINUX
+
+#ifdef LINUX
+
+// Add the missing secure string manipulation functions to linux
+#define strcpy_s( s1, sz, s2 )	strcpy( s1, s2 )
+
+#endif // LINUX
 
 } // namespace yaf3d
 

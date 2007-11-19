@@ -183,8 +183,8 @@ void GuiRenderer::initPerFrameStates()
     // setup the texture units
     //------------------------
     typedef void ( APIENTRY * ActiveTextureProc ) ( GLenum texture );
-    static ActiveTextureProc s_glClientActiveTexture = ( ActiveTextureProc )osg::getGLExtensionFuncPtr( "glClientActiveTexture", "glClientActiveTextureARB" );
-    static ActiveTextureProc s_glActiveTexture       = ( ActiveTextureProc )osg::getGLExtensionFuncPtr( "glActiveTexture",       "glActiveTextureARB"       );
+    static ActiveTextureProc s_glClientActiveTexture = reinterpret_cast< ActiveTextureProc >( osg::getGLExtensionFuncPtr( "glClientActiveTexture", "glClientActiveTextureARB" ) );
+    static ActiveTextureProc s_glActiveTexture       = reinterpret_cast< ActiveTextureProc >( osg::getGLExtensionFuncPtr( "glActiveTexture", "glActiveTextureARB" ) );
 
     // disable the client-side tex unit 0 as some previous primitives may have used it and missed to disable it after their usage ( is this behaviour intented by osg or is it a bug? )
     //  missing this results in disappearing the gui when primitives mentioned above are rendered

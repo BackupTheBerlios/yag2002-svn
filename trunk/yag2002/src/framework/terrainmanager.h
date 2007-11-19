@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  07/30/2007
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -58,10 +58,10 @@ class TerrainConfig
         //! Scale the terrain
         osg::Vec3f                                  _scale;
 
-        //! Count of tiles in X direction 
+        //! Count of tiles in X direction
         unsigned short                              _tilesX;
 
-        //! Count of tiles in Y direction 
+        //! Count of tiles in Y direction
         unsigned short                              _tilesY;
 
         //!Height map file (grey scale)
@@ -102,7 +102,7 @@ class TerrainConfig
 
         //! Type defining LOD ranges
         typedef std::vector< std::pair< float, float > > ListLodRange;
-            
+
         //! List of LOD ranges: min, max distance
         ListLodRange                                _lodRanges;
 
@@ -171,7 +171,7 @@ class TerrainManager : public Singleton< TerrainManager >
         void                                        shutdown();
 
         //! Setup the shaders
-        void                                        setupShaders( const TerrainConfig& config, osg::StateSet* p_stateset );
+        void                                        setupShaders( osg::StateSet* p_stateset );
 
         //! Build a quad tree for the given list of patches
         osg::ref_ptr< osg::Group >                  buildQuadTree( std::vector< osg::ref_ptr< osg::LOD > >& patches );
@@ -184,7 +184,7 @@ class TerrainManager : public Singleton< TerrainManager >
 
         //! Count of tiles in a row
         unsigned int                                _tilesX;
-        
+
         //! Count of tiles in a column
         unsigned int                                _tilesY;
 

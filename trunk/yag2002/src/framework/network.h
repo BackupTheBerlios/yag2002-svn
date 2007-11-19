@@ -74,16 +74,16 @@ class NodeInfo
 {
     public:
                                                     NodeInfo() :
-                                                     _accessGranted( false ),
                                                      _needAuthenfication( false ),
+                                                     _accessGranted( false ),
                                                      _protocolVersion( YAF3D_NETWORK_PROT_VERSION )
                                                     {}
 
                                                     NodeInfo( const std::string& levelname, const std::string& nodename ) :
                                                      _levelName( levelname ),
                                                      _nodeName( nodename ),
-                                                     _accessGranted( false ),
                                                      _needAuthenfication( false ),
+                                                     _accessGranted( false ),
                                                      _protocolVersion( YAF3D_NETWORK_PROT_VERSION )
                                                     {}
 
@@ -143,6 +143,8 @@ class CallbackAuthentification
 {
     public:
 
+	    virtual                                    ~CallbackAuthentification() {}
+
         /**
         * This method is called on server when a client requests for authentification on connecting.
         * \sessionID                                Unique session ID of connecting client.
@@ -151,7 +153,7 @@ class CallbackAuthentification
         * \userID                                   User's ID which is also sent to client.
         * \return                                   True if the authentification was succesfull, then the userID has a valid value, otherwise false.
         */
-        virtual bool                                authentify( int sessionID, const std::string& login, const std::string& passwd, unsigned int& userID ) { return false; }
+        virtual bool                                authentify( int /*sessionID*/, const std::string& /*login*/, const std::string& /*passwd*/, unsigned int& /*userID*/ ) { return false; }
 
         /**
         * Register a new user.
@@ -161,13 +163,13 @@ class CallbackAuthentification
         * \email                                    E-Mail address
         * \return                                   Return false if the registration went wrong.
         */
-        virtual bool                                registerUser( const std::string& name, const std::string& login, const std::string& passwd, const std::string& email ) { return false; }
+        virtual bool                                registerUser( const std::string& /*name*/, const std::string& /*login*/, const std::string& /*passwd*/, const std::string& /*email*/ ) { return false; }
 
         /**
         * This method is called on client when successfully authentified on server.
         * \userID                                   User's unique ID.
         */
-        virtual void                                authentificationResult( unsigned int userID ) {}
+        virtual void                                authentificationResult( unsigned int /*userID*/ ) {}
 };
 
 //! Class for registering a callback in order to get notification when clients join / leave the network session.
