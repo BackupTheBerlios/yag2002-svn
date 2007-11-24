@@ -33,6 +33,7 @@
 #include "entitymanager.h"
 #include "configuration.h"
 #include "terrainmanager.h"
+#include "shadercontainer.h"
 #include "shadowmanager.h"
 #include "levelmanager.h"
 #include "soundmanager.h"
@@ -153,6 +154,7 @@ void Application::shutdown()
     TerrainManager::get()->shutdown();
     SettingsManager::get()->shutdown();
     ShadowManager::get()->shutdown();
+    ShaderContainer::get()->shutdown();
     KeyMap::get()->shutdown();
 
     // delete viewer
