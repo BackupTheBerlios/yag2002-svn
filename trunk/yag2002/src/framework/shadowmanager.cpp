@@ -34,12 +34,14 @@
 #include "shadowmanager.h"
 #include "shadercontainer.h"
 
-#include <osg/CullFace>
-#include <osg/TexEnvCombine>
-#include <osg/TexEnv>
-#include <osg/TexGenNode>
-#include <osg/Camera>
+#include <osg/ComputeBoundsVisitor>
 #include <osg/PolygonOffset>
+#include <osg/TexEnvCombine>
+#include <osg/TexGenNode>
+#include <osg/Transform>
+#include <osg/CullFace>
+#include <osg/TexEnv>
+#include <osg/Camera>
 
 // Implementation of ShadowManager
 YAF3D_SINGLETON_IMPL( yaf3d::ShadowManager )
@@ -48,13 +50,14 @@ namespace yaf3d
 {
 
 // Update callback class for camera and tex generation
-class UpdateCameraAndTexGenCallback : public osg::NodeCallback
+class ShadowSceneCullCallback : public osg::NodeCallback
 {
     public:
 
-                                                UpdateCameraAndTexGenCallback( osg::Vec3f lightpos, osg::Camera* p_camera, osg::Uniform* p_texgenMatrix ):
+                                                ShadowSceneCullCallback( osg::Vec3f lightpos, osg::Camera* p_camera, osg::Uniform* p_texgenMatrix, osg::StateSet* p_stateset ):
                                                  _lightPosition( lightpos ),
-                                                 _camera( p_camera ),
+                                                 _p_camera( p_camera ),
+                                                 _p_stateSet( p_stateset ),
                                                  _p_texgenMatrix( p_texgenMatrix ),
                                                  _updateNodes( true ),
                                                  _updateLightPosition( true ),
@@ -78,15 +81,25 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
 
         void                                    operator()( osg::Node* p_node, osg::NodeVisitor* p_nv )
                                                 {
-                                                    // first update subgraph to make sure objects are all moved into position
-                                                    traverse( p_node, p_nv );
+
+                                                    // traverse the receiving shadow nodes
+                                                    {
+                                                        osgUtil::CullVisitor* p_cullvisitor = static_cast< osgUtil::CullVisitor* >( p_nv );
+                                                        p_cullvisitor->pushStateSet( _p_stateSet.get() );
+                                                        p_cullvisitor->setTraversalMask( ShadowManager::eReceiveShadow );
+                                                        traverse( p_node, p_cullvisitor );
+                                                        p_cullvisitor->popStateSet();
+                                                    }
 
                                                     if ( _updateNodes )
                                                     {
                                                         _shadowBB.init();
-                                                        // now compute the camera's view and projection matrix to point at the shadower (the camera's children)
-                                                        for( unsigned int i = 0; i < _camera->getNumChildren(); ++i )
-                                                            _shadowBB.expandBy( _camera->getChild(i)->getBound() );
+
+                                                        // get the bounds of receiving nodes
+                                                        osg::ComputeBoundsVisitor bv( osg::NodeVisitor::TRAVERSE_ACTIVE_CHILDREN );
+                                                        bv.setTraversalMask( ShadowManager::eReceiveShadow );
+                                                        p_node->traverse( bv );
+                                                        _shadowBB = bv.getBoundingBox();
 
                                                         if ( !_shadowBB.valid() )
                                                             return;
@@ -108,14 +121,14 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
 
                                                     if ( _updateLightPosition )
                                                     {
-                                                        _camera->setReferenceFrame( osg::Camera::ABSOLUTE_RF );
-                                                        _camera->setProjectionMatrixAsFrustum( -_frustomCorner, _frustomCorner, -_frustomCorner, _frustomCorner, _nearZ, _farZ );
-                                                        _camera->setViewMatrixAsLookAt( _lightPosition, _shadowBB.center(), osg::Vec3( 0.0f, 1.0f, 0.0f ) );
+                                                        _p_camera->setReferenceFrame( osg::Camera::ABSOLUTE_RF );
+                                                        _p_camera->setProjectionMatrixAsFrustum( -_frustomCorner, _frustomCorner, -_frustomCorner, _frustomCorner, _nearZ, _farZ );
+                                                        _p_camera->setViewMatrixAsLookAt( _lightPosition, _shadowBB.center(), osg::Vec3( 0.0f, 1.0f, 0.0f ) );
 
                                                         // compute the matrix which takes a vertex from local coords into tex coords
                                                         // will use this later to specify osg::TexGen
-                                                        _MVPT = _camera->getViewMatrix() *
-                                                                _camera->getProjectionMatrix() *
+                                                        _MVPT = _p_camera->getViewMatrix() *
+                                                                _p_camera->getProjectionMatrix() *
                                                                 osg::Matrix::translate( 1.0, 1.0, 1.0 ) *
                                                                 osg::Matrix::scale( 0.5f, 0.5f, 0.5f );
 
@@ -123,19 +136,25 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
                                                          _updateLightPosition = false;
                                                     }
 
+                                                    // collect the shadow throwing nodes in camera group
+                                                    p_nv->setTraversalMask( ShadowManager::eThrowShadow );
+                                                    _p_camera->accept( *p_nv );
+
                                                     // update the texture generation matrix
                                                     _p_texgenMatrix->set( osg::Matrixf::inverse( yaf3d::Application::get()->getSceneView()->getViewMatrix() )* _MVPT );
                                                 }
 
     protected:
 
-        virtual                                 ~UpdateCameraAndTexGenCallback() {}
+        virtual                                 ~ShadowSceneCullCallback() {}
 
         osg::Vec3f                              _lightPosition;
 
-        osg::ref_ptr< osg::Camera >             _camera;
+        osg::ref_ptr< osg::Camera >             _p_camera;
 
         osg::Uniform*                           _p_texgenMatrix;
+
+        osg::ref_ptr< osg::StateSet >           _p_stateSet;
 
         osg::BoundingSphere                     _shadowBB;
 
@@ -152,41 +171,74 @@ class UpdateCameraAndTexGenCallback : public osg::NodeCallback
         osg::Matrix                             _MVPT;
 };
 
-class CameraCullCallback : public osg::NodeCallback
+
+//! Cull callback class for culling far shadow throwing nodes
+class ShadowNodeCullCallback : public osg::NodeCallback
 {
     public:
 
-                                                CameraCullCallback() :
-                                                 _nodeMask( 0xffffffff )
+        //! culldistance is used for culling far shadows nodes.
+        explicit                                ShadowNodeCullCallback( float culldistance )
+                                                {
+                                                    _cullDistance2 = culldistance * culldistance;
+                                                }
+
+        //! Update the current viewer position
+        static void                             updateViewerPosition( const osg::Vec3f& pos )
+                                                {
+                                                    _viewerPosition = pos;
+                                                }
+
+        void                                    operator()( osg::Node* p_node, osg::NodeVisitor* p_nv )
+                                                {
+                                                    const osg::BoundingSphere& bb = p_node->getBound();
+                                                    float dist = ( bb.center() - _viewerPosition ).length2();
+                                                    if ( dist < _cullDistance2 )
+                                                        traverse( p_node, p_nv );
+                                                }
+
+    protected:
+
+        virtual                                 ~ShadowNodeCullCallback() {}
+
+        //! Current viewer position ( main camera ) used for culling far shadow throwing nodes
+        static osg::Vec3f                       _viewerPosition;
+
+        //! Square of cull distance
+        float                                   _cullDistance2;
+};
+osg::Vec3f ShadowNodeCullCallback::_viewerPosition;
+
+
+//! Update callback class for the top shadow scene node
+class ShadowSceneUpdateCallback : public osg::NodeCallback
+{
+    public:
+
+                                                ShadowSceneUpdateCallback( osg::Group* p_camera ) :
+                                                 _p_camera( p_camera )
                                                 {
                                                 }
 
         void                                    operator()( osg::Node* p_node, osg::NodeVisitor* p_nv )
                                                 {
-                                                    // traverse the shadow throwing nodes
-                                                    osg::Node::NodeMask mask = _nodeMask;
-                                                    p_nv->setTraversalMask( mask );
-
-                                                    traverse( p_node, p_nv );
-                                                }
-
-        //! Set node mask for shadow throwing nodes.
-        void                                    setNodeMask( unsigned int mask )
-                                                {
-                                                    _nodeMask = mask;
+                                                    // get the current camera position
+                                                    osg::Matrixd& mat = Application::get()->getSceneView()->getCamera()->getViewMatrix();
+                                                    ShadowNodeCullCallback::updateViewerPosition( osg::Matrix::inverse( mat ).getTrans() );
+                                                    // update all children of camera node
+                                                    _p_camera->accept( *p_nv );
                                                 }
 
     protected:
 
-        virtual                                 ~CameraCullCallback() {}
+        virtual                                 ~ShadowSceneUpdateCallback() {}
 
-        //! Shadow throwing node mask
-        unsigned int                            _nodeMask;
+        osg::ref_ptr< osg::Group >              _p_camera;
 };
 
 
+
 ShadowManager::ShadowManager() :
-_nodeMaskThrowShadow( 0xffffffff ),
 _shadowTextureWidth( 1024 ),
 _shadowTextureHeight( 1024 ),
 _shadowTextureUnit( 1 ),
@@ -194,7 +246,7 @@ _shadowAmbient( 0.2f ),
 _enable( false ),
 _lightPosition( osg::Vec3f( 20.0f, 20.0f, 280.0f ) ),
 _shadowAmbientBias( osg::Vec2f( 0.3, 0.9f ) ),
-_p_updateCallback( NULL ),
+_p_cullCallback( NULL ),
 _p_colorGainAndBiasParam( NULL ),
 _p_shadowMapTexture( NULL )
 {
@@ -291,7 +343,7 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
         osg::StateSet* p_localstateset = _shadowCameraGroup->getOrCreateStateSet();
         p_localstateset->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
 
-        float factor = 0.0f;
+        float factor = 2.0f;
         float units  = 2.0f;
 
         osg::ref_ptr< osg::PolygonOffset > p_polygonoffset = new osg::PolygonOffset;
@@ -315,15 +367,8 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
         // attach the texture and use it as the depth buffer.
         _shadowCameraGroup->attach( osg::Camera::DEPTH_BUFFER, p_texture );
 
-        _shadowSceneGroup->addChild( _shadowCameraGroup.get() );
-
         // store the shadow map texture for debug display
         _p_shadowMapTexture = p_texture;
-
-        // set camera's cull callback
-        _p_cullCallback = new CameraCullCallback;
-        _p_cullCallback->setNodeMask( _nodeMaskThrowShadow );
-        _shadowSceneGroup->setCullCallback( _p_cullCallback );
     }
 
     // set the shadowed subgraph so that it uses the p_texture and tex gen settings.
@@ -332,7 +377,7 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
         _shadowedGroup->setName( "_shadowedNodesGroup" );
         _shadowSceneGroup->addChild( _shadowedGroup.get() );
 
-        osg::StateSet* p_stateset = _shadowedGroup->getOrCreateStateSet();
+        osg::StateSet* p_stateset = new osg::StateSet();
         p_stateset->setTextureAttributeAndModes( shadowTextureUnit, p_texture, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
 
         osg::Program* p_program = new osg::Program;
@@ -365,8 +410,11 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
         p_stateset->addUniform( p_texgenMatrix );
 
         // set an update callback to keep moving the camera and tex gen in the right direction.
-        _p_updateCallback = new UpdateCameraAndTexGenCallback( _lightPosition, _shadowCameraGroup.get(), p_texgenMatrix );
-        _shadowedGroup->setUpdateCallback( _p_updateCallback );
+        _p_cullCallback = new ShadowSceneCullCallback( _lightPosition, _shadowCameraGroup.get(), p_texgenMatrix, p_stateset );
+        _shadowedGroup->setCullCallback( _p_cullCallback );
+
+        ShadowSceneUpdateCallback* p_updateCallback = new ShadowSceneUpdateCallback( _shadowCameraGroup.get() );
+        _shadowedGroup->setUpdateCallback( p_updateCallback );
     }
 
     // append the shadow group to top node group
@@ -435,15 +483,38 @@ void ShadowManager::displayShadowMap( bool enable )
     }
 }
 
-void ShadowManager::addShadowNode( osg::Node* p_node )
+void ShadowManager::addShadowNode( osg::Node* p_node, unsigned int shadowmode, float culldistance )
 {
     if ( !_enable )
         return;
 
-    _shadowedGroup->addChild( p_node );
-    _shadowCameraGroup->addChild( p_node );
+    // setup the node mask identifying receive/throw shadow mode
+    unsigned int nodemask = p_node->getNodeMask();
+    nodemask &= ~( eThrowShadow | eReceiveShadow );
+    p_node->setNodeMask( nodemask );
+    if ( shadowmode & eThrowShadow )
+    {
+        nodemask |= eThrowShadow;
+        p_node->setNodeMask( nodemask );
+
+        // create a lod node in order to cull away far shadow trowing nodes
+        ShadowNodeCullCallback* p_cullcallback = new ShadowNodeCullCallback( culldistance );
+        osg::Group* p_cullnode = new osg::Group;
+        p_cullnode->addChild( p_node );
+        p_cullnode->setNodeMask( nodemask );
+        p_cullnode->setCullCallback( p_cullcallback );
+
+        _shadowCameraGroup->addChild( p_cullnode );
+    }
+
+    if ( shadowmode & eReceiveShadow )
+    {
+        p_node->setNodeMask( nodemask | eReceiveShadow );
+        _shadowedGroup->addChild( p_node );
+    }
+
     // force updating shadow nodes in next callback
-    _p_updateCallback->updateNodes();
+    _p_cullCallback->updateNodes();
 }
 
 void ShadowManager::removeShadowNode( osg::Node* p_node )
@@ -454,7 +525,7 @@ void ShadowManager::removeShadowNode( osg::Node* p_node )
     _shadowedGroup->removeChild( p_node );
     _shadowCameraGroup->removeChild( p_node );
     // force updating shadow nodes in next callback
-    _p_updateCallback->updateNodes();
+    _p_cullCallback->updateNodes();
 }
 
 void ShadowManager::updateShadowArea()
@@ -463,7 +534,7 @@ void ShadowManager::updateShadowArea()
         return;
 
     // force updating shadow nodes in next callback
-    _p_updateCallback->updateNodes();
+    _p_cullCallback->updateNodes();
 }
 
 void ShadowManager::setLightPosition( const osg::Vec3f& position )
@@ -472,7 +543,7 @@ void ShadowManager::setLightPosition( const osg::Vec3f& position )
         return;
 
     _lightPosition = position;
-    _p_updateCallback->setLightPosition( _lightPosition );
+    _p_cullCallback->setLightPosition( _lightPosition );
 }
 
 void ShadowManager::setShadowColorGainAndBias( float gain, float bias )

@@ -50,7 +50,8 @@ class ShaderContainer : public yaf3d::Singleton< yaf3d::ShaderContainer >
             eCommonV                  = 0x10, // common shader functions to be used in main()
             eShadowMapV,
             eTerrainV,
-            eTerrainShadowMapV
+            eTerrainShadowMapV,
+            eVegetationV
         };
 
         //! GLSL fragment shader types
@@ -59,7 +60,8 @@ class ShaderContainer : public yaf3d::Singleton< yaf3d::ShaderContainer >
             eCommonF                  = 0x100, // common shader functions to be used in main()
             eShadowMapF,
             eTerrainF,
-            eTerrainShadowMapF
+            eTerrainShadowMapF,
+            eVegetationF
         };
 
         //! Get the vertex shader for given type ( one of the VertexShaderType enums ).
@@ -67,6 +69,22 @@ class ShaderContainer : public yaf3d::Singleton< yaf3d::ShaderContainer >
 
         //! Get the fragment shader for given type ( one of the FragmentShaderType enums ).
          osg::Shader*                               getFragmentShader( unsigned int type );
+
+         /** Add a shader node with given name to container. It can be retrieved by using 'getShaderNode' below.
+             If a prent node is given then the shader node is appended to it.
+             Returns false if a shader with same name already exists.
+         */
+         bool                                       addShaderNode( const std::string& name, osg::ref_ptr< osg::Group > node, osg::Group* p_parent = NULL );
+
+         /** Remove shader node with given name from container.
+             Returns false if no shader node with given name exists.
+         */
+         bool                                       removeShaderNode( const std::string& name, osg::ref_ptr< osg::Group > node );
+
+         /** Get the shader node with given name.
+             Returns NULL if no shader node with given name exists.
+         */
+         osg::ref_ptr< osg::Group >                 getShaderNode( const std::string& name );
 
     protected:
 
@@ -82,6 +100,9 @@ class ShaderContainer : public yaf3d::Singleton< yaf3d::ShaderContainer >
 
         //! Vertex shader cache
         std::map< unsigned int, osg::ref_ptr< osg::Shader > >      _vsCache;
+
+        //! Shader nodes < shader name, scenegraph node >
+        std::map< std::string, osg::ref_ptr< osg::Group > >        _shaderNodes;
 
     friend class yaf3d::Singleton< yaf3d::ShaderContainer >;
     friend class yaf3d::Application;

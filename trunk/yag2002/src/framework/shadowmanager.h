@@ -38,13 +38,19 @@
 namespace yaf3d
 {
 
-class CameraCullCallback;
-class UpdateCameraAndTexGenCallback;
+class ShadowSceneCullCallback;
 
 //! Shadow manager handles shadowers and shadowed geometries and the light source
 class ShadowManager : public yaf3d::Singleton< yaf3d::ShadowManager >
 {
     public:
+
+        //! Shadow node mode
+        enum ShadowNodeMode
+        {
+            eThrowShadow    = 0x80000000,
+            eReceiveShadow  = 0x40000000
+        };
 
         //! Setup shadow manager.
         /*!
@@ -62,14 +68,9 @@ class ShadowManager : public yaf3d::Singleton< yaf3d::ShadowManager >
         //! Enable / disable the shadow management
         void                                        enable( bool en );
 
-        //! Nodes with this mask throw shadow and receive shadow. Nodes not matching to this mask only receive shadow.
-        void                                        setShadowerNodeMask( unsigned int mask );
-
-        //! Get shadower node mask
-        unsigned int                                getShadowerNodeMask() const;
-
-        //! Add p_node to the list of shadow throwing / receiving nodes
-        void                                        addShadowNode( osg::Node* p_node );
+        //! Add p_node to the list of shadow throwing / receiving nodes. shadowmode is a combination of ShadowNodeMode enums and defines if the node should throw / receive shadow or both.
+        //! The two most significant bits of p_nodes' nodemask are modified by this method! The culldistance is used for disabling shadow throwing when the camera is too far from the node.
+        void                                        addShadowNode( osg::Node* p_node, unsigned int shadowmode, float culldistance = 100.0f );
 
         //! Remove p_node from the list of shadow throwing / receiving nodes
         void                                        removeShadowNode( osg::Node* p_node );
@@ -104,9 +105,6 @@ class ShadowManager : public yaf3d::Singleton< yaf3d::ShadowManager >
         //! Create a windget for showing the shadow map texture
         osg::Node*                                  createDebugDisplay( osg::Texture* p_texture );
 
-        //! Nodes matching to this mask throw shadow
-        unsigned int                                _nodeMaskThrowShadow;
-
         unsigned int                                _shadowTextureWidth;
 
         unsigned int                                _shadowTextureHeight;
@@ -127,9 +125,7 @@ class ShadowManager : public yaf3d::Singleton< yaf3d::ShadowManager >
 
         osg::ref_ptr< osg::Group >                  _shadowSceneGroup;
 
-        UpdateCameraAndTexGenCallback*              _p_updateCallback;
-
-        CameraCullCallback*                         _p_cullCallback;
+        ShadowSceneCullCallback*                    _p_cullCallback;
 
         osg::Uniform*                               _p_colorGainAndBiasParam;
 
@@ -143,16 +139,6 @@ class ShadowManager : public yaf3d::Singleton< yaf3d::ShadowManager >
 
 
 // Inline methods
-
-inline void ShadowManager::setShadowerNodeMask( unsigned int mask )
-{
-    _nodeMaskThrowShadow = mask;
-}
-
-inline unsigned int ShadowManager::getShadowerNodeMask() const
-{
-    return _nodeMaskThrowShadow;
-}
 
 inline const osg::Vec3f& ShadowManager::getLightPosition()
 {
