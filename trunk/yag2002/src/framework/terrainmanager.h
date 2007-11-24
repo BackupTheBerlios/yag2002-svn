@@ -67,7 +67,7 @@ class TerrainConfig
         //!Height map file (grey scale)
         std::string                                 _fileHeightmap;
 
-        //! Base map file. This map is spanned over the entire terrain.
+        //! Base map file. This map is spanned over the entire terrain. If the base map has an alpha channel then alpha values near 0 make holes to the terrain.
         std::string                                 _fileBasemap;
 
         //! Blend factor for mixing the base map and detail maps
@@ -195,7 +195,10 @@ class TerrainManager : public Singleton< TerrainManager >
         std::map< unsigned int, TerrainSection* >   _sectionMap;
 
         //! Terrain's stateset containing the shaders
-        osg::ref_ptr<osg::StateSet >                _p_stateSet;
+        osg::ref_ptr< osg::StateSet >               _p_stateSet;
+
+        //! Terrain shader program
+        osg::ref_ptr< osg::Program >                _p_shaderProgram;
 
     friend class Singleton< TerrainManager >;
     friend class Application;

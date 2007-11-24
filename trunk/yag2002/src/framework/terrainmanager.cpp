@@ -298,6 +298,11 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
 
     // set base texture
     _p_stateSet->setTextureAttributeAndModes( 0, p_basetex, osg::StateAttribute::ON );
+    // enable alpha function for making holes into the terrain on rendering
+    osg::AlphaFunc* p_alphaFunc = new osg::AlphaFunc;
+    p_alphaFunc->setFunction( osg::AlphaFunc::GREATER,0.7f );
+    _p_stateSet->setAttributeAndModes( p_alphaFunc, osg::StateAttribute::ON );
+
     // set detail textures only when glsl is available
     if ( glslavailable )
     {
@@ -567,20 +572,22 @@ float TerrainManager::getBlendBasemap( unsigned int id )
 
 void TerrainManager::setupShaders( osg::StateSet* p_stateset )
 {
-    osg::Program* p_program = new osg::Program;
-    p_stateset->setAttribute( p_program );
+    if ( !_p_shaderProgram.valid() )
+        _p_shaderProgram = new osg::Program;
+
+    p_stateset->setAttribute( _p_shaderProgram.get() );
 
     osg::Shader* p_vcommon = ShaderContainer::get()->getVertexShader( ShaderContainer::eCommonV );
-    p_program->addShader( p_vcommon );
+    _p_shaderProgram->addShader( p_vcommon );
 
     osg::Shader* p_vterrain = ShaderContainer::get()->getVertexShader( ShaderContainer::eTerrainV );
-    p_program->addShader( p_vterrain );
+    _p_shaderProgram->addShader( p_vterrain );
 
     osg::Shader* p_fcommon = ShaderContainer::get()->getFragmentShader( ShaderContainer::eCommonF );
-    p_program->addShader( p_fcommon );
+    _p_shaderProgram->addShader( p_fcommon );
 
     osg::Shader* p_fterrain = ShaderContainer::get()->getFragmentShader( ShaderContainer::eTerrainF );
-    p_program->addShader( p_fterrain );
+    _p_shaderProgram->addShader( p_fterrain );
 
     osg::Uniform* p_baseTextureSampler = new osg::Uniform( "baseTexture", 0 );
     p_stateset->addUniform( p_baseTextureSampler );

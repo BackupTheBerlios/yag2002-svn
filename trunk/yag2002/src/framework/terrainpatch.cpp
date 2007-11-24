@@ -128,9 +128,9 @@ bool TerrainPatchBuilder::build( const ImageTGA& image, const osg::Vec3f& scale,
     // setup the colour binding
     _p_drawable->setColorBinding( osg::Geometry::BIND_OVERALL );
 
-    float      inv24bits = scale.z() / float( 0x10000000 );
     float      minheight = float( 0xffffffff );
     float      height    = 0.0f;
+    float      invscale  = 1.0f / scale.z();
     osg::Vec3f pos;
 
     for ( unsigned int cntY = 0; cntY <= sizeY; cntY += pixdiffY )
@@ -156,8 +156,8 @@ bool TerrainPatchBuilder::build( const ImageTGA& image, const osg::Vec3f& scale,
             }
 
             // build the height value out of rgb ( 24 bits )
-            height = float( ( ( unsigned int )p_data[ cntX * pixelsize ] << 16 )  | ( ( unsigned int )p_data[ cntX * pixelsize + 1 ] << 8 ) | ( ( unsigned int )p_data[ cntX * pixelsize + 2 ] ) );
-            height *= inv24bits;
+            height = float( ( ( unsigned int )p_data[ cntX * pixelsize + 0 ] << 16 )  | ( ( unsigned int )p_data[ cntX * pixelsize + 1 ] << 8 ) | ( ( unsigned int )p_data[ cntX * pixelsize + 2 ] ) );
+            height *= invscale;
 
             pos._v[ 0 ] = float( cntX ) * scale.x();
             pos._v[ 1 ] = float( cntY ) * scale.y();
