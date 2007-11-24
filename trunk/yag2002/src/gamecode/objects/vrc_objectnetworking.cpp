@@ -42,6 +42,7 @@ namespace vrc
 
 ObjectNetworking::ObjectNetworking( BaseObject* p_objectEntity ) :
  _objectID( 0 ),
+ _objectInstanceID( 0 ),
  _positionX( 0.0f ),
  _positionY( 0.0f ),
  _positionZ( 0.0f ),
@@ -75,8 +76,9 @@ ObjectNetworking::ObjectNetworking( BaseObject* p_objectEntity ) :
         _rotationZ = rot.z();
         strcpy_s( _p_meshFile, sizeof( _p_meshFile ) - 1, meshfile.c_str() );
 
-        // get also the object ID
-        _objectID = p_objectEntity->getObjectID();
+        // get also the object and instance ID
+        _objectInstanceID = p_objectEntity->getObjectInstanceID();
+        _objectID         = p_objectEntity->getObjectID();
     }
 }
 
@@ -115,8 +117,11 @@ void ObjectNetworking::PostObjectCreate()
 
     _p_objectEntity = dynamic_cast< BaseObject* >( p_entity );
     assert( _p_objectEntity && "wrong entity type!" );
+
     // set object networking
     _p_objectEntity->setNetworking( this );
+    // set the instance ID
+    _p_objectEntity->setObjectInstanceID( _objectInstanceID );
 }
 
 bool ObjectNetworking::RequestAction( tActionData& action, CallbackActionResult* p_cb )
@@ -142,13 +147,21 @@ void ObjectNetworking::RPC_RequestAction( tActionData action )
 
     std::vector< float > args;
     std::vector< float > result;
-    result.push_back( 0.0f );
+    result.push_back( 0.0f ); // return value: success / fail
+    result.push_back( 0.0f ); // respawn time
 
-    if ( !GameLogic::get()->requestAction( action._actionType, action._paramUint[ 0 ], args, result ) )
+    if ( !GameLogic::get()->requestAction( action._actionType, action._paramUint[ 0 ], action._paramUint[ 1 ], args, result ) )
+    {
         log_error << "ObjectNetworking: problem executing required action: " << action._actionType << std::endl;
-
-    // push the result of action into first uint parameter
-    action._actionResult = int( result[ 0 ] );
+        action._actionResult = -1;
+    }
+    else
+    {
+        // push the result of action into first uint parameter
+        action._actionResult = int( result[ 0 ] );
+        // push the respawn time to first float parameter
+        action._paramFloat[ 0 ] = result[ 1 ];
+    }
 
     ALL_REPLICAS_FUNCTION_CALL( RPC_ActionResult( action ) );
 }

@@ -32,7 +32,6 @@ typedef struct _tActionData
 
 } tActionData;
 
-
 _RO_DEF_ALLOCATEFUNC(ObjectNetworking)
 class _MAKE_BASE(ObjectNetworking);
 class _RO_ObjectNetworking : public RNReplicaNet::ReplicaObject

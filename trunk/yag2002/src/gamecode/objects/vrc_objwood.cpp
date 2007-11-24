@@ -71,6 +71,7 @@ void EnObjectWood::onObjectUse()
         action._userID          = StorageClient::get()->getUserID();
         action._actionType      = GameLogic::eActionPick;
         action._paramUint[ 0 ]  = getObjectID();
+        action._paramUint[ 1 ]  = getObjectInstanceID();
 
         if ( !_p_networking->RequestAction( action, this ) )
         {
@@ -86,7 +87,7 @@ void EnObjectWood::onObjectUse()
 
         result.push_back( 0.0f );
 
-        if ( !GameLogic::get()->requestAction( GameLogic::eActionPick, getObjectID(), args, result ) )
+        if ( !GameLogic::get()->requestAction( GameLogic::eActionPick, getObjectID(), getObjectInstanceID(), args, result ) )
         {
             log_error << getInstanceName() << ": problem executing requested action Pick " << std::endl;
             return;
@@ -96,8 +97,14 @@ void EnObjectWood::onObjectUse()
         if ( res > 0 )
         {
             UserInventory* p_inv = gameutils::PlayerUtils::get()->getPlayerInventory();
-            //! TODO ...assemble the item string out of entity attributes
-            p_inv->addItem( ITEM_NAME_OBJWOOD, getObjectID(), "test=10,test2=21" );
+            if ( !p_inv->increaseItem( ITEM_NAME_OBJWOOD, 1 ) )
+            {
+                //! TODO ...assemble the item string out of entity attributes
+                p_inv->addItem( ITEM_NAME_OBJWOOD, getObjectID(), "test=10,test2=21" );
+            }
+
+            //! TODO: get the respawn time from object attributes
+            disappear( 5.0f );
         }
     }
 }
@@ -116,8 +123,17 @@ void EnObjectWood::actionResult( tActionData& result )
         case GameLogic::eActionPick:
         {
             UserInventory* p_inv = gameutils::PlayerUtils::get()->getPlayerInventory();
-            //! TODO ...assemble the item string out of entity attributes
-            p_inv->addItem( ITEM_NAME_OBJWOOD, getObjectID(), "test=10,test2=21" );
+            if ( !p_inv->increaseItem( ITEM_NAME_OBJWOOD, 1 ) )
+            {
+                //! TODO ...assemble the item string out of entity attributes
+                p_inv->addItem( ITEM_NAME_OBJWOOD, getObjectID(), "test=10,test2=21" );
+            }
+            // we expect the respawn time from first float parameter
+            disappear( result._paramFloat[ 0 ] );
+
+            std::stringstream respawn;
+            respawn << " respawn in " << result._paramFloat[ 0 ] << " seconds";
+            GameLogic::get()->getScriptConsole()->scAddOutput( respawn.str(), true );
         }
         break;
 

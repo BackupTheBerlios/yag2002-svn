@@ -4,7 +4,6 @@
 #pragma warning(disable : 4786)
 #endif
 #include "../vrc_objectnetworking.h"
-
 using namespace vrc;
 _RO_DO_STD_FRAMEWORK(ObjectNetworking)
 #include "RNReplicaNet/Inc/DataBlock_Function.h"
@@ -39,6 +38,9 @@ _RO_DO_REGISTERBLOCK_FUNCTION_VAR(RPC_ActionResult)
 _RO_DO_DATABLOCK_MAKERELIABLE()
 _RO_DO_REGISTERBLOCK_END()
 _RO_DO_REGISTERBLOCK_NDATA_VAR(_objectID)
+_RO_DO_DATABLOCK_MAKERELIABLE()
+_RO_DO_REGISTERBLOCK_END()
+_RO_DO_REGISTERBLOCK_NDATA_VAR(_objectInstanceID)
 _RO_DO_DATABLOCK_MAKERELIABLE()
 _RO_DO_REGISTERBLOCK_END()
 _RO_DO_REGISTERBLOCK_NDATA_VAR(_p_meshFile)

@@ -81,6 +81,9 @@ class ObjectNetworking : _RO_DO_PUBLIC_RO( ObjectNetworking )
         //! Unique object ID set on server
         unsigned int                                _objectID;
 
+        //! Unique object reference ID set on server
+        unsigned int                                _objectInstanceID;
+
         //! Object mesh file
         char                                        _p_meshFile[ 64 ];
 

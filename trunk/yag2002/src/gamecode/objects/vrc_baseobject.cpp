@@ -49,6 +49,9 @@ namespace vrc
 //! Implementation of distance sorted objects used for internal house-keeping
 std::vector< BaseObject* >              BaseObject::_objects;
 
+//! Object instance ID
+unsigned int                            BaseObject::_objectInstanceIDCnt = 42;
+
 //! Implementation of object input handler
 BaseObject::ObjectInputHandler*         BaseObject::_p_inputHandler;
 
@@ -98,6 +101,10 @@ _keyCodePick( 1 )
 
 bool BaseObject::ObjectInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
+    // check if the player is in interaction mode
+    if ( gameutils::PlayerUtils::get()->isLockInteraction() )
+        return false;
+
     if ( !_p_highlightedObject || !_enable )
         return false;
 
@@ -111,7 +118,7 @@ bool BaseObject::ObjectInputHandler::handle( const osgGA::GUIEventAdapter& ea, o
 
     if ( mouseButtonRelease )
     {
-        if ( mouseBtn == _keyCodePick )
+        if ( ( mouseBtn == _keyCodePick ) && ( _p_highlightedObject->_enable ) )
             _p_highlightedObject->onObjectUse();
     }
 
@@ -121,12 +128,16 @@ bool BaseObject::ObjectInputHandler::handle( const osgGA::GUIEventAdapter& ea, o
 
 //! Implementation of base object
 BaseObject::BaseObject( unsigned int ID, const std::string& type ) :
+ _p_node( NULL ),
  _shadowEnable( false ),
  _maxHeighlightDistance( 10.0f ),
  _maxPickDistance( 1.5f ),
  _highlight( false ),
  _animTime( 0.0f ),
+ _disappearTime( -1.0f ),
+ _destroyTime( -1.0f ),
  _objectID( ID ),
+ _objectInstanceID( 0 ),
  _enable( true ),
  _checkPickingPeriod( 0.0f ),
  _sortDistancePeriod( 0.0f ),
@@ -169,6 +180,12 @@ BaseObject::~BaseObject()
         _p_inputHandler->destroyHandler();
         _p_inputHandler = NULL;
     }
+
+    // on server we delete the networking on destruction, so all replicas get deleted
+    if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
+    {
+        delete _p_networking;
+    }
 }
 
 unsigned int BaseObject::getObjectID() const
@@ -176,10 +193,51 @@ unsigned int BaseObject::getObjectID() const
     return _objectID;
 }
 
+BaseObject* BaseObject::getObject( unsigned int instanceID )
+{
+    std::vector< BaseObject* >::const_iterator p_beg = _objects.begin(), p_end = _objects.end();
+    for ( ; p_beg != p_end; ++p_beg )
+    {
+        if ( ( *p_beg )->getObjectInstanceID() == instanceID )
+            return *p_beg;
+    }
+
+    return NULL;
+}
+
+unsigned int BaseObject::getObjectInstanceID() const
+{
+    return _objectInstanceID;
+}
+
+void BaseObject::setObjectInstanceID( unsigned int id )
+{
+    _objectInstanceID = id;
+}
+
 void BaseObject::setNetworking( ObjectNetworking* p_networking )
 {
-    assert( _p_networking == NULL && "networking object already exists!" );
+    assert( ( _p_networking == NULL ) && "networking object already exists!" );
     _p_networking = p_networking;
+}
+
+void BaseObject::disappear( float period )
+{
+    if ( period > 0.0f )
+    {
+        _disappearTime = period;
+        enable( false );
+    }
+}
+
+void BaseObject::destroy( float period )
+{
+    _destroyTime = period;
+}
+
+bool BaseObject::isActive() const
+{
+    return _enable;
 }
 
 void BaseObject::handleNotification( const yaf3d::EntityNotification& notification )
@@ -226,6 +284,14 @@ void BaseObject::initialize()
     // setup picking params
     _maxHeighlightDistance2 = _maxHeighlightDistance * _maxHeighlightDistance;
 
+    // first setup the object instance ID
+    if ( yaf3d::GameState::get()->getMode() & ( yaf3d::GameState::Server | yaf3d::GameState::Standalone ) )
+    {
+        // increase the object instance ID
+        _objectInstanceIDCnt++;
+        _objectInstanceID = _objectInstanceIDCnt;
+    }
+
     //! do game mode specific things
     switch ( yaf3d::GameState::get()->getMode() )
     {
@@ -249,6 +315,12 @@ void BaseObject::initialize()
             // create the networking object, this object is replicated on clients
             _p_networking = new ObjectNetworking( this );
             _p_networking->Publish();
+
+            // register entity in order to get updated per simulation step.
+            yaf3d::EntityManager::get()->registerUpdate( this, true );
+
+            // add the object to list on server at this point of initialization
+            _objects.push_back( this );
         }
         break;
 
@@ -259,9 +331,9 @@ void BaseObject::initialize()
 
 void BaseObject::setupMesh()
 {
-    osg::Node* p_node = yaf3d::LevelManager::get()->loadMesh( _meshFile, true );
+    _p_node = yaf3d::LevelManager::get()->loadMesh( _meshFile, true );
 
-    if ( !p_node )
+    if ( !_p_node )
     {
         log_error << "*** could not load mesh file: " << _meshFile << ", in '" << getInstanceName() << "'" << std::endl;
         return;
@@ -276,25 +348,47 @@ void BaseObject::setupMesh()
 
     setRotation( rot );
 
-    // get the shadow flag in configuration
-    bool shadow;
-    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
-
-    yaf3d::EntityManager::get()->removeFromScene( this );
-
-    // enable shadow only if it is enabled in configuration
-    if ( shadow && _shadowEnable )
+    // enable the scene node
+    if ( _enable )
     {
-        yaf3d::ShadowManager::get()->addShadowNode( getTransformationNode() );
-        yaf3d::ShadowManager::get()->updateShadowArea();
+        _enable = false;
+        enable( true );
+    }
+}
+
+void BaseObject::enable( bool en )
+{
+    if ( _enable == en )
+        return;
+
+    _enable = en;
+
+    if ( _enable )
+    {
+        // get the shadow flag in configuration
+        bool shadow;
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
+
+        yaf3d::EntityManager::get()->removeFromScene( this );
+
+        // enable shadow only if it is enabled in configuration
+        if ( shadow && _shadowEnable )
+        {
+            yaf3d::ShadowManager::get()->addShadowNode( getTransformationNode(), yaf3d::ShadowManager::eThrowShadow );
+            yaf3d::ShadowManager::get()->updateShadowArea();
+        }
+        else
+        {
+            yaf3d::EntityManager::get()->addToScene( this );
+        }
+
+        // append the mesh node to our transformation node
+        addToTransformationNode( _p_node );
     }
     else
     {
-        yaf3d::EntityManager::get()->addToScene( this );
+        yaf3d::EntityManager::get()->removeFromScene( this );
     }
-
-    // append the mesh node to our transformation node
-    addToTransformationNode( p_node );
 }
 
 void BaseObject::postInitialize()
@@ -303,36 +397,61 @@ void BaseObject::postInitialize()
 
 void BaseObject::updateEntity( float deltaTime )
 {
-    // animate the mesh if it is pickable
-    if ( _highlight )
+    // check for respawn
+    if ( _disappearTime > 0.0f )
     {
-        _animTime += deltaTime;
-        float z = 0.1f + 0.1f * sinf( _animTime );
-        osg::Vec3f pos = _position;
-        pos._v[ 2 ] += z;
-        setPosition( pos );
+        _disappearTime -= deltaTime;
+        if ( _disappearTime < 0.0f )
+        {
+            _disappearTime = 0.0f;
+            enable( true );
+        }
     }
 
-    _sortDistancePeriod += deltaTime;
-    if ( _sortDistancePeriod > OBJECT_PICK_DIST_UPDATE_PERIOD )
+    if ( _destroyTime > 0.0f )
     {
-        bool inrange = checkObjectDistance();
-        _sortDistancePeriod = 0.0f;
-        // do not continue if distance messurement fails
-        if ( !inrange )
-            return;
+        _destroyTime -= deltaTime;
+        if ( _destroyTime < 0.0f )
+        {
+            yaf3d::EntityManager::get()->deleteEntity( this );
+        }
     }
 
-    _checkPickingPeriod += deltaTime;
-    if ( _checkPickingPeriod > OBJECT_PICK_CHK_PERIOD )
+    // check for picking only if the object is enabled
+    if ( _enable && ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Server ) )
     {
-        checkCameraFocus();
-        _checkPickingPeriod = 0.0f;
+        // animate the mesh if it is pickable
+        if ( _highlight )
+        {
+            _animTime += deltaTime;
+            float z = 0.1f + 0.1f * sinf( _animTime );
+            osg::Vec3f pos = _position;
+            pos._v[ 2 ] += z;
+            setPosition( pos );
+        }
+
+        _sortDistancePeriod += deltaTime;
+        if ( _sortDistancePeriod > OBJECT_PICK_DIST_UPDATE_PERIOD )
+        {
+            bool inrange = checkObjectDistance();
+            _sortDistancePeriod = 0.0f;
+            // do not continue if distance messurement fails
+            if ( !inrange )
+                return;
+        }
+
+        _checkPickingPeriod += deltaTime;
+        if ( _checkPickingPeriod > OBJECT_PICK_CHK_PERIOD )
+        {
+            checkCameraFocus();
+            _checkPickingPeriod = 0.0f;
+        }
     }
 }
 
 bool BaseObject::checkObjectDistance()
 {
+    // ´further serup of the object
     // in networked mode the player may be created later!
     if ( !_p_player )
     {

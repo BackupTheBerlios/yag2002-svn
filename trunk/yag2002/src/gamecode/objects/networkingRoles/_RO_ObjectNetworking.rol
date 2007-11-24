@@ -29,6 +29,11 @@ object ObjectNetworking
             Reliable();
         }
 
+        NData _objectInstanceID;
+        { 
+            Reliable();
+        }
+
         NData _p_meshFile;
         { 
             Reliable();

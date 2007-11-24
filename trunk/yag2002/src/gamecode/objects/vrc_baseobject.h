@@ -57,22 +57,44 @@ class BaseObject : public yaf3d::BaseEntity, public ObjectNetworking::CallbackAc
         //! Create the object with a unique object ID and entity type ( ID is one of ObjectIDs enums ).
                                                     BaseObject( unsigned int ID, const std::string& type );
 
-        //! Destroy object
+        //! Destroy object.
         virtual                                     ~BaseObject();
 
-        //! Get the object ID
+        //! Get the object ID.
         unsigned int                                getObjectID() const;
+
+        //! Get the object given its instance ID. Returns NULL if the no object with given instance ID exist.
+        static BaseObject*                          getObject( unsigned int instanceID );
+
+        //! Get the object instance ID.
+        unsigned int                                getObjectInstanceID() const;
+
+        //! Set the object instance ID, used by networking on server.
+        void                                        setObjectInstanceID( unsigned int id );
 
         //! This method is used by networking on creation of the entity on clients.
         void                                        setNetworking( ObjectNetworking* p_networking );
 
+        //! Let the object disappear for given period of time ( in seconds > 0 ). After this period the object respawns.
+        //! This method can be used e.g on picking an object. This method is used in standalone or server mode.
+        void                                        disappear( float period );
+
+        //! Destroy the object after the given period of time ( in seconds >= 0 ).  This method is used in standalone or server mode.
+        void                                        destroy( float period );
+
+        //! Get the object state active / not active
+        bool                                        isActive() const;
+
     protected:
 
-        //! Called when the object is used by user, e.g. by picking
+        //! Called on derived objects when the object is used by user, e.g. by picking
         virtual void                                onObjectUse() = 0;
 
         //! Initializing function
         void                                        initialize();
+
+        //! Update entity
+        void                                        updateEntity( float deltaTime );
 
         //! Post-initializing function
         void                                        postInitialize();
@@ -80,8 +102,8 @@ class BaseObject : public yaf3d::BaseEntity, public ObjectNetworking::CallbackAc
         //! Setup the object mesh
         void                                        setupMesh();
 
-        //! Update entity
-        void                                        updateEntity( float deltaTime );
+        //! Enable/disable the object
+        void                                        enable( bool en );
 
         //! Handle system notifications
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
@@ -104,6 +126,9 @@ class BaseObject : public yaf3d::BaseEntity, public ObjectNetworking::CallbackAc
         //! Mesh file name
         std::string                                 _meshFile;
 
+        //! Mesh node
+        osg::Node*                                  _p_node;
+
         //! Enable/disable shadow
         bool                                        _shadowEnable;
 
@@ -114,8 +139,14 @@ class BaseObject : public yaf3d::BaseEntity, public ObjectNetworking::CallbackAc
         float                                       _maxPickDistance;
         // -----------
 
-        //! Unique object ID
+        //! Unique object ID ( this identifies the object type )
         unsigned int                                _objectID;
+
+        //! Unique object instance ID ( this identifies the object instance )
+        unsigned int                                _objectInstanceID;
+
+        //! Object instance ID counter
+        static unsigned int                         _objectInstanceIDCnt;
 
         //! Is the object enabled?
         bool                                        _enable;
@@ -143,6 +174,12 @@ class BaseObject : public yaf3d::BaseEntity, public ObjectNetworking::CallbackAc
 
         //! Mesh animation time when object can be picked up
         float                                       _animTime;
+
+        //! Period of time where the object is disappeared
+        float                                       _disappearTime;
+
+        //! Time remaining to object destruction
+        float                                       _destroyTime;
 
         //! Local player entity
         EnPlayer*                                   _p_player;
