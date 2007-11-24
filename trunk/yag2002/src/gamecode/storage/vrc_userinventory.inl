@@ -33,14 +33,19 @@
 #endif
 
 
-inline const std::string& InventoryItem::getItemName() const
+inline const std::string& InventoryItem::getName() const
 {
     return _name;
 }
 
-inline unsigned int InventoryItem::getItemID() const
+inline unsigned int InventoryItem::getID() const
 {
     return _itemID;
+}
+
+inline unsigned int InventoryItem::getCount() const
+{
+    return _itemCount;
 }
 
 inline std::map< std::string, std::string >& InventoryItem::getParams()

@@ -40,7 +40,8 @@ namespace vrc
 
 InventoryItem::InventoryItem( unsigned int itemID, const std::string& name ) :
  _itemID( itemID ),
- _name( name )
+ _name( name ),
+ _itemCount( 1 )
 {
 }
 
@@ -134,12 +135,51 @@ bool UserInventory::addItem( const std::string& itemName, unsigned int itemID, c
     return true;
 }
 
-bool UserInventory::removeItem( const std::string& itemName, unsigned int itemID )
+bool UserInventory::increaseItem( const std::string& itemName, unsigned int count )
 {
     std::vector< InventoryItem* >::iterator p_item = _items.begin(), p_end= _items.end();
     for ( ; p_item != p_end; ++p_item )
     {
-        if ( ( ( *p_item )->getItemName() == itemName ) && ( ( *p_item )->getItemID() ) )
+        InventoryItem* p_invitem = *p_item;
+        if ( p_invitem->getName() == itemName )
+        {
+            p_invitem->_itemCount += count;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool UserInventory::decreaseItem( const std::string& itemName, unsigned int count )
+{
+    std::vector< InventoryItem* >::iterator p_item = _items.begin(), p_end= _items.end();
+    for ( ; p_item != p_end; ++p_item )
+    {
+        InventoryItem* p_invitem = *p_item;
+        if ( p_invitem->getName() == itemName )
+        {
+            if ( int( p_invitem->_itemCount ) - int( count ) > 0 )
+            {
+                p_invitem->_itemCount -= count;
+            }
+            else
+            {
+                p_invitem->_itemCount = 0;
+            }
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool UserInventory::removeItem( const std::string& itemName )
+{
+    std::vector< InventoryItem* >::iterator p_item = _items.begin(), p_end= _items.end();
+    for ( ; p_item != p_end; ++p_item )
+    {
+        if ( ( *p_item )->getName() == itemName )
         {
             _items.erase( p_item );
             delete ( *p_item );

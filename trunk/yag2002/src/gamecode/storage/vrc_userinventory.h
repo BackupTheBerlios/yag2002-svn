@@ -36,6 +36,7 @@
 namespace vrc
 {
 
+class UserInventory;
 class StorageServer;
 class StoragePostgreSQL;
 
@@ -49,10 +50,13 @@ class InventoryItem
                                                     ~InventoryItem();
 
         //! Get the item name
-        inline const std::string&                   getItemName() const;
+        inline const std::string&                   getName() const;
 
         //! Get the item ID
-        inline unsigned int                         getItemID() const;
+        inline unsigned int                         getID() const;
+
+        //! Get the item count
+        inline unsigned int                         getCount() const;
 
         //! Get the value of given parameter
         template< class Type >
@@ -69,8 +73,13 @@ class InventoryItem
         //! Item name
         std::string                                 _name;
 
+        //! Item count
+        unsigned int                                _itemCount;
+
         //! Item's parameters as < param name, param value > map
         std::map< std::string, std::string >        _params;
+
+   friend class UserInventory;
 };
 
 
@@ -92,8 +101,14 @@ class UserInventory
         //! Add given item to inventory. The item parameters are encrypted in itemString.
         bool                                        addItem( const std::string& itemName, unsigned int itemID, const std::string& itemString );
 
+        //! Increase the count of item with given name by given count. Returns false if the item with given name does not exist in inventory.
+        bool                                        increaseItem( const std::string& itemName, unsigned int count = 1 );
+
+        //! decrease the count of item with given name by given count. Returns false if the item with given name does not exist in inventory.
+        bool                                        decreaseItem( const std::string& itemName, unsigned int count = -1 );
+
         //! Remove the item with given name and ID
-        bool                                        removeItem( const std::string& itemName, unsigned int itemID );
+        bool                                        removeItem( const std::string& itemName );
 
     protected:
 
