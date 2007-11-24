@@ -32,6 +32,12 @@
 #include <vrc_gameutils.h>
 #include "vrc_mesh.h"
 
+#include <osgShadow/ShadowedScene>
+#include <osgShadow/ShadowVolume>
+#include <osgShadow/ShadowMap>
+//#include <osgShadow/SoftShadowMap>
+
+
 //GLOD is currently disabled as we have no actual use for it
 #define DONT_USE_GLOD
 
@@ -48,17 +54,22 @@ YAF3D_IMPL_ENTITYFACTORY( MeshEntityFactory )
 EnMesh::EnMesh() :
 _enable( true ),
 _usedInMenu( false ),
-_shadowEnable( false ),
+_throwShadow( false ),
+_receiveShadow( false ),
 _useLOD( false ),
-_lodErrorThreshold( 0.05f )
+_lodErrorThreshold( 0.05f ),
+_shadowEnable( false )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "enable"       , _enable            );
-    getAttributeManager().addAttribute( "usedInMenu"   , _usedInMenu        );
-    getAttributeManager().addAttribute( "meshFile"     , _meshFile          );
-    getAttributeManager().addAttribute( "position"     , _position          );
-    getAttributeManager().addAttribute( "rotation"     , _rotation          );
-    getAttributeManager().addAttribute( "shadowEnable" , _shadowEnable      );
+    getAttributeManager().addAttribute( "enable"        , _enable        );
+    getAttributeManager().addAttribute( "usedInMenu"    , _usedInMenu    );
+    getAttributeManager().addAttribute( "meshFile"      , _meshFile      );
+    getAttributeManager().addAttribute( "shaderName"    , _shaderName    );
+    getAttributeManager().addAttribute( "position"      , _position      );
+    getAttributeManager().addAttribute( "rotation"      , _rotation      );
+    getAttributeManager().addAttribute( "throwShadow"   , _throwShadow   );
+    getAttributeManager().addAttribute( "receiveShadow" , _receiveShadow );
+
     //getAttributeManager().addAttribute( "useLOD"                , _useLOD            );
     //getAttributeManager().addAttribute( "lodErrorThreshold"     , _lodErrorThreshold );
 }
@@ -176,19 +187,52 @@ void EnMesh::addToSceneGraph()
     if ( !_mesh.valid() )
         return;
 
+    // is a shader name given?
+    osg::Group* p_shadernode = NULL;
+    if ( _shaderName.length() )
+    {
+        // try to get the shader node and append our node to it
+        p_shadernode = yaf3d::ShaderContainer::get()->getShaderNode( _shaderName ).get();
+        if ( !p_shadernode )
+        {
+            log_error << "*** invalid shader name: " << _shaderName << " in mesh instance " << getInstanceName() << std::endl;
+        }
+    }
+
     // get the shadow flag in configuration
     bool shadow;
     yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
 
+    // enable dynamic shadow for this mesh?
+    _shadowEnable = _throwShadow || _receiveShadow;
+
     // enable shadow only if it is enabled in configuration
     if ( shadow && _shadowEnable )
     {
-        yaf3d::ShadowManager::get()->addShadowNode( getTransformationNode() );
+        // set the shadow mode
+        unsigned int shadowmode = 0;
+        if ( _throwShadow )
+            shadowmode |= yaf3d::ShadowManager::eThrowShadow;
+        if ( _receiveShadow )
+            shadowmode |= yaf3d::ShadowManager::eReceiveShadow;
+
+        yaf3d::ShadowManager::get()->addShadowNode( p_shadernode ? p_shadernode : getTransformationNode(), shadowmode );
         yaf3d::ShadowManager::get()->updateShadowArea();
+
+        // the mesh needs at least one subgraph for getting rendered; the shadow throwing subgraph does not render the mesh (but only its shadow)
+        // so we put meshes which should throw shadow and not receive shadow to the default scene node.
+        if ( !_receiveShadow && !p_shadernode )
+            yaf3d::EntityManager::get()->addToScene( this );
     }
-    else
+    else if ( !p_shadernode ) // add to scene only if the mesh has no shader
     {
         yaf3d::EntityManager::get()->addToScene( this );
+    }
+
+    // if the node has a shader append it also to the shader node
+    if ( p_shadernode )
+    {
+        p_shadernode->addChild( getTransformationNode() );
     }
 }
 
@@ -214,7 +258,7 @@ osg::Node* EnMesh::setupMesh()
                      osg::DegreesToRadians( _rotation.y() ), osg::Vec3f( 0.0f, 1.0f, 0.0f ),
                      osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0.0f, 0.0f, 1.0f )
                     );
-    setRotation( rot );    
+    setRotation( rot );
 
 #ifndef DONT_USE_GLOD
     if ( _useLOD )

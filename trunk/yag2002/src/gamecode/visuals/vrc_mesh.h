@@ -76,6 +76,8 @@ class EnMesh :  public yaf3d::BaseEntity
 
         std::string                                 _meshFile;
 
+        std::string                                 _shaderName;
+
         osg::Vec3f                                  _position;
 
         osg::Vec3f                                  _rotation;
@@ -84,13 +86,17 @@ class EnMesh :  public yaf3d::BaseEntity
 
         bool                                        _usedInMenu;
 
-        bool                                        _shadowEnable;
+        bool                                        _throwShadow;
+
+        bool                                        _receiveShadow;
 
         bool                                        _useLOD;
 
         float                                       _lodErrorThreshold;
 
         //! Internal attributes
+
+        bool                                        _shadowEnable;
 
         osg::ref_ptr< osg::Node >                   _mesh;
 };
