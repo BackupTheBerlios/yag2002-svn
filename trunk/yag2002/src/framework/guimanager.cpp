@@ -202,9 +202,11 @@ void GuiManager::initialize()
     // append the gui node into scenegraph
     osgSDL::Viewer* p_viewer = Application::get()->getViewer();
     osg::ref_ptr< osg::Geode > p_geode = new osg::Geode;
+    p_geode->setName( "_GUI_" );
     osg::ref_ptr< CEGUIDrawable > p_drawble = new CEGUIDrawable();
     p_geode->addDrawable( p_drawble.get() );
-
+    p_geode->setDataVariance( osg::Geode::DYNAMIC );
+    p_geode->setCullingActive( false );
     Application::get()->getSceneRootNode()->addChild( p_geode.get() );
 
     // register a viewer realize callback, here we initialize CEGUI's renderer (using doInitialize)
