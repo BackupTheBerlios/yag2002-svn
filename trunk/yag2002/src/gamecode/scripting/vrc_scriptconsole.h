@@ -57,6 +57,9 @@ class ScriptConsole
 
     protected:
 
+        //! Callback for closing the frame
+        bool                                        onClickedClose( const CEGUI::EventArgs& arg );
+
         //! Callback for getting cmd line
         bool                                        scOnInputTextChanged( const CEGUI::EventArgs& arg );
 

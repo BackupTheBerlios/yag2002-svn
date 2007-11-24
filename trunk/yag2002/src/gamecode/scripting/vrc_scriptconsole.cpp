@@ -64,6 +64,7 @@ bool ScriptConsole::scInitialize()
     {
         float framewidth = 0.4f, frameheight = 0.2f;
         _p_scScriptWnd = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( ( CEGUI::utf8* )"TaharezLook/FrameWindow", "_script_editor_" ) );
+        _p_scScriptWnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &vrc::ScriptConsole::onClickedClose, this ) );
         _p_scScriptWnd->setText( "logic script editor" );
         _p_scScriptWnd->setPosition( CEGUI::Point( 0.6f, 0.8f ) );
         _p_scScriptWnd->setSize( CEGUI::Size( framewidth, frameheight ) );
@@ -101,6 +102,13 @@ bool ScriptConsole::scInitialize()
     }
 
     scAddOutput( "Lua script console\n" LUA_VERSION "\n" );
+    return true;
+}
+
+bool ScriptConsole::onClickedClose( const CEGUI::EventArgs& arg )
+{
+    _p_scScriptWnd->deactivate();
+    _p_scScriptWnd->hide();
     return true;
 }
 
