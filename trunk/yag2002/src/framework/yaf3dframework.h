@@ -32,6 +32,8 @@
 #define _YAF3DFRAMEWORK_H_
 
 #include <attributemanager.h>
+#include <shadercontainer.h>
+#include <terrainmanager.h>
 #include <configuration.h>
 #include <entitymanager.h>
 #include <shadowmanager.h>
