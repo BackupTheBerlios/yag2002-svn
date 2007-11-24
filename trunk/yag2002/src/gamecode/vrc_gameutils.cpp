@@ -138,6 +138,24 @@ void VRCStateHandler::onStateChange( unsigned int state )
         {
             // set app window title
             yaf3d::Application::get()->setWindowTitle( "VRC " VRC_VERSION );
+
+            // setup the shader container with necessary shader nodes
+            if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Server )
+            {
+                osg::ref_ptr< osg::Group > vegetationnode = new osg::Group;
+                vegetationnode->setName( "_vegetationShaderGroup_" );
+                osg::StateSet* p_stateset = vegetationnode->getOrCreateStateSet();
+                osg::Program* p_program = new osg::Program;
+                p_stateset->setAttribute( p_program );
+                // setup the vertex shader
+                osg::Shader* p_vert = yaf3d::ShaderContainer::get()->getVertexShader( yaf3d::ShaderContainer::eVegetationV );
+                p_program->addShader( p_vert );
+                // setup the fragment shader
+                osg::Shader* p_frag = yaf3d::ShaderContainer::get()->getFragmentShader( yaf3d::ShaderContainer::eVegetationF );
+                p_program->addShader( p_frag );
+                // add the vegetation shader to shader container
+                yaf3d::ShaderContainer::get()->addShaderNode( "vegetation", vegetationnode, yaf3d::LevelManager::get()->getTopNodeGroup().get() );
+            }
         }
         break;
 
@@ -454,9 +472,20 @@ void GuiUtils::playSound( const std::string& name )
 
 // Implementation of player utils
 PlayerUtils::PlayerUtils() :
+_interactionLock( false ),
 _p_localPlayer( NULL ),
 _p_userInventory( NULL )
 {
+}
+
+void PlayerUtils::setLockInteraction( bool interaction )
+{
+    _interactionLock = interaction;
+}
+
+bool PlayerUtils::isLockInteraction() const
+{
+    return _interactionLock;
 }
 
 bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& levelfile, const std::string& cfgfile )

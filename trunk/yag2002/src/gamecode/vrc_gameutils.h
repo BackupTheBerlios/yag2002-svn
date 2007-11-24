@@ -181,6 +181,12 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
 
                                                     PlayerUtils();
 
+        //! Lock/unlock the player interaction with environment. This is used when the player opens e.g. the property GUI.
+        void                                        setLockInteraction( bool interaction );
+
+        //! Is the interaction lock set?
+        bool                                        isLockInteraction() const;
+
         //! Retrieve player configuration file path depending on game settings and given game mode ( Server, Client, Standalone ) and
         //! in case of Client the remote flag determines local or remote client. If 'cfgfile' is not empty then that file is used for getting the names of the palyer config files.
         //! Returns false if something went wrong.
@@ -241,6 +247,8 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
         void                                        registerFunctorVoiceChatPlayerListChanged( FunctorPlayerListChange* p_func, bool reg = true );
 
     protected:
+
+        bool                                        _interactionLock;
 
         yaf3d::BaseEntity*                          _p_localPlayer;
 
