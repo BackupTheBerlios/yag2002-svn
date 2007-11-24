@@ -312,7 +312,7 @@ void EnTerrainSection::addToSceneGraph()
     // enable shadow only if it is enabled in configuration
     if ( shadow && _shadowEnable )
     {
-        yaf3d::ShadowManager::get()->addShadowNode( getTransformationNode() );
+        yaf3d::ShadowManager::get()->addShadowNode( getTransformationNode(), yaf3d::ShadowManager::eReceiveShadow );
         yaf3d::ShadowManager::get()->updateShadowArea();
     }
     else

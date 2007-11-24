@@ -254,7 +254,10 @@ _enable( true )
 EnWater::~EnWater()
 {
     if ( _water.get() )
+    {
+        removeFromTransformationNode( _water.get() );
         _water = NULL;
+    }
 }
 
 void EnWater::handleNotification( const yaf3d::EntityNotification& notification )
