@@ -81,7 +81,7 @@ class InspectorIH : public vrc::gameutils::GenericInputHandler< EnInspector >
                                                 // create a node for bbox visualization
                                                 {
                                                     _bboxGeode = new osg::Geode;
-                                                    _bboxGeode->setName( "_bboxCube_" );
+                                                    _bboxGeode->setName( "_inspectorBBoxCube_" );
                                                     _p_linesGeom = new osg::Geometry;
                                                     _p_linesGeom->setSupportsDisplayList( false );
                                                     _p_linesGeom->setUseDisplayList( false );
@@ -778,10 +778,6 @@ void EnInspector::postInitialize()
 
     // the default is info window is disabled ( press F1 to activate it )
     enableInfoWindow( false );
-
-    // emulate leaving menu as some entities need it for activating their meshes
-    yaf3d::EntityNotification ennotify( YAF3D_NOTIFY_MENU_LEAVE );
-    yaf3d::EntityManager::get()->sendNotification( ennotify );
 }
 
 // main gui callbacks
