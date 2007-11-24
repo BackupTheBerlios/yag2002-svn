@@ -51,8 +51,8 @@ class GameLogicScript : public BaseScript< GameLogicScript >, public ScriptConso
         bool                                        setupScript( const std::string& file );
 
 
-        //! Call the script function 'requestAction'. The actual argument and return value counts depend on action type and objectID.
-        bool                                        requestAction( unsigned int actiontype, unsigned int objectID, const std::vector< float >& params, std::vector< float >& returnvalues );
+        //! Call the script function 'requestAction'. The actual argument and return value counts depend on action type and objectID. objectInstanceID is the object instance ID.
+        bool                                        requestAction( unsigned int actiontype, unsigned int objectID, unsigned int objectInstanceID, const std::vector< float >& params, std::vector< float >& returnvalues );
 
     protected:
 
@@ -61,6 +61,12 @@ class GameLogicScript : public BaseScript< GameLogicScript >, public ScriptConso
 
         //! Method for outputting to log system
         void                                        llog( const Params& arguments, Params& /*returnvalues*/ );
+
+        //! Method for getting object properties
+        void                                        lgetObjectProperties( const Params& arguments, Params& returnvalues );
+
+        //! Method for getting the object state ( active / not active )
+        void                                        lgetObjectState( const Params& arguments, Params& returnvalues );
 
         // ############################
 

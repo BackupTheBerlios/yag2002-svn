@@ -78,8 +78,8 @@ class GameLogic : public yaf3d::Singleton< GameLogic >
             eActionUse  = 0x1002
         };
 
-        //! Request the game logic for processing an action on object with ID objectID.
-        bool                                        requestAction( unsigned int actionType, unsigned int objectID, const std::vector< float >& params, std::vector< float >& returnvalues );
+        //! Request the game logic for processing an action on object with given object and instance ID.
+        bool                                        requestAction( unsigned int actionType, unsigned int objectID, unsigned int objectInstanceID, const std::vector< float >& params, std::vector< float >& returnvalues );
 
         //! Get the script console, used for script debugging
         ScriptConsole*                              getScriptConsole();

@@ -30,20 +30,24 @@
 
 #include <vrc_main.h>
 #include "vrc_logicscript.h"
-
+#include "../objects/vrc_baseobject.h"
 
 //! File name of logic log output
-#define SCRIPTING_LOG_FILE_NAME     "logic.log"
+#define SCRIPTING_LOG_FILE_NAME             "logic.log"
 
 //! Exposed logic interface name to scripting
-#define SCRIPT_INTERFACE_NAME       "logic"
+#define SCRIPT_INTERFACE_NAME               "logic"
 
 //! Script function initialize called on script setup
-#define FCN_INITIALIZE              "initialize"
+#define FCN_INITIALIZE                      "initialize"
 
 //! Script function names
-#define FCN_REQUEST_ACTION          "requestAction"
+#define FCN_REQUEST_ACTION                  "requestAction"
 
+//! Exposed method names
+#define EXPOSED_METHOD_LOG                  "log"
+#define EXPOSED_METHOD_GET_OBJECT_PROPS     "getObjectProperties"
+#define EXPOSED_METHOD_GET_OBJECT_STATE     "getObjectState"
 
 namespace vrc
 {
@@ -81,11 +85,33 @@ bool GameLogicScript::setupScript( const std::string& file )
         Params arguments;
         Params returnsvalues;
 
-        // expose method log having the pseudo-signatur: void getPosition( char* string )
+        // expose method log having the pseudo-signatur: void log( char* string )
         {
             std::string strbuf;
-            arguments.add< std::string >( strbuf );
-            exposeMethod( "log", &GameLogicScript::llog, arguments, returnsvalues );
+            arguments.add( strbuf );
+            exposeMethod( EXPOSED_METHOD_LOG, &GameLogicScript::llog, arguments, returnsvalues );
+        }
+
+        arguments.clear();
+        returnsvalues.clear();
+        // expose method for getting object properties having the pseudo-signatur: [ return value (int), prop string ] getObjectProperties( unsigned int objectID )
+        {
+            unsigned int objectID = 0;
+            arguments.add( objectID );
+            returnsvalues.add( int( 0 ) );
+            returnsvalues.add( std::string( "" ) );
+            exposeMethod( EXPOSED_METHOD_GET_OBJECT_PROPS, &GameLogicScript::lgetObjectProperties, arguments, returnsvalues );
+        }
+
+        arguments.clear();
+        returnsvalues.clear();
+        // expose method for getting the object state having the pseudo-signatur: [ state (1 active, 0 not active), object ID ( can be used for validation ) ] getObjectState( unsigned int objectRefID )
+        {
+            unsigned int objectRefID = 0;
+            arguments.add( objectRefID );
+            returnsvalues.add( int( 0 ) );
+            returnsvalues.add( int( 0 ) );
+            exposeMethod( EXPOSED_METHOD_GET_OBJECT_STATE, &GameLogicScript::lgetObjectState, arguments, returnsvalues );
         }
 
         // execute the script after exposing methods; after this, all script functions are ready to be called now
@@ -151,7 +177,7 @@ void GameLogicScript::scProcessCmd( const std::string& cmd )
     }
 }
 
-bool GameLogicScript::requestAction( unsigned int actiontype, unsigned int objectID, const std::vector< float >& params, std::vector< float >& returnvalues )
+bool GameLogicScript::requestAction( unsigned int actiontype, unsigned int objectID, unsigned int objectInstanceID, const std::vector< float >& params, std::vector< float >& returnvalues )
 {
     // check if the script has been loaded without errors
     if ( !_valid )
@@ -163,11 +189,12 @@ bool GameLogicScript::requestAction( unsigned int actiontype, unsigned int objec
     // fill in the parameters
     Params arguments;
 
-    // first argument is the action type
+    // push the fixed function parameters
     arguments.add( int( actiontype ) );
     arguments.add( int( objectID ) );
+    arguments.add( int( objectInstanceID ) );
 
-    // fill the parameters
+    // fill the generic parameters
     std::vector< float >::const_iterator p_param = params.begin(), p_end = params.end();
     for ( ; p_param != p_end; ++p_param )
     {
@@ -205,6 +232,50 @@ bool GameLogicScript::requestAction( unsigned int actiontype, unsigned int objec
     }
 
     return true;
+}
+
+void GameLogicScript::lgetObjectProperties( const Params& arguments, Params& returnvalues )
+{
+    unsigned int objectID = GET_SCRIPT_PARAMVALUE( arguments, 0, unsigned int );
+    if ( arguments.size() != 1 )
+    {
+        scAddOutput( "*** error calling exposed method '" EXPOSED_METHOD_GET_OBJECT_PROPS "' for getting object properties!" );
+        SET_SCRIPT_PARAMVALUE( returnvalues, 0, int, -1 );
+        SET_SCRIPT_PARAMVALUE( returnvalues, 1, std::string, "" );
+        return;
+    }
+
+    //! TODO: ask the database! for now fill in dummy return values
+    SET_SCRIPT_PARAMVALUE( returnvalues, 0, int, 2 );
+    SET_SCRIPT_PARAMVALUE( returnvalues, 1, std::string, "Hello Foo" );
+}
+
+void GameLogicScript::lgetObjectState( const Params& arguments, Params& returnvalues )
+{
+    unsigned int objectRefID = GET_SCRIPT_PARAMVALUE( arguments, 0, unsigned int );
+    if ( arguments.size() != 1 )
+    {
+        scAddOutput( "*** error calling exposed method '" EXPOSED_METHOD_GET_OBJECT_STATE "' for getting object state!" );
+        SET_SCRIPT_PARAMVALUE( returnvalues, 0, int, -1 );
+        SET_SCRIPT_PARAMVALUE( returnvalues, 1, int, -1 );
+        return;
+    }
+
+    // get the instance ID
+    unsigned int instanceID = GET_SCRIPT_PARAMVALUE( arguments, 0, unsigned int );
+    // try to get the object instance
+    BaseObject* p_object = BaseObject::getObject( instanceID );
+    if ( !p_object )
+    {
+        scAddOutput( "*** " EXPOSED_METHOD_GET_OBJECT_STATE ": requested object instance does not exist!" );
+        SET_SCRIPT_PARAMVALUE( returnvalues, 0, int, -1 );
+        SET_SCRIPT_PARAMVALUE( returnvalues, 1, int, -1 );
+        return;
+    }
+
+    // fill in the function return values
+    SET_SCRIPT_PARAMVALUE( returnvalues, 0, unsigned int, p_object->isActive() );
+    SET_SCRIPT_PARAMVALUE( returnvalues, 1, unsigned int, p_object->getObjectID() );
 }
 
 void GameLogicScript::llog( const Params& arguments, Params& /*returnvalues*/ )
