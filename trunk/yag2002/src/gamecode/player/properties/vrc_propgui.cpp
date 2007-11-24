@@ -64,6 +64,23 @@ PropertyGui::~PropertyGui()
     }
 }
 
+void PropertyGui::enable( bool en )
+{
+    if ( _p_mainWnd )
+    {
+        if ( en )
+        {
+            _p_mainWnd->activate();
+            _p_mainWnd->show();
+        }
+        else
+        {
+            _p_mainWnd->deactivate();
+            _p_mainWnd->hide();
+        }
+    }
+}
+
 void PropertyGui::setupGui()
 {
     assert( _p_userInventory && "invalid user inventory!" );
@@ -140,6 +157,7 @@ void PropertyGui::setupGui()
         return;
     }
 
+    _p_mainWnd->setAlwaysOnTop( false );
     _p_mainWnd->activate();
     _p_mainWnd->show();
     _p_frame->hide();
@@ -174,7 +192,7 @@ void PropertyGui::updateInventory()
     CEGUI::ListboxTextItem * p_selitem = NULL;
     for ( ; p_invitem != p_end; ++p_invitem )
     {
-        CEGUI::ListboxTextItem * p_item = new CEGUI::ListboxTextItem( ( *p_invitem )->getItemName() );
+        CEGUI::ListboxTextItem * p_item = new CEGUI::ListboxTextItem( ( *p_invitem )->getName() );
         p_item->setSelectionColours( col );
         p_item->setSelectionBrushImage( "TaharezLook", "ListboxSelectionBrush" );
         // set the inventory item object as list item object
@@ -206,6 +224,11 @@ void PropertyGui::updateItemDescription()
     // extract the parameter name / value and fill the description field
     CEGUI::ListboxItem* p_selitem = _p_listboxItems->getNextSelected( NULL );
     InventoryItem* p_invitem = static_cast< InventoryItem* >( p_selitem->getUserData() );
+
+    std::stringstream itemcnt;
+    itemcnt << p_invitem->getCount();
+    description += "Count:   " + itemcnt.str() + "\n";
+
     std::map< std::string, std::string >& params = p_invitem->getParams();
     std::map< std::string, std::string >::iterator p_param = params.begin(), p_end = params.end();
     for ( ; p_param != p_end; ++p_param )
@@ -231,6 +254,10 @@ bool PropertyGui::onClickedOpen( const CEGUI::EventArgs& /*arg*/ )
     _p_frame->setPosition( CEGUI::Point( 0.25f, 0.2f ) );
     _p_frame->show();
     _p_btnOpen->hide();
+
+    // set the player interaction mode, thus avoid input processing of player keys
+    gameutils::PlayerUtils::get()->setLockInteraction( true );
+
     return true;
 }
 
@@ -238,6 +265,10 @@ bool PropertyGui::onClickedClose( const CEGUI::EventArgs& /*arg*/ )
 {
     _p_frame->hide();
     _p_btnOpen->show();
+
+    // remove the player interaction mode, thus allow input processing of player keys again
+    gameutils::PlayerUtils::get()->setLockInteraction( false );
+
     return true;
 }
 

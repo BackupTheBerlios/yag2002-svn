@@ -86,7 +86,7 @@ void BasePlayerImplementation::addToSceneGraph()
     if ( shadow )
     {
         // add it to shadow manager
-        yaf3d::ShadowManager::get()->addShadowNode( getPlayerEntity()->getTransformationNode() );
+        yaf3d::ShadowManager::get()->addShadowNode( getPlayerEntity()->getTransformationNode(), yaf3d::ShadowManager::eThrowShadow );
     }
     else
     {

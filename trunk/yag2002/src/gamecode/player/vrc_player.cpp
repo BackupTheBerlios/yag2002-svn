@@ -90,6 +90,27 @@ void EnPlayer::handleNotification( const yaf3d::EntityNotification& notification
 {
     if ( _p_playerImpl )
         _p_playerImpl->handleNotification( notification );
+
+    // handle the menu entering/leaving for property GUI
+    switch ( notification.getId() )
+    {
+        case YAF3D_NOTIFY_MENU_ENTER:
+        {
+            if ( _p_propertyGui )
+                _p_propertyGui->enable( false );
+        }
+        break;
+
+        case YAF3D_NOTIFY_MENU_LEAVE:
+        {
+            if ( _p_propertyGui )
+                _p_propertyGui->enable( true );
+        }
+        break;
+
+        default:
+            ;
+    }
 }
 
 void EnPlayer::initialize()
@@ -124,9 +145,7 @@ void EnPlayer::initialize()
             {
                 _p_playerImpl = new PlayerImplClient( this );
                 _p_playerImpl->initialize();
-            }
-            else
-            {
+
                 // create the property gui with given user inventory
                 _p_propertyGui = new PropertyGui( StorageClient::get()->getUserInventory() );
                 // set the inventory in player utils

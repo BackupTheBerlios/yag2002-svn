@@ -69,6 +69,10 @@ PlayerIHCharacterCameraCtrl< PlayerImplT >::~PlayerIHCharacterCameraCtrl()
 template< class PlayerImplT >
 bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*aa*/ )
 {
+    // check if the player is in interaction mode
+    if ( gameutils::PlayerUtils::get()->isLockInteraction() )
+        return false;
+
     // while in menu we skip input processing for player
     if ( _menuEnabled )
         return false;
