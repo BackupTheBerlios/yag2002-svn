@@ -1,0 +1,73 @@
+*** HOW TO INSTALL ***********************************************************
+
+This file describes how to install Eigen using the CMake build-system. If
+you don't want to (or can't) install CMake, don't worry: as Eigen is a pure
+template library, it consists only of header files (*.h) and there's nothing
+to compile. So it is enough to copy Eigen's header files to your favorite
+include directory, and you're done. Ignore the tests/ subdirectory.
+
+*** INSTALLATION USING CMAKE *************************************************
+
+Like the rest of KDE4, Eigen uses CMake as build-system. You can use CMake to
+install Eigen, as follows:
+
+1. Install CMake
+  There should exist packages for your favorite operating system, as CMake is
+  getting quite widely used.
+
+2. Enter the Eigen source directory (where this INSTALL file is)
+
+3. Run the following command:
+
+        cmake -DCMAKE_INSTALL_PREFIX=/where/to/install/
+
+  where /where/to/install/ is the installation prefix. The actual directory to
+  which the Eigen include files will be copied is:
+
+        /where/to/install/include/eigen/
+
+  Thus, if you wish to install Eigen to /usr/include/eigen, do:
+
+        cmake -DCMAKE_INSTALL_PREFIX=/usr/
+
+4. Run the following command with sufficient privileges:
+
+        make install
+
+  Here, "with sufficient privileges" means that depending on the installation
+  directory, this command might require e.g. root privileges. On most
+  operating systems, you can do:
+
+        su
+        make install
+
+  while Ubuntu/Kubuntu users can do:
+
+        sudo make install
+
+*** HOW TO BUILD TESTS AND EXAMPLES ******************************************
+
+You should first create an out-of-source build directory. In the sequel, we
+will call $SOURCEDIR the source directory (where this INSTALL file is) and
+$BUILDDIR the build directory.
+
+1. Enter the build directory
+
+  cd $BUILDDIR
+
+2. Run CMake, tell it to build the tests and/or the examples.
+
+  For the tests, do:
+    cmake -DBUILD_TESTS=ON $SOURCEDIR
+
+  For the examples, do:
+    cmake -DBUILD_EXAMPLES=ON $SOURCEDIR
+
+  If it complains that it can't find Qt or qmake, then check that you have
+  Qt4 installed, and check that your environment variables are properly
+  set up. In particular, Qt4's qmake should be in your PATH.
+
+3. Run make
+
+  make
+

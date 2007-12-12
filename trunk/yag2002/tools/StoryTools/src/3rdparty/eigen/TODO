@@ -1,0 +1,14 @@
+- find a solution to the problem that doxygen doesn't handle our advanced use
+  of C++ templates.
+- quaternions (Torsten?)
+- optimize matrix inversion if doable without too much more code
+- evaluate adding methods for rotation around special axis X,Y,Z
+- evaluate adding QR decomposition and eigenvalue computation
+- conversion methods/functions/constructors between fixed-size and dynamic-size
+  classes.
+- add more "see also" \sa doxygen tags (currently done only in VectorBase,
+  MatrixBase, MatrixP)
+- make sure that people without Qt4 can compile at least the examples that
+  don't use Qt4.
+- make a pkgconfig file (suggested by jbrefort)
+- evaluate throwing exceptions when __EXCEPTIONS is defined

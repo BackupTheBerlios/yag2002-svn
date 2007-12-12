@@ -1,0 +1,53 @@
+Eigen version 1.0.5                                        February 26, 2007
+
+*** WHAT IS EIGEN ************************************************************
+
+Eigen is a lightweight C++ template library for vector and matrix math,
+a.k.a. linear algebra. See our website:
+
+http://eigen.tuxfamily.org
+
+*** LICENSE ******************************************************************
+
+Eigen is distributed under the GPL, but with an exception allowing any
+software to use it. Thus, to the question "Can my own project use Eigen?",
+the answer is a definite YES.
+
+*** HOW TO INSTALL; TESTS; EXAMPLES ******************************************
+
+See the INSTALL file.
+
+*** API DOCUMENTATION ********************************************************
+
+...can be found on our website:
+
+http://eigen.tuxfamily.org
+
+
+*** AUTHORS AND ACKNOWLEDGEMENTS *********************************************
+
+Eigen was born at the end of July 2006.
+
+Lead Developer: Benoit Jacob <jacob@math.jussieu.fr>
+
+Contributors:
+Casper Boemann <cbr@boemann.dk>
+    project co-founder, initial code contributions
+David Faure <faure@kde.org>
+    Portability fixes
+Franz Keferboeck <franz.keferboeck@gmail.com>
+    contributions in matrixbase.h
+Carsten Niehaus <cniehaus@gmx.de>
+    helped with QTestLib, Doxygen, CMake
+Inge Wallin <inge@lysator.liu.se>
+    project co-founder, initial code contributions
+
+Special thanks to:
+Cyrille Berger, Brad Hards, Sylvain Joyeux, Thiago Macieira, Laurent Montel,
+Torsten Rahn, Pino Toscano, Eckhart Woerner
+
+*** CONTACT US ***************************************************************
+
+Mailing-list: eigen@lists.tuxfamily.org
+IRC channel:  #eigen on Freenode
+Website:      http://eigen.tuxfamily.org
