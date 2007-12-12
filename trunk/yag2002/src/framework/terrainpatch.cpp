@@ -60,7 +60,6 @@ void TerrainPatchBuilder::reset()
     _built  = false;
 }
 
-//! TODO: the build method has problems with some resolutions! check it.
 bool TerrainPatchBuilder::build( const ImageTGA& image, const osg::Vec3f& scale, unsigned short column , unsigned short row, unsigned short sizeX, unsigned short sizeY, unsigned short subdivX, unsigned short subdivY )
 {
     if ( _built )
