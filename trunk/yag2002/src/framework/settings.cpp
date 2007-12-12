@@ -48,7 +48,10 @@ SettingsManager::~SettingsManager()
     // delete all profiles
     std::map< std::string, Settings* >::iterator pp_profile = _profiles.begin(), pp_profileEnd = _profiles.end();
     while ( pp_profile != pp_profileEnd )
+    {
         delete pp_profile->second;
+        ++pp_profile;
+    }
 }
 
 void SettingsManager::shutdown()
