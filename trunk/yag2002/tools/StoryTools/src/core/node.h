@@ -52,8 +52,6 @@ class BaseNode : public RefCount< BaseNode >
         //! Node type
         enum NoteType
         {
-            eTypeTopNode   = 0x1, // this type is reserved for the top node in render graph!
-
             eTypeStory     = 0x10,
             eTypeExecution,
             eTypeOperation,

@@ -76,7 +76,6 @@
 #include <core/log.h>
 #include <core/core.h>
 #include <core/utils.h>
-#include <core/settings.h>
 #include <core/smartptr.h>
 #include <core/singleton.h>
 #include <core/elementfactory.h>

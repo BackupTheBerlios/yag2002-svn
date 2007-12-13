@@ -30,28 +30,30 @@
 #include <main.h>
 #include "mainframe.h"
 #include "drawpanel.h"
+#include <core/stories.h>
+#include <core/settings.h>
 
 #include "pix/story.xpm"
 #include "pix/event.xpm"
 #include "pix/condition.xpm"
 
-#define APP_ICON    "pix/story.xpm"
+#define APP_ICON "story.xpm"
 
 IMPLEMENT_CLASS( beditor::MainFrame, wxFrame )
 
 BEGIN_EVENT_TABLE( beditor::MainFrame, wxFrame )
 
-    EVT_MENU( ID_MENUITEM6, beditor::MainFrame::onMenuitemNewClick )
+    EVT_MENU( ID_MENUITEM_NEW, beditor::MainFrame::onMenuitemNewClick )
 
-    EVT_MENU( ID_MENUITEM7, beditor::MainFrame::onMenuitemOpenClick )
+    EVT_MENU( ID_MENUITEM_OPEN, beditor::MainFrame::onMenuitemOpenClick )
 
-    EVT_MENU( ID_MENUITEM8, beditor::MainFrame::onMenuitemSaveClick )
+    EVT_MENU( ID_MENUITEM_SAVE, beditor::MainFrame::onMenuitemSaveClick )
 
-    EVT_MENU( ID_MENUITEM9, beditor::MainFrame::onMenuitemSaveAsClick )
+    EVT_MENU( ID_MENUITEM_SAVE_AS, beditor::MainFrame::onMenuitemSaveAsClick )
 
-    EVT_MENU( ID_MENUITEM10, beditor::MainFrame::onMenuitemQuitClick )
+    EVT_MENU( ID_MENUITEM_QUIT, beditor::MainFrame::onMenuitemQuitClick )
 
-    EVT_MENU( ID_MENUITEM11, beditor::MainFrame::onMenuitemAboutClick )
+    EVT_MENU( ID_MENUITEM_ABOUT, beditor::MainFrame::onMenuitemAboutClick )
 
     EVT_MENU( ID_TOOL_DRAW_EVENT, beditor::MainFrame::onToolDrawEventClick )
 
@@ -62,16 +64,40 @@ END_EVENT_TABLE()
 namespace beditor
 {
 
-MainFrame::MainFrame()
+MainFrame::MainFrame() :
+ _p_storyTreeCtrl( NULL )
 {
 }
 
-MainFrame::MainFrame( wxWindow* parent )
+MainFrame::MainFrame( wxWindow* parent ) :
+ _p_storyTreeCtrl( NULL )
 {
     wxFrame::Create( parent, SYMBOL_MAINFRAME_IDNAME, SYMBOL_MAINFRAME_TITLE, SYMBOL_MAINFRAME_POSITION, SYMBOL_MAINFRAME_SIZE, SYMBOL_MAINFRAME_STYLE );
     createControls();
     SetIcon( GetIconResource( wxT( APP_ICON ) ) );
     Centre();
+
+    // open last story file
+    std::string lastfile;
+    CFG_GET_VALUE( CFG_LASTFILE, lastfile );
+    if ( lastfile.length() )
+    {
+        try
+        {
+            Stories::get()->load( lastfile );
+            std::vector< BaseNodePtr >& stories = Stories::get()->getStories();
+            // select the first story for visualization
+            if ( stories.size() )
+                RenderManager::get()->setTopNode( stories[ 0 ] );
+
+            setupStoryTree();
+        }
+        catch( const std::exception& e )
+        {
+            log_warning << "could not open last opened file: " << lastfile << std::endl;
+            log_warning << "  " << e.what() << std::endl;
+        }
+    }
 }
 
 MainFrame::~MainFrame()
@@ -84,17 +110,17 @@ void MainFrame::createControls()
 
     wxMenuBar* menuBar = new wxMenuBar;
     wxMenu* itemMenu3 = new wxMenu;
-    itemMenu3->Append(ID_MENUITEM6, _("New"), _T(""), wxITEM_NORMAL);
-    itemMenu3->Append(ID_MENUITEM7, _("Open"), _T(""), wxITEM_NORMAL);
-    itemMenu3->Append(ID_MENUITEM8, _("Save"), _T(""), wxITEM_NORMAL);
-    itemMenu3->Append(ID_MENUITEM9, _("Save As ..."), _T(""), wxITEM_NORMAL);
+    itemMenu3->Append(ID_MENUITEM_NEW, _("New"), _T(""), wxITEM_NORMAL);
+    itemMenu3->Append(ID_MENUITEM_OPEN, _("Open"), _T(""), wxITEM_NORMAL);
+    itemMenu3->Append(ID_MENUITEM_SAVE, _("Save"), _T(""), wxITEM_NORMAL);
+    itemMenu3->Append(ID_MENUITEM_SAVE_AS, _("Save As ..."), _T(""), wxITEM_NORMAL);
     itemMenu3->AppendSeparator();
-    itemMenu3->Append(ID_MENUITEM10, _("Quit"), _T(""), wxITEM_NORMAL);
+    itemMenu3->Append(ID_MENUITEM_QUIT, _("Quit"), _T(""), wxITEM_NORMAL);
     menuBar->Append(itemMenu3, _("File"));
     wxMenu* itemMenu10 = new wxMenu;
     menuBar->Append(itemMenu10, _("Edit"));
     wxMenu* itemMenu11 = new wxMenu;
-    itemMenu11->Append(ID_MENUITEM11, _("About"), _T(""), wxITEM_NORMAL);
+    itemMenu11->Append(ID_MENUITEM_ABOUT, _("About"), _T(""), wxITEM_NORMAL);
     menuBar->Append(itemMenu11, _("Help"));
     itemFrame1->SetMenuBar(menuBar);
 
@@ -110,8 +136,8 @@ void MainFrame::createControls()
     wxBoxSizer* itemBoxSizer17 = new wxBoxSizer(wxVERTICAL);
     itemPanel16->SetSizer(itemBoxSizer17);
 
-    wxTreeCtrl* itemTreeCtrl18 = new wxTreeCtrl( itemPanel16, ID_TREECTRL, wxDefaultPosition, wxSize(150, -1), wxTR_SINGLE|wxSUNKEN_BORDER );
-    itemBoxSizer17->Add(itemTreeCtrl18, 1, wxALIGN_LEFT|wxALL, 5);
+    _p_storyTreeCtrl = new wxTreeCtrl( itemPanel16, ID_TREECTRL, wxDefaultPosition, wxSize(150, -1), wxTR_SINGLE|wxSUNKEN_BORDER );
+    itemBoxSizer17->Add(_p_storyTreeCtrl, 1, wxALIGN_LEFT|wxALL, 5);
 
     wxPanel* itemPanel19 = new wxPanel( itemPanel16, ID_PANEL7, wxDefaultPosition, wxSize(150, 200), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     itemBoxSizer17->Add(itemPanel19, 0, wxALIGN_LEFT|wxALL, 5);
@@ -138,7 +164,26 @@ void MainFrame::createControls()
     wxStatusBar* itemStatusBar26 = new wxStatusBar( itemFrame1, ID_STATUSBAR, wxST_SIZEGRIP|wxNO_BORDER );
     itemStatusBar26->SetFieldsCount(1);
     itemFrame1->SetStatusBar(itemStatusBar26);
+
+    // setup the story tree now
+    setupStoryTree();
 }
+
+#define TREE_IMG_ROOT   -1
+
+void MainFrame::setupStoryTree()
+{
+    std::vector< BaseNodePtr > & stories = Stories::get()->getStories();
+    std::vector< BaseNodePtr >::iterator p_story = stories.begin(), p_end = stories.end();
+
+    _p_storyTreeCtrl->DeleteAllItems();
+    wxTreeItemId rootID = _p_storyTreeCtrl->AddRoot( "Story book", TREE_IMG_ROOT );
+    for ( ; p_story != p_end; ++p_story )
+    {
+        _p_storyTreeCtrl->AppendItem( rootID, ( *p_story )->getName() );
+    }
+}
+
 
 void MainFrame::onMenuitemNewClick( wxCommandEvent& event )
 {
@@ -147,6 +192,41 @@ void MainFrame::onMenuitemNewClick( wxCommandEvent& event )
 
 void MainFrame::onMenuitemOpenClick( wxCommandEvent& event )
 {
+    std::string lastdir;
+    CFG_GET_VALUE( CFG_LASTDIR, lastdir );
+
+    wxFileDialog dlg( this, "Choose Story File" );
+    dlg.SetWildcard( "*.sc" );
+    dlg.SetPath( lastdir );
+    dlg.SetDirectory( lastdir );
+
+    if ( dlg.ShowModal() == wxID_CANCEL )
+        return;
+
+    lastdir = dlg.GetDirectory().c_str();
+    CFG_SET_VALUE( CFG_LASTDIR, lastdir );
+
+    std::string file = dlg.GetPath().c_str();
+    try
+    {
+        Stories::get()->load( file );
+        std::vector< BaseNodePtr >& stories = Stories::get()->getStories();
+        // select the first story for visualization
+        if ( stories.size() )
+            RenderManager::get()->setTopNode( stories[ 0 ] );
+    }
+    catch( const std::exception& e )
+    {
+        wxMessageBox( std::string( "Cannot create requested node type.\nReason:\n  " ) + e.what(), "Attention", wxOK );
+        return;
+    }
+
+    std::string lastfile = dlg.GetPath().c_str();
+    CFG_SET_VALUE( CFG_LASTFILE, lastfile );
+
+    // refresh the story tree
+    setupStoryTree();
+
     event.Skip();
 }
 

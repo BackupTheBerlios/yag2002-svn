@@ -49,7 +49,7 @@ class SmartPtr
 
                                      SmartPtr( const SmartPtr& copy );
 
-        explicit                     SmartPtr( Type* p_ref );
+                                     SmartPtr( Type* p_ref );
 
         virtual                      ~SmartPtr();
 

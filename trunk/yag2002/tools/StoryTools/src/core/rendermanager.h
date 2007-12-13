@@ -80,8 +80,10 @@ class RenderManager : public Singleton< RenderManager >
 
         virtual                                 ~RenderManager();
 
+        //! Initialize the render manager
         void                                    initialize();
 
+        //! Shutdown the render manager
         void                                    shutdown();
 
         //! Render graph's top node

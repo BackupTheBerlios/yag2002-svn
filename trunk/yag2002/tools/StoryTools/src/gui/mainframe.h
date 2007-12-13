@@ -64,6 +64,9 @@ class MainFrame: public wxFrame
         //! Create the controls and sizers
         void                                    createControls();
 
+        //! Setup the story tree
+        void                                    setupStoryTree();
+
         /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM6
         void                                    onMenuitemNewClick( wxCommandEvent& event );
 
@@ -99,23 +102,26 @@ class MainFrame: public wxFrame
 
         //! Control identifiers
         enum {
-            ID_MENUITEM6 = 10002,
-            ID_MENUITEM7 = 10003,
-            ID_MENUITEM8 = 10004,
-            ID_MENUITEM9 = 10005,
-            ID_MENUITEM10 = 10006,
-            ID_MENUITEM11 = 10007,
-            ID_PANEL5 = 10008,
-            ID_SPLITTERWINDOW = 10009,
-            ID_PANEL6 = 10010,
-            ID_TREECTRL = 10011,
-            ID_PANEL7 = 10012,
-            ID_PANEL8 = 10013,
-            ID_TOOLBAR = 10014,
-            ID_TOOL_DRAW_EVENT = 10015,
-            ID_TOOL_DRAW_CONDITION = 10016,
-            ID_STATUSBAR = 10018
+            ID_MENUITEM_NEW         = 10002,
+            ID_MENUITEM_OPEN        = 10003,
+            ID_MENUITEM_SAVE        = 10004,
+            ID_MENUITEM_SAVE_AS     = 10005,
+            ID_MENUITEM_QUIT        = 10006,
+            ID_MENUITEM_ABOUT       = 10007,
+            ID_PANEL5               = 10008,
+            ID_SPLITTERWINDOW       = 10009,
+            ID_PANEL6               = 10010,
+            ID_TREECTRL             = 10011,
+            ID_PANEL7               = 10012,
+            ID_PANEL8               = 10013,
+            ID_TOOLBAR              = 10014,
+            ID_TOOL_DRAW_EVENT      = 10015,
+            ID_TOOL_DRAW_CONDITION  = 10016,
+            ID_STATUSBAR            = 10018
         };
+
+        //! Story tree
+        wxTreeCtrl*                             _p_storyTreeCtrl;
 };
 
 } // namespace beditor

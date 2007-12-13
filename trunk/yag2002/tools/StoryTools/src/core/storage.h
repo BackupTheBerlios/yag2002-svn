@@ -65,11 +65,11 @@ class Storage : public Singleton< Storage >
 {
     public:
 
-        //! Read from given file and construct the node hierarchy; throws StorageException exceptions.
-        BaseNodePtr                             read( const std::string& filename ) throw( ... );
+        //! Read from given file and construct the node hierarchy of stories; throws StorageException exceptions.
+        void                                   read( const std::string& filename, std::vector< BaseNodePtr >& stories ) throw( ... );
 
-        //! Write out the given node; throws StorageException exceptions.
-        void                                    write( BaseNodePtr node, const std::string& filename ) throw( ... );
+        //! Write out the given stories; throws StorageException exceptions.
+        void                                    write( const std::string& filename, std::vector< BaseNodePtr >& stories ) throw( ... );
 
     protected:
 

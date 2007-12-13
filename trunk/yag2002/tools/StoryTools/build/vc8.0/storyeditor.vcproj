@@ -321,6 +321,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\core\stories.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\core\stories.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\core\utils.cpp"
 				>
 			</File>

@@ -30,6 +30,7 @@
 #include <main.h>
 #include "core.h"
 #include "storage.h"
+#include "stories.h"
 #include "settings.h"
 #include "noderenderer.h"
 #include "rendermanager.h"
@@ -61,6 +62,7 @@ void Core::initialize()
         Settings* p_cfg = SettingsManager::get()->createProfile( CFG_PROFILE, TOOL_CONFIG_FILE );
         // register the settings
         p_cfg->registerSetting( CFG_LASTFILE, std::string( "" ) );
+        p_cfg->registerSetting( CFG_LASTDIR, std::string( "" ) );
 
         // try to load the profile, if not successful then create the settings file
         if ( !SettingsManager::get()->loadProfile( CFG_PROFILE ) )
@@ -71,6 +73,7 @@ void Core::initialize()
         ElementFactory::get()->initialize();
         RenderManager::get()->initialize();
         Storage::get()->initialize();
+        Stories::get()->initialize();
     }
     catch( const std::exception& e )
     {
@@ -83,12 +86,14 @@ void Core::shutdown()
     log_info << "shutting down the system ..." << std::endl;
     log_info << getFormatedDateAndTime() << std::endl;
 
+    Stories::get()->shutdown();
+    Storage::get()->shutdown();
+
     ElementFactory::get()->shutdown();
     RenderManager::get()->shutdown();
 
     SettingsManager::get()->storeProfile( CFG_PROFILE );
     SettingsManager::get()->shutdown();
-    Storage::get()->shutdown();
 
     // destroy the singleton
     destroy();

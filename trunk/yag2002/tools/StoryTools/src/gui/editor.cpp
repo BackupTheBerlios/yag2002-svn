@@ -56,6 +56,7 @@ void EditorApp::initialize()
 //! TODO: remove this test later
 void test()
 {
+#if 0
     try
     {
 #if 0
@@ -82,6 +83,7 @@ void test()
         wxMessageBox( std::string( "Cannot create requested node type.\nReason:\n  " ) + e.what(), "Attention", wxOK );
         return;
     }
+#endif
 }
 
 bool EditorApp::OnInit()
@@ -99,10 +101,11 @@ bool EditorApp::OnInit()
     wxImage::AddHandler( new wxGIFHandler );
 #endif
 
-    beditor::MainFrame* p_mainWindow = new beditor::MainFrame( NULL );
-
     // initialize the system
     beditor::Core::get()->initialize();
+
+    // create the main window now
+    beditor::MainFrame* p_mainWindow = new beditor::MainFrame( NULL );
 
     //! TODO: remove the test function later
     test();

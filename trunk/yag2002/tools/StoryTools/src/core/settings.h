@@ -42,7 +42,8 @@
 
 //! Tool settings
 #define CFG_LASTFILE                "lastFile"
-// #define CFG_ ...
+#define CFG_LASTDIR                 "lastDir"
+
 
 namespace beditor
 {

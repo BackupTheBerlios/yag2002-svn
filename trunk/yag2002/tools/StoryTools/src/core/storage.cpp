@@ -71,13 +71,8 @@ void Storage::shutdown()
     destroy();
 }
 
-BaseNodePtr Storage::read( const std::string& filename ) throw( ... )
+void Storage::read( const std::string& filename, std::vector< BaseNodePtr >& stories ) throw( ... )
 {
-    BaseNodePtr topnode;
-
-    // this container will be evaluated and setup to a node hierarchy
-    std::vector< BaseNodePtr > nodecontainer;
-
     // setup an xml document
     TiXmlDocument doc;
     doc.SetCondenseWhiteSpace( false );
@@ -141,7 +136,7 @@ BaseNodePtr Storage::read( const std::string& filename ) throw( ... )
         }
 
         // create a new story node
-        BaseNodePtr story;
+        BaseNodePtr story = new BaseNode( BaseNode::eTypeStory );
 
         try
         {
@@ -154,13 +149,6 @@ BaseNodePtr Storage::read( const std::string& filename ) throw( ... )
             log_error << "  " << e.what() << std::endl;
             throw StorageException( "Problem reading file '" + filename + "'. Story element " + storycntstr.str() + " has no valid element type '" + std::string( ELEM_TYPE_STORY ) + "'." );
         }
-
-        // create the top node only if at least one valid story exists!
-        if ( !topnode.getRef() )
-            topnode = new BaseNode( BaseNode::eTypeTopNode );
-
-        // append the story to top node
-        topnode->addChild( story.getRef() );
 
         // get the story elements
         TiXmlNode* p_nodestoryelement = p_nodestory->FirstChild( FF_NODE_STORY_ELEMENT );
@@ -242,16 +230,16 @@ BaseNodePtr Storage::read( const std::string& filename ) throw( ... )
         while( p_nodestoryelement );
 
         p_nodestory = p_nodestory->NextSiblingElement( FF_NODE_STORY );
+        // append the top node to stories container
+        stories.push_back( story );
     }
     while ( p_nodestory );
 
     // clear the xml document
     doc.Clear();
-
-    return topnode;
 }
 
-void Storage::write( BaseNodePtr node, const std::string& filename ) throw( ... )
+void Storage::write( const std::string& filename, std::vector< BaseNodePtr >& stories ) throw( ... )
 {
 }
 
