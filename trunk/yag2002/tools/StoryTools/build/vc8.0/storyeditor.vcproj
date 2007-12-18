@@ -424,6 +424,22 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\core\elements\link.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\core\elements\link.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\core\elements\linkrenderer.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\core\elements\linkrenderer.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\core\elements\operation.cpp"
 					>
 				</File>
