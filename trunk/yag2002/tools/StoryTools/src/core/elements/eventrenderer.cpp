@@ -45,10 +45,6 @@ NodeRendererEvent::~NodeRendererEvent()
 {
 }
 
-void NodeRendererEvent::setupGeometry()
-{
-}
-
 void NodeRendererEvent::render( const Eigen::Matrix4f& view, const Eigen::Matrix4f& model )
 {
     glPushMatrix();

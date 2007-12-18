@@ -109,7 +109,8 @@ void RenderManager::renderScene( const wxPoint& panPosition, const wxSize& viewS
     _p_canvas->SetCurrent();
 
     glClearColor( 1.0f, 1.0f, 1.0f, 1.0f );
-    glClear( GL_COLOR_BUFFER_BIT );
+    glEnable( GL_DEPTH_TEST );
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     // setup the view port
     glMatrixMode( GL_PROJECTION );
@@ -121,7 +122,7 @@ void RenderManager::renderScene( const wxPoint& panPosition, const wxSize& viewS
     float right  =  viewSize.x / 2.0f;
     float buttom = -viewSize.y / 2.0f;
     float top    =  viewSize.y / 2.0f;
-    glOrtho( left, right, buttom, top, -1.0, 1.0 );
+    glOrtho( left, right, buttom, top, -100.0, 100.0 );
 
     // reset the model matrix
     glMatrixMode( GL_MODELVIEW );

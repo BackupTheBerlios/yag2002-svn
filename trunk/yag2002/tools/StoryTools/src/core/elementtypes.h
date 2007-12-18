@@ -33,6 +33,7 @@
 
 //! Element types used for creating new elements via ElementFactory
 #define ELEM_TYPE_STORY         "Story"
+#define ELEM_TYPE_LINK          "Link"
 #define ELEM_TYPE_EVENT         "Event"
 
 

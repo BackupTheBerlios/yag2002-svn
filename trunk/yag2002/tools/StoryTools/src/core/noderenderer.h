@@ -46,8 +46,8 @@ class NodeRenderer
         //! Construct the node renderer
                                                 NodeRenderer();
 
-        //! Render the node shape
-        void                                    render( const Eigen::Matrix4f& view );
+        //! Render the node shape. If parent is given then parent/children relation ship is rendered by arrows
+        void                                    render( const Eigen::Matrix4f& view, BaseNode* p_parent );
 
         //! Set node position
         void                                    setPosition( const Eigen::Vector3f& pos );
@@ -71,11 +71,11 @@ class NodeRenderer
 
         virtual                                 ~NodeRenderer();
 
-        //! Setup the visualization geometry, this should be implemented by derived classes
-        virtual void                            setupGeometry() = 0;
-
         //! Render method, this should be implemented by derived classes
         virtual void                            render( const Eigen::Matrix4f& view, const Eigen::Matrix4f& model ) = 0;
+
+        //! Render an arrow from parent to child. This method can be overridden in order to implement a custom arrow.
+        virtual void                            renderArrow( Eigen::Vector3f& parentpos );
 
         //! Position of the node
         Eigen::Vector3f                         _position;

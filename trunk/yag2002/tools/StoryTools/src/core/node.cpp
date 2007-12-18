@@ -227,16 +227,16 @@ bool BaseNode::findNode( std::vector< BaseNodePtr >& nodes )
     return false;
 }
 
-void BaseNode::render( const Eigen::Matrix4f& view )
+void BaseNode::render( const Eigen::Matrix4f& view, BaseNode* p_parent )
 {
     if ( _p_nodeRenderer )
-        _p_nodeRenderer->render( view );
+        _p_nodeRenderer->render( view, p_parent );
 
     // draw the children
     std::vector< BaseNodePtr >::iterator p_currchild = _children.begin(), p_end = _children.end();
     for ( ; p_currchild != p_end; ++p_currchild )
     {
-        ( *p_currchild )->render( view );
+        ( *p_currchild )->render( view, this );
     }
 }
 

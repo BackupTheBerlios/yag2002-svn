@@ -58,13 +58,13 @@ void BBox::setDimensions( const Eigen::Vector3f& min, const Eigen::Vector3f& max
     _max = max;
 }
 
-bool BBox::contains( const Eigen::Vector3f& scale, const Eigen::Vector3f& boxpos, const Eigen::Vector3f& pos ) const
+bool BBox::contains( const Eigen::Vector3f& scale, const Eigen::Vector3f& volumepos, const Eigen::Vector3f& pos ) const
 {
     Eigen::Vector3f minpos( _min.x() * scale.x(), _min.y() * scale.y(), _min.z() * scale.z() );
-    minpos += boxpos;
+    minpos += volumepos;
 
     Eigen::Vector3f maxpos( _max.x() * scale.x(), _max.y() * scale.y(), _max.z() * scale.z() );
-    maxpos += boxpos;
+    maxpos += volumepos;
 
     if ( 
         ( pos.x() >= minpos.x() ) && ( pos.x() <= maxpos.x() ) &&
@@ -72,6 +72,34 @@ bool BBox::contains( const Eigen::Vector3f& scale, const Eigen::Vector3f& boxpos
         ( pos.z() >= minpos.z() ) && ( pos.z() <= maxpos.z() )
        )
        return true;
+
+    return false;
+}
+
+
+BLine::BLine() :
+ _width( 10.0f )
+{
+}
+
+BLine::~BLine()
+{
+}
+
+void BLine::setSourceDestination( BaseNodePtr src, BaseNodePtr dest )
+{
+    _src  = src;
+    _dest = dest;
+}
+
+void BLine::setLineWidth( float width )
+{
+    _width = width;
+}
+
+bool BLine::contains( const Eigen::Vector3f& scale, const Eigen::Vector3f& volumepos, const Eigen::Vector3f& pos ) const
+{
+    // TODO
 
     return false;
 }

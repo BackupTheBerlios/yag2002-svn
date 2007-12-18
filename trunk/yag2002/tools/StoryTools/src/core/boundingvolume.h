@@ -45,8 +45,8 @@ class BaseBoundingVolume : public RefCount< BaseBoundingVolume >
         //! Construct a bounding volume
                                                     BaseBoundingVolume();
 
-        //! Check if the given point (pos) is contained in scaled (scale) and positioned (boxpos) volume). Implementation must be done in derived classes.
-        virtual bool                                contains( const Eigen::Vector3f& scale, const Eigen::Vector3f& boxpos, const Eigen::Vector3f& pos ) const = 0;
+        //! Check if the given point (pos) is contained in scaled (scale) and positioned (volumepos) volume). Implementation must be done in derived classes.
+        virtual bool                                contains( const Eigen::Vector3f& scale, const Eigen::Vector3f& volumepos, const Eigen::Vector3f& pos ) const = 0;
 
     protected:
 
@@ -70,7 +70,7 @@ class BBox : public BaseBoundingVolume
         void                                        setDimensions( const Eigen::Vector3f& min, const Eigen::Vector3f& max );
 
         //! Containment test
-        bool                                        contains( const Eigen::Vector3f& scale, const Eigen::Vector3f& boxpos, const Eigen::Vector3f& pos ) const;
+        bool                                        contains( const Eigen::Vector3f& scale, const Eigen::Vector3f& volumepos, const Eigen::Vector3f& pos ) const;
 
     protected:
 
@@ -82,6 +82,38 @@ class BBox : public BaseBoundingVolume
 
         //! Max point of bbox dimensions
         Eigen::Vector3f                             _max;
+};
+
+//! Directed line volume (used for arrows)
+class BLine : public BaseBoundingVolume
+{
+    public:
+
+        //! Construct a bounding volume of box type
+                                                    BLine();
+
+        //! Set the source and destination nodes
+        void                                        setSourceDestination( BaseNodePtr src, BaseNodePtr dest );
+
+        //! Set the width of the line between src and dest to check
+        void                                        setLineWidth( float width );
+
+        //! Containment test
+        bool                                        contains( const Eigen::Vector3f& scale, const Eigen::Vector3f& volumepos, const Eigen::Vector3f& pos ) const;
+
+    protected:
+
+        //! The object can be destroyed only by the smart pointer
+        virtual                                     ~BLine();
+
+        //! Source node
+        BaseNodePtr                                 _src;
+
+        //! Destination node
+        BaseNodePtr                                 _dest;
+
+        //! Line width
+        float                                       _width;
 };
 
 } // namespace beditor

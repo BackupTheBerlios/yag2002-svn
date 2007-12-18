@@ -45,7 +45,7 @@ NodeRenderer::~NodeRenderer()
 {
 }
 
-void NodeRenderer::render( const Eigen::Matrix4f& view )
+void NodeRenderer::render( const Eigen::Matrix4f& view, BaseNode* p_parent )
 {
     // setup the model matrix
     Eigen::Matrix4f model;
@@ -55,7 +55,19 @@ void NodeRenderer::render( const Eigen::Matrix4f& view )
     model.loadScaling( scale );
     model.setColumn( 3, pos );
 
+    // story nodes do not need any arrows
+    if ( p_parent && p_parent->getType() != BaseNode::eTypeStory )
+    {
+        renderArrow( p_parent->getPosition() );
+    }
+
+    // render the element
     render( view, model );
+}
+
+void NodeRenderer::renderArrow( Eigen::Vector3f& parentpos )
+{
+
 }
 
 void NodeRenderer::setPosition( const Eigen::Vector3f& pos )

@@ -48,10 +48,7 @@ class NodeRendererEvent : public NodeRenderer
 
         virtual                                 ~NodeRendererEvent();
 
-        //! Setup the visualization geometry, this should be implemented by derived classes
-        virtual void                            setupGeometry();
-
-        //! Render method, this should be implemented by derived classes
+        //! Render method
         virtual void                            render( const Eigen::Matrix4f& view, const Eigen::Matrix4f& model );
 
     friend class BaseNode;

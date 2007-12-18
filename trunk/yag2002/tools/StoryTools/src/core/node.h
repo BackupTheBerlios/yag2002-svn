@@ -53,6 +53,7 @@ class BaseNode : public RefCount< BaseNode >
         enum NoteType
         {
             eTypeStory     = 0x10,
+            eTypeLink,
             eTypeExecution,
             eTypeOperation,
             eTypeDialog,
@@ -107,8 +108,8 @@ class BaseNode : public RefCount< BaseNode >
         //! Highlight the node and its children which are in node list
         virtual void                                highlight( std::vector< BaseNodePtr >& nodes );
 
-        //! Render the node shape, override it by derived class in order to implement custom shape(s)
-        virtual void                                render( const Eigen::Matrix4f& view );
+        //! Render the node shape, override it by derived class in order to implement custom shape(s). For a top node let p_parent be NULL.
+        virtual void                                render( const Eigen::Matrix4f& view, BaseNode* p_parent = NULL );
 
     protected:
 
