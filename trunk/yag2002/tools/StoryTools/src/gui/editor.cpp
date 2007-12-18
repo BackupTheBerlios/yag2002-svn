@@ -34,6 +34,8 @@
 #include "core/rendermanager.h"
 #include "core/elementfactory.h"
 
+#include "core/elements/link.h"
+
 IMPLEMENT_APP( beditor::EditorApp )
 IMPLEMENT_CLASS( beditor::EditorApp, wxApp )
 
@@ -59,20 +61,28 @@ void test()
 #if 0
     try
     {
-#if 0
+#if 1
         // create a top node in render manager
-        RenderManager::get()->setTopNode( BaseNodePtr( new BaseNode( BaseNode::eTypeTopNode ) ) );
+        BaseNodePtr story( new BaseNode( BaseNode::eTypeStory ) );
+        story->setName( "TEST" );
+        RenderManager::get()->setTopNode( story );
 
         BaseNodePtr eventnode1 = ElementFactory::get()->createNode( ELEM_TYPE_EVENT );
         BaseNodePtr eventnode2 = ElementFactory::get()->createNode( ELEM_TYPE_EVENT );
 
         eventnode1->setPosition( Eigen::Vector3f( 0.0f, 0.0f, 0.0f ) );
         eventnode1->setScale( Eigen::Vector3f( 1.0f, 1.0f, 1.0f ) );
-        RenderManager::get()->getTopNode()->addChild( eventnode1.getRef() );
+        story->addChild( eventnode1.getRef() );
 
         eventnode2->setPosition( Eigen::Vector3f( 100.0f, 100.0f, 0.0f ) );
         eventnode2->setScale( Eigen::Vector3f( 2.0f, 2.0f, 1.0f ) );
-        RenderManager::get()->getTopNode()->addChild( eventnode2.getRef() );
+        story->addChild( eventnode2.getRef() );
+
+        // setup a link node
+        BaseNodePtr link = ElementFactory::get()->createNode( ELEM_TYPE_LINK );
+        NodeLink* p_nodelink = dynamic_cast< NodeLink* >( link.getRef() );
+        p_nodelink->setSourceDestination( eventnode1, eventnode2 );
+        story->addChild( p_nodelink );
 #else
         BaseNodePtr topnode = Storage::get()->read( "test.sc" );
         RenderManager::get()->setTopNode( topnode );

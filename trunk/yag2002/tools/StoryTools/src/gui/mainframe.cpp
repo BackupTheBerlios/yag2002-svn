@@ -39,6 +39,11 @@
 
 #define APP_ICON "story.xpm"
 
+//! Story tree's item images
+#define TREE_IMG_ROOT       -1
+#define TREE_IMG_STORY      -1
+
+
 IMPLEMENT_CLASS( beditor::MainFrame, wxFrame )
 
 BEGIN_EVENT_TABLE( beditor::MainFrame, wxFrame )
@@ -55,6 +60,8 @@ BEGIN_EVENT_TABLE( beditor::MainFrame, wxFrame )
 
     EVT_MENU( ID_MENUITEM_ABOUT, beditor::MainFrame::onMenuitemAboutClick )
 
+    EVT_TREE_SEL_CHANGED( ID_TREECTRL, MainFrame::onTreectrlSelChanged )
+
     EVT_MENU( ID_TOOL_DRAW_EVENT, beditor::MainFrame::onToolDrawEventClick )
 
     EVT_MENU( ID_TOOL_DRAW_CONDITION, beditor::MainFrame::onToolDrawConditionClick )
@@ -64,7 +71,25 @@ END_EVENT_TABLE()
 namespace beditor
 {
 
+
+//! Class for holding nodes in tree leaves
+class TreeData: public wxTreeItemData
+{
+    public:
+                            TreeData( BaseNodePtr node ) : _node( node ) {}
+
+        virtual             ~TreeData() { _node = NULL; }
+
+        BaseNodePtr         getNode() { return _node; }
+
+    protected:
+
+        BaseNodePtr         _node;
+};
+
+
 MainFrame::MainFrame() :
+ _p_drawPanel( NULL ),
  _p_storyTreeCtrl( NULL )
 {
 }
@@ -136,7 +161,7 @@ void MainFrame::createControls()
     wxBoxSizer* itemBoxSizer17 = new wxBoxSizer(wxVERTICAL);
     itemPanel16->SetSizer(itemBoxSizer17);
 
-    _p_storyTreeCtrl = new wxTreeCtrl( itemPanel16, ID_TREECTRL, wxDefaultPosition, wxSize(150, -1), wxTR_SINGLE|wxSUNKEN_BORDER );
+    _p_storyTreeCtrl = new wxTreeCtrl( itemPanel16, ID_TREECTRL, wxDefaultPosition, wxSize(150, -1), wxTR_SINGLE|wxSUNKEN_BORDER|wxTR_HAS_BUTTONS );
     itemBoxSizer17->Add(_p_storyTreeCtrl, 1, wxALIGN_LEFT|wxALL, 5);
 
     wxPanel* itemPanel19 = new wxPanel( itemPanel16, ID_PANEL7, wxDefaultPosition, wxSize(150, 200), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
@@ -155,8 +180,9 @@ void MainFrame::createControls()
     itemToolBar22->AddTool(ID_TOOL_DRAW_CONDITION, _T(""), itemtool24Bitmap, itemtool24BitmapDisabled, wxITEM_NORMAL, _("Add Condition"), _("Add Condition Block to diagram"));
     itemToolBar22->Realize();
     itemBoxSizer21->Add(itemToolBar22, 0, wxGROW|wxALL, 5);
-    wxPanel* itemPanel25 = new DrawPanel( itemPanel20 );
-    itemBoxSizer21->Add(itemPanel25, 1, wxGROW|wxALL, 5);
+
+    _p_drawPanel = new DrawPanel( itemPanel20 );
+    itemBoxSizer21->Add(_p_drawPanel, 1, wxGROW|wxALL, 5);
 
     itemSplitterWindow15->SplitVertically(itemPanel16, itemPanel20, 170);
     itemBoxSizer14->Add(itemSplitterWindow15, 1, wxGROW|wxALL, 5);
@@ -169,8 +195,6 @@ void MainFrame::createControls()
     setupStoryTree();
 }
 
-#define TREE_IMG_ROOT   -1
-
 void MainFrame::setupStoryTree()
 {
     std::vector< BaseNodePtr > & stories = Stories::get()->getStories();
@@ -180,8 +204,10 @@ void MainFrame::setupStoryTree()
     wxTreeItemId rootID = _p_storyTreeCtrl->AddRoot( "Story book", TREE_IMG_ROOT );
     for ( ; p_story != p_end; ++p_story )
     {
-        _p_storyTreeCtrl->AppendItem( rootID, ( *p_story )->getName() );
+         wxTreeItemId item = _p_storyTreeCtrl->AppendItem( rootID, ( *p_story )->getName(), TREE_IMG_STORY );
+        _p_storyTreeCtrl->SetItemData( item, new TreeData( *p_story ) );
     }
+    _p_storyTreeCtrl->Expand( rootID );
 }
 
 
@@ -248,6 +274,24 @@ void MainFrame::onMenuitemQuitClick( wxCommandEvent& event )
 void MainFrame::onMenuitemAboutClick( wxCommandEvent& event )
 {
     event.Skip();
+}
+
+void MainFrame::onTreectrlSelChanged( wxTreeEvent& event )
+{
+    if ( !_p_storyTreeCtrl )
+        return;
+
+    wxTreeItemId item = _p_storyTreeCtrl->GetSelection();
+    if ( !item.IsOk() )
+        return;
+
+    wxTreeItemData* p_data = _p_storyTreeCtrl->GetItemData( item );
+    if ( !p_data )
+        return;
+
+    BaseNodePtr node = dynamic_cast< TreeData* >( p_data )->getNode();
+    RenderManager::get()->setTopNode( node );
+    _p_drawPanel->forceRedraw();
 }
 
 bool MainFrame::ShowToolTips()

@@ -54,6 +54,12 @@ void DrawPanel::resetZoom()
     _zoom = 1.0f;
 }
 
+void DrawPanel::forceRedraw()
+{
+    wxPaintEvent paintevent;
+    onPaint( paintevent );
+}
+
 void DrawPanel::createControls()
 {
     wxBoxSizer* p_canvassizer = new wxBoxSizer( wxVERTICAL );

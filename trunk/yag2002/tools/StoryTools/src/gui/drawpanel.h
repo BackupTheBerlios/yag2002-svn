@@ -52,6 +52,10 @@ class DrawPanel: public wxPanel
         //! Reset the zoom
         void                                resetZoom();
 
+        //! Forces the draw panel to re-render the gl canvas area.
+        //! NOTE: using wxPanel's Refresh method causes a flicker!
+        void                                forceRedraw();
+
     protected:
 
         //! Create the controls.

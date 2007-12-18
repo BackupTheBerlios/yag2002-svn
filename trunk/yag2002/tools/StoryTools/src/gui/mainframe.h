@@ -41,6 +41,8 @@
 namespace beditor
 {
 
+class DrawPanel;
+
 //! Application's main frame
 class MainFrame: public wxFrame
 {
@@ -67,37 +69,40 @@ class MainFrame: public wxFrame
         //! Setup the story tree
         void                                    setupStoryTree();
 
-        /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM6
+        //! wxEVT_COMMAND_MENU_SELECTED event handler
         void                                    onMenuitemNewClick( wxCommandEvent& event );
 
-        /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM7
+        //! wxEVT_COMMAND_MENU_SELECTED event handler
         void                                    onMenuitemOpenClick( wxCommandEvent& event );
 
-        /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM8
+        //! wxEVT_COMMAND_MENU_SELECTED event handler
         void                                    onMenuitemSaveClick( wxCommandEvent& event );
 
-        /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM9
+        //! wxEVT_COMMAND_MENU_SELECTED event handler
         void                                    onMenuitemSaveAsClick( wxCommandEvent& event );
 
-        /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM10
+        //! wxEVT_COMMAND_MENU_SELECTED event handler
         void                                    onMenuitemQuitClick( wxCommandEvent& event );
 
-        /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM11
+        //! wxEVT_COMMAND_MENU_SELECTED event handler
         void                                    onMenuitemAboutClick( wxCommandEvent& event );
 
-        /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_DRAW_EVENT
+        //! wxEVT_COMMAND_TREE_SEL_CHANGING event handler
+        void                                    onTreectrlSelChanged( wxTreeEvent& event );
+
+        //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_DRAW_EVENT
         void                                    onToolDrawEventClick( wxCommandEvent& event );
 
-        /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_DRAW_CONDITION
+        //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_DRAW_CONDITION
         void                                    onToolDrawConditionClick( wxCommandEvent& event );
 
-        /// Retrieves bitmap resources
+        //! Retrieves bitmap resources
         wxBitmap                                GetBitmapResource( const wxString& name );
 
-        /// Retrieves icon resources
+        //! Retrieves icon resources
         wxIcon                                  GetIconResource( const wxString& name );
 
-        /// Should we show tooltips?
+        //! Should we show tooltips?
         static bool                             ShowToolTips();
 
         //! Control identifiers
@@ -119,6 +124,9 @@ class MainFrame: public wxFrame
             ID_TOOL_DRAW_CONDITION  = 10016,
             ID_STATUSBAR            = 10018
         };
+
+        //! Draw panel object
+        DrawPanel*                              _p_drawPanel;
 
         //! Story tree
         wxTreeCtrl*                             _p_storyTreeCtrl;
