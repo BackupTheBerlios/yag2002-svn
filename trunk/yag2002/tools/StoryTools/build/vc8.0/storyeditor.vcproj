@@ -340,51 +340,51 @@
 				Name="math"
 				>
 				<File
-					RelativePath="..\..\src\core\eigen\src\linearsolver.h"
+					RelativePath="..\..\src\3rdparty\eigen\src\linearsolver.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\core\eigen\src\linearsolverbase.h"
+					RelativePath="..\..\src\3rdparty\eigen\src\linearsolverbase.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\core\eigen\src\ludecomposition.h"
+					RelativePath="..\..\src\3rdparty\eigen\src\ludecomposition.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\core\eigen\src\ludecompositionbase.h"
+					RelativePath="..\..\src\3rdparty\eigen\src\ludecompositionbase.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\core\eigen\src\matrix.h"
+					RelativePath="..\..\src\3rdparty\eigen\src\matrix.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\core\eigen\src\matrixbase.h"
+					RelativePath="..\..\src\3rdparty\eigen\src\matrixbase.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\core\eigen\src\projective.h"
+					RelativePath="..\..\src\3rdparty\eigen\src\projective.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\core\eigen\src\regression.h"
+					RelativePath="..\..\src\3rdparty\eigen\src\regression.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\core\eigen\src\regressioninternal.h"
+					RelativePath="..\..\src\3rdparty\eigen\src\regressioninternal.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\core\eigen\src\util.h"
+					RelativePath="..\..\src\3rdparty\eigen\src\util.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\core\eigen\src\vector.h"
+					RelativePath="..\..\src\3rdparty\eigen\src\vector.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\core\eigen\src\vectorbase.h"
+					RelativePath="..\..\src\3rdparty\eigen\src\vectorbase.h"
 					>
 				</File>
 			</Filter>
