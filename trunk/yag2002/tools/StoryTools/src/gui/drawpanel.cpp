@@ -96,10 +96,25 @@ void DrawPanel::onSize( wxSizeEvent& event )
 
 void DrawPanel::onKey( wxKeyEvent& event )
 {
+    bool forceredraw = false;
+
     if ( event.ShiftDown() )
         _editState |= eStateMultiSel;
     else
         _editState &= ~eStateMultiSel;
+
+    int keycode = event.GetKeyCode() ;
+    if ( keycode == WXK_DELETE )
+    {
+        RenderManager::get()->deleteNodes( _selNodes );
+        forceredraw = true;
+    }
+
+    if ( forceredraw )
+    {
+        wxPaintEvent paintevent;
+        onPaint( paintevent );
+    }
 }
 
 void DrawPanel::onPaint( wxPaintEvent& event )
