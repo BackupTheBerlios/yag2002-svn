@@ -56,6 +56,9 @@ class RenderManager : public Singleton< RenderManager >
         //! Select nodes by hit check at given position. Vector 'nodes' contains all hit nodes. Return count of hit nodes.
         unsigned int                            selectNodesByHit( const Eigen::Vector3f& hitposition, std::vector< BaseNodePtr >& nodes );
 
+        //! Delete given nodes
+        void                                    deleteNodes( std::vector< BaseNodePtr >& nodes );
+
         //! Traverse all nodes in scene and highlight the given nodes.
         void                                    highlightNodes( std::vector< BaseNodePtr >& nodes );
 

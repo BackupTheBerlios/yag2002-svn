@@ -29,6 +29,7 @@
 
 #include <main.h>
 #include "rendermanager.h"
+#include "elements/link.h"
 
 //! Implement the render manager singleton
 BEDITOR_SINGLETON_IMPL( beditor::RenderManager )
@@ -90,6 +91,37 @@ unsigned int RenderManager::selectNodesByHit( const Eigen::Vector3f& hitposition
         return 0;
 
     return ( unsigned int )( nodes.size() - nodecount );
+}
+
+void RenderManager::deleteNodes( std::vector< BaseNodePtr >& nodes )
+{
+    if ( !_topNode.getRef() )
+        return;
+
+    std::vector< BaseNodePtr >::iterator p_node = nodes.begin(), p_end = nodes.end();
+    for ( ; p_node != p_end; ++p_node )
+    {
+        // check if any links are asscociated with node
+        std::vector< BaseNodePtr > childrenlist = _topNode->getChildren();
+        std::vector< BaseNodePtr >::iterator p_childnode = childrenlist.begin(), p_childEnd = childrenlist.end();
+        for ( ; p_childnode != p_childEnd; ++p_childnode )
+        {
+            if ( ( *p_childnode )->getType() == BaseNode::eTypeLink )
+            {
+                NodeLink* p_link = dynamic_cast< NodeLink* >( p_childnode->getRef() );
+                if ( p_link->isAssociated( *p_node ) )
+                {
+                    _topNode->removeChild( p_link );
+                }
+            }
+        }
+
+        // remove the node
+        _topNode->removeChild( p_node->getRef() );
+    }
+
+
+    nodes.clear();
 }
 
 void RenderManager::highlightNodes( std::vector< BaseNodePtr >& nodes )
