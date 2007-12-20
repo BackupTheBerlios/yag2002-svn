@@ -87,6 +87,12 @@ class BaseNode : public RefCount< BaseNode >
         //! Remove all children
         void                                        removeChildren();
 
+        //! Add new parent
+        bool                                        addParent( BaseNode* p_child );
+
+        //! Remove given node from parent list, returns false if the node does not exist in parents.
+        bool                                        removeParent( BaseNode* p_node );
+
         //! Get node children
         std::vector< BaseNodePtr >&                 getChildren();
 
@@ -115,9 +121,6 @@ class BaseNode : public RefCount< BaseNode >
 
         //! The object can be destroyed only by the smart pointer
         virtual                                     ~BaseNode();
-
-        //! Add new parent
-        bool                                        addParent( BaseNode* p_child );
 
         //! Check if this node is contained in given list
         bool                                        findNode( std::vector< BaseNodePtr >& nodes );

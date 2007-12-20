@@ -45,6 +45,8 @@ BaseNode::~BaseNode()
 {
     if ( _p_nodeRenderer )
         delete _p_nodeRenderer;
+
+    removeChildren();
 }
 
 void BaseNode::setName( const std::string& name )
@@ -121,6 +123,7 @@ bool BaseNode::removeChild( BaseNode* p_child )
 
     if ( p_currchild != p_end )
     {
+        ( *p_currchild )->removeParent( this );
         _children.erase( p_currchild );
     }
     else
@@ -134,6 +137,10 @@ bool BaseNode::removeChild( BaseNode* p_child )
 
 void BaseNode::removeChildren()
 {
+    std::vector< BaseNodePtr >::iterator p_currchild = _children.begin(), p_end = _children.end();
+    for ( ; p_currchild != p_end; ++p_currchild )
+        ( *p_currchild )->removeParent( this );
+
     _children.clear();
 }
 
@@ -150,6 +157,28 @@ bool BaseNode::addParent( BaseNode* p_parent )
     }
 
     _parents.push_back( BaseNodePtr( p_parent ) );
+    return true;
+}
+
+bool BaseNode::removeParent( BaseNode* p_node )
+{
+    std::vector< BaseNodePtr >::iterator p_currparent = _parents.begin(), p_end = _parents.end();
+    for ( ; p_currparent != p_end; ++p_currparent )
+    {
+        if ( p_currparent->getRef() == p_node )
+            break;
+    }
+
+    if ( p_currparent != p_end )
+    {
+        _parents.erase( p_currparent );
+    }
+    else
+    {
+        assert( NULL && "cound not find node in parent list to remove!" );
+        return false;
+    }
+
     return true;
 }
 
