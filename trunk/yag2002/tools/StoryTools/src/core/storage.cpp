@@ -30,6 +30,7 @@
 #include <main.h>
 #include "storage.h"
 #include "elementfactory.h"
+#include "elements/link.h"
 #include <3rdparty/tinyxml/tinyxml.h>
 
 //! File format tags
@@ -44,7 +45,12 @@
 #define FF_NODE_RENDER          "Render"
 #define FF_ATTR_RENDER_POS      "Position"
 #define FF_ATTR_RENDER_SCALE    "Scale"
+
 #define FF_NODE_PROPS           "Properties"
+
+#define FF_NODE_CONNECTION      "Connection"
+#define FF_ATTR_CONNECTION_SRC  "Source"
+#define FF_ATTR_CONNECTION_DST  "Destination"
 
 
 //! Implement the render manager singleton
@@ -53,6 +59,91 @@ BEDITOR_SINGLETON_IMPL( beditor::Storage )
 namespace beditor
 {
 
+//! Helper class used für setting up the node links
+class NodeLinkInfo : public RefCount< NodeLinkInfo >
+{
+    DECLARE_SMARTPTR_ACCESS( NodeLinkInfo )
+
+    public:
+
+                                NodeLinkInfo( const std::string& name, const std::string& src, const std::string& dst ) :
+                                 _name( name ),
+                                 _src( src ),
+                                 _dst( dst )
+                                {
+                                }
+
+        std::string             _name;
+        std::string             _src;
+        std::string             _dst;
+
+    protected:
+
+        virtual                 ~NodeLinkInfo() {}
+};
+
+//! Typedef for the smart pointer
+typedef SmartPtr< NodeLinkInfo >   NodeLinkInfoPtr;
+
+//! Helper class for setting up the story nodes
+class NodeLinkSetup
+{
+    public:
+                                NodeLinkSetup() {}
+
+        virtual                 ~NodeLinkSetup() {}
+
+        //! Helper function for setting up node links in a given story
+        void                    setupNodeLinks( BaseNodePtr story, std::vector< NodeLinkInfoPtr >& nodelinks )
+                                {
+                                    std::vector< BaseNodePtr > newnodelinks;
+
+                                    // find source and destination nodes for every link node
+                                    std::vector< NodeLinkInfoPtr >::iterator p_link = nodelinks.begin(), p_end = nodelinks.end();
+                                    for ( ; p_link != p_end; ++p_link )
+                                    {
+                                        BaseNodePtr src = findChild( story, ( *p_link )->_src );
+                                        BaseNodePtr dst = findChild( story, ( *p_link )->_dst );
+                                        if ( src.getRef() && dst.getRef() )
+                                        {
+                                            BaseNodePtr linknode = ElementFactory::get()->createNode( ELEM_TYPE_LINK );
+                                            assert( linknode.getRef() );
+                                            NodeLink* p_linknode = dynamic_cast< NodeLink* >( linknode.getRef() );
+                                            p_linknode->setName( ( *p_link )->_name );
+                                            p_linknode->setSourceDestination( src, dst );
+                                            newnodelinks.push_back( p_linknode );
+                                        }
+                                    }
+
+                                    // now append all link nodes to story
+                                    std::vector< BaseNodePtr >::iterator p_newlink = newnodelinks.begin(), p_newlinkEnd = newnodelinks.end();
+                                    for ( ; p_newlink != p_newlinkEnd; ++p_newlink )
+                                    {
+                                        story->addChild( p_newlink->getRef() );
+                                    }
+
+                                    newnodelinks.clear();
+                                }
+
+    protected:
+
+        //! Find the child with given name in story
+        BaseNodePtr             findChild( BaseNodePtr story, const std::string& childname )
+                                {
+                                    std::vector< BaseNodePtr >::iterator p_child = story->getChildren().begin(), p_childEnd = story->getChildren().end();
+                                    for ( ; p_child != p_childEnd; ++p_child )
+                                    {
+                                        if ( ( *p_child ) ->getName() == childname )
+                                            return *p_child;
+                                    }
+
+                                    return BaseNodePtr();
+                                }
+};
+
+
+
+//! Implementation of storage singleton
 Storage::Storage()
 {
 }
@@ -117,10 +208,11 @@ void Storage::read( const std::string& filename, std::vector< BaseNodePtr >& sto
 
     TiXmlNode*      p_nodestory = p_node;
     unsigned int    storycnt = 0;
-    do
+
+    for ( ; p_nodestory; p_nodestory = p_nodestory->NextSiblingElement( FF_NODE_STORY ) )
     {
-        if ( !p_nodestory )
-            break;
+        // node link list
+        std::vector< NodeLinkInfoPtr > nodelinks;
 
         // increment the story count
         storycnt++;
@@ -153,12 +245,9 @@ void Storage::read( const std::string& filename, std::vector< BaseNodePtr >& sto
         // get the story elements
         TiXmlNode* p_nodestoryelement = p_nodestory->FirstChild( FF_NODE_STORY_ELEMENT );
 
-        do
-        {
-            // check for empty story
-            if ( !p_nodestoryelement )
-                break;
+        for( ; p_nodestoryelement; p_nodestoryelement = p_nodestoryelement->NextSiblingElement( FF_NODE_STORY_ELEMENT ) )
 
+        {
             // get element type and name
             p_element = p_nodestoryelement->ToElement();
             char* p_bufType = ( char* )p_element->Attribute( FF_ATTR_TYPE );
@@ -167,6 +256,31 @@ void Storage::read( const std::string& filename, std::vector< BaseNodePtr >& sto
             {
                 log_error << "Storage: Incomplete story element " << storycntstr.str() << std::endl;
                 //throw StorageException( "Problem reading file '" + filename + "'. Incomplete story element " + storycntstr.str() + "." );
+                continue;
+            }
+
+            // check for node link elements
+            if ( std::string( p_bufType ) == std::string( ELEM_TYPE_LINK ) )
+            {
+                TiXmlNode* p_nodelink = p_nodestoryelement->FirstChild( FF_NODE_CONNECTION );
+                if ( !p_nodelink )
+                {
+                    log_error << "Storage: Wrong link element " << p_bufName << std::endl;
+                    continue;
+                }
+
+                TiXmlElement* p_linkelement = p_nodelink->ToElement();
+                char* p_bufSrc  = ( char* )p_linkelement->Attribute( FF_ATTR_CONNECTION_SRC );
+                char* p_bufDest = ( char* )p_linkelement->Attribute( FF_ATTR_CONNECTION_DST );
+                if ( !p_bufSrc || !p_bufDest )
+                {
+                    log_error << "Storage: Incomplete link element " << p_bufName << ", missing source or destination" << std::endl;
+                    continue;
+                }
+                // add the link to node link list, this list is used to setup all node links when a complete story is read in
+                NodeLinkInfoPtr nodelink( new NodeLinkInfo( p_bufName, p_bufSrc, p_bufDest ) );
+                nodelinks.push_back( nodelink );
+
                 continue;
             }
 
@@ -224,16 +338,15 @@ void Storage::read( const std::string& filename, std::vector< BaseNodePtr >& sto
             TiXmlNode* p_elementprops = p_nodestoryelement->FirstChild( FF_NODE_PROPS );
 
 
-            // get the next story element
-            p_nodestoryelement = p_nodestoryelement->NextSiblingElement( FF_NODE_STORY_ELEMENT );
         }
-        while( p_nodestoryelement );
 
-        p_nodestory = p_nodestory->NextSiblingElement( FF_NODE_STORY );
+        // setup all node links now where all story elements are completely read in
+        NodeLinkSetup setup;
+        setup.setupNodeLinks( story, nodelinks );
+
         // append the top node to stories container
         stories.push_back( story );
     }
-    while ( p_nodestory );
 
     // clear the xml document
     doc.Clear();
