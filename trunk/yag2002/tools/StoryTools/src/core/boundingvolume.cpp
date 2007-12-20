@@ -78,7 +78,7 @@ bool BBox::contains( const Eigen::Vector3f& scale, const Eigen::Vector3f& volume
 
 
 BLine::BLine() :
- _width( 10.0f )
+ _width( 5.0f )
 {
 }
 
@@ -99,7 +99,29 @@ void BLine::setLineWidth( float width )
 
 bool BLine::contains( const Eigen::Vector3f& scale, const Eigen::Vector3f& volumepos, const Eigen::Vector3f& pos ) const
 {
-    // TODO
+    if ( !_src.getRef() || !_dest.getRef() )
+        return false;
+
+    Eigen::Vector3f SP( pos - _src->getPosition() );
+    Eigen::Vector3f SD( _dest->getPosition() - _src->getPosition() );
+
+    float lenSD = sqrtf( SD.x() * SD.x() + SD.y() * SD.y() + SD.z() * SD.z() );
+    if ( lenSD < 0.1f )
+        return false;
+
+    float beta = ( SD.x() * SP.x() + SD.y() * SP.y() + SD.z() * SP.z() ) / ( lenSD * lenSD );
+
+    // quick check for line projection
+    if ( ( beta < 0.1f ) || ( beta > 0.9f ) )
+        return false;
+
+    // calculate the distance from position to line
+    Eigen::Vector3f Pproj( _src->getPosition() + ( SD * beta ) );
+    Eigen::Vector3f PosPproj   = pos - Pproj;
+    float           distToLine = sqrtf( PosPproj.x() * PosPproj.x() + PosPproj.y() * PosPproj.y() + PosPproj.z() * PosPproj.z() );
+
+    if ( distToLine < _width )
+        return true;
 
     return false;
 }
