@@ -61,6 +61,9 @@ class DrawPanel: public wxPanel
         //! Create the controls.
         void                                createControls();
 
+        //! wxEVT_TIMER event handler for ID_PANEL_DRAW
+        void                                onTimer( wxTimerEvent& event );
+
         //! wxEVT_SIZE event handler for ID_PANEL_DRAW
         void                                onSize( wxSizeEvent& event );
 
@@ -85,6 +88,30 @@ class DrawPanel: public wxPanel
             ID_DRAW_PANEL  = 19000,
             ID_DRAW_CANVAS = 19001
         };
+
+        //! Timer used for periodic update of the draw panel
+        class RefreshTimer: public wxTimer
+        {
+            public:
+                
+                                                RefreshTimer( DrawPanel* p_panel, int millisec ) :
+                                                 _p_panel( p_panel )
+                                                {
+                                                    Start( millisec );
+                                                }
+
+                virtual                         ~RefreshTimer() {}
+
+                //! Timer expire callback
+                void                            Notify();
+
+            protected:
+
+                DrawPanel*                      _p_panel;
+        };
+
+        //! Timer
+        RefreshTimer*                       _p_timer;
 
         //! Current pan
         wxPoint                             _pan;

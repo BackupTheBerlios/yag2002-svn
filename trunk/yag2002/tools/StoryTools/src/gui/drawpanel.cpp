@@ -36,8 +36,17 @@ END_EVENT_TABLE()
 namespace beditor
 {
 
+//! Periodic actions on panel go here
+void DrawPanel::RefreshTimer::Notify()
+{
+    wxPaintEvent paintevent;
+    _p_panel->onPaint( paintevent );
+}
+
+//! Implementation of the draw panel
 DrawPanel::DrawPanel( wxWindow* p_parent ) :
  wxPanel( p_parent, ID_DRAW_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER ),
+ _p_timer( NULL ),
  _zoom( 1.0f ),
  _editState( 0 ),
  _p_canvas( NULL )
@@ -47,6 +56,8 @@ DrawPanel::DrawPanel( wxWindow* p_parent ) :
 
 DrawPanel::~DrawPanel()
 {
+    if ( _p_timer )
+        delete _p_timer;
 }
 
 void DrawPanel::resetZoom()
@@ -69,6 +80,9 @@ void DrawPanel::createControls()
 
     // setup the canvas in renderer
     RenderManager::get()->setGLCanvas( _p_canvas );
+
+    // setup a timer for periodic display redraws
+    _p_timer = new DrawPanel::RefreshTimer( this, 30 ); // update every 30 milliseconds
 
     // connect events
     _p_canvas->Connect( wxID_ANY, wxEVT_SIZE,         wxSizeEventHandler( DrawPanel::onSize ),   NULL, this );
