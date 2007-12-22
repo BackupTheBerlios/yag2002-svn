@@ -59,7 +59,7 @@ BEDITOR_SINGLETON_IMPL( beditor::Storage )
 namespace beditor
 {
 
-//! Helper class used für setting up the node links
+//! Helper class used for setting up the node links
 class NodeLinkInfo : public RefCount< NodeLinkInfo >
 {
     DECLARE_SMARTPTR_ACCESS( NodeLinkInfo )
@@ -173,7 +173,7 @@ void Storage::read( const std::string& filename, std::vector< BaseNodePtr >& sto
         int col = doc.ErrorCol();
         std::stringstream msg;
         msg << doc.ErrorDesc() << " Line " << row << " column " << col;
-        log_error << "Storage: cannot load level file: '" << filename << "'" << std::endl;
+        log_error << "Storage: cannot load file: '" << filename << "'" << std::endl;
         log_error << " reason: " << msg.str() << "." << std::endl;
 
         throw StorageException( "Problem reading file '" + filename + "'. " + msg.str() + "." );
@@ -337,7 +337,6 @@ void Storage::read( const std::string& filename, std::vector< BaseNodePtr >& sto
             //! TODO: implement the serialization of element properties
             TiXmlNode* p_elementprops = p_nodestoryelement->FirstChild( FF_NODE_PROPS );
 
-
         }
 
         // setup all node links now where all story elements are completely read in
@@ -354,6 +353,107 @@ void Storage::read( const std::string& filename, std::vector< BaseNodePtr >& sto
 
 void Storage::write( const std::string& filename, std::vector< BaseNodePtr >& stories ) throw( ... )
 {
+    if ( !stories.size() )
+    {
+        log_warning << "Storage: nothing to write!" << std::endl;
+        return;
+    }
+
+    // setup an xml document
+    TiXmlDocument doc;
+    doc.SetCondenseWhiteSpace( false );
+
+    // start building the xml structure
+    //---------------------------------//
+    TiXmlElement*  p_tinytopnode = NULL;
+
+    // create the encoding info
+    TiXmlDeclaration* p_decl = new TiXmlDeclaration( "1.0", "UTF-8", "" );
+    doc.LinkEndChild( p_decl );
+
+    // create the top node
+    p_tinytopnode = new TiXmlElement( FF_NODE_MAIN );
+    p_tinytopnode->SetAttribute( FF_ATTR_NAME, filename.c_str() );
+    doc.LinkEndChild( p_tinytopnode );
+
+    // create the stories
+    std::vector< BaseNodePtr >::iterator p_story = stories.begin(), p_storyEnd = stories.end();
+    for ( ; p_story != p_storyEnd; ++p_story )
+    {
+        if ( !p_story->getRef() || !( *p_story )->getChildren().size() )
+        {
+            log_warning << "Storage: empty story" << std::endl;
+            continue;
+        }
+
+        // create a story node
+        TiXmlElement* p_tinystory = new TiXmlElement( FF_NODE_STORY );
+        p_tinystory->SetAttribute( FF_ATTR_NAME, ( *p_story )->getName().c_str() );
+        p_tinytopnode->LinkEndChild( p_tinystory );
+
+        std::vector< BaseNodePtr >::iterator p_storyelem = ( *p_story )->getChildren().begin(), p_elemEnd = ( *p_story )->getChildren().end();
+        for ( ; p_storyelem != p_elemEnd; ++p_storyelem )
+        {
+            BaseNode* p_storyelement = p_storyelem->getRef();
+            if ( !p_storyelement )
+            {
+                log_warning << "Storage: empty story element" << std::endl;
+                continue;
+            }
+
+            //! TODO: continue here ...
+            TiXmlElement* p_tinystoryelem = new TiXmlElement( FF_NODE_STORY_ELEMENT );
+            p_tinystoryelem->SetAttribute( FF_ATTR_TYPE, p_storyelement->getTypeAsString().c_str() );
+            p_tinystoryelem->SetAttribute( FF_ATTR_NAME, p_storyelement->getName().c_str() );
+            p_tinystory->LinkEndChild( p_tinystoryelem );
+
+            if ( p_storyelement->getType() != BaseNode::eTypeLink )
+            {
+                TiXmlElement* p_tinyrender = new TiXmlElement( FF_NODE_RENDER );
+
+                std::stringstream attrpos;
+                attrpos << p_storyelement->getPosition().x() << " " << p_storyelement->getPosition().y();
+
+                std::stringstream attrscale;
+                attrscale << p_storyelement->getScale().x() << " " << p_storyelement->getScale().y();
+
+                p_tinyrender->SetAttribute( FF_ATTR_RENDER_POS, attrpos.str().c_str() );
+                p_tinyrender->SetAttribute( FF_ATTR_RENDER_SCALE, attrscale.str().c_str() );
+                p_tinystoryelem->LinkEndChild( p_tinyrender );
+            }
+            else
+            {
+                NodeLink* p_link = dynamic_cast< NodeLink* >( p_storyelement );
+                assert( p_link );
+
+                BaseNodePtr src, dest;
+                p_link->getSourceDestination( src, dest );
+                if ( !src.getRef() || !dest.getRef() )
+                {
+                    log_warning << "Storage: incomplete link node detected! skipping ..." << std::endl;
+                    continue;
+                }
+
+                TiXmlElement* p_tinyrender = new TiXmlElement( FF_NODE_CONNECTION );
+                p_tinyrender->SetAttribute( FF_ATTR_CONNECTION_SRC, src->getName().c_str() );
+                p_tinyrender->SetAttribute( FF_ATTR_CONNECTION_DST, dest->getName().c_str() );
+                p_tinystoryelem->LinkEndChild( p_tinyrender );
+            }
+
+            //! TODO: continue with properties ...
+        }
+    }
+
+    if ( !doc.SaveFile( filename.c_str() ) )
+    {
+        log_error << "Storage: cannot store file: '" << filename << "'" << std::endl;
+        log_error << " reason: " << doc.ErrorDesc() << "." << std::endl;
+
+        throw StorageException( "Problem storing file '" + filename + "'. " + doc.ErrorDesc() + "." );
+    }
+
+    // clear the xml document
+    doc.Clear();
 }
 
 } // namespace beditor
