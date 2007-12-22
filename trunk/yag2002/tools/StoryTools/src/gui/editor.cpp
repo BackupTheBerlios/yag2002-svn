@@ -61,7 +61,7 @@ void test()
 #if 0
     try
     {
-#if 1
+#if 0
         // create a top node in render manager
         BaseNodePtr story( new BaseNode( BaseNode::eTypeStory ) );
         story->setName( "TEST" );
@@ -84,8 +84,12 @@ void test()
         p_nodelink->setSourceDestination( eventnode1, eventnode2 );
         story->addChild( p_nodelink );
 #else
-        BaseNodePtr topnode = Storage::get()->read( "test.sc" );
-        RenderManager::get()->setTopNode( topnode );
+        std::vector< BaseNodePtr > stories;
+        Storage::get()->read( "test.sc", stories );
+        RenderManager::get()->setTopNode( stories[ 0 ] );
+
+        Storage::get()->write( "C:\\out.sc", stories );
+
 #endif
     }
     catch( const std::exception& e )
