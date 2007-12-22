@@ -71,6 +71,9 @@
 #include <3rdparty/eigen/src/projective.h>
 #include <3rdparty/eigen/src/vector.h>
 #include <3rdparty/eigen/src/util.h>
+#include <3rdparty/freetype/include/ft2build.h>
+#include <3rdparty/FTGL/include/FTGL.h>
+#include <3rdparty/FTGL/include/FTGLPixmapFont.h>
 
 //! Internal stuff
 #include <core/log.h>
