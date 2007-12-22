@@ -61,11 +61,19 @@ void Stories::load( const std::string& filename ) throw( ... )
     // is the file has successfully loaded then update our story container
     clear();
     _stories = stories;
+
+    _file = filename;
 }
 
 void Stories::store( const std::string& filename ) throw( ... )
 {
-    Storage::get()->write( filename, _stories );
+    std::string file( filename );
+    if ( !file.length() )
+        file = _file;
+    
+    assert ( file.length() > 0 && "no file was previously opended, don't know where to store to!" );
+
+    Storage::get()->write( file, _stories );
 }
 
 std::vector< BaseNodePtr >& Stories::getStories()
@@ -76,6 +84,7 @@ std::vector< BaseNodePtr >& Stories::getStories()
 void Stories::clear()
 {
     _stories.clear();
+    _file = "";
 }
 
 } // namespace beditor

@@ -46,7 +46,8 @@ class Stories : public Singleton< Stories >
         void                                    load( const std::string& filename ) throw( ... );
 
         //! Store stories to file; throws StorageException if something goes wrong with storing.
-        void                                    store( const std::string& filename ) throw( ... );
+        //! Let filename blank in order to store to last opened file.
+        void                                    store( const std::string& filename = "" ) throw( ... );
 
         //! Get the story container
         std::vector< BaseNodePtr >&             getStories();
@@ -65,6 +66,9 @@ class Stories : public Singleton< Stories >
 
         //! Shutdown the stories singleton
         void                                    shutdown();
+
+        //! Currently loaded file
+        std::string                             _file;
 
         //! Story container
         std::vector< BaseNodePtr >              _stories;
