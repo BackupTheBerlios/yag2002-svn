@@ -32,6 +32,7 @@
 
 #include <main.h>
 #include <core/boundingvolume.h>
+#include <core/rendermanager.h>
 
 namespace beditor
 {
@@ -61,6 +62,12 @@ class NodeRenderer
         //! Get node scale
         const Eigen::Vector3f&                  getScale() const;
 
+        //! Set the text which should be rendered for the node
+        void                                    setText( const std::string& text );
+
+        //! Get the text which is rendered for the node
+        const std::string&                      getText() const;
+
         //! 3D hit test
         bool                                    hit( const Eigen::Vector3f& hitpos ) const;
 
@@ -86,8 +93,8 @@ class NodeRenderer
         //! Bounding volume
         BoundingVolumePtr                       _bounds;
 
-        //! GL object list, which must be setup by every concrete NodeRenderer
-        GLint                                   _objectList;
+        //! Node text to be rendered
+        std::string                             _text;
 
         //! Flag showing if the node is to be drawn with highlight
         bool                                    _isHighlighted;

@@ -34,7 +34,6 @@ namespace beditor
 {
 
 NodeRenderer::NodeRenderer() :
- _objectList( -1 ),
 _isHighlighted( false )
 {
     _position.loadZero();
@@ -43,6 +42,16 @@ _isHighlighted( false )
 
 NodeRenderer::~NodeRenderer()
 {
+}
+
+void NodeRenderer::setText( const std::string& text )
+{
+    _text = text;
+}
+
+const std::string& NodeRenderer::getText() const
+{
+    return _text;
 }
 
 void NodeRenderer::render( const Eigen::Matrix4f& view, BaseNode* p_parent )

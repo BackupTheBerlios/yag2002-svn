@@ -28,16 +28,24 @@
  ################################################################*/
 
 #include <main.h>
+#include "settings.h"
 #include "rendermanager.h"
 #include "elements/link.h"
+
+#define FONT_DEFAULT        "kimbalt_.ttf"
+#define FONT_DEPTH          10.0f
+#define FONT_DEFAULT_SIZE   12.0f
 
 //! Implement the render manager singleton
 BEDITOR_SINGLETON_IMPL( beditor::RenderManager )
 
+
 namespace beditor
 {
 
-RenderManager::RenderManager()
+RenderManager::RenderManager() :
+ _p_font( NULL ),
+ _fontSize( FONT_DEFAULT_SIZE )
 {
 }
 
@@ -45,19 +53,37 @@ RenderManager::~RenderManager()
 {
 }
 
-void RenderManager::setGLCanvas( wxGLCanvas* p_canvas )
-{
-    _p_canvas = p_canvas;
-}
-
-wxGLCanvas* RenderManager::getGLCanvas()
-{
-    return _p_canvas;
-}
-
 void RenderManager::initialize()
 {
     assert( _p_canvas && "the canvas is not set!" );
+    assert( ( _p_font == NULL ) && "render manager seems to be already intitialized!" );
+
+    std::string fontfile;
+    CFG_GET_VALUE( CFG_FONT, fontfile );
+    if ( !fontfile.length() )
+    {
+        fontfile = FONT_DEFAULT;
+        CFG_SET_VALUE( CFG_FONT, fontfile );
+    }
+
+    std::auto_ptr< FTGLPixmapFont > p_font( new FTGLPixmapFont( fontfile.c_str() ) );
+    if ( p_font->Error() )
+    {
+        log_error << "RenderManager: failed to open font: " << fontfile << std::endl;
+        return;
+    }
+    else
+    {
+        if( !p_font->FaceSize( 12 ) )
+        {
+            log_error << "RenderManager: failed to set font size: " << fontfile << std::endl;
+            return;
+        }
+
+        p_font->CharMap( ft_encoding_unicode );
+    }
+
+    _p_font = p_font.release();
 }
 
 void RenderManager::shutdown()
@@ -160,14 +186,14 @@ void RenderManager::renderScene( const wxPoint& panPosition, const wxSize& viewS
     glMatrixMode( GL_MODELVIEW );
     glLoadIdentity();
 
-    //! TODO: any HUD here?
-    //glColor3f( 0.0, 1.0, .0 );
-    //glBegin( GL_QUADS );
-    //    glVertex3f(left, top, 0.0f);     // Left And Up 1 Unit (Top Left) 
-    //    glVertex3f(right, top, 0.0f);    // Right And Up 1 Unit (Top Right) 
-    //    glVertex3f(right, buttom, 0.0f); // Right And Down One Unit (Bottom Right) 
-    //    glVertex3f(left, buttom, 0.0f);  // Left And Down One Unit (Bottom Left) 
-    //glEnd();
+    // render the current top node name
+    {
+        std::string text( "Story: " );
+        text += _topNode->getName();
+        Eigen::Vector2f namepos( -float( viewSize.x / 2.0f ) + 5.0, float( viewSize.y / 2.0f ) - 15.0f );
+        glColor3f( 0.42f, 0.4f, 0.4f );
+        fontRender( text, namepos, 14.0f );
+    }
 
     // set the camera position
     Eigen::Matrix4f view;
@@ -183,6 +209,43 @@ void RenderManager::renderScene( const wxPoint& panPosition, const wxSize& viewS
     // flush the render pipeline and swap buffers
     glFlush();
     _p_canvas->SwapBuffers();
+}
+
+void RenderManager::fontGetDims( const std::string& text, Eigen::Vector3f& min, Eigen::Vector3f& max )
+{
+    if ( !_p_font )
+        return;
+
+    _p_font->BBox( text.c_str(), min.x(), min.y(), min.z(), max.x(), max.y(), max.z() );
+}
+
+void RenderManager::fontRender( const std::string& text, const Eigen::Vector2f& pos, float size )
+{
+    if ( !_p_font )
+        return;
+
+    if ( size > 0.0f )
+        _p_font->FaceSize( size );
+    else
+        _p_font->FaceSize( _fontSize );
+
+    glRasterPos3f( pos.x(), pos.y(), FONT_DEPTH );
+    _p_font->Render( text.c_str() );
+}
+
+void RenderManager::setDefaultFontSize( float size )
+{
+    _fontSize = size;
+}
+
+float RenderManager::getDefaultFontSize() const
+{
+    return _fontSize;
+}
+
+void RenderManager::setGLCanvas( wxGLCanvas* p_canvas )
+{
+    _p_canvas = p_canvas;
 }
 
 } // namespace beditor

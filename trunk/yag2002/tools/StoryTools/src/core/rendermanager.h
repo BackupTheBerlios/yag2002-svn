@@ -71,11 +71,20 @@ class RenderManager : public Singleton< RenderManager >
         //! Set a new top node. The old one is released.
         void                                    setTopNode( BaseNodePtr topnode );
 
+        //! Set the default font size
+        void                                    setDefaultFontSize( float size );
+
+        //! Get the default font size
+        float                                   getDefaultFontSize() const;
+
+        //! Given a text, get its needed dimensions for rendering
+        void                                    fontGetDims( const std::string& text, Eigen::Vector3f& min, Eigen::Vector3f& max );
+
+        //! Render the given text. If size is 0 then the default size is used.
+        void                                    fontRender( const std::string& text, const Eigen::Vector2f& pos, float size = 0.0f );
+
         //! Set the GL canvas, no drawing takes place until the canvas is set. This method is used by draw panel class only!
         void                                    setGLCanvas( wxGLCanvas* p_canvas );
-
-        //! Get the GL canvas
-        wxGLCanvas*                             getGLCanvas();
 
     protected:
 
@@ -94,6 +103,12 @@ class RenderManager : public Singleton< RenderManager >
 
         //! OpenGL canvas of the draw panel
         wxGLCanvas*                             _p_canvas;
+
+        //! Font renderer object
+        FTGLPixmapFont*                         _p_font;
+
+        //! Font size
+        float                                   _fontSize;
 
     friend class Core;
     friend class Singleton< RenderManager >;
