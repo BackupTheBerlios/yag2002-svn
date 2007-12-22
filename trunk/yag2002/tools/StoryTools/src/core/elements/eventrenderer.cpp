@@ -30,6 +30,9 @@
 #include <main.h>
 #include "eventrenderer.h"
 
+#define GEOM_WIDTH      40.0f
+#define GEOM_HEIGHT     20.0f
+
 namespace beditor
 {
 
@@ -37,7 +40,7 @@ NodeRendererEvent::NodeRendererEvent()
 {
     // setup the bbox
     BBox* p_bbox = new BBox;
-    p_bbox->setDimensions( Eigen::Vector3f( -10.0f, -10.0f, 0.0f ), Eigen::Vector3f( 10.0f, 10.0f, 0.0f ) );
+    p_bbox->setDimensions( Eigen::Vector3f( -GEOM_WIDTH, -GEOM_HEIGHT, 0.0f ), Eigen::Vector3f( GEOM_WIDTH, GEOM_HEIGHT, 0.0f ) );
     _bounds = p_bbox;
 }
 
@@ -50,28 +53,56 @@ void NodeRendererEvent::render( const Eigen::Matrix4f& view, const Eigen::Matrix
     glPushMatrix();
     glMultMatrixf( ( model * view ).array() );
 
-    glColor3f( 0.2f, 0.6f, 0.2f );
-    glBegin( GL_QUADS );
-                glVertex3f( -10.0f, 10.0f, 0.0f );
-                glVertex3f(  10.0f, 10.0f, 0.0f );
-                glVertex3f(  10.0f,-10.0f, 0.0f );
-                glVertex3f( -10.0f,-10.0f, 0.0f );
+    glColor3f( 1.0f, 1.0f, 0.0f );
+
+    // render a filled elipse
+    glBegin( GL_POLYGON );
+    for ( float step = 0.0f; step < 2.0f * M_PI; step += 0.1f )
+    {
+        float x = GEOM_WIDTH * sinf( step );
+        float y = GEOM_HEIGHT * cosf( step );
+        glVertex3f( x, y, 0.0f );
+    }
     glEnd();
 
+    // render the border
     if ( _isHighlighted )
     {
         glColor3f( 1.0f, 0.0f, 0.0f );
-        float restorelw;
-        glGetFloatv( GL_LINE_WIDTH, &restorelw );
-        glLineWidth( 2.0f );
-        glBegin( GL_LINE_STRIP );
-                    glVertex3f( -10.0f, 10.0f, 0.0f );
-                    glVertex3f(  10.0f, 10.0f, 0.0f );
-                    glVertex3f(  10.0f,-10.0f, 0.0f );
-                    glVertex3f( -10.0f,-10.0f, 0.0f );
-                    glVertex3f( -10.0f, 10.0f, 0.0f );
-        glEnd();
-        glLineWidth( restorelw );
+    }
+    else
+    {
+        glColor3f( 0.3f, 0.3f, 0.0f );
+    }
+
+    glLineWidth( 8.0f );
+    glBegin( GL_LINE_LOOP );
+    for ( float step = 0.0f; step < 2.0f * M_PI; step += 0.05f )
+    {
+        float x = ( GEOM_WIDTH + 0.9f ) * sinf( step );
+        float y = ( GEOM_HEIGHT + 0.9f ) * cosf( step );
+        glVertex3f( x, y, 0.0f );
+    }
+    glEnd();
+
+    // render the node text
+    glColor3f( 0.0, 0.0, 0.0 );
+    std::string text( getText() );
+    if ( text.length() )
+    {
+        Eigen::Vector3f tmin, tmax;
+        RenderManager::get()->fontGetDims( text.c_str(), tmin, tmax );
+
+        float xpos = tmax.x() - tmin.x();
+        float ypos = tmax.y() - tmin.y();
+        if ( getScale().x() )
+            xpos /= getScale().x();
+
+        if ( getScale().y() )
+            ypos /= getScale().y();
+
+        Eigen::Vector2f pos( -xpos / 2.0f, -ypos / 2.0f );
+        RenderManager::get()->fontRender( text.c_str(), pos );
     }
 
     glPopMatrix();
