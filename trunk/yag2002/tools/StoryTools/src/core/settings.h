@@ -43,6 +43,7 @@
 //! Tool settings
 #define CFG_LASTFILE                "lastFile"
 #define CFG_LASTDIR                 "lastDir"
+#define CFG_FONT                    "font"
 
 
 namespace beditor
