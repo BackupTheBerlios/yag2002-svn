@@ -34,6 +34,9 @@
 //! Element types used for creating new elements via ElementFactory
 #define ELEM_TYPE_STORY         "Story"
 #define ELEM_TYPE_LINK          "Link"
+#define ELEM_TYPE_EXECUTION     "Execution"
+#define ELEM_TYPE_OPERATION     "Operation"
+#define ELEM_TYPE_DIALOG        "Dialog"
 #define ELEM_TYPE_EVENT         "Event"
 
 

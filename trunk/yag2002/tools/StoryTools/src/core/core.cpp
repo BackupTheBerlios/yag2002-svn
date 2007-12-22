@@ -63,6 +63,7 @@ void Core::initialize()
         // register the settings
         p_cfg->registerSetting( CFG_LASTFILE, std::string( "" ) );
         p_cfg->registerSetting( CFG_LASTDIR, std::string( "" ) );
+        p_cfg->registerSetting( CFG_FONT, std::string( "" ) );
 
         // try to load the profile, if not successful then create the settings file
         if ( !SettingsManager::get()->loadProfile( CFG_PROFILE ) )

@@ -52,6 +52,8 @@ BaseNode::~BaseNode()
 void BaseNode::setName( const std::string& name )
 {
     _name = name;
+    if ( _p_nodeRenderer )
+        _p_nodeRenderer->setText( name );
 }
 
 const std::string& BaseNode::getName() const
@@ -62,6 +64,42 @@ const std::string& BaseNode::getName() const
 unsigned int BaseNode::getType() const
 {
     return _type;
+}
+
+std::string BaseNode::getTypeAsString() const
+{
+    std::string type;
+    switch( _type )
+    {
+        case eTypeStory:
+            type = ELEM_TYPE_STORY;
+            break;
+
+        case eTypeLink:
+            type = ELEM_TYPE_LINK;
+            break;
+
+        case eTypeExecution:
+            type = ELEM_TYPE_EXECUTION;
+            break;
+
+        case eTypeOperation:
+            type = ELEM_TYPE_OPERATION;
+            break;
+
+        case eTypeDialog:
+            type = ELEM_TYPE_DIALOG;
+            break;
+
+        case eTypeEvent:
+            type = ELEM_TYPE_EVENT;
+            break;
+
+        default:
+            type = "__unknown__";
+    }
+
+    return type;
 }
 
 bool BaseNode::hit( const Eigen::Vector2f& pos, std::vector< BaseNodePtr >* p_nodes )

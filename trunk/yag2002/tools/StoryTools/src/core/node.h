@@ -72,6 +72,9 @@ class BaseNode : public RefCount< BaseNode >
         //! Get the node type, one of NoteType enums.
         unsigned int                                getType() const;
 
+        //! Get the node type as string
+        std::string                                 getTypeAsString() const;
+
         //! 2D hit test used for visualization. If a node vector is given then the node appends itself when the hit was successfull. Returns true when at least one hit detected.
         bool                                        hit( const Eigen::Vector2f& pos, std::vector< BaseNodePtr >* p_nodes = NULL );
 
