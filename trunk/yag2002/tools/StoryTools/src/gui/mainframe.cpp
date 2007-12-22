@@ -28,6 +28,7 @@
  ################################################################*/
 
 #include <main.h>
+#include <wx/file.h>
 #include "mainframe.h"
 #include "drawpanel.h"
 #include <core/stories.h>
@@ -218,10 +219,21 @@ void MainFrame::onMenuitemNewClick( wxCommandEvent& event )
 
 void MainFrame::onMenuitemOpenClick( wxCommandEvent& event )
 {
+    if ( Stories::get()->getStories().size() > 0 )
+    {
+        if ( wxMessageBox( "Save current story file?", "Note", wxICON_QUESTION | wxYES_NO ) != wxYES )
+        {
+            wxCommandEvent event;
+            onMenuitemSaveClick( event );
+        }
+        // clear up the story container
+        Stories::get()->clear();
+    }
+
     std::string lastdir;
     CFG_GET_VALUE( CFG_LASTDIR, lastdir );
 
-    wxFileDialog dlg( this, "Choose Story File" );
+    wxFileDialog dlg( this, "Open Story File ..." );
     dlg.SetWildcard( "*.sc" );
     dlg.SetPath( lastdir );
     dlg.SetDirectory( lastdir );
@@ -243,7 +255,7 @@ void MainFrame::onMenuitemOpenClick( wxCommandEvent& event )
     }
     catch( const std::exception& e )
     {
-        wxMessageBox( std::string( "Cannot create requested node type.\nReason:\n  " ) + e.what(), "Attention", wxOK );
+        wxMessageBox( std::string( "Problem occured on loading file.\nReason:\n  " ) + e.what(), "Attention", wxOK );
         return;
     }
 
@@ -258,11 +270,58 @@ void MainFrame::onMenuitemOpenClick( wxCommandEvent& event )
 
 void MainFrame::onMenuitemSaveClick( wxCommandEvent& event )
 {
+    try
+    {
+        Stories::get()->store();
+    }
+    catch( const std::exception& e )
+    {
+        wxMessageBox( std::string( "Cannot save file.\nReason:\n  " ) + e.what(), "Attention", wxOK );
+        return;
+    }
+
     event.Skip();
 }
 
 void MainFrame::onMenuitemSaveAsClick( wxCommandEvent& event )
 {
+    std::string lastdir;
+    CFG_GET_VALUE( CFG_LASTDIR, lastdir );
+
+    wxFileDialog dlg( this, "Save As ..." );
+    dlg.SetWildcard( "*.sc" );
+    dlg.SetPath( lastdir );
+    dlg.SetDirectory( lastdir );
+
+    if ( dlg.ShowModal() == wxID_CANCEL )
+        return;
+
+    lastdir = dlg.GetDirectory().c_str();
+    CFG_SET_VALUE( CFG_LASTDIR, lastdir );
+
+    std::string file = dlg.GetPath().c_str();
+    if ( wxFile::Exists( file.c_str() ) )
+    {
+        if ( wxMessageBox( "File already exists. Overwrite it?", "Attention", wxICON_QUESTION | wxYES_NO ) != wxYES )
+            return;
+    }
+
+    try
+    {
+        Stories::get()->store( file );
+    }
+    catch( const std::exception& e )
+    {
+        wxMessageBox( std::string( "Cannot save file.\nReason:\n  " ) + e.what(), "Attention", wxOK );
+        return;
+    }
+
+    std::string lastfile = dlg.GetPath().c_str();
+    CFG_SET_VALUE( CFG_LASTFILE, lastfile );
+
+    // refresh the story tree
+    setupStoryTree();
+
     event.Skip();
 }
 
