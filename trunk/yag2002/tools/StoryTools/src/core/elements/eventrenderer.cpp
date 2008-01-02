@@ -68,7 +68,8 @@ void NodeRendererEvent::render( const Eigen::Matrix4f& view, const Eigen::Matrix
     // render the border
     if ( _isHighlighted )
     {
-        glColor3f( 1.0f, 0.0f, 0.0f );
+        Eigen::Vector3f col = RenderManager::get()->getHeighlightColour();
+        glColor3f( col.x(), col.y(), col.z() );
     }
     else
     {
