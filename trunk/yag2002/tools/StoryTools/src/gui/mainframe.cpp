@@ -37,6 +37,7 @@
 #include "pix/story.xpm"
 #include "pix/event.xpm"
 #include "pix/condition.xpm"
+#include "pix/link.xpm"
 
 #define APP_ICON "story.xpm"
 
@@ -66,6 +67,8 @@ BEGIN_EVENT_TABLE( beditor::MainFrame, wxFrame )
     EVT_MENU( ID_TOOL_DRAW_EVENT, beditor::MainFrame::onToolDrawEventClick )
 
     EVT_MENU( ID_TOOL_DRAW_CONDITION, beditor::MainFrame::onToolDrawConditionClick )
+
+    EVT_MENU( ID_TOOL_DRAW_LINK, beditor::MainFrame::onToolDrawLinkClick )
 
 END_EVENT_TABLE()
 
@@ -176,9 +179,15 @@ void MainFrame::createControls()
     wxBitmap itemtool23Bitmap(itemFrame1->GetBitmapResource(wxT("event.xpm")));
     wxBitmap itemtool23BitmapDisabled;
     itemToolBar22->AddTool(ID_TOOL_DRAW_EVENT, _T(""), itemtool23Bitmap, itemtool23BitmapDisabled, wxITEM_NORMAL, _("Add Event"), _("Add Event Block to diagram"));
+
     wxBitmap itemtool24Bitmap(itemFrame1->GetBitmapResource(wxT("condition.xpm")));
     wxBitmap itemtool24BitmapDisabled;
     itemToolBar22->AddTool(ID_TOOL_DRAW_CONDITION, _T(""), itemtool24Bitmap, itemtool24BitmapDisabled, wxITEM_NORMAL, _("Add Condition"), _("Add Condition Block to diagram"));
+
+    wxBitmap itemtool25Bitmap(itemFrame1->GetBitmapResource(wxT("link.xpm")));
+    wxBitmap itemtool25BitmapDisabled;
+    itemToolBar22->AddTool(ID_TOOL_DRAW_LINK, _T(""), itemtool25Bitmap, itemtool25BitmapDisabled, wxITEM_NORMAL, _("Link two elements"), _("Create a link between two elements"));
+
     itemToolBar22->Realize();
     itemBoxSizer21->Add(itemToolBar22, 0, wxGROW|wxALL, 5);
 
@@ -371,6 +380,11 @@ wxBitmap MainFrame::GetBitmapResource( const wxString& name )
         wxBitmap bitmap( condition_xpm );
         return bitmap;
     }
+    else if ( name == _T( "link.xpm" ) )
+    {
+        wxBitmap bitmap( link_xpm );
+        return bitmap;
+    }
     return wxNullBitmap;
 }
 
@@ -387,6 +401,13 @@ wxIcon MainFrame::GetIconResource( const wxString& name )
 
 void MainFrame::onToolDrawEventClick( wxCommandEvent& event )
 {
+    event.Skip();
+}
+
+void MainFrame::onToolDrawLinkClick( wxCommandEvent& event )
+{
+    assert( _p_drawPanel );
+    _p_drawPanel->setEditMode( DrawPanel::eCreateLink );
     event.Skip();
 }
 

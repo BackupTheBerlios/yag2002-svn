@@ -29,6 +29,7 @@
 
 #include <main.h>
 #include "drawpanel.h"
+#include <core/elements/link.h>
 
 BEGIN_EVENT_TABLE( beditor::DrawPanel, wxPanel )
 END_EVENT_TABLE()
@@ -58,6 +59,16 @@ DrawPanel::~DrawPanel()
 {
     if ( _p_timer )
         delete _p_timer;
+}
+
+void DrawPanel::setEditMode( unsigned int mode )
+{
+    _editState &= 0x00ff;
+    _editState |= mode;
+
+    // prepare the create link mode
+    if ( mode & eCreateLink )
+        _linkNode = NULL;
 }
 
 void DrawPanel::resetZoom()
@@ -112,13 +123,21 @@ void DrawPanel::onKey( wxKeyEvent& event )
 {
     bool forceredraw = false;
 
-    if ( event.ShiftDown() )
-        _editState |= eStateMultiSel;
-    else
-        _editState &= ~eStateMultiSel;
-
     int keycode = event.GetKeyCode() ;
-    if ( keycode == WXK_DELETE )
+
+    if ( event.ShiftDown() )
+    {
+        if ( !( _editState & eCreateLink ) )
+        {
+            _editState |= eStateMultiSel;
+        }
+    }
+    else
+    {
+        _editState &= ~eStateMultiSel;
+    }
+
+    if ( ( keycode == WXK_DELETE ) && !( _editState & eCreateLink ) )
     {
         RenderManager::get()->deleteNodes( _selNodes );
         forceredraw = true;
@@ -149,6 +168,10 @@ void DrawPanel::onMouse( wxMouseEvent& event )
 {
     // some interactions need a panel redraw
     bool forceredraw = false;
+
+    // exit any edit mode on right click
+    if ( event.RightUp() )
+        setEditMode( 0 );
 
     if ( event.RightUp() || event.Leaving() )
     {
@@ -193,7 +216,51 @@ void DrawPanel::onMouse( wxMouseEvent& event )
         hitposition.z() = 0.0f;
 
         RenderManager::get()->selectNodesByHit( hitposition, _selNodes );
-        RenderManager::get()->highlightNodes( _selNodes );
+
+        // highlight colour in create link mode is different
+        Eigen::Vector3f highlightcolour( 1.0f, 0.0f, 0.0f );
+        if ( _editState & eCreateLink )
+        {
+            highlightcolour = Eigen::Vector3f( 0.0f, 0.0f, 1.0f );
+            if ( ( _selNodes.size() > 0 ) && !_linkNode.getRef() )
+            {
+                std::vector< BaseNodePtr > linksrcnode;
+                linksrcnode.push_back( _selNodes[ 0 ] );
+                RenderManager::get()->highlightNodes( linksrcnode, highlightcolour );
+            }
+        }
+        else
+        {
+            RenderManager::get()->highlightNodes( _selNodes, highlightcolour );
+        }
+
+        if ( _editState & eCreateLink )
+        {
+            if ( _selNodes.size() > 0 )
+            {
+                if ( !_linkNode.getRef() )
+                {
+                    _linkNode = _selNodes[ 0 ];
+                }
+                else
+                {
+                    // create a node link
+                    BaseNodePtr linknode = ElementFactory::get()->createNode( ELEM_TYPE_LINK );
+                    assert( linknode.getRef() );
+                    NodeLink* p_linknode = dynamic_cast< NodeLink* >( linknode.getRef() );
+                    p_linknode->setName( "" );
+                    p_linknode->setSourceDestination( _linkNode, _selNodes[ 0 ] );
+                    
+                    // append link node to story
+                    RenderManager::get()->getTopNode()->addChild( p_linknode );
+
+                    _selNodes.clear();
+                    RenderManager::get()->highlightNodes( _selNodes );
+
+                    _linkNode = NULL;
+                }
+            }
+        }
 
         forceredraw = true;
     }

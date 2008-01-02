@@ -44,10 +44,19 @@ class DrawPanel: public wxPanel
 
     public:
 
+        //! Edit modes
+        enum EditMode
+        {
+            eCreateLink   = 0x0100
+        };
+
         // Construct the draw panel.
         explicit                            DrawPanel( wxWindow* p_parent );
 
         virtual                             ~DrawPanel();
+
+        //! Set the edit mode, one of the EditMode enums
+        void                                setEditMode( unsigned int mode );
 
         //! Reset the zoom
         void                                resetZoom();
@@ -130,11 +139,14 @@ class DrawPanel: public wxPanel
             eStateMultiSel  = 0x0002
         };
 
-        //! Edit state
+        //! Edit state, this is a shared var for edit state and mode!
         unsigned int                        _editState;
 
         //! Currently selected nodes
         std::vector< BaseNodePtr >          _selNodes;
+
+        //! Node used for create link mode
+        BaseNodePtr                         _linkNode;
 
         //! The opengl canvas we will draw to
         wxGLCanvas*                         _p_canvas;

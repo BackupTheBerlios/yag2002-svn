@@ -96,6 +96,9 @@ class MainFrame: public wxFrame
         //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_DRAW_CONDITION
         void                                    onToolDrawConditionClick( wxCommandEvent& event );
 
+        //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_DRAW_LINK
+        void                                    onToolDrawLinkClick( wxCommandEvent& event );
+
         //! Retrieves bitmap resources
         wxBitmap                                GetBitmapResource( const wxString& name );
 
@@ -122,6 +125,7 @@ class MainFrame: public wxFrame
             ID_TOOLBAR              = 10014,
             ID_TOOL_DRAW_EVENT      = 10015,
             ID_TOOL_DRAW_CONDITION  = 10016,
+            ID_TOOL_DRAW_LINK       = 10017,
             ID_STATUSBAR            = 10018
         };
 
