@@ -59,8 +59,11 @@ class RenderManager : public Singleton< RenderManager >
         //! Delete given nodes
         void                                    deleteNodes( std::vector< BaseNodePtr >& nodes );
 
-        //! Traverse all nodes in scene and highlight the given nodes.
-        void                                    highlightNodes( std::vector< BaseNodePtr >& nodes );
+        //! Traverse all nodes in scene and highlight the given nodes with given colour.
+        void                                    highlightNodes( std::vector< BaseNodePtr >& nodes, const Eigen::Vector3f& colour = Eigen::Vector3f( 1.0f, 0.0f, 0.0f ) );
+
+        //! Get the current highlight colour.
+        const Eigen::Vector3f&                  getHeighlightColour() const;
 
         //! Render all nodes in scene
         void                                    renderScene( const wxPoint& panPosition, const wxSize& viewSize );
@@ -109,6 +112,9 @@ class RenderManager : public Singleton< RenderManager >
 
         //! Font size
         float                                   _fontSize;
+
+        //! Highlighting colour
+        Eigen::Vector3f                         _highlightColour;
 
     friend class Core;
     friend class Singleton< RenderManager >;

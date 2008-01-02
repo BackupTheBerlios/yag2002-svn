@@ -45,7 +45,8 @@ namespace beditor
 
 RenderManager::RenderManager() :
  _p_font( NULL ),
- _fontSize( FONT_DEFAULT_SIZE )
+ _fontSize( FONT_DEFAULT_SIZE ),
+ _highlightColour( Eigen::Vector3f( 1.0f, 0.0f, 0.0f ) )
 {
 }
 
@@ -150,12 +151,19 @@ void RenderManager::deleteNodes( std::vector< BaseNodePtr >& nodes )
     nodes.clear();
 }
 
-void RenderManager::highlightNodes( std::vector< BaseNodePtr >& nodes )
+void RenderManager::highlightNodes( std::vector< BaseNodePtr >& nodes, const Eigen::Vector3f& colour )
 {
+    _highlightColour = colour;
+
     if ( !_topNode.getRef() )
         return;
 
     _topNode->highlight( nodes );
+}
+
+const Eigen::Vector3f& RenderManager::getHeighlightColour() const
+{
+    return _highlightColour;
 }
 
 void RenderManager::renderScene( const wxPoint& panPosition, const wxSize& viewSize )
