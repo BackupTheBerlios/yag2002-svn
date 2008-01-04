@@ -86,9 +86,6 @@ _loadedPlayerEntity( NULL )
 
 PlayerNetworking::~PlayerNetworking()
 {
-    // we have to lock creation / deletion of network objects during destruction
-    yaf3d::NetworkDevice::get()->lockObjects();
-
     log_info << "player left: " << _p_playerName << std::endl;
 
     // remove ghost from simulation ( server and client )
@@ -103,7 +100,7 @@ PlayerNetworking::~PlayerNetworking()
             if ( _voiceChat && ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client ) )
                 vrc::gameutils::PlayerUtils::get()->removeRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
 
-            // PlayerNetworking has created the player implementation, so set its networking and other components to NULL in order to abvoid deleting it also by player's implementation
+            // PlayerNetworking has created the player implementation, so set its networking and other components to NULL in order to avoid deleting it also by player's implementation
             _p_playerImpl->setPlayerNetworking( NULL );
             _p_playerImpl->setPlayerSound( NULL );
             _p_playerImpl->setPlayerAnimation( NULL );
@@ -115,8 +112,6 @@ PlayerNetworking::~PlayerNetworking()
                 yaf3d::EntityManager::get()->deleteEntity( *p_beg );
         }
     }
-
-    yaf3d::NetworkDevice::get()->unlockObjects();
 }
 
 void PlayerNetworking::PostObjectCreate()
