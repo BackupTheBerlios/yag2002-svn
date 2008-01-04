@@ -38,6 +38,7 @@
 #include "levelmanager.h"
 #include "soundmanager.h"
 #include "guimanager.h"
+#include "filesystem.h"
 #include "gamestate.h"
 #include "physics.h"
 #include "network.h"
@@ -46,6 +47,7 @@
 #include "log.h"
 
 #include <SDL_cpuinfo.h>
+
 
 // uncomment if the application should have an console stdout ( is used for server )
 // when using ms compiler you have also to set linker parameter /SUBSYSTEM:CONSOLE
@@ -65,6 +67,8 @@
 
 // media path relative to inst dir
 #define YAF3D_MEDIA_PATH            "/media/"
+// main media pack
+#define YAF3D_MEDIA_PACK            "media.pak"
 // default level
 #define YAF3D_DEFAULT_LEVEL         "gui/loader"
 
@@ -156,6 +160,7 @@ void Application::shutdown()
     ShadowManager::get()->shutdown();
     ShaderContainer::get()->shutdown();
     KeyMap::get()->shutdown();
+    FileSystem::get()->shutdown();
 
     // delete viewer
     delete _p_viewer;
@@ -328,13 +333,30 @@ bool Application::initialize( int argc, char **argv )
         log_out << cpuinfo.str() << std::endl;
     }
 
-    log_out << "Application: initializing viewer" << std::endl;
     log_out << "Application: using media path: " << _mediaPath << std::endl;
+
+    log_out << "Application: setup virtual file system" << std::endl;
+    try
+    {
+        FileSystem::get()->initialize();
+        FileSystem::get()->mountResource( _mediaPath, "/" );
+        if ( fileExists( _mediaPath + "/"YAF3D_MEDIA_PACK ) )
+        {
+            FileSystem::get()->mountResource( _mediaPath + "/"YAF3D_MEDIA_PACK, "/" );
+        }
+    }
+    catch ( const FileSystemException& e )
+    {
+        log_error << "Application: problem occured while setting up the virtual file system!" << std::endl;
+        log_error << " reason:" << e.what() << std::endl;
+        return false;
+    }
 
     // setup the viewer
     //----------
 
     // load the display settings
+    log_out << "Application: initializing viewer" << std::endl;
     Configuration::get()->getSettingValue( YAF3D_GS_SCREENWIDTH,  _screenWidth  );
     Configuration::get()->getSettingValue( YAF3D_GS_SCREENHEIGHT, _screenHeight );
     Configuration::get()->getSettingValue( YAF3D_GS_FULLSCREEN,   _fullScreen   );
@@ -405,7 +427,10 @@ bool Application::initialize( int argc, char **argv )
         // load the level and setup things
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( YAF3D_LEVEL_SERVER_DIR + arg_levelname );
         if ( !sceneroot.valid() )
+        {
+            log_error << "Application: could not load level '" << YAF3D_LEVEL_SERVER_DIR + arg_levelname << "'" << std::endl;
             return false;
+        }
 
         // append the level node to scene root node
         _rootSceneNode->addChild( sceneroot.get() );
@@ -463,7 +488,10 @@ bool Application::initialize( int argc, char **argv )
         // load the level and setup things
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( levelname );
         if ( !sceneroot.valid() )
+        {
+            log_error << "Application: could not load level '" << levelname << "'" << std::endl;
             return false;
+        }
 
         // append the level node to scene root node
         _rootSceneNode->addChild( sceneroot.get() );
@@ -485,7 +513,10 @@ bool Application::initialize( int argc, char **argv )
         // load the level and setup things
         osg::ref_ptr< osg::Group > sceneroot = LevelManager::get()->loadLevel( defaultlevel );
         if ( !sceneroot.valid() )
+        {
+            log_error << "Application: could not load level '" << defaultlevel << "'" << std::endl;
             return false;
+        }
 
         // append the level node to scene root node
         _rootSceneNode->addChild( sceneroot.get() );
@@ -515,7 +546,10 @@ bool Application::initialize( int argc, char **argv )
             yaf3d::Configuration::get()->store();
         }
 
-        if ( shadow )
+        bool shadowEnable = false;
+        Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadowEnable );
+
+        if ( shadow && shadowEnable )
         {
             unsigned int shadowTexSizeX = 0, shadowTexSizeY = 0, shadowTexChannel = 0;
             yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_TEXSIZEX, shadowTexSizeX );
@@ -566,7 +600,7 @@ void Application::run()
     float            deltaTime = LOWER_UPDATE_PERIOD_LIMIT;
 
     // set game state
-    _p_gameState->setState( GameState::EnterMainLoop );
+    _p_gameState->setState( GameState::MainLoop );
 
     // begin game loop
     while( _p_gameState->getState() != GameState::Quitting )
