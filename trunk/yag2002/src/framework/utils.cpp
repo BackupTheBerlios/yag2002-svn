@@ -631,6 +631,19 @@ bool isGlslAvailable()
     return glslavailable;
 }
 
+bool fileExists( const std::string& filename )
+{
+    std::fstream file;
+    file.open( filename.c_str(), std::ios::in );
+    if( file.is_open() )
+    {
+        file.close();
+        return true;
+    }
+    file.close();
+    return false;
+}
+
 std::string getCurrentWorkingDirectory()
 {
 #ifdef WIN32

@@ -111,8 +111,8 @@ class ImageTGA
 //! Return true if GLSL is available. Call this function in a valid GL context!
 bool isGlslAvailable();
 
-// functions with platform dependent implementations
-//--------------------------------------------------
+//! Check if the given file exists.
+bool fileExists( const std::string& filename );
 
 //! Return the current working directory
 std::string getCurrentWorkingDirectory();
