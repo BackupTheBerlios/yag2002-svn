@@ -1,4 +1,10 @@
 
+boto ( 01/04/2008 )
+
+- added a virutal file system using PhysFS
+
+-  added smart pointer class
+
 boto ( 09/09/2007 )
 
 - moved the shadow manager to the framework
