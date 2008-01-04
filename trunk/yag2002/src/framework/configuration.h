@@ -113,7 +113,7 @@ class Configuration : public Singleton< Configuration >
 
         virtual                                 ~Configuration();
         
-        //! Shutdown the network device.
+        //! Shutdown the configuration.
         void                                    shutdown();
 
         //! Configuration settings
