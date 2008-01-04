@@ -113,11 +113,10 @@ class EnPlayerAnimation  : public yaf3d::BaseEntity
         //! Override this method of yaf3d::BaseEntity to get notifications
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
+        //! Setup the shader
+        void                                        setupShader();
+
         //! Read config file and setup animation
-        /**
-        * \param rootDir                            The relative directory path to media directory which must contain all animation files and textures
-        * \param configfilename                     Cfg file name
-        */
         bool                                        setupAnimation( const std::string& rootDir, const std::string& configfilename );
 
         // entity attributes
@@ -137,6 +136,8 @@ class EnPlayerAnimation  : public yaf3d::BaseEntity
         osg::ref_ptr< osg::PositionAttitudeTransform > _animNode;
 
         bool                                        _renderingEnabled;
+
+        bool                                        _useTexture;
 
         //! offset position
         osg::Vec3f                                  _position;

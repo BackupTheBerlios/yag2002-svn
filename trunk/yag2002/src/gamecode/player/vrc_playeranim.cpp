@@ -96,12 +96,65 @@ static const char glsl_fp[] =
     "}                                                                              \n"
 ;
 
-static osg::ref_ptr< osg::Program > s_program;
+static const char glsl_vp_notex[] =
+    "/*                                                                             \n"
+    "* Vertex shader for rendering the player                                       \n"
+    "* http://yag2002.sf.net                                                        \n"
+    "* 11/28/2005                                                                   \n"
+    "*/                                                                             \n"
+    "varying vec4 diffuse,ambient;                                                  \n"
+    "varying vec3 normal,lightDir,halfVector;                                       \n"
+    "                                                                               \n"
+    "void main()                                                                    \n"
+    "{                                                                              \n"
+    "   normal      = normalize(gl_NormalMatrix * gl_Normal);                       \n"
+    "   lightDir    = normalize(vec3(gl_LightSource[0].position));                  \n"
+    "   halfVector  = normalize(gl_LightSource[0].halfVector.xyz);                  \n"
+    "   diffuse     = gl_FrontMaterial.diffuse * gl_LightSource[0].diffuse;         \n"
+    "   ambient     = gl_FrontMaterial.ambient * gl_LightSource[0].ambient;         \n"
+    "   ambient     += gl_LightModel.ambient * gl_FrontMaterial.ambient;            \n"
+    "   gl_Position = ftransform();                                                 \n"
+    "}                                                                              \n"
+;
+static const char glsl_fp_notex[] =
+    "/*                                                                             \n"
+    "* Fragment shader for rendering the player                                     \n"
+    "* http://yag2002.sf.net                                                        \n"
+    "* 11/28/2005                                                                   \n"
+    "*/                                                                             \n"
+    "varying vec4 diffuse,ambient;                                                  \n"
+    "varying vec3 normal,lightDir,halfVector;                                       \n"
+    "uniform sampler2D tex;                                                         \n"
+    "                                                                               \n"
+    "void main()                                                                    \n"
+    "{                                                                              \n"
+    "   vec3 n,halfV;                                                               \n"
+    "   float NdotL,NdotHV;                                                         \n"
+    "                                                                               \n"
+    "   vec4 color = ambient;                                                       \n"
+    "   n = normalize(normal);                                                      \n"
+    "   NdotL = max(dot(n,lightDir),0.0);                                           \n"
+    "    if (NdotL > 0.0) {                                                         \n"
+    "       color += diffuse * NdotL;                                               \n"
+    "       halfV = normalize(halfVector);                                          \n"
+    "       NdotHV = max(dot(n,halfV),0.0);                                         \n"
+    "       color += gl_FrontMaterial.specular *                                    \n"
+    "               gl_LightSource[0].specular *                                    \n"
+    "               pow(NdotHV, gl_FrontMaterial.shininess * 100.0);                \n"
+    "   }                                                                           \n"
+    "                                                                               \n"
+    "   gl_FragColor = color;                                                       \n"
+    "}                                                                              \n"
+;
+
+static osg::ref_ptr< osg::Program > s_programTex;
+static osg::ref_ptr< osg::Program > s_programNoTex;
 
 EnPlayerAnimation::EnPlayerAnimation() :
 _anim( eIdle ),
 _p_player( NULL ),
 _renderingEnabled( true ),
+_useTexture( true ),
 _scale( 1.0f ),
 _IdAnimIdle( -1 ),
 _IdAnimWalk( -1 ),
@@ -160,10 +213,13 @@ void EnPlayerAnimation::initialize()
     _animNode->setAttitude( quat );
     _animNode->addChild( _model.get() );
 
-   // register entity in order to get notifications (e.g. from menu entity)
+    // setup the shader
+    setupShader();
+
+    // register entity in order to get notifications (e.g. from menu entity)
     yaf3d::EntityManager::get()->registerNotification( this, true );
 
-    log_out << "  initializing player animation instance completed" << std::endl;
+    log_info << "  initializing player animation instance completed" << std::endl;
 }
 
 void EnPlayerAnimation::handleNotification( const yaf3d::EntityNotification& notification )
@@ -173,44 +229,63 @@ void EnPlayerAnimation::handleNotification( const yaf3d::EntityNotification& not
     {
         case YAF3D_NOTIFY_MENU_LEAVE:
         {
-            // if shadow has been enabled then remove the player shader from state set
-            bool shadow;
-            yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
-            osg::StateSet* p_stateSet = _animNode->getStateSet();
-            if ( shadow )
-            {
-                if ( p_stateSet )
-                {
-                    p_stateSet->clear();
-                    _animNode->setStateSet( NULL );
-                }
-            }
-            else
-            {
-                // setup the shader if glsl is supported
-                if ( yaf3d::isGlslAvailable() )
-                {
-                    if ( !s_program.valid() )
-                    {
-                        s_program = new osg::Program;
-                        s_program->setName( "_playerAnim_" );
-                        s_program->addShader( new osg::Shader( osg::Shader::VERTEX, glsl_vp ) );
-                        s_program->addShader( new osg::Shader( osg::Shader::FRAGMENT, glsl_fp ) );
-                    }
-                    // add shader if it does not already exist
-                    if ( !p_stateSet )
-                    {
-                        p_stateSet = _animNode->getOrCreateStateSet();
-                        p_stateSet->setAttributeAndModes( s_program.get(), osg::StateAttribute::ON );
-                        _animNode->setStateSet( p_stateSet );
-                    }
-                }
-            }
+            setupShader();
         }
         break;
 
         default:
             ;
+    }
+}
+
+void EnPlayerAnimation::setupShader()
+{
+    // if shadow has been enabled then remove the player shader from state set
+    bool shadow;
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
+    osg::StateSet* p_stateSet = _animNode->getStateSet();
+    if ( shadow )
+    {
+        if ( p_stateSet )
+        {
+            p_stateSet->clear();
+            _animNode->setStateSet( NULL );
+        }
+    }
+    else
+    {
+        // setup the shader if glsl is supported
+        if ( yaf3d::isGlslAvailable() )
+        {
+            if ( _useTexture )
+            {
+                if ( !s_programTex.valid() )
+                {
+                    s_programTex = new osg::Program;
+                    s_programTex->setName( "_playerAnimTex_" );
+                    s_programTex->addShader( new osg::Shader( osg::Shader::VERTEX, glsl_vp ) );
+                    s_programTex->addShader( new osg::Shader( osg::Shader::FRAGMENT, glsl_fp ) );
+                }
+            }
+            else
+            {
+                if ( !s_programNoTex.valid() )
+                {
+                    s_programNoTex = new osg::Program;
+                    s_programNoTex->setName( "_playerAnimNoTex_" );
+                    s_programNoTex->addShader( new osg::Shader( osg::Shader::VERTEX, glsl_vp_notex ) );
+                    s_programNoTex->addShader( new osg::Shader( osg::Shader::FRAGMENT, glsl_fp_notex ) );
+                }
+            }
+
+            // add shader if it does not already exist
+            if ( !p_stateSet )
+            {
+                p_stateSet = _animNode->getOrCreateStateSet();
+                p_stateSet->setAttributeAndModes( _useTexture ? s_programTex.get() : s_programNoTex.get(), osg::StateAttribute::ON );
+                _animNode->setStateSet( p_stateSet );
+            }
+        }
     }
 }
 
@@ -315,7 +390,12 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
         destFileName = rootDir + "/" + strData;
 
         // handle the model creation
-        if( strKey == "skeleton" )
+        if( strKey == "usetexture" )
+        {
+            if ( strData == "no" )
+                _useTexture = false;
+        }
+        else if( strKey == "skeleton" )
         {
             if ( !p_calCoreModel->loadCoreSkeleton( destFileName ) )
                 log_error << "***  line " << line << ", problem loading skeleton: " << destFileName << std::endl;
