@@ -61,15 +61,15 @@ class GameState : public Singleton< GameState >
         //! Game state
         enum State
         {
-            UnknownState = 0x20,
-            Initializing,           // set at startup
-            GraphicsInitialized,    // set after initializing the graphics
-            StartRunning,           // start running game
-            EnterMainLoop,
-            Pausing,                // game pausing
-            Leaving,                // leaving a level
-            Quitting,               // quitting application
-            Shutdown                // shutdown the application
+            UnknownState        = 0x0,
+            Initializing        = 0x0001,    // set at startup
+            GraphicsInitialized = 0x0002,    // set after initializing the graphics
+            StartRunning        = 0x0004,    // start running game
+            MainLoop            = 0x0008,    // application is in main loop
+            Pausing             = 0x0010,    // game pausing
+            Leaving             = 0x0020,    // leaving a level
+            Quitting            = 0x0040,    // quitting application
+            Shutdown            = 0x0080     // shutdown the application
         };
 
         //! Application window state

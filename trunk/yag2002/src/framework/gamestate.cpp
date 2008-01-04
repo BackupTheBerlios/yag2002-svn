@@ -139,7 +139,7 @@ void GameState::setState( unsigned int state )
             ( state == GameState::Initializing        ) ||
             ( state == GameState::GraphicsInitialized ) ||
             ( state == GameState::StartRunning        ) ||
-            ( state == GameState::EnterMainLoop       ) ||
+            ( state == GameState::MainLoop            ) ||
             ( state == GameState::Pausing             ) ||
             ( state == GameState::Leaving             ) ||
             ( state == GameState::Quitting            ) ||
