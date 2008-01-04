@@ -33,6 +33,7 @@
 #include "storage/vrc_storageclient.h"
 #include "storage/vrc_storageserver.h"
 #include "gamelogic/vrc_gamelogic.h"
+#include "gamelogic/vrc_storysystem.h"
 
 YAF3D_SINGLETON_IMPL( vrc::gameutils::PlayerUtils )
 YAF3D_SINGLETON_IMPL( vrc::gameutils::GuiUtils )
@@ -205,11 +206,22 @@ void VRCStateHandler::onStateChange( unsigned int state )
                     log_error << "could not initialize the game logic!" << std::endl;
                     log_error << " reason: " << e.what() << std::endl;
                 }
+
+                try
+                {
+                    // init the user interaction system
+                    StorySystem::get()->initialize();
+                }
+                catch( const StorySystemException& e )
+                {
+                    log_error << "could not initialize the user interaction system!" << std::endl;
+                    log_error << " reason: " << e.what() << std::endl;
+                }
             }
         }
         break;
 
-        case yaf3d::GameState::EnterMainLoop :
+        case yaf3d::GameState::MainLoop :
         {
         }
         break;
@@ -224,6 +236,11 @@ void VRCStateHandler::onStateChange( unsigned int state )
             // shutdown the storage
             if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
             {
+                // shutdown the user interaction system
+                StorySystem::get()->shutdown();
+                // shutdown the game logic
+                GameLogic::get()->shutdown();
+
                 // check if the server is configured to request client authentification
                 bool needsAuth = false;
                 yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_AUTH, needsAuth );
@@ -238,6 +255,9 @@ void VRCStateHandler::onStateChange( unsigned int state )
             // shutdown the game logic
             if ( yaf3d::GameState::get()->getMode() & ( yaf3d::GameState::Server | yaf3d::GameState::Standalone ) )
             {
+                // shutdown the user interaction system
+                StorySystem::get()->shutdown();
+                // shutdown the game logic
                 GameLogic::get()->shutdown();
             }
         }
