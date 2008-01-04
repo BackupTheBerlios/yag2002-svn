@@ -703,6 +703,9 @@ void EnMenu::updateEntity( float deltaTime )
 
             switchMenuScene( true );
 
+            // set the proper game state
+            yaf3d::GameState::get()->setState( yaf3d::GameState::MainLoop );
+
             _menuState = Visible;
         }
         break;
