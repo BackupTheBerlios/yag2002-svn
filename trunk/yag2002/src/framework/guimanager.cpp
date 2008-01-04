@@ -33,6 +33,7 @@
 #include "application.h"
 #include "configuration.h"
 #include "guirenderer.h"
+#include "filesystem.h"
 #include "keymap.h"
 #include "log.h"
 #include <CEGUILogger.h>
@@ -139,32 +140,14 @@ GuiManager::InputHandler::~InputHandler()
 
 void GuiResourceProvider::loadRawDataContainer( const CEGUI::String& filename, CEGUI::RawDataContainer& output, const CEGUI::String& /*resourceGroup*/ )
 {
-    std::auto_ptr< std::fstream > p_stream( new std::fstream );
-
-    std::string fullpath = Application::get()->getMediaPath() + filename.c_str();
-    p_stream->open( fullpath.c_str(), std::ios_base::binary | std::ios_base::in );
-    // if the file does not exist then return
-    if ( !( *p_stream ) )
+    FilePtr file = FileSystem::get()->getFile( filename.c_str() );
+    if ( !file.valid() )
     {
-        log_warning << " GuiResourceProvider: file '" << fullpath << "' does not exist." << std::endl;
-        throw CEGUI::Exception( "GuiResourceProvider cannot find file '" + fullpath + "'" );
+        log_warning << "GuiResourceProvider: cannot find file: " << filename << std::endl;
+        return;
     }
-
-    // get file size
-    p_stream->seekg( 0, std::ios_base::end );
-    int filesize = ( int )p_stream->tellg();
-    p_stream->seekg( 0, std::ios_base::beg );
-
-    // load the file
-    unsigned char* p_buf = new unsigned char[ filesize + 1 ];
-    p_buf[ filesize ] = 0;
-    p_stream->read( ( char* )p_buf, filesize );
-
-    // set output
-    output.setData( p_buf );
-    output.setSize( filesize );
-
-    p_stream->close();
+    output.setData( reinterpret_cast< unsigned char* >( file->releaseBuffer() ) );
+    output.setSize( file->getSize() );
 }
 
 
