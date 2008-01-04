@@ -68,8 +68,10 @@ void GuiTexture::loadFromFile( const CEGUI::String& filename, const CEGUI::Strin
     // load file to memory via resource provider
     CEGUI::RawDataContainer texFile;
     CEGUI::System::getSingleton().getResourceProvider()->loadRawDataContainer( filename, texFile, resourceGroup );
+    if ( !texFile.getDataPtr() )
+        return;
 
-    tImageTGA*  img = LoadTGA(texFile.getDataPtr(), texFile.getSize());
+    tImageTGA*  img = LoadTGA( texFile.getDataPtr(), texFile.getSize() );
     if (img != 0)
     {
         _width = static_cast<CEGUI::ushort>(img->sizeX);
