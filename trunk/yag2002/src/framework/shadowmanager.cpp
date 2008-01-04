@@ -295,6 +295,8 @@ osg::Node* ShadowManager::createDebugDisplay( osg::Texture* p_texture )
 
 void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowTextureHeight, unsigned int shadowTextureUnit, float shadowAmbient )
 {
+    log_info << "ShadowManager: setting up the shadow scene graph" << std::endl;
+
     if ( _enable )
     {
         log_error << "ShadowManager has already been initialized! Skipping initialization." << std::endl;
