@@ -64,7 +64,7 @@ const std::string& CmdDisplayShadowMap::execute( const std::vector< std::string 
     yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
     if ( !shadow )
     {
-        _cmdResult += "dynamic shadows are not enabled! this command has not effect.";
+        _cmdResult += "dynamic shadows are not enabled! this command has no effect.";
         return _cmdResult;
     }
 
