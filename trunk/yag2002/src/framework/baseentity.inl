@@ -90,6 +90,16 @@ inline const osg::Quat& BaseEntity::getRotation()
     return _p_transformNode->getAttitude();
 }
 
+inline void BaseEntity::setScale( const osg::Vec3d& scale )
+{
+    _p_transformNode->setScale( scale );
+}
+
+inline const osg::Vec3d& BaseEntity::getScale()
+{
+    return _p_transformNode->getScale();
+}
+
 inline void BaseEntity::setInitialized( bool init )
 {
     _initialized = init;

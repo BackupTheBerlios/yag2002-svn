@@ -157,6 +157,16 @@ class BaseEntity
         inline const osg::Quat&                     getRotation();
 
         /**
+        * Set scale of the transform node
+        */
+        inline void                                 setScale( const osg::Vec3d& scale );
+
+        /**
+        * Get scale of the transform node
+        */
+        inline const osg::Vec3d&                    getScale();
+
+        /**
         * Clone this entity and name it instanceName.
         * Cloning an entity means that also the accociated scenegraph node is cloned.
         * If p_scenegroup is not NULL then the cloned scene node will be added to this group.
