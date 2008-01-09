@@ -82,7 +82,7 @@ void PlayerImplStandalone::handleNotification( const yaf3d::EntityNotification& 
             if ( _p_camera )
                 _p_camera->setEnable( false );
 
-            // players are all rendered in menu, regardless their camera mode
+            // players are all rendered in menu, regardless of their camera mode
             _p_playerAnimation->enableRendering( true );
             if ( _cameraMode == Ego )
                 addToSceneGraph();
