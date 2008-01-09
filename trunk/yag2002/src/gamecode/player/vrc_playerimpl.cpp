@@ -72,7 +72,7 @@ BasePlayerImplementation::~BasePlayerImplementation()
 void BasePlayerImplementation::removeFromSceneGraph()
 {
     unsigned int parents = getPlayerEntity()->getTransformationNode()->getNumParents();
-    for ( unsigned int cnt = 0; cnt < parents; ++cnt )        
+    for ( unsigned int cnt = 0; cnt < parents; ++cnt )
         getPlayerEntity()->getTransformationNode()->getParent( 0 )->removeChild( getPlayerEntity()->getTransformationNode() );
 }
 
@@ -85,14 +85,12 @@ void BasePlayerImplementation::addToSceneGraph()
     yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
     if ( shadow )
     {
-        // add it to shadow manager
+        // add it to shadow manager as only shadow thrower
         yaf3d::ShadowManager::get()->addShadowNode( getPlayerEntity()->getTransformationNode(), yaf3d::ShadowManager::eThrowShadow );
     }
-    else
-    {
-        // add it to level manager's entity node
-        yaf3d::EntityManager::get()->addToScene( getPlayerEntity() );
-    }
+
+    // add it to level manager's entity node
+    yaf3d::EntityManager::get()->addToScene( getPlayerEntity() );
 }
 
 // get the shared chat manager
@@ -133,7 +131,7 @@ bool BasePlayerImplementation::createChatManager()
     if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Standalone )
     {
         ChatNetworkingVRC* p_chatProtocolVRC = new ChatNetworkingVRC;
-        s_chatMgr->registerChatProtocol( VRC_PROTOCOL_NAME, p_chatProtocolVRC );        
+        s_chatMgr->registerChatProtocol( VRC_PROTOCOL_NAME, p_chatProtocolVRC );
     }
 
     // build the chat system

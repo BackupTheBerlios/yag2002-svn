@@ -113,6 +113,9 @@ class EnPlayerAnimation  : public yaf3d::BaseEntity
         //! Override this method of yaf3d::BaseEntity to get notifications
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
+        //! Update entity
+        void                                        updateEntity( float deltaTime );
+
         //! Setup the shader
         void                                        setupShader();
 
@@ -147,6 +150,12 @@ class EnPlayerAnimation  : public yaf3d::BaseEntity
 
         //! Uniform scale
         float                                       _scale;
+
+        //! Maximal distance for getting the lowest LOD
+        float                                       _maxLODDistance;
+
+        //! One over max LOD distance
+        float                                       _divMaxLODDistance;
 
         // animation ids
         int                                         _IdAnimIdle;

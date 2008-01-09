@@ -156,6 +156,8 @@ _p_player( NULL ),
 _renderingEnabled( true ),
 _useTexture( true ),
 _scale( 1.0f ),
+_maxLODDistance( 50.0f ),
+_divMaxLODDistance( 1.0f / 50.0f ),
 _IdAnimIdle( -1 ),
 _IdAnimWalk( -1 ),
 _IdAnimRun( -1 ),
@@ -164,10 +166,11 @@ _IdAnimLand( -1 ),
 _IdAnimTurn( -1 )
 {
     // register attributes
-    getAttributeManager().addAttribute( "animconfig"   , _animCfgFile );
-    getAttributeManager().addAttribute( "position"     , _position    );
-    getAttributeManager().addAttribute( "rotation"     , _rotation    );
-    getAttributeManager().addAttribute( "scale"        , _scale       );
+    getAttributeManager().addAttribute( "animconfig"     , _animCfgFile    );
+    getAttributeManager().addAttribute( "position"       , _position       );
+    getAttributeManager().addAttribute( "rotation"       , _rotation       );
+    getAttributeManager().addAttribute( "scale"          , _scale          );
+    getAttributeManager().addAttribute( "maxLODDistance" , _maxLODDistance );
 }
 
 EnPlayerAnimation::~EnPlayerAnimation()
@@ -213,13 +216,38 @@ void EnPlayerAnimation::initialize()
     _animNode->setAttitude( quat );
     _animNode->addChild( _model.get() );
 
+    // calculate LOD distance internal var
+    _divMaxLODDistance = 1.0f / _maxLODDistance;
+
     // setup the shader
     setupShader();
 
     // register entity in order to get notifications (e.g. from menu entity)
     yaf3d::EntityManager::get()->registerNotification( this, true );
+    // register entity in order to get updated
+    yaf3d::EntityManager::get()->registerUpdate( this, true );
 
     log_info << "  initializing player animation instance completed" << std::endl;
+}
+
+void EnPlayerAnimation::updateEntity( float deltaTime )
+{
+    // set proper LOD
+    if ( _p_player )
+    {
+        //! TODO: better take the camera entity!?
+        osg::Matrixd& mat = yaf3d::Application::get()->getSceneView()->getCamera()->getViewMatrix();
+        osg::Vec3f campos = osg::Matrix::inverse( mat ).getTrans();
+
+        float dist = ( campos - _p_player->getPlayerPosition() ).length();
+        float lod = 1.0f - dist * _divMaxLODDistance;
+        if ( lod < 0.1f )
+            lod = 0.1f;
+        else if ( lod > 1.0f )
+            lod = 1.0f;
+
+        _model->setLOD( lod );
+    }
 }
 
 void EnPlayerAnimation::handleNotification( const yaf3d::EntityNotification& notification )
@@ -233,6 +261,24 @@ void EnPlayerAnimation::handleNotification( const yaf3d::EntityNotification& not
         }
         break;
 
+        // update entity params when attributes changed
+        case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
+        {
+            _divMaxLODDistance = 1.0f / _maxLODDistance;
+
+            if ( _coreModel->get() )
+                _coreModel->get()->scale( _scale );
+
+            _animNode->setPosition( _position );
+            osg::Quat quat(
+                _rotation.x() * osg::PI / 180.0f, osg::Vec3f( 1, 0, 0 ),
+                _rotation.y() * osg::PI / 180.0f, osg::Vec3f( 0, 1, 0 ),
+                _rotation.z() * osg::PI / 180.0f, osg::Vec3f( 0, 0, 1 )
+                );
+            _animNode->setAttitude( quat );
+        }
+        break;
+
         default:
             ;
     }
@@ -240,51 +286,38 @@ void EnPlayerAnimation::handleNotification( const yaf3d::EntityNotification& not
 
 void EnPlayerAnimation::setupShader()
 {
-    // if shadow has been enabled then remove the player shader from state set
-    bool shadow;
-    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
     osg::StateSet* p_stateSet = _animNode->getStateSet();
-    if ( shadow )
-    {
-        if ( p_stateSet )
-        {
-            p_stateSet->clear();
-            _animNode->setStateSet( NULL );
-        }
-    }
-    else
-    {
-        // setup the shader if glsl is supported
-        if ( yaf3d::isGlslAvailable() )
-        {
-            if ( _useTexture )
-            {
-                if ( !s_programTex.valid() )
-                {
-                    s_programTex = new osg::Program;
-                    s_programTex->setName( "_playerAnimTex_" );
-                    s_programTex->addShader( new osg::Shader( osg::Shader::VERTEX, glsl_vp ) );
-                    s_programTex->addShader( new osg::Shader( osg::Shader::FRAGMENT, glsl_fp ) );
-                }
-            }
-            else
-            {
-                if ( !s_programNoTex.valid() )
-                {
-                    s_programNoTex = new osg::Program;
-                    s_programNoTex->setName( "_playerAnimNoTex_" );
-                    s_programNoTex->addShader( new osg::Shader( osg::Shader::VERTEX, glsl_vp_notex ) );
-                    s_programNoTex->addShader( new osg::Shader( osg::Shader::FRAGMENT, glsl_fp_notex ) );
-                }
-            }
 
-            // add shader if it does not already exist
-            if ( !p_stateSet )
+    // setup the shader if glsl is supported
+    if ( yaf3d::isGlslAvailable() )
+    {
+        if ( _useTexture )
+        {
+            if ( !s_programTex.valid() )
             {
-                p_stateSet = _animNode->getOrCreateStateSet();
-                p_stateSet->setAttributeAndModes( _useTexture ? s_programTex.get() : s_programNoTex.get(), osg::StateAttribute::ON );
-                _animNode->setStateSet( p_stateSet );
+                s_programTex = new osg::Program;
+                s_programTex->setName( "_playerAnimTex_" );
+                s_programTex->addShader( new osg::Shader( osg::Shader::VERTEX, glsl_vp ) );
+                s_programTex->addShader( new osg::Shader( osg::Shader::FRAGMENT, glsl_fp ) );
             }
+        }
+        else
+        {
+            if ( !s_programNoTex.valid() )
+            {
+                s_programNoTex = new osg::Program;
+                s_programNoTex->setName( "_playerAnimNoTex_" );
+                s_programNoTex->addShader( new osg::Shader( osg::Shader::VERTEX, glsl_vp_notex ) );
+                s_programNoTex->addShader( new osg::Shader( osg::Shader::FRAGMENT, glsl_fp_notex ) );
+            }
+        }
+
+        // add shader if it does not already exist
+        if ( !p_stateSet )
+        {
+            p_stateSet = _animNode->getOrCreateStateSet();
+            p_stateSet->setAttributeAndModes( _useTexture ? s_programTex.get() : s_programNoTex.get(), osg::StateAttribute::ON );
+            _animNode->setStateSet( p_stateSet );
         }
     }
 }
