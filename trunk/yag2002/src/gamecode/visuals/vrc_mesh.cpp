@@ -52,6 +52,7 @@ namespace vrc
 YAF3D_IMPL_ENTITYFACTORY( MeshEntityFactory )
 
 EnMesh::EnMesh() :
+_scale( osg::Vec3f( 1.0f, 1.0f, 1.0f ) ),
 _enable( true ),
 _usedInMenu( false ),
 _throwShadow( false ),
@@ -67,6 +68,7 @@ _shadowEnable( false )
     getAttributeManager().addAttribute( "shaderName"    , _shaderName    );
     getAttributeManager().addAttribute( "position"      , _position      );
     getAttributeManager().addAttribute( "rotation"      , _rotation      );
+    getAttributeManager().addAttribute( "scale"         , _scale         );
     getAttributeManager().addAttribute( "throwShadow"   , _throwShadow   );
     getAttributeManager().addAttribute( "receiveShadow" , _receiveShadow );
 
@@ -259,6 +261,7 @@ osg::Node* EnMesh::setupMesh()
                      osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0.0f, 0.0f, 1.0f )
                     );
     setRotation( rot );
+    setScale( _scale );
 
 #ifndef DONT_USE_GLOD
     if ( _useLOD )

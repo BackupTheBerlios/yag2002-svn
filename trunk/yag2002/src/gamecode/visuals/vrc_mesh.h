@@ -82,6 +82,8 @@ class EnMesh :  public yaf3d::BaseEntity
 
         osg::Vec3f                                  _rotation;
 
+        osg::Vec3f                                  _scale;
+
         bool                                        _enable;
 
         bool                                        _usedInMenu;
