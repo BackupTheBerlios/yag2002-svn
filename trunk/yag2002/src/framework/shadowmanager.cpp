@@ -35,13 +35,13 @@
 #include "shadercontainer.h"
 
 #include <osg/ComputeBoundsVisitor>
-#include <osg/PolygonOffset>
 #include <osg/TexEnvCombine>
 #include <osg/TexGenNode>
 #include <osg/Transform>
 #include <osg/CullFace>
 #include <osg/TexEnv>
 #include <osg/Camera>
+#include <osgDB/WriteFile>
 
 // Implementation of ShadowManager
 YAF3D_SINGLETON_IMPL( yaf3d::ShadowManager )
@@ -86,18 +86,18 @@ class ShadowSceneCullCallback : public osg::NodeCallback
                                                     {
                                                         osgUtil::CullVisitor* p_cullvisitor = static_cast< osgUtil::CullVisitor* >( p_nv );
                                                         p_cullvisitor->pushStateSet( _p_stateSet.get() );
-                                                        p_cullvisitor->setTraversalMask( ShadowManager::eReceiveShadow );
+                                                        //p_cullvisitor->setTraversalMask( ShadowManager::eReceiveShadow );
                                                         traverse( p_node, p_cullvisitor );
                                                         p_cullvisitor->popStateSet();
                                                     }
-
+#if 1
                                                     if ( _updateNodes )
                                                     {
                                                         _shadowBB.init();
 
                                                         // get the bounds of receiving nodes
                                                         osg::ComputeBoundsVisitor bv( osg::NodeVisitor::TRAVERSE_ACTIVE_CHILDREN );
-                                                        bv.setTraversalMask( ShadowManager::eReceiveShadow );
+                                                        //bv.setTraversalMask( ShadowManager::eReceiveShadow );
                                                         p_node->traverse( bv );
                                                         _shadowBB = bv.getBoundingBox();
 
@@ -123,7 +123,7 @@ class ShadowSceneCullCallback : public osg::NodeCallback
                                                     {
                                                         _p_camera->setReferenceFrame( osg::Camera::ABSOLUTE_RF );
                                                         _p_camera->setProjectionMatrixAsFrustum( -_frustomCorner, _frustomCorner, -_frustomCorner, _frustomCorner, _nearZ, _farZ );
-                                                        _p_camera->setViewMatrixAsLookAt( _lightPosition, _shadowBB.center(), osg::Vec3( 0.0f, 1.0f, 0.0f ) );
+                                                        _p_camera->setViewMatrixAsLookAt( _lightPosition, _shadowBB.center(), osg::Vec3( 0.0f, 0.0f, 1.0f ) );
 
                                                         // compute the matrix which takes a vertex from local coords into tex coords
                                                         // will use this later to specify osg::TexGen
@@ -132,16 +132,66 @@ class ShadowSceneCullCallback : public osg::NodeCallback
                                                                 osg::Matrix::translate( 1.0, 1.0, 1.0 ) *
                                                                 osg::Matrix::scale( 0.5f, 0.5f, 0.5f );
 
-                                                        
                                                          _updateLightPosition = false;
                                                     }
 
                                                     // collect the shadow throwing nodes in camera group
-                                                    p_nv->setTraversalMask( ShadowManager::eThrowShadow );
+//                                                    p_nv->setTraversalMask( ShadowManager::eThrowShadow );
                                                     _p_camera->accept( *p_nv );
 
                                                     // update the texture generation matrix
                                                     _p_texgenMatrix->set( osg::Matrixf::inverse( yaf3d::Application::get()->getSceneView()->getViewMatrix() )* _MVPT );
+
+// psm implementation is broken :-(
+#else
+                                                    {
+                                                        _shadowBB.init();
+
+                                                        // get the bounds of receiving nodes
+                                                        osg::ComputeBoundsVisitor bv( osg::NodeVisitor::TRAVERSE_ACTIVE_CHILDREN );
+                                                        //bv.setTraversalMask( ShadowManager::eReceiveShadow );
+                                                        p_node->traverse( bv );
+                                                        _shadowBB = bv.getBoundingBox();
+
+                                                        if ( !_shadowBB.valid() )
+                                                            return;
+
+                                                        float centerDistance = ( _lightPosition - _shadowBB.center() ).length();
+
+                                                        _nearZ = centerDistance - _shadowBB.radius();
+                                                        _farZ  = centerDistance + _shadowBB.radius();
+                                                        float zNearRatio = 0.001f;
+                                                        if ( _nearZ < _farZ * zNearRatio )
+                                                            _nearZ = _farZ * zNearRatio;
+
+                                                        _frustomCorner   = ( _shadowBB.radius() / centerDistance ) * _nearZ;
+                                                    }
+
+                                                    osg::Vec4f lightpp( _lightPosition, 1.0f );
+                                                    osg::Matrixd& MV = yaf3d::Application::get()->getSceneView()->getViewMatrix();
+                                                    osg::Matrixd& P  = yaf3d::Application::get()->getSceneView()->getProjectionMatrix();
+                                                    osg::Matrixd  M  = P * MV;
+                                                    lightpp = lightpp * M;
+                                                    lightpp /= lightpp._v[ 3 ];
+                                                    osg::Matrixf  MVL;
+                                                    MVL.makeLookAt( osg::Vec3( lightpp._v [ 0 ], lightpp._v [ 1 ], lightpp._v [ 2 ] ) , osg::Vec3( 0.0f, 0.0f, 0.0f ), osg::Vec3( 0.0f, 0.0f, 1.0f ) );
+
+                                                    _p_camera->setReferenceFrame( osg::Camera::ABSOLUTE_RF );
+                                                    _p_camera->setProjectionMatrixAsFrustum( -_frustomCorner, _frustomCorner, -_frustomCorner, _frustomCorner, _nearZ, _farZ );
+                                                    _p_camera->setViewMatrix( M * MVL );
+
+                                                    // compute the matrix which takes a vertex from local coords into tex coords
+                                                    // will use this later to specify osg::TexGen
+                                                    _MVPT = osg::Matrix::translate( 1.0, 1.0, 1.0 ) * osg::Matrix::scale( 0.5f, 0.5f, 0.5f );
+                                                    _MVPT = _p_camera->getProjectionMatrix() * _p_camera->getViewMatrix() * P * MV * _MVPT;
+                                                    // update the texture generation matrix
+                                                    _p_texgenMatrix->set( osg::Matrixf::inverse( yaf3d::Application::get()->getSceneView()->getViewMatrix() ) * _MVPT );
+
+                                                    // collect the shadow throwing nodes in camera group
+                                                    //p_nv->setTraversalMask( ShadowManager::eThrowShadow );
+                                                    _p_camera->accept( *p_nv );
+#endif
+
                                                 }
 
     protected:
@@ -264,31 +314,54 @@ osg::Node* ShadowManager::createDebugDisplay( osg::Texture* p_texture )
 
     osg::Geode* p_geode = new osg::Geode;
     p_geode->setName( "_shadowMapOverlay" );
-    osg::Geometry* p_geom = osg::createTexturedQuadGeometry( osg::Vec3( 0, 0, 0 ), osg::Vec3( size.x(), 0.0, 0.0 ), osg::Vec3( 0.0, size.y(), 0.0 ) );
-    osg::StateSet* p_stateset = p_geom->getOrCreateStateSet();
-    p_stateset->setTextureAttributeAndModes( 0, p_texture,osg::StateAttribute::ON );
-    p_stateset->setTextureAttributeAndModes( 1, p_texture, osg::StateAttribute::ON );
+    osg::StateSet* p_stateset = p_geode->getOrCreateStateSet();
     p_stateset->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
-    p_geode->addDrawable( p_geom );
+    {
+        osg::Geometry* p_geom = new osg::Geometry;
+        osg::Vec3Array* p_vertices = new osg::Vec3Array;
+        p_vertices->push_back( osg::Vec3( pos.x(), pos.y(), -10 ) );
+        p_vertices->push_back( osg::Vec3( pos.x(), pos.y() + size.y(), -10 ) );
+        p_vertices->push_back( osg::Vec3( pos.x() + size.x(), pos.y() + size.y(), -10 ) );
+        p_vertices->push_back( osg::Vec3( pos.x() + size.x(), pos.y(), -10 ) );
+        p_geom->setVertexArray( p_vertices );
+
+        osg::Vec3Array* p_normals = new osg::Vec3Array;
+        p_normals->push_back( osg::Vec3( 0.0f, 0.0f, 1.0f ) );
+        p_geom->setNormalArray( p_normals );
+        p_geom->setNormalBinding( osg::Geometry::BIND_OVERALL );
+
+        osg::Vec4Array* p_colors = new osg::Vec4Array;
+        p_colors->push_back( osg::Vec4( 1.0f, 1.0, 1.0f, 1.0f ) );
+        p_geom->setColorArray( p_colors );
+        p_geom->setColorBinding( osg::Geometry::BIND_OVERALL );
+
+        osg::Vec2Array* p_tcoords = new osg::Vec2Array( 4 );
+        ( *p_tcoords )[ 0 ].set( 0.0f, 1.0f );
+        ( *p_tcoords )[ 1 ].set( 0.0f, 0.0f );
+        ( *p_tcoords )[ 2 ].set( 1.0f, 0.0f );
+        ( *p_tcoords )[ 3 ].set( 1.0f, 1.0f );
+        p_geom->setTexCoordArray( 0, p_tcoords );
+
+        p_geom->addPrimitiveSet( new osg::DrawArrays( GL_QUADS, 0, 4 ) );
+        p_geode->addDrawable( p_geom );
+        
+        osg::StateSet* p_stateset = p_geom->getOrCreateStateSet();
+        p_stateset->setTextureAttributeAndModes( 0, p_texture, osg::StateAttribute::ON );
+    }
 
     osg::Camera* p_camera = new osg::Camera;
+    p_camera->addChild( p_geode );
 
     // set the projection matrix
-    p_camera->setProjectionMatrix(osg::Matrix::ortho2D( 0, size.x(), 0, size.y() ) );
-
+    p_camera->setProjectionMatrixAsOrtho2D( 0, size.x(), 0, size.y() );
     // set the view matrix
     p_camera->setReferenceFrame( osg::Transform::ABSOLUTE_RF );
     p_camera->setViewMatrix( osg::Matrix::identity() );
-
     p_camera->setViewport( static_cast< int >( pos.x() ), static_cast< int >( pos.y() ), static_cast< int >( size.x() ), static_cast< int >( size.y() ) );
-
     // only clear the depth buffer
     p_camera->setClearMask( GL_DEPTH_BUFFER_BIT );
-
     // draw subgraph after main camera view.
     p_camera->setRenderOrder( osg::Camera::POST_RENDER );
-
-    p_camera->addChild( p_geode );
 
     return p_camera;
 }
@@ -346,19 +419,23 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
         p_localstateset->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
 
         float factor = 2.0f;
-        float units  = 2.0f;
+        float units  = 4.0f;
 
-        osg::ref_ptr< osg::PolygonOffset > p_polygonoffset = new osg::PolygonOffset;
-        p_polygonoffset->setFactor( factor );
-        p_polygonoffset->setUnits( units );
-        p_localstateset->setAttribute( p_polygonoffset.get(), osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
+        _polygonOffset = new osg::PolygonOffset;
+        _polygonOffset->setFactor( factor );
+        _polygonOffset->setUnits( units );
+        p_localstateset->setAttribute( _polygonOffset.get(), osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
         p_localstateset->setMode( GL_POLYGON_OFFSET_FILL, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
 
+        // using culling is not good for non-closed geoms!
+#if 0
         osg::ref_ptr< osg::CullFace > p_cullface = new osg::CullFace;
         p_cullface->setMode( osg::CullFace::FRONT );
         p_localstateset->setAttribute( p_cullface.get(), osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
         p_localstateset->setMode( GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE );
-
+#else
+        p_localstateset->setMode( GL_CULL_FACE, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE );
+#endif
 
         // set the camera to render before the main camera.
         _shadowCameraGroup->setRenderOrder( osg::Camera::PRE_RENDER );
@@ -473,6 +550,7 @@ void ShadowManager::displayShadowMap( bool enable )
             _debugDisplay = createDebugDisplay( _p_shadowMapTexture );
             // add the preview pic for shadow map
             _shadowedGroup->addChild( _debugDisplay.get() );
+//            Application::get()->getSceneRootNode()->addChild( _debugDisplay.get() );
         }
     }
     else
@@ -481,6 +559,7 @@ void ShadowManager::displayShadowMap( bool enable )
             return;
 
         _shadowedGroup->removeChild( _debugDisplay.get() );
+//        Application::get()->getSceneRootNode()->removeChild( _debugDisplay.get() );
         _debugDisplay = NULL;
     }
 }
@@ -499,7 +578,7 @@ void ShadowManager::addShadowNode( osg::Node* p_node, unsigned int shadowmode, f
         nodemask |= eThrowShadow;
         p_node->setNodeMask( nodemask );
 
-        // create a lod node in order to cull away far shadow trowing nodes
+        // create a lod node in order to cull away far shadow throwing nodes
         ShadowNodeCullCallback* p_cullcallback = new ShadowNodeCullCallback( culldistance );
         osg::Group* p_cullnode = new osg::Group;
         p_cullnode->addChild( p_node );

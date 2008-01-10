@@ -34,6 +34,7 @@
 #include <base.h>
 #include <singleton.h>
 #include <application.h>
+#include <osg/PolygonOffset>
 
 namespace yaf3d
 {
@@ -84,6 +85,12 @@ class ShadowManager : public yaf3d::Singleton< yaf3d::ShadowManager >
         //! Get light position
         inline const osg::Vec3f&                    getLightPosition();
 
+        //! Set the polygon offset parameters
+        inline void                                 setPolygonOffset( float factor, float unit );
+
+        //! Get the polygon offset parameters
+        inline void                                 getPolygonOffset( float& factor, float& unit ) const;
+
         //! Set shadow's gain and bias ( frag color = tex color * ( bias + shadow color * gain ) )
         void                                        setShadowColorGainAndBias( float gain, float bias );
 
@@ -131,6 +138,8 @@ class ShadowManager : public yaf3d::Singleton< yaf3d::ShadowManager >
 
         osg::Texture2D*                             _p_shadowMapTexture;
 
+        osg::ref_ptr< osg::PolygonOffset >          _polygonOffset;
+
         osg::ref_ptr< osg::Node >                   _debugDisplay;
 
     friend class yaf3d::Singleton< yaf3d::ShadowManager >;
@@ -143,6 +152,24 @@ class ShadowManager : public yaf3d::Singleton< yaf3d::ShadowManager >
 inline const osg::Vec3f& ShadowManager::getLightPosition()
 {
     return _lightPosition;
+}
+
+inline void ShadowManager::setPolygonOffset( float factor, float units )
+{
+    if ( _polygonOffset.valid() )
+    {
+        _polygonOffset->setFactor( factor );
+        _polygonOffset->setUnits( units );
+    }
+}
+
+inline void ShadowManager::getPolygonOffset( float& factor, float& units ) const
+{
+    if ( _polygonOffset.valid() )
+    {
+        factor = _polygonOffset->getFactor();
+        units  = _polygonOffset->getUnits();
+    }
 }
 
 inline void ShadowManager::getShadowColorGainAndBias( float& gain, float& bias )
