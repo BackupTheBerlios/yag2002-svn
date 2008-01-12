@@ -45,6 +45,7 @@
 #include <singleton.h>
 #include <guimsgbox.h>
 #include <gamestate.h>
+#include <smartptr.h>
 #include <settings.h>
 #include <network.h>
 #include <physics.h>
