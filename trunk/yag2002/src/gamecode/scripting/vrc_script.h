@@ -191,8 +191,7 @@ class BaseScript
             MATH      = 0x20,
             IO        = 0x40,
 
-            ALL       = 0x7F,
-            DEFAULT   = 0x6D  // all libs except DEBUG and LOADLIB
+            DEFAULT   = 0x3D  // all libs except IO, DEBUG, and LOADLIB
         };
 
         //! Define a method pointer type for exposed methods
