@@ -56,6 +56,7 @@ class ConsoleGUI : public std::basic_ostream< char >
                                                                 float               height = 0.2f,
                                                                 bool                hasinput = true,
                                                                 bool                enabletimestamp = true,
+                                                                unsigned int        lineBufferSize = 100,
                                                                 CEGUI::Window*      p_parentwindow = NULL
                                                                );
 
@@ -68,6 +69,9 @@ class ConsoleGUI : public std::basic_ostream< char >
 
         //! Add message to output
         void                                        addOutput( const std::string& msg );
+
+        //! Clear the output window
+        void                                        clearOutput();
 
     protected:
 
@@ -92,6 +96,11 @@ class ConsoleGUI : public std::basic_ostream< char >
         //! Enable outputting timestamp for every output
         bool                                        _enableTimeStamp;
 
+        //! Max lines hold in output buffer
+        unsigned int                                _lineBufferSize;
+
+        //! Current count of lines in buffer
+        unsigned int                                _currLine;
 
         //! Stream buffer class used for output streaming
         class ConStreamBuf : public std::basic_streambuf< char >

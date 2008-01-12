@@ -40,7 +40,9 @@ ConsoleGUI::ConsoleGUI() :
  _p_wnd( NULL ),
  _p_inputWindow( NULL ),
  _p_outputWindow( NULL ),
- _enableTimeStamp( true )
+ _enableTimeStamp( true ),
+ _lineBufferSize( 100 ),
+ _currLine( 0 )
 {
     _stream.setConsole( this );
 }
@@ -67,9 +69,12 @@ bool ConsoleGUI::initialize(
                              float               height,
                              bool                hasinput,
                              bool                enabletimestamp,
+                             unsigned int        lineBufferSize,
                              CEGUI::Window*      p_parentwindow
                            )
 {
+    _lineBufferSize = lineBufferSize;
+
     CEGUI::Window* p_parent = p_parentwindow ? p_parentwindow : yaf3d::GuiManager::get()->getRootWindow();
     try
     {
@@ -94,7 +99,6 @@ bool ConsoleGUI::initialize(
         _p_outputWindow = static_cast< CEGUI::MultiLineEditbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/MultiLineEditbox", inst.str() + "_console_output_" ) );
         _p_outputWindow->setReadOnly( true );
         _p_outputWindow->setSize( CEGUI::Size( 0.96f, hasinput ? 0.7f : 0.93f ) );
-//        _p_outputWindow->setPosition( CEGUI::Absolute, CEGUI::Point( 10.0f, 40.0f ) );
         _p_outputWindow->setPosition( CEGUI::Relative, CEGUI::Point( 0.02f, 0.05f ) );
         _p_outputWindow->setFont( YAF3D_GUI_CONSOLE );
         _p_outputWindow->setAlpha( 0.7f );
@@ -174,9 +178,25 @@ void ConsoleGUI::addOutput( const std::string& msg )
         if ( _enableTimeStamp )
             ts = "[" + yaf3d::getFormatedTime() + "] ";
 
+        // eraze top of output window buffer for fitting in to specified max number of lines
+        _currLine++;
+        if ( _currLine > _lineBufferSize )
+        {
+            // dirty cast around the const return value, but it saves much performance ;-)
+            CEGUI::String& buffer = ( CEGUI::String& )_p_outputWindow->getText();
+            buffer.erase( 0, buffer.find( "\n", 0 ) + 1 );
+            _currLine--;
+        }
+
         _p_outputWindow->setText( _p_outputWindow->getText() + ts + msg );
         _p_outputWindow->setCaratIndex( _p_outputWindow->getText().length() );
     }
+}
+
+void ConsoleGUI::clearOutput()
+{
+    _p_outputWindow->setText( "" );
+    _currLine = 0;
 }
 
 std::basic_ios< char >::int_type ConsoleGUI::ConStreamBuf::overflow( int_type c )
