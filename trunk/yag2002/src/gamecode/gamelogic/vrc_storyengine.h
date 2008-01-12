@@ -19,8 +19,8 @@
  ****************************************************************/
 
 /*###############################################################
- # story builder checks incoming events and conditions and creates
- #  new stories
+ # story engine checks incoming events and conditions and creates
+ #  new stories. it further handles the progress of all stories.
  #
  #   date of creation:  05/12/2007
  #
@@ -28,39 +28,71 @@
  #
  ################################################################*/
 
-#ifndef _VRC_STORYBUILDER_H_
-#define _VRC_STORYBUILDER_H_
+#ifndef _VRC_STORYENGINE_H_
+#define _VRC_STORYENGINE_H_
 
 #include <vrc_main.h>
 #include "vrc_storyevent.h"
-
+#include "vrc_storysystem.h"
 
 namespace vrc
 {
 
-class Story;
-class StorySystem;
-
 //! Story builder class responsible for checking incoming events and creating new stories
-class StoryBuilder
+class StoryEngine
 {
-    public:
-
-        /**
-            Process the event and check if new stoies can be created caused by the event. Stores created stories in 'newstories'.
-            Returns the number of created stories.
-        */
-        unsigned int                                processEvent( const StoryEvent& event, std::vector< Story* >& newstories );
-
     protected:
 
-                                                    StoryBuilder();
+                                                    StoryEngine();
 
-        virtual                                     ~StoryBuilder();
+        virtual                                     ~StoryEngine();
 
+        //! Load the story book, this is a script file containing all stories.
+        void                                        loadStoryBook( const std::string& filename ) throw ( StorySystemException );
+
+        //! Process the event and check if new stoies can be created caused by the event. This is called by story system.
+        void                                        processEvent( const StoryEvent& event );
+
+        //! Update the active stories.
+        void                                        update( float deltaTime );
+
+        //! Create a new story from stock, return false if the story does not exist in stock.
+        bool                                        beginStory( const std::string storytype, const std::string storyname, unsigned int ownerID );
+
+        //! End the given story of given owner
+        bool                                        closeStory( unsigned int ownerID, const std::string storyname );
+
+        //! Internally used method for removing a list of stories from another list of stories
+        void                                        removeStories( std::vector< StoryPtr >& stories, std::vector< StoryPtr >& toberemoved );
+
+        //! Type for story stock
+        typedef std::vector< StoryPtr >             StoryStock;
+
+        StoryStock                                  _storyStock;
+
+        //! Typedef for stories < owner ID, stories >. The stories are gathered into a lookup table with story owner as key.
+        typedef std::map< unsigned int, std::vector< StoryPtr > > StoryInstances;
+
+        //! Concrete instance of stories
+        StoryInstances                              _stories;
+
+        //! Stories which are created during one time stamp, on next update they get moved to the story lookup _stories.
+        StoryInstances                              _newStories;
+
+        //! Stories which are ended during one time stamp, on next update they get removed from the story lookup _stories.
+        StoryInstances                              _endedStories;
+
+        //! Current story time
+        unsigned int                                _time;
+
+        //! Log object for story system output
+        yaf3d::Log*                                 _p_log;
+
+    friend class Story;
     friend class StorySystem;
+    friend class StoryBookLoader;
 };
 
 }
 
-#endif // _VRC_STORYBUILDER_H_
+#endif // _VRC_STORYENGINE_H_

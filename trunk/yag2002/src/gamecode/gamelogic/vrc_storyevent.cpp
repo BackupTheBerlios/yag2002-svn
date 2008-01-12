@@ -34,15 +34,29 @@
 namespace vrc
 {
 
-StoryEvent::StoryEvent( unsigned int source, unsigned int target, unsigned int type, unsigned int targetInstanceID, unsigned int filter ) :
- _sourceID( source ),
- _targetID( target ),
- _targetInstanceID( targetInstanceID ),
- _type( type ),
- _filter( filter )
+StoryEvent::StoryEvent( 
+                        unsigned int eventType,
+                        unsigned int sourceType,
+                        unsigned int sourceID,
+                        unsigned int targetType,
+                        unsigned int targetID,
+                        unsigned int filter,
+                        float        fParam1,
+                        float        fParam2,
+                        std::string  sParam1,
+                        std::string  sParam2
+                        ) :
+ _sourceType( sourceType ),
+ _sourceID( sourceID ),
+ _targetType( targetType ),
+ _targetID( targetID ),
+ _eventType( eventType ),
+ _filter( filter ),
+ _fParam1( fParam1 ),
+ _fParam2( fParam2 ),
+ _sParam1( sParam1 ),
+ _sParam2( sParam2 )
 {
-    assert( type == eTypePickItem || type == eTypeTalk );
-    assert( filter == eFilterPrivate || filter == eFilterPublic );
 }
 
 StoryEvent::~StoryEvent()

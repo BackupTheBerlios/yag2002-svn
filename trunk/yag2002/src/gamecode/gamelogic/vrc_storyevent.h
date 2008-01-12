@@ -58,42 +58,71 @@ class StoryEvent
             eTypeTalk       = 0x20
         };
 
-        //! Create an event with given source, target, type and propagation filter
-                                                    StoryEvent( unsigned int source, unsigned int target, unsigned int type, unsigned int targetInstanceID = 0, unsigned int filter = eFilterPrivate );
+        //! Create an event with given source, target, type and propagation filter. Several generic event parameters can also be defined.
+                                                    StoryEvent(
+                                                                unsigned int eventType,
+                                                                unsigned int sourceType,
+                                                                unsigned int sourceID,
+                                                                unsigned int targetType,
+                                                                unsigned int targetID,
+                                                                unsigned int filter = eFilterPublic,
+                                                                float        fParam1 = 0.0f,
+                                                                float        fParam2 = 0.0f,
+                                                                std::string  sParam1 = "",
+                                                                std::string  sParam2 = ""
+                                                               );
 
         virtual                                     ~StoryEvent();
 
         //! Get event type, one of EventType enums.
-        unsigned int                                getType() const { return _type; }
+        unsigned int                                getType() const { return _eventType; }
 
         //! Get event filter, one of EventFilter enums.
         unsigned int                                getFilter() const { return _filter; }
 
-        //! Get source ID.
+        //! Get source type, e.g. a player.
+        unsigned int                                getSourceType() const { return _sourceType; }
+
+        //! Get source ID. This specifies an instance of a source type, e.g. player Foo.
         unsigned int                                getSourceID() const { return _sourceID; }
 
         //! Get target ID. This specifies a target type.
+        unsigned int                                getTargetType() const { return _targetType; }
+
+        //! Get target ID. This specifies an instance of a target type.
         unsigned int                                getTargetID() const { return _targetID; }
 
-        //! Get target instance ID. This specefies an instance of a target type.
-        unsigned int                                getTargetInstanceID() const { return _targetInstanceID; }
+        //! Get generic event parameters.
+        float                                       getFParam1() const { return _fParam1; }
+        float                                       getFParam2() const { return _fParam2; }
+        const std::string&                          getSParam1() const { return _sParam1; }
+        const std::string&                          getSParam2() const { return _sParam2; }
 
     protected:
 
-        //! Source triggering the event ( e.g. player ID )
+        //! Source type triggering the event ( e.g. player )
+        unsigned int                                _sourceType;
+
+        //! Event's source instance, this specefies an instance of a source type ( ( e.g. player ID )
         unsigned int                                _sourceID;
 
         //! Event target, the event target specifies the target type.
+        unsigned int                                _targetType;
+
+        //! Event's target instance, this specefies an instance of a target type
         unsigned int                                _targetID;
 
-        //! Event's instance target, this specefies an instance of a target type
-        unsigned int                                _targetInstanceID;
-
         //! Event type
-        unsigned int                                _type;
+        unsigned int                                _eventType;
 
         //! Event filter
         unsigned int                                _filter;
+
+        //! Event's generic parameters
+        float                                       _fParam1;
+        float                                       _fParam2;
+        std::string                                 _sParam1;
+        std::string                                 _sParam2;
 };
 
 }

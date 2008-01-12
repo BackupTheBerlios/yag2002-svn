@@ -29,8 +29,12 @@
 
 #include <vrc_main.h>
 #include "vrc_gamelogic.h"
-#include "vrc_storybuilder.h"
+#include "vrc_storyengine.h"
 #include "vrc_storysystem.h"
+#include <tools/vrc_consolegui.h>
+
+
+#define SCRIPTING_LOG_FILE_NAME     "storysystem.log"
 
 
 //! Implement the singleton
@@ -40,88 +44,88 @@ namespace vrc
 {
 
 StorySystem::StorySystem() :
- _p_storyBuilder( NULL )
+ _p_storyEngine( NULL )
 {
+    _p_log = new yaf3d::Log;
+    _p_log->addSink( "file", yaf3d::Application::get()->getMediaPath() + std::string( SCRIPTING_LOG_FILE_NAME ), yaf3d::Log::L_VERBOSE );
+
+    //!TODO show up the console only in dev builds!
+    if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Server )
+    {
+        _p_console = new ConsoleGUI;
+        _p_console->initialize( "story system output", 0.1f, 0.68f, 0.84f, 0.29f, false, true );
+        _p_log->addSink( "console", *_p_console, yaf3d::Log::L_VERBOSE );
+    }
+
+    storylog_info << "date " << yaf3d::getFormatedDateAndTime() << std::endl;
 }
 
 StorySystem::~StorySystem()
 {
+    if ( _p_log )
+        delete _p_log;
+
+    _p_log = NULL;
+
+    if ( _p_console )
+        delete _p_console;
 }
 
-void StorySystem::initialize() throw ( StorySystemException )
+void StorySystem::initialize( const std::string& storybookfile ) throw ( StorySystemException )
 {
-    assert( _p_storyBuilder == NULL && "seems to be already initialized!" );
+    assert( _p_storyEngine == NULL && "seems to be already initialized!" );
 
-    _p_storyBuilder = new StoryBuilder();
+    storylog_info << "StorySystem: setting up story book" << std::endl;
+
+    _p_storyEngine = new StoryEngine();
+    _p_storyEngine->loadStoryBook( storybookfile );
+
+    // register the story system in entity manager so it can get updated and notified
+    yaf3d::EntityManager::get()->registerNotification( this );
+    yaf3d::EntityManager::get()->registerUpdate( this );
+
+    //! TODO remove this test
+#if 1
+    StoryEvent event1( 1, 2, 3, 4, 5, StoryEvent::eFilterPublic, 42.0f, 43.f, "hello", "world" );
+    processEvent( event1 );
+
+    StoryEvent event2( 1, 2, 3, 4, 100, StoryEvent::eFilterPrivate, 42.0f, 43.f, "event should", "arrive" );
+    processEvent( event2 );
+
+#endif
 }
 
 void StorySystem::shutdown()
 {
-    // destroy the story builder
-    if ( _p_storyBuilder )
-        delete _p_storyBuilder;
+    // destroy the story engine
+    if ( _p_storyEngine )
+        delete _p_storyEngine;
 
-    // destroy user tasks
-    Stories::iterator p_user = _stories.begin(), p_end = _stories.end();
-    std::vector< Story* >::iterator p_story, p_storyEnd;
-    for ( ; p_user != p_end; ++p_user )
-    {
-        p_story = p_user->second.begin(), p_storyEnd = p_user->second.end();
-        for ( ; p_story != p_storyEnd; ++p_story )
-        {
-            delete *p_story;
-        }
-    }
+    yaf3d::EntityManager::get()->registerNotification( this, false );
+    yaf3d::EntityManager::get()->registerUpdate( this, false );
 
     // destroy the singleton
     destroy();
 }
 
-void StorySystem::processEvent( const StoryEvent& event )
+// Handle entity system notifications
+void StorySystem::handleNotification( const yaf3d::EntityNotification& notification )
 {
-    assert( _p_storyBuilder && "system nor ready!" );
-
-    // check if new stories can be created caused by the event
-    std::vector< Story* > stories;
-    unsigned int numnewstories = _p_storyBuilder->processEvent( event, stories );
-    if ( numnewstories > 0 )
-    {
-        std::vector< Story* >::iterator p_story, p_storyEnd;
-        for ( ; p_story != p_storyEnd; ++p_story )
-        {
-            _stories[ event.getSourceID() ].push_back( *p_story );
-        }
-    }
-
-    // pass the event to existing stories with matching event owner
-    if ( event.getFilter() == StoryEvent::eFilterPrivate )
-    {
-        propagateEventToStories( event.getSourceID(), event );
-    }
-    // pass the event to all existing stories
-    else if ( event.getFilter() == StoryEvent::eFilterPublic )
-    {
-        Stories::iterator p_owner = _stories.begin(), p_end = _stories.end();
-        for ( ; p_owner != p_end; ++p_owner )
-        {
-            propagateEventToStories( p_owner->first, event );
-        }
-    }
 }
 
-void StorySystem::propagateEventToStories( unsigned int ownerID, const StoryEvent& event )
+void StorySystem::updateEntity( float deltaTime )
 {
-    Stories::iterator p_owner = _stories.find( ownerID );
-    // are ther stories for given owner?
-    if ( p_owner == _stories.end() )
-        return;
+    assert( _p_storyEngine && "system not ready!" );
 
-    std::vector< Story* >::iterator p_story, p_storyEnd;
-    p_story = p_owner->second.begin(), p_storyEnd = p_owner->second.end();
-    for ( ; p_story != p_storyEnd; ++p_story )
-    {
-        ( *p_story )->processEvent( event );
-    }
+    _p_storyEngine->update( deltaTime );
+}
+
+
+void StorySystem::processEvent( const StoryEvent& event )
+{
+    assert( _p_storyEngine && "system not ready!" );
+
+    _p_storyEngine->processEvent( event );
 }
 
 } // namespace vrc

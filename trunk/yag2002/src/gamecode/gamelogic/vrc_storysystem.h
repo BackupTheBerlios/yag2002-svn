@@ -64,10 +64,12 @@ class StorySystemException : public std::runtime_error
 };
 
 
-class StoryBuilder;
+class Story;
+class StoryEngine;
+class ConsoleGUI;
 
 //! Story system singleton providing all necessary functionality for running stories
-class StorySystem : public yaf3d::Singleton< StorySystem >
+class StorySystem : public yaf3d::Singleton< StorySystem >, public yaf3d::BaseEntity
 {
     public:
 
@@ -80,27 +82,64 @@ class StorySystem : public yaf3d::Singleton< StorySystem >
 
         virtual                                     ~StorySystem();
 
-        //! Initialize the storage server
-        void                                        initialize() throw ( StorySystemException );
+        //! Initialize the story system with given story book script
+        void                                        initialize( const std::string& storybookfile ) throw ( StorySystemException );
 
-        //! Shutdown the storage server
+        //! Shutdown the story system
         void                                        shutdown();
 
-        //! Propagate given event to all stories with given ower ID
-        void                                        propagateEventToStories( unsigned int ownerID, const StoryEvent& event );
+        //! Entity related method overides
+        //  ###############################
 
-        //! Typedef for stories < owner ID, stories >
-        typedef std::map< unsigned int, std::vector< Story* > > Stories;
+        // Handle entity system notifications
+        void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
-        //! Stories
-        Stories                                     _stories;
+        //! Update entity
+        void                                        updateEntity( float deltaTime );
 
-        //! The story builder
-        StoryBuilder*                               _p_storyBuilder;
+        //! No need for transformation node
+        const bool                                  isTransformable() const { return false; }
 
+        //  ###############################
+
+        //! Get the story system log object
+        inline yaf3d::Log*                          getStoryLog();
+
+        //! Get the script engine
+        inline StoryEngine*                         getStoryEngine();
+
+        //! The story engine
+        StoryEngine*                                _p_storyEngine;
+
+        //! Log object for story system output
+        yaf3d::Log*                                 _p_log;
+
+        //! Debug console
+        ConsoleGUI*                                 _p_console;
+
+    friend class Story;
+    friend class StoryEngine;
     friend class gameutils::VRCStateHandler;
     friend class yaf3d::Singleton< StorySystem >;
 };
+
+//! Inline methods
+inline yaf3d::Log* StorySystem::getStoryLog()
+{
+    return _p_log;
+}
+
+inline StoryEngine* StorySystem::getStoryEngine()
+{
+    return _p_storyEngine;
+}
+
+
+//! Convenient macros for story system components to access the story log. Do not use these macros elsewhere!
+#define storylog_info      *_p_log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO )
+#define storylog_debug     *_p_log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG )
+#define storylog_error     *_p_log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR )
+#define storylog_verbose   *_p_log << yaf3d::Log::LogLevel( yaf3d::Log::L_VERBOSE )
 
 }
 
