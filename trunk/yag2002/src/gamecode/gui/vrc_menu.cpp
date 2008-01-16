@@ -240,7 +240,6 @@ void EnMenu::handleNotification( const yaf3d::EntityNotification& notification )
     // handle notifications
     switch( notification.getId() )
     {
-        // for every subsequent level loading we must register outself again for getting updating
         case YAF3D_NOTIFY_NEW_LEVEL_INITIALIZED:
             break;
 
@@ -618,6 +617,9 @@ void EnMenu::updateEntity( float deltaTime )
             // note: the menu entity is persistent anyway, it handles the level switch itself!
             yaf3d::LevelManager::get()->unloadLevel( true, true );
             _menuState  = LoadingLevel;
+
+            // set the proper game state
+            yaf3d::GameState::get()->setState( yaf3d::GameState::StartingLevel );
         }
         break;
 
@@ -684,6 +686,9 @@ void EnMenu::updateEntity( float deltaTime )
             _levelSelectDialog->enable( false );
 
              _p_menuWindow->disable();
+
+            // set the proper game state
+            yaf3d::GameState::get()->setState( yaf3d::GameState::MainLoop );
         }
         break;
 
@@ -692,6 +697,9 @@ void EnMenu::updateEntity( float deltaTime )
         {
             _menuState = UnloadLevel;
             yaf3d::LevelManager::get()->unloadLevel();
+
+            // set the proper game state
+            yaf3d::GameState::get()->setState( yaf3d::GameState::LeavingLevel );
         }
         break;
 
@@ -705,6 +713,9 @@ void EnMenu::updateEntity( float deltaTime )
 
             // set the proper game state
             yaf3d::GameState::get()->setState( yaf3d::GameState::MainLoop );
+
+            // reset the game mode
+            yaf3d::GameState::get()->setMode( yaf3d::GameState::UnknownMode );
 
             _menuState = Visible;
         }
@@ -959,6 +970,10 @@ void EnMenu::onLoginDialogClose( bool btnlogin )
         std::string passwd;
         _loginDialog->getAndErazeDetails( login, passwd );
 
+        // set the proper game state and mode
+        yaf3d::GameState::get()->setMode( yaf3d::GameState::Client ); // first set the mode!
+        yaf3d::GameState::get()->setState( yaf3d::GameState::StartingLevel );
+
         // try to connect to server
         yaf3d::NetworkDevice::get()->setupClient( url, channel, nodeinfo, login, passwd );
 
@@ -1101,9 +1116,6 @@ void EnMenu::leaveLevel()
 
     _levelLoaded = false;
 
-    // set the proper game state
-    yaf3d::GameState::get()->setState( yaf3d::GameState::Leaving );
-
     _menuState = PrepareUnloadLevel;
 
     _p_btnStartJoin->show();
@@ -1114,9 +1126,6 @@ void EnMenu::leaveLevel()
     // end networking
     if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client || yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
         yaf3d::NetworkDevice::get()->disconnect();
-
-    // reset the game state
-    yaf3d::GameState::get()->setMode( yaf3d::GameState::UnknownMode );
 }
 
 } // namespace vrc
