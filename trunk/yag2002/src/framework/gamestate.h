@@ -67,9 +67,10 @@ class GameState : public Singleton< GameState >
             StartRunning        = 0x0004,    // start running game
             MainLoop            = 0x0008,    // application is in main loop
             Pausing             = 0x0010,    // game pausing
-            Leaving             = 0x0020,    // leaving a level
-            Quitting            = 0x0040,    // quitting application
-            Shutdown            = 0x0080     // shutdown the application
+            StartingLevel       = 0x0020,    // starting a level
+            LeavingLevel        = 0x0040,    // leaving a level
+            Quitting            = 0x0080,    // quitting application
+            Shutdown            = 0x0100     // shutdown the application
         };
 
         //! Application window state

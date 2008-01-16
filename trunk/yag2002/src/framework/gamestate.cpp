@@ -141,7 +141,8 @@ void GameState::setState( unsigned int state )
             ( state == GameState::StartRunning        ) ||
             ( state == GameState::MainLoop            ) ||
             ( state == GameState::Pausing             ) ||
-            ( state == GameState::Leaving             ) ||
+            ( state == GameState::StartingLevel       ) ||
+            ( state == GameState::LeavingLevel        ) ||
             ( state == GameState::Quitting            ) ||
             ( state == GameState::Shutdown            ) &&
             "GameState: trying to set an invalid game state!"
