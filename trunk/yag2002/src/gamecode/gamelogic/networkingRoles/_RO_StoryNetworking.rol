@@ -1,0 +1,21 @@
+/* The Story object */
+
+namespace vrc
+{
+
+object StoryNetworking
+{
+    datablock Function;
+
+    extern RPC_ReceiveEvent( tEventData );
+
+    networking
+    {
+        Function RPC_ReceiveEvent;
+        { 
+            Reliable();
+        }
+    }
+}
+
+} // namespace vrc
