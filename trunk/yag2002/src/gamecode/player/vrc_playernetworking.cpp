@@ -91,7 +91,7 @@ PlayerNetworking::~PlayerNetworking()
     // remove ghost from simulation ( server and client )
 
     // we have to delete player associated entities only if we are not unloading the level or quitting/shutdown
-    if ( !( yaf3d::GameState::get()->getState() & ( yaf3d::GameState::Leaving | yaf3d::GameState::Quitting | yaf3d::GameState::Shutdown ) ) )
+    if ( !( yaf3d::GameState::get()->getState() & ( yaf3d::GameState::LeavingLevel | yaf3d::GameState::Quitting | yaf3d::GameState::Shutdown ) ) )
     {
         // filter server and remoteclient objects ( no clients' local objects )
         if ( isRemoteClient() )
