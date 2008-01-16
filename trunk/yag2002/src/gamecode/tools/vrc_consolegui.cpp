@@ -183,7 +183,7 @@ void ConsoleGUI::addOutput( const std::string& msg )
         if ( _currLine > _lineBufferSize )
         {
             // dirty cast around the const return value, but it saves much performance ;-)
-            CEGUI::String& buffer = ( CEGUI::String& )_p_outputWindow->getText();
+            CEGUI::String& buffer = const_cast< CEGUI::String& >( _p_outputWindow->getText() );
             buffer.erase( 0, buffer.find( "\n", 0 ) + 1 );
             _currLine--;
         }
