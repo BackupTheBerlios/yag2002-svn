@@ -146,10 +146,16 @@ void EnPlayer::initialize()
                 _p_playerImpl = new PlayerImplClient( this );
                 _p_playerImpl->initialize();
 
-                // create the property gui with given user inventory
-                _p_propertyGui = new PropertyGui( StorageClient::get()->getUserInventory() );
+                // create the player inventory for clients without authentification (guests)
+                _p_userInventory = gameutils::PlayerUtils::get()->getPlayerInventory();
+                if ( !_p_userInventory )
+                    _p_userInventory = new UserInventory( 0 );
+
                 // set the inventory in player utils
-                gameutils::PlayerUtils::get()->setPlayerInventory( StorageClient::get()->getUserInventory() );
+                gameutils::PlayerUtils::get()->setPlayerInventory( _p_userInventory );
+
+                // create the property gui with given user inventory
+                _p_propertyGui = new PropertyGui( _p_userInventory );
             }
         }
         break;
