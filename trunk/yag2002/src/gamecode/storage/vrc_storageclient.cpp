@@ -54,6 +54,9 @@ StorageClient::~StorageClient()
 
 void StorageClient::shutdown()
 {
+    log_info << "StorageClient: shutting down" << std::endl;
+
+    yaf3d::NetworkDevice::get()->setAuthCallback( NULL );
     // destroy the singleton
     destroy();
 }
@@ -73,6 +76,7 @@ void StorageClient::authentificationResult( unsigned int userID )
 { // this is only called when the client has successfully been authentified on server
     _userID = userID;
     // create the user inventory object
+    assert ( ( _p_userInventory == NULL ) && "inventory object already exists!" );
     _p_userInventory = new UserInventory( userID );
 }
 
