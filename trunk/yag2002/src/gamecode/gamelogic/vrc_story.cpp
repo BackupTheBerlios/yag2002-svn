@@ -41,6 +41,7 @@
 #define EXPOSED_METHOD_LOG              "log"
 #define EXPOSED_METHOD_BEGIN_STORY      "begin"
 #define EXPOSED_METHOD_CLOSE_STORY      "close"
+#define EXPOSED_METHOD_SEND_EVENT       "sendEvent"
 
 
 namespace vrc
@@ -107,6 +108,44 @@ bool Story::setup( const std::string& scriptfile )
             exposeMethod( EXPOSED_METHOD_CLOSE_STORY, &Story::lcloseStory, arguments, returnsvalues );
         }
 
+        arguments.clear();
+        returnsvalues.clear();
+
+        /* expose method for sending an event having the pseudo-signatur:
+            void sendEvent(
+                           EventType,   ( see StoryEvent )
+                           EventFilter,
+                           SourceType,
+                           SourceID,
+                           TargetType,
+                           TargetID,
+                           uiParam1, ( optional )
+                           uiParam2, ( optional )
+                           fParam1,  ( optional )
+                           fParam2,  ( optional )
+                           sParam1,  ( optional )
+                           sParam2   ( optional )
+                          )
+        */
+        {
+            unsigned int ui = 0;
+            float        f  = 0.0f;
+            std::string  s;
+            arguments.add( ui ); // EventType
+            arguments.add( ui ); // EventFilter
+            arguments.add( ui ); // SourceType
+            arguments.add( ui ); // SourceID
+            arguments.add( ui ); // TargetType
+            arguments.add( ui ); // TargetID
+            arguments.add( ui ); // uiParam1
+            arguments.add( ui ); // uiParam2
+            arguments.add( f );  // fParam1
+            arguments.add( f );  // fParam2
+            arguments.add( s );  // sParam1
+            arguments.add( s );  // sParam2
+            exposeMethod( EXPOSED_METHOD_SEND_EVENT, &Story::lsendEvent, arguments, returnsvalues );
+        }
+
         // execute the script after exposing methods
         execute();
 
@@ -148,10 +187,11 @@ void Story::processEvent( unsigned int storyTime, const StoryEvent& event )
     arguments.add( event.getSourceID() );
     arguments.add( event.getTargetType() );
     arguments.add( event.getTargetID() );
+    arguments.add( event.getUIParam1() );
+    arguments.add( event.getUIParam2() );
     arguments.add( event.getFParam1() );
     arguments.add( event.getFParam2() );
-    arguments.add( event.getSParam1() );
-    arguments.add( event.getSParam2() );
+    arguments.add( event.getSParam() );
     
     try
     {
@@ -190,8 +230,7 @@ void Story::update( float deltaTime )
 
 void Story::llog( const Params& arguments, Params& /*returnvalues*/ )
 {
-    std::string str = GET_SCRIPT_PARAMVALUE( arguments, 0, std::string );
-    if ( arguments.size() )
+    if ( arguments.getNumPassedParameters() )
     {
         //! TODO: get the lua function name
         //lua_Debug dbg;
@@ -199,6 +238,7 @@ void Story::llog( const Params& arguments, Params& /*returnvalues*/ )
         //lua_getinfo( _p_state, ">S", &dbg );
         //std::string fcnname = dbg.name ? dbg.name : "?fcn";
 
+        std::string str = GET_SCRIPT_PARAMVALUE( arguments, 0, std::string );
         _p_log->enableSeverityLevelPrinting( false );
         storylog_info << "[story]   " << getName() << ": " << str << std::endl;
         _p_log->enableSeverityLevelPrinting( true );
@@ -207,7 +247,7 @@ void Story::llog( const Params& arguments, Params& /*returnvalues*/ )
 
 void Story::lbeginStory( const Params& arguments, Params& /*returnvalues*/ )
 {
-    if ( arguments.size() < 3 )
+    if ( arguments.getNumPassedParameters() < 3 )
     {
         storylog_error << getName() << ": invalid call of function '" << EXPOSED_METHOD_BEGIN_STORY << "' without story type, name, and owner ID arguments!" << std::endl;
         return;
@@ -225,7 +265,7 @@ void Story::lbeginStory( const Params& arguments, Params& /*returnvalues*/ )
 
 void Story::lcloseStory( const Params& arguments, Params& /*returnvalues*/ )
 {
-    if ( arguments.size() < 2 )
+    if ( arguments.getNumPassedParameters() < 2 )
     {
         storylog_error << getName() << ": invalid call of function '" << EXPOSED_METHOD_CLOSE_STORY << "' without owner ID and story name arguments!" << std::endl;
         return;
@@ -239,5 +279,45 @@ void Story::lcloseStory( const Params& arguments, Params& /*returnvalues*/ )
     else
         storylog_verbose << getName() << ": ended story '" << storyname << "' of owner: '" << ownerID << "'" << std::endl;
 }
+
+void Story::lsendEvent( const Params& arguments, Params& /*returnvalues*/ )
+{
+    unsigned int numparams = arguments.getNumPassedParameters();
+    if ( numparams < 6 )
+    {
+        storylog_error << getName() << ": invalid call of function '" << EXPOSED_METHOD_SEND_EVENT << "' it must be called with at least 6 parameters!" << std::endl;
+        return;
+    }
+
+    // mandatory params
+    unsigned int eventType  = GET_SCRIPT_PARAMVALUE( arguments, 0, unsigned int );
+    unsigned int filter     = GET_SCRIPT_PARAMVALUE( arguments, 1, unsigned int );
+    unsigned int sourceType = GET_SCRIPT_PARAMVALUE( arguments, 2, unsigned int );
+    unsigned int sourceID   = GET_SCRIPT_PARAMVALUE( arguments, 3, unsigned int );
+    unsigned int targetType = GET_SCRIPT_PARAMVALUE( arguments, 4, unsigned int );
+    unsigned int targetID   = GET_SCRIPT_PARAMVALUE( arguments, 5, unsigned int );
+
+    // optional parameters
+    unsigned int uiParam1 = 0;
+    unsigned int uiParam2 = 0;
+    float        fParam1  = 0.0f;
+    float        fParam2  = 0.0f;
+    std::string  sParam;
+    if ( numparams > 6 )
+        uiParam1 = GET_SCRIPT_PARAMVALUE( arguments, 6, unsigned int );
+    if ( numparams > 7 )
+        uiParam2 = GET_SCRIPT_PARAMVALUE( arguments, 7, unsigned int );
+    if ( numparams > 8 )
+        fParam1 = GET_SCRIPT_PARAMVALUE( arguments, 8, float );
+    if ( numparams > 9 )
+        fParam2 = GET_SCRIPT_PARAMVALUE( arguments, 9, float );
+    if ( numparams > 10 )
+        sParam = GET_SCRIPT_PARAMVALUE( arguments, 10, std::string );
+
+    // enqueue the event, it will be sent out on next update
+    StoryEvent event( eventType, sourceType, sourceID, targetType, targetID, filter, uiParam1, uiParam2, fParam1, fParam2, sParam );
+    _p_storyEngine->enqueueEvent( event );
+}
+
 
 } // namespace vrc

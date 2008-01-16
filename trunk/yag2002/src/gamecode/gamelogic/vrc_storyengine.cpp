@@ -190,6 +190,9 @@ StoryEngine::~StoryEngine()
 
     storylog_debug << "StoryEngine: count of queued ended stories " << _endedStories.size() << std::endl;
     _endedStories.clear();
+
+    storylog_debug << "StoryEngine: count of queued events " << _eventQueue.size() << std::endl;
+    _eventQueue.clear();
 }
 
 void StoryEngine::loadStoryBook( const std::string& filename ) throw ( StorySystemException )
@@ -205,36 +208,54 @@ void StoryEngine::loadStoryBook( const std::string& filename ) throw ( StorySyst
 
 void StoryEngine::processEvent( const StoryEvent& event )
 {
-    // first check the stock if new stories can be created caused by the event
-    StoryStock::iterator p_stock = _storyStock.begin(), p_stockEnd = _storyStock.end();
-    for ( ; p_stock != p_stockEnd; ++p_stock )
-        ( *p_stock )->processEvent( _time, event );
-
-    // now propagate the event to stories
     unsigned int eventfilter = event.getFilter();
-    unsigned int ownerID     = event.getTargetID();
-    StoryInstances::iterator p_story = _stories.begin(), p_storyEnd = _stories.end();
 
-    // private event to a story?
-    if ( eventfilter == StoryEvent::eFilterPrivate )
+    // check for a valid event filter
+    if ( !( eventfilter & 
+            (
+             StoryEvent::eFilterStoryBook |
+             StoryEvent::eFilterStoryPrivate |
+             StoryEvent::eFilterStoryPublic |
+             StoryEvent::eFilterActorPrivate |
+             StoryEvent::eFilterActorPublic
+            )
+          ) )
+    {
+        storylog_error << "unknown story event filter " << eventfilter << std::endl;
+        return;
+    }
+
+    StoryInstances::iterator p_story = _stories.begin(), p_storyEnd = _stories.end();
+    unsigned int targetID = event.getTargetID();
+
+    // first check the stock if new stories can be created caused by the event
+    if ( eventfilter & StoryEvent::eFilterStoryBook )
+    {
+        StoryStock::iterator p_stock = _storyStock.begin(), p_stockEnd = _storyStock.end();
+        for ( ; p_stock != p_stockEnd; ++p_stock )
+            ( *p_stock )->processEvent( _time, event );
+    }
+
+    // private event sent to a story?
+    if ( eventfilter & StoryEvent::eFilterStoryPrivate )
     {
         // find the target of event
-        if ( _stories.find( ownerID ) == p_storyEnd )
+        if ( _stories.find( targetID ) == p_storyEnd )
         {
-            storylog_error << "event has been passed to unknown target ID: " << ownerID << std::endl;
+            storylog_error << "Actor->Story: event cannot be passed to unknown target ID: " << targetID << std::endl;
         }
         else
         {
             // iterate through all stories of target
-            std::vector< StoryPtr >::iterator p_currstory = _stories[ ownerID ].begin(), p_currstoryEnd = _stories[ ownerID ].end();
+            std::vector< StoryPtr >::iterator p_currstory = _stories[ targetID ].begin(), p_currstoryEnd = _stories[ targetID ].end();
             for ( ; p_currstory != p_currstoryEnd; ++p_currstory )
             {
                 ( *p_currstory )->processEvent( _time, event );
             }
         }
     }
-    // public events go to all stories
-    else if ( eventfilter == StoryEvent::eFilterPublic )
+    // story public events go to all stories
+    else if ( eventfilter & StoryEvent::eFilterStoryPublic )
     {
         for ( p_story = _stories.begin(), p_storyEnd = _stories.end(); p_story != p_storyEnd; ++p_story )
         {
@@ -246,9 +267,10 @@ void StoryEngine::processEvent( const StoryEvent& event )
             }
         }
     }
+    // seems to be an actor event, pass it to story system (the actors are registered in StorySystem)
     else
     {
-        storylog_error << "unknown story event filter " << eventfilter << std::endl;
+        StorySystem::get()->receiveEvent( event );
     }
 }
 
@@ -283,6 +305,16 @@ void StoryEngine::update( float deltaTime )
             }
         }
         _endedStories.clear();
+    }
+
+    // process queued events
+    if ( _eventQueue.size() )
+    {
+        EventQueue::iterator p_event = _eventQueue.begin(), p_eventEnd = _eventQueue.end();
+        for ( ; p_event != p_eventEnd; ++p_event )
+            processEvent( *p_event );
+
+        _eventQueue.clear();
     }
 
     // call the update of all active stories
@@ -362,6 +394,11 @@ void StoryEngine::removeStories( std::vector< StoryPtr >& stories, std::vector< 
             }
         }
     }
+}
+
+void StoryEngine::enqueueEvent( const StoryEvent& event )
+{
+    _eventQueue.push_back( event );
 }
 
 } // namespace vrc

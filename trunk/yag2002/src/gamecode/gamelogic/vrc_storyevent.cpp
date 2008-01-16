@@ -41,10 +41,11 @@ StoryEvent::StoryEvent(
                         unsigned int targetType,
                         unsigned int targetID,
                         unsigned int filter,
+                        unsigned int uiParam1,
+                        unsigned int uiParam2,
                         float        fParam1,
                         float        fParam2,
-                        std::string  sParam1,
-                        std::string  sParam2
+                        std::string  sParam
                         ) :
  _sourceType( sourceType ),
  _sourceID( sourceID ),
@@ -52,10 +53,11 @@ StoryEvent::StoryEvent(
  _targetID( targetID ),
  _eventType( eventType ),
  _filter( filter ),
+ _uiParam1( uiParam1 ),
+ _uiParam2( uiParam2 ),
  _fParam1( fParam1 ),
  _fParam2( fParam2 ),
- _sParam1( sParam1 ),
- _sParam2( sParam2 )
+ _sParam( sParam )
 {
 }
 

@@ -47,23 +47,31 @@ class StoryEngine
 
         virtual                                     ~StoryEngine();
 
-        //! Load the story book, this is a script file containing all stories.
+        //! Load the story book, this is a script file containing all stories. This is used by story system.
         void                                        loadStoryBook( const std::string& filename ) throw ( StorySystemException );
 
         //! Process the event and check if new stoies can be created caused by the event. This is called by story system.
         void                                        processEvent( const StoryEvent& event );
 
-        //! Update the active stories.
+        //! Update the active stories, used by StorySystem.
         void                                        update( float deltaTime );
 
-        //! Create a new story from stock, return false if the story does not exist in stock.
+        //! Create a new story from stock, return false if the story does not exist in stock. This is used by Story.
         bool                                        beginStory( const std::string storytype, const std::string storyname, unsigned int ownerID );
 
-        //! End the given story of given owner
+        //! End the given story of given owner. This is used by Story.
         bool                                        closeStory( unsigned int ownerID, const std::string storyname );
 
-        //! Internally used method for removing a list of stories from another list of stories
+        //! Internally used methods
+        // ########################
+
+        //! Remove a list of stories from another list of stories
         void                                        removeStories( std::vector< StoryPtr >& stories, std::vector< StoryPtr >& toberemoved );
+
+        //! Enqueue an event which is sent out at next update. This is used internally when a story tries to send an event.
+        void                                        enqueueEvent( const StoryEvent& event );
+
+        // ########################
 
         //! Type for story stock
         typedef std::vector< StoryPtr >             StoryStock;
@@ -81,6 +89,12 @@ class StoryEngine
 
         //! Stories which are ended during one time stamp, on next update they get removed from the story lookup _stories.
         StoryInstances                              _endedStories;
+
+        //! Type for event queue
+        typedef std::vector< StoryEvent >           EventQueue;
+
+        //! Event queue
+        EventQueue                                  _eventQueue;
 
         //! Current story time
         unsigned int                                _time;

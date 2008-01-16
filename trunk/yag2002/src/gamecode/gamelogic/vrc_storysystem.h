@@ -34,8 +34,9 @@
 
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
-#include "vrc_storyevent.h"
-#include "vrc_story.h"
+#include <gamelogic/vrc_story.h>
+#include <gamelogic/vrc_storyevent.h>
+#include <gamelogic/vrc_storyactor.h>
 
 namespace vrc
 {
@@ -66,6 +67,7 @@ class StorySystemException : public std::runtime_error
 
 class Story;
 class StoryEngine;
+class StoryNetworking;
 class ConsoleGUI;
 
 //! Story system singleton providing all necessary functionality for running stories
@@ -73,8 +75,14 @@ class StorySystem : public yaf3d::Singleton< StorySystem >, public yaf3d::BaseEn
 {
     public:
 
-        //! Process an event
-        void                                        processEvent( const StoryEvent& event );
+        //! Add an actor for receiving actor events
+        bool                                        addActor( unsigned int actorID, StoryEventReceiver* p_receiver );
+
+        //! Remove an actor from receiving actor events
+        bool                                        removeActor( unsigned int actorID, StoryEventReceiver* p_receiver );
+
+        //! Send an event to stories or actors, the recipients depend on the defined event filter.
+        void                                        sendEvent( const StoryEvent& event );
 
     protected:
 
@@ -87,6 +95,12 @@ class StorySystem : public yaf3d::Singleton< StorySystem >, public yaf3d::BaseEn
 
         //! Shutdown the story system
         void                                        shutdown();
+
+        //! Set the networking object. On clients, this is used by networking object itself on creation. On server the networking object is created by story system.
+        void                                        setNetworking( StoryNetworking* p_networking );
+
+        //! This method is called by networking in client mode or by story engine in server/standalone mode
+        void                                        receiveEvent( const StoryEvent& event );
 
         //! Entity related method overides
         //  ###############################
@@ -111,14 +125,27 @@ class StorySystem : public yaf3d::Singleton< StorySystem >, public yaf3d::BaseEn
         //! The story engine
         StoryEngine*                                _p_storyEngine;
 
+        //! Story system's networking
+        StoryNetworking*                            _p_networking;
+
         //! Log object for story system output
         yaf3d::Log*                                 _p_log;
 
         //! Debug console
         ConsoleGUI*                                 _p_console;
 
+        //! Typedef for actors < ID, callback object >.
+        typedef std::map< unsigned int, StoryEventReceiver* > Actors;
+
+        //! Registered actors for receiving events
+        Actors                                      _actors;
+
+        //! Internal flag for identifying the event passing phase for actors
+        bool                                        _sendEventsToActors;
+
     friend class Story;
     friend class StoryEngine;
+    friend class StoryNetworking;
     friend class gameutils::VRCStateHandler;
     friend class yaf3d::Singleton< StorySystem >;
 };
@@ -135,10 +162,11 @@ inline StoryEngine* StorySystem::getStoryEngine()
 }
 
 
-//! Convenient macros for story system components to access the story log. Do not use these macros elsewhere!
+//! Convenient macros for story system components to access the story log.
 #define storylog_info      *_p_log << yaf3d::Log::LogLevel( yaf3d::Log::L_INFO )
 #define storylog_debug     *_p_log << yaf3d::Log::LogLevel( yaf3d::Log::L_DEBUG )
 #define storylog_error     *_p_log << yaf3d::Log::LogLevel( yaf3d::Log::L_ERROR )
+#define storylog_warning   *_p_log << yaf3d::Log::LogLevel( yaf3d::Log::L_WARNING )
 #define storylog_verbose   *_p_log << yaf3d::Log::LogLevel( yaf3d::Log::L_VERBOSE )
 
 }

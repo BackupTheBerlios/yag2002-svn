@@ -35,27 +35,38 @@
 namespace vrc
 {
 
-//! Story event class
+//! Story event class used for sending events from/to stories
 class StoryEvent
 {
     public:
 
-        //! Event filter type defining the propagation of the event to receivers
-        enum EventFilter
-        {
-            eFilterUnknown    = 0x00,
-            //! Event is sent only to receivers (stories) which have an ower ID = event source ID
-            eFilterPrivate    = 0x100,
-            //! Event is sent to all receivers
-            eFilterPublic     = 0x200
-        };
-
         //! Event type
         enum EventType
         {
-            eTypeUnknown    = 0x00,
-            eTypePickItem   = 0x10,
-            eTypeTalk       = 0x20
+            //! Invalid event type
+            eTypeUnknown    = 0x0000,
+            //! Used by event senders
+            eTypePickItem   = 0x1000,
+            eTypeTalk       = 0x2000
+        };
+
+        //! Event filter type defining the propagation of the event to story or actor receivers
+        enum EventReceiverFilter
+        {
+            //! Invalid event filter
+            eFilterUnknown         = 0x0000,
+            
+            //! Event is sent to story book (stock stories), it can cause beginning of a new story. This flag can be combined with the flags below.
+            eFilterStoryBook       = 0x0010,
+
+            //! Event is sent only to receivers (stories) which have an ower ID = event source ID
+            eFilterStoryPrivate    = 0x0100,
+            //! Event is sent to all receivers
+            eFilterStoryPublic     = 0x0200,
+            //! Event is sent only to receivers (actors) which have an ower ID = event source ID
+            eFilterActorPrivate    = 0x0400,
+            //! Event is sent to all actor receivers
+            eFilterActorPublic     = 0x0800
         };
 
         //! Create an event with given source, target, type and propagation filter. Several generic event parameters can also be defined.
@@ -65,11 +76,13 @@ class StoryEvent
                                                                 unsigned int sourceID,
                                                                 unsigned int targetType,
                                                                 unsigned int targetID,
-                                                                unsigned int filter = eFilterPublic,
+                                                                unsigned int filter,
+
+                                                                unsigned int uiParam1 = 0,
+                                                                unsigned int uiParam2 = 0,
                                                                 float        fParam1 = 0.0f,
                                                                 float        fParam2 = 0.0f,
-                                                                std::string  sParam1 = "",
-                                                                std::string  sParam2 = ""
+                                                                std::string  sParam = ""
                                                                );
 
         virtual                                     ~StoryEvent();
@@ -93,10 +106,11 @@ class StoryEvent
         unsigned int                                getTargetID() const { return _targetID; }
 
         //! Get generic event parameters.
-        float                                       getFParam1() const { return _fParam1; }
-        float                                       getFParam2() const { return _fParam2; }
-        const std::string&                          getSParam1() const { return _sParam1; }
-        const std::string&                          getSParam2() const { return _sParam2; }
+        unsigned int                                getUIParam1() const { return _uiParam1; }
+        unsigned int                                getUIParam2() const { return _uiParam2; }
+        float                                       getFParam1()  const { return _fParam1; }
+        float                                       getFParam2()  const { return _fParam2; }
+        const std::string&                          getSParam()  const { return _sParam; }
 
     protected:
 
@@ -119,10 +133,25 @@ class StoryEvent
         unsigned int                                _filter;
 
         //! Event's generic parameters
+        unsigned int                                _uiParam1;
+        unsigned int                                _uiParam2;
         float                                       _fParam1;
         float                                       _fParam2;
-        std::string                                 _sParam1;
-        std::string                                 _sParam2;
+        std::string                                 _sParam;
+};
+
+
+//! Base class used by actors for receiving events.
+class StoryEventReceiver
+{
+    public:
+
+                                                    StoryEventReceiver() {}
+
+        virtual                                     ~StoryEventReceiver() {}
+
+        //! Override this method in order to receive events.
+        virtual void                                onReceiveEvent( const StoryEvent& event ) = 0;
 };
 
 }

@@ -59,7 +59,7 @@ class Story : public BaseScript< Story >, public yaf3d::RefCount< Story >
 
         //! Construct a story with given type and type, this story will be stock element. Concrete stories are
         //   created by cloning.
-        explicit                                    Story( const std::string type, const std::string name );
+                                                    Story( const std::string type, const std::string name );
 
         virtual                                     ~Story();
 
@@ -86,6 +86,9 @@ class Story : public BaseScript< Story >, public yaf3d::RefCount< Story >
 
         //! End an existing story
         void                                        lcloseStory( const Params& arguments, Params& /*returnvalues*/ );
+
+        //! Send an event to another story or actor
+        void                                        lsendEvent( const Params& arguments, Params& /*returnvalues*/ );
 
         // ############################
 
