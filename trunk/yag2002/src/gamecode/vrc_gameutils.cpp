@@ -32,7 +32,6 @@
 #include "vrc_gameutils.h"
 #include "storage/vrc_storageclient.h"
 #include "storage/vrc_storageserver.h"
-#include "gamelogic/vrc_gamelogic.h"
 #include "gamelogic/vrc_storysystem.h"
 
 YAF3D_SINGLETON_IMPL( vrc::gameutils::PlayerUtils )
@@ -49,6 +48,7 @@ YAF3D_SINGLETON_IMPL( vrc::gameutils::GuiUtils )
 
 //! The main game logic script file
 #define VRC_LOGIC_SCRIPTFILE                "script/logic/gamelogic.lua"
+#define VRC_STORY_BOOK_FILE                 "script/storybook/book.lua"
 
 namespace vrc
 {
@@ -162,7 +162,7 @@ void VRCStateHandler::onStateChange( unsigned int state )
 
         case yaf3d::GameState::StartRunning :
         {
-            // setup the storage server
+            // setup the storage server and story system
             if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
             {
                 // check if the server is configured to request client authentification
@@ -180,37 +180,11 @@ void VRCStateHandler::onStateChange( unsigned int state )
                         log_error << " reason: " << e.what() << std::endl;
                     }
                 }
-            }
-            else // register the storage client in standalone and client; the app is always in standalone on startup!
-            {
-                try
-                {
-                    StorageClient::get()->initialize();
-                }
-                catch ( const StorageClientException& e )
-                {
-                    log_error << "could not initialize the storage client!" << std::endl;
-                    log_error << " reason: " << e.what() << std::endl;
-                }
-            }
 
-            // setup the game logic
-            if ( yaf3d::GameState::get()->getMode() & ( yaf3d::GameState::Server | yaf3d::GameState::Standalone ) )
-            {
+                // init the story system
                 try
                 {
-                    GameLogic::get()->initialize( VRC_LOGIC_SCRIPTFILE );
-                }
-                catch ( const GameLogicException& e )
-                {
-                    log_error << "could not initialize the game logic!" << std::endl;
-                    log_error << " reason: " << e.what() << std::endl;
-                }
-
-                try
-                {
-                    // init the user interaction system
-                    StorySystem::get()->initialize();
+                    StorySystem::get()->initialize( VRC_STORY_BOOK_FILE );
                 }
                 catch( const StorySystemException& e )
                 {
@@ -226,6 +200,51 @@ void VRCStateHandler::onStateChange( unsigned int state )
         }
         break;
 
+        case yaf3d::GameState::StartingLevel :
+        {
+            if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client )
+            {
+                try
+                {
+                    StorageClient::get()->initialize();
+                }
+                catch ( const StorageClientException& e )
+                {
+                    log_error << "could not initialize the storage client!" << std::endl;
+                    log_error << " reason: " << e.what() << std::endl;
+                }
+            }
+
+            // setup the game logic
+            if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Standalone )
+            {
+                // init the story system
+                try
+                {
+                    StorySystem::get()->initialize( VRC_STORY_BOOK_FILE );
+                }
+                catch( const StorySystemException& e )
+                {
+                    log_error << "could not initialize the user interaction system!" << std::endl;
+                    log_error << " reason: " << e.what() << std::endl;
+                }
+            }
+        }
+        break;
+
+        case yaf3d::GameState::LeavingLevel :
+        {
+            // shutdown the user interaction system
+            StorySystem::get()->shutdown();
+
+            if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client )
+            {
+                // shutdown the storage client
+                StorageClient::get()->shutdown();
+            }
+        }
+        break;
+
         case yaf3d::GameState::Quitting :
         {
         }
@@ -236,29 +255,11 @@ void VRCStateHandler::onStateChange( unsigned int state )
             // shutdown the storage
             if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
             {
-                // shutdown the user interaction system
-                StorySystem::get()->shutdown();
-                // shutdown the game logic
-                GameLogic::get()->shutdown();
-
                 // check if the server is configured to request client authentification
                 bool needsAuth = false;
                 yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_AUTH, needsAuth );
                 if ( needsAuth )
                     StorageServer::get()->shutdown();
-            }
-            else if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client )
-            {
-                StorageClient::get()->shutdown();
-            }
-
-            // shutdown the game logic
-            if ( yaf3d::GameState::get()->getMode() & ( yaf3d::GameState::Server | yaf3d::GameState::Standalone ) )
-            {
-                // shutdown the user interaction system
-                StorySystem::get()->shutdown();
-                // shutdown the game logic
-                GameLogic::get()->shutdown();
             }
         }
         break;
