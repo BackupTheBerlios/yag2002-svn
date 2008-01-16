@@ -165,11 +165,19 @@ class Params: protected std::vector< BaseParam* >
         //! Get count of parameters
         inline const std::size_t                size() const;
 
+        //! Return the number of passed parameters, this is used in exposed methods in order to support optional or default parameters.
+        inline unsigned int                     getNumPassedParameters() const;
+
         //! Clear params
         void                                    clear();
 
         //! Assignment operator
         Params&                                 operator = ( const Params& params );
+
+    protected:
+
+        //! Actual number of parameters passed from script to C++ exposed method
+        unsigned int                            _numParams;
 
     template< class T > friend class BaseScript;
 };

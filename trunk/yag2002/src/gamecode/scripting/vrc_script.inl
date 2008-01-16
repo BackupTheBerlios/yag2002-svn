@@ -78,6 +78,11 @@ const std::size_t Params::size() const
     return std::vector< BaseParam* >::size();
 }
 
+unsigned int Params::getNumPassedParameters() const
+{
+    return _numParams;
+}
+
 // Template definitions of BaseScript
 template< class T >
 BaseScript< T >::BaseScript() :
@@ -230,7 +235,7 @@ template< class T >
 int BaseScript< T >::exposedMethodProxy( lua_State* p_state )
 {
     // get number of arguments passed from script on function call
-    std::size_t nargs = lua_gettop( p_state );
+    std::size_t nargs = lua_gettop( p_state ) + 1;
 
     int res = lua_islightuserdata( p_state, lua_upvalueindex( 1 ) );
     assert( res && "missing user data" );
@@ -244,16 +249,19 @@ int BaseScript< T >::exposedMethodProxy( lua_State* p_state )
 
     // grab the arguments
     {
-        if ( nargs != arguments.size() )
+        if ( nargs > ( arguments.size() + 1 ) )
         {
-            log_error << "script error: exposed method called with wrong parameter count, file: " << p_instance->getScriptFileName()
-                << ", method name: " << p_entry->_methodName;
+            log_error << "script error: exposed method called with greater parameter count as defined, file: "
+                      << p_instance->getScriptFileName()
+                      << ", method name: "
+                      << p_entry->_methodName
+                      << std::endl;
 
             p_instance->printParamsInfo( arguments );
             log_error << std::endl;
             return 0;
         }
-        for ( std::size_t cnt = 1; cnt <= nargs; ++cnt )
+        for ( std::size_t cnt = 1; cnt < nargs; ++cnt )
         {
             // get the param type
             const std::type_info& typeinfo = arguments.getTypeInfo( cnt - 1 );
@@ -290,6 +298,7 @@ int BaseScript< T >::exposedMethodProxy( lua_State* p_state )
     }
 
     // call method
+    arguments._numParams = nargs;
     ( p_instance->*( p_entry->_ptrMethod ) )( arguments, returnvalues );
 
     // push return values onto Lua stack

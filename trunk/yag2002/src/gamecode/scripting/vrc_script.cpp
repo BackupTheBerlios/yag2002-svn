@@ -36,7 +36,8 @@
 namespace vrc
 {
 
-Params::Params()
+Params::Params() :
+ _numParams( 0 )
 {
 }
 
