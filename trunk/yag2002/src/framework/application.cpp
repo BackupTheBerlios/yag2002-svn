@@ -162,11 +162,15 @@ void Application::shutdown()
     KeyMap::get()->shutdown();
     FileSystem::get()->shutdown();
 
+    // remove the top scene node
+    _p_viewer->getViewport( 0 )->getSceneView()->setSceneData( NULL );
+    _rootSceneNode = NULL;
+
+    // close all osg loader libraries
+    osgDB::Registry::instance()->closeAllLibraries();
+
     // delete viewer
     delete _p_viewer;
-
-    // delete the top scene node
-    _rootSceneNode = NULL;
 
     SDL_Quit();
 
