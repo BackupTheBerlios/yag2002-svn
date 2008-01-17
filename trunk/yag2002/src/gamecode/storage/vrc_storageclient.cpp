@@ -63,6 +63,7 @@ void StorageClient::shutdown()
 
 void StorageClient::initialize() throw ( StorageClientException )
 {
+    log_info << "StorageClient: initializing" << std::endl;
     // register callback in network device for getting authentification result.
     yaf3d::NetworkDevice::get()->setAuthCallback( this );
 }

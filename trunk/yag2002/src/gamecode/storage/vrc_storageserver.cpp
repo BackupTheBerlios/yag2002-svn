@@ -105,6 +105,8 @@ void StorageServer::shutdown()
 
 void StorageServer::initialize() throw ( StorageServerException )
 {
+    log_info << "StorageServer: initializing" << std::endl;
+
     // this is created only on server
     assert( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server );
 
