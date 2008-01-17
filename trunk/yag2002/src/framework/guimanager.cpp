@@ -90,8 +90,8 @@ class CEGUIDrawable : public osg::Drawable
                                                         setSupportsDisplayList( false );
                                                         _activeContextID = 0;
                                                         // create a gui renderbin and make the gui drawable to be drawn in this render bin ( last stage of rendering )
-                                                        osgUtil::RenderBin* p_renderbin = new osgUtil::RenderBin( osgUtil::RenderBin::SORT_BACK_TO_FRONT );
-                                                        osgUtil::RenderBin::addRenderBinPrototype( "GUIBin", p_renderbin );
+                                                        osg::ref_ptr< osgUtil::RenderBin > renderbin = new osgUtil::RenderBin( osgUtil::RenderBin::SORT_BACK_TO_FRONT );
+                                                        osgUtil::RenderBin::addRenderBinPrototype( "GUIBin", renderbin.get() );
                                                         osg::StateSet* p_stateset = new osg::StateSet;
                                                         p_stateset->setRenderBinDetails( 1000, "GUIBin", osg::StateSet::USE_RENDERBIN_DETAILS );
                                                         setStateSet( p_stateset );
@@ -160,6 +160,7 @@ _p_mouseImg( NULL ),
 _windowWidth( 600 ),
 _windowHeight( 400 ),
 _p_root( NULL ),
+_p_resourceLoader( NULL ),
 _active( true ),
 _lockMouse( false )
 {
@@ -175,6 +176,9 @@ void GuiManager::shutdown()
 
     delete CEGUI::System::getSingletonPtr();
     delete _p_renderer;
+
+    if ( _p_resourceLoader )
+        delete _p_resourceLoader;
 
     // destroy singleton
     destroy();
@@ -210,8 +214,8 @@ void GuiManager::doInitialize()
     _p_renderer = new GuiRenderer( 0, int( _windowWidth ), int( _windowHeight ) );
 
     // create the gui
-    GuiResourceProvider* p_resourceLoader = new GuiResourceProvider;
-    new CEGUI::System( _p_renderer, p_resourceLoader );
+    _p_resourceLoader = new GuiResourceProvider;
+    new CEGUI::System( _p_renderer, _p_resourceLoader );
 
     // set logging level
 //#ifdef _DEBUG

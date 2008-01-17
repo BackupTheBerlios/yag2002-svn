@@ -42,6 +42,7 @@ namespace yaf3d
 class Application;
 class LevelManager;
 class GuiRenderer;
+class GuiResourceProvider;
 class GuiViewerInitCallback;
 
 // some definitions
@@ -171,6 +172,9 @@ class GuiManager : public Singleton< GuiManager >
 
         //! Root window of cegui where all other windows are placed
         CEGUI::DefaultWindow*                   _p_root;
+
+        //! Resource loader object
+        GuiResourceProvider*                    _p_resourceLoader;
 
         //! Loaded fonts
         std::map< std::string, CEGUI::Font* >   _loadedFonts;
