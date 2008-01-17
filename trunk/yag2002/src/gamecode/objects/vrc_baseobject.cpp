@@ -49,39 +49,32 @@ namespace vrc
 //! Implementation of distance sorted objects used for internal house-keeping
 std::vector< BaseObject* >              BaseObject::_objects;
 
-//! Object instance ID
-unsigned int                            BaseObject::_objectInstanceIDCnt = 42;
-
 //! Implementation of object input handler
 BaseObject::ObjectInputHandler*         BaseObject::_p_inputHandler;
 
-//! Implementation of object type lookup
-std::map< unsigned int, std::string >*  ObjectRegistry::_p_objectTypes = NULL;
-unsigned int                            ObjectRegistry::_refCnt = 0;
-
 //! Implementation of object registry
-void ObjectRegistry::registerEntityType( unsigned int ID, const std::string& entitytype )
+void ActorRegistry::registerEntityType( unsigned int ID, const std::string& entitytype )
 {
-    std::map< unsigned int, std::string >::iterator p_end = ObjectRegistry::_p_objectTypes->end(), p_type;
-    p_type = ObjectRegistry::_p_objectTypes->find( ID );
+    std::map< unsigned int, std::string >::iterator p_end = ActorRegistry::_p_actorTypes->end(), p_type;
+    p_type = ActorRegistry::_p_actorTypes->find( ID );
 
     if ( p_type != p_end )
     {
-        log_error << "ObjectRegistry: type with ID " << ID << " is already registered!" << std::endl;
+        log_error << "ActorRegistry: type with ID " << ID << " is already registered!" << std::endl;
         return;
     }
 
     // register type
-    ( *_p_objectTypes )[ ID ] = entitytype;
+    ( *_p_actorTypes )[ ID ] = entitytype;
 }
 
-std::string ObjectRegistry::getEntityType( unsigned int ID )
+std::string ActorRegistry::getEntityType( unsigned int ID )
 {
-    std::map< unsigned int, std::string >::iterator p_end = ObjectRegistry::_p_objectTypes->end(), p_type;
-    p_type = ObjectRegistry::_p_objectTypes->find( ID );
+    std::map< unsigned int, std::string >::iterator p_end = ActorRegistry::_p_actorTypes->end(), p_type;
+    p_type = ActorRegistry::_p_actorTypes->find( ID );
     if ( p_type == p_end )
     {
-        log_error << "ObjectRegistry: invalid object ID: " << ID << std::endl;
+        log_error << "ActorRegistry: invalid object ID: " << ID << std::endl;
         return std::string( "" );
     }
 
@@ -127,7 +120,8 @@ bool BaseObject::ObjectInputHandler::handle( const osgGA::GUIEventAdapter& ea, o
 }
 
 //! Implementation of base object
-BaseObject::BaseObject( unsigned int ID, const std::string& type ) :
+BaseObject::BaseObject( unsigned int actortype ) :
+ BaseStoryActor( actortype ),
  _p_node( NULL ),
  _shadowEnable( false ),
  _maxHeighlightDistance( 10.0f ),
@@ -136,8 +130,6 @@ BaseObject::BaseObject( unsigned int ID, const std::string& type ) :
  _animTime( 0.0f ),
  _disappearTime( -1.0f ),
  _destroyTime( -1.0f ),
- _objectID( ID ),
- _objectInstanceID( 0 ),
  _enable( true ),
  _checkPickingPeriod( 0.0f ),
  _sortDistancePeriod( 0.0f ),
@@ -147,6 +139,8 @@ BaseObject::BaseObject( unsigned int ID, const std::string& type ) :
  _p_playercamera( NULL ),
  _p_networking( NULL )
 {
+    assert( actortype && "invalid actor type!" );
+
     getAttributeManager().addAttribute( "meshFile"              , _meshFile              );
     getAttributeManager().addAttribute( "position"              , _position              );
     getAttributeManager().addAttribute( "rotation"              , _rotation              );
@@ -162,6 +156,9 @@ BaseObject::~BaseObject()
     {
         yaf3d::ShadowManager::get()->removeShadowNode( getTransformationNode() );
     }
+
+    // remove us from events listeners
+    StorySystem::get()->removeActor( getActorID(), this );
 
     // remove this object from the object list
     std::vector< BaseObject* >::iterator p_beg = _objects.begin(), p_end = _objects.end();
@@ -186,33 +183,6 @@ BaseObject::~BaseObject()
     {
         delete _p_networking;
     }
-}
-
-unsigned int BaseObject::getObjectID() const
-{
-    return _objectID;
-}
-
-BaseObject* BaseObject::getObject( unsigned int instanceID )
-{
-    std::vector< BaseObject* >::const_iterator p_beg = _objects.begin(), p_end = _objects.end();
-    for ( ; p_beg != p_end; ++p_beg )
-    {
-        if ( ( *p_beg )->getObjectInstanceID() == instanceID )
-            return *p_beg;
-    }
-
-    return NULL;
-}
-
-unsigned int BaseObject::getObjectInstanceID() const
-{
-    return _objectInstanceID;
-}
-
-void BaseObject::setObjectInstanceID( unsigned int id )
-{
-    _objectInstanceID = id;
 }
 
 void BaseObject::setNetworking( ObjectNetworking* p_networking )
@@ -269,6 +239,11 @@ void BaseObject::handleNotification( const yaf3d::EntityNotification& notificati
         }
         break;
 
+        case YAF3D_NOTIFY_UNLOAD_LEVEL:
+        {
+        }
+        break;
+
         case YAF3D_NOTIFY_SHUTDOWN:
         {
         }
@@ -284,13 +259,8 @@ void BaseObject::initialize()
     // setup picking params
     _maxHeighlightDistance2 = _maxHeighlightDistance * _maxHeighlightDistance;
 
-    // first setup the object instance ID
-    if ( yaf3d::GameState::get()->getMode() & ( yaf3d::GameState::Server | yaf3d::GameState::Standalone ) )
-    {
-        // increase the object instance ID
-        _objectInstanceIDCnt++;
-        _objectInstanceID = _objectInstanceIDCnt;
-    }
+    // add us to events listeners
+    StorySystem::get()->addActor( getActorID(), this );
 
     //! do game mode specific things
     switch ( yaf3d::GameState::get()->getMode() )
@@ -447,6 +417,12 @@ void BaseObject::updateEntity( float deltaTime )
             _checkPickingPeriod = 0.0f;
         }
     }
+}
+
+void BaseObject::onReceiveEvent( const StoryEvent& event )
+{
+    // propagate the event to derived object
+    onEventReceived( event );
 }
 
 bool BaseObject::checkObjectDistance()

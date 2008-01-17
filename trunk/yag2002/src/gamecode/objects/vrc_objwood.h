@@ -35,9 +35,9 @@
 #include "vrc_baseobject.h"
 
 //! Entity name
-#define ENTITY_NAME_OBJWOOD     "ObjectWood"
+#define ENTITY_NAME_OBJ_WOOD     "ObjectWood"
 //! Object name used for display
-#define ITEM_NAME_OBJWOOD       "Wood"
+#define ITEM_NAME_OBJ_WOOD       "Wood"
 
 namespace vrc
 {
@@ -56,8 +56,8 @@ class EnObjectWood : public BaseObject
         //! Called when the object is used by user, e.g. by picking
         virtual void                                onObjectUse();
 
-        //! Called when networking delivers the result of requested action
-        virtual void                                actionResult( tActionData& result );
+        //! Called when an event arrives
+        virtual void                                onEventReceived( const StoryEvent& event );
 };
 
 //! Entity type definition used for type registry
@@ -65,7 +65,7 @@ class ObjectWoodEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     ObjectWoodEntityFactory() : 
-                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_OBJWOOD, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client | yaf3d::BaseEntityFactory::Server )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_OBJ_WOOD, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client | yaf3d::BaseEntityFactory::Server )
                                                     {}
 
         virtual                                     ~ObjectWoodEntityFactory() {}

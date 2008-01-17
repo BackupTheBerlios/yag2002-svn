@@ -19,7 +19,8 @@
  ****************************************************************/
 
 /*###############################################################
- # networking for interactive objects; this is a server side object.
+ # networking for interactive objects; this is a server side object,
+ #  which is replicated on clients.
  #
  #   date of creation:  11/01/2007
  #
@@ -48,20 +49,6 @@ class ObjectNetworking : _RO_DO_PUBLIC_RO( ObjectNetworking )
 
         virtual                                    ~ObjectNetworking();
 
-        //! Callback class for getting action results.
-        //!  Note: only one request can by handled at the same time.
-        class CallbackActionResult
-        {
-            public:
-
-                //! If granted is true then the authentification was successfull.
-                virtual void                        actionResult( tActionData& result ) = 0;
-        };
-
-        //! Client requests the server for performing an action. Use the callback in order to get notified when the result comes in on client.
-        //! Returns false if a request is already in progress.
-        bool                                        RequestAction( tActionData& action, CallbackActionResult* p_cb );
-
     protected:
 
         // Internal RN Overrides, do not use these methods!
@@ -70,19 +57,13 @@ class ObjectNetworking : _RO_DO_PUBLIC_RO( ObjectNetworking )
         //! Object can now be initialized in scene
         void                                        PostObjectCreate();
 
-        //! Client requests the server to perform an action
-        void                                        RPC_RequestAction( tActionData action );
-
-        //! Action result sent by server
-        void                                        RPC_ActionResult( tActionData action );
-
         //-----------------------------------------------------------------------------------//
 
-        //! Unique object ID set on server
-        unsigned int                                _objectID;
+        //! Unique actor type set on server
+        unsigned int                                _actorType;
 
-        //! Unique object reference ID set on server
-        unsigned int                                _objectInstanceID;
+        //! Unique actor ID set on server
+        unsigned int                                _actorID;
 
         //! Object mesh file
         char                                        _p_meshFile[ 64 ];
@@ -107,9 +88,6 @@ class ObjectNetworking : _RO_DO_PUBLIC_RO( ObjectNetworking )
 
         //! Base object
         BaseObject*                                 _p_objectEntity;
-
-        //! Result callback object used by client
-        CallbackActionResult*                       _p_cbResult;
 
     friend class _MAKE_RO( ObjectNetworking );
 };

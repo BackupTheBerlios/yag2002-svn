@@ -31,7 +31,6 @@
 #include <vrc_main.h>
 #include "vrc_baseobject.h"
 #include "vrc_objectnetworking.h"
-#include "../gamelogic/vrc_gamelogic.h"
 #include "../storage/vrc_storageserver.h"
 #include <RNReplicaNet/Inc/DataBlock_Function.h>
 
@@ -41,16 +40,15 @@ namespace vrc
 {
 
 ObjectNetworking::ObjectNetworking( BaseObject* p_objectEntity ) :
- _objectID( 0 ),
- _objectInstanceID( 0 ),
+ _actorType( 0 ),
+ _actorID( 0 ),
  _positionX( 0.0f ),
  _positionY( 0.0f ),
  _positionZ( 0.0f ),
  _rotationZ( 0.0f ),
  _maxPickDistance( 1.5f ),
- _maxHeighlightDistance( 10 ),
- _p_objectEntity( p_objectEntity ),
- _p_cbResult( NULL )
+ _maxHeighlightDistance( 10.0f ),
+ _p_objectEntity( p_objectEntity )
 {
     memset( _p_meshFile, 0, sizeof( _p_meshFile ) );
 
@@ -76,9 +74,9 @@ ObjectNetworking::ObjectNetworking( BaseObject* p_objectEntity ) :
         _rotationZ = rot.z();
         strcpy_s( _p_meshFile, sizeof( _p_meshFile ) - 1, meshfile.c_str() );
 
-        // get also the object and instance ID
-        _objectInstanceID = p_objectEntity->getObjectInstanceID();
-        _objectID         = p_objectEntity->getObjectID();
+        // get also the actor type and id
+        _actorType = p_objectEntity->getActorType();
+        _actorID   = p_objectEntity->getActorID();
     }
 }
 
@@ -92,87 +90,37 @@ void ObjectNetworking::PostObjectCreate()
     // this function is called only on clients
     assert( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client );
 
-    // create the object entity
-    std::string entitytype = ObjectRegistry::getEntityType( _objectID );
+    // create the actor entity
+    std::string entitytype = ActorRegistry::getEntityType( _actorType );
     yaf3d::BaseEntity* p_entity = yaf3d::EntityManager::get()->createEntity( entitytype, "_obj_" + entitytype, true );
     if ( !p_entity )
     {
-        log_error << "ObjectNetworking: entity type does not exist: " << _objectID << " '" << entitytype << "'" << std::endl;
+        log_error << "ObjectNetworking: entity type does not exist: " << _actorType << " '" << entitytype << "'" << std::endl;
         return;
     }
+    _p_objectEntity = dynamic_cast< BaseObject* >( p_entity );
+    assert( _p_objectEntity && "wrong entity type!" );
 
     // set the entity attributes
     osg::Vec3f pos( _positionX, _positionY, _positionZ );
     osg::Vec3f rot( 0.0f, 0.0f, _rotationZ );
     _p_meshFile[ sizeof( _p_meshFile ) - 1 ] = 0;
 
-    p_entity->getAttributeManager().setAttributeValue( "meshFile", std::string( _p_meshFile ) );
-    p_entity->getAttributeManager().setAttributeValue( "position", pos );
-    p_entity->getAttributeManager().setAttributeValue( "rotation", rot );
-    p_entity->getAttributeManager().setAttributeValue( "maxViewDistance", _maxPickDistance );
-    p_entity->getAttributeManager().setAttributeValue( "maxHeighlightDistance", _maxHeighlightDistance );
+    // bas hard-coded attribute names :-(
+    _p_objectEntity->getAttributeManager().setAttributeValue( "meshFile", std::string( _p_meshFile ) );
+    _p_objectEntity->getAttributeManager().setAttributeValue( "position", pos );
+    _p_objectEntity->getAttributeManager().setAttributeValue( "rotation", rot );
+    _p_objectEntity->getAttributeManager().setAttributeValue( "maxViewDistance", _maxPickDistance );
+    _p_objectEntity->getAttributeManager().setAttributeValue( "maxHeighlightDistance", _maxHeighlightDistance );
+    // set the type and id
+    _p_objectEntity->setActorType( _actorType );
+    _p_objectEntity->setActorID( _actorID );
 
-    p_entity->initialize();
-    p_entity->postInitialize();
-
-    _p_objectEntity = dynamic_cast< BaseObject* >( p_entity );
-    assert( _p_objectEntity && "wrong entity type!" );
+    _p_objectEntity->initialize();
+    _p_objectEntity->postInitialize();
 
     // set object networking
     _p_objectEntity->setNetworking( this );
-    // set the instance ID
-    _p_objectEntity->setObjectInstanceID( _objectInstanceID );
-}
-
-bool ObjectNetworking::RequestAction( tActionData& action, CallbackActionResult* p_cb )
-{
-    if ( _p_cbResult )
-        return false;
-
-    // make an RPC on server object
-    MASTER_FUNCTION_CALL( RPC_RequestAction( action ) );
-
-    // set the callback object
-    _p_cbResult = p_cb;
-
-    return true;
-}
-
-void ObjectNetworking::RPC_RequestAction( tActionData action )
-{ // this is called on server
-
-    // let the storage server validate the client first!
-    if ( !StorageServer::get()->validateClient( action._userID, action._sessionCookie ) )
-        return;
-
-    std::vector< float > args;
-    std::vector< float > result;
-    result.push_back( 0.0f ); // return value: success / fail
-    result.push_back( 0.0f ); // respawn time
-
-    if ( !GameLogic::get()->requestAction( action._actionType, action._paramUint[ 0 ], action._paramUint[ 1 ], args, result ) )
-    {
-        log_error << "ObjectNetworking: problem executing required action: " << action._actionType << std::endl;
-        action._actionResult = -1;
-    }
-    else
-    {
-        // push the result of action into first uint parameter
-        action._actionResult = int( result[ 0 ] );
-        // push the respawn time to first float parameter
-        action._paramFloat[ 0 ] = result[ 1 ];
-    }
-
-    ALL_REPLICAS_FUNCTION_CALL( RPC_ActionResult( action ) );
-}
-
-void ObjectNetworking::RPC_ActionResult( tActionData action )
-{ // this method is called only on client
-
-    if ( _p_cbResult )
-        _p_cbResult->actionResult( action );
-
-    _p_cbResult = NULL;
 }
 
 } // namespace vrc

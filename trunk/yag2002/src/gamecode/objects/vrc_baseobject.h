@@ -33,15 +33,16 @@
 
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
+#include <gamelogic/vrc_storysystem.h>
 #include "vrc_objectnetworking.h"
 
 namespace vrc
 {
 
-//! Unique object IDs
-enum ObjectIDs
+//! Unique actor types
+enum ActorTypes
 {
-    VRC_OBJECT_ID_WOOD  = 100
+    VRC_ACTOR_TYPE_WOOD  = 100
 };
 
 class EnPlayer;
@@ -50,27 +51,15 @@ class ObjectNetworking;
 class ObjectInputHandler;
 
 //! Base of pickable objects
-class BaseObject : public yaf3d::BaseEntity, public ObjectNetworking::CallbackActionResult
+class BaseObject : public yaf3d::BaseEntity, public StoryEventReceiver, public BaseStoryActor
 {
     public:
 
-        //! Create the object with a unique object ID and entity type ( ID is one of ObjectIDs enums ).
-                                                    BaseObject( unsigned int ID, const std::string& type );
+        //! Create the object with a unique type ( ID is one of ActorTypes enums ).
+                                                    BaseObject( unsigned int actortype );
 
         //! Destroy object.
         virtual                                     ~BaseObject();
-
-        //! Get the object ID.
-        unsigned int                                getObjectID() const;
-
-        //! Get the object given its instance ID. Returns NULL if the no object with given instance ID exist.
-        static BaseObject*                          getObject( unsigned int instanceID );
-
-        //! Get the object instance ID.
-        unsigned int                                getObjectInstanceID() const;
-
-        //! Set the object instance ID, used by networking on server.
-        void                                        setObjectInstanceID( unsigned int id );
 
         //! This method is used by networking on creation of the entity on clients.
         void                                        setNetworking( ObjectNetworking* p_networking );
@@ -89,6 +78,9 @@ class BaseObject : public yaf3d::BaseEntity, public ObjectNetworking::CallbackAc
 
         //! Called on derived objects when the object is used by user, e.g. by picking
         virtual void                                onObjectUse() = 0;
+
+        //! Called on derived object when an event has been received.
+        virtual void                                onEventReceived( const StoryEvent& event ) = 0;
 
         //! Initializing function
         void                                        initialize();
@@ -114,6 +106,9 @@ class BaseObject : public yaf3d::BaseEntity, public ObjectNetworking::CallbackAc
         //! Check object distance
         bool                                        checkObjectDistance();
 
+        //! Called when an event arrives
+        virtual void                                onReceiveEvent( const StoryEvent& event );
+
         // entity attributes
         // -----------
 
@@ -138,15 +133,6 @@ class BaseObject : public yaf3d::BaseEntity, public ObjectNetworking::CallbackAc
         //! Maximal allowed camera distance to object when picking
         float                                       _maxPickDistance;
         // -----------
-
-        //! Unique object ID ( this identifies the object type )
-        unsigned int                                _objectID;
-
-        //! Unique object instance ID ( this identifies the object instance )
-        unsigned int                                _objectInstanceID;
-
-        //! Object instance ID counter
-        static unsigned int                         _objectInstanceIDCnt;
 
         //! Is the object enabled?
         bool                                        _enable;
@@ -237,56 +223,9 @@ class BaseObject : public yaf3d::BaseEntity, public ObjectNetworking::CallbackAc
 
         //! Object input handler
         static ObjectInputHandler*                  _p_inputHandler;
+
+    friend class ObjectNetworking;
 };
-
-
-//! Helper class for registration of object ID and Type.
-/**
-    Every object type must register its ID!
-*/
-class ObjectRegistry
-{
-    public:
-
-        //! ID is one of ObjectIDs enums and entitytype is a unique entity type
-                                                    ObjectRegistry( unsigned int ID, const std::string& entitytype )
-                                                    {
-                                                        ++_refCnt;
-
-                                                        if ( !_p_objectTypes )
-                                                            _p_objectTypes = new std::map< unsigned int, std::string >;
-
-                                                        ( *_p_objectTypes )[ ID ] = entitytype;
-                                                    }
-
-        //! Destroy the object
-        virtual                                     ~ObjectRegistry()
-                                                    {
-                                                        --_refCnt;
-                                                        if ( !_refCnt )
-                                                        {
-                                                            delete _p_objectTypes;
-                                                            _p_objectTypes = NULL;
-                                                        }
-                                                    }
-
-        //! Register an object ID/Type
-        static void                                 registerEntityType( unsigned int ID, const std::string& entitytype );
-
-        //! Given an object ID return its entity type.
-        static std::string                          getEntityType( unsigned int ID );
-
-    protected:
-
-        //! Ref count
-        static unsigned int                             _refCnt;
-
-        //! Object ID/Type lookup
-        static std::map< unsigned int, std::string >*   _p_objectTypes;
-};
-
-//! Convenient macro for registring an object type
-#define VRC_REGISTER_OBJECT( id, type )     static std::auto_ptr< ObjectRegistry > ObjectRegistry_impl_auto( new ObjectRegistry( ( id ), ( type ) ) );
 
 } // namespace vrc
 

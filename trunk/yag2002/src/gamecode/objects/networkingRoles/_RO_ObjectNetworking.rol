@@ -1,4 +1,4 @@
-/* The Pickable Objects object */
+/* The network object for Objects */
 
 namespace vrc
 {
@@ -6,30 +6,16 @@ namespace vrc
 object ObjectNetworking
 {
     datablock Function;
-
-    extern RPC_RequestAction( tActionData );
-    extern RPC_ActionResult( tActionData );
-
     datablock NData;
 
     networking
     {
-        Function RPC_RequestAction;
+        NData _actorType;
         { 
             Reliable();
         }
 
-        Function RPC_ActionResult;
-        { 
-            Reliable();
-        }
-
-        NData _objectID;
-        { 
-            Reliable();
-        }
-
-        NData _objectInstanceID;
+        NData _actorID;
         { 
             Reliable();
         }
