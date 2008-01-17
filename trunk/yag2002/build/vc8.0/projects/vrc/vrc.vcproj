@@ -977,6 +977,14 @@
 				Name="tools"
 				>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\tools\vrc_consolegui.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\tools\vrc_consolegui.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\tools\vrc_fpsdisplay.cpp"
 					>
 				</File>
@@ -1259,6 +1267,22 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdshadowlight.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdshadowlight.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdshadowpolyoffset.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdshadowpolyoffset.h"
+							>
+						</File>
+						<File
 							RelativePath="..\..\..\..\src\gamecode\tools\console\vrc_cmdshowfps.cpp"
 							>
 						</File>
@@ -1426,14 +1450,6 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\scripting\vrc_script.inl"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\..\src\gamecode\scripting\vrc_scriptconsole.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\..\src\gamecode\scripting\vrc_scriptconsole.h"
 					>
 				</File>
 				<File
@@ -1793,22 +1809,6 @@
 				Name="gamelogic"
 				>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_gamelogic.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_gamelogic.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_logicscript.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_logicscript.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_story.cpp"
 					>
 				</File>
@@ -1817,11 +1817,19 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_storybuilder.cpp"
+					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_storyactor.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_storybuilder.h"
+					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_storyactor.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_storyengine.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_storyengine.h"
 					>
 				</File>
 				<File
@@ -1833,6 +1841,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_storynetworking.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_storynetworking.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_storysystem.cpp"
 					>
 				</File>
@@ -1840,6 +1856,51 @@
 					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_storysystem.h"
 					>
 				</File>
+				<Filter
+					Name="nw-roles"
+					>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\gamelogic\networkingRoles\_RO_StoryNetworking.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug-Server|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release-Server|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\gamelogic\networkingRoles\_RO_StoryNetworking.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<File
