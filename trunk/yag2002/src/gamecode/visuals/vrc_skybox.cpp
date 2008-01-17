@@ -88,16 +88,36 @@ void EnSkyBox::handleNotification( const yaf3d::EntityNotification& notification
 
         // re-create the skybox whenever an attribute changed
         case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
+
             removeFromTransformationNode( _p_skyGrp.get() );
             _p_skyGrp = setupSkybox();
             if ( _enable )
                 addToTransformationNode( _p_skyGrp.get() );
 
+            break;
+
+        case YAF3D_NOTIFY_UNLOAD_LEVEL:
+
+            if ( _p_skyGrp.valid() && !_usedInMenu )
+            {
+                removeFromTransformationNode( _p_skyGrp.get() );
+                _p_skyGrp = NULL;
+            }
+
+            break;
+
         // if used in menu then this entity is persisten, so we have to trigger its deletion on shutdown
         case YAF3D_NOTIFY_SHUTDOWN:
 
+            if ( _p_skyGrp.valid() )
+            {
+                removeFromTransformationNode( _p_skyGrp.get() );
+                _p_skyGrp = NULL;
+            }
+
             if ( _usedInMenu )
                 yaf3d::EntityManager::get()->deleteEntity( this );
+
             break;
 
         default:
@@ -108,7 +128,7 @@ void EnSkyBox::handleNotification( const yaf3d::EntityNotification& notification
 void EnSkyBox::initialize()
 {
     // register entity in order to get notifications   
-    yaf3d::EntityManager::get()->registerNotification( this, true );   
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 
     // setup the skybox
     _p_skyGrp = setupSkybox();

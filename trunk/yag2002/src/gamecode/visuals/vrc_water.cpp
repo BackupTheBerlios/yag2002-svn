@@ -313,6 +313,13 @@ void EnWater::handleNotification( const yaf3d::EntityNotification& notification 
 
             break;
 
+        case YAF3D_NOTIFY_UNLOAD_LEVEL:
+
+            // release the shader state set
+            if ( !_usedInMenu )
+                s_stateSet = NULL;
+            break;
+
         // if used in menu then this entity is persisten, so we have to trigger its deletion on shutdown
         case YAF3D_NOTIFY_SHUTDOWN:
 
@@ -524,6 +531,7 @@ osg::Node* EnWater::setupWater()
     setShaderParams( p_node );
     // disable culling
     p_node->setCullingActive( false );
+
     return p_node;
 }
 

@@ -182,6 +182,14 @@ void EnTerrainSection::handleNotification( const yaf3d::EntityNotification& noti
         }
         break;
 
+        case YAF3D_NOTIFY_UNLOAD_LEVEL:
+
+            // release the shader state set
+            if ( !_usedInMenu )
+                removeFromTransformationNode( _p_terrainGrp.get() );
+
+            break;
+
         // if used in menu then this entity is persisten, so we have to trigger its deletion on shutdown
         case YAF3D_NOTIFY_SHUTDOWN:
         {
