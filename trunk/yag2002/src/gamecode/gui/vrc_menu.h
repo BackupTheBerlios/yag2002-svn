@@ -200,6 +200,7 @@ class EnMenu :  public yaf3d::BaseEntity
             LoadingLevel,
             PrepareUnloadLevel,
             UnloadLevel,
+            Quitting,
             Visible,
             Hidden
         }                                           _menuState;

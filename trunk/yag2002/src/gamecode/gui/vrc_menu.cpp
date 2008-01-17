@@ -233,6 +233,9 @@ EnMenu::~EnMenu()
     // destroy the input handler
     if ( _p_inputHandler )
         _p_inputHandler->destroyHandler();
+
+    if ( _menuAnimationPath.valid() )
+        yaf3d::Application::get()->getSceneRootNode()->removeChild( _menuAnimationPath.get() );
 }
 
 void EnMenu::handleNotification( const yaf3d::EntityNotification& notification )
@@ -493,7 +496,10 @@ bool EnMenu::onClickedQuit( const CEGUI::EventArgs& arg )
     // play mouse click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
-    yaf3d::Application::get()->stop();
+    // set the proper game state
+    yaf3d::GameState::get()->setState( yaf3d::GameState::LeavingLevel );
+
+    _menuState = Quitting;
 
     return true;
 }
@@ -755,6 +761,13 @@ void EnMenu::updateEntity( float deltaTime )
                     yaf3d::GuiManager::get()->showMousePointer( false );
                 }
             }
+        }
+        break;
+
+        case Quitting:
+        {
+            // quit the application now
+            yaf3d::Application::get()->stop();
         }
         break;
 
