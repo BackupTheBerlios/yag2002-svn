@@ -28,7 +28,6 @@
  ################################################################*/
 
 #include <vrc_main.h>
-#include "vrc_gamelogic.h"
 #include "vrc_storyengine.h"
 #include "vrc_storysystem.h"
 #include "vrc_storynetworking.h"
@@ -86,6 +85,7 @@ void StorySystem::initialize( const std::string& storybookfile ) throw ( StorySy
 
     std::string mode = ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server ) ? "(server):" : ":";
     storylog_info << "StorySystem " << mode << " initializing ..." << std::endl;
+    log_info << "StorySystem " << mode << " initializing ..." << std::endl;
 
     // the story engine exists only on server
     if ( yaf3d::GameState::get()->getMode() & ( yaf3d::GameState::Server | yaf3d::GameState::Standalone ) )
@@ -110,7 +110,8 @@ void StorySystem::initialize( const std::string& storybookfile ) throw ( StorySy
 
 void StorySystem::shutdown()
 {
-    storylog_debug << "StorySystem: shuttding down" << std::endl;
+    log_info << "StorySystem: shuttding down" << std::endl;
+    storylog_info << "StorySystem: shuttding down" << std::endl;
 
     storylog_debug << "StorySystem: count of still registered actors " << _actors.size() << std::endl;
     _actors.clear();
