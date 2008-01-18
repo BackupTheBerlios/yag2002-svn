@@ -40,6 +40,7 @@
 #include "guimanager.h"
 #include "gamestate.h"
 #include "yaf3dtinyxml/tinyxml.h"
+#include <osgUtil/GLObjectsVisitor>
 
 // XML item names
 //---------------------------------------------------------//
@@ -63,68 +64,6 @@
 
 namespace yaf3d
 {
-
-//! Visitor for compiling openGL resources after loading a level.
-class GLResourceCompiler : public osg::NodeVisitor
-{
-    public:
-                                        GLResourceCompiler( osg::NodeVisitor::TraversalMode tm, osg::State* p_state ) :
-                                         osg::NodeVisitor( tm ),
-                                         _numVisited( 0 ),
-                                         _p_state( p_state )
-                                        {
-                                            // we take all nodes
-                                            setTraversalMask( 0xffffffff );
-                                        }
-
-                                        ~GLResourceCompiler() {}
-
-        void                            apply( osg::Geode& node )
-                                        {
-                                            //setup render info
-                                            osg::RenderInfo renderinfo;
-                                            renderinfo.setState( _p_state );
-                                            node.compileDrawables( renderinfo );
-
-                                            osg::Geode::DrawableList drawableList = node.getDrawableList();
-                                            int listsize = drawableList.size();
-                                            for ( int cnt = 0; cnt < listsize; ++cnt )
-                                            {
-                                                ++_numVisited;
-                                                compileResource( node.getStateSet() );
-                                            }
-                                            traverse( node );
-                                        }
-
-        void                            apply( osg::MatrixTransform& node )
-                                        {
-                                            ++_numVisited;
-                                            compileResource( node.getStateSet() );
-                                            traverse( node );
-                                        }
-
-        //! Statistics methods, use them after traversal
-        unsigned int                    getNumVisited() { return _numVisited; }
-
-    protected:
-
-        void                            compileResource( osg::StateSet* p_stateset )
-                                        {
-                                            if ( !p_stateset )
-                                                return;
-
-                                            // compile all kind of attributes
-                                            osg::StateSet::AttributeList& attrlist = p_stateset->getAttributeList();
-                                            osg::StateSet::AttributeList::iterator p_beg = attrlist.begin(), p_end = attrlist.end();
-                                            for ( ; p_beg != p_end; ++p_beg )
-                                                p_beg->second.first->compileGLObjects( *_p_state );
-                                        }
-
-        // statistics
-        unsigned int                    _numVisited;
-
-        osg::State*                     _p_state;
-};
 
 //! Implement the level manager singleton
 YAF3D_SINGLETON_IMPL( LevelManager )
@@ -485,17 +424,6 @@ void LevelManager::finalizeLoading()
     EntityManager::get()->setupEntities( _setupQueue );
     _setupQueue.clear();
 
-    // compile all gl textures in loaded level
-    // this avoids delays when textures are loaded on-the-fly by osg only when they are visible for first time
-    // check if glsl is supported before setting up the shaders ( gl context 0  is assumed )
-    if ( GameState::get()->getMode() != GameState::Server )
-    {
-        GLResourceCompiler rc( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN, Application::get()->getSceneView()->getState() );
-        log_debug << "LevelManager: start compiling openGL resources ..." << std::endl;
-        _topGroup->accept( rc );
-        log_debug << "LevelManager: total num of evaluated elements: " << rc.getNumVisited() << std::endl;
-    }
-
     // send the notification that the a new level has been loaded and initialized
     {
         EntityNotification ennotify( YAF3D_NOTIFY_NEW_LEVEL_INITIALIZED );
@@ -613,6 +541,19 @@ osg::Node* LevelManager::loadMesh( const std::string& fileName, bool useCache )
     // optimize the scene graph, remove rendundent nodes and state etc.
     osgUtil::Optimizer optimizer;
     optimizer.optimize( p_loadedModel );
+
+    // compile all gl textures in loaded level
+    // this avoids delays when textures are loaded on-the-fly by osg only when they are visible for first time
+    // check if glsl is supported before setting up the shaders ( gl context 0  is assumed )
+    if ( GameState::get()->getMode() != GameState::Server )
+    {
+        log_debug << "LevelManager: compiling openGL resources ..." << std::endl;
+        osgUtil::GLObjectsVisitor compiler;
+        osg::RenderInfo renderinfo;
+        renderinfo.setState( Application::get()->getSceneView()->getState() );
+        compiler.setRenderInfo( renderinfo );
+        p_loadedModel->accept( compiler );
+    }
 
     // cache the loaded mesh
     if ( useCache )
