@@ -62,6 +62,9 @@
 					<Add library="libspeex" />
 					<Add library="libframeworkd.a" />
 					<Add directory="../../../../lib/framework" />
+					<Add directory="/usr/lib" />
+					<Add directory="/usr/local/lib" />
+					<Add directory="/usr/local/lib64" />
 				</Linker>
 			</Target>
 			<Target title="Release">
