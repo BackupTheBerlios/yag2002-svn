@@ -103,11 +103,14 @@ void BaseScript< T >::setupLuaLibs( lua_State* p_state, unsigned int usedlibs )
 {
     luaopen_base( p_state );
 
+//! TODO: fix the problem with luaopen_package on linux
+#ifndef LINUX
     if ( usedlibs & BaseScript::LOADLIB )
     {
         luaopen_package( p_state );
         lua_settop( p_state, 0 );
     }
+#endif
     if ( usedlibs & BaseScript::STRING )
     {
         luaopen_string( p_state );

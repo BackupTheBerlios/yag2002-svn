@@ -283,7 +283,7 @@ char * irc_color_convert_to_mirc (const char * source)
 			&& (p2 - p1) > 1
 			&& (p2 - p1) < 31 )
 			{
-				// Get the tag
+				/* Get the tag */
 				char tagbuf[32];
 				int taglen = p2 - p1 - 1;
 

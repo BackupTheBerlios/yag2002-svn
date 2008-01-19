@@ -201,7 +201,7 @@ bool getFromClipboard( std::wstring& text, unsigned int maxcnt )
     if ( XGetWindowProperty( SDL_Display, owner, selection, 0, INT_MAX/4, False, XA_STRING, &selntype, &selnformat,
          &nbytes, &overflow, reinterpret_cast< unsigned char ** >( &p_src ) ) == Success )
     {
-    	p_src[ maxcnt - 1 ] = 0;
+        p_src[ maxcnt - 1 ] = 0;
         if ( selntype == XA_STRING )
             text = p_src;
 

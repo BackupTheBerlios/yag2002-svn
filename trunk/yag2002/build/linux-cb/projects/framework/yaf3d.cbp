@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_project_file>
-	<FileVersion major="1" minor="4" />
+	<FileVersion major="1" minor="6" />
 	<Project>
 		<Option title="framework" />
 		<Option pch_mode="2" />
-		<Option default_target="-1" />
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="../../../../lib/framework/libframeworkd.a" />
+				<Option output="../../../../lib/framework/libframeworkd.a" prefix_auto="0" extension_auto="0" />
 				<Option working_dir="" />
 				<Option object_output="../../../linux-cb/obj/framework/debug" />
 				<Option type="2" />
 				<Option compiler="gcc" />
-				<Option includeInTargetAll="1" />
 				<Option createDefFile="1" />
 				<Option projectResourceIncludeDirsRelation="2" />
 				<Option projectLibDirsRelation="1" />
@@ -40,12 +38,11 @@
 				</Compiler>
 			</Target>
 			<Target title="Release">
-				<Option output="../../../../lib/framework/libframework.a" />
+				<Option output="../../../../lib/framework/libframework.a" prefix_auto="0" extension_auto="0" />
 				<Option working_dir="" />
 				<Option object_output="../../../linux-cb/obj/framework/release" />
 				<Option type="2" />
 				<Option compiler="gcc" />
-				<Option includeInTargetAll="1" />
 				<Option createDefFile="1" />
 				<Option projectResourceIncludeDirsRelation="2" />
 				<Compiler>
@@ -71,383 +68,76 @@
 				</Compiler>
 			</Target>
 		</Build>
-		<Unit filename="../../../../src/framework/application.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/application.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/application.inl">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/attributemanager.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/attributemanager.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/attributemanager.inl">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/base.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/base.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/baseentity.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/baseentity.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/baseentity.inl">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/configuration.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/configuration.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/entitymanager.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/entitymanager.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/gamestate.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/gamestate.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/guimanager.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/guimanager.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/guimsgbox.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/guimsgbox.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/guirenderer.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/guirenderer.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/guitexture.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/guitexture.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/keymap.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/keymap.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/levelmanager.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/levelmanager.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/log.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/log.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/network.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/network.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/network_defs.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/physics.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/physics.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/physics_helpers.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/physics_helpers.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/settings.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/settings.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/settings.inl">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/shadercontainer.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/shadercontainer.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/shadowmanager.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/shadowmanager.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/singleton.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/singleton.inl">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/soundmanager.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/soundmanager.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/terrainmanager.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/terrainmanager.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/terrainpatch.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/terrainpatch.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/utils.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/utils.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/yaf3dframework.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/yaf3dtinyxml/tinystr.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/yaf3dtinyxml/tinystr.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/yaf3dtinyxml/tinyxml.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/yaf3dtinyxml/tinyxml.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/yaf3dtinyxml/tinyxmlerror.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/framework/yaf3dtinyxml/tinyxmlparser.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
+		<VirtualTargets>
+			<Add alias="All" targets="Debug;Release;" />
+		</VirtualTargets>
+		<Unit filename="../../../../src/framework/application.cpp" />
+		<Unit filename="../../../../src/framework/application.h" />
+		<Unit filename="../../../../src/framework/application.inl" />
+		<Unit filename="../../../../src/framework/attributemanager.cpp" />
+		<Unit filename="../../../../src/framework/attributemanager.h" />
+		<Unit filename="../../../../src/framework/attributemanager.inl" />
+		<Unit filename="../../../../src/framework/base.cpp" />
+		<Unit filename="../../../../src/framework/base.h" />
+		<Unit filename="../../../../src/framework/baseentity.cpp" />
+		<Unit filename="../../../../src/framework/baseentity.h" />
+		<Unit filename="../../../../src/framework/baseentity.inl" />
+		<Unit filename="../../../../src/framework/configuration.cpp" />
+		<Unit filename="../../../../src/framework/configuration.h" />
+		<Unit filename="../../../../src/framework/entitymanager.cpp" />
+		<Unit filename="../../../../src/framework/entitymanager.h" />
+		<Unit filename="../../../../src/framework/gamestate.cpp" />
+		<Unit filename="../../../../src/framework/gamestate.h" />
+		<Unit filename="../../../../src/framework/guimanager.cpp" />
+		<Unit filename="../../../../src/framework/guimanager.h" />
+		<Unit filename="../../../../src/framework/guimsgbox.cpp" />
+		<Unit filename="../../../../src/framework/guimsgbox.h" />
+		<Unit filename="../../../../src/framework/guirenderer.cpp" />
+		<Unit filename="../../../../src/framework/guirenderer.h" />
+		<Unit filename="../../../../src/framework/guitexture.cpp" />
+		<Unit filename="../../../../src/framework/guitexture.h" />
+		<Unit filename="../../../../src/framework/keymap.cpp" />
+		<Unit filename="../../../../src/framework/keymap.h" />
+		<Unit filename="../../../../src/framework/levelmanager.cpp" />
+		<Unit filename="../../../../src/framework/levelmanager.h" />
+		<Unit filename="../../../../src/framework/log.cpp" />
+		<Unit filename="../../../../src/framework/log.h" />
+		<Unit filename="../../../../src/framework/network.cpp" />
+		<Unit filename="../../../../src/framework/network.h" />
+		<Unit filename="../../../../src/framework/network_defs.h" />
+		<Unit filename="../../../../src/framework/physics.cpp" />
+		<Unit filename="../../../../src/framework/physics.h" />
+		<Unit filename="../../../../src/framework/physics_helpers.cpp" />
+		<Unit filename="../../../../src/framework/physics_helpers.h" />
+		<Unit filename="../../../../src/framework/settings.cpp" />
+		<Unit filename="../../../../src/framework/settings.h" />
+		<Unit filename="../../../../src/framework/settings.inl" />
+		<Unit filename="../../../../src/framework/shadercontainer.cpp" />
+		<Unit filename="../../../../src/framework/shadercontainer.h" />
+		<Unit filename="../../../../src/framework/shadowmanager.cpp" />
+		<Unit filename="../../../../src/framework/shadowmanager.h" />
+		<Unit filename="../../../../src/framework/singleton.h" />
+		<Unit filename="../../../../src/framework/singleton.inl" />
+		<Unit filename="../../../../src/framework/smartptr.h" />
+		<Unit filename="../../../../src/framework/smartptr.inl" />
+		<Unit filename="../../../../src/framework/soundmanager.cpp" />
+		<Unit filename="../../../../src/framework/soundmanager.h" />
+		<Unit filename="../../../../src/framework/terrainmanager.cpp" />
+		<Unit filename="../../../../src/framework/terrainmanager.h" />
+		<Unit filename="../../../../src/framework/terrainpatch.cpp" />
+		<Unit filename="../../../../src/framework/terrainpatch.h" />
+		<Unit filename="../../../../src/framework/utils.cpp" />
+		<Unit filename="../../../../src/framework/utils.h" />
+		<Unit filename="../../../../src/framework/yaf3dframework.h" />
+		<Unit filename="../../../../src/framework/yaf3dtinyxml/tinystr.cpp" />
+		<Unit filename="../../../../src/framework/yaf3dtinyxml/tinystr.h" />
+		<Unit filename="../../../../src/framework/yaf3dtinyxml/tinyxml.cpp" />
+		<Unit filename="../../../../src/framework/yaf3dtinyxml/tinyxml.h" />
+		<Unit filename="../../../../src/framework/yaf3dtinyxml/tinyxmlerror.cpp" />
+		<Unit filename="../../../../src/framework/yaf3dtinyxml/tinyxmlparser.cpp" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

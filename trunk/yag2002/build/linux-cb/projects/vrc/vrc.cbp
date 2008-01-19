@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_project_file>
-	<FileVersion major="1" minor="4" />
+	<FileVersion major="1" minor="6" />
 	<Project>
 		<Option title="VRC" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="../../../../bin/linux/vrc_debug" />
+				<Option output="../../../../bin/linux/vrc_debug" prefix_auto="0" extension_auto="0" />
 				<Option working_dir="../../../../bin/linux/" />
 				<Option object_output="../../../linux-cb/obj/vrc/debug" />
 				<Option external_deps="../../../../lib/framework/libframeworkd.a;" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option includeInTargetAll="1" />
 				<Option projectResourceIncludeDirsRelation="1" />
 				<Compiler>
 					<Add option="-pedantic" />
@@ -66,13 +65,12 @@
 				</Linker>
 			</Target>
 			<Target title="Release">
-				<Option output="../../../../bin/linux/vrc" />
+				<Option output="../../../../bin/linux/vrc" prefix_auto="0" extension_auto="0" />
 				<Option working_dir="../../../../bin/linux/" />
 				<Option object_output="../../../linux-cb/obj/vrc/release" />
 				<Option external_deps="../../../../lib/framework/libframework.a;" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option includeInTargetAll="1" />
 				<Option projectResourceIncludeDirsRelation="1" />
 				<Compiler>
 					<Add option="-pedantic" />
@@ -124,1728 +122,295 @@
 				</Linker>
 			</Target>
 		</Build>
-		<Unit filename="../../../../src/gamecode/extern/Noise.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/extern/Noise.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gamelogic/vrc_gamelogic.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gamelogic/vrc_gamelogic.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gamelogic/vrc_logicscript.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gamelogic/vrc_logicscript.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gui/vrc_dialoglevelselect.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gui/vrc_dialoglevelselect.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gui/vrc_dialoglogin.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gui/vrc_dialoglogin.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gui/vrc_dialogplayercfg.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gui/vrc_dialogplayercfg.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gui/vrc_dialogsettings.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gui/vrc_dialogsettings.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gui/vrc_intro.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gui/vrc_intro.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gui/vrc_mapview.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gui/vrc_mapview.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gui/vrc_menu.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gui/vrc_menu.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gui/vrc_microinput.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/gui/vrc_microinput.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/maintenance/networkingRoles/_RO_NetworkNotification.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/maintenance/networkingRoles/_RO_NetworkNotification.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/maintenance/networkingRoles/_RO_UpdateNotifier.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/maintenance/networkingRoles/_RO_UpdateNotifier.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/maintenance/vrc_networknotification.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/maintenance/vrc_networknotification.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/maintenance/vrc_updatenotifier.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/maintenance/vrc_updatenotifier.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/networking/_Def_replicaregs.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/npc/fish/vrc_npcfish.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/npc/fish/vrc_npcfish.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/objects/networkingRoles/_RO_ObjectNetworking.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/objects/networkingRoles/_RO_ObjectNetworking.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/objects/vrc_baseobject.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/objects/vrc_baseobject.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/objects/vrc_objectnetworking.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/objects/vrc_objectnetworking.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/objects/vrc_objwood.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/objects/vrc_objwood.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/physics/vrc_geomemitter.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/physics/vrc_geomemitter.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/physics/vrc_physicsbase.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/physics/vrc_physicsbase.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/physics/vrc_physicsbase.inl">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/physics/vrc_physicsbox.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/physics/vrc_physicsbox.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/physics/vrc_physicscylinder.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/physics/vrc_physicscylinder.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/physics/vrc_physicssphere.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/physics/vrc_physicssphere.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/platform/vrc_platform.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/platform/vrc_platform.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/colors.c">
-			<Option compilerVar="CC" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/dcc.c">
-			<Option compilerVar="CC" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/errors.c">
-			<Option compilerVar="CC" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_dcc.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_doc.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_doc_faq.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_errors.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_events.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_options.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_params.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_rfcnumeric.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_session.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libircclient.c">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libircclient.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/portable.c">
-			<Option compilerVar="CC" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/sockets.c">
-			<Option compilerVar="CC" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/utils.c">
-			<Option compilerVar="CC" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/vrc_chatprotIRC.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/IRC/vrc_chatprotIRC.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/Irc/vrc_chatprotIRC.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/VRC/networkingRoles/_RO_PlayerChat.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/VRC/networkingRoles/_RO_PlayerChat.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/VRC/vrc_chatprotVRC.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/VRC/vrc_chatprotVRC.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguibox.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguibox.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguiboxtab.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguiboxtab.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguicondiag.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguicondiag.inl">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguictrl.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguictrl.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatmgr.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatmgr.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatprotocol.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatprotocol.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatserverVRC.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatserverVRC.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/networkingRoles/_RO_PlayerNetworking.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/networkingRoles/_RO_PlayerNetworking.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/properties/vrc_propgui.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/properties/vrc_propgui.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_inputhandler.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_inputhandler.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_inputhandler.inl">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_player.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_player.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playeranim.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playeranim.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playerimpl.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playerimpl.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playerimplclient.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playerimplclient.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playerimplserver.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playerimplserver.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playerimplstandalone.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playerimplstandalone.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playernamedisp.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playernamedisp.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playernetworking.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playernetworking.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playerphysics.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playerphysics.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playersound.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_playersound.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_spawnpoint.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/player/vrc_spawnpoint.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/scripting/vrc_script.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/scripting/vrc_script.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/scripting/vrc_script.inl">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/scripting/vrc_scriptconsole.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/scripting/vrc_scriptconsole.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/scripting/vrc_testscript.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/scripting/vrc_testscript.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/sound/vrc_3dsound.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/sound/vrc_3dsound.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/sound/vrc_ambientsound.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/sound/vrc_ambientsound.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/database/vrc_account.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/database/vrc_account.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/database/vrc_basestorage.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/database/vrc_basestorage.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/database/vrc_connectiondata.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/database/vrc_storagepostgres.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/database/vrc_storagepostgres.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/networkingRoles/_RO_StorageNetworking.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/networkingRoles/_RO_StorageNetworking.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/vrc_storageclient.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/vrc_storageclient.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/vrc_storagenetworking.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/vrc_storagenetworking.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/vrc_storageserver.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/vrc_storageserver.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/vrc_userinventory.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/vrc_userinventory.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/storage/vrc_userinventory.inl">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_basecmd.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_basecmd.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdcd.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdcd.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdconfigget.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdconfigget.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdconfiglist.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdconfiglist.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdconfigset.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdconfigset.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdconnect.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdconnect.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdentityattrlist.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdentityattrlist.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdentityattrset.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdentityattrset.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdentitydump.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdentitydump.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdentitylist.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdentitylist.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdexec.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdexec.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdhelp.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdhelp.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdidle.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdidle.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdlevellist.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdlevellist.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdloadentities.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdloadentities.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdloadfinalize.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdloadfinalize.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdloadlevel.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdloadlevel.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdlogclose.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdlogclose.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdlogcreate.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdlogcreate.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdls.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdls.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdnetworksendnotify.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdnetworksendnotify.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdphysicsrender.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdphysicsrender.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdphysicsserialize.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdphysicsserialize.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdpwd.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdpwd.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdregistry.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdregistry.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdrenderingmode.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdrenderingmode.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdserverstart.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdserverstart.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshadowdisplaymap.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshadowdisplaymap.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshowfps.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshowfps.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshowplayerinfo.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshowplayerinfo.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshutdown.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshutdown.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdtime.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdtime.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdunloadlevel.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdunloadlevel.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdversion.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdversion.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdwriteobjfile.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdwriteobjfile.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdwriteosgfile.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdwriteosgfile.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_console.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_console.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_consoleiobase.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_consoleiocin.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_consoleiocin.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_consoleiogui.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/console/vrc_consoleiogui.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/vrc_fpsdisplay.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/vrc_fpsdisplay.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/vrc_inspector.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/vrc_inspector.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/vrc_playerinfodisplay.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/tools/vrc_playerinfodisplay.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_camera.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_camera.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_candle.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_candle.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_fog.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_fog.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_lightmanager.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_lightmanager.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_lod.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_lod.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_lod.inl">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_mesh.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_mesh.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_observer.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_observer.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_pointlight.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_pointlight.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_skybox.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_skybox.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_spotlight.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_spotlight.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_terrain.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_terrain.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_water.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/visuals/vrc_water.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_codec.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_codec.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_netvoice.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_netvoice.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_networksoundimpl.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_networksoundimpl.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_voiceinput.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_voiceinput.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_voicenetwork.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_voicenetwork.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_voicereceiver.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_voicereceiver.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_voicesender.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_voicesender.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_voicetestutils.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_voicetestutils.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/voice/vrc_voicetestutils.inl">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/vrc_exceptionlogger.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/vrc_exceptionlogger.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/vrc_gameutils.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/vrc_gameutils.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/vrc_main.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/vrc_main.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/vrc_shadowmanager.cpp">
-			<Option compilerVar="CPP" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../../../../src/gamecode/vrc_shadowmanager.h">
-			<Option compilerVar="CPP" />
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
+		<VirtualTargets>
+			<Add alias="All" targets="Debug;Release;" />
+		</VirtualTargets>
+		<Unit filename="../../../../src/gamecode/extern/Noise.cpp" />
+		<Unit filename="../../../../src/gamecode/extern/Noise.h" />
+		<Unit filename="../../../../src/gamecode/gamelogic/networkingRoles/_RO_StoryNetworking.cpp" />
+		<Unit filename="../../../../src/gamecode/gamelogic/networkingRoles/_RO_StoryNetworking.h" />
+		<Unit filename="../../../../src/gamecode/gamelogic/vrc_story.cpp" />
+		<Unit filename="../../../../src/gamecode/gamelogic/vrc_story.h" />
+		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storyactor.cpp" />
+		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storyactor.h" />
+		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storyengine.cpp" />
+		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storyengine.h" />
+		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storyevent.cpp" />
+		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storyevent.h" />
+		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storynetworking.cpp" />
+		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storynetworking.h" />
+		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storysystem.cpp" />
+		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storysystem.h" />
+		<Unit filename="../../../../src/gamecode/gui/vrc_dialoglevelselect.cpp" />
+		<Unit filename="../../../../src/gamecode/gui/vrc_dialoglevelselect.h" />
+		<Unit filename="../../../../src/gamecode/gui/vrc_dialoglogin.cpp" />
+		<Unit filename="../../../../src/gamecode/gui/vrc_dialoglogin.h" />
+		<Unit filename="../../../../src/gamecode/gui/vrc_dialogplayercfg.cpp" />
+		<Unit filename="../../../../src/gamecode/gui/vrc_dialogplayercfg.h" />
+		<Unit filename="../../../../src/gamecode/gui/vrc_dialogsettings.cpp" />
+		<Unit filename="../../../../src/gamecode/gui/vrc_dialogsettings.h" />
+		<Unit filename="../../../../src/gamecode/gui/vrc_intro.cpp" />
+		<Unit filename="../../../../src/gamecode/gui/vrc_intro.h" />
+		<Unit filename="../../../../src/gamecode/gui/vrc_mapview.cpp" />
+		<Unit filename="../../../../src/gamecode/gui/vrc_mapview.h" />
+		<Unit filename="../../../../src/gamecode/gui/vrc_menu.cpp" />
+		<Unit filename="../../../../src/gamecode/gui/vrc_menu.h" />
+		<Unit filename="../../../../src/gamecode/gui/vrc_microinput.cpp" />
+		<Unit filename="../../../../src/gamecode/gui/vrc_microinput.h" />
+		<Unit filename="../../../../src/gamecode/maintenance/networkingRoles/_RO_NetworkNotification.cpp" />
+		<Unit filename="../../../../src/gamecode/maintenance/networkingRoles/_RO_NetworkNotification.h" />
+		<Unit filename="../../../../src/gamecode/maintenance/networkingRoles/_RO_UpdateNotifier.h" />
+		<Unit filename="../../../../src/gamecode/maintenance/vrc_networknotification.cpp" />
+		<Unit filename="../../../../src/gamecode/maintenance/vrc_networknotification.h" />
+		<Unit filename="../../../../src/gamecode/maintenance/vrc_updatenotifier.h" />
+		<Unit filename="../../../../src/gamecode/networking/_Def_replicaregs.cpp" />
+		<Unit filename="../../../../src/gamecode/npc/fish/vrc_npcfish.cpp" />
+		<Unit filename="../../../../src/gamecode/npc/fish/vrc_npcfish.h" />
+		<Unit filename="../../../../src/gamecode/objects/networkingRoles/_RO_ObjectNetworking.cpp" />
+		<Unit filename="../../../../src/gamecode/objects/networkingRoles/_RO_ObjectNetworking.h" />
+		<Unit filename="../../../../src/gamecode/objects/vrc_baseobject.cpp" />
+		<Unit filename="../../../../src/gamecode/objects/vrc_baseobject.h" />
+		<Unit filename="../../../../src/gamecode/objects/vrc_objectnetworking.cpp" />
+		<Unit filename="../../../../src/gamecode/objects/vrc_objectnetworking.h" />
+		<Unit filename="../../../../src/gamecode/objects/vrc_objwood.cpp" />
+		<Unit filename="../../../../src/gamecode/objects/vrc_objwood.h" />
+		<Unit filename="../../../../src/gamecode/physics/vrc_geomemitter.cpp" />
+		<Unit filename="../../../../src/gamecode/physics/vrc_geomemitter.h" />
+		<Unit filename="../../../../src/gamecode/physics/vrc_physicsbase.cpp" />
+		<Unit filename="../../../../src/gamecode/physics/vrc_physicsbase.h" />
+		<Unit filename="../../../../src/gamecode/physics/vrc_physicsbase.inl" />
+		<Unit filename="../../../../src/gamecode/physics/vrc_physicsbox.cpp" />
+		<Unit filename="../../../../src/gamecode/physics/vrc_physicsbox.h" />
+		<Unit filename="../../../../src/gamecode/physics/vrc_physicscylinder.cpp" />
+		<Unit filename="../../../../src/gamecode/physics/vrc_physicscylinder.h" />
+		<Unit filename="../../../../src/gamecode/physics/vrc_physicssphere.cpp" />
+		<Unit filename="../../../../src/gamecode/physics/vrc_physicssphere.h" />
+		<Unit filename="../../../../src/gamecode/platform/vrc_platform.cpp" />
+		<Unit filename="../../../../src/gamecode/platform/vrc_platform.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_dcc.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_doc.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_doc_faq.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_errors.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_events.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_options.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_params.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_rfcnumeric.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_session.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libircclient.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/IRC/vrc_chatprotIRC.cpp" />
+		<Unit filename="../../../../src/gamecode/player/chat/IRC/vrc_chatprotIRC.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/Irc/vrc_chatprotIRC.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/VRC/networkingRoles/_RO_PlayerChat.cpp" />
+		<Unit filename="../../../../src/gamecode/player/chat/VRC/networkingRoles/_RO_PlayerChat.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/VRC/vrc_chatprotVRC.cpp" />
+		<Unit filename="../../../../src/gamecode/player/chat/VRC/vrc_chatprotVRC.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguibox.cpp" />
+		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguibox.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguiboxtab.cpp" />
+		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguiboxtab.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguicondiag.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguicondiag.inl" />
+		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguictrl.cpp" />
+		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguictrl.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatmgr.cpp" />
+		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatmgr.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatprotocol.cpp" />
+		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatprotocol.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatserverVRC.cpp" />
+		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatserverVRC.h" />
+		<Unit filename="../../../../src/gamecode/player/networkingRoles/_RO_PlayerNetworking.cpp" />
+		<Unit filename="../../../../src/gamecode/player/networkingRoles/_RO_PlayerNetworking.h" />
+		<Unit filename="../../../../src/gamecode/player/properties/vrc_propgui.cpp" />
+		<Unit filename="../../../../src/gamecode/player/properties/vrc_propgui.h" />
+		<Unit filename="../../../../src/gamecode/player/vrc_inputhandler.cpp" />
+		<Unit filename="../../../../src/gamecode/player/vrc_inputhandler.h" />
+		<Unit filename="../../../../src/gamecode/player/vrc_inputhandler.inl" />
+		<Unit filename="../../../../src/gamecode/player/vrc_player.cpp" />
+		<Unit filename="../../../../src/gamecode/player/vrc_player.h" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playeranim.cpp" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playeranim.h" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playerimpl.cpp" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playerimpl.h" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playerimplclient.cpp" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playerimplclient.h" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playerimplserver.cpp" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playerimplserver.h" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playerimplstandalone.cpp" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playerimplstandalone.h" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playernamedisp.cpp" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playernamedisp.h" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playernetworking.cpp" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playernetworking.h" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playerphysics.cpp" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playerphysics.h" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playersound.cpp" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playersound.h" />
+		<Unit filename="../../../../src/gamecode/player/vrc_spawnpoint.cpp" />
+		<Unit filename="../../../../src/gamecode/player/vrc_spawnpoint.h" />
+		<Unit filename="../../../../src/gamecode/scripting/vrc_script.cpp" />
+		<Unit filename="../../../../src/gamecode/scripting/vrc_script.h" />
+		<Unit filename="../../../../src/gamecode/scripting/vrc_script.inl" />
+		<Unit filename="../../../../src/gamecode/scripting/vrc_testscript.cpp" />
+		<Unit filename="../../../../src/gamecode/scripting/vrc_testscript.h" />
+		<Unit filename="../../../../src/gamecode/sound/vrc_3dsound.cpp" />
+		<Unit filename="../../../../src/gamecode/sound/vrc_3dsound.h" />
+		<Unit filename="../../../../src/gamecode/sound/vrc_ambientsound.cpp" />
+		<Unit filename="../../../../src/gamecode/sound/vrc_ambientsound.h" />
+		<Unit filename="../../../../src/gamecode/storage/database/vrc_account.cpp" />
+		<Unit filename="../../../../src/gamecode/storage/database/vrc_account.h" />
+		<Unit filename="../../../../src/gamecode/storage/database/vrc_basestorage.cpp" />
+		<Unit filename="../../../../src/gamecode/storage/database/vrc_basestorage.h" />
+		<Unit filename="../../../../src/gamecode/storage/database/vrc_connectiondata.h" />
+		<Unit filename="../../../../src/gamecode/storage/database/vrc_storagepostgres.cpp" />
+		<Unit filename="../../../../src/gamecode/storage/database/vrc_storagepostgres.h" />
+		<Unit filename="../../../../src/gamecode/storage/networkingRoles/_RO_StorageNetworking.cpp" />
+		<Unit filename="../../../../src/gamecode/storage/networkingRoles/_RO_StorageNetworking.h" />
+		<Unit filename="../../../../src/gamecode/storage/vrc_storageclient.cpp" />
+		<Unit filename="../../../../src/gamecode/storage/vrc_storageclient.h" />
+		<Unit filename="../../../../src/gamecode/storage/vrc_storagenetworking.cpp" />
+		<Unit filename="../../../../src/gamecode/storage/vrc_storagenetworking.h" />
+		<Unit filename="../../../../src/gamecode/storage/vrc_storageserver.cpp" />
+		<Unit filename="../../../../src/gamecode/storage/vrc_storageserver.h" />
+		<Unit filename="../../../../src/gamecode/storage/vrc_userinventory.cpp" />
+		<Unit filename="../../../../src/gamecode/storage/vrc_userinventory.h" />
+		<Unit filename="../../../../src/gamecode/storage/vrc_userinventory.inl" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_basecmd.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_basecmd.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdcd.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdcd.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdconfigget.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdconfigget.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdconfiglist.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdconfiglist.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdconfigset.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdconfigset.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdconnect.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdconnect.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdentityattrlist.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdentityattrlist.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdentityattrset.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdentityattrset.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdentitydump.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdentitydump.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdentitylist.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdentitylist.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdexec.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdexec.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdhelp.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdhelp.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdidle.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdidle.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdlevellist.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdlevellist.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdloadentities.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdloadentities.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdloadfinalize.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdloadfinalize.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdloadlevel.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdloadlevel.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdlogclose.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdlogclose.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdlogcreate.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdlogcreate.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdls.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdls.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdnetworksendnotify.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdnetworksendnotify.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdphysicsrender.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdphysicsrender.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdphysicsserialize.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdphysicsserialize.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdpwd.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdpwd.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdregistry.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdregistry.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdrenderingmode.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdrenderingmode.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdserverstart.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdserverstart.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshadowdisplaymap.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshadowdisplaymap.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshowfps.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshowfps.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshowplayerinfo.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshowplayerinfo.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshutdown.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshutdown.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdtime.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdtime.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdunloadlevel.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdunloadlevel.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdversion.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdversion.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdwriteobjfile.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdwriteobjfile.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdwriteosgfile.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdwriteosgfile.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_console.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_console.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_consoleiobase.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_consoleiocin.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_consoleiocin.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_consoleiogui.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_consoleiogui.h" />
+		<Unit filename="../../../../src/gamecode/tools/vrc_fpsdisplay.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/vrc_fpsdisplay.h" />
+		<Unit filename="../../../../src/gamecode/tools/vrc_inspector.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/vrc_inspector.h" />
+		<Unit filename="../../../../src/gamecode/tools/vrc_playerinfodisplay.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/vrc_playerinfodisplay.h" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_camera.cpp" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_camera.h" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_candle.cpp" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_candle.h" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_fog.cpp" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_fog.h" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_lightmanager.cpp" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_lightmanager.h" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_lod.cpp" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_lod.h" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_lod.inl" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_mesh.cpp" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_mesh.h" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_observer.cpp" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_observer.h" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_pointlight.cpp" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_pointlight.h" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_skybox.cpp" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_skybox.h" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_spotlight.cpp" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_spotlight.h" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_terrain.cpp" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_terrain.h" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_water.cpp" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_water.h" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_codec.cpp" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_codec.h" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_netvoice.cpp" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_netvoice.h" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_networksoundimpl.cpp" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_networksoundimpl.h" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_voiceinput.cpp" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_voiceinput.h" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_voicenetwork.cpp" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_voicenetwork.h" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_voicereceiver.cpp" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_voicereceiver.h" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_voicesender.cpp" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_voicesender.h" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_voicetestutils.cpp" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_voicetestutils.h" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_voicetestutils.inl" />
+		<Unit filename="../../../../src/gamecode/vrc_exceptionlogger.cpp" />
+		<Unit filename="../../../../src/gamecode/vrc_exceptionlogger.h" />
+		<Unit filename="../../../../src/gamecode/vrc_gameutils.cpp" />
+		<Unit filename="../../../../src/gamecode/vrc_gameutils.h" />
+		<Unit filename="../../../../src/gamecode/vrc_main.cpp" />
+		<Unit filename="../../../../src/gamecode/vrc_main.h" />
+		<Unit filename="../../../../src/gamecode/vrc_shadowmanager.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

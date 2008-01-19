@@ -23,7 +23,7 @@
  #
  #   date of creation:  01/14/2008
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -83,7 +83,7 @@ bool StoryNetworking::sendEvent( const StoryEvent& event )
 
     if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client )
     {
-        eventdata._sessionCookie = unsigned int( yaf3d::NetworkDevice::get()->getSessionID() );
+        eventdata._sessionCookie = ( unsigned int )( yaf3d::NetworkDevice::get()->getSessionID() );
         eventdata._userID        = StorageClient::get()->getUserID();
     }
 
@@ -110,7 +110,7 @@ void StoryNetworking::RPC_ReceiveEvent( tEventData eventdata )
     eventdata._sParam[ sizeof( eventdata._sParam ) - 1 ] = 0;
     eventdata._sParam[ sizeof( eventdata._sParam ) - 2 ] = 0;
     // create the event
-    StoryEvent event( 
+    StoryEvent event(
                         eventdata._eventType,
                         eventdata._sourceType,
                         eventdata._sourceID,

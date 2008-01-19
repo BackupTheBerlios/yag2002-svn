@@ -404,7 +404,7 @@ bool ShaderContainer::addShaderNode( const std::string& name, osg::ref_ptr< osg:
     return true;
 }
 
-bool ShaderContainer::removeShaderNode( const std::string& name, osg::ref_ptr< osg::Group > node )
+bool ShaderContainer::removeShaderNode( const std::string& name )
 {
     std::map< std::string, osg::ref_ptr< osg::Group > >::iterator p_shader = _shaderNodes.find( name );
     if ( p_shader == _shaderNodes.end() )

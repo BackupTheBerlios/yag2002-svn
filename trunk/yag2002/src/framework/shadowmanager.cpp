@@ -270,7 +270,7 @@ class ShadowSceneUpdateCallback : public osg::NodeCallback
                                                 {
                                                 }
 
-        void                                    operator()( osg::Node* p_node, osg::NodeVisitor* p_nv )
+        void                                    operator()( osg::Node* /*p_node*/, osg::NodeVisitor* p_nv )
                                                 {
                                                     // get the current camera position
                                                     osg::Matrixd& mat = Application::get()->getSceneView()->getCamera()->getViewMatrix();
@@ -344,7 +344,7 @@ osg::Node* ShadowManager::createDebugDisplay( osg::Texture* p_texture )
 
         p_geom->addPrimitiveSet( new osg::DrawArrays( GL_QUADS, 0, 4 ) );
         p_geode->addDrawable( p_geom );
-        
+
         osg::StateSet* p_stateset = p_geom->getOrCreateStateSet();
         p_stateset->setTextureAttributeAndModes( 0, p_texture, osg::StateAttribute::ON );
     }

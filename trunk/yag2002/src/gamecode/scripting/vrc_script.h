@@ -38,9 +38,13 @@
 
 // Lua headers
 //! NOTE: we expect the lua libray built as C++, so no extern C around lua headers!
+extern "C"
+{
+#define LUA_USE_LINUX
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
+}
 
 namespace vrc
 {
