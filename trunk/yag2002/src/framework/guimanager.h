@@ -61,9 +61,9 @@ class GuiManager : public Singleton< GuiManager >
 
         //! Load a gui layout ( e.g. a dialog ) from given file and handle.
         /**
-        * If handle is empty then a handle is automaticaly genereated, if so you cannot access the elements in layout later!
+        * If handle is empty then a handle is automaticaly genereated, if so you cannot access the elements in layout later by searching by element name!
         * example: 
-        *   CEGUI::Window* p_wnd = loadlayout( mylayoutfile, "myhanlde" )
+        *   CEGUI::Window* p_wnd = loadlayout( mylayoutfile, NULL, "myhanlde" )
         *   CEGUI::WIndow* p_btn = p_wnd->getChild( "myhandle" + "OK_BUTTON" );
         * where OK_BUTTON is defined in layout file.
         * If p_parent is NULL then the layout will be appended to the root window.
