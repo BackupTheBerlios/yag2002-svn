@@ -38,6 +38,7 @@
 #include <RNXPSession/Inc/XPSession.h>
 #include <RNXPURL/Inc/XPURL.h>
 #include <RNXPURL/Inc/DebugHandler.h>
+#include <RNXPURL/Inc/TransportConfig.h>
 
 // Visual debugger interface
 class ApplicationDebugHandler : public RNReplicaNet::DebugHandler
@@ -605,6 +606,10 @@ void NetworkDevice::startClient() throw ( NetworkException )
     _p_session->PreConnectHasFinished();
 
     log_info << "NetworkDevice: client successfully integrated to network" << std::endl;
+
+    // Enable packet buffering and set paket update time for transport layer
+    RNReplicaNet::TransportConfig::SetPacketBufferEnable( true );
+    RNReplicaNet::TransportConfig::SetPacketBufferTime( 1.0f / 60.0f );
 
     unsigned int tryCounter = 0;
     while ( !_p_session->IsStable() )
