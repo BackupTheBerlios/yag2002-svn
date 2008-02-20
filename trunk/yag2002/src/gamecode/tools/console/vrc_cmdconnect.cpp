@@ -123,6 +123,10 @@ const std::string& CmdConnect::execute( const std::vector< std::string >& argume
     try
     {
         yaf3d::NetworkDevice::get()->startClient();
+
+        // send the notification on established network session
+        yaf3d::EntityNotification ennotify( YAF3D_NOTIFY_NETWORKING_ESTABLISHED );
+        yaf3d::EntityManager::get()->sendNotification( ennotify );
     }
     catch ( yaf3d::NetworkException& e )
     {
