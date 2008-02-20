@@ -94,8 +94,9 @@ _keyCodePick( 1 )
 
 bool BaseObject::ObjectInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
-    // check if the player is in interaction mode
-    if ( gameutils::PlayerUtils::get()->isLockInteraction() )
+    // first check if picking is locked
+    unsigned int ctrlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
+    if ( ctrlmodes & gameutils::PlayerUtils::eLockPicking )
         return false;
 
     if ( !_p_highlightedObject || !_enable )
