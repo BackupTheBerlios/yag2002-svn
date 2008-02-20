@@ -166,8 +166,8 @@ void Application::shutdown()
     _p_viewer->getViewport( 0 )->getSceneView()->setSceneData( NULL );
     _rootSceneNode = NULL;
 
-    // close all osg loader libraries
-    osgDB::Registry::instance()->closeAllLibraries();
+    // close all osg loader libraries, this seems to cause a crash on osg v2.2.3
+    //osgDB::Registry::instance()->closeAllLibraries();
 
     // delete viewer
     delete _p_viewer;
@@ -587,6 +587,9 @@ void Application::run()
         try
         {
             _p_networkDevice->startClient();
+            // send the notification on established network session
+            EntityNotification ennotify( YAF3D_NOTIFY_NETWORKING_ESTABLISHED );
+            EntityManager::get()->sendNotification( ennotify );
         }
         catch ( const NetworkException& e )
         {
