@@ -122,9 +122,12 @@ void StorySystem::shutdown()
 
     _p_storyEngine = NULL;
 
-    // deregister us from entity manager
-    yaf3d::EntityManager::get()->registerNotification( this, false );
-    yaf3d::EntityManager::get()->registerUpdate( this, false );
+    if ( yaf3d::GameState::get()->getMode() & ( yaf3d::GameState::Server | yaf3d::GameState::Standalone ) )
+    {
+        // deregister us from entity manager
+        yaf3d::EntityManager::get()->registerNotification( this, false );
+        yaf3d::EntityManager::get()->registerUpdate( this, false );
+    }
 
     // on clients the networking is automatically deleted by networking device
     if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
