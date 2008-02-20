@@ -76,6 +76,9 @@ class ChatGuiBox
         //! Shows / hides the gui completely
         void                                        show( bool visible );
 
+        //! Open the chat box if it is not opened already.
+        void                                        openBox();
+
         //! Set / Unset focus to edit box
         void                                        setEditBoxFocus( bool en );
 

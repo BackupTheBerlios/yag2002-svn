@@ -126,6 +126,11 @@ void PlayerNetworking::PostObjectCreate()
         // create the player and its components
         createPlayer();
 
+        // set session if in player entity
+        int sid = GetSessionID();
+        _loadedPlayerEntity->setNetworkID( sid );
+        log_verbose << "  remote player's network ID: " << sid << std::endl;
+
         // setup new connected client
         if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
         {
@@ -148,7 +153,6 @@ void PlayerNetworking::PostObjectCreate()
             // consider also a possible "public host" set in client, if so _ip already contains the valid IP address
             _ip[ sizeof( _ip ) - 1 ] = 0;
             std::string ip;
-            int sid = GetSessionID();
 
             if ( _ip[ 0 ] == 0 )
                 ip = yaf3d::NetworkDevice::get()->getClientIP( sid );
@@ -160,9 +164,6 @@ void PlayerNetworking::PostObjectCreate()
 
             // set ip address in player entity
             _loadedPlayerEntity->setIPAdress( ip );
-
-            // set session if in player entity
-            _loadedPlayerEntity->setNetworkID( sid );
 
             // grant new connected client to session with initialization data
             ALL_REPLICAS_FUNCTION_CALL( RPC_ServerGrantsAccess( init ) );
@@ -248,6 +249,13 @@ void PlayerNetworking::RPC_ServerGrantsAccess( tInitializationData initData )
         _p_playerImpl->getPlayerEntity()->setIPAdress( _ip );
     }
 
+    // now it's time to set the valid network id in local player
+    if ( !isRemoteClient() )
+    {
+        int sid = GetSessionID();
+        _p_playerImpl->getPlayerEntity()->setNetworkID( sid );
+    }
+
     // set the connection status
     vrc::PlayerImplClient* p_playerClient = dynamic_cast< vrc::PlayerImplClient* >( _p_playerImpl );
     assert( p_playerClient && "the player object must be a client implementation if this function is called!" );
@@ -257,8 +265,8 @@ void PlayerNetworking::RPC_ServerGrantsAccess( tInitializationData initData )
 void PlayerNetworking::RPC_Initialize( tInitializationData initData )
 { // this method is called on replicas of new connected client, on server and clients
 
-    // init remote or local client player
-    if ( ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Client ) )
+    // init remote or local client player, ignore this call on server!
+    if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Client )
         return;
 
     if ( _remoteClientInitialized )

@@ -226,6 +226,9 @@ class BasePlayerImplementation
 
         //! Rotation about Z axis (yaw), this is used in addition to _currentRot for a better networking performance
         float                                       _rotZ;
+
+        //! Dynamic shadow configuration setting
+        bool                                        _cgfShadow;
 };
 
 // inlines

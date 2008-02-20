@@ -85,9 +85,6 @@ class PropertyGui
         //! User inventory
         UserInventory*                              _p_userInventory;
 
-        //! Main GUI window
-        CEGUI::Window*                              _p_mainWnd;
-
         //! Frame object
         CEGUI::FrameWindow*                         _p_frame;
 

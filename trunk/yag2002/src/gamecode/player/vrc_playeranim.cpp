@@ -63,6 +63,7 @@ static const char glsl_vp[] =
     "   texCoords   = gl_MultiTexCoord0.st;                                         \n"
     "}                                                                              \n"
 ;
+
 static const char glsl_fp[] =
     "/*                                                                             \n"
     "* Fragment shader for rendering the player                                     \n"
@@ -124,7 +125,6 @@ static const char glsl_fp_notex[] =
     "*/                                                                             \n"
     "varying vec4 diffuse,ambient;                                                  \n"
     "varying vec3 normal,lightDir,halfVector;                                       \n"
-    "uniform sampler2D tex;                                                         \n"
     "                                                                               \n"
     "void main()                                                                    \n"
     "{                                                                              \n"
@@ -299,6 +299,12 @@ void EnPlayerAnimation::setupShader()
                 s_programTex->setName( "_playerAnimTex_" );
                 s_programTex->addShader( new osg::Shader( osg::Shader::VERTEX, glsl_vp ) );
                 s_programTex->addShader( new osg::Shader( osg::Shader::FRAGMENT, glsl_fp ) );
+
+                if ( !p_stateSet )
+                    p_stateSet = _animNode->getOrCreateStateSet();
+
+                osg::Uniform* p_baseTextureSampler = new osg::Uniform( "tex", int( 0 ) );
+                p_stateSet->addUniform( p_baseTextureSampler );
             }
         }
         else
@@ -320,19 +326,6 @@ void EnPlayerAnimation::setupShader()
             _animNode->setStateSet( p_stateSet );
         }
     }
-}
-
-void EnPlayerAnimation::enableRendering( bool render )
-{
-    if ( ( _renderingEnabled && render ) || ( !_renderingEnabled && !render ) )
-        return;
-
-    if ( !render )
-        _p_player->getPlayerEntity()->removeTransformationNode( _animNode.get() );
-    else
-        _p_player->getPlayerEntity()->appendTransformationNode( _animNode.get() );
-
-    _renderingEnabled = render;
 }
 
 void EnPlayerAnimation::setPlayer( BasePlayerImplementation* p_player )

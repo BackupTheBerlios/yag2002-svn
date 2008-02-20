@@ -83,7 +83,6 @@ void PlayerImplStandalone::handleNotification( const yaf3d::EntityNotification& 
                 _p_camera->setEnable( false );
 
             // players are all rendered in menu, regardless of their camera mode
-            _p_playerAnimation->enableRendering( true );
             if ( _cameraMode == Ego )
                 addToSceneGraph();
 
@@ -106,10 +105,7 @@ void PlayerImplStandalone::handleNotification( const yaf3d::EntityNotification& 
 
             // if we are in ego mode then disable player avatar rendering
             if ( _cameraMode == Ego )
-            {
-                _p_playerAnimation->enableRendering( false );
                 removeFromSceneGraph();
-            }
         }
         break;
 
@@ -181,7 +177,7 @@ void PlayerImplStandalone::postInitialize()
 
         if ( _cameraMode == Ego ) // in ego mode we won't render our character
         {
-            _p_playerAnimation->enableRendering( false );
+            removeFromSceneGraph();
         }
         else // if in spheric mode disable the mouse pointer
         {

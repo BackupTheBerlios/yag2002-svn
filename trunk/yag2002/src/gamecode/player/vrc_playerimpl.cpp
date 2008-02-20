@@ -58,11 +58,15 @@ _p_playerSound( NULL ),
 _p_camera( NULL ),
 _p_playerNetworking( NULL ),
 _moveDir( osg::Vec3f( 0, 1.0f, 0 ) ),
-_rotZ( 0 )
+_rotZ( 0 ),
+_cgfShadow( false )
 {
     // copy player's attributes
     _playerAttributes = _p_player->getPlayerAttributes();
     _rotZ = _p_player->getPlayerAttributes()._rot;
+
+    // get the dynamic shadow configuration
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, _cgfShadow );
 }
 
 BasePlayerImplementation::~BasePlayerImplementation()
@@ -71,9 +75,11 @@ BasePlayerImplementation::~BasePlayerImplementation()
 
 void BasePlayerImplementation::removeFromSceneGraph()
 {
-    unsigned int parents = getPlayerEntity()->getTransformationNode()->getNumParents();
-    for ( unsigned int cnt = 0; cnt < parents; ++cnt )
-        getPlayerEntity()->getTransformationNode()->getParent( 0 )->removeChild( getPlayerEntity()->getTransformationNode() );
+    if ( _cgfShadow )
+        yaf3d::ShadowManager::get()->removeShadowNode( getPlayerEntity()->getTransformationNode() );
+
+    // actually this call removes the scenegraph node from all its parents; however the call above lets the shadow manager also do some internal house-keeping
+    yaf3d::EntityManager::get()->removeFromScene( getPlayerEntity() );
 }
 
 void BasePlayerImplementation::addToSceneGraph()
@@ -81,15 +87,12 @@ void BasePlayerImplementation::addToSceneGraph()
     // first remove the entity transformation node from its parent(s) ( default entity group of level manager or shadow manager )
     removeFromSceneGraph();
 
-    bool shadow;
-    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
-    if ( shadow )
+    if ( _cgfShadow )
     {
         // add it to shadow manager as only shadow thrower
         yaf3d::ShadowManager::get()->addShadowNode( getPlayerEntity()->getTransformationNode(), yaf3d::ShadowManager::eThrowShadow );
     }
-
-    // add it to level manager's entity node
+    // add it also to level manager's entity node as the entity mesh does not receive shadows
     yaf3d::EntityManager::get()->addToScene( getPlayerEntity() );
 }
 
@@ -185,7 +188,6 @@ void BasePlayerImplementation::setCameraMode( unsigned int mode )
                 osg::DegreesToRadians( _playerAttributes._camRotOffsetSpheric.z()  ), osg::Vec3f( 0.0f, 0.0f, 1.0f )  // yaw
                 );
             _p_camera->setCameraOffsetRotation( rot );
-            _p_playerAnimation->enableRendering( true );
             // re-add to scenegraph ( actually we remove it first just to be on safe side )
             removeFromSceneGraph();
             addToSceneGraph();
@@ -202,7 +204,6 @@ void BasePlayerImplementation::setCameraMode( unsigned int mode )
                 osg::DegreesToRadians( _playerAttributes._camRotOffsetEgo.z()  ), osg::Vec3f( 0.0f, 0.0f, 1.0f )  // yaw
                 );
             _p_camera->setCameraOffsetRotation( rot );
-            _p_playerAnimation->enableRendering( false );
             removeFromSceneGraph();
         }
         break;

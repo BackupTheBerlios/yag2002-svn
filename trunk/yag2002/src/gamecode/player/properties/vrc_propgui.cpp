@@ -40,7 +40,6 @@ namespace vrc
 
 PropertyGui::PropertyGui( UserInventory* p_inv ) :
  _p_userInventory( p_inv ),
- _p_mainWnd( NULL ),
  _p_frame( NULL ),
  _p_btnOpen( NULL ),
  _p_listboxItems( NULL ),
@@ -54,8 +53,12 @@ PropertyGui::~PropertyGui()
 {
     try
     {
-        if ( _p_mainWnd )
-            CEGUI::WindowManager::getSingleton().destroyWindow( _p_mainWnd );
+        CEGUI::Window* p_maingui = gameutils::GuiUtils::get()->getMainGuiWindow();
+        if ( _p_frame )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_frame );
+
+        if ( _p_btnOpen )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_btnOpen );
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -66,17 +69,15 @@ PropertyGui::~PropertyGui()
 
 void PropertyGui::enable( bool en )
 {
-    if ( _p_mainWnd )
+    if ( _p_frame )
     {
         if ( en )
         {
-            _p_mainWnd->activate();
-            _p_mainWnd->show();
+            _p_frame->activate();
         }
         else
         {
-            _p_mainWnd->deactivate();
-            _p_mainWnd->hide();
+            _p_frame->deactivate();
         }
     }
 }
@@ -85,16 +86,17 @@ void PropertyGui::setupGui()
 {
     assert( _p_userInventory && "invalid user inventory!" );
 
-    _p_mainWnd = yaf3d::GuiManager::get()->loadLayout( PROPERTIES_GUI_LAYOUT, NULL, PDLG_PREFIX );
-    if ( !_p_mainWnd )
-    {
-        log_error << "PropertyGui: cannot find layout: " << PROPERTIES_GUI_LAYOUT << std::endl;
-        return;
-    }
-
     try
     {
-        _p_frame = static_cast< CEGUI::FrameWindow* >( _p_mainWnd->getChild( PDLG_PREFIX "frame" ) );
+        CEGUI::Window* p_maingui = gameutils::GuiUtils::get()->getMainGuiWindow();
+        CEGUI::Window* p_layout  = yaf3d::GuiManager::get()->loadLayout( PROPERTIES_GUI_LAYOUT, p_maingui, PDLG_PREFIX );
+
+        _p_frame = static_cast< CEGUI::FrameWindow* >( p_layout );
+        if ( !_p_frame )
+        {
+            log_error << "PropertyGui: missing main gui frame with name 'frame'" << std::endl;
+            return;
+        }
 
         // subscribe for getting on-close callbacks
         _p_frame->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &vrc::PropertyGui::onClickedClose, this ) );
@@ -108,7 +110,8 @@ void PropertyGui::setupGui()
         _p_btnOpen->setStandardImageryEnabled( false );
         _p_btnOpen->setPosition( CEGUI::Point( 0.0f, 0.6f ) );
         _p_btnOpen->setSize( CEGUI::Size( 0.08f, 0.1f ) );
-        _p_mainWnd->addChildWindow( _p_btnOpen );
+
+        p_maingui->addChildWindow( _p_btnOpen );
 
         // set editbox open button images
         const CEGUI::Image* p_image = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_HAND_NORMAL ); //! TODO: take a proper image
@@ -150,16 +153,10 @@ void PropertyGui::setupGui()
     {
         log_error << "PropertyGui: cannot setup gui layout." << std::endl;
         log_out << "      reason: " << e.getMessage().c_str() << std::endl;
-
-        _p_mainWnd->hide();
-        _p_mainWnd->deactivate();
-
         return;
     }
 
-    _p_mainWnd->setAlwaysOnTop( false );
-    _p_mainWnd->activate();
-    _p_mainWnd->show();
+    // hide the inventory frame
     _p_frame->hide();
 
     // update the inventory pane
@@ -255,8 +252,10 @@ bool PropertyGui::onClickedOpen( const CEGUI::EventArgs& /*arg*/ )
     _p_frame->show();
     _p_btnOpen->hide();
 
-    // set the player interaction mode, thus avoid input processing of player keys
-    gameutils::PlayerUtils::get()->setLockInteraction( true );
+    // lock the player control
+    unsigned int ctrlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
+    ctrlmodes |= ( gameutils::PlayerUtils::eLockPicking | gameutils::PlayerUtils::eLockCameraSwitch | gameutils::PlayerUtils::eLockLooking | gameutils::PlayerUtils::eLockMovement );
+    gameutils::PlayerUtils::get()->setPlayerControlModes( ctrlmodes );
 
     return true;
 }
@@ -266,8 +265,10 @@ bool PropertyGui::onClickedClose( const CEGUI::EventArgs& /*arg*/ )
     _p_frame->hide();
     _p_btnOpen->show();
 
-    // remove the player interaction mode, thus allow input processing of player keys again
-    gameutils::PlayerUtils::get()->setLockInteraction( false );
+    // unlock the player control
+    unsigned int ctrlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
+    ctrlmodes &= ~( gameutils::PlayerUtils::eLockPicking | gameutils::PlayerUtils::eLockCameraSwitch | gameutils::PlayerUtils::eLockLooking | gameutils::PlayerUtils::eLockMovement );
+    gameutils::PlayerUtils::get()->setPlayerControlModes( ctrlmodes );
 
     return true;
 }

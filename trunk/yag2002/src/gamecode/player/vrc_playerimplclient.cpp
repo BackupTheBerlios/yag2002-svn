@@ -98,8 +98,6 @@ void PlayerImplClient::handleNotification( const yaf3d::EntityNotification& noti
                 // very important: diable the camera when we enter menu!
                 _p_camera->setEnable( false );
 
-                // players are all rendered in menu, regardless their camera mode
-                _p_playerAnimation->enableRendering( true );
                 if ( _cameraMode == Ego )
                     addToSceneGraph();
             }
@@ -127,10 +125,7 @@ void PlayerImplClient::handleNotification( const yaf3d::EntityNotification& noti
 
                 // if we are in ego mode then disable player avatar rendering
                 if ( _cameraMode == Ego )
-                {
-                    _p_playerAnimation->enableRendering( false );
                     removeFromSceneGraph();
-                }
             }
         }
         break;
@@ -244,7 +239,7 @@ void PlayerImplClient::postInitialize()
 
         if ( _cameraMode == Ego ) // in ego mode we won't render our character
         {
-            _p_playerAnimation->enableRendering( false );
+            removeFromSceneGraph();
         }
         else // if in spheric mode disable the mouse pointer
         {
@@ -300,7 +295,6 @@ void PlayerImplClient::postInitialize()
             assert( _p_playerAnimation && "given instance name does not belong to a EnPlayerAnimation entity type, or entity is missing!" );
             _p_playerAnimation->setPlayer( this );
             // enable rendering for remote clients
-            _p_playerAnimation->enableRendering( true );
             addToSceneGraph();
             _p_playerAnimation->setAnimation( EnPlayerAnimation::eIdle );
 

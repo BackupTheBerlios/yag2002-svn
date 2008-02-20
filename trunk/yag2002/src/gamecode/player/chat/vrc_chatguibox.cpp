@@ -126,7 +126,7 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
         _p_frame->setMinimumSize( CEGUI::Size( 0.2f, 0.2f ) );
         _p_frame->hide();
         _p_frame->setText( "chatbox" );
-        _p_frame->setAlpha( 0.8f );
+        _p_frame->setAlpha( 0.9f );
         _p_frame->setPosition( CEGUI::Point( 0.08f, 0.7f ) );
         _p_frame->setSize( CEGUI::Size( 0.86f, 0.28f ) );
 
@@ -479,6 +479,15 @@ void ChatGuiBox::show( bool visible )
         _p_btnOpen->hide();
         _p_frame->hide();
         _p_shortMsgBox->hide();
+    }
+}
+
+void ChatGuiBox::openBox()
+{
+    if ( _boxState == BoxHidden )
+    {
+        CEGUI::EventArgs args;
+        onClickedOpen( args );
     }
 }
 

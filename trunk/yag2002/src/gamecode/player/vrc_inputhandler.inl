@@ -69,9 +69,7 @@ PlayerIHCharacterCameraCtrl< PlayerImplT >::~PlayerIHCharacterCameraCtrl()
 template< class PlayerImplT >
 bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*aa*/ )
 {
-    // check if the player is in interaction mode
-    if ( gameutils::PlayerUtils::get()->isLockInteraction() )
-        return false;
+    unsigned int controlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
 
     // while in menu we skip input processing for player
     if ( _menuEnabled )
@@ -95,6 +93,25 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         key = kcode;
     else if ( mouseButtonPush || mouseButtonRelease )
         key = mouseBtn;
+
+    // check the control locks
+    if ( controlmodes & gameutils::PlayerUtils::eLockCameraSwitch )
+    {
+        if ( key == _keyCodeChatMode )
+            key = 0;
+    }
+
+    if ( controlmodes & gameutils::PlayerUtils::eLockMovement )
+    {
+        if ( 
+            ( key == _keyCodeMoveForward  ) ||
+            ( key == _keyCodeMoveBackward ) ||
+            ( key == _keyCodeMoveRight    ) ||
+            ( key == _keyCodeMoveLeft     ) ||
+            ( key == _keyCodeJump         )
+            )
+            key = 0;
+    }
 
     // first check the edit / walk toggle command
     //--------
@@ -151,9 +168,9 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 _p_mouseData->popfrontPitchYaw();
 
                 // synchronize the mouse data yaw on switching to ego mode, as in spheric mode
-				//  the player rotation can also be changed
+                //  the player rotation can also be changed
                 if ( getPlayerImpl()->_cameraMode == vrc::BasePlayerImplementation::Ego )
-			        _p_mouseData->_yaw = getPlayerImpl()->_rotZ;
+                    _p_mouseData->_yaw = getPlayerImpl()->_rotZ;
 
                 // after cam mode switching and restoring the pitch / yaw we have also to update the player pitch / yaw
                 updatePlayerPitchYaw( _p_mouseData->_pitch, _p_mouseData->_yaw );
@@ -304,73 +321,77 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             getPlayerImpl()->getPlayerAnimation()->animIdle();
     }
 
-    // get the SDL event in order to extract mouse button and absolute / relative mouse movement coordinates out of it
-    const SDL_Event& sdlevent = p_eventAdapter->getSDLEvent();
-
-    // handle mouse wheel changes for camera offsetting in spheric mode
-    if ( getPlayerImpl()->_cameraMode == BasePlayerImplementation::Spheric )
+    // check if looking is locked
+    if ( !( controlmodes & gameutils::PlayerUtils::eLockLooking ) )
     {
-        if ( sdlevent.button.type == SDL_MOUSEBUTTONDOWN )
+        // get the SDL event in order to extract mouse button and absolute / relative mouse movement coordinates out of it
+        const SDL_Event& sdlevent = p_eventAdapter->getSDLEvent();
+
+        // handle mouse wheel changes for camera offsetting in spheric mode
+        if ( getPlayerImpl()->_cameraMode == BasePlayerImplementation::Spheric )
         {
-            if ( sdlevent.button.button == SDL_BUTTON_WHEELUP )
+            if ( sdlevent.button.type == SDL_MOUSEBUTTONDOWN )
             {
-                float& dist = _attributeContainer._camPosOffsetSpheric._v[ 1 ];
-                dist = std::min( dist + SPHERIC_DIST_INCREMENT, -LIMIT_SPHERIC_MIN_DIST );
-                getPlayerImpl()->_p_camera->setCameraOffsetPosition( _attributeContainer._camPosOffsetSpheric );
-            }
-            else if ( sdlevent.button.button == SDL_BUTTON_WHEELDOWN )
-            {
-                float& dist = _attributeContainer._camPosOffsetSpheric._v[ 1 ];
-                dist = std::max( -LIMIT_SPHERIC_MAX_DIST, dist - SPHERIC_DIST_INCREMENT );
-                getPlayerImpl()->_p_camera->setCameraOffsetPosition( _attributeContainer._camPosOffsetSpheric );
+                if ( sdlevent.button.button == SDL_BUTTON_WHEELUP )
+                {
+                    float& dist = _attributeContainer._camPosOffsetSpheric._v[ 1 ];
+                    dist = std::min( dist + SPHERIC_DIST_INCREMENT, -LIMIT_SPHERIC_MIN_DIST );
+                    getPlayerImpl()->_p_camera->setCameraOffsetPosition( _attributeContainer._camPosOffsetSpheric );
+                }
+                else if ( sdlevent.button.button == SDL_BUTTON_WHEELDOWN )
+                {
+                    float& dist = _attributeContainer._camPosOffsetSpheric._v[ 1 ];
+                    dist = std::max( -LIMIT_SPHERIC_MAX_DIST, dist - SPHERIC_DIST_INCREMENT );
+                    getPlayerImpl()->_p_camera->setCameraOffsetPosition( _attributeContainer._camPosOffsetSpheric );
+                }
             }
         }
-    }
 
-    // adjust pitch and yaw depending on camera mode
-    if ( eventType == osgGA::GUIEventAdapter::MOVE )
-    {
-        // skip events which come in when we warp the mouse pointer to middle of app window ( see below )
-        if ( (  sdlevent.motion.x == _p_mouseData->_screenMiddleX ) && ( sdlevent.motion.y == _p_mouseData->_screenMiddleY ) )
-            return false;
-
-        // limit the movement gradient in x and y direction and multiply with mouse sensitivity factor
-        float xrel = float( sdlevent.motion.xrel );
-        if ( xrel > LIMIT_MMOVE_DELTA )
-            xrel = LIMIT_MMOVE_DELTA;
-        else if ( xrel < -LIMIT_MMOVE_DELTA )
-            xrel = -LIMIT_MMOVE_DELTA;
-        xrel *= _mouseSensitivity;
-
-        float yrel = float( sdlevent.motion.yrel );
-        if ( yrel > LIMIT_MMOVE_DELTA )
-            yrel = LIMIT_MMOVE_DELTA;
-        else if ( yrel < -LIMIT_MMOVE_DELTA )
-            yrel = -LIMIT_MMOVE_DELTA;
-        yrel *= _mouseSensitivity;
-
-        // update accumulated mouse coords ( pitch / yaw )
-        _p_mouseData->_yaw += xrel / _p_mouseData->_screenSizeX;
-        // consider the mouse invert flag
-        if ( !_invertedMouse )
-            _p_mouseData->_pitch -= yrel / _p_mouseData->_screenSizeY;
-        else
-            _p_mouseData->_pitch += yrel / _p_mouseData->_screenSizeY;
-
-        // update the player pitch / yaw
-        updatePlayerPitchYaw( _p_mouseData->_pitch, _p_mouseData->_yaw );
-
-        // calculate yaw and change player direction when in ego mode
-        if ( getPlayerImpl()->_cameraMode == vrc::BasePlayerImplementation::Ego )
+        // adjust pitch and yaw depending on camera mode
+        if ( eventType == osgGA::GUIEventAdapter::MOVE )
         {
-			float& rotZ = getPlayerImpl()->_rotZ;
-			rotZ = _p_mouseData->_yaw;
-			getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
-			getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
-        }
+            // skip events which come in when we warp the mouse pointer to middle of app window ( see below )
+            if ( (  sdlevent.motion.x == _p_mouseData->_screenMiddleX ) && ( sdlevent.motion.y == _p_mouseData->_screenMiddleY ) )
+                return false;
 
-        // reset mouse position in order to avoid leaving the app window
-        yaf3d::Application::get()->getViewer()->requestWarpPointer( _p_mouseData->_screenMiddleX, _p_mouseData->_screenMiddleY );
+            // limit the movement gradient in x and y direction and multiply with mouse sensitivity factor
+            float xrel = float( sdlevent.motion.xrel );
+            if ( xrel > LIMIT_MMOVE_DELTA )
+                xrel = LIMIT_MMOVE_DELTA;
+            else if ( xrel < -LIMIT_MMOVE_DELTA )
+                xrel = -LIMIT_MMOVE_DELTA;
+            xrel *= _mouseSensitivity;
+
+            float yrel = float( sdlevent.motion.yrel );
+            if ( yrel > LIMIT_MMOVE_DELTA )
+                yrel = LIMIT_MMOVE_DELTA;
+            else if ( yrel < -LIMIT_MMOVE_DELTA )
+                yrel = -LIMIT_MMOVE_DELTA;
+            yrel *= _mouseSensitivity;
+
+            // update accumulated mouse coords ( pitch / yaw )
+            _p_mouseData->_yaw += xrel / _p_mouseData->_screenSizeX;
+            // consider the mouse invert flag
+            if ( !_invertedMouse )
+                _p_mouseData->_pitch -= yrel / _p_mouseData->_screenSizeY;
+            else
+                _p_mouseData->_pitch += yrel / _p_mouseData->_screenSizeY;
+
+            // update the player pitch / yaw
+            updatePlayerPitchYaw( _p_mouseData->_pitch, _p_mouseData->_yaw );
+
+            // calculate yaw and change player direction when in ego mode
+            if ( getPlayerImpl()->_cameraMode == vrc::BasePlayerImplementation::Ego )
+            {
+                float& rotZ = getPlayerImpl()->_rotZ;
+                rotZ = _p_mouseData->_yaw;
+                getPlayerImpl()->_moveDir._v[ 0 ] = sinf( rotZ );
+                getPlayerImpl()->_moveDir._v[ 1 ] = cosf( rotZ );
+            }
+
+            // reset mouse position in order to avoid leaving the app window
+            yaf3d::Application::get()->getViewer()->requestWarpPointer( _p_mouseData->_screenMiddleX, _p_mouseData->_screenMiddleY );
+        }
     }
 
     return false;

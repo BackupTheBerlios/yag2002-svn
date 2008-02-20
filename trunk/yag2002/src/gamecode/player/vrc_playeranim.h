@@ -68,11 +68,6 @@ class EnPlayerAnimation  : public yaf3d::BaseEntity
         void                                        setPlayer( BasePlayerImplementation* p_player );
 
         /**
-        * Enable / disable rendering
-        */
-        void                                        enableRendering( bool render );
-
-        /**
         * Initializing function
         */
         void                                        initialize();
