@@ -35,6 +35,7 @@
 #include "application.h"
 #include "shadercontainer.h"
 #include "utils.h"
+#include "configuration.h"
 
 
 //! Patch subdivisions in X and Y direction for different lod levels
@@ -306,13 +307,13 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
     // set detail textures only when glsl is available
     if ( glslavailable )
     {
-        _p_stateSet->setTextureAttributeAndModes( 1, p_detailtex0, osg::StateAttribute::ON );
-        _p_stateSet->setTextureAttributeAndModes( 2, p_detailtex1, osg::StateAttribute::ON );
-        _p_stateSet->setTextureAttributeAndModes( 3, p_detailtex2, osg::StateAttribute::ON );
-        _p_stateSet->setTextureAttributeAndModes( 4, p_detailtex3, osg::StateAttribute::ON );
+        _p_stateSet->setTextureAttributeAndModes( 2, p_detailtex0, osg::StateAttribute::ON );
+        _p_stateSet->setTextureAttributeAndModes( 3, p_detailtex1, osg::StateAttribute::ON );
+        _p_stateSet->setTextureAttributeAndModes( 4, p_detailtex2, osg::StateAttribute::ON );
+        _p_stateSet->setTextureAttributeAndModes( 5, p_detailtex3, osg::StateAttribute::ON );
         // setup the layer mask
         if ( p_layermask )
-            _p_stateSet->setTextureAttributeAndModes( 5, p_layermask, osg::StateAttribute::ON );
+            _p_stateSet->setTextureAttributeAndModes( 6, p_layermask, osg::StateAttribute::ON );
     }
 
     // create a new terrain section
@@ -353,19 +354,19 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
                 if ( glslavailable )
                 {
                     // build the detail texture map 0 coordinates
-                    if ( !p_patch->buildTexCoords( 1, config._detailmap0Repeat ) )
+                    if ( !p_patch->buildTexCoords( 2, config._detailmap0Repeat ) )
                         log_error << "Terrain Manager: could not build deatial texture 0 coordinates!" << std::endl;
 
                     // build the detail texture map 1 coordinates
-                    if ( !p_patch->buildTexCoords( 2, config._detailmap1Repeat ) )
+                    if ( !p_patch->buildTexCoords( 3, config._detailmap1Repeat ) )
                         log_error << "Terrain Manager: could not build deatial texture 1 coordinates!" << std::endl;
 
                     // build the detail texture map 2 coordinates
-                    if ( !p_patch->buildTexCoords( 3, config._detailmap2Repeat ) )
+                    if ( !p_patch->buildTexCoords( 4, config._detailmap2Repeat ) )
                         log_error << "Terrain Manager: could not build deatial texture 2 coordinates!" << std::endl;
 
                     // build the detail texture map 3 coordinates
-                    if ( !p_patch->buildTexCoords( 4, config._detailmap3Repeat ) )
+                    if ( !p_patch->buildTexCoords( 5, config._detailmap3Repeat ) )
                         log_error << "Terrain Manager: could not build deatial texture 3 coordinates!" << std::endl;
                 }
 
@@ -575,36 +576,40 @@ void TerrainManager::setupShaders( osg::StateSet* p_stateset )
     if ( !_p_shaderProgram.valid() )
         _p_shaderProgram = new osg::Program;
 
+    // check if dynamic shadows are enabled
+    bool dynshadow = false;
+    Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, dynshadow );
+
     p_stateset->setAttribute( _p_shaderProgram.get() );
 
     osg::Shader* p_vcommon = ShaderContainer::get()->getVertexShader( ShaderContainer::eCommonV );
     _p_shaderProgram->addShader( p_vcommon );
 
-    osg::Shader* p_vterrain = ShaderContainer::get()->getVertexShader( ShaderContainer::eTerrainV );
+    osg::Shader* p_vterrain = ShaderContainer::get()->getVertexShader( dynshadow ? ShaderContainer::eTerrainShadowMapV : ShaderContainer::eTerrainV );
     _p_shaderProgram->addShader( p_vterrain );
 
     osg::Shader* p_fcommon = ShaderContainer::get()->getFragmentShader( ShaderContainer::eCommonF );
     _p_shaderProgram->addShader( p_fcommon );
 
-    osg::Shader* p_fterrain = ShaderContainer::get()->getFragmentShader( ShaderContainer::eTerrainF );
+    osg::Shader* p_fterrain = ShaderContainer::get()->getFragmentShader( dynshadow ? ShaderContainer::eTerrainShadowMapF : ShaderContainer::eTerrainF );
     _p_shaderProgram->addShader( p_fterrain );
 
     osg::Uniform* p_baseTextureSampler = new osg::Uniform( "baseTexture", 0 );
     p_stateset->addUniform( p_baseTextureSampler );
 
-    osg::Uniform* p_detailTexture0Sampler = new osg::Uniform( "detailTexture0", 1 );
+    osg::Uniform* p_detailTexture0Sampler = new osg::Uniform( "detailTexture0", 2 );
     p_stateset->addUniform( p_detailTexture0Sampler );
 
-    osg::Uniform* p_detailTexture1Sampler = new osg::Uniform( "detailTexture1", 2 );
+    osg::Uniform* p_detailTexture1Sampler = new osg::Uniform( "detailTexture1", 3 );
     p_stateset->addUniform( p_detailTexture1Sampler );
 
-    osg::Uniform* p_detailTexture2Sampler = new osg::Uniform( "detailTexture2", 3 );
+    osg::Uniform* p_detailTexture2Sampler = new osg::Uniform( "detailTexture2", 4 );
     p_stateset->addUniform( p_detailTexture2Sampler );
 
-    osg::Uniform* p_detailTexture3Sampler = new osg::Uniform( "detailTexture3", 4 );
+    osg::Uniform* p_detailTexture3Sampler = new osg::Uniform( "detailTexture3", 5 );
     p_stateset->addUniform( p_detailTexture3Sampler );
 
-    osg::Uniform* p_layerMaskSampler = new osg::Uniform( "layerMask", 5 );
+    osg::Uniform* p_layerMaskSampler = new osg::Uniform( "layerMask", 6 );
     p_stateset->addUniform( p_layerMaskSampler );
 }
 
