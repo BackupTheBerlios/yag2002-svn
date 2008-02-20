@@ -59,7 +59,8 @@ EnTerrainSection::EnTerrainSection() :
  _lod2ResolutionX( 1 ),
  _lod2ResolutionY( 1 ),
  _lod2RangeMin( 380.0f ),
- _lod2RangeMax( 100000.0f )
+ _lod2RangeMax( 100000.0f ),
+ _cgfShadow( false )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "enable"           , _enable           );
@@ -210,6 +211,8 @@ void EnTerrainSection::initialize()
     // setup the terrain
     _p_terrainGrp = setup();
 
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, _cgfShadow );
+
     if ( _p_terrainGrp.valid() )
         addToTransformationNode( _p_terrainGrp.get() );
 
@@ -313,12 +316,8 @@ void EnTerrainSection::addToSceneGraph()
     if ( !_p_terrainGrp.valid() )
         return;
 
-    // get the shadow flag in configuration
-    bool shadow;
-    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
-
     // enable shadow only if it is enabled in configuration
-    if ( shadow && _shadowEnable )
+    if ( _cgfShadow && _shadowEnable )
     {
         yaf3d::ShadowManager::get()->addShadowNode( getTransformationNode(), yaf3d::ShadowManager::eReceiveShadow );
         yaf3d::ShadowManager::get()->updateShadowArea();

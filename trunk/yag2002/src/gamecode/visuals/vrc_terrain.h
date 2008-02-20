@@ -181,6 +181,8 @@ class EnTerrainSection :  public yaf3d::BaseEntity
         //------------------
         
         osg::ref_ptr< osg::Group >                  _p_terrainGrp;
+
+        bool                                        _cgfShadow;
 };
 
 //! Entity type definition used for type registry

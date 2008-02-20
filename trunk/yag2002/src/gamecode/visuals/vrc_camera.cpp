@@ -77,7 +77,7 @@ YAF3D_IMPL_ENTITYFACTORY( CameraEntityFactory )
 
 EnCamera::EnCamera() :
 _fov( 60.00 ),
-_nearClip( 0.5f ),
+_nearClip( 1.0f ),
 _farClip( 5000.0f ),
 _backgroundColor( osg::Vec3f( 0.2f, 0.2f, 0.2f ) ),
 _isPersistent( false ),

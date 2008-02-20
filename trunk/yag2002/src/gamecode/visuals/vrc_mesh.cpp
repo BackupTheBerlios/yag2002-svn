@@ -59,6 +59,7 @@ _throwShadow( false ),
 _receiveShadow( false ),
 _useLOD( false ),
 _lodErrorThreshold( 0.05f ),
+_cgfShadow( false ),
 _shadowEnable( false )
 {
     // register entity attributes
@@ -128,7 +129,9 @@ void EnMesh::handleNotification( const yaf3d::EntityNotification& notification )
         {
             if ( _usedInMenu )
             {
-                removeFromSceneGraph();
+                // this method really removes the node from all its parents
+                yaf3d::EntityManager::get()->removeFromScene( this );
+                // now add it to scene graph again
                 addToSceneGraph();
             }
         }
@@ -149,9 +152,8 @@ void EnMesh::handleNotification( const yaf3d::EntityNotification& notification )
 
         case YAF3D_NOTIFY_UNLOAD_LEVEL:
 
-            // release the shader state set
             if ( !_usedInMenu )
-                removeFromTransformationNode( _mesh.get() );
+                removeFromSceneGraph();
 
             break;
 
@@ -174,11 +176,19 @@ void EnMesh::initialize()
 {
     _mesh = setupMesh();
 
+    getTransformationNode()->setName( getInstanceName() );
+
+    // is dynamic shadows enabled in the configuration?
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, _cgfShadow );
+
+    // is dynamic shadow for this mesh desired?
+    _shadowEnable = ( _throwShadow || _receiveShadow ) && _cgfShadow;
+
     if ( _mesh.valid() )
         addToTransformationNode( _mesh.get() );
 
     // the node is added and removed by notification callback!
-    removeFromSceneGraph();
+    yaf3d::EntityManager::get()->removeFromScene( this );
 
     // register entity in order to get menu notifications
     yaf3d::EntityManager::get()->registerNotification( this, true );
@@ -188,6 +198,9 @@ void EnMesh::removeFromSceneGraph()
 {
     if ( !_mesh.valid() )
         return;
+
+    if ( _shadowEnable )
+        yaf3d::ShadowManager::get()->removeShadowNode( getTransformationNode() );
 
     yaf3d::EntityManager::get()->removeFromScene( this );
 }
@@ -209,15 +222,8 @@ void EnMesh::addToSceneGraph()
         }
     }
 
-    // get the shadow flag in configuration
-    bool shadow;
-    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
-
-    // enable dynamic shadow for this mesh?
-    _shadowEnable = _throwShadow || _receiveShadow;
-
     // enable shadow only if it is enabled in configuration
-    if ( shadow && _shadowEnable )
+    if ( _shadowEnable )
     {
         // set the shadow mode
         unsigned int shadowmode = 0;
@@ -227,7 +233,6 @@ void EnMesh::addToSceneGraph()
             shadowmode |= yaf3d::ShadowManager::eReceiveShadow;
 
         yaf3d::ShadowManager::get()->addShadowNode( p_shadernode ? p_shadernode : getTransformationNode(), shadowmode );
-        yaf3d::ShadowManager::get()->updateShadowArea();
 
         // the mesh needs at least one subgraph for getting rendered; the shadow throwing subgraph does not render the mesh (but only its shadow)
         // so we put meshes which should throw shadow and not receive shadow to the default scene node.

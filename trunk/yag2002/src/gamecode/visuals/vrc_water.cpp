@@ -317,7 +317,8 @@ void EnWater::handleNotification( const yaf3d::EntityNotification& notification 
 
             // release the shader state set
             if ( !_usedInMenu )
-                s_stateSet = NULL;
+                removeFromTransformationNode( _water.get() );
+
             break;
 
         // if used in menu then this entity is persisten, so we have to trigger its deletion on shutdown

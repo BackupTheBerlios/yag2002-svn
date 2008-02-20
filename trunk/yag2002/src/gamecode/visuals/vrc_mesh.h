@@ -98,6 +98,8 @@ class EnMesh :  public yaf3d::BaseEntity
 
         //! Internal attributes
 
+        bool                                        _cgfShadow;
+
         bool                                        _shadowEnable;
 
         osg::ref_ptr< osg::Node >                   _mesh;
