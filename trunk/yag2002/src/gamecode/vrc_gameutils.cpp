@@ -493,20 +493,10 @@ void GuiUtils::playSound( const std::string& name )
 
 // Implementation of player utils
 PlayerUtils::PlayerUtils() :
-_interactionLock( false ),
 _p_localPlayer( NULL ),
-_p_userInventory( NULL )
+_p_userInventory( NULL ),
+_playerControlModes( 0 )
 {
-}
-
-void PlayerUtils::setLockInteraction( bool interaction )
-{
-    _interactionLock = interaction;
-}
-
-bool PlayerUtils::isLockInteraction() const
-{
-    return _interactionLock;
 }
 
 bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& levelfile, const std::string& cfgfile )

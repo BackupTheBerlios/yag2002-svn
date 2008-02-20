@@ -181,8 +181,19 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
 
                                                     PlayerUtils();
 
-        //! Lock/unlock the player interaction with environment. This is used when the player opens e.g. the property GUI.
-        void                                        setLockInteraction( bool interaction );
+        enum PlayerControlModes
+        {
+            eLockMovement       = 0x0001,
+            eLockLooking        = 0x0002,
+            eLockCameraSwitch   = 0x0004,
+            eLockPicking        = 0x0008
+        };
+
+        //! Set the player input control modes, a combination of PlayerControlModes flags.
+        inline void                                 setPlayerControlModes( unsigned int modes );
+
+        //! Get the player input control modes, a combination of PlayerControlModes flags.
+        inline unsigned int                         getPlayerControlModes() const;
 
         //! Is the interaction lock set?
         bool                                        isLockInteraction() const;
@@ -248,8 +259,6 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
 
     protected:
 
-        bool                                        _interactionLock;
-
         yaf3d::BaseEntity*                          _p_localPlayer;
 
         UserInventory*                              _p_userInventory;
@@ -262,8 +271,20 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
 
         std::vector< FunctorPlayerListChange* >     _funcPlayerListVoiceChat;
 
+        unsigned int                                _playerControlModes;
+
     friend class yaf3d::Singleton< vrc::gameutils::PlayerUtils >;
 };
+
+inline void PlayerUtils::setPlayerControlModes( unsigned int modes )
+{
+    _playerControlModes = modes;
+}
+
+inline unsigned int PlayerUtils::getPlayerControlModes() const
+{
+    return _playerControlModes;
+}
 
 inline const std::vector< yaf3d::BaseEntity* >& PlayerUtils::getRemotePlayers()
 {
