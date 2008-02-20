@@ -668,6 +668,10 @@ void EnMenu::updateEntity( float deltaTime )
                 try
                 {
                     yaf3d::NetworkDevice::get()->startClient();
+
+                    // send the notification on established network session
+                    yaf3d::EntityNotification ennotify( YAF3D_NOTIFY_NETWORKING_ESTABLISHED );
+                    yaf3d::EntityManager::get()->sendNotification( ennotify );
                 }
                 catch ( const yaf3d::NetworkException& e )
                 {
@@ -702,10 +706,9 @@ void EnMenu::updateEntity( float deltaTime )
         case PrepareUnloadLevel:
         {
             _menuState = UnloadLevel;
-            yaf3d::LevelManager::get()->unloadLevel();
-
             // set the proper game state
             yaf3d::GameState::get()->setState( yaf3d::GameState::LeavingLevel );
+            yaf3d::LevelManager::get()->unloadLevel();
         }
         break;
 
