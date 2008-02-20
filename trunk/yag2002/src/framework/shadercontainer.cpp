@@ -35,6 +35,9 @@
 // Implementation of ShadowManager
 YAF3D_SINGLETON_IMPL( yaf3d::ShaderContainer )
 
+//! Hardcoded shadowmap texture size used in fragment shaders below
+#define SHADOWMAP_TEXSIZE   "2048.0"
+
 namespace yaf3d
 {
 
@@ -125,6 +128,47 @@ static const char _glslTerrainV[] =
     "   detail1TexCoords = gl_MultiTexCoord2.st;\n"
     "   detail2TexCoords = gl_MultiTexCoord3.st;\n"
     "   detail3TexCoords = gl_MultiTexCoord4.st;\n"
+    "}\n"
+;
+
+// Terrain vertex shader with dynamic shadows
+static const char _glslTerrainShadowMapV[] =
+    "/*\n"
+    "* Vertex shader for terrain renderer\n"
+    "* http://yag2002.sf.net\n"
+    "* 08/28/2007\n"
+    "*/\n"
+    "varying vec2 baseTexCoords;\n"
+    "varying vec2 detail0TexCoords;\n"
+    "varying vec2 detail1TexCoords;\n"
+    "varying vec2 detail2TexCoords;\n"
+    "varying vec2 detail3TexCoords;\n"
+
+    "uniform mat4 texgenMatrix;\n"
+    "varying vec4 diffuse, ambient;\n"
+    "varying vec3 normal, lightDir, halfVector;\n"
+    "const   int  shadowTexChannel = 1;\n"
+
+    "// declarations for common functions\n"
+    "void calcLightingParams( in int lightnum, out vec3 normal, out vec3 lightdir, out vec3 halfvec, out vec4 ambient, out vec4 diffuse );\n"
+
+    "\n"
+    "void main()\n"
+    "{\n"
+    "   gl_Position      = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
+    "   baseTexCoords    = gl_MultiTexCoord0.st;\n"
+    "   detail0TexCoords = gl_MultiTexCoord2.st;\n"
+    "   detail1TexCoords = gl_MultiTexCoord3.st;\n"
+    "   detail2TexCoords = gl_MultiTexCoord4.st;\n"
+    "   detail3TexCoords = gl_MultiTexCoord5.st;\n"
+
+    "   // calcualte the lighting parameters\n"
+    "//   calcLightingParams( 0, normal, lightDir, halfVector, ambient, diffuse );\n"
+    "   // calculate the tex coords for shadow map\n"
+    "   vec4 pos    =  gl_ModelViewMatrix * gl_Vertex;\n"
+    "   gl_TexCoord[ shadowTexChannel ] = texgenMatrix * pos;\n"
+    "   gl_Position   = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
+
     "}\n"
 ;
 
@@ -238,7 +282,7 @@ static char _glslShadowMapF[] =
     "varying vec4            diffuse, ambient;\n"
     "varying vec3            normal, lightDir, halfVector;\n"
     "varying vec2            baseTexCoords;\n"
-    "const   float           shadowTexSize    = 1024.0;\n"
+    "const   float           shadowTexSize = " SHADOWMAP_TEXSIZE ";\n"
     "\n"
     "// declarations for common functions\n"
     "vec4 calcLighting( in vec4 diffuse, in vec4 ambient, in vec3 normal, in vec3 lightdir, in vec3 halfvector ); \n"
@@ -292,6 +336,56 @@ static const char _glslTerrainF[] =
     "}\n"
 ;
 
+// Terrain fragment shader with dynamic shadows
+static const char _glslTerrainShadowMapF[] =
+    "/*\n"
+    "* Fragment shader for terrain renderer\n"
+    "* http://yag2002.sf.net\n"
+    "* 08/28/2007\n"
+    "*/\n"
+    "uniform sampler2D baseTexture;\n"
+    "uniform sampler2D detailTexture0;\n"
+    "uniform sampler2D detailTexture1;\n"
+    "uniform sampler2D detailTexture2;\n"
+    "uniform sampler2D detailTexture3;\n"
+    "uniform sampler2D layerMask;\n"
+    "uniform sampler2DShadow shadowTexture;\n"
+    "uniform float     baseTextureBlend;\n"
+    "varying vec2      baseTexCoords;\n"
+    "varying vec2      detail0TexCoords;\n"
+    "varying vec2      detail1TexCoords;\n"
+    "varying vec2      detail2TexCoords;\n"
+    "varying vec2      detail3TexCoords;\n"
+    "uniform vec2      ambientBias;\n"
+    "varying vec4      diffuse, ambient;\n"
+    "varying vec3      normal, lightDir, halfVector;\n"
+    "const   float     shadowTexSize = " SHADOWMAP_TEXSIZE ";\n"
+
+    "// declarations for common functions\n"
+    "vec4 calcLighting( in vec4 diffuse, in vec4 ambient, in vec3 normal, in vec3 lightdir, in vec3 halfvector ); \n"
+    "vec3 calcShadowColor( in float shadowTexSize, in sampler2DShadow shadowTexture ); \n"
+
+    "\n"
+    "void main(void)\n"
+    "{\n"
+    "   vec4 fetch = texture2D( baseTexture, baseTexCoords );\n"
+    "   vec3 color = fetch.rgb;\n"
+    "   float alpha = fetch.a;\n"
+    "   color *= baseTextureBlend;\n"
+    "   vec4 mask  = texture2D( layerMask, baseTexCoords ).rgba;\n"
+    "   color += mask.r * texture2D( detailTexture0, detail0TexCoords ).rgb;\n"
+    "   color += mask.g * texture2D( detailTexture1, detail1TexCoords ).rgb;\n"
+    "   color += mask.b * texture2D( detailTexture2, detail2TexCoords ).rgb;\n"
+    "   color += mask.a * texture2D( detailTexture3, detail3TexCoords ).rgb;\n"
+    "   vec3 shadowColor = calcShadowColor( shadowTexSize, shadowTexture );\n"
+    "\n"
+    "   gl_FragColor  = vec4(\n"
+    "                         color.rgb * ( ambientBias.x + shadowColor * ambientBias.y ),\n"
+    "                         step( 0.5, alpha )\n"
+    "                       );\n"
+    "}\n"
+;
+
 // Vegetation fragment shader
 static const char _glslVegetationF[] =
     "/*\n"
@@ -332,9 +426,9 @@ osg::Shader* ShaderContainer::getVertexShader( unsigned int type )
             code = _glslTerrainV;
             break;
 
-        //case eTerrainShadowMapV:
-        //    code = _glslTerrainShadowMapV;
-        //    break;
+        case eTerrainShadowMapV:
+            code = _glslTerrainShadowMapV;
+            break;
 
         case eVegetationV:
             code = _glslVegetationV;
@@ -372,9 +466,9 @@ osg::Shader* ShaderContainer::getFragmentShader( unsigned int type )
             code = _glslTerrainF;
             break;
 
-        //case eTerrainShadowMapF:
-        //    code = _glslTerrainShadowMapF;
-        //    break;
+        case eTerrainShadowMapF:
+            code = _glslTerrainShadowMapF;
+            break;
 
         case eVegetationF:
             code = _glslVegetationF;
