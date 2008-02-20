@@ -77,7 +77,8 @@ _voiceInputGain( 1.0f ),
 _p_voiceOutputGain( NULL ),
 _voiceOutputGain( 1.0f ),
 _p_microInput( NULL ),
-_p_menuEntity( p_menuEntity )
+_p_menuEntity( p_menuEntity ),
+_cfgShadows( false )
 {
 }
 
@@ -85,6 +86,9 @@ DialogGameSettings::~DialogGameSettings()
 {
     if ( _p_settingsDialog )
         CEGUI::WindowManager::getSingleton().destroyWindow( _p_settingsDialog );
+
+    // store the dynamic shadow settings on shutdown
+    yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SHADOW_ENABLE, _cfgShadows );
 
     assert( !_busy && "this object must not be destroyed before the message box has been closed! see method onClickedOk" );
 }
@@ -192,6 +196,21 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
             // get dynamic shadow checkbox
             _p_enableDynShadow = static_cast< CEGUI::Checkbox* >( p_paneDisplay->getChild( SDLG_PREFIX "cb_shadows" ) );
             _p_enableDynShadow->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onDynShadowChanged, this ) );
+
+            // dynamic shadows need glsl, set the checkbox initial value
+            yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, _cfgShadows );
+            if ( yaf3d::isGlslAvailable() )
+            {
+                if ( _cfgShadows )
+                    _p_enableDynShadow->setSelected( true );
+                else
+                    _p_enableDynShadow->setSelected( false );
+            }
+            else
+            {
+                _p_enableDynShadow->setSelected( false );
+                _p_enableDynShadow->disable();
+            }
         }
 
         // get contents of pane Sound/Voice
@@ -378,22 +397,6 @@ void DialogGameSettings::setupControls()
         else
             _p_enableFullscreen->setSelected( false );
 
-        // dynamic shadows need glsl
-        bool shadow;
-        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
-        if ( yaf3d::isGlslAvailable() )
-        {
-            if ( shadow )
-                _p_enableDynShadow->setSelected( true );
-            else
-                _p_enableDynShadow->setSelected( false );
-        }
-        else
-        {
-            _p_enableDynShadow->setSelected( false );
-            _p_enableDynShadow->disable();
-        }
-
         unsigned int width, height, colorbits;
         std::stringstream resolution;
         yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SCREENWIDTH, width );
@@ -535,8 +538,9 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& /*arg*/ )
     {
         bool fullscreen = _p_enableFullscreen->isSelected();
         yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_FULLSCREEN, fullscreen );
-        bool shadow = _p_enableDynShadow->isSelected();
-        yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
+
+        // we store this flag on application exit, so it takes effect next time when the app starts
+        _cfgShadows = _p_enableDynShadow->isSelected();
 
         unsigned int width, height, colorbits;
         // get the resolution out of the combobox string

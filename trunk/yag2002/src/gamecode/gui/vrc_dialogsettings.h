@@ -251,6 +251,8 @@ class DialogGameSettings
 
         std::auto_ptr< DialogPlayerConfig >         _playerConfigDialog;
 
+        bool                                        _cfgShadows;
+
         //! Lookup for current key bindings, it is used for detecting an overriding key binding
         std::vector< std::pair< std::string, CEGUI::PushButton* > > _keyBindingLookup;
         typedef std::vector< std::pair< std::string, CEGUI::PushButton* > >     tBindingLookup;
