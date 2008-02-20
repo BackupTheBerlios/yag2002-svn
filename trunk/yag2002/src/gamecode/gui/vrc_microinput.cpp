@@ -119,7 +119,9 @@ bool MicrophoneInput::getInputDevices( MicrophoneInput::InputDeviceMap& devices 
     for ( int count = 0; count < numdrivers; ++count )
     {
         char name[ 256 ];
-        result = p_system->getRecordDriverName( count, name, 256 );
+        //result = p_system->getRecordDriverName( count, name, 256 );
+        FMOD_GUID guid;
+        result = p_system->getRecordDriverInfo( count, name, 256, &guid );
         if ( result != FMOD_OK )
             log_error << "MicrophoneInput: error getting input device name" << std::endl;
         else
