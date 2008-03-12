@@ -50,8 +50,8 @@ class VoiceNetwork
 {
     public:
 
-        //! A map for remote client entities and their accociated IP addresses
-        typedef std::map< yaf3d::BaseEntity*, std::string >   VoiceClientMap;
+        //! A map for remote client entities and their accociated session ID 
+        typedef std::map< yaf3d::BaseEntity*, int >   VoiceClientMap;
 
 
                                                     VoiceNetwork();

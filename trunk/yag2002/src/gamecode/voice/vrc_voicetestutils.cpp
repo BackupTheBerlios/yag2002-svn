@@ -33,6 +33,7 @@
 #include "vrc_voiceinput.h"
 #include "vrc_codec.h"
 #include "vrc_networksoundimpl.h"
+#include "vrc_natcommon.h"
 
 namespace vrc
 {
@@ -55,7 +56,7 @@ CodecTest::~CodecTest()
 }
 
 void CodecTest::shutdown()
-{ 
+{
     if ( _p_voicePaket )
     {
         delete _p_voicePaket;
@@ -113,7 +114,7 @@ void CodecTest::update()
 
 void CodecTest::operator ()( char* p_encodedaudio, unsigned short length )
 { // this operator is called by voice input instance ( encoded audio is passed in p_encodedaudio )
-    
+
     // simulate a transmission of encoded input
     _p_voicePaket->_length     = length;
     memcpy( _p_voicePaket->_p_buffer, p_encodedaudio, length );

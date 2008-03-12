@@ -32,12 +32,14 @@
 #define _VRC_VOICEINPUT_H_
 
 #include <vrc_main.h>
+#include "vrc_codec.h"
 #include "vrc_networksoundimpl.h"
 
 namespace vrc
 {
 
 class NetworkSoundCodec;
+class InputGrabber;
 
 //! Base class for voice input
 class BaseVoiceInput
@@ -51,10 +53,10 @@ class BaseVoiceInput
         virtual                                     ~BaseVoiceInput();
 
         //! Initialize the voice input
-        virtual void                                initialize() throw( NetworkSoundExpection );
+        virtual void                                initialize() throw( NetworkSoundException );
 
         //! Update sound system, call this only once per simulation step
-        virtual void                                update();
+        virtual void                                update() = 0;
 
         //! Stop / continue grabbing
         virtual void                                stop( bool st ) = 0;
@@ -86,7 +88,7 @@ class BaseVoiceInput
     protected:
 
         //! Encode and distribute samples
-        void                                        distributeSamples( void* const p_rawpointer1, void* const p_rawpointer2, unsigned int len1, unsigned int len2 );
+        void                                        distributeSamples( VOICE_DATA_FORMAT_TYPE* p_data, unsigned int length );
 
         //! Sound system
         FMOD::System*                               _p_soundSystem;
@@ -100,11 +102,17 @@ class BaseVoiceInput
         //! Sound channel
         FMOD::Channel*                              _p_channel;
 
+        //! Input grabber thread
+        InputGrabber*                               _p_grabber;
+
         //! Input gain
         float                                       _inputGain;
 
         //! Encoder buffer
-        char                                        _p_encoderbuffer[ VOICE_PAKET_MAX_BUF_SIZE ];
+        char                                        _p_encoderBuffer[ VOICE_PAKET_MAX_BUF_SIZE ];
+
+        //! Raw sound data buffer
+        VOICE_DATA_FORMAT_TYPE                      _p_rawData[ CODEC_MAX_BUFFER_SIZE ];
 
         //! Indicated whether the sound system has been created by this instance
         bool                                        _createSoundSystem;
@@ -118,8 +126,14 @@ class BaseVoiceInput
         //! Used for getting access to raw sound data
         unsigned int                                _lastSoundTrackPos;
 
+        //! Length of a sampled input chunk
+        unsigned int                                _chunkLength;
+
         //! Registered stream sinks
         std::vector< FCaptureInput* >               _sinks;
+
+        //! Mutex used for sink feeding and registration / deregistration
+        OpenThreads::Mutex                          _sinkMutex;
 };
 
 //! Class for capturing microphone input
@@ -135,7 +149,7 @@ class VoiceMicrophoneInput: public BaseVoiceInput
     protected:
 
         //! Initialize the microphone input
-        void                                        initialize() throw( NetworkSoundExpection );
+        void                                        initialize() throw( NetworkSoundException );
 
         //! Update the input and encoder, call this only once per simulation step.
         void                                        update();
@@ -163,7 +177,7 @@ class VoiceFileInput: public BaseVoiceInput
     protected:
 
         //! Initialize the file input
-        void                                        initialize() throw( NetworkSoundExpection );
+        void                                        initialize() throw( NetworkSoundException );
 
         //! Update the input and encoder, call this only once per simulation step.
         void                                        update();

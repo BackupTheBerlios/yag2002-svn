@@ -26,31 +26,33 @@
  #
  #   author:            boto (botorabi at users.sourceforge.net) 
  #
- #
  ################################################################*/
 
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
 #include "vrc_voicesender.h"
+#include "vrc_voicetestutils.h"
 #include "vrc_codec.h"
 #include <RNXPSession/Inc/XPSession.h>
-#include <RNXPURL/Inc/TransportConfig.h>
+
+//! TODO: we should move this to general header and choose a better name for it
+#define VOICE_RESPOND_TIMEOPUT  0.5f
+
 
 namespace vrc
 {
 
-VoiceSender::VoiceSender( const std::string& receiverIP, BaseVoiceInput* p_soundInput ) :
-_receiverIP( receiverIP ),
-_p_udpTransport( NULL ),
-_senderState( Initial ),
+VoiceSender::VoiceSender( int sid, BaseVoiceInput* p_soundInput, VoiceTransport* p_transport ) :
+_receiverSID( sid ),
+_senderState( Start ),
 _p_soundInput( p_soundInput ),
+_p_transport( p_transport ),
 _pingTimer( 0.0f ),
 _pongTimer( 0.0f ),
+_respondTimer( 0.0f ),
 _paketStamp( 0 ),
-_senderID( 0 ),
 _isAlive( true )
 {
-    assert( receiverIP.length() && "invalid server IP" );
     assert( p_soundInput && "invalid sound input" );
     _p_voicePaket = new VoicePaket;
     _p_voicePaket->_paketStamp = _paketStamp;
@@ -59,20 +61,21 @@ _isAlive( true )
 
 VoiceSender::~VoiceSender()
 {
-    shutdown();
+    if ( _p_transport )
+    {
+        // de-register from transport layer
+        _p_transport->registerReceiver( this, false );
+    }
 
     // deregister from input stream
     _p_soundInput->registerStreamSink( this, false );
+
+    // shutdown
+    shutdown();
 }
 
 void VoiceSender::shutdown()
-{ 
-    if ( _p_udpTransport )
-    {
-        delete _p_udpTransport;
-        _p_udpTransport = NULL;
-    }
-
+{
     if ( _p_voicePaket )
     {
         delete _p_voicePaket;
@@ -80,40 +83,30 @@ void VoiceSender::shutdown()
     }
 }
 
-void VoiceSender::initialize() throw( NetworkSoundExpection )
+void VoiceSender::initialize() throw( NetworkSoundException )
 {
-    if ( !_receiverIP.length() )
-    {
-        log_error << " cannot setup voice sender, invalid receiver ip" << std::endl;
-        throw NetworkSoundExpection( "Invalid Receiver IP address" ) ;
-    }
-
     // register for getting audio input stream
     _p_soundInput->registerStreamSink( this, true );
 
-    // setup networking
-    {
-        int channel;
-        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_CHANNEL, channel );
+    // get the sender socket
+    _p_sendSocket = _p_transport->getSocket();
 
-        // Enable packet buffering and set paket update time for transport layer
-        RNReplicaNet::TransportConfig::SetPacketBufferEnable( true );
-        RNReplicaNet::TransportConfig::SetPacketBufferTime( 1.0f / 60.0f );
-
-        RNReplicaNet::XPURL xpurl;
-
-        assert( xpurl.FindTransport( "UDP@" ) );
-
-        _p_udpTransport = xpurl.FindTransport( "UDP@" )->Allocate();
-        std::stringstream assembledUrl;
-        assembledUrl << "UDP@" << _receiverIP << ":" << channel;// << "/" << VOICE_SERVER_NAME;
-        RNReplicaNet::Transport::Error res = _p_udpTransport->Connect( assembledUrl.str() );
-        if ( res != RNReplicaNet::Transport::kTransport_EOK )
-            log_error << "  -> cannot connect to receiver on channel: " << assembledUrl.str() << std::endl;
-        else
-            log_debug << "  -> trying to connect the receiver: " << assembledUrl.str() << " ..." << std::endl;
-    }
+    // get peer's NAT information
+    _p_transport->getClientInfo( _receiverSID, this );
 }
+
+void VoiceSender::recvClientAddress( int sid, const RNReplicaNet::XPAddress& address )
+{
+    log_verbose << "  <- trying to connect the receiver: " << address.Export() << std::endl;
+    _receiverAddress = address;
+    _p_transport->registerReceiver( this, true );
+
+    _senderState = Initial;
+}
+
+static int pakets = 0;
+static float t = 0.0f;
+
 
 void VoiceSender::update( float deltaTime )
 {
@@ -121,116 +114,66 @@ void VoiceSender::update( float deltaTime )
     if ( !_isAlive )
         return;
 
+//! TODO: remove this
+#if 0
+t += deltaTime;
+if ( t > 1.0f )
+{
+    log_verbose << "sender time: " << t << ", packets sent: " << pakets << std::endl;
+    t -= 1.0f;
+    pakets = 0;
+}
+#endif
+
+    assert( _p_sendSocket && "invalid socket" );
     assert( _p_soundInput && "invalid sound input instance" );
-    assert( _p_udpTransport && "network session is not available!" );
 
     // handle the initial state
     if ( _senderState == Initial )
     {
-        // check if connection is established
-        RNReplicaNet::Transport::Error res = _p_udpTransport->GetStatus();
-        if ( res != RNReplicaNet::Transport::kTransport_EOK )
-        {
-            // check the transport connection timeout
-            _pongTimer += deltaTime;
-            if ( _pongTimer > VOICE_LIFESIGN_PERIOD )
-            {
-                log_debug << "  -> receiver does not respond, giving up! " << std::endl;
-                _isAlive = false;
-            }
-            return;
-        }
-        _pongTimer = 0.0f;
-
-        _p_voicePaket->_typeId    = NETWORKSOUND_PAKET_TYPE_CON_REQ;
-        _p_voicePaket->_length    = 4;
-
+        _p_voicePaket->_typeId   = VOICE_PAKET_TYPE_CON_REQ;
+        _p_voicePaket->_length   = 4;
+        _p_voicePaket->_senderID = 0; // this must be 0 on connection!
         // put the player network id into data buffer
         int sid = yaf3d::NetworkDevice::get()->getSessionID();
         *( reinterpret_cast< int* >( _p_voicePaket->_p_buffer ) ) = sid;
 
-        _p_udpTransport->SendReliable( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE + _p_voicePaket->_length );
+        _p_sendSocket->Send( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE + _p_voicePaket->_length, _receiverAddress );
         _senderState = RequestConnection;
 
-        log_debug << "  -> ... connected, requesting for joining voice session ... " << std::endl;
+        log_verbose << "  <- request for joining voice session from: " << _receiverAddress.Export() << " ... " << std::endl;
 
         return;
     }
 
-    // check for new arrived data pakets
-    static char s_buffer[ 512 ];
-    while ( _p_udpTransport->Recv( s_buffer, 512 ) > 0 )
+    // check request timeout and try again
+    if ( _senderState == RequestConnection )
     {
-        // update protocol state
-        switch ( _senderState )
+        _respondTimer += deltaTime;
+        if ( _respondTimer > VOICE_RESPOND_TIMEOPUT )
         {
-            case RequestConnection:
-            {
-                VoicePaket* p_data = reinterpret_cast< VoicePaket* >( s_buffer );
-                if ( p_data->_typeId == NETWORKSOUND_PAKET_TYPE_CON_GRANT )
-                {
-                    // store assigned sender ID
-                    _senderID = p_data->_senderID;
-                    _senderState = ConnectionReady;
-                    std::stringstream msg;
-                    msg << "  -> receiver granted joining with ID: " << _senderID;
-                    log_debug << msg.str() << std::endl;
-                }
-                else if ( p_data->_typeId == NETWORKSOUND_PAKET_TYPE_CON_DENY )
-                {
-                    _senderState = ConnectionDenied;
-                    log_debug << "  -> receiver denied joining " << std::endl;
-                }
-            }
-            break;
-
-            // maintain the periodic alive signaling
-            case ConnectionReady:
-            {
-                // check for receiver's pong paket
-                // reset pong timer when a pong paket arrived
-                VoicePaket* p_data = reinterpret_cast< VoicePaket* >( s_buffer );
-                if ( ( p_data->_typeId == NETWORKSOUND_PAKET_TYPE_CON_PONG ) && ( _senderID == p_data->_senderID ) )
-                {
-                    _pongTimer = 0.0f;
-                }
-            }
-            break;
-
-            case ConnectionDenied:
-            {
-                // kill this sender
-                _isAlive = false;
-                // set the state to Initial so the input functor gets inactive too
-                _senderState = Initial;
-            }
-            break;
-
-            default:
-                ;
+            _respondTimer = 0.0f;
+            _senderState  = Initial;
         }
     }
 
     // send out a ping to receiver
     _pingTimer += deltaTime;
-    if ( _pingTimer > ( VOICE_LIFESIGN_PERIOD / 10.0f ) )
+    if ( _pingTimer > ( VOICE_LIFESIGN_PERIOD * 0.5f ) )
     {
         _pingTimer = 0.0f;
         _p_voicePaket->_length   = 0;
-        _p_voicePaket->_typeId   = NETWORKSOUND_PAKET_TYPE_CON_PING;
+        _p_voicePaket->_typeId   = VOICE_PAKET_TYPE_CON_PING;
         _p_voicePaket->_senderID = _senderID;
-        _p_udpTransport->SendReliable( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE );
+        _p_sendSocket->Send( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE, _receiverAddress );
     }
-
-    //!FIXME: checking for lifesign, i.e. checking the ping/pong timers, causes a problem 
-    //        when dragging the app window the gameloop stucks which causes lifetime exceeding!
 
     // check for receiver's pong
     _pongTimer += deltaTime;
     if ( _pongTimer > VOICE_LIFESIGN_PERIOD )
     {
         // lost the receiver
-        log_verbose << "  -> voice chat receiver does not respond, going dead ..." << std::endl;
+        log_verbose << "  <- voice chat receiver does not respond, going dead ..." << std::endl;
         _pongTimer = 0.0f;
 
         // set the alive flag to false, this flag is polled by netvoice entity and handled appropriately
@@ -241,18 +184,101 @@ void VoiceSender::update( float deltaTime )
 }
 
 void VoiceSender::operator ()( char* p_encodedaudio, unsigned short length )
-{ // this operator is called by voice input instance ( encoded audio is passed in p_encodedaudio )
+{ // this operator is called by voice input instance ( encoded audio is passed in p_encodedaudio ), it runs in an own thread context!
 
-    if ( _senderState != ConnectionReady )
+    static VoicePaket packet;
+
+    if ( ( _senderState != ConnectionReady ) || !_isAlive )
         return;
 
-    // transmit encoded input over net
-    _p_voicePaket->_paketStamp = ++_paketStamp;
-    _p_voicePaket->_typeId     = NETWORKSOUND_PAKET_TYPE_VOICE_DATA;
-    _p_voicePaket->_senderID   = _senderID;
-    _p_voicePaket->_length     = length;
-    memcpy( _p_voicePaket->_p_buffer, p_encodedaudio, length );
-    _p_udpTransport->Send( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE + _p_voicePaket->_length );
+    // wrap-around in ring buffer
+    if ( ( _sendBufferWritePos + length ) > VOICE_SEND_RING_BUF_SIZE )
+    {
+        int lentail = VOICE_SEND_RING_BUF_SIZE - _sendBufferReadPos;
+        memcpy( _p_sendBuffer, &_p_sendBuffer[ _sendBufferReadPos ], lentail );
+        memcpy( &_p_sendBuffer[ lentail ], p_encodedaudio, length );
+        _sendBufferWritePos = length + lentail;
+        _sendBufferReadPos  = 0;
+    }
+    else
+    {
+        memcpy( &_p_sendBuffer[ _sendBufferWritePos ], p_encodedaudio, length );
+        _sendBufferWritePos += length;
+    }
+
+    // we use a ring buffer in order to efficiently load the network packets, thus every packet carries 4 encoded frames
+    if ( ( _sendBufferWritePos - _sendBufferReadPos ) > VOICE_SEND_PACKET_BUF_SIZE )
+    {
+        // transmit encoded input over net
+        packet._typeId     = VOICE_PAKET_TYPE_VOICE_DATA;
+        packet._paketStamp = ++_paketStamp;
+        packet._senderID   = _senderID;
+        packet._length     = VOICE_SEND_PACKET_BUF_SIZE;
+        memcpy( packet._p_buffer, &_p_sendBuffer[ _sendBufferReadPos ], VOICE_SEND_PACKET_BUF_SIZE );
+
+        _sendBufferReadPos += VOICE_SEND_PACKET_BUF_SIZE;
+
+        _p_sendSocket->Send( reinterpret_cast< char* >( &packet ), VOICE_PAKET_HEADER_SIZE + packet._length, _receiverAddress );
+
+pakets++;
+    }
+}
+
+bool VoiceSender::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddress& senderaddr )
+{
+    bool handled = true;
+
+    // update protocol state
+    switch ( _senderState )
+    {
+        case RequestConnection:
+        {
+            if ( p_packet->_typeId == VOICE_PAKET_TYPE_CON_GRANT )
+            {
+                // store assigned sender ID
+                _senderID = p_packet->_senderID;
+                _senderState = ConnectionReady;
+                std::stringstream msg;
+                msg << "  <- receiver granted joining with ID: " << _senderID;
+                log_debug << msg.str() << std::endl;
+            }
+            else if ( p_packet->_typeId == VOICE_PAKET_TYPE_CON_DENY )
+            {
+                log_debug << "  <- receiver denied joining " << std::endl;
+
+                // kill this sender
+                _isAlive = false;
+                // set the state to Initial so the input functor gets inactive too
+                _senderState = Initial;
+            }
+            else
+            {
+                handled = false;
+            }
+        }
+        break;
+
+        // maintain the periodic alive signaling
+        case ConnectionReady:
+        {
+            // check for receiver's pong paket
+            // reset pong timer when a pong paket arrived
+            if ( ( p_packet->_typeId == VOICE_PAKET_TYPE_CON_PONG ) && ( _senderID == p_packet->_senderID ) )
+            {
+                _pongTimer = 0.0f;
+            }
+            else
+            {
+                handled = false;
+            }
+        }
+        break;
+
+        default:
+            handled = false;
+    }
+
+    return handled;
 }
 
 } // namespace vrc

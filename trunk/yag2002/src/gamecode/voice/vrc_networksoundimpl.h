@@ -35,30 +35,40 @@
 
 namespace vrc
 {
+//! Voice sample rate
+#define VOICE_SAMPLE_RATE                       16000
+//! Sound format, this must match to VOICE_DATA_FORMAT_TYPE
+#define VOICE_SOUND_FORMAT                      FMOD_SOUND_FORMAT_PCM16
+//! Type of raw voice data, currently we use 'short' for PCM16
+#define VOICE_DATA_FORMAT_TYPE                  short
+//! Maximal data in _p_buffer ( in bytes ) in a voice paket.
+//! Note: VOICE_PAKET_HEADER_SIZE + VOICE_PAKET_MAX_BUF_SIZE ( see vrc_natcommon.h ) should be maximal 512 bytes for a better performance
+#define VOICE_PAKET_MAX_BUF_SIZE                ( 512 - 14  )
+
 
 typedef std::queue< short > SoundSampleQueue;
 
 //! Class for network sound related exceptions
-class NetworkSoundExpection : public std::runtime_error
+class NetworkSoundException : public std::runtime_error
 {
     public:
-                                        NetworkSoundExpection( const std::string& reason ) :
+                                        NetworkSoundException( const std::string& reason ) :
                                          std::runtime_error( reason )
                                         {
                                         }
 
-        virtual                         ~NetworkSoundExpection() throw() {}
+        virtual                         ~NetworkSoundException() throw() {}
 
-                                        NetworkSoundExpection( const NetworkSoundExpection& e ) :
+                                        NetworkSoundException( const NetworkSoundException& e ) :
                                          std::runtime_error( e )
                                         {
                                         }
 
     protected:
 
-                                        NetworkSoundExpection();
+                                        NetworkSoundException();
 
-        NetworkSoundExpection&          operator = ( const NetworkSoundExpection& );
+        NetworkSoundException&          operator = ( const NetworkSoundException& );
 };
 
 //! Base class of all network sound implementations
@@ -73,7 +83,7 @@ class BaseNetworkSoundImplementation
 
 
         //! Initialize
-        virtual void                    initialize() throw( NetworkSoundExpection ) = 0;
+        virtual void                    initialize() throw( NetworkSoundException ) = 0;
 
         //! Set output volume
         virtual void                    setOutputGain( float /* gain */ ) {}
@@ -87,43 +97,13 @@ class BaseNetworkSoundImplementation
         //! Shutdown
         virtual void                    shutdown() = 0;
 
-        //! Set output gain, this is meant to be used in a receiver
-};
+        //! Get the sender ID
+        unsigned int                    getSenderID() const { return _senderID; }
 
-//! Voice server name
-#define VOICE_SERVER_NAME                       "vrc-voiceserver"
-//! Voice sample rate
-#define VOICE_SAMPLE_RATE                       16000
+    protected:
 
-//! Sound format, this must match to VOICE_DATA_FORMAT_TYPE
-#define VOICE_SOUND_FORMAT                      FMOD_SOUND_FORMAT_PCM16
-//! Type of raw voice data, currently we use 'short' for PCM16
-#define VOICE_DATA_FORMAT_TYPE                  short
-
-//! Life-sign signaling period ( in seconds ) used in voice paket transmission protocol
-#define VOICE_LIFESIGN_PERIOD                   5.0f
-
-//! Paket structure and type ids for transmitting voice stream
-#define NETWORKSOUND_PAKET_TYPE_CON_REQ         0x0010  /* Sender requests receiver for connection */
-#define NETWORKSOUND_PAKET_TYPE_CON_GRANT       0x0020  /* Receiver grants connection from sender */
-#define NETWORKSOUND_PAKET_TYPE_CON_DENY        0x0030  /* Receiver denies connection from sender */
-#define NETWORKSOUND_PAKET_TYPE_CON_CLOSE       0x0040  /* Sender closes connection */
-#define NETWORKSOUND_PAKET_TYPE_CON_PING        0x0050  /* Sender pings receiver */
-#define NETWORKSOUND_PAKET_TYPE_CON_PONG        0x0060  /* Receiver pongs sender */
-#define NETWORKSOUND_PAKET_TYPE_VOICE_DATA      0x0070  /* voice data buffer */
-
-//! Maximal data in _p_buffer ( in bytes ) in a voice paket
-#define VOICE_PAKET_MAX_BUF_SIZE                500
-//! Voice paket header size ( in bytes )
-#define VOICE_PAKET_HEADER_SIZE                 12
-//! The total paket size must not exceed 512 bytes!
-struct VoicePaket
-{
-    unsigned int        _paketStamp;        // stamp for detecting lost pakets
-    unsigned int        _senderID;          // unique sender ID, 0 means unassigned
-    unsigned short      _typeId;            // paket id
-    unsigned short      _length;            // buffer length
-    char                _p_buffer[ VOICE_PAKET_MAX_BUF_SIZE ];
+        //! Unique sender ID created by receiver on connection
+        unsigned int                    _senderID;
 };
 
 } // namespace vrc

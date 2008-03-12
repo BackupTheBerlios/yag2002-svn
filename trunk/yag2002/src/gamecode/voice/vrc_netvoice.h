@@ -40,6 +40,7 @@ namespace vrc
 
 #define ENTITY_NAME_NETWORKVOICE    "NetworkVoice"
 
+class VoiceTransport;
 class BaseVoiceInput;
 class NetworkSoundCodec;
 class BaseNetworkSoundImplementation;
@@ -60,6 +61,9 @@ class EnNetworkVoice :
 
         //! This entity needs updating
         void                                        updateEntity( float deltaTime );
+
+        //! Destroy the given sender, this is used by receiver.
+        void                                        destroySender( unsigned int senderID );
 
     protected:
         
@@ -93,6 +97,9 @@ class EnNetworkVoice :
 
         //! Voice network manager
         VoiceNetwork*                               _p_voiceNetwork;
+
+        //! Used for transporting voice packets over network
+        VoiceTransport*                             _p_transport;
 
         //! Sound compression codec
         NetworkSoundCodec*                          _p_codec;

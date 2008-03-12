@@ -143,16 +143,9 @@ void VoiceNetwork::updateVoiceClients( yaf3d::BaseEntity* p_playerentity, bool j
             assert( ( p_player->isVoiceChatEnabled() ) &&
                     "internal error, player has no voice chat support!" );
 
-            std::string ip = p_player->getIPAdress();
-            if ( !ip.empty() )
-            {
-                _voiceClientMap[ p_playerentity ] = ip ;
-            }
-            else
-            {
-                log_error << "VoiceNetwork: cannot resolve client IP for voice chat" << std::endl;
-            }
-        }        
+            int sid = p_player->getNetworkID();
+            _voiceClientMap[ p_playerentity ] = sid ;
+        }
     }
     else
     {

@@ -35,7 +35,8 @@
 namespace vrc
 {
 
-BaseNetworkSoundImplementation::BaseNetworkSoundImplementation()
+BaseNetworkSoundImplementation::BaseNetworkSoundImplementation() :
+ _senderID( 0 )
 {
 }
 

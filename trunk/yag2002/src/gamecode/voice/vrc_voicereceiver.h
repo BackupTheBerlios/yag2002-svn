@@ -35,26 +35,32 @@
 #include <vrc_main.h>
 #include <speex/speex.h>
 #include "vrc_networksoundimpl.h"
+#include "vrc_voicetransport.h"
+#include <RNLobby/Inc/TransportNATUDP.h>
 
 namespace vrc
 {
 
 class SoundNode;
+class EnNetworkVoice;
+class ReceiverUpdateThread;
 
 //! Class for receiving, decoding and playing incoming voice pakets
-class VoiceReceiver : public BaseNetworkSoundImplementation
+class VoiceReceiver : public BaseNetworkSoundImplementation, public CallbackVoiceData
 {
     public:
 
-
-                                                    VoiceReceiver();
+        explicit                                    VoiceReceiver( EnNetworkVoice* p_network, VoiceTransport* p_transport );
 
         virtual                                     ~VoiceReceiver();
-        
+
+        //! Get the sound data mutex
+        static OpenThreads::Mutex&                   getSoundDataMutex() { return _s_sndDataMutex; }
+
     protected:
 
         //! Initialize the voice server
-        void                                        initialize() throw( NetworkSoundExpection );
+        void                                        initialize() throw( NetworkSoundException );
 
         //! Set output gain
         void                                        setOutputGain( float gain );
@@ -65,31 +71,47 @@ class VoiceReceiver : public BaseNetworkSoundImplementation
         //! Shutdown the voice server
         void                                        shutdown();
 
-        //! Update server
+        //! Update server, call this in gaim loop
         void                                        update( float deltaTime );
 
         //! Setup FMOD
-        void                                        setupSound() throw( NetworkSoundExpection );
+        void                                        setupSound() throw( NetworkSoundException );
 
         //! Create a sound node for a new client with given session ID
         SoundNode*                                  createSoundNode();
 
         //! Setup ReplicaNet
-        void                                        setupNetwork()  throw( NetworkSoundExpection );
+        void                                        setupNetwork()  throw( NetworkSoundException );
 
-        //! A map for connected senders ( udp transport / sound node )
-        typedef std::map< RNReplicaNet::Transport*, SoundNode* > SenderMap;
+        //! Destroy the given connection, note: this call modifies _soundNodeMap!
+        void                                        destroyConnection( unsigned int senderID );
+
+        //! Overriden method called when new data received on socket.
+        bool                                        recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddress& senderaddr );
+
+        //! A map for connected senders ( sender ID / sound node )
+        typedef std::map< unsigned int, SoundNode* > SenderMap;
+
         SenderMap                                   _soundNodeMap;
 
-        //! Unique sender ID for connecting senders
-        unsigned int                                _senderID;
-
-        //! UDP Transport
-        RNReplicaNet::Transport*                    _p_udpTransport;
+        //! Transport layer
+        VoiceTransport*                             _p_transport;
 
         //! Sound system
         FMOD::System*                               _p_soundSystem;
-    
+
+        //! Voice network
+        EnNetworkVoice*                             _p_network;
+
+        //! Receiver updating is done in an own thread
+        ReceiverUpdateThread*                       _p_receiverUpdateThread;
+
+        //! Sound data mutex
+        static OpenThreads::Mutex                   _s_sndDataMutex;
+
+        //! Senders' lifesign check timer
+        float                                       _lifesignCheck;
+
         //! Output gain
         float                                       _outputGain;
 

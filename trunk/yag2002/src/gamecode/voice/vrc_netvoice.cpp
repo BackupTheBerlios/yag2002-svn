@@ -34,8 +34,16 @@
 #include "vrc_voicesender.h"
 #include "vrc_voicereceiver.h"
 #include "vrc_voiceinput.h"
+#include "vrc_natclient.h"
 #include "vrc_codec.h"
 #include <RNXPURL/Inc/NetworkEmulation.h>
+
+
+//! Define this for getting voice input from file instead of microphone device; it is used for testing.
+//#define INPUT_TEST
+//! Test file name
+#define INPUT_TEST_FILE     "voiceinput.wav"
+
 
 namespace vrc
 {
@@ -47,6 +55,7 @@ EnNetworkVoice::EnNetworkVoice():
 _spotRange( 20.0f ),
 _p_receiver( NULL ),
 _p_voiceNetwork( NULL ),
+_p_transport( NULL ),
 _p_codec( NULL ),
 _p_soundInput( NULL ),
 _inputGain( 1.0f ),
@@ -60,6 +69,9 @@ EnNetworkVoice::~EnNetworkVoice()
 {
     if ( _active )
         destroyVoiceChat();
+
+    if ( _p_transport )
+        delete _p_transport;
 }
 
 void EnNetworkVoice::handleNotification( const yaf3d::EntityNotification& notification )
@@ -72,6 +84,11 @@ void EnNetworkVoice::handleNotification( const yaf3d::EntityNotification& notifi
             // reflect the settings in menu
             setupNetworkVoice();
             break;
+
+        case YAF3D_NOTIFY_NETWORKING_ESTABLISHED:
+
+            if ( _p_transport )
+                _p_transport->initialize();
 
         case YAF3D_NOTIFY_SHUTDOWN:
             break;
@@ -88,17 +105,6 @@ void EnNetworkVoice::initialize()
 
     // register entity in order to get notifications (e.g. from menu entity)
     yaf3d::EntityManager::get()->registerNotification( this, true );
-
-    // some network emulation settings
-    //bool enableNetworkEmulation = true;
-    //if ( enableNetworkEmulation )
-    //{
-    //    RNReplicaNet::NetworkEmulation::SetEnabled( true );
-    //    RNReplicaNet::NetworkEmulation::SetConnection( RNReplicaNet::NetworkEmulation::kModem56k, true );
-    //    RNReplicaNet::NetworkEmulation::SetPacketLoss( 5 );
-    //    RNReplicaNet::NetworkEmulation::SetAverageLatency( 0.1f );
-    //    RNReplicaNet::NetworkEmulation::SetJitter( 0.02f );
-    //}
 }
 
 void EnNetworkVoice::setupNetworkVoice()
@@ -140,10 +146,14 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
 
     try
     {
+        assert( !_p_transport && "transport layer already exists!" );
+        // setup the transport layer
+        _p_transport = new VoiceTransport;
+
         _inputGain = inputgain;
 
         // create a sound receiver
-        _p_receiver = new VoiceReceiver();
+        _p_receiver = new VoiceReceiver( this, _p_transport );
         _p_receiver->initialize();
         _p_receiver->setOutputGain( outputgain );
         _p_receiver->setSpotRange( _spotRange );
@@ -159,18 +169,24 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
         _p_codec->setEncoderQuality( 10 );
         _p_codec->setupEncoder();
 
-        unsigned int inputdevice;
-        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_INPUT_DEVICE, inputdevice );
+
+#ifdef INPUT_TEST
+        _p_soundInput = new VoiceFileInput( INPUT_TEST_FILE, NULL, _p_codec );
+        _p_soundInput->initialize();
+        _p_soundInput->setInputGain( _inputGain );
+        _p_soundInput->stop( true );
+#else
+
+        //unsigned int inputdevice;
+        //yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_INPUT_DEVICE, inputdevice );
         _p_soundInput = new VoiceMicrophoneInput( NULL, _p_codec );
-        if ( inputdevice != VRC_GS_VOICECHAT_INPUT_DEVICE_NA )
-        {
-            _p_soundInput->initialize();
-            _p_soundInput->setInputGain( _inputGain );
-            // we begin with input grabbing when at least one sender is active
-            _p_soundInput->stop( true );
-        }
+        _p_soundInput->initialize();
+        _p_soundInput->setInputGain( _inputGain );
+        // we begin with input grabbing when at least one sender is active
+        _p_soundInput->stop( true );
+#endif
     }
-    catch ( const NetworkSoundExpection& e )
+    catch ( const NetworkSoundException& e )
     {
         log_error << ENTITY_NAME_NETWORKVOICE << ":" << getInstanceName() << "  could not be initialized." << std::endl;
         log_error << "  reason: " << e.what() << std::endl;
@@ -246,8 +262,14 @@ void EnNetworkVoice::destroyVoiceChat()
             delete _p_codec;
             _p_codec = NULL;
         }
+
+        if ( _p_transport )
+        {
+            delete _p_transport;
+            _p_transport = NULL;
+        }
     }
-    catch ( const NetworkSoundExpection& e )
+    catch ( const NetworkSoundException& e )
     {
         log_error << ENTITY_NAME_NETWORKVOICE << ":" << getInstanceName() << "  a problem occurred during shutdown." << std::endl;
         log_error << "  reason: " << e.what() << std::endl;
@@ -289,13 +311,9 @@ void EnNetworkVoice::updateEntity( float deltaTime )
         }
     }
 
-    // update audio input
-    if ( _p_soundInput )
-        _p_soundInput->update();
-
-    // update our receiver
-    if ( _p_receiver )
-        _p_receiver->update( deltaTime );
+//! TODO: updating is done in an own thread (receiver)
+//// update the transport
+//_p_transport->update( deltaTime );
 
     //! TODO: remove this diagnostics stuff later
     //*******************************************
@@ -309,6 +327,21 @@ void EnNetworkVoice::updateEntity( float deltaTime )
     //    log_verbose << msg.str() << std::endl;
     //}
     //*******************************************
+}
+
+void EnNetworkVoice::destroySender( unsigned int senderID )
+{
+    SenderMap::iterator p_sender = _sendersMap.begin(), p_senderEnd = _sendersMap.end();
+    for( ; p_sender != p_senderEnd; ++p_sender )
+    {
+        VoiceSender* p_voicesender = dynamic_cast< VoiceSender* >( p_sender->second );
+        assert( p_voicesender && "invalid object type!" );
+        if ( p_voicesender->getSenderID() == senderID )
+        {
+            p_voicesender->die();
+            break;
+        }
+    }
 }
 
 void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
@@ -334,8 +367,8 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
         else
         {
             // create a new sender
-            std::string receiverIP = p_vmapent->second;
-            BaseNetworkSoundImplementation* p_sender = new VoiceSender( receiverIP, _p_soundInput );
+            int sid = p_vmapent->second;
+            BaseNetworkSoundImplementation* p_sender = new VoiceSender( sid, _p_soundInput, _p_transport );
             p_sender->initialize();
             _sendersMap[ p_entity ] = p_sender;
 

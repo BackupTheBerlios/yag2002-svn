@@ -31,14 +31,11 @@
 #include <vrc_main.h>
 #include "vrc_codec.h"
 #include "vrc_networksoundimpl.h"
-
 #include "vrc_voicetestutils.h"
+
 
 namespace vrc
 {
-
-// power threshold for detection of silent periods in voice data during encoding
-#define VOICE_ACTIVATION_THRESHOLD  0.0015f
 
 NetworkSoundCodec::NetworkSoundCodec() :
 _p_mode( NULL ),
@@ -49,7 +46,6 @@ _encoderFrameSize( 0 ),
 _p_codecDecoderState( NULL ),
 _enh( 1 ),
 _sampleRate( VOICE_SAMPLE_RATE ),
-_maxDecodeQueueSize( CODEC_MAX_BUFFER_SIZE ),
 _decoderFrameSize( 0 )
 {
     // determine the mode
@@ -124,6 +120,9 @@ void NetworkSoundCodec::setupEncoder()
     _p_preprocessorState = speex_preprocess_state_init( _encoderFrameSize, _sampleRate );
     speex_preprocess_ctl( _p_preprocessorState, SPEEX_PREPROCESS_SET_DENOISE, &enabled );
     speex_preprocess_ctl( _p_preprocessorState, SPEEX_PREPROCESS_SET_VAD, &enabled );
+
+    // erase the input buffer
+    memset( _p_inputBuffer, 0, sizeof( _p_inputBuffer ) );
 }
 
 void NetworkSoundCodec::setupDecoder()
@@ -140,12 +139,9 @@ void NetworkSoundCodec::setupDecoder()
     speex_decoder_ctl( _p_codecDecoderState, SPEEX_SET_SAMPLING_RATE, &_sampleRate );
     speex_decoder_ctl( _p_codecDecoderState, SPEEX_GET_FRAME_SIZE, &_decoderFrameSize );
     speex_bits_init( &_decoderBits );
-}
 
-void NetworkSoundCodec::setMaxDecodeQueueSize( unsigned int size )
-{
-    // -100 as we do not exactly limit the queue size to this max size, see 'decode'
-    _maxDecodeQueueSize = size - 100;
+    // erase the output buffer
+    memset( _p_outputBuffer, 0, sizeof( _p_outputBuffer ) );
 }
 
 void NetworkSoundCodec::setEncoderQuality( unsigned int q )
@@ -176,47 +172,80 @@ unsigned int NetworkSoundCodec::encode( short* p_soundbuffer, unsigned int lengt
 {
     assert( _p_codecEncoderState && "encoder has not been created!" );
 
-    // limit the input to max buffer size
-    if ( length > CODEC_MAX_BUFFER_SIZE )
+    // check internal buffer overrun
+    if ( _inputBufferQueue.size() < CODEC_MAX_BUFFER_SIZE - length )
     {
-        length = CODEC_MAX_BUFFER_SIZE;
-        log_debug << "*** sound codec: encoder had to limit requested buffer length to defined maximum: " << CODEC_MAX_BUFFER_SIZE << std::endl;
+        for ( unsigned int cnt = 0; cnt < length; ++cnt )
+        {
+            _inputBufferQueue.push( p_soundbuffer[ cnt ] );
+        }
+    }
+    else
+    {
+//! TODO: if there is no receivers then stop the encoder!
+        log_verbose << "Voice Codec: buffer overrun!" << std::endl;
     }
 
-    // preproces samples
-    /*int vad = */speex_preprocess( _p_preprocessorState, p_soundbuffer, NULL );
+    unsigned int buffersize = _inputBufferQueue.size();
 
-    // copy and gain the preprocessed input
-    for ( unsigned int cnt = 0; cnt < length; ++cnt )
-        _p_inputBuffer[ cnt ] = static_cast< float >( p_soundbuffer[ cnt ]  ) * gain;
+    // do we have enough data for encoding?
+    if ( buffersize < _encoderFrameSize )
+    {
+        return 0;
+    }
 
-    // encode
     int encodedbytes = 0;
-    speex_bits_reset( &_encoderBits );
-    speex_encode( _p_codecEncoderState, _p_inputBuffer, &_encoderBits );
-    int nb = speex_bits_nbytes( &_encoderBits );
-    encodedbytes = speex_bits_write( &_encoderBits, p_bitbuffer, nb );
+    for ( unsigned int pos = 0; pos < buffersize; pos += _encoderFrameSize )
+    {
+        if ( ( pos + _encoderFrameSize ) > buffersize )
+            break;
 
-    return static_cast< unsigned int >( encodedbytes );
+        for ( unsigned int cnt = 0; cnt < _encoderFrameSize; ++cnt )
+        {
+            _p_inputBuffer[ cnt ] = static_cast< float >( _inputBufferQueue.front() ) * gain;
+            _inputBufferQueue.pop();
+        }
+
+        // preproces samples
+        /*int vad = */ //speex_preprocess( _p_preprocessorState, p_soundbuffer, NULL );
+
+        // encode
+        speex_bits_reset( &_encoderBits );
+        speex_encode( _p_codecEncoderState, _p_inputBuffer, &_encoderBits );
+        int nb = speex_bits_nbytes( &_encoderBits );
+        // we expect encoded packets of CODEC_CHUNK_SIZE bytes
+        encodedbytes += speex_bits_write( &_encoderBits, &p_bitbuffer[ encodedbytes ], nb );
+
+        // check for network buffer fitting
+        if ( encodedbytes + CODEC_CHUNK_SIZE > VOICE_PAKET_MAX_BUF_SIZE )
+            break;
+    }
+
+    return encodedbytes;
 }
 
 bool NetworkSoundCodec::decode( char* p_bitbuffer, unsigned int length, std::queue< short >& samplequeue, float gain )
 {
     assert( _p_codecDecoderState && "decoder has not been created!" );
 
-    // check for queue overflow
-    // we check this only once per call, not for all iterations on pushing values into queue ( it saves cpu time )
-    // so the actual max queue size may vary!
-    if ( samplequeue.size() > _maxDecodeQueueSize )
-        return false;
-
-    // decode and enqueue sound data
-    speex_bits_read_from( &_decoderBits, p_bitbuffer, length );
-    int res = speex_decode( _p_codecDecoderState, &_decoderBits, _p_outputBuffer );
-    if ( res == 0 )
+    if ( length < CODEC_CHUNK_SIZE )
     {
-        for ( unsigned short cnt = 0; cnt < _decoderFrameSize; ++cnt )
-            samplequeue.push( static_cast< short >( _p_outputBuffer[ cnt ] * gain ) );
+        log_error << "Codec: unexpected codec packet size received, " << length << ", expected minimal size: " << CODEC_CHUNK_SIZE << std::endl;
+        return false;
+    }
+
+    int decodedbytes = 0;
+    int buffersize = length;
+    for ( int pos = 0; buffersize > 0; pos += CODEC_CHUNK_SIZE, buffersize -= CODEC_CHUNK_SIZE )
+    {
+        // decode and enqueue sound data
+        speex_bits_read_from( &_decoderBits, &p_bitbuffer[ pos ], CODEC_CHUNK_SIZE );
+        int res = speex_decode( _p_codecDecoderState, &_decoderBits, _p_outputBuffer );
+        if ( res == 0 )
+        {
+            for ( unsigned short cnt = 0; cnt < _decoderFrameSize; ++cnt )
+                samplequeue.push( static_cast< short >( _p_outputBuffer[ cnt ] * gain ) );
+        }
     }
 
     return true;
