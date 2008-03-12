@@ -355,6 +355,17 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, NodeI
     _p_session->SetPreConnect( true );
     _p_session->SetEncryption( true );
 
+    // some network emulation settings
+    //bool enableNetworkEmulation = true;
+    //if ( enableNetworkEmulation )
+    //{
+    //    RNReplicaNet::NetworkEmulation::SetEnabled( true );
+    //    RNReplicaNet::NetworkEmulation::SetConnection( RNReplicaNet::NetworkEmulation::kModem56k, true );
+    //    RNReplicaNet::NetworkEmulation::SetPacketLoss( 5 );
+    //    RNReplicaNet::NetworkEmulation::SetAverageLatency( 0.1f );
+    //    RNReplicaNet::NetworkEmulation::SetJitter( 0.02f );
+    //}
+
     //! if the URL is empty or "localhost" then set it to "127.0.0.1"
     std::string Url, ip;
     if ( !serverIp.length() || ( serverIp == "localhost" ) )
