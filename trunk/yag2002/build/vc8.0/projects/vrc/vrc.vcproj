@@ -67,7 +67,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsd.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgShadowd.lib osgcald.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib RNPlatformDMDLL.lib RNXPCompressionDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib libpng.lib fmodex_vc.lib lua51.lib libspeexd.lib physfsd.lib frameworkd.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsd.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgShadowd.lib osgcald.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib RNPlatformDMDLL.lib RNXPCompressionDMDLL.lib RNLobbyDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib libpng.lib fmodex_vc.lib lua51.lib libspeexd.lib physfsd.lib frameworkd.lib"
 				OutputFile="../../../../bin/win32/vrc_debug.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)\LibDotNet2005&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs-vc8.0&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
@@ -154,7 +154,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreads.lib osg.lib osgDB.lib osgGA.lib osgUtil.lib osgcal.lib cal3d.lib osgSDL.lib SDL.lib SDLmain.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib RNPlatformRMDLL.lib RNXPCompressionRMDLL.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib libpng.lib fmodex_vc.lib lua51.lib libspeex.lib physfs.lib framework.lib"
+				AdditionalDependencies="opengl32.lib OpenThreads.lib osg.lib osgDB.lib osgGA.lib osgUtil.lib osgShadow.lib osgcal.lib cal3d.lib osgSDL.lib SDL.lib SDLmain.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib RNPlatformRMDLL.lib RNXPCompressionRMDLL.lib RNLobbyRMDLL.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib libpng.lib fmodex_vc.lib lua51.lib libspeex.lib libspeexdsp.lib physfs.lib framework.lib"
 				OutputFile="../../../../bin/win32/vrc.exe"
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)\LibDotNet2005&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs-vc8.0&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
 				IgnoreAllDefaultLibraries="false"
@@ -248,7 +248,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsd.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgcald.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib RNPlatformDMDLL.lib RNXPCompressionDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib libpng.lib fmodex_vc.lib lua51.lib libspeexd.lib physfsd.lib framework-serverd.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsd.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgcald.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib RNPlatformDMDLL.lib RNXPCompressionDMDLL.lib RNLobbyDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib libpng.lib fmodex_vc.lib lua51.lib libspeexd.lib libspeexdspd.lib physfsd.lib framework-serverd.lib"
 				OutputFile="../../../../bin/win32/vrc-server_debug.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)\LibDotNet2005&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs-vc8.0&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
@@ -264,6 +264,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				EmbedManifest="false"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -335,7 +336,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreads.lib osg.lib osgDB.lib osgGA.lib osgUtil.lib osgcal.lib cal3d.lib osgSDL.lib SDL.lib SDLmain.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib RNPlatformRMDLL.lib RNXPCompressionRMDLL.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib libpng.lib fmodex_vc.lib lua51.lib libspeex.lib physfs.lib framework-server.lib"
+				AdditionalDependencies="opengl32.lib OpenThreads.lib osg.lib osgDB.lib osgGA.lib osgUtil.lib osgcal.lib cal3d.lib osgSDL.lib SDL.lib SDLmain.lib RNReplicaNetRMDLL.lib RNXPSessionRMDLL.lib RNXPSocketsRMDLL.lib RNXPURLRMDLL.lib RNPlatformRMDLL.lib RNXPCompressionRMDLL.lib RNLobbyRMDLL.lib Newton.lib CEGUIBase.lib CEGUITaharezLook.lib libpng.lib fmodex_vc.lib lua51.lib libspeex.lib libspeexdsp.lib physfs.lib framework-server.lib"
 				OutputFile="../../../../bin/win32/vrc-server.exe"
 				LinkIncremental="0"
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)\LibDotNet2005&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs-vc8.0&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
@@ -1489,6 +1490,26 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\voice\vrc_natclient.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\voice\vrc_natclient.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\voice\vrc_natcommon.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\voice\vrc_natserver.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\voice\vrc_natserver.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\voice\vrc_netvoice.cpp"
 					>
 				</File>
@@ -1546,6 +1567,14 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\voice\vrc_voicetestutils.inl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\voice\vrc_voicetransport.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\voice\vrc_voicetransport.h"
 					>
 				</File>
 			</Filter>
