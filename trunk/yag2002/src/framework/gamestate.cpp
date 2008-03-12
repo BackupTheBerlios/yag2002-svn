@@ -99,7 +99,7 @@ BOOL WINAPI handlerRoutine( DWORD dwCtrlType )  //  control signal type
         case CTRL_C_EVENT:
         case CTRL_SHUTDOWN_EVENT:
         {
-            Application::get()->stop();
+            Application::get()->handleCtrlC();
             break;
         }
     }

@@ -90,6 +90,9 @@ class Application : public Singleton< Application >
         //! Get the application window title
         const std::string&                          getWindowTitle();
 
+        //! Handle key input Ctrl+C
+        void                                        handleCtrlC();
+
     protected:
 
 
@@ -138,6 +141,8 @@ class Application : public Singleton< Application >
         std::string                                 _appWindowTitle;
 
         bool                                        _appWindowMinimized;
+
+        bool                                        _ctrlCPressed;
 
         AppWindowStateHandler*                      _p_appWindowStateHandler;
 

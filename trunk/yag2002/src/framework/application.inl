@@ -85,3 +85,8 @@ inline void Application::setAppWindowMinimized( bool en )
 {
     _appWindowMinimized = en;
 }
+
+inline void Application::handleCtrlC()
+{
+    _ctrlCPressed = true;
+}

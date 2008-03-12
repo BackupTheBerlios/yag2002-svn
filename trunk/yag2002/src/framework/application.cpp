@@ -129,6 +129,7 @@ _screenWidth( 600 ),
 _screenHeight( 400 ),
 _fullScreen( false ),
 _appWindowMinimized( false ),
+_ctrlCPressed( false ),
 _p_appWindowStateHandler( NULL )
 {
 }
@@ -641,6 +642,12 @@ void Application::run()
         lastTick  = curTick;
         curTick   = timer.tick();
         deltaTime = timer.delta_s( lastTick, curTick );
+
+        // we handle Ctrl+C in main thread context
+        if ( _ctrlCPressed )
+        {
+            _p_gameState->setState( GameState::Quitting );
+        }
 
         // check heap if enabled ( used for detecting heap corruptions )
         YAF3D_CHECK_HEAP();
