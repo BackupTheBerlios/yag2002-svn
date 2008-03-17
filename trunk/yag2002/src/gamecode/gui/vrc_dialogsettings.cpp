@@ -242,12 +242,12 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
 
             // input gain
             _p_voiceInputGain = static_cast< CEGUI::Scrollbar* >( p_paneSoundVoice->getChild( SDLG_PREFIX "sb_voiceinputgain" ) );
-            _p_voiceInputGain->setDocumentSize( 30.0f ); // the scrollbar works in range 0...2 now
+            _p_voiceInputGain->setDocumentSize( 1.0f ); // the scrollbar works in range 0...1
             _p_voiceInputGain->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onVoiceInputGainChanged, this ) );
 
             // output gain
             _p_voiceOutputGain = static_cast< CEGUI::Scrollbar* >( p_paneSoundVoice->getChild( SDLG_PREFIX "sb_voiceoutputgain" ) );
-            _p_voiceOutputGain->setDocumentSize( 2.0f ); // the scrollbar works in range 0...2 now
+            _p_voiceOutputGain->setDocumentSize( 1.0f ); // the scrollbar works in range 0...1
             _p_voiceOutputGain->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onVoiceOutputGainChanged, this ) );
 
             CEGUI::PushButton* p_inputtest = static_cast< CEGUI::PushButton* >( p_paneSoundVoice->getChild( SDLG_PREFIX "btn_voicetest" ) );
