@@ -209,11 +209,11 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
     // register for getting periodic updates
     yaf3d::EntityManager::get()->registerUpdate( this, true );
 
-    // set functor to get notifications on changed voice chat list
-    vrc::gameutils::PlayerUtils::get()->registerFunctorVoiceChatPlayerListChanged( this, true );
+    // set callback to get notifications on changed voice chat list
+    vrc::gameutils::PlayerUtils::get()->registerCallbackVoiceChatPlayerListChanged( this, true );
 
-    // set functor to get notifications on changed hotspot
-    _p_voiceNetwork->registerFunctorHotspotChanged( this, true );
+    // set callback to get notifications on changed hotspot
+    _p_voiceNetwork->registerCallbackHotspotChanged( this, true );
 
     // set active flag
     _active = true;
@@ -225,9 +225,6 @@ void EnNetworkVoice::destroyVoiceChat()
 
     try
     {
-        // remove functor in player utils
-        vrc::gameutils::PlayerUtils::get()->registerFunctorVoiceChatPlayerListChanged( this, false );
-
         SenderMap::iterator p_beg = _sendersMap.begin(), p_end = _sendersMap.end();
         for ( ; p_beg != p_end; ++p_beg )
         {
@@ -245,7 +242,7 @@ void EnNetworkVoice::destroyVoiceChat()
         // now destroy voice network
         if ( _p_voiceNetwork )
         {
-            _p_voiceNetwork->registerFunctorHotspotChanged( this, false );
+            _p_voiceNetwork->registerCallbackHotspotChanged( this, false );
             _p_voiceNetwork->shutdown();
             delete _p_voiceNetwork;
             _p_voiceNetwork = NULL;
@@ -279,7 +276,7 @@ void EnNetworkVoice::destroyVoiceChat()
     yaf3d::EntityManager::get()->registerUpdate( this, false );
 
     // deregister from getting notifications on changed voice chat list
-    vrc::gameutils::PlayerUtils::get()->registerFunctorVoiceChatPlayerListChanged( this, false );
+    vrc::gameutils::PlayerUtils::get()->registerCallbackVoiceChatPlayerListChanged( this, false );
 
     // reset active flag
     _active = false;
@@ -301,8 +298,6 @@ void EnNetworkVoice::updateEntity( float deltaTime )
         {
             delete p_sender;
             _sendersMap.erase( p_beg );
-            p_beg = _sendersMap.begin();
-            p_end = _sendersMap.end();
             break;
         }
         else
@@ -310,23 +305,6 @@ void EnNetworkVoice::updateEntity( float deltaTime )
             p_beg->second->update( deltaTime );
         }
     }
-
-//! TODO: updating is done in an own thread (receiver)
-//// update the transport
-//_p_transport->update( deltaTime );
-
-    //! TODO: remove this diagnostics stuff later
-    //*******************************************
-    //static float t = 0.0f;
-    //t += deltaTime;
-    //if ( t > 2.0f )
-    //{
-    //    t = 0.0f;
-    //    std::stringstream msg;
-    //    msg << "current active senders: " << _sendersMap.size();
-    //    log_verbose << msg.str() << std::endl;
-    //}
-    //*******************************************
 }
 
 void EnNetworkVoice::destroySender( unsigned int senderID )
@@ -362,7 +340,7 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
         VoiceNetwork::VoiceClientMap::const_iterator p_vmapent = _p_voiceNetwork->getHotspot().find( p_entity );
         if ( p_vmapent == p_vmapend )
         {
-            log_error << " EnNetworkVoice: internal error, voice client's receiver ip cannot be determined." << std::endl;
+            log_error << " EnNetworkVoice: internal error, voice client's receiver address cannot be determined." << std::endl;
         }
         else
         {
@@ -379,23 +357,21 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
     }
     else
     {
-        if ( p_hit == _sendersMap.end() )
+        // check if the sender is in hotspot map, if so remove it
+        if ( p_hit != _sendersMap.end() )
         {
-            log_verbose << "EnNetworkVoice: entity is not in internal hotspot map!" << std::endl;
-            return;
+            // destroy the sender
+            p_hit->second->shutdown();
+            delete p_hit->second;
+            _sendersMap.erase( p_hit );
+            // stop input grabbing when no senders exist
+            if ( _sendersMap.size() == 0 )
+                _p_soundInput->stop( true );
         }
-
-        // destroy the sender
-        p_hit->second->shutdown();
-        delete p_hit->second;
-        _sendersMap.erase( p_hit );
-        // stop input grabbing when no senders exist
-        if ( _sendersMap.size() == 0 )
-            _p_soundInput->stop( true );
     }
 }
 
-void EnNetworkVoice::operator()( bool /*localplayer*/, bool joining, yaf3d::BaseEntity* p_entity )
+void EnNetworkVoice::onVoiceChatPlayerListChanged( bool joining, yaf3d::BaseEntity* p_entity )
 {
     // let the voice network manager update its internal client list when a new client is joining
     if ( joining )
@@ -421,7 +397,7 @@ void EnNetworkVoice::operator()( bool /*localplayer*/, bool joining, yaf3d::Base
     }
 }
 
-void EnNetworkVoice::operator()( bool joining, yaf3d::BaseEntity* p_entity )
+void EnNetworkVoice::onHotspotChanged( bool joining, yaf3d::BaseEntity* p_entity )
 {
     // update the hotspot when clients enter / leave the hotspot range
     updateHotspot( p_entity, joining );

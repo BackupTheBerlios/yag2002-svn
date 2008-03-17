@@ -76,6 +76,9 @@ class NATClient
         //! Server address
         RNReplicaNet::XPAddress                     _serverAddress;
 
+        //! Used if ip forwarding is enabled.
+        int                                         _forwardedPort;
+
         //! General timer
         float                                       _timer;
 

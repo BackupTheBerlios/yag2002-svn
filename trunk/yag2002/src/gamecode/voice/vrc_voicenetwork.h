@@ -67,20 +67,20 @@ class VoiceNetwork
         void                                        updateVoiceClients( yaf3d::BaseEntity* p_playerentity, bool joining );
 
         //! Class for getting notified whenever the voice hotspot changed 
-        class FunctorHotspotChange
+        class CallbackHotspotChange
         {
             public:
-                                                        FunctorHotspotChange() {}
+                                                        CallbackHotspotChange() {}
 
-                virtual                                 ~FunctorHotspotChange() {}
+                virtual                                 ~CallbackHotspotChange() {}
 
                 //! Callback method called whenever the hotspot changed
-                virtual void                            operator()( bool joining, yaf3d::BaseEntity* p_entity ) = 0;
+                virtual void                            onHotspotChanged( bool joining, yaf3d::BaseEntity* p_entity ) = 0;
         };
 
-        //! Registor functor for changed hotspot.
+        //! Callback registry for changed hotspot.
         //! Use reg = true for registration and reg = false for deregistration
-        void                                        registerFunctorHotspotChanged( FunctorHotspotChange* p_func, bool reg = true );
+        void                                        registerCallbackHotspotChanged( CallbackHotspotChange* p_func, bool reg = true );
 
     protected:
 
@@ -117,8 +117,8 @@ class VoiceNetwork
         //! Hotspot update timer
         float                                       _hotspotUpdateTimer;
 
-        //! Hotspot functor registrations
-        std::vector< FunctorHotspotChange* >        _funcsHotspot;
+        //! Hotspot changed-callback registrations
+        std::vector< CallbackHotspotChange* >       _cbsHotspot;
 
     friend class EnNetworkVoice;
 };

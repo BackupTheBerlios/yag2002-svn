@@ -43,7 +43,7 @@ class  BaseVoiceInput;
 struct VoicePaket;
 
 //! Class for testing the codec
-class CodecTest : public BaseVoiceInput::FCaptureInput
+class CodecTest : public BaseVoiceInput::CallbackInputStream
 {
     public:
 
@@ -62,8 +62,8 @@ class CodecTest : public BaseVoiceInput::FCaptureInput
         //! Shutdown the voice server
         void                                        shutdown();
 
-        //! Functor for grabbing the sound input, see class BaseVoiceInput
-        void                                        operator ()( char* p_encodedaudio, unsigned short length );
+        //! Callback for grabbing the sound input, see class BaseVoiceInput
+        void                                        recvEncodedAudio( char* p_encodedaudio, unsigned short length );
 
         //! Test wav file, must be a PCM16, 16 khz
         std::string                                 _testFile;
@@ -83,7 +83,7 @@ class CodecTest : public BaseVoiceInput::FCaptureInput
         //! Sound sample queue
         std::queue< short >                         _sampleQueue;
 
-    friend class BaseVoiceInput::FCaptureInput;
+    friend class BaseVoiceInput::CallbackInputStream;
 };
 
 //! Class for writing a wav file given a collection of samples

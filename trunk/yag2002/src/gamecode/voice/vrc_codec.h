@@ -65,6 +65,9 @@ class NetworkSoundCodec
         //! Set decoder complexity in range [ 1 ... 10 ], default is 5
         void                                        setEncoderComplexity( unsigned int c );
 
+        //! Get the frame size of every encoded voice packet in bytes.
+        unsigned int                                getEncoderFrameSize() const { return _encoderFrameSize; }
+
         /**
             Encode 'length' number of raw sound data ( of type short ) to a compressed paket stored in p_bitbuffer, the samples are multiplied by 'gain'.
             This method returns the count of bytes needed for encoding. The caller must ensure that p_bitbuffer is big enough.

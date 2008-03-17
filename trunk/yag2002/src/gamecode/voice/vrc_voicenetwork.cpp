@@ -100,9 +100,9 @@ void VoiceNetwork::updateHotspot()
 
                 // now notify registered callbacks for changed hotspot ( addition )
                 {
-                    std::vector< FunctorHotspotChange* >::iterator p_cbbeg = _funcsHotspot.begin(), p_cbend = _funcsHotspot.end();
+                    std::vector< CallbackHotspotChange* >::iterator p_cbbeg = _cbsHotspot.begin(), p_cbend = _cbsHotspot.end();
                     for ( ; p_cbbeg != p_cbend; ++p_cbbeg )
-                        ( *p_cbbeg )->operator()( true, p_beg->first );
+                        ( *p_cbbeg )->onHotspotChanged( true, p_beg->first );
                 }
             }
         }
@@ -114,9 +114,9 @@ void VoiceNetwork::updateHotspot()
             {
                 // first notify registered callbacks for changed hotspot ( removal )
                 {
-                    std::vector< FunctorHotspotChange* >::iterator p_cbbeg = _funcsHotspot.begin(), p_cbend = _funcsHotspot.end();
+                    std::vector< CallbackHotspotChange* >::iterator p_cbbeg = _cbsHotspot.begin(), p_cbend = _cbsHotspot.end();
                     for ( ; p_cbbeg != p_cbend; ++p_cbbeg )
-                        ( *p_cbbeg )->operator()( false, p_beg->first );
+                        ( *p_cbbeg )->onHotspotChanged( false, p_beg->first );
                 }
 
                 // now remove entity from hotspot map
@@ -157,10 +157,10 @@ void VoiceNetwork::updateVoiceClients( yaf3d::BaseEntity* p_playerentity, bool j
     }
 }
 
-void VoiceNetwork::registerFunctorHotspotChanged( FunctorHotspotChange* p_func, bool reg )
+void VoiceNetwork::registerCallbackHotspotChanged( CallbackHotspotChange* p_func, bool reg )
 {
     bool funcinlist = false;
-    std::vector< FunctorHotspotChange* >::iterator p_beg = _funcsHotspot.begin(), p_end = _funcsHotspot.end();
+    std::vector< CallbackHotspotChange* >::iterator p_beg = _cbsHotspot.begin(), p_end = _cbsHotspot.end();
     for ( ; p_beg != p_end; ++p_beg )
     {
         if ( *p_beg == p_func )
@@ -171,13 +171,13 @@ void VoiceNetwork::registerFunctorHotspotChanged( FunctorHotspotChange* p_func, 
     }
 
     // check the registration / deregistration
-    assert( !( funcinlist && reg ) && "functor is already registered for getting hotspot changes" );
-    assert( !( !funcinlist && !reg ) && "functor has not been previousely registered for getting hotspot changes" );
+    assert( !( funcinlist && reg ) && "callback is already registered for getting hotspot changes" );
+    assert( !( !funcinlist && !reg ) && "callback has not been previousely registered for getting hotspot changes" );
 
     if ( reg )
-        _funcsHotspot.push_back( p_func );
+        _cbsHotspot.push_back( p_func );
     else
-        _funcsHotspot.erase( p_beg );
+        _cbsHotspot.erase( p_beg );
 }
 
 } // namespace vrc

@@ -195,11 +195,9 @@ unsigned int NetworkSoundCodec::encode( short* p_soundbuffer, unsigned int lengt
     }
 
     int encodedbytes = 0;
+    buffersize      -= _encoderFrameSize;
     for ( unsigned int pos = 0; pos < buffersize; pos += _encoderFrameSize )
     {
-        if ( ( pos + _encoderFrameSize ) > buffersize )
-            break;
-
         for ( unsigned int cnt = 0; cnt < _encoderFrameSize; ++cnt )
         {
             _p_inputBuffer[ cnt ] = static_cast< float >( _inputBufferQueue.front() ) * gain;
@@ -213,12 +211,8 @@ unsigned int NetworkSoundCodec::encode( short* p_soundbuffer, unsigned int lengt
         speex_bits_reset( &_encoderBits );
         speex_encode( _p_codecEncoderState, _p_inputBuffer, &_encoderBits );
         int nb = speex_bits_nbytes( &_encoderBits );
-        // we expect encoded packets of CODEC_CHUNK_SIZE bytes
+        //! NOTE: we expect encoded packets of CODEC_CHUNK_SIZE bytes
         encodedbytes += speex_bits_write( &_encoderBits, &p_bitbuffer[ encodedbytes ], nb );
-
-        // check for network buffer fitting
-        if ( encodedbytes + CODEC_CHUNK_SIZE > VOICE_PAKET_MAX_BUF_SIZE )
-            break;
     }
 
     return encodedbytes;

@@ -48,8 +48,8 @@ class BaseNetworkSoundImplementation;
 //! NetworkVoice Entity
 class EnNetworkVoice : 
     public yaf3d::BaseEntity, 
-    public VoiceNetwork::FunctorHotspotChange,
-    public gameutils::PlayerUtils::FunctorPlayerListChange
+    public VoiceNetwork::CallbackHotspotChange,
+    public gameutils::PlayerUtils::CallbackPlayerListChange
 {
     public:
                                                     EnNetworkVoice();
@@ -84,10 +84,10 @@ class EnNetworkVoice :
         void                                        updateHotspot( yaf3d::BaseEntity* p_entity, bool joining );
 
         //! Functor for getting changed player list
-        void                                        operator()( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity );
+        void                                        onVoiceChatPlayerListChanged( bool joining, yaf3d::BaseEntity* p_entity );
 
-        //! Functor for getting changed hotspot
-        void                                        operator()( bool joining, yaf3d::BaseEntity* p_entity );
+        //! Callback for getting changed hotspot ( see VoiceNetwork::CallbackHotspotChange )
+        void                                        onHotspotChanged( bool joining, yaf3d::BaseEntity* p_entity );
 
         //! Sound spot range, only players in this range transmit voice data
         float                                       _spotRange;

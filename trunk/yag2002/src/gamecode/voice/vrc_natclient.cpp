@@ -34,16 +34,19 @@
 #include "vrc_natclient.h"
 
 //! Various timeouts
-#define TIMEOUT_REQ_CLIENT_INFO   1.0f
-#define TIMEOUT_REGISTER_CLIENT   1.0f
+#define TIMEOUT_REQ_CLIENT_INFO     1.0f
+#define TIMEOUT_REGISTER_CLIENT     1.0f
+// maximal count of getting nat info retries
+#define GET_NAT_INFO_RETRIES        5
 
 namespace vrc
 {
 
 NATClient::NATClient() :
  _p_socket( NULL ),
- _state( eUnknown ),
- _timer( 0.0f )
+ _forwardedPort ( 0 ),
+ _timer( 0.0f ),
+ _state( eUnknown )
 {
     assert( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client && "this object must be created only on a client!" );
 }
@@ -60,15 +63,24 @@ void NATClient::initialize()
     std::string serverip;
     int         voiceChannel;
     serverip = yaf3d::NetworkDevice::get()->getServerIP();
-    yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_CHANNEL, voiceChannel );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_PORT, voiceChannel );
     std::stringstream assembledUrl;
     assembledUrl << serverip << ":" << voiceChannel;
     RNReplicaNet::XPAddress addr( assembledUrl.str() );
 
     _serverAddress = addr;
 
+    // check if ip forwarding is enabled
+    _forwardedPort = 0;
+    bool ipforwarding;
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_IP_FWD, ipforwarding );
+    if ( ipforwarding )
+    {
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_IP_FWD_PORT, _forwardedPort );
+    }
+
     _p_socket = new RNReplicaNet::XPSocketUrgent;
-    int result = _p_socket->Create( 0 );
+    int result = _p_socket->Create( _forwardedPort );
     if ( ( result != XPSOCK_EOK ) && ( result != XPSOCK_EWOULDBLOCK ) )
     {
         log_error << "NATClient: could not create socket, error " <<  RNReplicaNet::XPSocket::GetLastError() << std::endl;
@@ -99,9 +111,16 @@ void NATClient::update( float deltaTime )
         {
             if ( _timer > TIMEOUT_REGISTER_CLIENT )
             {
+                RNReplicaNet::XPAddress localaddr;
+                _p_socket->GetAddress( &localaddr );
+
                 // send out a packet to the NAT server
-                s_data._cmd    = NAT_REGISTER_CLIENT;
-                s_data._ownSID = yaf3d::NetworkDevice::get()->getSessionID();
+                s_data._cmd       = NAT_REGISTER_CLIENT;
+                s_data._ownSID    = yaf3d::NetworkDevice::get()->getSessionID();
+                s_data._fwdPort   = _forwardedPort;
+                s_data._localPort = localaddr.port;
+                memcpy( s_data._localIP, localaddr.addr, sizeof( s_data._localIP ) );
+
                 _p_socket->Send( reinterpret_cast< char* >( &s_data ), sizeof( s_data ), _serverAddress );
                 _timer = 0.0f;
             }
@@ -121,13 +140,20 @@ void NATClient::update( float deltaTime )
 
                 for ( ; p_beg != p_end; ++p_beg )
                 {
+                    // check for a maximal retry count, otherwise the requests runs for ever!
+                    p_beg->second->_cntRetries++;
+                    if ( p_beg->second->_cntRetries > GET_NAT_INFO_RETRIES )
+                    {
+                        log_verbose << "NATClient: could not get information of client with sid " << p_beg->first << std::endl;
+                        _requestMap.erase( p_beg );
+                        break;
+                    }
+
                     s_data._cmd     = NAT_GET_CLIENT_INFO;
                     s_data._ownSID  = yaf3d::NetworkDevice::get()->getSessionID();
                     s_data._peerSID = p_beg->first;
                     _p_socket->Send( reinterpret_cast< char* >( &s_data ), sizeof( s_data ), _serverAddress );
                     _timer = 0.0f;
-
-                    //! TODO: implement a mechanism for a maximal try count, otherwise the requests runs for ever!
                 }
             }
         }
@@ -186,7 +212,8 @@ bool NATClient::receivePacket( char* p_buffer, int len, const RNReplicaNet::XPAd
                 break;
             }
 
-            RNReplicaNet::XPAddress mappedaddress( p_data->_peerPort, p_data->_peerIP[ 0 ], p_data->_peerIP[ 1 ], p_data->_peerIP[ 2 ], p_data->_peerIP[ 3 ] );
+            // check for port forwarding
+            RNReplicaNet::XPAddress mappedaddress( p_data->_fwdPort ? p_data->_fwdPort : p_data->_peerPort, p_data->_peerIP[ 0 ], p_data->_peerIP[ 1 ], p_data->_peerIP[ 2 ], p_data->_peerIP[ 3 ] );
 
             log_verbose << "NATClient: receiving NAT info for sid " << p_data->_peerSID << std::endl;
 
@@ -210,15 +237,19 @@ bool NATClient::receivePacket( char* p_buffer, int len, const RNReplicaNet::XPAd
                 log_warning << "NATClient: wrong query destination " << p_data->_ownSID << std::endl;
             }
 
-            // send a dummy packet to peer client in order to punch a hole in our fw
-            tNATData data;
-            memset( &data, 0, sizeof( data ) );
-            data._cmd = NAT_PUNCH_HOLE;
+            // we punch a hole, only if port forwarding is not enabled!
+            if ( !_forwardedPort )
+            {
+                // send a dummy packet to peer client in order to punch a hole in our fw
+                tNATData data;
+                memset( &data, 0, sizeof( data ) );
+                data._cmd = NAT_PUNCH_HOLE;
 
-            RNReplicaNet::XPAddress peeraddr( p_data->_peerPort, p_data->_peerIP[ 0 ], p_data->_peerIP[ 1 ], p_data->_peerIP[ 2 ], p_data->_peerIP[ 3 ] );
-            _p_socket->Send( reinterpret_cast< char* >( &data ), sizeof( data ), peeraddr );
+                RNReplicaNet::XPAddress peeraddr( p_data->_peerPort, p_data->_peerIP[ 0 ], p_data->_peerIP[ 1 ], p_data->_peerIP[ 2 ], p_data->_peerIP[ 3 ] );
+                _p_socket->Send( reinterpret_cast< char* >( &data ), sizeof( data ), peeraddr );
 
-            log_verbose << "NATClient: punching a hole for peer: " << peeraddr.Export() << std::endl;
+                log_verbose << "NATClient: punching a hole for peer: " << peeraddr.Export() << std::endl;
+            }
         }
         break;
 
@@ -234,6 +265,8 @@ bool NATClient::receivePacket( char* p_buffer, int len, const RNReplicaNet::XPAd
 
 void NATClient::requestClientInfo( int sid, NATInfoCallback* p_cb )
 {
+    // reset the retry count
+    p_cb->_cntRetries = 0;
     // store the request in lookup table for later handling of the response
     _requestMap[ sid ] = p_cb;
     // set proper state

@@ -108,7 +108,7 @@ void VoiceTransport::registerReceiver( CallbackVoiceData* p_cb, bool reg )
         {
             if ( *p_beg == p_cb )
             {
-                log_error << "VoiceTransport: receiver is already registered on socket!" << std::endl;
+                log_warning << "VoiceTransport: receiver is already registered on socket!" << std::endl;
                 return;
             }
         }
@@ -130,7 +130,7 @@ void VoiceTransport::registerReceiver( CallbackVoiceData* p_cb, bool reg )
         }
         else
         {
-            log_error << "VoiceTransport: receiver was not previously registered on socket!" << std::endl;
+            log_warning << "VoiceTransport: receiver was not previously registered on socket!" << std::endl;
         }
     }
 }
@@ -145,11 +145,11 @@ void VoiceTransport::receiveAddressMap( int sid, RNReplicaNet::XPAddress& addres
 {
     if ( _sidRecvMap.find( sid ) == _sidRecvMap.end() )
     {
-        log_error << "VoiceTransport: cannot find receiver functor!" << std::endl;
+        log_error << "VoiceTransport: cannot find receiver callback!" << std::endl;
         return;
     }
 
-    // use the functor
+    // use the callback
     _sidRecvMap[ sid ]->recvClientAddress( sid, address );
 }
 

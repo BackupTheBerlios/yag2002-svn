@@ -112,7 +112,7 @@ void CodecTest::update()
     _p_soundInput->update();
 }
 
-void CodecTest::operator ()( char* p_encodedaudio, unsigned short length )
+void CodecTest::recvEncodedAudio( char* p_encodedaudio, unsigned short length )
 { // this operator is called by voice input instance ( encoded audio is passed in p_encodedaudio )
 
     // simulate a transmission of encoded input

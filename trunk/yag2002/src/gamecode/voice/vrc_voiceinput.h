@@ -67,23 +67,23 @@ class BaseVoiceInput
         //! Set input device given its ID
         virtual void                                setInputDevice( unsigned int /*deviceid*/ ) {}
 
-        //! Functor for grabbing the encoded audio data.
-        class FCaptureInput
+        //! Callback class for grabbing the encoded audio data.
+        class CallbackInputStream
         {
             public:
 
-                                                        FCaptureInput() {}
+                                                        CallbackInputStream() {}
 
-                virtual                                 ~FCaptureInput() {}
+                virtual                                 ~CallbackInputStream() {}
 
-                //! Implement the functor in your derived class
+                //! Implement the callback method in your derived class
                 //! p_encodedaudio contains the encoded audio data, length is the count of encoded bytes.
-                virtual void                            operator ()( char* p_encodedaudio, unsigned short length ) = 0;
+                virtual void                            recvEncodedAudio( char* p_encodedaudio, unsigned short length ) = 0;
         };
 
         //! Register a sink for encoded audio stream. It will be called during update if something was encoded.
         //! Pass reg = true for registration and reg = false for deregistration.
-        void                                        registerStreamSink( FCaptureInput* p_functor, bool reg = true );
+        void                                        registerStreamSink( CallbackInputStream* p_functor, bool reg = true );
 
     protected:
 
@@ -109,7 +109,7 @@ class BaseVoiceInput
         float                                       _inputGain;
 
         //! Encoder buffer
-        char                                        _p_encoderBuffer[ VOICE_PAKET_MAX_BUF_SIZE ];
+        char                                        _p_encoderBuffer[ CODEC_MAX_BUFFER_SIZE ];
 
         //! Raw sound data buffer
         VOICE_DATA_FORMAT_TYPE                      _p_rawData[ CODEC_MAX_BUFFER_SIZE ];
@@ -130,7 +130,7 @@ class BaseVoiceInput
         unsigned int                                _chunkLength;
 
         //! Registered stream sinks
-        std::vector< FCaptureInput* >               _sinks;
+        std::vector< CallbackInputStream* >         _sinks;
 
         //! Mutex used for sink feeding and registration / deregistration
         OpenThreads::Mutex                          _sinkMutex;

@@ -35,9 +35,8 @@
 #include "vrc_codec.h"
 #include <RNXPSession/Inc/XPSession.h>
 
-//! TODO: we should move this to general header and choose a better name for it
-#define VOICE_RESPOND_TIMEOPUT  0.5f
-
+//! Timeout for connection request
+#define VOICE_REQ_CON_TIMEOPUT  0.5f
 
 namespace vrc
 {
@@ -51,7 +50,9 @@ _pingTimer( 0.0f ),
 _pongTimer( 0.0f ),
 _respondTimer( 0.0f ),
 _paketStamp( 0 ),
-_isAlive( true )
+_isAlive( true ),
+_sendBufferWritePos( 0 ),
+_sendBufferReadPos( 0 )
 {
     assert( p_soundInput && "invalid sound input" );
     _p_voicePaket = new VoicePaket;
@@ -61,14 +62,17 @@ _isAlive( true )
 
 VoiceSender::~VoiceSender()
 {
+    // deregister from input stream
+    _p_soundInput->registerStreamSink( this, false );
+
+    // sleep a while in order to avoid a conflict with sender's audio codec callback
+    OpenThreads::Thread::microSleep( 50000 );
+
     if ( _p_transport )
     {
         // de-register from transport layer
         _p_transport->registerReceiver( this, false );
     }
-
-    // deregister from input stream
-    _p_soundInput->registerStreamSink( this, false );
 
     // shutdown
     shutdown();
@@ -104,26 +108,11 @@ void VoiceSender::recvClientAddress( int sid, const RNReplicaNet::XPAddress& add
     _senderState = Initial;
 }
 
-static int pakets = 0;
-static float t = 0.0f;
-
-
 void VoiceSender::update( float deltaTime )
 {
     // if sender is dead then do not update, we will be removed soon
     if ( !_isAlive )
         return;
-
-//! TODO: remove this
-#if 0
-t += deltaTime;
-if ( t > 1.0f )
-{
-    log_verbose << "sender time: " << t << ", packets sent: " << pakets << std::endl;
-    t -= 1.0f;
-    pakets = 0;
-}
-#endif
 
     assert( _p_sendSocket && "invalid socket" );
     assert( _p_soundInput && "invalid sound input instance" );
@@ -141,7 +130,7 @@ if ( t > 1.0f )
         _p_sendSocket->Send( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE + _p_voicePaket->_length, _receiverAddress );
         _senderState = RequestConnection;
 
-        log_verbose << "  <- request for joining voice session from: " << _receiverAddress.Export() << " ... " << std::endl;
+        log_verbose << "  <- requesting " << _receiverAddress.Export() << " for joining voice session " << " ... " << std::endl;
 
         return;
     }
@@ -150,7 +139,7 @@ if ( t > 1.0f )
     if ( _senderState == RequestConnection )
     {
         _respondTimer += deltaTime;
-        if ( _respondTimer > VOICE_RESPOND_TIMEOPUT )
+        if ( _respondTimer > VOICE_REQ_CON_TIMEOPUT )
         {
             _respondTimer = 0.0f;
             _senderState  = Initial;
@@ -178,12 +167,12 @@ if ( t > 1.0f )
 
         // set the alive flag to false, this flag is polled by netvoice entity and handled appropriately
         _isAlive = false;
-        // set the state to Initial so the input functor gets inactive too
+        // set the state to Initial so the input callback gets inactive too
         _senderState = Initial;
     }
 }
 
-void VoiceSender::operator ()( char* p_encodedaudio, unsigned short length )
+void VoiceSender::recvEncodedAudio( char* p_encodedaudio, unsigned short length )
 { // this operator is called by voice input instance ( encoded audio is passed in p_encodedaudio ), it runs in an own thread context!
 
     static VoicePaket packet;
@@ -191,36 +180,26 @@ void VoiceSender::operator ()( char* p_encodedaudio, unsigned short length )
     if ( ( _senderState != ConnectionReady ) || !_isAlive )
         return;
 
-    // wrap-around in ring buffer
-    if ( ( _sendBufferWritePos + length ) > VOICE_SEND_RING_BUF_SIZE )
-    {
-        int lentail = VOICE_SEND_RING_BUF_SIZE - _sendBufferReadPos;
-        memcpy( _p_sendBuffer, &_p_sendBuffer[ _sendBufferReadPos ], lentail );
-        memcpy( &_p_sendBuffer[ lentail ], p_encodedaudio, length );
-        _sendBufferWritePos = length + lentail;
-        _sendBufferReadPos  = 0;
-    }
-    else
-    {
-        memcpy( &_p_sendBuffer[ _sendBufferWritePos ], p_encodedaudio, length );
-        _sendBufferWritePos += length;
-    }
+    // transmit encoded input over net
+    packet._typeId  = VOICE_PAKET_TYPE_VOICE_DATA;
+    packet._senderID= _senderID;
 
-    // we use a ring buffer in order to efficiently load the network packets, thus every packet carries 4 encoded frames
-    if ( ( _sendBufferWritePos - _sendBufferReadPos ) > VOICE_SEND_PACKET_BUF_SIZE )
+    int bufferlen = length;
+    int bufferpos = 0;
+    int packetlen = 0;
+    while ( bufferlen >= CODEC_CHUNK_SIZE )
     {
-        // transmit encoded input over net
-        packet._typeId     = VOICE_PAKET_TYPE_VOICE_DATA;
+        // we can put upto 4 encoded frames into one packet
+        packetlen = std::min( VOICE_SEND_PACKET_BUF_SIZE, bufferlen );
+
         packet._paketStamp = ++_paketStamp;
-        packet._senderID   = _senderID;
-        packet._length     = VOICE_SEND_PACKET_BUF_SIZE;
-        memcpy( packet._p_buffer, &_p_sendBuffer[ _sendBufferReadPos ], VOICE_SEND_PACKET_BUF_SIZE );
-
+        packet._length     = packetlen;
+        memcpy( packet._p_buffer, &p_encodedaudio[ bufferpos ], packetlen );
         _sendBufferReadPos += VOICE_SEND_PACKET_BUF_SIZE;
+        _p_sendSocket->Send( reinterpret_cast< char* >( &packet ), VOICE_PAKET_HEADER_SIZE + packetlen, _receiverAddress );
 
-        _p_sendSocket->Send( reinterpret_cast< char* >( &packet ), VOICE_PAKET_HEADER_SIZE + packet._length, _receiverAddress );
-
-pakets++;
+        bufferlen -= packetlen;
+        bufferpos += packetlen;
     }
 }
 
@@ -248,7 +227,7 @@ bool VoiceSender::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddres
 
                 // kill this sender
                 _isAlive = false;
-                // set the state to Initial so the input functor gets inactive too
+                // set the state to Initial so the input callback gets inactive too
                 _senderState = Initial;
             }
             else

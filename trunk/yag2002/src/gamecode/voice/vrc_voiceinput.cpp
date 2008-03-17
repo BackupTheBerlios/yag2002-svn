@@ -147,13 +147,13 @@ void BaseVoiceInput::setInputGain( float gain )
     _inputGain = gain;
 }
 
-void BaseVoiceInput::registerStreamSink( FCaptureInput* p_functor, bool reg )
+void BaseVoiceInput::registerStreamSink( CallbackInputStream* p_functor, bool reg )
 {
     // set a lock on sink list
     _sinkMutex.lock();
 
     bool isinlist = false;
-    std::vector< FCaptureInput* >::iterator p_beg = _sinks.begin(), p_end = _sinks.end();
+    std::vector< CallbackInputStream* >::iterator p_beg = _sinks.begin(), p_end = _sinks.end();
     for ( ; p_beg != p_end; ++p_beg )
     {
         if ( *p_beg == p_functor )
@@ -164,8 +164,8 @@ void BaseVoiceInput::registerStreamSink( FCaptureInput* p_functor, bool reg )
     }
 
     // check the registration / deregistration
-    assert( !( isinlist && reg ) && "stream functor is already registered" );
-    assert( !( !isinlist && !reg ) && "stream functor has not been previousely registered" );
+    assert( !( isinlist && reg ) && "stream callback is already registered" );
+    assert( !( !isinlist && !reg ) && "stream callback has not been previousely registered" );
 
     if ( reg )
         _sinks.push_back( p_functor );
@@ -179,16 +179,15 @@ void BaseVoiceInput::distributeSamples( VOICE_DATA_FORMAT_TYPE* p_data, unsigned
 {
     // encode the stream
     unsigned int encodedbytes = _p_codec->encode( p_data, length, _p_encoderBuffer, _inputGain );
-
-    if ( encodedbytes > 0 )
+    if ( encodedbytes )
     {
-        // set a lock on sink list, the sinks can be modified in another thread context ( registration / deregistration )
+        // set a lock on sink list, the sinks can be modified in another thread context ( sink registration / deregistration )
         _sinkMutex.lock();
 
         // call all registered functors with fresh data
-        std::vector< FCaptureInput* >::iterator p_beg = _sinks.begin(), p_end = _sinks.end();
+        std::vector< CallbackInputStream* >::iterator p_beg = _sinks.begin(), p_end = _sinks.end();
         for ( ; p_beg != p_end; ++p_beg )
-            ( *p_beg )->operator ()( _p_encoderBuffer, encodedbytes );
+            ( *p_beg )->recvEncodedAudio( _p_encoderBuffer, encodedbytes );
 
         _sinkMutex.unlock();
     }
@@ -232,14 +231,14 @@ void VoiceMicrophoneInput::initialize() throw( NetworkSoundException )
 
     // create a sound object
     FMOD_RESULT result;
-    FMOD_MODE               mode = FMOD_2D | FMOD_OPENUSER | FMOD_SOFTWARE | FMOD_LOOP_NORMAL;
+    FMOD_MODE               mode = FMOD_2D | FMOD_OPENUSER | FMOD_SOFTWARE;
     FMOD_CREATESOUNDEXINFO  createsoundexinfo;
     int                     channels = 1;
 
     memset( &createsoundexinfo, 0, sizeof( FMOD_CREATESOUNDEXINFO ) );
     createsoundexinfo.cbsize            = sizeof( FMOD_CREATESOUNDEXINFO );
-    createsoundexinfo.decodebuffersize  = VOICE_SAMPLE_RATE / 8;
-    createsoundexinfo.length            = VOICE_SAMPLE_RATE; // buffer for 1 second
+    //createsoundexinfo.decodebuffersize  = VOICE_SAMPLE_RATE / 8;
+    createsoundexinfo.length            = VOICE_SAMPLE_RATE; // buffer for 1/2 second
     createsoundexinfo.numchannels       = channels;
     createsoundexinfo.defaultfrequency  = VOICE_SAMPLE_RATE;
     createsoundexinfo.format            = VOICE_SOUND_FORMAT;
@@ -402,6 +401,10 @@ void VoiceFileInput::initialize() throw( NetworkSoundException )
     _p_soundSystem->playSound( FMOD_CHANNEL_FREE, _p_sound, false, &_p_channel );
     _p_channel->setMute( true );
 
+    result = _p_sound->getLength( &_chunkLength, FMOD_TIMEUNIT_PCM );
+    if ( result != FMOD_OK )
+        throw( "VoiceFileInput: cannot get the track length" );
+
     // create and start the grabber thread
     _p_grabber = new InputGrabber( this );
     _p_grabber->start();
@@ -421,10 +424,10 @@ void VoiceFileInput::update()
 
         if ( _lastSoundTrackPos != currentSoundTrackPos )
         {
-            unsigned int len1, len2;
-            void* p_rawpointer1 = NULL;
-            void* p_rawpointer2 = NULL;
-            int   blocklength   = int( currentSoundTrackPos ) - int( _lastSoundTrackPos );
+            unsigned int  len1, len2;
+            void*         p_rawpointer1 = NULL;
+            void*         p_rawpointer2 = NULL;
+            int           blocklength   = int( currentSoundTrackPos ) - int( _lastSoundTrackPos );
 
             if ( blocklength < 0 )
             {
@@ -455,7 +458,6 @@ void VoiceFileInput::update()
             // encode and distribute samples
             distributeSamples( _p_rawData, ( len1 + len2 ) / sizeof( VOICE_DATA_FORMAT_TYPE ) );
         }
-
         _lastSoundTrackPos = currentSoundTrackPos;
     }
 

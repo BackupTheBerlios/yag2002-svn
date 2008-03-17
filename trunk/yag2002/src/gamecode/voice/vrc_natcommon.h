@@ -107,6 +107,15 @@ typedef struct tNATData
     //! Peer's IP
     unsigned char       _peerIP[ 4 ];
 
+    //! Local port
+    int                 _localPort;
+
+    //! Local IP
+    unsigned char       _localIP[ 4 ];
+
+    //! Non-zero if port forwarding is enabled
+    int                 _fwdPort;
+
 } tNATData;
 
 
@@ -114,12 +123,15 @@ typedef struct tNATData
 class NATInfoCallback
 {
     public:
-                        NATInfoCallback() {}
+                        NATInfoCallback() : _cntRetries( 0 ) {}
 
         virtual         ~NATInfoCallback() {}
 
         //! Called when client's NAT information received ( mapped address and port ).
         virtual void    receiveAddressMap( int sid, RNReplicaNet::XPAddress& address ) = 0;
+
+        //! Count of retries
+        unsigned int    _cntRetries;
 };
 
 }

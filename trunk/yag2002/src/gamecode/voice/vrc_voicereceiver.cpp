@@ -76,9 +76,10 @@ class ReceiverUpdateThread: public OpenThreads::Thread
         void                                  run()
                                               {
                                                   osg::Timer   timer;
-                                                  osg::Timer_t curTick = timer.tick();
-                                                  osg::Timer_t lastTick = curTick;
-                                                  float        deltaTime = 0.015f;
+                                                  osg::Timer_t curTick         = timer.tick();
+                                                  osg::Timer_t lastTick        = curTick;
+                                                  float        deltaTime       = 0.015f;
+
                                                   while ( !_terminate )
                                                   {
                                                       // sleep for 50 miliseconds, the sound system needs at least 8 updates per second! we consider also some processing time
@@ -118,6 +119,7 @@ class SoundNode
                                                     _p_senderPlayer = NULL;
                                                     _pingTimer      = 0.0f;
                                                     _senderID       = 0;
+                                                    _senderSID      = 0;
                                                     _lastPaketStamp = 0;
                                                     _p_sampleQueue  = new SoundSampleQueue;
                                                     _p_codec        = new NetworkSoundCodec;
@@ -145,6 +147,9 @@ class SoundNode
         
         //! Sound channel
         FMOD::Channel*                          _p_channel;
+
+        //! Sender's session ID
+        int                                     _senderSID;
 
         //! Unique sender ID
         unsigned int                            _senderID;
@@ -370,6 +375,11 @@ SoundNode* VoiceReceiver::createSoundNode()
     // create a new node
     SoundNode* p_soundnode = new SoundNode();
     result = _p_soundSystem->createStream( 0, mode, &createsoundexinfo, &p_soundnode->_p_sound );
+    if ( result != FMOD_OK )
+    {
+        log_error << "VoiceReceiver: error setting up sound stream: " << result << std::endl;
+    }
+
     _p_soundSystem->playSound( FMOD_CHANNEL_FREE, p_soundnode->_p_sound, false, &p_soundnode->_p_channel );
     p_soundnode->_p_sound->setUserData( static_cast< void* >( p_soundnode ) );
 
@@ -382,21 +392,8 @@ void VoiceReceiver::setupNetwork() throw( NetworkSoundException )
     _p_transport->registerReceiver( this, true );
 }
 
-static int pakets = 0;
-static float t = 0.0f;
-
 void VoiceReceiver::update( float deltaTime )
 {
-//! TODO: remove this
-#if 0
-t += deltaTime;
-if ( t > 1.0f )
-{
-    log_verbose << "time: " << t << ", packets received: " << pakets << std::endl;
-    t -= 1.0f;
-    pakets = 0;
-}
-#endif
     // update the sound system
     _p_soundSystem->update();
 
@@ -457,7 +454,7 @@ bool VoiceReceiver::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddr
             return false;
         }
 
-        log_debug << "  -> connection accepted from sender: " << senderaddr.Export() << std::endl;
+        log_debug << "  -> connection request from sender: " << senderaddr.Export() << std::endl;
 
         // get the network id of connecting sender
         int sid = *( reinterpret_cast< int* >( p_packet->_p_buffer ) );
@@ -467,6 +464,19 @@ bool VoiceReceiver::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddr
         {
             log_warning << "  -> local loopback detected!" << std::endl;
             return true;
+        }
+
+        // check if the sid is already in voice group, this can happen because of unreliable udp protocol
+        {
+            SenderMap::iterator p_node = _soundNodeMap.begin(), p_end = _soundNodeMap.end();
+            for ( ; p_node != p_end; ++p_node )
+            {
+                if ( p_node->second->_senderSID == sid )
+                {
+                    log_verbose << "  -> sender already in group, skipping connection request!" << std::endl;
+                    return true;
+                }
+            }
         }
 
         // find the ghost of the sender in voice enabled player list using its network id
@@ -515,6 +525,9 @@ bool VoiceReceiver::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddr
 
             // store the sender ID into node
             p_soundnode->_senderID = _senderID;
+
+            // store also the sender sid
+            p_soundnode->_senderSID = sid;
 
             // add the new sender to internal lookup
             _soundNodeMap[ _senderID ] = p_soundnode;
@@ -579,18 +592,15 @@ bool VoiceReceiver::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddr
 
             _s_sndDataMutex.lock();
             {
-//! TODO: remove this
-#if 0
-log_verbose << "recv: " << p_packet->_length << std::endl;
-pakets++;
-#endif
-                // decode and enqueue the samples
-                if ( !p_soundnode->_p_codec->decode( p_packet->_p_buffer, p_packet->_length, *p_soundnode->_p_sampleQueue, _outputGain * attenuation ) )
+                if ( p_soundnode->_p_sampleQueue->size() > ( 2 * VOICE_SAMPLE_RATE ) )
                 {
                     log_debug << "  -> decoder queue overrun, flushing queue!" << std::endl;
                     delete p_soundnode->_p_sampleQueue;
                     p_soundnode->_p_sampleQueue = new SoundSampleQueue;
                 }
+
+                // decode and enqueue the samples
+                p_soundnode->_p_codec->decode( p_packet->_p_buffer, p_packet->_length, *p_soundnode->_p_sampleQueue, _outputGain * attenuation );
             }
             _s_sndDataMutex.unlock();
         }

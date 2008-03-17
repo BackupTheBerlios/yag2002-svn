@@ -51,7 +51,7 @@ namespace vrc
 class NetworkSoundCodec;
 
 //! Class for encoding sound data and sending voice pakets
-class VoiceSender : public BaseNetworkSoundImplementation, public BaseVoiceInput::FCaptureInput, public CallbackVoiceData
+class VoiceSender : public BaseNetworkSoundImplementation, public BaseVoiceInput::CallbackInputStream, public CallbackVoiceData
 {
     public:
 
@@ -83,8 +83,8 @@ class VoiceSender : public BaseNetworkSoundImplementation, public BaseVoiceInput
         //! Setup ReplicaNet
         void                                        setupNetwork()  throw( NetworkSoundException );
 
-        //! Functor for grabbing the sound input, see class BaseVoiceInput ( FCaptureInput )
-        void                                        operator ()( char* p_encodedaudio, unsigned short length );
+        //! Callback for grabbing the sound input, see class BaseVoiceInput ( CallbackInputStream )
+        void                                        recvEncodedAudio( char* p_encodedaudio, unsigned short length );
 
         //! Callback for getting client NAT information ( CallbackVoiceData ).
         void                                        recvClientAddress( int sid, const RNReplicaNet::XPAddress& address );
@@ -144,7 +144,7 @@ class VoiceSender : public BaseNetworkSoundImplementation, public BaseVoiceInput
         int                                         _sendBufferReadPos;
 
 
-    friend class BaseVoiceInput::FCaptureInput;
+    friend class BaseVoiceInput::CallbackInputStream;
 };
 
 inline bool VoiceSender::isAlive()

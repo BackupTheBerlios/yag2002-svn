@@ -68,8 +68,10 @@ class EnNATServer : public yaf3d::BaseEntity, public yaf3d::SessionNotifyCallbac
         class NATInfo
         {
             public:
-                                                            NATInfo( RNReplicaNet::XPAddress address ) : 
-                                                             _mappedAddress( address )
+                                                            NATInfo( RNReplicaNet::XPAddress address, RNReplicaNet::XPAddress localaddr, int fwdport ) : 
+                                                             _mappedAddress( address ),
+                                                             _localAddress( localaddr ),
+                                                             _forwardedPort( fwdport )
                                                             {
                                                             }
 
@@ -78,6 +80,10 @@ class EnNATServer : public yaf3d::BaseEntity, public yaf3d::SessionNotifyCallbac
                                                              }
 
                 RNReplicaNet::XPAddress                     _mappedAddress;
+
+                RNReplicaNet::XPAddress                     _localAddress;
+
+                int                                         _forwardedPort;
         };
 
         //! Lookup for < sid, NATClient >, used on server

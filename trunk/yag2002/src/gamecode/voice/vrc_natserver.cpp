@@ -66,7 +66,7 @@ void EnNATServer::initialize()
 {
     // assemble the NAT udp listener address ( NAT server )
     int voicechannel = 0;
-    yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_CHANNEL, voicechannel );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_PORT, voicechannel );
 
     _p_socket = new RNReplicaNet::XPSocketUrgent;
     int result = _p_socket->Create( voicechannel );
@@ -96,7 +96,9 @@ void EnNATServer::updateEntity( float deltaTime )
         {
             case NAT_REGISTER_CLIENT:
             {
-                NATInfo* p_natc = new NATInfo( senderaddr );
+                RNReplicaNet::XPAddress localaddr( s_data._localPort, s_data._localIP[ 0 ], s_data._localIP[ 1 ], s_data._localIP[ 2 ], s_data._localIP[ 3 ] );
+
+                NATInfo* p_natc = new NATInfo( senderaddr, localaddr, s_data._fwdPort );
                 _sidNATInfoMap[ s_data._ownSID ] = p_natc;
 
                 log_verbose << "NATServer: client registered, sid " << s_data._ownSID << ", port " << senderaddr.port << std::endl;
@@ -122,21 +124,60 @@ void EnNATServer::updateEntity( float deltaTime )
                     return;
                 }
 
-                // send back the mapped address info to requester
-                s_data._peerPort = p_queried->second->_mappedAddress.port;
-                memcpy( s_data._peerIP, p_queried->second->_mappedAddress.addr, sizeof( p_queried->second->_mappedAddress.addr ) );
-                s_data._cmd = NAT_RCV_CLIENT_INFO;
+                // check if both clients are behind the same nat
+                bool localclients = false;
 
+                if ( ( p_queried->second->_mappedAddress.addr[ 0 ] == senderaddr.addr[ 0 ] ) &&
+                     ( p_queried->second->_mappedAddress.addr[ 1 ] == senderaddr.addr[ 1 ] ) &&
+                     ( p_queried->second->_mappedAddress.addr[ 2 ] == senderaddr.addr[ 2 ] ) &&
+                     ( p_queried->second->_mappedAddress.addr[ 3 ] == senderaddr.addr[ 3 ] )
+                   )
+                {
+                    localclients = true;
+                }
+
+                if ( localclients )
+                {
+                    // send back the local address info to requester
+                    s_data._peerPort = p_queried->second->_localAddress.port;
+                    memcpy( s_data._peerIP, p_queried->second->_localAddress.addr, sizeof( s_data._peerIP ) );
+                }
+                else
+                {
+                    // send back the mapped address info to requester
+                    s_data._fwdPort  = p_queried->second->_forwardedPort;
+                    s_data._peerPort = p_queried->second->_mappedAddress.port;
+                    memcpy( s_data._peerIP, p_queried->second->_mappedAddress.addr, sizeof( s_data._peerIP ) );
+                }
+
+                s_data._cmd = NAT_RCV_CLIENT_INFO;
                 _p_socket->Send( reinterpret_cast< char* >( &s_data ), sizeof( s_data ), senderaddr );
 
                 // we have also to notify the queried client about beeing queried, thus the queried client can punch a hole for the requester
-                s_data._peerSID  = s_data._ownSID;
-                s_data._ownSID   = p_queried->first;
-                s_data._peerPort = senderaddr.port;
-                memcpy( s_data._peerIP, senderaddr.addr, sizeof( senderaddr.addr ) );
-                s_data._cmd = NAT_RCV_CLIENT_QUERY;
+                if ( localclients )
+                {
+                    std::map< int, NATInfo* >::iterator p_requester = _sidNATInfoMap.find( s_data._ownSID );
+                    if ( p_requester == _sidNATInfoMap.end() )
+                    {
+                        log_verbose << "NATServer: have no info on requesting client with sid " << s_data._ownSID << std::endl;
+                    }
+                    else
+                    {
+                        s_data._peerPort = p_requester->second->_localAddress.port;
+                        memcpy( s_data._peerIP, p_requester->second->_localAddress.addr, sizeof( s_data._peerIP ) );
+                    }
+                }
+                else
+                {
+                    s_data._peerPort = senderaddr.port;
+                    memcpy( s_data._peerIP, senderaddr.addr, sizeof( s_data._peerIP ) );
+                }
 
-                //! TODO: we have to guarantee that this packet arrives!
+                s_data._peerSID = s_data._ownSID;
+                s_data._ownSID  = p_queried->first;
+                s_data._cmd     = NAT_RCV_CLIENT_QUERY;
+
+                //! TODO: check if we have to guarantee that this packet arrives!
                 _p_socket->Send( reinterpret_cast< char* >( &s_data ), sizeof( s_data ), p_queried->second->_mappedAddress );
 
                 log_verbose << "NATServer: sending requested NAT info: " << senderaddr.Export() << " to sid: " << s_data._ownSID << std::endl;
