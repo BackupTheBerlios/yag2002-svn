@@ -37,6 +37,9 @@
 #define SCRIPTING_LOG_FILE_NAME     "storysystem"
 
 
+//! TODO: implement a console cmd for showing the console and remove this define
+//#define ENABLE_CONSOLE
+
 //! Implement the singleton
 YAF3D_SINGLETON_IMPL( vrc::StorySystem )
 
@@ -46,6 +49,8 @@ namespace vrc
 StorySystem::StorySystem() :
  _p_storyEngine( NULL ),
  _p_networking( NULL ),
+ _p_log( NULL ),
+ _p_console( NULL ),
  _sendEventsToActors( false )
 {
     std::string filename( SCRIPTING_LOG_FILE_NAME "_server.log" );
@@ -60,9 +65,13 @@ StorySystem::StorySystem() :
     //!TODO show up the console only in dev builds!
     if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Server )
     {
+//! TODO: implement a console cmd for showing the console
+#ifdef ENABLE_CONSOLE
         _p_console = new ConsoleGUI;
         _p_console->initialize( "story system output", 0.1f, 0.68f, 0.84f, 0.29f, false, true );
         _p_log->addSink( "console", *_p_console, yaf3d::Log::L_VERBOSE );
+#endif
+
     }
 
     storylog_info << "date " << yaf3d::getFormatedDateAndTime() << std::endl;
