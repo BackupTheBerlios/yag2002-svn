@@ -91,7 +91,7 @@ void EnPlayerInfoDisplay::handleNotification( const yaf3d::EntityNotification& n
     }
 }
 
-void EnPlayerInfoDisplay::operator()( bool localplayer, bool /*joining*/, yaf3d::BaseEntity* p_entity )
+void EnPlayerInfoDisplay::onPlayerListChanged( bool localplayer, bool /*joining*/, yaf3d::BaseEntity* p_entity )
 {
     if ( localplayer )
         _p_playerEntity = dynamic_cast< EnPlayer* >( p_entity );

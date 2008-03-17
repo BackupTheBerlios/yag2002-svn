@@ -72,7 +72,9 @@ namespace gameutils
 #define VRC_GS_VOICECHAT_INPUT_DEVICE       "voiceChatInputDevice"
 #define VRC_GS_VOICE_INPUT_GAIN             "voiceInputGain"
 #define VRC_GS_VOICE_OUTPUT_GAIN            "voiceOutputGain"
-#define VRC_GS_VOICECHAT_CHANNEL            "voiceChatChannel"
+#define VRC_GS_VOICE_PORT                   "voicePort"
+#define VRC_GS_VOICE_IP_FWD                 "voiceIpForward"
+#define VRC_GS_VOICE_IP_FWD_PORT            "voiceIpForwardPort"
 #define VRC_GS_DB_IP                        "dbIP"
 #define VRC_GS_DB_PORT                      "dbPort"
 #define VRC_GS_DB_NAME                      "dbName"
@@ -81,7 +83,7 @@ namespace gameutils
 //! Settings default values
 #define VRC_GS_DEFAULT_PLAYER_CONFIG        "default_cfg"
 
-#define VRC_GS_DEFAULT_VOICE_CHANNEL        31200
+#define VRC_GS_DEFAULT_VOICE_PORT           31200
 #define VRC_GS_DEFAULT_SOUND_VOLUME         1.0f
 // Input device not ready
 #define VRC_GS_VOICECHAT_INPUT_DEVICE_NA    0
@@ -163,7 +165,11 @@ class VRCStateHandler : public yaf3d::GameState::CallbackStateChange
 
         float                                       _voiceOutputGain;
 
-        unsigned int                                _voiceChatChannel;
+        unsigned int                                _voicePort;
+
+        bool                                        _voiceIpForward;
+
+        unsigned int                                _voiceIpForwardPort;
 
         std::string                                 _dbIp;
 
@@ -234,28 +240,32 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
         inline const std::vector< yaf3d::BaseEntity* >&   getRemotePlayersVoiceChat();
 
         //! Class used for getting notified whenever the player list ( also those supporting voice chat ) changed
-        class FunctorPlayerListChange
+        class CallbackPlayerListChange
         {
             public:
-                                                        FunctorPlayerListChange() {}
+                                                        CallbackPlayerListChange() {}
 
-                virtual                                 ~FunctorPlayerListChange() {}
+                virtual                                 ~CallbackPlayerListChange() {}
 
-                //! If 'localplayer' is true then the local player has been changed, otherwise the remote player list has been changed.
-                //! If 'localplayer' is true then get the entity of local player using PlayerUtil's method 'getLocalPlayer'.
-                //! In overridden callback method access the leaver / joiner depending on 'joining'.
-                //! In case a player is joining 'joining' is true otherwise it is false.
-                //! For a complete list of players use the PlayerUtil's methods 'getRemotePlayers' or 'getRemotePlayersVoiceChat'.
-                virtual void                            operator()( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity ) = 0;
+                /** If 'localplayer' is true then the local player has been changed, otherwise the remote player list has been changed.
+                    If 'localplayer' is true then get the entity of local player using PlayerUtil's method 'getLocalPlayer'.
+                    In overridden callback method access the leaver / joiner depending on 'joining'.
+                    In case a player is joining 'joining' is true otherwise it is false.
+                    For a complete list of players use the PlayerUtil's methods 'getRemotePlayers' or 'getRemotePlayersVoiceChat'.
+                **/
+                virtual void                            onPlayerListChanged( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity ) {}
+
+                //! Similar to onPlayerListChanged but only for players with voice chat enabled.
+                virtual void                            onVoiceChatPlayerListChanged( bool joining, yaf3d::BaseEntity* p_entity ) {}
         };
 
         //! Functor registration for changed player list.
         //! Use reg = true for registration and reg = false for deregistration
-        void                                        registerFunctorPlayerListChanged( FunctorPlayerListChange* p_func, bool reg = true );
+        void                                        registerFunctorPlayerListChanged( CallbackPlayerListChange* p_func, bool reg = true );
 
-        //! Functor registration for changed player list supporting voice chat.
+        //! Callback registration for changed player list supporting voice chat.
         //! Use reg = true for registration and reg = false for deregistration
-        void                                        registerFunctorVoiceChatPlayerListChanged( FunctorPlayerListChange* p_func, bool reg = true );
+        void                                        registerCallbackVoiceChatPlayerListChanged( CallbackPlayerListChange* p_func, bool reg = true );
 
     protected:
 
@@ -265,11 +275,11 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
 
         std::vector< yaf3d::BaseEntity* >           _remotePlayers;
 
-        std::vector< FunctorPlayerListChange* >     _funcPlayerList;
+        std::vector< CallbackPlayerListChange* >    _cbsPlayerList;
 
         std::vector< yaf3d::BaseEntity* >           _remotePlayersVoiceChat;
 
-        std::vector< FunctorPlayerListChange* >     _funcPlayerListVoiceChat;
+        std::vector< CallbackPlayerListChange* >    _cbsPlayerListVoiceChat;
 
         unsigned int                                _playerControlModes;
 

@@ -117,7 +117,7 @@ void EnMapView::handleNotification( const yaf3d::EntityNotification& notificatio
     }
 }
 
-void EnMapView::operator()( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity )
+void EnMapView::onPlayerListChanged( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity )
 {
     updatePlayerList();
 }

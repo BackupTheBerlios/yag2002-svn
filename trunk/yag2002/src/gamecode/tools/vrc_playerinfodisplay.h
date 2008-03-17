@@ -42,7 +42,7 @@ namespace vrc
 class EnPlayer;
 
 //! Player information display entity
-class EnPlayerInfoDisplay :  public yaf3d::BaseEntity, public gameutils::PlayerUtils::FunctorPlayerListChange
+class EnPlayerInfoDisplay :  public yaf3d::BaseEntity, public gameutils::PlayerUtils::CallbackPlayerListChange
 {
     public:
                                                     EnPlayerInfoDisplay();
@@ -73,7 +73,7 @@ class EnPlayerInfoDisplay :  public yaf3d::BaseEntity, public gameutils::PlayerU
         bool                                        getPlayerEntity();
 
         //! Functor for changed player list
-        void                                        operator()( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity );
+        void                                        onPlayerListChanged( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity );
 
         //! Positon on screen
         osg::Vec2f                                  _position;

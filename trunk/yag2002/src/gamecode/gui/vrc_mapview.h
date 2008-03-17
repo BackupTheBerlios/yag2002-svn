@@ -39,7 +39,7 @@ namespace vrc
 #define ENTITY_NAME_MAPVIEW    "MapView"
 
 //! Map view entity
-class EnMapView :  public yaf3d::BaseEntity, public gameutils::PlayerUtils::FunctorPlayerListChange
+class EnMapView :  public yaf3d::BaseEntity, public gameutils::PlayerUtils::CallbackPlayerListChange
 {
     public:
                                                     EnMapView();
@@ -67,7 +67,7 @@ class EnMapView :  public yaf3d::BaseEntity, public gameutils::PlayerUtils::Func
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Functor for getting player list changes
-        void                                        operator()( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity );
+        void                                        onPlayerListChanged( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity );
 
         //! Set up the map view
         void                                        setupMapView();
