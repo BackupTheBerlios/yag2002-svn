@@ -473,7 +473,26 @@ bool VoiceReceiver::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddr
             {
                 if ( p_node->second->_senderSID == sid )
                 {
-                    log_verbose << "  -> sender already in group, skipping connection request!" << std::endl;
+                    log_verbose << "  -> sender already in group, try to re-join" << std::endl;
+
+
+                    if ( _soundNodeMap.size() > MAX_SENDERS_CONNECTED )
+                    {
+                        p_packet->_senderID = 0;
+                        p_packet->_typeId   = VOICE_PAKET_TYPE_CON_DENY;
+
+                        log_verbose << "  -> re-joining request denied ( " << p_packet->_senderID << " )" << std::endl;
+                    } 
+                    else
+                    {
+                        p_packet->_typeId   = VOICE_PAKET_TYPE_CON_GRANT;
+                        p_packet->_senderID = p_node->second->_senderID;
+
+                        log_verbose << "  -> re-joining request granted ( " << p_packet->_senderID << " )" << std::endl;
+                    }
+                    p_packet->_length = 0;
+                    _p_transport->getSocket()->Send( reinterpret_cast< char* >( p_packet ), VOICE_PAKET_HEADER_SIZE  + p_packet->_length, senderaddr );
+
                     return true;
                 }
             }
@@ -564,6 +583,9 @@ bool VoiceReceiver::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddr
 
         case VOICE_PAKET_TYPE_VOICE_DATA:
         {
+            // reset the ping timer
+            p_soundnode->_pingTimer = 0.0f;
+
             // drop obsolete packets
             if ( p_packet->_paketStamp != p_soundnode->_lastPaketStamp + 1 )
             {

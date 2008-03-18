@@ -148,7 +148,7 @@ void VoiceSender::update( float deltaTime )
 
     // send out a ping to receiver
     _pingTimer += deltaTime;
-    if ( _pingTimer > ( VOICE_LIFESIGN_PERIOD * 0.5f ) )
+    if ( _pingTimer > ( VOICE_LIFESIGN_PERIOD / 5.0f ) )
     {
         _pingTimer = 0.0f;
         _p_voicePaket->_length   = 0;
@@ -165,10 +165,16 @@ void VoiceSender::update( float deltaTime )
         log_verbose << "  <- voice chat receiver does not respond, going dead ..." << std::endl;
         _pongTimer = 0.0f;
 
+//! TODO: check this strategy for connection problems
+#if 0
         // set the alive flag to false, this flag is polled by netvoice entity and handled appropriately
         _isAlive = false;
         // set the state to Initial so the input callback gets inactive too
         _senderState = Initial;
+#else
+        // retry to connect to receiver
+        _senderState = Initial;
+#endif
     }
 }
 
