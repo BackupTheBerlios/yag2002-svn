@@ -630,7 +630,7 @@ void PlayerUtils::removeRemotePlayer( yaf3d::BaseEntity* p_entity )
         ( *p_cbbeg )->onPlayerListChanged( false, false, p_entity );
 }
 
-void PlayerUtils::registerFunctorPlayerListChanged( CallbackPlayerListChange* p_cb, bool reg )
+void PlayerUtils::registerCallbackPlayerListChanged( CallbackPlayerListChange* p_cb, bool reg )
 {
     bool funcinlist = false;
     std::vector< CallbackPlayerListChange* >::iterator p_beg = _cbsPlayerList.begin(), p_end = _cbsPlayerList.end();
@@ -674,7 +674,7 @@ void PlayerUtils::addRemotePlayerVoiceChat( yaf3d::BaseEntity* p_entity )
         log_error << "PlayerUtils: remote player supporting voice chat already exists in list!" << std::endl;
         return;
     }
-    
+
     _remotePlayersVoiceChat.push_back( p_entity );
 
     // notify registered callbacks for changed remote player list supporting voice chat

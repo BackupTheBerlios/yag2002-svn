@@ -59,7 +59,7 @@ EnPlayerInfoDisplay::~EnPlayerInfoDisplay()
         CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
 
         // deregister to get notified whenever the player list changes
-        vrc::gameutils::PlayerUtils::get()->registerFunctorPlayerListChanged( this, false );
+        vrc::gameutils::PlayerUtils::get()->registerCallbackPlayerListChanged( this, false );
     }
 }
 
@@ -128,7 +128,7 @@ void EnPlayerInfoDisplay::initialize()
     // register entity in order to get notifications
     yaf3d::EntityManager::get()->registerNotification( this, true );
     // register to get notified whenever the player list changes
-    vrc::gameutils::PlayerUtils::get()->registerFunctorPlayerListChanged( this, true );
+    vrc::gameutils::PlayerUtils::get()->registerCallbackPlayerListChanged( this, true );
 
     getPlayerEntity();
 }

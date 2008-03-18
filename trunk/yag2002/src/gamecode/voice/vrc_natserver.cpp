@@ -201,6 +201,7 @@ void EnNATServer::onSessionLeft( int sessionID )
 
         if ( p_natclient != _sidNATInfoMap.end() )
         {
+            log_verbose << "NATServer: remove NAT entry of sid " << sessionID << ", total entries: " << _sidNATInfoMap.size() - 1 << std::endl;
             delete p_natclient->second;
             _sidNATInfoMap.erase( p_natclient );
         }

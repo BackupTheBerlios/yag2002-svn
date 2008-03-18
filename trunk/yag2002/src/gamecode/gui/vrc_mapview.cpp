@@ -89,7 +89,7 @@ EnMapView::~EnMapView()
     destroyMapView();
 
     // deregister
-    vrc::gameutils::PlayerUtils::get()->registerFunctorPlayerListChanged( this, false );
+    vrc::gameutils::PlayerUtils::get()->registerCallbackPlayerListChanged( this, false );
 }
 
 void EnMapView::handleNotification( const yaf3d::EntityNotification& notification )
@@ -150,7 +150,7 @@ void EnMapView::initialize()
     yaf3d::EntityManager::get()->registerUpdate( this, true );
 
     // register us to get notifications on changed player lists
-    vrc::gameutils::PlayerUtils::get()->registerFunctorPlayerListChanged( this, true );
+    vrc::gameutils::PlayerUtils::get()->registerCallbackPlayerListChanged( this, true );
 }
 
 void EnMapView::setupMapView()

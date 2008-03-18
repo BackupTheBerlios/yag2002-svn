@@ -259,9 +259,9 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
                 virtual void                            onVoiceChatPlayerListChanged( bool joining, yaf3d::BaseEntity* p_entity ) {}
         };
 
-        //! Functor registration for changed player list.
+        //! Callback registration for changed player list.
         //! Use reg = true for registration and reg = false for deregistration
-        void                                        registerFunctorPlayerListChanged( CallbackPlayerListChange* p_func, bool reg = true );
+        void                                        registerCallbackPlayerListChanged( CallbackPlayerListChange* p_func, bool reg = true );
 
         //! Callback registration for changed player list supporting voice chat.
         //! Use reg = true for registration and reg = false for deregistration
