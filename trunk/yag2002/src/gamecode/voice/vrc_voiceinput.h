@@ -111,9 +111,6 @@ class BaseVoiceInput
         //! Encoder buffer
         char                                        _p_encoderBuffer[ CODEC_MAX_BUFFER_SIZE ];
 
-        //! Raw sound data buffer
-        VOICE_DATA_FORMAT_TYPE                      _p_rawData[ CODEC_MAX_BUFFER_SIZE ];
-
         //! Indicated whether the sound system has been created by this instance
         bool                                        _createSoundSystem;
 

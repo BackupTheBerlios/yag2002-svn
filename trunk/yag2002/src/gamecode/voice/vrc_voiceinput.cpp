@@ -59,7 +59,7 @@ class InputGrabber: public OpenThreads::Thread
                                       {
                                           _p_input->update();
                                           // sleep for 100 miliseconds, the sound system needs at least 8 updates per second! we consider also some processing time
-                                          OpenThreads::Thread::microSleep( 50000 );
+                                          OpenThreads::Thread::microSleep( 100000 );
                                       }
                                   }
 
@@ -231,17 +231,19 @@ void VoiceMicrophoneInput::initialize() throw( NetworkSoundException )
 
     // create a sound object
     FMOD_RESULT result;
-    FMOD_MODE               mode = FMOD_2D | FMOD_OPENUSER | FMOD_SOFTWARE;
+    FMOD_MODE               mode = FMOD_2D | FMOD_OPENUSER | FMOD_SOFTWARE | FMOD_LOOP_NORMAL;
     FMOD_CREATESOUNDEXINFO  createsoundexinfo;
     int                     channels = 1;
 
     memset( &createsoundexinfo, 0, sizeof( FMOD_CREATESOUNDEXINFO ) );
     createsoundexinfo.cbsize            = sizeof( FMOD_CREATESOUNDEXINFO );
-    //createsoundexinfo.decodebuffersize  = VOICE_SAMPLE_RATE / 8;
-    createsoundexinfo.length            = VOICE_SAMPLE_RATE; // buffer for 1/2 second
+    //createsoundexinfo.decodebuffersize  = VOICE_SAMPLE_RATE;
+    createsoundexinfo.length            = VOICE_SAMPLE_RATE * 4;
     createsoundexinfo.numchannels       = channels;
     createsoundexinfo.defaultfrequency  = VOICE_SAMPLE_RATE;
     createsoundexinfo.format            = VOICE_SOUND_FORMAT;
+
+    _p_soundSystem->recordStop();
 
     result = _p_soundSystem->createSound( NULL, mode, &createsoundexinfo, &_p_sound );
     if ( result != FMOD_OK )
@@ -318,26 +320,22 @@ void VoiceMicrophoneInput::update()
 
             if ( len1 && p_rawpointer1 )
             {
-                memcpy( _p_rawData, p_rawpointer1, len1 );
+                // encode and distribute samples
+                distributeSamples( reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_rawpointer1 ), len1 / sizeof( VOICE_DATA_FORMAT_TYPE ) );
             }
 
             // check for wrap-arounds in data buffer
             if ( len2 && p_rawpointer2 )
             {
-                memcpy( &_p_rawData[ len1 ], p_rawpointer2, len2 );
+                // encode and distribute samples
+                distributeSamples( reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_rawpointer2 ), len2 / sizeof( VOICE_DATA_FORMAT_TYPE ) );
             }
 
             // unlock the sound buffer
             _p_sound->unlock( p_rawpointer1, p_rawpointer2, len1, len2 );
-
-            // encode and distribute samples
-            distributeSamples( _p_rawData, ( len1 + len2 ) / sizeof( VOICE_DATA_FORMAT_TYPE ) );
         }
         _lastSoundTrackPos = currentSoundTrackPos;
     }
-
-    // update the sound system
-    _p_soundSystem->update();
 }
 
 void VoiceMicrophoneInput::stop( bool st )
@@ -444,24 +442,22 @@ void VoiceFileInput::update()
 
             if ( len1 && p_rawpointer1 )
             {
-                memcpy( _p_rawData, p_rawpointer1, len1 );
+                // encode and distribute samples
+                distributeSamples( reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_rawpointer1 ), len1 / sizeof( VOICE_DATA_FORMAT_TYPE ) );
             }
 
             // check for wrap-arounds in data buffer
             if ( len2 && p_rawpointer2 )
             {
-                memcpy( &_p_rawData[ len1 ], p_rawpointer2, len2 );
+                // encode and distribute samples
+                distributeSamples( reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_rawpointer2 ), len2 / sizeof( VOICE_DATA_FORMAT_TYPE ) );
             }
 
+            // unlock the sound buffer
             _p_sound->unlock( p_rawpointer1, p_rawpointer2, len1, len2 );
-
-            // encode and distribute samples
-            distributeSamples( _p_rawData, ( len1 + len2 ) / sizeof( VOICE_DATA_FORMAT_TYPE ) );
         }
         _lastSoundTrackPos = currentSoundTrackPos;
     }
-
-    _p_soundSystem->update();
 }
 
 void VoiceFileInput::stop( bool st )
