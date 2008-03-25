@@ -48,6 +48,7 @@ class BaseNetworkSoundImplementation;
 //! NetworkVoice Entity
 class EnNetworkVoice : 
     public yaf3d::BaseEntity, 
+    public yaf3d::SessionNotifyCallback,
     public VoiceNetwork::CallbackHotspotChange,
     public gameutils::PlayerUtils::CallbackPlayerListChange
 {
@@ -88,6 +89,9 @@ class EnNetworkVoice :
 
         //! Callback for getting changed hotspot ( see VoiceNetwork::CallbackHotspotChange )
         void                                        onHotspotChanged( bool joining, yaf3d::BaseEntity* p_entity );
+
+        //! Called when the client gets disconnected from server
+        void                                        onServerDisconnect( int /*sessionID*/ );
 
         //! Sound spot range, only players in this range transmit voice data
         float                                       _spotRange;

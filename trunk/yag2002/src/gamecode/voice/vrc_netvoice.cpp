@@ -90,6 +90,8 @@ void EnNetworkVoice::handleNotification( const yaf3d::EntityNotification& notifi
             if ( _p_transport )
                 _p_transport->initialize();
 
+            break;
+
         case YAF3D_NOTIFY_SHUTDOWN:
             break;
 
@@ -219,6 +221,12 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
     _active = true;
 }
 
+void EnNetworkVoice::onServerDisconnect( int /*sessionID*/ )
+{
+    if ( _active )
+        destroyVoiceChat();
+}
+
 void EnNetworkVoice::destroyVoiceChat()
 {
     assert( _active && "trying to destroy voice chat entity which has not been created before!" );
@@ -305,6 +313,9 @@ void EnNetworkVoice::updateEntity( float deltaTime )
             p_beg->second->update( deltaTime );
         }
     }
+
+    // update the transport layer
+    _p_transport->update( deltaTime );
 }
 
 void EnNetworkVoice::destroySender( unsigned int senderID )

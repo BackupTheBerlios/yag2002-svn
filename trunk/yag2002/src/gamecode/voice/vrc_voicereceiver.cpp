@@ -397,9 +397,6 @@ void VoiceReceiver::update( float deltaTime )
     // update the sound system
     _p_soundSystem->update();
 
-    // update the transport layer in this context
-    _p_transport->update( deltaTime );
-
     _lifesignCheck += deltaTime;
     if ( _lifesignCheck < ( VOICE_LIFESIGN_PERIOD * 0.5f ) )
         return;
