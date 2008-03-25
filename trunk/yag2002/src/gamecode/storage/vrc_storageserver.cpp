@@ -191,20 +191,10 @@ bool StorageServer::authentify( int sessionID, const std::string& login, const s
 
     assert ( _p_networking && "storage server is not initialized!" );
 
-    // guest login
-    if ( !login.length() )
+    // check for loging and passwd strings
+    if ( !passwd.length() || !login.length() )
     {
-        userID = static_cast< unsigned int >( -1 );
-
-       // cache the user login state
-        UserAccount acc;
-        UserState*  p_state     = new UserState;
-        p_state->_sessionID     = sessionID;
-        p_state->_guest         = true;
-        p_state->_userAccount   = acc; // empty account info
-        _userCache[ sessionID ] = p_state;
-
-        return true;
+        return false;
     }
 
     // check the login
@@ -226,7 +216,6 @@ bool StorageServer::authentify( int sessionID, const std::string& login, const s
 
     // cache the user login state
     p_state->_sessionID       = sessionID;
-    p_state->_guest           = true;
     p_state->_userAccount     = acc;
     p_state->_p_userInventory = new UserInventory( acc._userID );
     _userCache[ sessionID ]   = p_state;
@@ -249,8 +238,7 @@ void StorageServer::onSessionLeft( int sessionID )
         return;
     }
 
-    if ( !p_user->second->_guest )
-        _p_storage->logoutUser( p_user->second->_userAccount.getNickname() );
+    _p_storage->logoutUser( p_user->second->_userAccount.getNickname() );
 
     // delete and remove the cache entry
     delete p_user->second;

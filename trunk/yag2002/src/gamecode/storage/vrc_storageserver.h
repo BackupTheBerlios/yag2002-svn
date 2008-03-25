@@ -125,7 +125,6 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >, public yaf3
             public:
                                                 UserState() :
                                                  _sessionID( -1 ),
-                                                 _guest( false ),
                                                  _p_userInventory( NULL )
                                                 {
                                                 }
@@ -138,9 +137,6 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >, public yaf3
 
                 //! Client session ID
                 int                             _sessionID;
-
-                //! Logged in as guest?
-                bool                            _guest;
 
                 //! User accout
                 UserAccount                     _userAccount;
