@@ -764,12 +764,14 @@ void NetworkDevice::updateServer( float /*deltaTime*/ )
                     {
                         p_data->_p_login[ sizeof(  p_data->_p_login ) - 1 ] = 0;
                         login =  p_data->_p_login;
+                        memset( p_data->_p_login, 0, sizeof(  p_data->_p_login ) );
                     }
 
                     if ( p_data->_p_passwd[ 0 ] )
                     {
                         p_data->_p_passwd[ sizeof(  p_data->_p_passwd ) - 1 ] = 0;
                         passwd =  p_data->_p_passwd;
+                        memset( p_data->_p_passwd, 0, sizeof(  p_data->_p_passwd ) );
                     }
 
                     // send paket
@@ -786,8 +788,6 @@ void NetworkDevice::updateServer( float /*deltaTime*/ )
 
                     sendData._state = eLoginResult;
 
-                    strcpy( sendData._p_levelName, _serverNodeInfo._levelName.c_str() );
-                    strcpy( sendData._p_serverName, _serverNodeInfo._nodeName.c_str() );
                     sendData._userID = static_cast< unsigned int >( -1 );
                     sendData._state  = eLoginResult;
 
@@ -808,6 +808,8 @@ void NetworkDevice::updateServer( float /*deltaTime*/ )
                             // send server node
                             sendData._accessGranted = true;
                             sendData._userID        = userID;
+                            strcpy( sendData._p_levelName, _serverNodeInfo._levelName.c_str() );
+                            strcpy( sendData._p_serverName, _serverNodeInfo._nodeName.c_str() );
                             _p_session->DataSend( sessionId, reinterpret_cast< void* >( &sendData ), sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
                             log_info << "NetworkDevice: access granted to user '" << login << "'" << std::endl;
                         }
@@ -816,9 +818,13 @@ void NetworkDevice::updateServer( float /*deltaTime*/ )
                     {
                         // send server node
                         sendData._accessGranted = true;
+                        strcpy( sendData._p_levelName, _serverNodeInfo._levelName.c_str() );
+                        strcpy( sendData._p_serverName, _serverNodeInfo._nodeName.c_str() );
                         _p_session->DataSend( sessionId, reinterpret_cast< void* >( &sendData ), sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
                         log_info << "NetworkDevice: access granted to user '" << login << "'" << std::endl;
                     }
+
+                    memset( &sendData, 0, sizeof( PreconnectDataServer ) );
                 }
                 break;
 
