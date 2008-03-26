@@ -187,7 +187,7 @@ void BaseVoiceInput::distributeSamples( VOICE_DATA_FORMAT_TYPE* p_data, unsigned
         // call all registered functors with fresh data
         std::vector< CallbackInputStream* >::iterator p_beg = _sinks.begin(), p_end = _sinks.end();
         for ( ; p_beg != p_end; ++p_beg )
-            ( *p_beg )->recvEncodedAudio( _p_encoderBuffer, encodedbytes );
+            ( *p_beg )->recvEncodedAudio( _p_encoderBuffer, encodedbytes, _p_codec->getEncodedFrameBytes() );
 
         _sinkMutex.unlock();
     }

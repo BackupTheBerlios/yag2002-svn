@@ -42,9 +42,6 @@ namespace vrc
 // maximum smaple buffer size for encoding and decoding
 #define CODEC_MAX_BUFFER_SIZE       16000
 
-// fixed size of a codec packet
-#define CODEC_CHUNK_SIZE            106
-
 
 //! Codec class
 //! Note: This codec class uses Speex in wide mode
@@ -65,8 +62,11 @@ class NetworkSoundCodec
         //! Set decoder complexity in range [ 1 ... 10 ], default is 5
         void                                        setEncoderComplexity( unsigned int c );
 
-        //! Get the frame size of every encoded voice packet in bytes.
+        //! Get the frame size of every encoded input voice packet in bytes.
         unsigned int                                getEncoderFrameSize() const { return _encoderFrameSize; }
+
+        //! Get the bytes needed for encoding one input frame, it depends on quality setting.
+        unsigned int                                getEncodedFrameBytes() const { return _encodedFrameBytes; }
 
         /**
             Encode 'length' number of raw sound data ( of type short ) to a compressed paket stored in p_bitbuffer, the samples are multiplied by 'gain'.
@@ -77,8 +77,8 @@ class NetworkSoundCodec
         */ 
         unsigned int                                encode( short* p_soundbuffer, unsigned int length, char* p_bitbuffer, float gain = 1.0f );
 
-        //! Setup Decoder
-        void                                        setupDecoder();
+        //! Setup the decoder given quality and complexity, it must match to those settings in encoder.
+        void                                        setupDecoder( int quality, int complexity );
 
         //! Enable / disable perceptual enhancement for decoding
         void                                        setDecoderENH( bool enh );
@@ -101,14 +101,17 @@ class NetworkSoundCodec
         //! Encoder bit structure
         SpeexBits                                   _encoderBits;
 
-        //! [ 1 ... 10 ]
+        //! [ 1 ... 10 ], higher values cause bigger size of encoded frames
         int                                         _encoderQuality;
 
-        //! [ 1 ... 10 ]
+        //! [ 1 ... 10 ], note that values bigger than 4 cause high cpu usage
         int                                         _encoderComplexity;
 
-        //! Frame size for encoder
+        //! Input frame size for encoder
         unsigned int                                _encoderFrameSize;
+
+        //! Count of bytes needed for encoding one frame, it depends on quality setting.
+        unsigned int                                _encodedFrameBytes;
 
         //! Decoder State
         void*                                       _p_codecDecoderState;

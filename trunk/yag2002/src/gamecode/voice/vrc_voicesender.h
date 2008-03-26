@@ -43,10 +43,6 @@
 namespace vrc
 {
 
-//! Send buffer specific defines
-#define VOICE_SEND_PACKET_BUF_SIZE          ( ( VOICE_PAKET_MAX_BUF_SIZE / CODEC_CHUNK_SIZE ) * CODEC_CHUNK_SIZE )
-#define VOICE_SEND_RING_BUF_SIZE            ( VOICE_SEND_PACKET_BUF_SIZE * 10 )
-
 
 class NetworkSoundCodec;
 
@@ -84,7 +80,7 @@ class VoiceSender : public BaseNetworkSoundImplementation, public BaseVoiceInput
         void                                        setupNetwork()  throw( NetworkSoundException );
 
         //! Callback for grabbing the sound input, see class BaseVoiceInput ( CallbackInputStream )
-        void                                        recvEncodedAudio( char* p_encodedaudio, unsigned short length );
+        void                                        recvEncodedAudio( char* p_encodedaudio, unsigned int length, unsigned int encframesize );
 
         //! Callback for getting client NAT information ( CallbackVoiceData ).
         void                                        recvClientAddress( int sid, const RNReplicaNet::XPAddress& address );
@@ -133,16 +129,6 @@ class VoiceSender : public BaseNetworkSoundImplementation, public BaseVoiceInput
 
         //! Alive flag set when the sender loses the connection to receiver
         bool                                        _isAlive;
-
-        //! Ring buffer for sending voice packets
-        char                                        _p_sendBuffer[ VOICE_SEND_RING_BUF_SIZE ];
-
-        //! Ring buffer's write position
-        int                                         _sendBufferWritePos;
-
-        //! Ring buffer's read position
-        int                                         _sendBufferReadPos;
-
 
     friend class BaseVoiceInput::CallbackInputStream;
 };

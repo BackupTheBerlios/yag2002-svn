@@ -50,9 +50,7 @@ _pingTimer( 0.0f ),
 _pongTimer( 0.0f ),
 _respondTimer( 0.0f ),
 _paketStamp( 0 ),
-_isAlive( true ),
-_sendBufferWritePos( 0 ),
-_sendBufferReadPos( 0 )
+_isAlive( true )
 {
     assert( p_soundInput && "invalid sound input" );
     _p_voicePaket = new VoicePaket;
@@ -165,20 +163,12 @@ void VoiceSender::update( float deltaTime )
         log_verbose << "  <- voice chat receiver does not respond, going dead ..." << std::endl;
         _pongTimer = 0.0f;
 
-//! TODO: check this strategy for connection problems
-#if 0
-        // set the alive flag to false, this flag is polled by netvoice entity and handled appropriately
-        _isAlive = false;
-        // set the state to Initial so the input callback gets inactive too
-        _senderState = Initial;
-#else
         // retry to connect to receiver
         _senderState = Initial;
-#endif
     }
 }
 
-void VoiceSender::recvEncodedAudio( char* p_encodedaudio, unsigned short length )
+void VoiceSender::recvEncodedAudio( char* p_encodedaudio, unsigned int length, unsigned int encframesize )
 { // this operator is called by voice input instance ( encoded audio is passed in p_encodedaudio ), it runs in an own thread context!
 
     static VoicePaket packet;
@@ -193,15 +183,15 @@ void VoiceSender::recvEncodedAudio( char* p_encodedaudio, unsigned short length 
     int bufferlen = length;
     int bufferpos = 0;
     int packetlen = 0;
-    while ( bufferlen >= CODEC_CHUNK_SIZE )
+    int iencframesize = int( encframesize );
+    while ( bufferlen >= iencframesize )
     {
-        // we can put upto 4 encoded frames into one packet
-        packetlen = std::min( VOICE_SEND_PACKET_BUF_SIZE, bufferlen );
+        // we can put several encoded frames into one packet
+        packetlen = std::min( ( VOICE_PAKET_MAX_BUF_SIZE / iencframesize ) * iencframesize, bufferlen ); // try to fit as much encoded frames as possible
 
         packet._paketStamp = ++_paketStamp;
         packet._length     = packetlen;
         memcpy( packet._p_buffer, &p_encodedaudio[ bufferpos ], packetlen );
-        _sendBufferReadPos += VOICE_SEND_PACKET_BUF_SIZE;
         _p_sendSocket->Send( reinterpret_cast< char* >( &packet ), VOICE_PAKET_HEADER_SIZE + packetlen, _receiverAddress );
 
         bufferlen -= packetlen;

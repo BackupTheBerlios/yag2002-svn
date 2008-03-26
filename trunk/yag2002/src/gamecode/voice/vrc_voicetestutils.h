@@ -63,7 +63,7 @@ class CodecTest : public BaseVoiceInput::CallbackInputStream
         void                                        shutdown();
 
         //! Callback for grabbing the sound input, see class BaseVoiceInput
-        void                                        recvEncodedAudio( char* p_encodedaudio, unsigned short length );
+        void                                        recvEncodedAudio( char* p_encodedaudio, unsigned int length, unsigned int encframesize );
 
         //! Test wav file, must be a PCM16, 16 khz
         std::string                                 _testFile;

@@ -50,15 +50,6 @@ namespace vrc
 // maximal allowed senders connected to the receiver
 #define MAX_SENDERS_CONNECTED       5
 
-//! TODO remove this test ripper
-//**************************************************************
-//#define VOICE_RIP
-
-#ifdef VOICE_RIP
-    std::queue< short > s_wavqueue;
-#endif
-//**************************************************************
-
 //! Threading class for updating the receiver
 class ReceiverUpdateThread: public OpenThreads::Thread
 {
@@ -123,7 +114,7 @@ class SoundNode
                                                     _lastPaketStamp = 0;
                                                     _p_sampleQueue  = new SoundSampleQueue;
                                                     _p_codec        = new NetworkSoundCodec;
-                                                    _p_codec->setupDecoder();
+                                                    _p_codec->setupDecoder( VOICE_CODEC_QUALITY, VOICE_CODEC_COMPLEXITY );
                                                     _p_codec->setDecoderENH( true );
                                                 }
 
@@ -219,35 +210,6 @@ void VoiceReceiver::shutdown()
         _p_soundSystem->release();
         _p_soundSystem = NULL;
     }
-
-//! TODO: remove this rip code later
-//*******************************
-#ifdef VOICE_RIP
-    // write out the ripped wav file
-    {
-#if 0
-        // create a pure sine
-        {
-            std::queue< short > wavqueue;
-            for ( int i = 0; i < 16000 * 10; i++)
-            {
-                wavqueue.push( ( short ) 50000.0f * sinf( float( i ) / float( 8 ) * 2.0f * 3.14159265f ) );
-            }
-            WaveWriterPCM16 wavwriter( 16000, WaveWriterPCM16::MONO );
-            wavwriter.write( yaf3d::Application::get()->getMediaPath() + std::string( "sine-2khz-mono.wav" ), wavqueue );
-        }
-#endif
-
-
-        if ( !s_wavqueue.empty() )
-        {
-            // write out the rip
-            WaveWriterPCM16 wavwriter( VOICE_SAMPLE_RATE, WaveWriterPCM16::MONO );
-            wavwriter.write( yaf3d::Application::get()->getMediaPath() + std::string( "sender0-rip-receiver.wav" ), s_wavqueue );
-        }
-    }
-#endif
-//*******************************
 }
 
 void VoiceReceiver::initialize() throw( NetworkSoundException )
@@ -310,10 +272,6 @@ static FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p
     if ( !p_soundnode )
         return FMOD_OK;
 
-//! TODO: remove this
-static int sequence = 0;
-sequence++;
-
     VOICE_DATA_FORMAT_TYPE*   p_sndbuffer = reinterpret_cast< VOICE_DATA_FORMAT_TYPE* >( p_data );
     unsigned int              cnt         = datalen / sizeof( VOICE_DATA_FORMAT_TYPE );
 
@@ -326,22 +284,15 @@ sequence++;
         // handle buffer underrun
         if ( samplequeue.size() < cnt )
         {
-            log_verbose << "playback buffer underrun: " << samplequeue.size() << ", " << cnt << ", frame " << sequence << std::endl;
+            log_verbose << "playback buffer underrun: " << samplequeue.size() << ", " << cnt << std::endl;
             cnt = samplequeue.size();
             // erase the remaining buffer
             memset( p_sndbuffer + cnt, 0, datalen - ( cnt * sizeof( VOICE_DATA_FORMAT_TYPE ) ) );
-            log_verbose << "playback buffer corrected" << std::endl;
         }
 
         for ( ; cnt > 0; --cnt )
         {
             *p_sndbuffer++ = samplequeue.front();
-
-//! TODO: remove this later, it's only for ripping to a wave file
-#ifdef VOICE_RIP
-            s_wavqueue.push( samplequeue.front() );
-#endif
-
             samplequeue.pop();
         }
 
@@ -396,6 +347,9 @@ void VoiceReceiver::update( float deltaTime )
 {
     // update the sound system
     _p_soundSystem->update();
+
+    // update the transport layer
+    _p_transport->update( deltaTime );
 
     _lifesignCheck += deltaTime;
     if ( _lifesignCheck < ( VOICE_LIFESIGN_PERIOD * 0.5f ) )

@@ -38,6 +38,11 @@
 namespace vrc
 {
 
+//! Codec parameters used for encoder and decoder
+#define VOICE_CODEC_COMPLEXITY    4
+#define VOICE_CODEC_QUALITY       5
+
+
 class NetworkSoundCodec;
 class InputGrabber;
 
@@ -77,8 +82,8 @@ class BaseVoiceInput
                 virtual                                 ~CallbackInputStream() {}
 
                 //! Implement the callback method in your derived class
-                //! p_encodedaudio contains the encoded audio data, length is the count of encoded bytes.
-                virtual void                            recvEncodedAudio( char* p_encodedaudio, unsigned short length ) = 0;
+                //! p_encodedaudio contains the encoded audio data, length is the count of encoded bytes. encframesize is the output size of one encoded input frame.
+                virtual void                            recvEncodedAudio( char* p_encodedaudio, unsigned int length, unsigned int encframesize ) = 0;
         };
 
         //! Register a sink for encoded audio stream. It will be called during update if something was encoded.

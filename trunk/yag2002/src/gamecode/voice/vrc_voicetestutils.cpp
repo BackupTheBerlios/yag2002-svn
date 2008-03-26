@@ -86,11 +86,11 @@ void CodecTest::initialize()
 
     // create sound codec
     _p_codec = new NetworkSoundCodec;
-    _p_codec->setEncoderComplexity( 9 );
-    _p_codec->setEncoderQuality( 10 );
+    _p_codec->setEncoderComplexity( 3 );
+    _p_codec->setEncoderQuality( 5 );
     _p_codec->setupEncoder();
     _p_codec->setDecoderENH( true );
-    _p_codec->setupDecoder();
+    _p_codec->setupDecoder( 5, 3 );
 
     // if a test file is given then grab the input from wav file
     if ( _testFile.length() )
@@ -112,7 +112,7 @@ void CodecTest::update()
     _p_soundInput->update();
 }
 
-void CodecTest::recvEncodedAudio( char* p_encodedaudio, unsigned short length )
+void CodecTest::recvEncodedAudio( char* p_encodedaudio, unsigned int length, unsigned int encframesize )
 { // this operator is called by voice input instance ( encoded audio is passed in p_encodedaudio )
 
     // simulate a transmission of encoded input

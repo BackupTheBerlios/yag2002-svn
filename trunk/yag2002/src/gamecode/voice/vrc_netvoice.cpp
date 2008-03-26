@@ -167,10 +167,9 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
 
         // create sound codec
         _p_codec = new NetworkSoundCodec;
-        _p_codec->setEncoderComplexity( 9 );
-        _p_codec->setEncoderQuality( 10 );
+        _p_codec->setEncoderComplexity( VOICE_CODEC_COMPLEXITY );
+        _p_codec->setEncoderQuality( VOICE_CODEC_QUALITY );
         _p_codec->setupEncoder();
-
 
 #ifdef INPUT_TEST
         _p_soundInput = new VoiceFileInput( INPUT_TEST_FILE, NULL, _p_codec );
@@ -313,9 +312,6 @@ void EnNetworkVoice::updateEntity( float deltaTime )
             p_beg->second->update( deltaTime );
         }
     }
-
-    // update the transport layer
-    _p_transport->update( deltaTime );
 }
 
 void EnNetworkVoice::destroySender( unsigned int senderID )

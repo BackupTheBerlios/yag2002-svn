@@ -40,10 +40,11 @@ namespace vrc
 NetworkSoundCodec::NetworkSoundCodec() :
 _p_mode( NULL ),
 _p_codecEncoderState( NULL ),
-_encoderQuality( 9 ),
-_encoderComplexity( 5 ),
+_encoderQuality( 5 ),
+_encoderComplexity( 3 ),
 _encoderFrameSize( 0 ),
 _p_codecDecoderState( NULL ),
+_encodedFrameBytes( 0 ),
 _enh( 1 ),
 _sampleRate( VOICE_SAMPLE_RATE ),
 _decoderFrameSize( 0 )
@@ -112,20 +113,24 @@ void NetworkSoundCodec::setupEncoder()
     speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_COMPLEXITY, &_encoderComplexity );
     speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_SAMPLING_RATE, &_sampleRate );
     speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_VBR, &disabled );
-    speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_DTX, &enabled );
+    speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_DTX, &disabled );
     speex_bits_init( &_encoderBits );
+
+    speex_bits_reset( &_encoderBits );
+    speex_encode( _p_codecEncoderState, _p_inputBuffer, &_encoderBits );
+    _encodedFrameBytes = static_cast< unsigned int >( speex_bits_nbytes( &_encoderBits ) );
 
     // setup preprocessor
     speex_encoder_ctl( _p_codecEncoderState, SPEEX_GET_FRAME_SIZE, &_encoderFrameSize );
     _p_preprocessorState = speex_preprocess_state_init( _encoderFrameSize, _sampleRate );
     speex_preprocess_ctl( _p_preprocessorState, SPEEX_PREPROCESS_SET_DENOISE, &enabled );
-    speex_preprocess_ctl( _p_preprocessorState, SPEEX_PREPROCESS_SET_VAD, &enabled );
+    speex_preprocess_ctl( _p_preprocessorState, SPEEX_PREPROCESS_SET_VAD, &disabled );
 
     // erase the input buffer
     memset( _p_inputBuffer, 0, sizeof( _p_inputBuffer ) );
 }
 
-void NetworkSoundCodec::setupDecoder()
+void NetworkSoundCodec::setupDecoder( int quality, int complexity )
 {
     // catch invalid sample rates resulting in invalid mode
     if ( !_p_mode )
@@ -140,6 +145,30 @@ void NetworkSoundCodec::setupDecoder()
     speex_decoder_ctl( _p_codecDecoderState, SPEEX_GET_FRAME_SIZE, &_decoderFrameSize );
     speex_bits_init( &_decoderBits );
 
+    // determine the encoded frame size which depends on quality
+    //------
+    int disabled  = 0;
+    // setup a temporary encoder
+    void* p_codecEncoderState = speex_encoder_init( _p_mode );
+    speex_encoder_ctl( p_codecEncoderState, SPEEX_SET_QUALITY, &quality );
+    speex_encoder_ctl( p_codecEncoderState, SPEEX_SET_COMPLEXITY, &complexity );
+    speex_encoder_ctl( p_codecEncoderState, SPEEX_SET_SAMPLING_RATE, &_sampleRate );
+    speex_encoder_ctl( p_codecEncoderState, SPEEX_SET_VBR, &disabled );
+    speex_encoder_ctl( p_codecEncoderState, SPEEX_SET_DTX, &disabled );
+    SpeexBits encoderBits;
+    speex_bits_init( &encoderBits );
+    speex_bits_reset( &encoderBits );
+    float in[ 512 ];
+    speex_encode( p_codecEncoderState, in, &encoderBits );
+
+    // here we get the needed frame size
+    _encodedFrameBytes = static_cast< unsigned int >( speex_bits_nbytes( &encoderBits ) );
+
+    // now destroy the encoder stuff
+    speex_encoder_destroy( p_codecEncoderState );
+    speex_bits_destroy( &encoderBits );
+    //------
+
     // erase the output buffer
     memset( _p_outputBuffer, 0, sizeof( _p_outputBuffer ) );
 }
@@ -149,7 +178,16 @@ void NetworkSoundCodec::setEncoderQuality( unsigned int q )
     _encoderQuality = q;
 
     if ( _p_codecEncoderState )
+    {
         speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_QUALITY, &_encoderQuality );
+
+        // determine the encoded frame size
+        speex_bits_reset( &_encoderBits );
+        speex_encode( _p_codecEncoderState, _p_inputBuffer, &_encoderBits );
+        _encodedFrameBytes = static_cast< unsigned int >( speex_bits_nbytes( &_encoderBits ) );
+        // erase the input buffer
+        memset( _p_inputBuffer, 0, sizeof( _p_inputBuffer ) );
+    }
 }
 
 void NetworkSoundCodec::setEncoderComplexity( unsigned int c )
@@ -182,7 +220,6 @@ unsigned int NetworkSoundCodec::encode( short* p_soundbuffer, unsigned int lengt
     }
     else
     {
-//! TODO: if there is no receivers then stop the encoder!
         log_verbose << "Voice Codec: buffer overrun!" << std::endl;
     }
 
@@ -222,18 +259,18 @@ bool NetworkSoundCodec::decode( char* p_bitbuffer, unsigned int length, std::que
 {
     assert( _p_codecDecoderState && "decoder has not been created!" );
 
-    if ( length < CODEC_CHUNK_SIZE )
+    if ( length < _encodedFrameBytes )
     {
-        log_error << "Codec: unexpected codec packet size received, " << length << ", expected minimal size: " << CODEC_CHUNK_SIZE << std::endl;
+        log_error << "Codec: unexpected codec packet size received, " << length << ", expected minimal size: " << _encodedFrameBytes << std::endl;
         return false;
     }
 
     int decodedbytes = 0;
     int buffersize = length;
-    for ( int pos = 0; buffersize > 0; pos += CODEC_CHUNK_SIZE, buffersize -= CODEC_CHUNK_SIZE )
+    for ( int pos = 0; buffersize > 0; pos += _encodedFrameBytes, buffersize -= _encodedFrameBytes )
     {
         // decode and enqueue sound data
-        speex_bits_read_from( &_decoderBits, &p_bitbuffer[ pos ], CODEC_CHUNK_SIZE );
+        speex_bits_read_from( &_decoderBits, &p_bitbuffer[ pos ], _encodedFrameBytes );
         int res = speex_decode( _p_codecDecoderState, &_decoderBits, _p_outputBuffer );
         if ( res == 0 )
         {
