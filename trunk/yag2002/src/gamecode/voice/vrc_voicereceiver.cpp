@@ -81,7 +81,14 @@ class ReceiverUpdateThread: public OpenThreads::Thread
                                                       lastTick  = curTick;
 
                                                       // update the receiver
-                                                      _p_receiver->update( deltaTime );
+                                                      try
+                                                      {
+                                                          _p_receiver->update( deltaTime );
+                                                      }
+                                                      catch( ... )
+                                                      {
+                                                          log_warning << "VoiceReceiver: an exception occured on updating the receiver, try to continue the operation" << std::endl;
+                                                      }
                                                   }
                                               }
 
@@ -151,7 +158,7 @@ class SoundNode
         //! Last received valid voice paket stamp
         unsigned int                           _lastPaketStamp;
 
-        //! Ghost of sending sound data
+        //! Remote player sending sound data
         EnPlayer*                               _p_senderPlayer;
 };
 
@@ -172,13 +179,12 @@ _cutoffRange( 0.0f )
 
 VoiceReceiver::~VoiceReceiver()
 {
+    log_debug << "VoiceReceiver: shutting down ..." << std::endl;
     shutdown();
 }
 
 void VoiceReceiver::shutdown()
 {
-    log_debug << "Voice receiver: shutting down ..." << std::endl;
-
     // first shutdown the updater thread
     if ( _p_receiverUpdateThread )
     {
@@ -259,7 +265,7 @@ void VoiceReceiver::setupSound() throw( NetworkSoundException )
     if ( version < FMOD_VERSION )
         throw NetworkSoundException( "FMOD version conflict." );
 
-    result = _p_soundSystem->init( MAX_SENDERS_CONNECTED, /*FMOD_INIT_STREAM_FROM_UPDATE*/ FMOD_INIT_NORMAL, 0 );
+    result = _p_soundSystem->init( MAX_SENDERS_CONNECTED, FMOD_INIT_NORMAL, 0 );
 }
 
 static FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, unsigned int datalen )
@@ -284,7 +290,8 @@ static FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p
         // handle buffer underrun
         if ( samplequeue.size() < cnt )
         {
-            log_verbose << "playback buffer underrun: " << samplequeue.size() << ", " << cnt << std::endl;
+            //log_verbose << "playback buffer underrun: " << samplequeue.size() << ", " << cnt << std::endl;
+
             cnt = samplequeue.size();
             // erase the remaining buffer
             memset( p_sndbuffer + cnt, 0, datalen - ( cnt * sizeof( VOICE_DATA_FORMAT_TYPE ) ) );
@@ -376,13 +383,46 @@ void VoiceReceiver::update( float deltaTime )
     _lifesignCheck = 0.0f;
 }
 
+void VoiceReceiver::removePlayer( yaf3d::BaseEntity* p_entity )
+{
+    // the destruction can be called in packet receive context or in update context, so use a mutex
+    _soundMapMutex.lock();
+
+    bool entityfound = false;
+    SenderMap::iterator p_node = _soundNodeMap.begin(), p_end = _soundNodeMap.end();
+    for ( ; p_node != p_end; ++p_node )
+    {
+        if ( p_node->second->_p_senderPlayer == p_entity )
+        {
+            log_verbose << "  -> removed voice chat player, sender ID " << p_node->second->_senderID << ", sid " << p_node->second->_senderSID << std::endl;
+            _soundNodeMap.erase( p_node );
+            entityfound = true;
+            break;
+        }
+    }
+
+    if ( !entityfound )
+    {
+        log_warning << "VoiceReceiver: player not found for removal!" << std::endl;
+    }
+
+    _soundMapMutex.unlock();
+}
+
 void VoiceReceiver::destroyConnection( unsigned int senderID )
 {
+    // the destruction can be called in packet receive context or in update context, so use a mutex
+    _soundMapMutex.lock();
+
     SenderMap::iterator p_conmap = _soundNodeMap.find( senderID );
     if ( p_conmap == _soundNodeMap.end() )
+    {
+        log_verbose << "  -> *** could not find sender with given ID for destruction " << senderID << std::endl;
         return;
+    }
 
     SoundNode* p_node = p_conmap->second;
+    p_node->_p_senderPlayer = NULL;
 
     log_verbose << "  -> destroying sender with ID " << p_node->_senderID << std::endl;
 
@@ -391,6 +431,8 @@ void VoiceReceiver::destroyConnection( unsigned int senderID )
     delete p_node;
 
     _soundNodeMap.erase( p_conmap );
+
+    _soundMapMutex.unlock();
 }
 
 bool VoiceReceiver::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddress& senderaddr )
@@ -512,7 +554,7 @@ bool VoiceReceiver::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddr
 
         _p_transport->getSocket()->Send( reinterpret_cast< char* >( p_packet ), VOICE_PAKET_HEADER_SIZE  + p_packet->_length, senderaddr );
 
-        log_verbose << "  -> count of members in voice group ( " << _soundNodeMap.size() << " )" << std::endl;
+        log_verbose << "  -> count of members in voice group " << _soundNodeMap.size() + 1 << std::endl;
 
         return true;
     }
@@ -526,7 +568,7 @@ bool VoiceReceiver::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddr
         case VOICE_PAKET_TYPE_CON_CLOSE:
         {
             // remove senders which do not respond anymore; this call modifies _soundNodeMap!
-            log_debug << "  -> voice sender leaves ( " << _soundNodeMap.size() << " )" << std::endl;
+            log_debug << "  -> voice sender leaves, members in group " << _soundNodeMap.size() + 1 << std::endl;
 
             destroyConnection( p_soundnode->_senderID );
         }

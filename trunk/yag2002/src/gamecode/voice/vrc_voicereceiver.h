@@ -54,9 +54,6 @@ class VoiceReceiver : public BaseNetworkSoundImplementation, public CallbackVoic
 
         virtual                                     ~VoiceReceiver();
 
-        //! Get the sound data mutex
-        static OpenThreads::Mutex&                   getSoundDataMutex() { return _s_sndDataMutex; }
-
     protected:
 
         //! Initialize the voice server
@@ -89,6 +86,12 @@ class VoiceReceiver : public BaseNetworkSoundImplementation, public CallbackVoic
         //! Overriden method called when new data received on socket.
         bool                                        recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddress& senderaddr );
 
+        //! Overriden method called when a voice chat player left the session ( see BaseNetworkSoundImplementation ).
+        void                                        removePlayer( yaf3d::BaseEntity* p_entity );
+
+        //! Get the sound data mutex
+        static OpenThreads::Mutex&                   getSoundDataMutex() { return _s_sndDataMutex; }
+
         //! A map for connected senders ( sender ID / sound node )
         typedef std::map< unsigned int, SoundNode* > SenderMap;
 
@@ -109,6 +112,9 @@ class VoiceReceiver : public BaseNetworkSoundImplementation, public CallbackVoic
         //! Sound data mutex
         static OpenThreads::Mutex                   _s_sndDataMutex;
 
+        //! Sound node manipulation mutex
+        OpenThreads::Mutex                          _soundMapMutex;
+
         //! Senders' lifesign check timer
         float                                       _lifesignCheck;
 
@@ -120,6 +126,9 @@ class VoiceReceiver : public BaseNetworkSoundImplementation, public CallbackVoic
 
         //! Cut-off range
         float                                       _cutoffRange;
+
+    //! The voice playing callback function has access to internal methods.
+    friend FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, unsigned int datalen );
 };
 
 } // namespace vrc

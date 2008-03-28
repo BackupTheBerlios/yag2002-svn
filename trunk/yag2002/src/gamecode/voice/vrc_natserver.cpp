@@ -51,7 +51,10 @@ EnNATServer::EnNATServer() :
 EnNATServer::~EnNATServer()
 {
     if ( _p_socket )
+    {
+        _p_socket->Close();
         delete _p_socket;
+    }
 
     // deregister for getting network session notifications ( client left notification )
     yaf3d::NetworkDevice::get()->deregisterSessionNotify( this );

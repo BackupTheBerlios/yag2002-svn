@@ -43,7 +43,7 @@ namespace vrc
 
 VoiceSender::VoiceSender( int sid, BaseVoiceInput* p_soundInput, VoiceTransport* p_transport ) :
 _receiverSID( sid ),
-_senderState( Start ),
+_senderState( eStart ),
 _p_soundInput( p_soundInput ),
 _p_transport( p_transport ),
 _pingTimer( 0.0f ),
@@ -53,24 +53,18 @@ _paketStamp( 0 ),
 _isAlive( true )
 {
     assert( p_soundInput && "invalid sound input" );
-    _p_voicePaket = new VoicePaket;
-    _p_voicePaket->_paketStamp = _paketStamp;
-    _p_voicePaket->_senderID   = 0;
+    _p_voicePacket = new VoicePaket;
+    _p_voicePacket->_paketStamp = _paketStamp;
+    _p_voicePacket->_senderID   = 0;
+
+    // clean the receiver address, the XPAddress constructor seems not to clean the port!
+    _receiverAddress.port      = 0;
+    memset( _receiverAddress.addr, 0, sizeof( _receiverAddress.addr ) );
 }
 
 VoiceSender::~VoiceSender()
 {
-    // deregister from input stream
-    _p_soundInput->registerStreamSink( this, false );
-
-    // sleep a while in order to avoid a conflict with sender's audio codec callback
-    OpenThreads::Thread::microSleep( 50000 );
-
-    if ( _p_transport )
-    {
-        // de-register from transport layer
-        _p_transport->registerReceiver( this, false );
-    }
+    log_verbose << "VoiceSender: shutdown" << std::endl;
 
     // shutdown
     shutdown();
@@ -78,15 +72,33 @@ VoiceSender::~VoiceSender()
 
 void VoiceSender::shutdown()
 {
-    if ( _p_voicePaket )
+    // we use this pointer for knowing if we have already been shut down
+    if ( _p_voicePacket )
     {
-        delete _p_voicePaket;
-        _p_voicePaket = NULL;
+        delete _p_voicePacket;
+        _p_voicePacket = NULL;
+
+        // set sender state to start in order to avoid further voice packet processing
+        _senderState = eStart;
+
+        // deregister from input stream
+        _p_soundInput->registerStreamSink( this, false );
+
+        // sleep a while in order to avoid a conflict with sender's audio codec and packet receive callback
+        OpenThreads::Thread::microSleep( 50000 );
+
+        if ( _p_transport )
+        {
+            // de-register from transport layer
+            _p_transport->registerReceiver( this, false );
+        }
     }
 }
 
 void VoiceSender::initialize() throw( NetworkSoundException )
 {
+    log_verbose << "VoiceSender: initializing ..." << std::endl;
+
     // register for getting audio input stream
     _p_soundInput->registerStreamSink( this, true );
 
@@ -103,30 +115,30 @@ void VoiceSender::recvClientAddress( int sid, const RNReplicaNet::XPAddress& add
     _receiverAddress = address;
     _p_transport->registerReceiver( this, true );
 
-    _senderState = Initial;
+    _senderState = eInitial;
 }
 
 void VoiceSender::update( float deltaTime )
 {
     // if sender is dead then do not update, we will be removed soon
-    if ( !_isAlive )
+    if ( !_isAlive || ( _senderState == eStart ) )
         return;
 
     assert( _p_sendSocket && "invalid socket" );
     assert( _p_soundInput && "invalid sound input instance" );
 
     // handle the initial state
-    if ( _senderState == Initial )
+    if ( _senderState == eInitial )
     {
-        _p_voicePaket->_typeId   = VOICE_PAKET_TYPE_CON_REQ;
-        _p_voicePaket->_length   = 4;
-        _p_voicePaket->_senderID = 0; // this must be 0 on connection!
+        _p_voicePacket->_typeId   = VOICE_PAKET_TYPE_CON_REQ;
+        _p_voicePacket->_length   = 4;
+        _p_voicePacket->_senderID = 0; // this must be 0 on connection!
         // put the player network id into data buffer
         int sid = yaf3d::NetworkDevice::get()->getSessionID();
-        *( reinterpret_cast< int* >( _p_voicePaket->_p_buffer ) ) = sid;
+        *( reinterpret_cast< int* >( _p_voicePacket->_p_buffer ) ) = sid;
 
-        _p_sendSocket->Send( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE + _p_voicePaket->_length, _receiverAddress );
-        _senderState = RequestConnection;
+        _p_sendSocket->Send( reinterpret_cast< char* >( _p_voicePacket ), VOICE_PAKET_HEADER_SIZE + _p_voicePacket->_length, _receiverAddress );
+        _senderState = eRequestConnection;
 
         log_verbose << "  <- requesting " << _receiverAddress.Export() << " for joining voice session " << " ... " << std::endl;
 
@@ -134,13 +146,13 @@ void VoiceSender::update( float deltaTime )
     }
 
     // check request timeout and try again
-    if ( _senderState == RequestConnection )
+    if ( _senderState == eRequestConnection )
     {
         _respondTimer += deltaTime;
         if ( _respondTimer > VOICE_REQ_CON_TIMEOPUT )
         {
             _respondTimer = 0.0f;
-            _senderState  = Initial;
+            _senderState  = eInitial;
         }
     }
 
@@ -149,10 +161,10 @@ void VoiceSender::update( float deltaTime )
     if ( _pingTimer > ( VOICE_LIFESIGN_PERIOD / 5.0f ) )
     {
         _pingTimer = 0.0f;
-        _p_voicePaket->_length   = 0;
-        _p_voicePaket->_typeId   = VOICE_PAKET_TYPE_CON_PING;
-        _p_voicePaket->_senderID = _senderID;
-        _p_sendSocket->Send( reinterpret_cast< char* >( _p_voicePaket ), VOICE_PAKET_HEADER_SIZE, _receiverAddress );
+        _p_voicePacket->_length   = 0;
+        _p_voicePacket->_typeId   = VOICE_PAKET_TYPE_CON_PING;
+        _p_voicePacket->_senderID = _senderID;
+        _p_sendSocket->Send( reinterpret_cast< char* >( _p_voicePacket ), VOICE_PAKET_HEADER_SIZE, _receiverAddress );
     }
 
     // check for receiver's pong
@@ -164,7 +176,7 @@ void VoiceSender::update( float deltaTime )
         _pongTimer = 0.0f;
 
         // retry to connect to receiver
-        _senderState = Initial;
+        _senderState = eInitial;
     }
 }
 
@@ -173,7 +185,7 @@ void VoiceSender::recvEncodedAudio( char* p_encodedaudio, unsigned int length, u
 
     static VoicePaket packet;
 
-    if ( ( _senderState != ConnectionReady ) || !_isAlive )
+    if ( ( _senderState != eConnectionReady ) || !_isAlive )
         return;
 
     // transmit encoded input over net
@@ -206,13 +218,13 @@ bool VoiceSender::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddres
     // update protocol state
     switch ( _senderState )
     {
-        case RequestConnection:
+        case eRequestConnection:
         {
             if ( p_packet->_typeId == VOICE_PAKET_TYPE_CON_GRANT )
             {
                 // store assigned sender ID
                 _senderID = p_packet->_senderID;
-                _senderState = ConnectionReady;
+                _senderState = eConnectionReady;
                 std::stringstream msg;
                 msg << "  <- receiver granted joining with ID: " << _senderID;
                 log_debug << msg.str() << std::endl;
@@ -224,7 +236,7 @@ bool VoiceSender::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddres
                 // kill this sender
                 _isAlive = false;
                 // set the state to Initial so the input callback gets inactive too
-                _senderState = Initial;
+                _senderState = eInitial;
             }
             else
             {
@@ -234,7 +246,7 @@ bool VoiceSender::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddres
         break;
 
         // maintain the periodic alive signaling
-        case ConnectionReady:
+        case eConnectionReady:
         {
             // check for receiver's pong paket
             // reset pong timer when a pong paket arrived

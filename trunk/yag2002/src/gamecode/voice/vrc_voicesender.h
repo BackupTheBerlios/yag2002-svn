@@ -94,14 +94,14 @@ class VoiceSender : public BaseNetworkSoundImplementation, public BaseVoiceInput
         //! Network states of sender
         enum
         {
-            Start = 0x10,
-            Initial,
-            RequestConnection,
-            ConnectionReady
+            eStart = 0x10,
+            eInitial,
+            eRequestConnection,
+            eConnectionReady
         }                                           _senderState;
 
-        //! Paket for sending and voice data over network
-        VoicePaket*                                 _p_voicePaket;
+        //! Packet for sending and voice data over network
+        VoicePaket*                                 _p_voicePacket;
 
         //! Sound input
         BaseVoiceInput*                             _p_soundInput;

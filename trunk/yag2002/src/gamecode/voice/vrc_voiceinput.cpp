@@ -129,7 +129,7 @@ void BaseVoiceInput::initialize() throw( NetworkSoundException )
         //    throw NetworkSoundException( "Cannot set software format" );
 
         // we need only one single channel in sound system
-        result = _p_soundSystem->init( 1, /* FMOD_INIT_STREAM_FROM_UPDATE */ FMOD_INIT_NORMAL, 0 );
+        result = _p_soundSystem->init( 1, FMOD_INIT_NORMAL, 0 );
         if ( result != FMOD_OK )
             throw NetworkSoundException( "Cannot initialize sound system" );
     }

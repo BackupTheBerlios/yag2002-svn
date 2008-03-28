@@ -54,7 +54,10 @@ NATClient::NATClient() :
 NATClient::~NATClient()
 {
     if ( _p_socket )
+    {
+        _p_socket->Close();
         delete _p_socket;
+    }
 }
 
 void NATClient::initialize()

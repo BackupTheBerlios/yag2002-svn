@@ -380,6 +380,8 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
 
 void EnNetworkVoice::onVoiceChatPlayerListChanged( bool joining, yaf3d::BaseEntity* p_entity )
 {
+    log_verbose << "EnNetworkVoice: voice chat player changed, player " << p_entity->getInstanceName() << ( joining ? " joining" : " leaving" ) << std::endl;
+
     // let the voice network manager update its internal client list when a new client is joining
     if ( joining )
     {
@@ -396,10 +398,13 @@ void EnNetworkVoice::onVoiceChatPlayerListChanged( bool joining, yaf3d::BaseEnti
             BaseNetworkSoundImplementation* p_sender = player->second;
             delete p_sender;
             _sendersMap.erase( player );
+
+            // remove also the player from voice receiver immediately
+            _p_receiver->removePlayer( p_entity );
         }
         else
         {
-            log_error << "VoiceNetwork: leaving player could not be found in sender map" << std::endl;
+            log_error << "EnNetworkVoice: leaving player could not be found in sender map" << std::endl;
         }
     }
 }

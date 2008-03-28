@@ -56,7 +56,7 @@ void VoiceTransport::initialize()
 
 void VoiceTransport::update( float deltaTime )
 {
-    // check the transport layer is initialized
+    // check if the transport layer is initialized
     if ( !_p_socket )
         return;
 
@@ -137,6 +137,8 @@ void VoiceTransport::registerReceiver( CallbackVoiceData* p_cb, bool reg )
 
 void VoiceTransport::getClientInfo( int sid, CallbackVoiceData* p_cb )
 {
+    log_verbose << "VoiceTransport: requesting client info for sid " << sid << std::endl;
+
     _p_NATClient->requestClientInfo( sid, this );
     _sidRecvMap[ sid ] = p_cb;
 }

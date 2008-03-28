@@ -116,8 +116,11 @@ void NetworkSoundCodec::setupEncoder()
     speex_encoder_ctl( _p_codecEncoderState, SPEEX_SET_DTX, &disabled );
     speex_bits_init( &_encoderBits );
 
+    // determine the frame bytes by encoding a dummy input sample set
+    float dummyinput[ 512 ];
+    memset( dummyinput, 0, sizeof( dummyinput ) );
     speex_bits_reset( &_encoderBits );
-    speex_encode( _p_codecEncoderState, _p_inputBuffer, &_encoderBits );
+    speex_encode( _p_codecEncoderState, dummyinput, &_encoderBits );
     _encodedFrameBytes = static_cast< unsigned int >( speex_bits_nbytes( &_encoderBits ) );
 
     // setup preprocessor
