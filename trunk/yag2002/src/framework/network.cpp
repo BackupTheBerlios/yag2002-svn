@@ -821,7 +821,7 @@ void NetworkDevice::updateServer( float /*deltaTime*/ )
                         strcpy( sendData._p_levelName, _serverNodeInfo._levelName.c_str() );
                         strcpy( sendData._p_serverName, _serverNodeInfo._nodeName.c_str() );
                         _p_session->DataSend( sessionId, reinterpret_cast< void* >( &sendData ), sizeof( PreconnectDataServer ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
-                        log_info << "NetworkDevice: access granted to user '" << login << "'" << std::endl;
+                        log_info << "NetworkDevice: access granted to user" << std::endl;
                     }
 
                     memset( &sendData, 0, sizeof( PreconnectDataServer ) );

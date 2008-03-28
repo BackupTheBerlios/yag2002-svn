@@ -134,8 +134,6 @@ bool Physics::reinitialize()
     // clear the material cache
     _materials.clear();
 
-    log_verbose << "Physics: remaining non-freed bytes: " <<  allocBytesSum - freedBytesSum << std::endl;
-
     return initialize();
 }
 
