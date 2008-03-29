@@ -47,9 +47,9 @@ FileSystem::~FileSystem()
 {
 }
 
-void FileSystem::initialize() throw ( FileSystemException )
+void FileSystem::initialize( char** p_argv ) throw ( FileSystemException )
 {
-    if ( !PHYSFS_init( NULL ) )
+    if ( !PHYSFS_init( p_argv[ 0 ] ) )
     {
         const char* p_reason = PHYSFS_getLastError();
         log_error << "FileSystem could not be initialized!" << std::endl;
@@ -61,7 +61,7 @@ void FileSystem::initialize() throw ( FileSystemException )
 void FileSystem::shutdown()
 {
     log_info << "FileSystem: shutting down" << std::endl;
-    
+
     if ( !PHYSFS_deinit() )
         log_error << "File system could not be shut down properly!" << std::endl;
 
@@ -93,7 +93,7 @@ FilePtr FileSystem::getFile( const std::string& filename )
         return file;
     }
 
-    PHYSFS_uint32 filesize = PHYSFS_fileLength( p_handle );
+    PHYSFS_sint64 filesize = PHYSFS_fileLength( p_handle );
     if ( filesize < 0 )
     {
         log_error << "FileSystem: cannot determine file size: " << filename << std::endl;
@@ -129,7 +129,7 @@ std::vector< std::string > FileSystem::listFiles( const std::string& dir ) const
         files.push_back( *p_filename );
 
     PHYSFS_freeList( p_filenames );
-    
+
     return files;
 }
 
