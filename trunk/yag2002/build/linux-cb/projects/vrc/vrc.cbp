@@ -60,11 +60,16 @@
 					<Add library="lua5.1" />
 					<Add library="fmodex" />
 					<Add library="libspeex" />
+					<Add library="libspeexdsp" />
+					<Add library="pq" />
+					<Add library="pqxx" />
+					<Add library="physfs" />
 					<Add library="libframeworkd.a" />
 					<Add directory="../../../../lib/framework" />
 					<Add directory="/usr/lib" />
 					<Add directory="/usr/local/lib" />
 					<Add directory="/usr/local/lib64" />
+					<Add directory="/usr/local/pgsql/lib" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -120,8 +125,15 @@
 					<Add library="lua5.1" />
 					<Add library="fmodex" />
 					<Add library="libspeex" />
+					<Add library="libspeexdsp" />
+					<Add library="pq" />
+					<Add library="pqxx" />
+					<Add library="physfs" />
 					<Add library="libframework.a" />
 					<Add directory="../../../../lib/framework" />
+					<Add directory="/usr/local/lib" />
+					<Add directory="/usr/local/lib64" />
+					<Add directory="/usr/local/pgsql/lib" />
 				</Linker>
 			</Target>
 		</Build>
@@ -199,6 +211,7 @@
 		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_params.h" />
 		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_rfcnumeric.h" />
 		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libirc_session.h" />
+		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libircclient.cpp" />
 		<Unit filename="../../../../src/gamecode/player/chat/IRC/libIRC/libircclient.h" />
 		<Unit filename="../../../../src/gamecode/player/chat/IRC/vrc_chatprotIRC.cpp" />
 		<Unit filename="../../../../src/gamecode/player/chat/IRC/vrc_chatprotIRC.h" />
@@ -333,6 +346,10 @@
 		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdserverstart.h" />
 		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshadowdisplaymap.cpp" />
 		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshadowdisplaymap.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshadowlight.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshadowlight.h" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshadowpolyoffset.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshadowpolyoffset.h" />
 		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshowfps.cpp" />
 		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshowfps.h" />
 		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdshowplayerinfo.cpp" />
@@ -356,6 +373,8 @@
 		<Unit filename="../../../../src/gamecode/tools/console/vrc_consoleiocin.h" />
 		<Unit filename="../../../../src/gamecode/tools/console/vrc_consoleiogui.cpp" />
 		<Unit filename="../../../../src/gamecode/tools/console/vrc_consoleiogui.h" />
+		<Unit filename="../../../../src/gamecode/tools/vrc_consolegui.cpp" />
+		<Unit filename="../../../../src/gamecode/tools/vrc_consolegui.h" />
 		<Unit filename="../../../../src/gamecode/tools/vrc_fpsdisplay.cpp" />
 		<Unit filename="../../../../src/gamecode/tools/vrc_fpsdisplay.h" />
 		<Unit filename="../../../../src/gamecode/tools/vrc_inspector.cpp" />
@@ -389,6 +408,11 @@
 		<Unit filename="../../../../src/gamecode/visuals/vrc_water.h" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_codec.cpp" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_codec.h" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_natclient.cpp" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_natclient.h" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_natcommon.h" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_natserver.cpp" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_natserver.h" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_netvoice.cpp" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_netvoice.h" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_networksoundimpl.cpp" />
@@ -404,6 +428,8 @@
 		<Unit filename="../../../../src/gamecode/voice/vrc_voicetestutils.cpp" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_voicetestutils.h" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_voicetestutils.inl" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_voicetransport.cpp" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_voicetransport.h" />
 		<Unit filename="../../../../src/gamecode/vrc_exceptionlogger.cpp" />
 		<Unit filename="../../../../src/gamecode/vrc_exceptionlogger.h" />
 		<Unit filename="../../../../src/gamecode/vrc_gameutils.cpp" />

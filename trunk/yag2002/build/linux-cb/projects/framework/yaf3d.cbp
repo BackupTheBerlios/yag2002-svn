@@ -86,6 +86,8 @@
 		<Unit filename="../../../../src/framework/configuration.h" />
 		<Unit filename="../../../../src/framework/entitymanager.cpp" />
 		<Unit filename="../../../../src/framework/entitymanager.h" />
+		<Unit filename="../../../../src/framework/filesystem.cpp" />
+		<Unit filename="../../../../src/framework/filesystem.h" />
 		<Unit filename="../../../../src/framework/gamestate.cpp" />
 		<Unit filename="../../../../src/framework/gamestate.h" />
 		<Unit filename="../../../../src/framework/guimanager.cpp" />
