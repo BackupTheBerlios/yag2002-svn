@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,20 +11,20 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
- # voice receiver is responsible for collecting incoming voice 
+ # voice receiver is responsible for collecting incoming voice
  #  over netweork
  #
  #   date of creation:  01/19/2006
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -38,7 +38,6 @@
 #include "../player/vrc_player.h"
 #include "RNXPURL/Inc/XPURL.h"
 #include "RNXPURL/Inc/Transport.h"
-#include <RNLobby/Inc/NATDetectServer.h>
 
 
 namespace vrc
@@ -142,7 +141,7 @@ class SoundNode
 
         //! Sound object
         FMOD::Sound*                            _p_sound;
-        
+
         //! Sound channel
         FMOD::Channel*                          _p_channel;
 
@@ -268,7 +267,7 @@ void VoiceReceiver::setupSound() throw( NetworkSoundException )
     result = _p_soundSystem->init( MAX_SENDERS_CONNECTED, FMOD_INIT_NORMAL, 0 );
 }
 
-static FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, unsigned int datalen )
+FMOD_RESULT F_CALLBACK voiceReceiverReadPCM( FMOD_SOUND* p_sound, void* p_data, unsigned int datalen )
 {
     FMOD::Sound*    p_fmodsound = reinterpret_cast< FMOD::Sound* >( p_sound );
     void*           p_userdata;
@@ -371,7 +370,7 @@ void VoiceReceiver::update( float deltaTime )
         // first check for dead senders
         if ( ( p_sendernode->_pingTimer += _lifesignCheck ) > VOICE_LIFESIGN_PERIOD )
         {
-            // removing sender 
+            // removing sender
             log_verbose << "  -> remove sender from receiver list!" << std::endl;
 
             // remove senders which do not respond anymore; this call modifies _soundNodeMap!
@@ -475,7 +474,7 @@ bool VoiceReceiver::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddr
                         p_packet->_typeId   = VOICE_PAKET_TYPE_CON_DENY;
 
                         log_verbose << "  -> re-joining request denied ( " << p_packet->_senderID << " )" << std::endl;
-                    } 
+                    }
                     else
                     {
                         p_packet->_typeId   = VOICE_PAKET_TYPE_CON_GRANT;
@@ -525,7 +524,7 @@ bool VoiceReceiver::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddr
             p_packet->_typeId   = VOICE_PAKET_TYPE_CON_DENY;
 
             log_verbose << "  -> joining request denied ( " << p_packet->_senderID << " )" << std::endl;
-        } 
+        }
         else
         {
             // assign a unique ID to new sender

@@ -24,7 +24,7 @@ COMMENT ON SCHEMA public IS 'VRC data storage';
 -- Name: plpgsql; Type: PROCEDURAL LANGUAGE; Schema: -; Owner: postgres
 --
 
-CREATE PROCEDURAL LANGUAGE plpgsql;
+--CREATE PROCEDURAL LANGUAGE plpgsql;
 
 
 SET search_path = public, pg_catalog;

@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2007, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -24,7 +24,7 @@
  #
  #   date of creation:  09/29/2007
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -42,6 +42,9 @@
 //! Multi-platform '_getch()' for reading the db password from console
 #ifdef WIN32
     #include <conio.h>
+
+    #define LINE_TERM   0xd
+
 #else
     #include <termios.h>
     int _getch()
@@ -57,6 +60,9 @@
        tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
        return ch;
     }
+
+    #define LINE_TERM   0xa
+
 #endif
 
 //! Implement the singleton
@@ -126,10 +132,10 @@ void StorageServer::initialize() throw ( StorageServerException )
     do
     {
         c = _getch();
-        if ( c != 0xd )
+        if ( c != LINE_TERM )
             dbpasswd += c;
     }
-    while ( c != 0xd );
+    while ( c != LINE_TERM );
     std::cout << std::endl;
     std::cout << "################################" << std::endl;
     std::cout << std::endl;
@@ -151,7 +157,23 @@ void StorageServer::initialize() throw ( StorageServerException )
 
     // initialize the storage
     if ( !_p_storage->initialize( connData ) )
+    {
+        // remove sensitive data from memory
+        for ( std::size_t cnt = 0; cnt < connData._passwd.size(); cnt++ )
+            connData._passwd[ cnt ] = 0;
+
+        for ( std::size_t cnt = 0; cnt < dbpasswd.size(); cnt++ )
+            dbpasswd[ cnt ] = 0;
+
         throw StorageServerException( "Storage backend could not be initialized." );
+    }
+
+    // remove sensitive data from memory
+    for ( std::size_t cnt = 0; cnt < connData._passwd.size(); cnt++ )
+        connData._passwd[ cnt ] = 0;
+
+    for ( std::size_t cnt = 0; cnt < dbpasswd.size(); cnt++ )
+        dbpasswd[ cnt ] = 0;
 
     log_info << "setup storage ..." << std::endl;
 

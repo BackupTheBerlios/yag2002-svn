@@ -23,7 +23,7 @@
  #
  #   date of creation:  02/24/2008
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -74,7 +74,7 @@ void VoiceTransport::update( float deltaTime )
         if ( !natpacket )
         {
             VoicePaket* p_voicepacket = reinterpret_cast< VoicePaket* >( s_buffer );
-            if ( len > sizeof( VoicePaket ) )
+            if ( len > int( sizeof( VoicePaket ) ) )
             {
                 log_error << "VoiceTransport: receiver packet; unexpected packet length " << len << std::endl;
                 continue;
