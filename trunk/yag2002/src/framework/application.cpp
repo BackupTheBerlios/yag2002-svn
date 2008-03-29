@@ -338,12 +338,19 @@ bool Application::initialize( int argc, char **argv )
         log_out << cpuinfo.str() << std::endl;
     }
 
+{
+    extern void implementSignalHandler();
+    // implement the signal handler
+    implementSignalHandler();
+}
+
     log_out << "Application: using media path: " << _mediaPath << std::endl;
 
     log_out << "Application: setup virtual file system" << std::endl;
+
     try
     {
-        FileSystem::get()->initialize();
+        FileSystem::get()->initialize( argv );
         FileSystem::get()->mountResource( _mediaPath, "/" );
         if ( fileExists( _mediaPath + "/"YAF3D_MEDIA_PACK ) )
         {

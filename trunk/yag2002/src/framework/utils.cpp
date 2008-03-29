@@ -41,11 +41,55 @@
  #include <glob.h>
  #include <dirent.h>
  #include <spawn.h>
+ #include <signal.h>
 #endif
 
 
 namespace yaf3d
 {
+
+
+//! Signal handler for catching Ctrl+C and other system signals
+
+#ifdef WIN32
+BOOL WINAPI handlerRoutine( DWORD dwCtrlType )  //  control signal type
+{
+    // shutdown or Ctrl-C signal
+    switch ( dwCtrlType )
+    {
+        case CTRL_CLOSE_EVENT:
+        case CTRL_C_EVENT:
+        case CTRL_SHUTDOWN_EVENT:
+        {
+            Application::get()->handleCtrlC();
+            break;
+        }
+    }
+
+    return TRUE;
+}
+#endif
+
+#ifdef LINUX
+void handlerRoutine( int sig )
+{
+    Application::get()->handleCtrlC();
+}
+#endif
+
+void implementSignalHandler()
+{
+    // set the console event handler in win32
+#ifdef WIN32
+    SetConsoleCtrlHandler( handlerRoutine,  TRUE );
+#endif
+
+    // set the console event handler in linux
+#ifdef LINUX
+    signal( SIGINT,  &handlerRoutine );
+#endif
+}
+
 
 #ifdef LINUX
 
