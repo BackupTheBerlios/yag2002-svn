@@ -609,7 +609,7 @@
 							Name="libIRC"
 							>
 							<File
-								RelativePath="..\..\..\..\src\gamecode\player\chat\Irc\libIRC\libircclient.c"
+								RelativePath="..\..\..\..\src\gamecode\player\chat\IRC\libIRC\libircclient.cpp"
 								>
 								<FileConfiguration
 									Name="Debug|Win32"
@@ -617,6 +617,8 @@
 									<Tool
 										Name="VCCLCompilerTool"
 										UsePrecompiledHeader="0"
+										PrecompiledHeaderThrough=""
+										CompileAs="1"
 									/>
 								</FileConfiguration>
 								<FileConfiguration
@@ -626,6 +628,7 @@
 										Name="VCCLCompilerTool"
 										UsePrecompiledHeader="0"
 										PrecompiledHeaderThrough=""
+										CompileAs="1"
 									/>
 								</FileConfiguration>
 								<FileConfiguration
@@ -634,6 +637,8 @@
 									<Tool
 										Name="VCCLCompilerTool"
 										UsePrecompiledHeader="0"
+										PrecompiledHeaderThrough=""
+										CompileAs="1"
 									/>
 								</FileConfiguration>
 								<FileConfiguration
@@ -643,8 +648,13 @@
 										Name="VCCLCompilerTool"
 										UsePrecompiledHeader="0"
 										PrecompiledHeaderThrough=""
+										CompileAs="1"
 									/>
 								</FileConfiguration>
+							</File>
+							<File
+								RelativePath="..\..\..\..\src\gamecode\player\chat\IRC\libIRC\libircclient.h"
+								>
 							</File>
 						</Filter>
 					</Filter>
