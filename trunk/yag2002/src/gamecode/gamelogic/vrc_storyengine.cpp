@@ -45,9 +45,9 @@ class StoryBookLoader : public BaseScript< StoryBookLoader >
 {
     public:
 
-                                                    StoryBookLoader( StoryEngine* p_engine, yaf3d::Log* p_log ) : 
-                                                     _p_storyEngine( p_engine ),
-                                                     _p_log( p_log )
+                                                    StoryBookLoader( StoryEngine* p_engine, yaf3d::Log* p_log ) :
+                                                     _p_log( p_log ),
+                                                     _p_storyEngine( p_engine )
                                                     {
                                                     }
 
@@ -211,7 +211,7 @@ void StoryEngine::processEvent( const StoryEvent& event )
     unsigned int eventfilter = event.getFilter();
 
     // check for a valid event filter
-    if ( !( eventfilter & 
+    if ( !( eventfilter &
             (
              StoryEvent::eFilterStoryBook |
              StoryEvent::eFilterStoryPrivate |

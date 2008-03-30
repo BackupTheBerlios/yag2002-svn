@@ -71,7 +71,7 @@ BOOL WINAPI handlerRoutine( DWORD dwCtrlType )  //  control signal type
 #endif
 
 #ifdef LINUX
-void handlerRoutine( int sig )
+void handlerRoutine( int /*sig*/ )
 {
     Application::get()->handleCtrlC();
 }
@@ -221,7 +221,7 @@ bool getFromClipboard( std::wstring& text, unsigned int maxcnt )
     int            selnformat;
     unsigned long  nbytes;
     unsigned long  overflow;
-    wchar_t*       p_src;
+    unsigned char* p_src;
 
     Lock_Display();
     owner = XGetSelectionOwner( SDL_Display, XA_PRIMARY );
@@ -247,7 +247,7 @@ bool getFromClipboard( std::wstring& text, unsigned int maxcnt )
     {
         p_src[ maxcnt - 1 ] = 0;
         if ( selntype == XA_STRING )
-            text = p_src;
+            text = reinterpret_cast< wchar_t* >( p_src );
 
         XFree( p_src );
     }

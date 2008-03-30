@@ -1,14 +1,14 @@
-/* 
+/*
  * Copyright (C) 2004 Georgy Yunaev tim@krasnogorsk.ru
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2 of the License, or (at your 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at your
  * option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
  * License for more details.
  *
  * $Id: utils.c,v 1.3 2004/10/07 18:18:36 gyunaev Exp $
@@ -49,13 +49,13 @@ static int libirc_findcrlf (const char * buf, int length)
 static int libirc_findcrorlf (char * buf, int length)
 {
 	int offset = 0;
-	for ( ; offset < length; offset++ ) 
+	for ( ; offset < length; offset++ )
 	{
 		if ( buf[offset] == 0x0D || buf[offset] == 0x0A )
 		{
 			buf[offset++] = '\0';
 
-			if ( offset < (length - 1) 
+			if ( offset < (length - 1)
 			&& (buf[offset] == 0x0D || buf[offset] == 0x0A) )
 				offset++;
 
@@ -67,7 +67,7 @@ static int libirc_findcrorlf (char * buf, int length)
 }
 
 
-static void libirc_event_ctcp_internal (irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count)
+static void libirc_event_ctcp_internal (irc_session_t * session, const char * /*event*/, const char * origin, const char ** params, unsigned int /*count*/)
 {
 	if ( origin )
 	{
@@ -86,7 +86,7 @@ static void libirc_event_ctcp_internal (irc_session_t * session, const char * ev
 		}
 		else if ( !strcmp (params[0], "FINGER") )
 		{
-			sprintf (textbuf, "FINGER %s (%s) Idle 0 seconds", 
+			sprintf (textbuf, "FINGER %s (%s) Idle 0 seconds",
 				session->username ? session->username : "nobody",
 				session->realname ? session->realname : "noname");
 

@@ -39,12 +39,13 @@ namespace vrc
 
 NetworkSoundCodec::NetworkSoundCodec() :
 _p_mode( NULL ),
+_p_preprocessorState( NULL ),
 _p_codecEncoderState( NULL ),
 _encoderQuality( 5 ),
 _encoderComplexity( 3 ),
 _encoderFrameSize( 0 ),
-_p_codecDecoderState( NULL ),
 _encodedFrameBytes( 0 ),
+_p_codecDecoderState( NULL ),
 _enh( 1 ),
 _sampleRate( VOICE_SAMPLE_RATE ),
 _decoderFrameSize( 0 )
@@ -268,7 +269,6 @@ bool NetworkSoundCodec::decode( char* p_bitbuffer, unsigned int length, std::que
         return false;
     }
 
-    int decodedbytes = 0;
     int buffersize = length;
     for ( int pos = 0; buffersize > 0; pos += _encodedFrameBytes, buffersize -= _encodedFrameBytes )
     {

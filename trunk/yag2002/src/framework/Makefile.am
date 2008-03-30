@@ -22,7 +22,12 @@ libYAF3D_la_SOURCES = 	application.cpp \
 			physics_helpers.cpp \
 			settings.cpp \
 			settings.inl \
-			soundmanager.cpp\
+			soundmanager.cpp \
+			shadowmanager.cpp \
+			shadercontainer.cpp \
+			filesystem.cpp \
+			terrainmanager.cpp \
+			terrainpatch.cpp \
 			utils.cpp \
 			yaf3dtinyxml/tinystr.cpp \
 			yaf3dtinyxml/tinyxml.cpp \
@@ -54,7 +59,12 @@ pkginclude_HEADERS = 	application.h \
 			settings.h \
 			singleton.h \
 			singleton.inl \
-			soundmanager.h\
+			soundmanager.h \
+                        shadowmanager.h \
+                        shadercontainer.h \
+                        filesystem.h \
+                        terrainmanager.h \
+                        terrainpatch.h \
 			utils.h \
 			yaf3dframework.h \
 			yaf3dtinyxml/tinystr.h \

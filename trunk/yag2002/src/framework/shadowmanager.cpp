@@ -49,6 +49,7 @@ YAF3D_SINGLETON_IMPL( yaf3d::ShadowManager )
 namespace yaf3d
 {
 
+
 // Update callback class for camera and tex generation
 class ShadowSceneCullCallback : public osg::NodeCallback
 {
@@ -57,8 +58,8 @@ class ShadowSceneCullCallback : public osg::NodeCallback
                                                 ShadowSceneCullCallback( osg::Vec3f lightpos, osg::Camera* p_camera, osg::Uniform* p_texgenMatrix, osg::StateSet* p_stateset ):
                                                  _lightPosition( lightpos ),
                                                  _p_camera( p_camera ),
-                                                 _p_stateSet( p_stateset ),
                                                  _p_texgenMatrix( p_texgenMatrix ),
+                                                 _p_stateSet( p_stateset ),
                                                  _updateNodes( true ),
                                                  _updateLightPosition( true ),
                                                  _nearZ( 0.0f ),

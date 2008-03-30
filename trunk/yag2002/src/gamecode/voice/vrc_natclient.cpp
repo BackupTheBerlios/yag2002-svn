@@ -24,7 +24,7 @@
  #
  #   date of creation:  02/20/2008
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -188,7 +188,7 @@ bool NATClient::receivePacket( char* p_buffer, int len, const RNReplicaNet::XPAd
         return false;
 
     // this packet comes from other clients, not from NAT server
-    if ( p_data->_cmd == NAT_PUNCH_HOLE )
+    if ( p_data->_cmd == int( NAT_PUNCH_HOLE ) )
     {
         log_verbose << "NATClient: hole punching packet received from: " << senderaddr.Export() << std::endl;
         return true;

@@ -1,14 +1,14 @@
-/* 
+/*
  * Copyright (C) 2004 Georgy Yunaev tim@krasnogorsk.ru
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2 of the License, or (at your 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at your
  * option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
  * License for more details.
  *
  * $Id: sockets.c,v 1.2 2004/10/17 11:16:03 gyunaev Exp $
@@ -20,7 +20,7 @@
 #if !defined (WIN32)
 	#include <sys/socket.h>
 	#include <netdb.h>
-	#include <arpa/inet.h>	
+	#include <arpa/inet.h>
 	#include <netinet/in.h>
 	#include <fcntl.h>
 
@@ -61,7 +61,7 @@ static int socket_error()
 }
 
 
-static int socket_create (int domain, int type, socket_t * sock)
+static int socket_create (int /*domain*/, int /*type*/, socket_t * sock)
 {
 	*sock = socket (PF_INET, SOCK_STREAM, 0);
 	return IS_SOCKET_ERROR(*sock) ? 1 : 0;

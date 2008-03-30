@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  04/24/2005
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -42,8 +42,6 @@
 
 #include <osgDB/WriteFile>
 
-// used for starting server process
-static YAF3D_SPAWN_PROC_ID _serverProcHandle = static_cast< YAF3D_SPAWN_PROC_ID >( 0 );
 
 namespace vrc
 {
@@ -73,7 +71,7 @@ class MenuInputHandler : public vrc::gameutils::GenericInputHandler< EnMenu >
         virtual                             ~MenuInputHandler() {}
 
         //! Handle input events
-        bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+        bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*aa*/ )
                                             {
                                                 const osgSDL::SDLEventAdapter* p_eventAdapter = dynamic_cast< const osgSDL::SDLEventAdapter* >( &ea );
                                                 assert( p_eventAdapter && "invalid event adapter received" );
@@ -277,7 +275,7 @@ void EnMenu::initialize()
             _backgrdSoundVolume = 0.0f;
         else
             yaf3d::Configuration::get()->getSettingValue( VRC_GS_MUSIC_VOLUME, _backgrdSoundVolume );
-        
+
         setBkgMusicVolume( _backgrdSoundVolume );
     }
 
@@ -346,7 +344,7 @@ void EnMenu::initialize()
         // create a new imageset for loading pic
         std::string materialName( OVERLAY_IMAGESET );
         CEGUI::Texture*  p_texture = yaf3d::GuiManager::get()->getGuiRenderer()->createTexture( _loadingOverlayTexture, "MenuResources" );
-        CEGUI::Imageset* p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( materialName, p_texture );        
+        CEGUI::Imageset* p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( materialName, p_texture );
         if ( !p_imageSet->isImageDefined( _loadingOverlayTexture ) )
         {
             p_imageSet->defineImage( materialName, CEGUI::Point( 0.0f, 0.0f ), CEGUI::Size( p_texture->getWidth(), p_texture->getHeight() ), CEGUI::Point( 0.0f,0.0f ) );
@@ -436,7 +434,7 @@ bool EnMenu::createMenuScene()
     p_camEntity->getAttributeManager().setAttributeValue( "nearClip",        _cameraNearClip        );
     p_camEntity->getAttributeManager().setAttributeValue( "farClip",         _cameraFarClip         );
     osg::Quat rotoffset( -osg::PI / 2.0f, osg::Vec3f( 1, 0, 0 ) );
-    p_camEntity->setCameraOffsetRotation( rotoffset );    
+    p_camEntity->setCameraOffsetRotation( rotoffset );
     p_camEntity->initialize();
     p_camEntity->postInitialize();
 
@@ -473,14 +471,14 @@ EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume, b
     return p_ent;
 }
 
-bool EnMenu::onButtonHover( const CEGUI::EventArgs& arg )
+bool EnMenu::onButtonHover( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse over sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_HOVER );
     return true;
 }
 
-bool EnMenu::onClickedGameSettings( const CEGUI::EventArgs& arg )
+bool EnMenu::onClickedGameSettings( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
@@ -491,7 +489,7 @@ bool EnMenu::onClickedGameSettings( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool EnMenu::onClickedQuit( const CEGUI::EventArgs& arg )
+bool EnMenu::onClickedQuit( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
@@ -504,7 +502,7 @@ bool EnMenu::onClickedQuit( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool EnMenu::onClickedReturnToLevel( const CEGUI::EventArgs& arg )
+bool EnMenu::onClickedReturnToLevel( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
@@ -514,7 +512,7 @@ bool EnMenu::onClickedReturnToLevel( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
+bool EnMenu::onClickedLeave( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
@@ -551,7 +549,7 @@ bool EnMenu::onClickedLeave( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
+bool EnMenu::onClickedJoin( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
@@ -619,7 +617,7 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
 
                 virtual                 ~MsgOkClick() {}
 
-                void                    onClicked( unsigned int btnId )
+                void                    onClicked( unsigned int /*btnId*/ )
                                         {
                                             _p_menu->_p_menuWindow->enable();
 
@@ -669,7 +667,7 @@ bool EnMenu::onClickedJoin( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool EnMenu::onClickedWT( const CEGUI::EventArgs& arg )
+bool EnMenu::onClickedWT( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
@@ -700,7 +698,7 @@ void EnMenu::updateEntity( float deltaTime )
         case BeginIntro:
         {
             // let the mouse disappear for intro
-            gameutils::GuiUtils::get()->showMousePointer( false ); 
+            gameutils::GuiUtils::get()->showMousePointer( false );
             _menuState = Intro;
         }
         break;
@@ -717,7 +715,7 @@ void EnMenu::updateEntity( float deltaTime )
         {
             _p_loadingWindow->show();
             // show up the loading window
-            gameutils::GuiUtils::get()->showMousePointer( false ); // let the mouse disappear 
+            gameutils::GuiUtils::get()->showMousePointer( false ); // let the mouse disappear
             _menuState = PrepareLoadingLevel;
         }
         break;
@@ -891,7 +889,7 @@ void EnMenu::updateEntity( float deltaTime )
             break;
 
         case SoundFadeIn:
-        {   
+        {
             _p_backgrdSound->startPlaying( true );
             _menuSoundState = SoundFadingIn;
         }
@@ -945,7 +943,7 @@ void EnMenu::beginIntro()
 void EnMenu::stopIntro()
 {
     // let the mouse appear
-    gameutils::GuiUtils::get()->showMousePointer( false ); 
+    gameutils::GuiUtils::get()->showMousePointer( false );
     _intro->stop();
 }
 
@@ -1119,7 +1117,7 @@ void EnMenu::onLoginDialogClose( bool btnlogin )
 
                 virtual                 ~MsgOkClick() {}
 
-                void                    onClicked( unsigned int btnId )
+                void                    onClicked( unsigned int /*btnId*/ )
                                         {
                                             _p_menu->_p_menuWindow->enable();
 
@@ -1189,7 +1187,7 @@ void EnMenu::setBkgMusicVolume( float volume )
 }
 
 void EnMenu::onLevelSelectCanceled()
-{    
+{
     _p_menuWindow->enable();
 
     // disable dialog, frees up the resources ( texures ) and hides the dialog
@@ -1199,7 +1197,7 @@ void EnMenu::onLevelSelectCanceled()
 // called by DialogLevelSelect when a level has been selected by user
 void EnMenu::onLevelSelected( std::string levelfile, CEGUI::Image* p_img )
 {
-    if ( _levelSelectionState == ForStandalone ) 
+    if ( _levelSelectionState == ForStandalone )
     {
         // prepare the level loading; the actual loading is done in update method
         _menuState = BeginLoadingLevel;

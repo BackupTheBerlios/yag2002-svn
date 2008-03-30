@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -53,7 +53,6 @@ PropertyGui::~PropertyGui()
 {
     try
     {
-        CEGUI::Window* p_maingui = gameutils::GuiUtils::get()->getMainGuiWindow();
         if ( _p_frame )
             CEGUI::WindowManager::getSingleton().destroyWindow( _p_frame );
 
@@ -138,7 +137,7 @@ void PropertyGui::setupGui()
 
             _p_listboxItems = static_cast< CEGUI::Listbox* >( p_paneInventory->getChild( PDLG_PREFIX "listbox_items" ) );
             _p_listboxItems->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &vrc::PropertyGui::onItemSelChanged, this ) );
-            
+
             _p_imageItem    = static_cast< CEGUI::StaticImage* >( p_paneInventory->getChild( PDLG_PREFIX "image_item" ) );
             _p_editboxItem   = static_cast< CEGUI::MultiLineEditbox* >( p_paneInventory->getChild( PDLG_PREFIX "item_description" ) );
 

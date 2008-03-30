@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,19 +11,19 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
- # manager for voice connections in network 
+ # manager for voice connections in network
  #
  #   date of creation:  02/12/2006
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -50,14 +50,14 @@ class VoiceNetwork
 {
     public:
 
-        //! A map for remote client entities and their accociated session ID 
+        //! A map for remote client entities and their accociated session ID
         typedef std::map< yaf3d::BaseEntity*, int >   VoiceClientMap;
 
 
                                                     VoiceNetwork();
 
         virtual                                     ~VoiceNetwork();
-        
+
         //! Get all clients in hotspot
         const VoiceClientMap&                       getHotspot();
 
@@ -66,7 +66,7 @@ class VoiceNetwork
         //! Set 'joining' to true if the player is beeing joined otherwise ( on leaving ) set it to false.
         void                                        updateVoiceClients( yaf3d::BaseEntity* p_playerentity, bool joining );
 
-        //! Class for getting notified whenever the voice hotspot changed 
+        //! Class for getting notified whenever the voice hotspot changed
         class CallbackHotspotChange
         {
             public:

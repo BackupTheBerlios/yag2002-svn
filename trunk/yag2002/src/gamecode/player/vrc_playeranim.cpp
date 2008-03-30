@@ -230,7 +230,7 @@ void EnPlayerAnimation::initialize()
     log_info << "  initializing player animation instance completed" << std::endl;
 }
 
-void EnPlayerAnimation::updateEntity( float deltaTime )
+void EnPlayerAnimation::updateEntity( float /*deltaTime*/ )
 {
     // set proper LOD
     if ( _p_player )

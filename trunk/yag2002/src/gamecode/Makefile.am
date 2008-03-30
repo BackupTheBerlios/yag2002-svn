@@ -4,24 +4,34 @@ noinst_PROGRAMS = vrc
 vrc_LDFLAGS = -L$(top_builddir)/src/framework/.libs 
 
 vrc_LDADD = -lpthread -lYAF3D $(CEGUI_LIBS) $(SDL_LIBS) $(OPENAL_LIBS) $(VORBIS_LIBS)  $(OSGAL_LIBS) $(OSGSDL_LIBS) $(AM_LDFLAGS) \
-$(OSGCAL_LIBS) $(CAL3D_LIBS) -losgCal -lNewton -lRNReplicaNet -lRNXPSession -lRNXPSockets -lRNXPURL -lRNPlatform -lRNXPCompression -lfmodex -lspeex 
+$(OSGCAL_LIBS) $(CAL3D_LIBS) -losgCal -lNewton -lRNReplicaNet -lRNXPSession -lRNXPSockets -lRNXPURL -lRNPlatform -lRNXPCompression -lfmodex -lspeex -lspeexdsp -lphysfs -llua5.1 -lpq -lpqxx
 
 vrc_SOURCES = vrc_gameutils.cpp \
-			vrc_shadowmanager.cpp \
 			vrc_main.cpp \
 			extern/Noise.cpp \
 			networking/_Def_replicaregs.cpp \
+			gamelogic/vrc_storyactor.cpp \
+			gamelogic/vrc_story.cpp \
+			gamelogic/vrc_storyengine.cpp \
+			gamelogic/vrc_storyevent.cpp \
+			gamelogic/vrc_storynetworking.cpp \
+			gamelogic/vrc_storysystem.cpp \
+			gamelogic/networkingRoles/_RO_StoryNetworking.cpp \
 			gui/vrc_dialoglevelselect.cpp \
+			gui/vrc_dialoglogin.cpp \
 			gui/vrc_dialogplayercfg.cpp \
 			gui/vrc_dialogsettings.cpp \
 			gui/vrc_microinput.cpp \
 			gui/vrc_intro.cpp \
 			gui/vrc_menu.cpp \
 			gui/vrc_mapview.cpp \
-			npc/fish/vrc_npcfish.cpp \
-			scripting/vrc_script.cpp \
 			maintenance/vrc_networknotification.cpp \
 			maintenance/networkingRoles/_RO_NetworkNotification.cpp \
+			npc/fish/vrc_npcfish.cpp \
+			objects/vrc_baseobject.cpp \
+			objects/vrc_objectnetworking.cpp \
+			objects/vrc_objwood.cpp \
+			objects/networkingRoles/_RO_ObjectNetworking.cpp \
 			physics/vrc_geomemitter.cpp \
 			physics/vrc_physicsbase.cpp \
 			physics/vrc_physicsbox.cpp \
@@ -47,12 +57,22 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			player/chat/vrc_chatprotocol.cpp \
 			player/chat/vrc_chatserverVRC.cpp \
 			player/chat/IRC/vrc_chatprotIRC.cpp \
-			player/chat/IRC/libIRC/libircclient.c \
+			player/chat/IRC/libIRC/libircclient.cpp \
 			player/chat/VRC/vrc_chatprotVRC.cpp \
 			player/chat/VRC/networkingRoles/_RO_PlayerChat.cpp \
 			player/networkingRoles/_RO_PlayerNetworking.cpp \
+			player/properties/vrc_propgui.cpp \
+			scripting/vrc_script.cpp \
 			sound/vrc_3dsound.cpp \
 			sound/vrc_ambientsound.cpp \
+			storage/vrc_storageclient.cpp \
+			storage/vrc_storagenetworking.cpp \
+			storage/vrc_storageserver.cpp \
+			storage/vrc_userinventory.cpp \
+			storage/database/vrc_account.cpp \
+			storage/database/vrc_basestorage.cpp \
+			storage/database/vrc_storagepostgres.cpp \
+			storage/networkingRoles/_RO_StorageNetworking.cpp \
 			tools/vrc_fpsdisplay.cpp \
 			tools/vrc_inspector.cpp \
 			tools/vrc_playerinfodisplay.cpp \
@@ -76,24 +96,27 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			tools/console/vrc_cmdlogclose.cpp \
 			tools/console/vrc_cmdlogcreate.cpp \
 			tools/console/vrc_cmdls.cpp \
+			tools/console/vrc_cmdnetworksendnotify.cpp \
 			tools/console/vrc_cmdphysicsrender.cpp \
 			tools/console/vrc_cmdphysicsserialize.cpp \
 			tools/console/vrc_cmdpwd.cpp \
 			tools/console/vrc_cmdregistry.cpp \
+			tools/console/vrc_cmdrenderingmode.cpp \
 			tools/console/vrc_cmdserverstart.cpp \
+                        tools/console/vrc_cmdshadowdisplaymap.cpp \
+                        tools/console/vrc_cmdshadowlight.cpp \
+                        tools/console/vrc_cmdshadowpolyoffset.cpp \
 			tools/console/vrc_cmdshowfps.cpp \
 			tools/console/vrc_cmdshowplayerinfo.cpp \
 			tools/console/vrc_cmdshutdown.cpp \
 			tools/console/vrc_cmdtime.cpp \
 			tools/console/vrc_cmdunloadlevel.cpp \
 			tools/console/vrc_cmdversion.cpp \
+			tools/console/vrc_cmdwriteobjfile.cpp \
 			tools/console/vrc_cmdwriteosgfile.cpp \
 			tools/console/vrc_console.cpp \
 			tools/console/vrc_consoleiocin.cpp \
 			tools/console/vrc_consoleiogui.cpp \
-			tools/console/vrc_cmdrenderingmode.cpp \
-			tools/console/vrc_cmdshadowdisplaymap.cpp \
-			tools/console/vrc_cmdnetworknotification.cpp \
 			visuals/vrc_camera.cpp \
 			visuals/vrc_candle.cpp \
 			visuals/vrc_fog.cpp \
@@ -103,6 +126,7 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			visuals/vrc_pointlight.cpp \
 			visuals/vrc_skybox.cpp \
 			visuals/vrc_spotlight.cpp \
+			visuals/vrc_terrain.cpp \
 			visuals/vrc_water.cpp \
 			voice/vrc_codec.cpp \
 			voice/vrc_netvoice.cpp \
@@ -111,7 +135,11 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			voice/vrc_voicenetwork.cpp \
 			voice/vrc_voicereceiver.cpp \
 			voice/vrc_voicesender.cpp \
-			voice/vrc_voicetestutils.cpp
+			voice/vrc_voicetestutils.cpp \
+                        voice/vrc_voicetransport.cpp \
+                        voice/vrc_natserver.cpp \
+			voice/vrc_natclient.cpp
+
 
 install-exec-local:
 	$(INSTALL_PROGRAM) $(top_builddir)/src/gamecode/vrc $(top_srcdir)/bin/linux

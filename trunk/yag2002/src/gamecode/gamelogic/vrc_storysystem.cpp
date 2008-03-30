@@ -153,7 +153,7 @@ void StorySystem::setNetworking( StoryNetworking* p_networking )
     _p_networking = p_networking;
 }
 
-void StorySystem::handleNotification( const yaf3d::EntityNotification& notification )
+void StorySystem::handleNotification( const yaf3d::EntityNotification& /*notification*/ )
 {
     // check if we need any notification
 }
@@ -186,7 +186,7 @@ bool StorySystem::addActor( unsigned int actorID, StoryEventReceiver* p_receiver
     return true;
 }
 
-bool StorySystem::removeActor( unsigned int actorID, StoryEventReceiver* p_receiver )
+bool StorySystem::removeActor( unsigned int actorID, StoryEventReceiver* /*p_receiver*/ )
 {
     if ( _sendEventsToActors )
     {

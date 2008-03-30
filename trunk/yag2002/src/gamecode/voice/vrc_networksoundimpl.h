@@ -93,9 +93,9 @@ class BaseNetworkSoundImplementation
 
         //! Update
         virtual void                    update( float deltaTime ) = 0;
- 
+
         //! Called when a voice chat player left the session
-        virtual void                    removePlayer( yaf3d::BaseEntity* p_entity ) {}
+        virtual void                    removePlayer( yaf3d::BaseEntity* /*p_entity*/ ) {}
 
         //! Shutdown
         virtual void                    shutdown() = 0;

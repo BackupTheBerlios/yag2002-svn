@@ -253,10 +253,10 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
                     In case a player is joining 'joining' is true otherwise it is false.
                     For a complete list of players use the PlayerUtil's methods 'getRemotePlayers' or 'getRemotePlayersVoiceChat'.
                 **/
-                virtual void                            onPlayerListChanged( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity ) {}
+                virtual void                            onPlayerListChanged( bool /*localplayer*/, bool /*joining*/, yaf3d::BaseEntity* /*p_entity*/ ) {}
 
                 //! Similar to onPlayerListChanged but only for players with voice chat enabled.
-                virtual void                            onVoiceChatPlayerListChanged( bool joining, yaf3d::BaseEntity* p_entity ) {}
+                virtual void                            onVoiceChatPlayerListChanged( bool /*joining*/, yaf3d::BaseEntity* /*p_entity*/ ) {}
         };
 
         //! Callback registration for changed player list.

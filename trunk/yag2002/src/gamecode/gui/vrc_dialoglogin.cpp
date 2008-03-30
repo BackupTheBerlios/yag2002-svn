@@ -23,7 +23,7 @@
  #
  #   date of creation:  09/29/2007
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -222,7 +222,7 @@ bool DialogLogin::onClickedRegistrationCreate( const CEGUI::EventArgs& /*arg*/ )
 
             virtual                 ~MsgOkClick() {}
 
-            void                    onClicked( unsigned int btnId )
+            void                    onClicked( unsigned int /*btnId*/ )
                                     {
                                         _p_registrationDialog->show();
                                     }
@@ -273,7 +273,7 @@ bool DialogLogin::onClickedRegistrationCreate( const CEGUI::EventArgs& /*arg*/ )
 
             virtual                 ~MsgOkClick() {}
 
-            void                    onClicked( unsigned int btnId )
+            void                    onClicked( unsigned int /*btnId*/ )
                                     {
                                         _p_registrationDialog->show();
                                     }
@@ -303,9 +303,9 @@ bool DialogLogin::onClickedRegistrationCreate( const CEGUI::EventArgs& /*arg*/ )
     {
         // pop up the welcome message
         yaf3d::MessageBoxDialog* p_msgwelcome = new yaf3d::MessageBoxDialog
-           ( 
-            "Server", 
-            "Congratulation, your account has been created.\nNow, you can login with your User name and Password.", 
+           (
+            "Server",
+            "Congratulation, your account has been created.\nNow, you can login with your User name and Password.",
             yaf3d::MessageBoxDialog::OK,
             true
            );
@@ -317,7 +317,7 @@ bool DialogLogin::onClickedRegistrationCreate( const CEGUI::EventArgs& /*arg*/ )
 
             virtual                 ~MsgOkClick() {}
 
-            void                    onClicked( unsigned int btnId )
+            void                    onClicked( unsigned int /*btnId*/ )
                                     {
                                         _p_dialog->_p_loginDialog->show();
                                         // take the fresh registered nick name as login name in login dialog

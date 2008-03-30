@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  01/07/2006
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -39,7 +39,7 @@ namespace vrc
 // window element name for mapview
 #define MAPVIEW_WND                 "_mapview_"
 
-// aligning 
+// aligning
 #define ALIGN_TOPLEFT               "topleft"
 #define ALIGN_TOPMIDDLE             "topmiddle"
 #define ALIGN_TOPRIGHT              "topright"
@@ -117,7 +117,7 @@ void EnMapView::handleNotification( const yaf3d::EntityNotification& notificatio
     }
 }
 
-void EnMapView::onPlayerListChanged( bool localplayer, bool joining, yaf3d::BaseEntity* p_entity )
+void EnMapView::onPlayerListChanged( bool /*localplayer*/, bool /*joining*/, yaf3d::BaseEntity* /*p_entity*/ )
 {
     updatePlayerList();
 }
@@ -283,15 +283,15 @@ osg::Vec2 EnMapView::calcPosition( const std::string& align, const osg::Vec2& ma
     }
     else
     {
-        log_error << "EnMapView: invalid aligning '" << align << "'" << std::endl;    
- 
-        log_out       << "           valid values are: " << 
+        log_error << "EnMapView: invalid aligning '" << align << "'" << std::endl;
+
+        log_out       << "           valid values are: " <<
                         ALIGN_TOPLEFT       << ", "  <<
                         ALIGN_TOPMIDDLE     << ", "  <<
                         ALIGN_TOPRIGHT      << ", "  <<
                         ALIGN_BOTTOMLEFT    << ", "  <<
                         ALIGN_BOTTOMMIDDLE  << ", "  <<
-                        ALIGN_BOTTOMRIGHT   << std::endl;    
+                        ALIGN_BOTTOMRIGHT   << std::endl;
 
         log_out       << "           set to default '" << ALIGN_TOPLEFT << "'" << std::endl;
     }
@@ -352,7 +352,7 @@ void EnMapView::updatePlayerList()
             p_staticimg->setUserData( reinterpret_cast< void* >( *p_beg ) );
 
             assert( p_staticimg && "EnMapView::updatePlayerList: internal error" );
-            
+
             _p_wnd->addChildWindow( p_staticimg );
 
             // store the new marker in list
@@ -372,7 +372,7 @@ void EnMapView::updatePlayerList()
             p_staticimg->setUserData( reinterpret_cast< void* >( p_localplayer ) );
 
             assert( p_staticimg && "EnMapView::updatePlayerList: internal error" );
-            
+
             _p_wnd->addChildWindow( p_staticimg );
 
             // store the new marker in list
@@ -391,7 +391,7 @@ void EnMapView::updateMap()
             CEGUI::Point markerpos;
             osg::Vec3f playerpos = p_beg->first->getPosition();
             markerpos.d_x = ( ( playerpos.x() + _offset.x() ) * _factor.x() + 1.0f ) * _halfSize.x();
-            markerpos.d_y = ( ( playerpos.y() + _offset.y() ) * _factor.y() + 1.0f ) * _halfSize.y();            
+            markerpos.d_y = ( ( playerpos.y() + _offset.y() ) * _factor.y() + 1.0f ) * _halfSize.y();
             p_beg->second->setPosition( markerpos );
         }
     }
@@ -444,7 +444,7 @@ bool EnMapView::onMouseEntersPlayerPoint( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool EnMapView::onMouseLeavesPlayerPoint( const CEGUI::EventArgs& arg )
+bool EnMapView::onMouseLeavesPlayerPoint( const CEGUI::EventArgs& /*arg*/ )
 {
     // reset the display timer, after the time-out the player name will disappear
     _nameDisplayTimer = PLAYER_NAME_DISP_TIMEOUT;
@@ -465,7 +465,7 @@ bool EnMapView::onMouseDown( const CEGUI::EventArgs& arg )
     return true;
 }
 
-bool EnMapView::onMouseUp( const CEGUI::EventArgs& arg )
+bool EnMapView::onMouseUp( const CEGUI::EventArgs& /*arg*/ )
 {
     if ( !_dragging )
         return true;

@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  10/31/2007
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -92,7 +92,7 @@ _keyCodePick( 1 )
     _keyCodePick = yaf3d::KeyMap::get()->getCode( keyname );
 }
 
-bool BaseObject::ObjectInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+bool BaseObject::ObjectInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*aa*/ )
 {
     // first check if picking is locked
     unsigned int ctrlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
@@ -107,7 +107,6 @@ bool BaseObject::ObjectInputHandler::handle( const osgGA::GUIEventAdapter& ea, o
 
     unsigned int eventType  = p_eventAdapter->getEventType();
     unsigned int mouseBtn   = p_eventAdapter->getButton();
-    bool mouseButtonPush    = ( eventType == osgGA::GUIEventAdapter::PUSH    );
     bool mouseButtonRelease = ( eventType == osgGA::GUIEventAdapter::RELEASE );
 
     if ( mouseButtonRelease )
@@ -120,6 +119,7 @@ bool BaseObject::ObjectInputHandler::handle( const osgGA::GUIEventAdapter& ea, o
     return false;
 }
 
+
 //! Implementation of base object
 BaseObject::BaseObject( unsigned int actortype ) :
  BaseStoryActor( actortype ),
@@ -127,15 +127,15 @@ BaseObject::BaseObject( unsigned int actortype ) :
  _shadowEnable( false ),
  _maxHeighlightDistance( 10.0f ),
  _maxPickDistance( 1.5f ),
- _highlight( false ),
- _animTime( 0.0f ),
- _disappearTime( -1.0f ),
- _destroyTime( -1.0f ),
  _enable( true ),
  _checkPickingPeriod( 0.0f ),
  _sortDistancePeriod( 0.0f ),
  _maxHeighlightDistance2( 10.0f * 10.0f ),
  _maxPickDistance2( 1.5f * 1.5f ),
+ _highlight( false ),
+ _animTime( 0.0f ),
+ _disappearTime( -1.0f ),
+ _destroyTime( -1.0f ),
  _p_player( NULL ),
  _p_playercamera( NULL ),
  _p_networking( NULL )
@@ -311,7 +311,7 @@ void BaseObject::setupMesh()
     }
 
     setPosition( _position );
-    osg::Quat   rot( 
+    osg::Quat   rot(
                      osg::DegreesToRadians( _rotation.x() ), osg::Vec3f( 1.0f, 0.0f, 0.0f ),
                      osg::DegreesToRadians( _rotation.y() ), osg::Vec3f( 0.0f, 1.0f, 0.0f ),
                      osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0.0f, 0.0f, 1.0f )
@@ -428,7 +428,7 @@ void BaseObject::onReceiveEvent( const StoryEvent& event )
 
 bool BaseObject::checkObjectDistance()
 {
-    // ´further serup of the object
+    // Â´further serup of the object
     // in networked mode the player may be created later!
     if ( !_p_player )
     {
@@ -440,7 +440,7 @@ bool BaseObject::checkObjectDistance()
         if ( !_p_playercamera )
         {
             log_error << "cannot find player's camera entity!" << std::endl;
-            
+
             // deregister entity from getting updated
             yaf3d::EntityManager::get()->registerUpdate( this, false );
 

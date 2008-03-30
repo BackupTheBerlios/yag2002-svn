@@ -65,7 +65,7 @@ void VoiceTransport::update( float deltaTime )
     static char             s_buffer[ 512 ];
     int                     len = 0;
     std::vector< CallbackVoiceData* >::iterator p_beg, p_end;
-    while ( len = _p_socket->Recv( s_buffer, sizeof( s_buffer ), &senderaddr ) )
+    while ( ( len = _p_socket->Recv( s_buffer, sizeof( s_buffer ), &senderaddr ) ) )
     {
         // handle NAT related packets
         bool natpacket = _p_NATClient->receivePacket( s_buffer, len, senderaddr );

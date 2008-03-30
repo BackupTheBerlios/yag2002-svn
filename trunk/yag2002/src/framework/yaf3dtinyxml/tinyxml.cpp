@@ -1143,7 +1143,7 @@ void TiXmlAttribute::SetIntValue( int _value )
 void TiXmlAttribute::SetDoubleValue( double _value )
 {
 	char buf [256];
-	sprintf (buf, "%lf", _value);
+	sprintf (buf, "%f", _value);
 	SetValue (buf);
 }
 
