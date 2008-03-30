@@ -415,8 +415,11 @@ class GuiUtils :
         //! A map of sound object and its associated name
         MapSound                                    _soundMap;
 
-        //! Used for storing master sound volume on app window minimizing
+        //! Used for storing master sound volume on app window minimizing or loosing focus
         float                                       _masterVolume;
+
+        //! Flag indicating that the sound has been muted on loosing window focus or minimizing
+        bool                                        _muteSound;
 
     friend class yaf3d::Singleton< vrc::gameutils::GuiUtils >;
 };

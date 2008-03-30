@@ -92,7 +92,8 @@ void SoundManager::shutdown()
 
 void SoundManager::update( float /*deltaTime*/ )
 {
-    assert( _p_system && "sound system is not initialized" );
+    if ( !_p_system )
+        return;
 
     if ( !_p_sceneView )
         _p_sceneView = Application::get()->getSceneView();
@@ -131,13 +132,20 @@ void SoundManager::initialize() throw ( SoundException )
     // create sound system
     result = FMOD::System_Create( &_p_system );
     if ( result != FMOD_OK )
+    {
+        _p_system = NULL;
         throw SoundException( "Problem creating sound system, reason: " + std::string( FMOD_ErrorString( result ) ) );
+    }
 
     // check fmod version
     unsigned int version;
     result = _p_system->getVersion( &version );
     if ( version < FMOD_VERSION )
     {
+        _p_system->close();
+        _p_system->release();
+        _p_system = NULL;
+
         std::stringstream str;
         str << "SoundManager: detected fmod version " << version << ", this application needs at least version " << FMOD_VERSION;
         throw SoundException( str.str() );
@@ -159,7 +167,10 @@ void SoundManager::initialize() throw ( SoundException )
 
     result = _p_system->init( SOUND_MAX_VIRTUAL_SOURCES, FMOD_INIT_NORMAL, 0 );
     if ( result != FMOD_OK )
+    {
+        _p_system = NULL;
         throw SoundException( "Problem initializing sound system, reason: " + std::string( FMOD_ErrorString( result ) ) );
+    }
 
     FMOD::ChannelGroup* p_mastergroup;
     result = _p_system->getMasterChannelGroup( &p_mastergroup );
@@ -245,6 +256,9 @@ std::string SoundManager::getSoundGroupStringFromId( unsigned int soundgroup ) t
 
 unsigned int SoundManager::createSound( unsigned int soundgroup, const std::string& file, float volume, bool autoplay, unsigned int flags ) throw ( SoundException )
 {
+    if ( !_p_system )
+        return 0;
+
     // check the given group id
     FMOD::ChannelGroup* p_soundgroup;
     if ( _soundGroupMap.find( soundgroup ) == _soundGroupMap.end() )
@@ -310,6 +324,9 @@ unsigned int SoundManager::createSound( unsigned int soundgroup, const std::stri
 
 void SoundManager::releaseSound( unsigned int soundID ) throw ( SoundException )
 {
+    if ( !_p_system )
+        return;
+
     MapSoundResource::iterator p_soundresource = _mapSoundResource.find( soundID );
     if ( p_soundresource == _mapSoundResource.end() )
     {
@@ -344,6 +361,9 @@ SoundManager::SoundResource* SoundManager::getSoundResource( unsigned int soundI
 
 void SoundManager::playSound( unsigned int soundID, bool paused )
 {
+    if ( !_p_system )
+        return;
+
     MapSoundResource::iterator p_soundresource = _mapSoundResource.find( soundID );
     if ( p_soundresource == _mapSoundResource.end() )
         return;
@@ -361,6 +381,9 @@ void SoundManager::playSound( unsigned int soundID, bool paused )
 
 void SoundManager::pauseSound( unsigned int soundID )
 {
+    if ( !_p_system )
+        return;
+
     MapSoundResource::iterator p_soundresource = _mapSoundResource.find( soundID );
     if ( p_soundresource == _mapSoundResource.end() )
         return;
@@ -371,6 +394,9 @@ void SoundManager::pauseSound( unsigned int soundID )
 
 void SoundManager::continueSound( unsigned int soundID )
 {
+    if ( !_p_system )
+        return;
+
     MapSoundResource::iterator p_soundresource = _mapSoundResource.find( soundID );
     if ( p_soundresource == _mapSoundResource.end() )
         return;
@@ -381,6 +407,9 @@ void SoundManager::continueSound( unsigned int soundID )
 
 void SoundManager::stopSound( unsigned int soundID )
 {
+    if ( !_p_system )
+        return;
+
     MapSoundResource::iterator p_soundresource = _mapSoundResource.find( soundID );
     if ( p_soundresource == _mapSoundResource.end() )
         return;
@@ -391,6 +420,9 @@ void SoundManager::stopSound( unsigned int soundID )
 
 void SoundManager::setSoundVolume( unsigned int soundID, float volume )
 {
+    if ( !_p_system )
+        return;
+
     if ( ( volume > 1.0f ) || ( volume < 0.0f ) )
         throw SoundException( "Volume out of range, it must be in range 0..1" );
 
@@ -407,6 +439,9 @@ void SoundManager::setSoundVolume( unsigned int soundID, float volume )
 
 void SoundManager::setSoundMute( unsigned int soundID, bool en )
 {
+    if ( !_p_system )
+        return;
+
     MapSoundResource::iterator p_soundresource = _mapSoundResource.find( soundID );
     if ( p_soundresource == _mapSoundResource.end() )
     {
@@ -420,6 +455,9 @@ void SoundManager::setSoundMute( unsigned int soundID, bool en )
 
 void SoundManager::setGroupVolume( unsigned int soundgroup, float volume )
 {
+    if ( !_p_system )
+        return;
+
     if ( ( volume > 1.0f ) || ( volume < 0.0f ) )
         throw SoundException( "Volume out of range, it must be in range 0..1" );
 
@@ -433,6 +471,9 @@ void SoundManager::setGroupVolume( unsigned int soundgroup, float volume )
 
 float SoundManager::getGroupVolume( unsigned int soundgroup )
 {
+    if ( !_p_system )
+        return 0.0f;
+
     // first check the given group id
     if ( _soundGroupMap.find( soundgroup ) == _soundGroupMap.end() )
         throw SoundException( "Invalid sound group" );

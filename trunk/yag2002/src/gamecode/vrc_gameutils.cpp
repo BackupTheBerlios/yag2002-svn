@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  06/16/2005
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -278,7 +278,8 @@ GuiUtils::GuiUtils() :
 _p_mainWindow( NULL ),
 _p_rootWindow( NULL ),
 _p_vrcImageSet( NULL ),
-_masterVolume( 1.0f )
+_masterVolume( 1.0f ),
+_muteSound( false )
 {
     // take care, this is a phoenix singleton!
     if ( yaf3d::GameState::get()->getState() != yaf3d::GameState::Shutdown )
@@ -358,12 +359,22 @@ void GuiUtils::onAppWindowStateChange( unsigned int state )
     // when application window is minimized or lost focus then set the master sound volume to zero
     if ( ( state == yaf3d::GameState::Minimized ) || ( state == yaf3d::GameState::LostFocus ) )
     {
-        _masterVolume = yaf3d::SoundManager::get()->getGroupVolume( yaf3d::SoundManager::SoundGroupMaster );
-        yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMaster, 0.0f );
+        // check if the sound is already muted, both gamestates can come in sequence on some platforms (such as linux)
+        if ( !_muteSound )
+        {
+            _masterVolume = yaf3d::SoundManager::get()->getGroupVolume( yaf3d::SoundManager::SoundGroupMaster );
+            yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMaster, 0.0f );
+            _muteSound = true;
+        }
     }
     else if ( ( state == yaf3d::GameState::Restored ) || ( state == yaf3d::GameState::GainedFocus ) )
     {
-        yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMaster, _masterVolume );
+        if ( _muteSound )
+        {
+            yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMaster, _masterVolume );
+            _muteSound = false;
+        }
+
     }
 }
 
@@ -427,7 +438,7 @@ void GuiUtils::showMainWindow( bool show )
 {
     if ( !_p_mainWindow || !_p_rootWindow )
         return;
- 
+
     if ( show )
         _p_rootWindow->addChildWindow( _p_mainWindow );
     else
@@ -453,13 +464,13 @@ unsigned int GuiUtils::createSound( const std::string& name, const std::string& 
 
     unsigned int soundID = 0;
 
-    try 
+    try
     {
         // all gui sounds are of type Common
         soundID = yaf3d::SoundManager::get()->createSound( yaf3d::SoundManager::SoundGroupCommon, filename, volume, false, yaf3d::SoundManager::fmodDefaultCreationFlags2D );
         // give the gui sound a high priority
         yaf3d::SoundManager::get()->getSoundResource( soundID )->getChannel()->setPriority( 100 );
-    } 
+    }
     catch ( const yaf3d::SoundException& e )
     {
         log_error << "GuiUtils::createSound" << "  error creating sound: " << filename << std::endl;
@@ -593,13 +604,13 @@ void PlayerUtils::addRemotePlayer( yaf3d::BaseEntity* p_entity )
     for ( ; p_beg != p_end; ++p_beg )
         if ( *p_beg == p_entity )
             break;
-   
+
     if ( p_beg != p_end )
     {
         log_error << "PlayerUtils: remote player already exists in list!" << std::endl;
         return;
     }
- 
+
     _remotePlayers.push_back( p_entity );
 
     // notify registered callbacks for changed remote player list
@@ -668,7 +679,7 @@ void PlayerUtils::addRemotePlayerVoiceChat( yaf3d::BaseEntity* p_entity )
     for ( ; p_beg != p_end; ++p_beg )
         if ( *p_beg == p_entity )
             break;
-   
+
     if ( p_beg != p_end )
     {
         log_error << "PlayerUtils: remote player supporting voice chat already exists in list!" << std::endl;
@@ -767,7 +778,7 @@ LevelFiles::LevelFiles( const std::string& dir )
                 }
 
                 CEGUI::Image* p_image = &const_cast< CEGUI::Image& >( p_imageSet->getImage( materialName + postfix.str() ) );
-                
+
                 // add new preview to map
                 _files.insert( make_pair( materialName, p_image ) );
 
