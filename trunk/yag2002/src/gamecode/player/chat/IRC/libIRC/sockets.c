@@ -61,7 +61,12 @@ static int socket_error()
 }
 
 
+//! NOTE (boto): gcc warns on unused parameters and msvc compains about expecting formal parameter :-(
+#if !defined (WIN32)
 static int socket_create (int /*domain*/, int /*type*/, socket_t * sock)
+#else
+static int socket_create (int domain, int type, socket_t * sock)
+#endif
 {
 	*sock = socket (PF_INET, SOCK_STREAM, 0);
 	return IS_SOCKET_ERROR(*sock) ? 1 : 0;

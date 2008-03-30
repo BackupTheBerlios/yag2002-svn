@@ -66,8 +66,12 @@ static int libirc_findcrorlf (char * buf, int length)
 	return 0;
 }
 
-
+//! NOTE (boto): gcc warns on unused parameters and msvc compains about expecting formal parameter :-(
+#if !defined (WIN32)
 static void libirc_event_ctcp_internal (irc_session_t * session, const char * /*event*/, const char * origin, const char ** params, unsigned int /*count*/)
+#else
+static void libirc_event_ctcp_internal (irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count)
+#endif
 {
 	if ( origin )
 	{
