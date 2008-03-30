@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  06/28/2005
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -55,6 +55,12 @@ const std::string& CmdShowPlayerInfo::execute( const std::vector< std::string >&
 {
     _cmdResult = "";
 
+    if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
+    {
+        _cmdResult = "this command is not available in server mode";
+        return _cmdResult;
+    }
+
     if ( !arguments.size() )
     {
         _cmdResult = "* error executing command '" + std::string( CMD_NAME_SHOWPLAYERINFO ) + "'\n ";
@@ -67,7 +73,7 @@ const std::string& CmdShowPlayerInfo::execute( const std::vector< std::string >&
         enable = true;
     else if ( arguments[ 0 ] == "false" )
         enable = false;
-    else 
+    else
     {
         _cmdResult = "* error executing command '" + std::string( CMD_NAME_SHOWPLAYERINFO ) + "'\n ";
         _cmdResult += getUsage();
@@ -89,7 +95,7 @@ const std::string& CmdShowPlayerInfo::execute( const std::vector< std::string >&
     }
 
     _p_playerInfo->enable( enable );
-    
+
     return _cmdResult;
 }
 
