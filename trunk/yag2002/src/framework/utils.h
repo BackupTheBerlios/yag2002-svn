@@ -37,6 +37,9 @@
 namespace yaf3d
 {
 
+//! Implement the default signal handler for fetching Ctrl-C, the app is shutdown on such signal
+void implementSignalHandler();
+
 //! Copy text to system clipboard in uniform format, return false if text could not be copied.
 bool copyToClipboard( const std::wstring& text );
 
