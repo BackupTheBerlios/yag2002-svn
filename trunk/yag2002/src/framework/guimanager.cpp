@@ -210,44 +210,52 @@ void GuiManager::doInitialize()
     _windowWidth = float( width );
     _windowHeight = float( height );
 
-    // create a renderer
-    _p_renderer = new GuiRenderer( 0, int( _windowWidth ), int( _windowHeight ) );
+    try
+    {
+        // create a renderer
+        _p_renderer = new GuiRenderer( 0, int( _windowWidth ), int( _windowHeight ) );
 
-    // create the gui
-    _p_resourceLoader = new GuiResourceProvider;
-    new CEGUI::System( _p_renderer, _p_resourceLoader );
+        // create the gui
+        _p_resourceLoader = new GuiResourceProvider;
+        new CEGUI::System( _p_renderer, _p_resourceLoader );
 
-    // set logging level
-//#ifdef _DEBUG
-    CEGUI::Logger::getSingleton().setLoggingLevel( CEGUI::Insane );
-//#endif
+        // set logging level
+        CEGUI::Logger::getSingleton().setLoggingLevel( CEGUI::Insane );
 
-    std::string guiScheme;
-    Configuration::get()->getSettingValue( YAF3D_GS_GUISCHEME, guiScheme );
+        std::string guiScheme;
+        Configuration::get()->getSettingValue( YAF3D_GS_GUISCHEME, guiScheme );
 
-    CEGUI::Imageset* p_images = CEGUI::ImagesetManager::getSingleton().createImageset( "gui/imagesets/TaharezLook.imageset" );
+        CEGUI::Imageset* p_images = CEGUI::ImagesetManager::getSingleton().createImageset( "gui/imagesets/TaharezLook.imageset" );
 
-    _p_mouseImg = const_cast< CEGUI::Image* >( &p_images->getImage( "MouseArrow" ) );
-    CEGUI::System::getSingleton().setDefaultMouseCursor( _p_mouseImg );
+        _p_mouseImg = const_cast< CEGUI::Image* >( &p_images->getImage( "MouseArrow" ) );
+        CEGUI::System::getSingleton().setDefaultMouseCursor( _p_mouseImg );
 
-    // create necessary fonts
-    CEGUI::Font* p_font = NULL;
-    p_font = createFont( std::string( "gui/fonts/" YAF3D_GUI_FONT8 ".font" ) );
-    p_font = createFont( std::string( "gui/fonts/" YAF3D_GUI_FONT10 ".font" ) );
-    CEGUI::System::getSingleton().setDefaultFont( p_font ); // set the default font
-    p_font = createFont( std::string( "gui/fonts/" YAF3D_GUI_CONSOLE ".font" ) );
+        // create necessary fonts
+        CEGUI::Font* p_font = NULL;
+        p_font = createFont( std::string( "gui/fonts/" YAF3D_GUI_FONT8 ".font" ) );
+        p_font = createFont( std::string( "gui/fonts/" YAF3D_GUI_FONT10 ".font" ) );
+        CEGUI::System::getSingleton().setDefaultFont( p_font ); // set the default font
+        p_font = createFont( std::string( "gui/fonts/" YAF3D_GUI_CONSOLE ".font" ) );
 
-    // load scheme
-    CEGUI::SchemeManager::getSingleton().loadScheme( std::string( "gui/schemes/" YAF3D_GUI_SCHEME ".scheme" ) );
+        // load scheme
+        CEGUI::SchemeManager::getSingleton().loadScheme( std::string( "gui/schemes/" YAF3D_GUI_SCHEME ".scheme" ) );
 
-    // create the root window called 'Root'.
-    _p_root = static_cast< CEGUI::DefaultWindow* >( CEGUI::WindowManager::getSingleton().createWindow("DefaultWindow", "Root") );
-    _p_root->setMetricsMode( CEGUI::Absolute );
-    _p_root->setPosition( CEGUI::Point( 0, 0 ) );
-    _p_root->setSize( CEGUI::Size( _windowWidth, _windowHeight ) );
+        // create the root window called 'Root'.
+        _p_root = static_cast< CEGUI::DefaultWindow* >( CEGUI::WindowManager::getSingleton().createWindow("DefaultWindow", "Root") );
+        _p_root->setMetricsMode( CEGUI::Absolute );
+        _p_root->setPosition( CEGUI::Point( 0, 0 ) );
+        _p_root->setSize( CEGUI::Size( _windowWidth, _windowHeight ) );
 
-    // set the GUI root window (also known as the GUI "sheet"), all layout will be added to this root for showing up
-    CEGUI::System::getSingleton().setGUISheet( _p_root );
+        // set the GUI root window (also known as the GUI "sheet"), all layout will be added to this root for showing up
+        CEGUI::System::getSingleton().setGUISheet( _p_root );
+
+    }
+    catch( const CEGUI::Exception& e )
+    {
+        log_error << "GuiManager: problem occured on initializing the gui system." << std::endl;
+        log_error << " reason: " << e.getMessage() << std::endl;
+        Application::get()->stop();
+    }
 
     // create input handler
     _inputHandler = new InputHandler( this );
@@ -605,7 +613,7 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
                                     std::size_t stringlen = cpytext.length();
                                     for ( std::size_t cnt = 0; cnt < stringlen; ++cnt )
                                         seltext += cpytext[ cnt ];
-                                    
+
                                     copyToClipboard( seltext );
                                 }
 
@@ -631,7 +639,7 @@ bool GuiManager::InputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::
                                     std::size_t stringlen = cpytext.length();
                                     for ( std::size_t cnt = 0; cnt < stringlen; ++cnt )
                                         seltext += cpytext[ cnt ];
-                                    
+
                                     copyToClipboard( seltext );
                                 }
 
