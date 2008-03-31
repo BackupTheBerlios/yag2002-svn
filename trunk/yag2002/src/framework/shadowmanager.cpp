@@ -419,8 +419,8 @@ void ShadowManager::setup( unsigned int shadowTextureWidth, unsigned int shadowT
         osg::StateSet* p_localstateset = _shadowCameraGroup->getOrCreateStateSet();
         p_localstateset->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
 
-        float factor = 2.0f;
-        float units  = 4.0f;
+        float factor = 10.0f;
+        float units  = 1.0f;
 
         _polygonOffset = new osg::PolygonOffset;
         _polygonOffset->setFactor( factor );
