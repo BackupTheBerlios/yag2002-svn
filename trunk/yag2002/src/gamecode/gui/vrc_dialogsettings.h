@@ -174,6 +174,9 @@ class DialogGameSettings
         //! Dialog callback for output gain scrollbar
         bool                                        onVoiceOutputGainChanged( const CEGUI::EventArgs& arg );
 
+        //! Dialog callback for enabling port forwarding
+        bool                                        onEnablePortForwardingChanged( const CEGUI::EventArgs& arg );
+
         //! This method is used for sensing keybinding by the mean of a little messagebox
         void                                        senseKeybinding( CEGUI::PushButton* p_btn );
         //---------
@@ -242,6 +245,10 @@ class DialogGameSettings
         float                                       _voiceInputGain;
 
         CEGUI::Scrollbar*                           _p_voiceOutputGain;
+
+        CEGUI::Checkbox*                            _p_enablePortForwarding;
+
+        CEGUI::Editbox*                             _p_portForwarding;
 
         float                                       _voiceOutputGain;
 

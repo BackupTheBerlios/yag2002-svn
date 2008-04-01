@@ -75,6 +75,8 @@ _inputDevices( NULL ),
 _p_voiceInputGain( NULL ),
 _voiceInputGain( 1.0f ),
 _p_voiceOutputGain( NULL ),
+_p_enablePortForwarding( NULL ),
+_p_portForwarding( NULL ),
 _voiceOutputGain( 1.0f ),
 _p_microInput( NULL ),
 _p_menuEntity( p_menuEntity ),
@@ -252,6 +254,10 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
 
             CEGUI::PushButton* p_inputtest = static_cast< CEGUI::PushButton* >( p_paneSoundVoice->getChild( SDLG_PREFIX "btn_voicetest" ) );
             p_inputtest->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onVoiceTestClicked, this ) );
+
+            _p_enablePortForwarding = static_cast< CEGUI::Checkbox* >( p_paneSoundVoice->getChild( SDLG_PREFIX "cbx_portforward" ) );
+            _p_enablePortForwarding->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onEnablePortForwardingChanged, this ) );
+            _p_portForwarding = static_cast< CEGUI::Editbox* >( p_paneSoundVoice->getChild( SDLG_PREFIX "text_portforwarding" ) );
         }
     }
     catch ( const CEGUI::Exception& e )
@@ -474,6 +480,26 @@ void DialogGameSettings::setupControls()
             _p_voiceInputGain->setEnabled( false );
             _p_voiceOutputGain->setEnabled( false );
         }
+
+        // setup the port forwarding controls
+        std::stringstream port;
+        unsigned int      portnum;
+        bool              portfw = false;
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_IP_FWD_PORT, portnum );
+        port << portnum;
+        _p_portForwarding->setText( ( std::string( "      " ) + port.str() ) );
+
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_IP_FWD, portfw );
+        if ( portfw )
+        {
+            _p_enablePortForwarding->setSelected( true );
+            _p_portForwarding->enable();
+        }
+        else
+        {
+            _p_enablePortForwarding->setSelected( false );
+            _p_portForwarding->disable();
+        }
     }
 }
 
@@ -583,6 +609,22 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& /*arg*/ )
             delete _p_microInput;
             _p_microInput = NULL;
         }
+
+        // store the port forwarding controls
+        std::string port;
+        if ( _p_portForwarding->getText().length() )
+            port = _p_portForwarding->getText().c_str();
+        else
+            port = "      32210";
+
+        std::stringstream p;
+        unsigned int portnum;
+        p << port;
+        p >> portnum;
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_VOICE_IP_FWD_PORT, portnum );
+
+        bool enabled = _p_enablePortForwarding->isSelected();
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_VOICE_IP_FWD, enabled );
     }
 
     // store all settings into file
@@ -938,6 +980,22 @@ bool DialogGameSettings::onVoiceOutputGainChanged( const CEGUI::EventArgs& /*arg
     if ( _p_microInput )
     {
         _p_microInput->setOutputGain( _voiceOutputGain );
+    }
+
+    return true;
+}
+
+bool DialogGameSettings::onEnablePortForwardingChanged( const CEGUI::EventArgs& /*arg*/ )
+{
+    // play scroll sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+    if ( _p_enablePortForwarding->isSelected() )
+    {
+        _p_portForwarding->enable();
+    }
+    else
+    {
+        _p_portForwarding->disable();
     }
 
     return true;
