@@ -110,6 +110,10 @@ void PropertyGui::setupGui()
         _p_btnOpen->setPosition( CEGUI::Point( 0.0f, 0.6f ) );
         _p_btnOpen->setSize( CEGUI::Size( 0.08f, 0.1f ) );
 
+        //! TODO: this button is currently disabled, it will be re-enabled later
+        _p_btnOpen->disable();
+        _p_btnOpen->hide();
+
         p_maingui->addChildWindow( _p_btnOpen );
 
         // set editbox open button images
