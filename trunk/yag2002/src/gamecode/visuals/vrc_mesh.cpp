@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  04/05/2005
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -35,10 +35,9 @@
 #include <osgShadow/ShadowedScene>
 #include <osgShadow/ShadowVolume>
 #include <osgShadow/ShadowMap>
-//#include <osgShadow/SoftShadowMap>
 
 
-//GLOD is currently disabled as we have no actual use for it
+//! NOTE GLOD is currently disabled as we have no actual use for it
 #define DONT_USE_GLOD
 
 #ifndef DONT_USE_GLOD
@@ -60,21 +59,25 @@ _receiveShadow( false ),
 _useLOD( false ),
 _lodErrorThreshold( 0.05f ),
 _cgfShadow( false ),
-_shadowEnable( false )
+_shadowEnable( false ),
+_shadowCullDist( 200.0f )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "enable"        , _enable        );
-    getAttributeManager().addAttribute( "usedInMenu"    , _usedInMenu    );
-    getAttributeManager().addAttribute( "meshFile"      , _meshFile      );
-    getAttributeManager().addAttribute( "shaderName"    , _shaderName    );
-    getAttributeManager().addAttribute( "position"      , _position      );
-    getAttributeManager().addAttribute( "rotation"      , _rotation      );
-    getAttributeManager().addAttribute( "scale"         , _scale         );
-    getAttributeManager().addAttribute( "throwShadow"   , _throwShadow   );
-    getAttributeManager().addAttribute( "receiveShadow" , _receiveShadow );
+    getAttributeManager().addAttribute( "enable"         , _enable        );
+    getAttributeManager().addAttribute( "usedInMenu"     , _usedInMenu    );
+    getAttributeManager().addAttribute( "meshFile"       , _meshFile      );
+    getAttributeManager().addAttribute( "shaderName"     , _shaderName    );
+    getAttributeManager().addAttribute( "position"       , _position      );
+    getAttributeManager().addAttribute( "rotation"       , _rotation      );
+    getAttributeManager().addAttribute( "scale"          , _scale         );
+    getAttributeManager().addAttribute( "throwShadow"    , _throwShadow   );
+    getAttributeManager().addAttribute( "receiveShadow"  , _receiveShadow );
+    getAttributeManager().addAttribute( "shadowCullDist" , _shadowCullDist );
 
-    //getAttributeManager().addAttribute( "useLOD"                , _useLOD            );
-    //getAttributeManager().addAttribute( "lodErrorThreshold"     , _lodErrorThreshold );
+#ifndef DONT_USE_GLOD
+    getAttributeManager().addAttribute( "useLOD"                , _useLOD            );
+    getAttributeManager().addAttribute( "lodErrorThreshold"     , _lodErrorThreshold );
+#endif
 }
 
 EnMesh::~EnMesh()
@@ -232,7 +235,7 @@ void EnMesh::addToSceneGraph()
         if ( _receiveShadow )
             shadowmode |= yaf3d::ShadowManager::eReceiveShadow;
 
-        yaf3d::ShadowManager::get()->addShadowNode( p_shadernode ? p_shadernode : getTransformationNode(), shadowmode );
+        yaf3d::ShadowManager::get()->addShadowNode( p_shadernode ? p_shadernode : getTransformationNode(), shadowmode, _shadowCullDist );
 
         // the mesh needs at least one subgraph for getting rendered; the shadow throwing subgraph does not render the mesh (but only its shadow)
         // so we put meshes which should throw shadow and not receive shadow to the default scene node.
@@ -268,7 +271,7 @@ osg::Node* EnMesh::setupMesh()
     }
 
     setPosition( _position );
-    osg::Quat   rot( 
+    osg::Quat   rot(
                      osg::DegreesToRadians( _rotation.x() ), osg::Vec3f( 1.0f, 0.0f, 0.0f ),
                      osg::DegreesToRadians( _rotation.y() ), osg::Vec3f( 0.0f, 1.0f, 0.0f ),
                      osg::DegreesToRadians( _rotation.z() ), osg::Vec3f( 0.0f, 0.0f, 1.0f )
