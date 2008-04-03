@@ -24,7 +24,7 @@
  #
  #   date of creation:  02/14/2008
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -210,7 +210,7 @@ void EnNATServer::onSessionLeft( int sessionID )
         }
         else
         {
-            log_error << "NATServer: leaving client could not be found in sid/port map: sid " << sessionID << std::endl;
+            log_warning << "NATServer: leaving client could not be found in sid/port map: sid " << sessionID << std::endl;
         }
     }
 }

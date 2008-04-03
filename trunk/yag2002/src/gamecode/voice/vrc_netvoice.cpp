@@ -69,9 +69,6 @@ EnNetworkVoice::~EnNetworkVoice()
 {
     if ( _active )
         destroyVoiceChat();
-
-    if ( _p_transport )
-        delete _p_transport;
 }
 
 void EnNetworkVoice::handleNotification( const yaf3d::EntityNotification& notification )
@@ -142,29 +139,18 @@ void EnNetworkVoice::setupNetworkVoice()
     }
 }
 
+void EnNetworkVoice::onServerDisconnect( int /*sessionID*/ )
+{
+    if ( _active )
+        destroyVoiceChat();
+}
+
 void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
 {
     assert( !_active && "trying to destroy voice chat which has already been created before!" );
 
     try
     {
-        assert( !_p_transport && "transport layer already exists!" );
-        // setup the transport layer
-        _p_transport = new VoiceTransport;
-
-        _inputGain = inputgain;
-
-        // create a sound receiver
-        _p_receiver = new VoiceReceiver( this, _p_transport );
-        _p_receiver->initialize();
-        _p_receiver->setOutputGain( outputgain );
-        _p_receiver->setSpotRange( _spotRange );
-
-        // create the network manager for voice chat clients
-        _p_voiceNetwork = new VoiceNetwork;
-        _p_voiceNetwork->initialize();
-        _p_voiceNetwork->setHotspotRange( _spotRange );
-
         // create sound codec
         _p_codec = new NetworkSoundCodec;
         _p_codec->setEncoderComplexity( VOICE_CODEC_COMPLEXITY );
@@ -186,6 +172,23 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
         // we begin with input grabbing when at least one sender is active
         _p_soundInput->stop( true );
 #endif
+
+        assert( !_p_transport && "transport layer already exists!" );
+        // setup the transport layer
+        _p_transport = new VoiceTransport;
+
+        _inputGain = inputgain;
+
+        // create a sound receiver
+        _p_receiver = new VoiceReceiver( this, _p_transport );
+        _p_receiver->initialize();
+        _p_receiver->setOutputGain( outputgain );
+        _p_receiver->setSpotRange( _spotRange );
+
+        // create the network manager for voice chat clients
+        _p_voiceNetwork = new VoiceNetwork;
+        _p_voiceNetwork->initialize();
+        _p_voiceNetwork->setHotspotRange( _spotRange );
     }
     catch ( const NetworkSoundException& e )
     {
@@ -204,6 +207,12 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
             _p_voiceNetwork = NULL;
         }
 
+        if ( _p_transport )
+        {
+            delete _p_transport;
+            _p_transport = NULL;
+        }
+
         return;
     }
 
@@ -218,12 +227,6 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
 
     // set active flag
     _active = true;
-}
-
-void EnNetworkVoice::onServerDisconnect( int /*sessionID*/ )
-{
-    if ( _active )
-        destroyVoiceChat();
 }
 
 void EnNetworkVoice::destroyVoiceChat()
@@ -291,6 +294,9 @@ void EnNetworkVoice::destroyVoiceChat()
 
 void EnNetworkVoice::updateEntity( float deltaTime )
 {
+    if ( !_active )
+        return;
+
     // update the voice network state
     if ( _p_voiceNetwork )
         _p_voiceNetwork->update( deltaTime );
@@ -380,6 +386,9 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
 
 void EnNetworkVoice::onVoiceChatPlayerListChanged( bool joining, yaf3d::BaseEntity* p_entity )
 {
+    if ( !_active )
+        return;
+
     log_verbose << "EnNetworkVoice: voice chat player changed, player " << p_entity->getInstanceName() << ( joining ? " joining" : " leaving" ) << std::endl;
 
     // let the voice network manager update its internal client list when a new client is joining
@@ -411,6 +420,9 @@ void EnNetworkVoice::onVoiceChatPlayerListChanged( bool joining, yaf3d::BaseEnti
 
 void EnNetworkVoice::onHotspotChanged( bool joining, yaf3d::BaseEntity* p_entity )
 {
+    if ( !_active )
+        return;
+
     // update the hotspot when clients enter / leave the hotspot range
     updateHotspot( p_entity, joining );
 }
