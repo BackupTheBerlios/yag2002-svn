@@ -73,20 +73,20 @@ BOOL WINAPI handlerRoutine( DWORD dwCtrlType )  //  control signal type
 #ifdef LINUX
 void handlerRoutine( int /*sig*/ )
 {
-    Application::get()->handleCtrlC();
 }
 #endif
 
 void implementSignalHandler()
 {
-    // set the console event handler in win32
+    // set the event handler in win32
 #ifdef WIN32
     SetConsoleCtrlHandler( handlerRoutine,  TRUE );
 #endif
 
-    // set the console event handler in linux
+    // set the event handler in linux
 #ifdef LINUX
-    signal( SIGINT,  &handlerRoutine );
+    // NOTE: do not set the SIGINT handler, it makes trouble!
+    //signal( SIGINT,  &handlerRoutine );
 #endif
 }
 
@@ -169,7 +169,8 @@ bool copyToClipboard( const std::wstring& text )
     if ( !SDL_Display )
        initCopyPaste();
 
-    wchar_t* p_dst = ( wchar_t* )malloc( text.length() );
+
+    wchar_t* p_dst = ( wchar_t* )malloc( sizeof( wchar_t ) * text.length() + 2 );
     wcscpy( p_dst, text.c_str() );
 
     Lock_Display();
@@ -245,11 +246,17 @@ bool getFromClipboard( std::wstring& text, unsigned int maxcnt )
     if ( XGetWindowProperty( SDL_Display, owner, selection, 0, INT_MAX/4, False, XA_STRING, &selntype, &selnformat,
          &nbytes, &overflow, reinterpret_cast< unsigned char ** >( &p_src ) ) == Success )
     {
-        p_src[ maxcnt - 1 ] = 0;
-        if ( selntype == XA_STRING )
-            text = reinterpret_cast< wchar_t* >( p_src );
+        if ( p_src )
+        {
+            // limit the string to the max count
+            if ( nbytes > maxcnt )
+                p_src[ maxcnt - 1 ] = 0;
 
-        XFree( p_src );
+            if ( selntype == XA_STRING )
+                text = reinterpret_cast< wchar_t* >( p_src );
+
+            XFree( p_src );
+        }
     }
     Unlock_Display();
 
