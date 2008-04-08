@@ -44,6 +44,7 @@ _moveBackward( false ),
 _camSwitch( false ),
 _chatSwitch( false ),
 _toggleChatMode( false ),
+_showFPS( false ),
 _keyCodeMoveForward( osgGA::GUIEventAdapter::KEY_Up ),
 _keyCodeMoveBackward( osgGA::GUIEventAdapter::KEY_Down ),
 _keyCodeMoveLeft( osgGA::GUIEventAdapter::KEY_Left ),
@@ -113,7 +114,38 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             key = 0;
     }
 
-    // first check the edit / walk toggle command
+    // activate the chat box on pressing ENTER key
+    if ( keyDown && ( ( key == SDLK_RETURN ) || ( key == SDLK_KP_ENTER ) ) )
+    {
+        getPlayerImpl()->getChatManager()->activateBox( true, true );
+        enable( false );
+        _toggleChatMode = true;
+        // stop player and sound
+        getPlayerImpl()->getPlayerAnimation()->animIdle();
+        getPlayerImpl()->getPlayerPhysics()->stopMovement();
+    }
+
+    // show up the fps display
+    if ( keyDown && ( key == SDLK_F9 ) )
+    {
+        // first check if the fps entity already exists
+        EnFPSDisplay* p_fps = static_cast< EnFPSDisplay* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_FPSDISPLAY ) );
+        if ( p_fps )
+        {
+            _showFPS = !_showFPS;
+            p_fps->enable( _showFPS );
+        }
+        else
+        {
+            _showFPS = true;
+            p_fps = static_cast< EnFPSDisplay* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_FPSDISPLAY, "_fps_" ) );
+            p_fps->initialize();
+            p_fps->postInitialize();
+            p_fps->enable( _showFPS );
+        }
+    }
+
+    // check the edit / walk toggle command
     //--------
     if ( keyDown || mouseButtonPush )
     {

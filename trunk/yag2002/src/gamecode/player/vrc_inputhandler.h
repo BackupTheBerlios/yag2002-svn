@@ -47,6 +47,7 @@
 #include "vrc_playersound.h"
 #include "vrc_playerphysics.h"
 #include "../visuals/vrc_camera.h"
+#include "../tools/vrc_fpsdisplay.h"
 
 namespace vrc
 {
@@ -176,6 +177,7 @@ class PlayerIHCharacterCameraCtrl : public vrc::gameutils::GenericInputHandler< 
         bool                                _camSwitch;
         bool                                _chatSwitch;
         bool                                _toggleChatMode;
+        bool                                _showFPS;
 
     public:
 
