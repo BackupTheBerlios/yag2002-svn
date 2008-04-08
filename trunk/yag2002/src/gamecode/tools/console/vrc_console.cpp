@@ -118,10 +118,13 @@ void EnConsole::initialize()
     {
         _p_ioHandler = new ConsoleIOCin( this );
     }
+    //! NOTE the console is not enabled in published version!
+#ifndef VRC_BUILD_PUBLISH
     else
     {
         _p_ioHandler = new ConsoleIOGui( this );
     }
+#endif
 
     // register entity in order to get updated per simulation step
     yaf3d::EntityManager::get()->registerUpdate( this, true );
