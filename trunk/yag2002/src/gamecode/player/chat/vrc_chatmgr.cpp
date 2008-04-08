@@ -130,17 +130,27 @@ BaseChatProtocol* ChatManager::getRegisteredProtocol( const std::string& prot )
     return _availableProtocols[ prot ];
 }
 
-void ChatManager::activateBox( bool en )
+void ChatManager::activateBox( bool en, bool openbox )
 {
     assert( !_serverMode && "don't call this method in server mode!" );
 
-    if ( _activeBox == en )
+    if ( ( _activeBox == en ) && ( !openbox ) )
         return;
 
     _activeBox = en;
+
+    if ( !openbox )
+    {
+        gameutils::GuiUtils::get()->showMousePointer( _activeBox );
+    }
+    else
+    {
+        show( true );
+        _p_chatGuiBox->openBox();
+    }
+
     _p_chatGuiCtrl->setEditMode( _activeBox );
     _p_chatGuiBox->setEditBoxFocus( _activeBox );
-    gameutils::GuiUtils::get()->showMousePointer( _activeBox );
 }
 
 void ChatManager::show( bool en )

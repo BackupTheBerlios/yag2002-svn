@@ -154,7 +154,6 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
         _p_btnConnectIRC->show();
         _p_frame->addChildWindow( _p_btnConnectIRC );
 
-        _boxFrameSize = osg::Vec2f( _p_frame->getSize().d_width, _p_frame->getSize().d_height );
         _frameAlphaValue = _p_frame->getAlpha();
     }
     catch ( const CEGUI::Exception& e )
@@ -367,9 +366,7 @@ void ChatGuiBox::update( float deltaTime )
             {
                 _fadeTimer = 0;
                 // restore the initial size
-                CEGUI::Size size( _boxFrameSize.x(), _boxFrameSize.y() );
                 _p_frame->setAlpha( _frameAlphaValue );
-                _p_frame->setSize( size );
                 _p_btnOpen->hide();
                 setEditBoxFocus( true );
                 // let the short message box disappear
@@ -380,8 +377,6 @@ void ChatGuiBox::update( float deltaTime )
             _fadeTimer += deltaTime;
             // fade in the box
             float fadefac = _fadeTimer / FADE_TIME;
-            CEGUI::Size size( _boxFrameSize.x() * fadefac, _boxFrameSize.y() * fadefac );
-            _p_frame->setSize( size );
             _p_frame->setAlpha( fadefac * _frameAlphaValue );
             _p_btnOpen->setAlpha( std::max( 0.0f, ( 1.0f - ( _fadeTimer / FADE_TIME ) ) * _frameAlphaValue ) );
         }
@@ -393,9 +388,6 @@ void ChatGuiBox::update( float deltaTime )
             if ( _fadeTimer > FADE_TIME )
             {
                 _fadeTimer = 0;
-                // set size to zero
-                CEGUI::Size size( 0, 0 );
-                _p_frame->setSize( size );
                 _p_frame->hide();
                 setEditBoxFocus( false );
                 // let the short message box appear
@@ -406,8 +398,6 @@ void ChatGuiBox::update( float deltaTime )
             _fadeTimer += deltaTime;
             // fade in the box
             float fadefac = std::max( 0.0f, 1.0f - ( _fadeTimer / FADE_TIME ) );
-            CEGUI::Size size( _boxFrameSize.x() * fadefac, _boxFrameSize.y() * fadefac );
-            _p_frame->setSize( size );
             _p_frame->setAlpha( fadefac * _frameAlphaValue );
             _p_btnOpen->setAlpha( ( _fadeTimer / FADE_TIME ) * _frameAlphaValue );
         }
@@ -675,8 +665,6 @@ void ChatGuiBox::fadeChatbox( bool fadeout )
 
     if ( fadeout )
     {
-        // store the current size for later fade-out
-        _boxFrameSize = osg::Vec2f( _p_frame->getSize().d_width, _p_frame->getSize().d_height );
         _boxState = BoxFadeOut;
     }
     else

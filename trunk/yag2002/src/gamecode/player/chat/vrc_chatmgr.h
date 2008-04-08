@@ -140,8 +140,8 @@ class ChatManager : public ChatProtocolCallback, public yaf3d::GameState::Callba
         virtual                                     ~ChatManager();
 
 
-        //! Activate / deactivate interaction with chat gui box
-        void                                        activateBox( bool en );
+        //! Activate / deactivate interaction with chat gui box. If openbox is true then the box is shown up on activation.
+        void                                        activateBox( bool en, bool openbox = false );
 
         //! Enable / disable entire chat gui rendering
         void                                        show( bool en );

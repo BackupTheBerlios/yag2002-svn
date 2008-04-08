@@ -198,8 +198,6 @@ class ChatGuiBox
         //! Fading in / out stuff
         float                                       _fadeTimer;
 
-        osg::Vec2f                                  _boxFrameSize;
-
         float                                       _frameAlphaValue;
 
         ConnectionDialog< ChatGuiBox >*             _p_connectionDialog;

@@ -109,7 +109,7 @@ void ChatGuiCtrl::setEditMode( bool en )
 
     _editMode = en;
 }
-        
+
 void ChatGuiCtrl::show( bool en )
 {
     if ( en )
