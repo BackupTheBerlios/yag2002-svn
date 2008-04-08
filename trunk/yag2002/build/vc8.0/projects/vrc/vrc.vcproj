@@ -67,7 +67,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib OpenThreadsd.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgShadowd.lib osgcald.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib RNPlatformDMDLL.lib RNXPCompressionDMDLL.lib RNLobbyDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib libpng.lib fmodex_vc.lib lua51.lib libspeexd.lib physfsd.lib frameworkd.lib"
+				AdditionalDependencies="opengl32.lib OpenThreadsd.lib osgd.lib osgDBd.lib osgGAd.lib osgUtild.lib osgShadowd.lib osgcald.lib cal3d_d.lib osgSDLd.lib SDL.lib SDLmain.lib RNReplicaNetDMDLL.lib RNXPSessionDMDLL.lib RNXPSocketsDMDLL.lib RNXPURLDMDLL.lib RNPlatformDMDLL.lib RNXPCompressionDMDLL.lib RNLobbyDMDLL.lib Newton.lib CEGUIBase_d.lib CEGUITaharezLook_d.lib libpng.lib fmodex_vc.lib lua51.lib libspeexd.lib libspeexdspd.lib physfsd.lib frameworkd.lib"
 				OutputFile="../../../../bin/win32/vrc_debug.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(REPLICANET_LIB_DIR)\LibDotNet2005&quot;;&quot;$(YAF3D_DEP_DIR)\all_Libs-vc8.0&quot;;&quot;$(YAF3D_DEP_DIR)\3rdParty\lib&quot;;../../../../lib/framework"
@@ -1944,6 +1944,10 @@
 		</Filter>
 		<File
 			RelativePath=".\VRC.rc"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\..\src\gamecode\vrc_config.h"
 			>
 		</File>
 		<File
