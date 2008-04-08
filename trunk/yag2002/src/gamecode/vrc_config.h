@@ -19,9 +19,9 @@
  ****************************************************************/
 
 /*###############################################################
- # source file for building precompiled headers
+ # main game code configuration file
  #
- #   date of creation:  04/27/2005
+ #   date of creation:  08/04/2008
  #
  #   author:            boto (botorabi at users.sourceforge.net)
  #
@@ -30,25 +30,17 @@
  ################################################################*/
 
 
-#ifndef _VRC_MAIN_H_
-#define _VRC_MAIN_H_
+#ifndef _VRC_CONFIG_H_
+#define _VRC_CONFIG_H_
 
+//! Build version, set this define for publishing releases
+//#define VRC_BUILD_PUBLISH
 
-// framework's central header for most important dependencies
-#include <base.h>
-
-// game code configuration file
-#include "vrc_config.h"
-
-// ms windows stuff
-#ifdef WIN32
-#  ifndef WIN32_LEAN_AND_MEAN
-#    define WIN32_LEAN_AND_MEAN
-#  endif
-#  include <windows.h>
+//! Set the VRC version string
+#ifdef VRC_BUILD_PUBLISH
+  #define VRC_VERSION         "1.3.0"
+#else
+  #define VRC_VERSION         "1.3.0 - Dev"
 #endif
 
-// main header of framework itself
-#include <yaf3dframework.h>
-
-#endif // _VRC_MAIN_H_
+#endif // _VRC_CONFIG_H_
