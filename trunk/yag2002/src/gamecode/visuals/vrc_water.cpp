@@ -115,7 +115,7 @@ static const char glsl_fp[] =
     "   vec4 refl = textureCube(samplerSkyBox, reflVec.yzx);                                    \n"
     "                                                                                           \n"
     "   // interpolate between the water color and reflection                                   \n"
-    "   float lrp = 1.0 - dot(-normalize(vViewVec), bump);                                      \n"
+    "   float lrp = 1.0 - dot(-normalize(vViewVec), normalize(bump));                           \n"
     "   vec4 col = mix(waterColor, refl, clamp(fadeBias + pow(lrp, fadeExp),0.0, 1.0));         \n"
     "                                                                                           \n"
     "   // linear fog                                                                           \n"
