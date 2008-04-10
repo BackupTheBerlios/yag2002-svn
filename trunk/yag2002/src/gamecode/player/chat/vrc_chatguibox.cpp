@@ -53,10 +53,10 @@ namespace vrc
 #define GUI_TABCTRL_TAB_HEIGHT      25.0f
 
 #define GUI_CLOSE_BTN_WIDTH         120.0f
-#define GUI_CLOSE_BTN_HEIGHT        20.0f
+#define GUI_CLOSE_BTN_HEIGHT        24.0f
 
 #define GUI_IRCCONNECT_BTN_WIDTH    110.0f
-#define GUI_IRCCONNECT_BTN_HEIGHT   20.0f
+#define GUI_IRCCONNECT_BTN_HEIGHT   24.0f
 
 
 ChatGuiBox::ChatGuiBox() :
