@@ -28,6 +28,13 @@
  #
  ################################################################*/
 
+//! Camera switch functionality is currently only available in development build
+#ifndef VRC_BUILD_PUBLISH
+    #define ENABLE_CAM_SWITCH   1
+#else
+    #define ENABLE_CAM_SWITCH   0
+#endif
+
 
 template< class PlayerImplT >
 PlayerIHCharacterCameraCtrl< PlayerImplT >::PlayerIHCharacterCameraCtrl( PlayerImplT* p_player, EnPlayer* p_playerentity ) :
@@ -187,6 +194,8 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     //--------
     if ( keyDown || mouseButtonPush )
     {
+//! NOTE the camera switch function is in publish build disabled until we have implemented camera physics
+#if ENABLE_CAM_SWITCH
         // change camera mode
         if ( key == _keyCodeCameraMode )
         {
@@ -208,6 +217,7 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
                 updatePlayerPitchYaw( _p_mouseData->_pitch, _p_mouseData->_yaw );
             }
         }
+#endif
 
         if ( key == _keyCodeMoveForward )
             _moveForward = true;
@@ -230,9 +240,11 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     }
     else if ( keyUp || mouseButtonRelease )
     {
+//! NOTE the camera switch function is in publish build disabled until we have implemented camera physics
+#if ENABLE_CAM_SWITCH
         if ( key == _keyCodeCameraMode )
             _camSwitch = false;
-
+#endif
         if ( ( key == _keyCodeMoveForward ) || ( key == _keyCodeMoveBackward ) )
         {
             if ( key == _keyCodeMoveForward )
