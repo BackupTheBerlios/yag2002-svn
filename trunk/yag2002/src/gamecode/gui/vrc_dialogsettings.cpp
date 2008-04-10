@@ -164,7 +164,10 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
             _p_keyJump->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedJump, this ) );
 
             _p_keyCameraMode   = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_camera" ) );
-            _p_keyCameraMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedCameraMode, this ) );
+            //! NOTE: the camera switch mode is disabled until we have implemented a camera physics in order to avoid going through meshes!
+            //_p_keyCameraMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedCameraMode, this ) );
+            _p_keyCameraMode->setVisible( false );
+            _p_keyCameraMode->disable();
 
             _p_keyChatMode     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_chatmode" ) );
             _p_keyChatMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedChatMode, this ) );
@@ -431,7 +434,6 @@ void DialogGameSettings::setupControls()
             _p_volumeMusic->setEnabled( false );
         else
             _p_volumeMusic->setEnabled( true );
-
 
         // FX
         bool fxenable;
