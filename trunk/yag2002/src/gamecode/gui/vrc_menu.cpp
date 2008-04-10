@@ -103,15 +103,22 @@ class MenuInputHandler : public vrc::gameutils::GenericInputHandler< EnMenu >
 
                                                         // are we in intro, if so then abort it
                                                         if ( getUserObject()->_menuState == EnMenu::Intro )
+                                                        {
                                                             getUserObject()->stopIntro();
-
-                                                        if ( _menuActive )
-                                                        {
                                                             getUserObject()->enter();
+                                                            return false;
                                                         }
-                                                        else
+
+                                                        if ( getUserObject()->_levelLoaded )
                                                         {
-                                                            getUserObject()->leave();
+                                                            if ( !_menuActive )
+                                                            {
+                                                                getUserObject()->enter();
+                                                            }
+                                                            else
+                                                            {
+                                                                getUserObject()->leave();
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -261,6 +268,9 @@ void EnMenu::handleNotification( const yaf3d::EntityNotification& notification )
 
 void EnMenu::initialize()
 {
+    // mute the master volume as otherwise the onchange callbacks cause playing various sounds on start-up
+    yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMaster, 0.0f );
+
     // setup sounds
     if ( _introductionSound.length() )
         _p_introSound = setupSound( _introductionSound, _introductionSoundVolume, false );
@@ -391,6 +401,9 @@ void EnMenu::initialize()
 
     // start intro
     beginIntro();
+
+    // now restore the master volume ( see above )
+    yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMaster, 1.0f );
 
     // this entity needs updates initially for getting the intro running
     yaf3d::EntityManager::get()->registerUpdate( this, true );
@@ -1018,7 +1031,7 @@ void EnMenu::leave()
     _settingsDialog->show( false );
 
     // reset the input handler
-    _p_inputHandler->reset( true );
+    _p_inputHandler->reset( false );
 
     // deactivate the menu scene
     switchMenuScene( false );
