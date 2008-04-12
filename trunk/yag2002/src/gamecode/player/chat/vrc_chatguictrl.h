@@ -62,8 +62,6 @@ class ChatGuiCtrl
 
         CEGUI::Window*                              _p_wnd;
 
-        CEGUI::StaticImage*                         _p_btnMode;
-
         ChatManager*                                _p_chatMgr;
 
         bool                                        _editMode;

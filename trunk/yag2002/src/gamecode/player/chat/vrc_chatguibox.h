@@ -51,7 +51,7 @@ namespace vrc
 
 //! Tab pane related defs
 #define GUI_PANE_SPACING            5.0f
-#define GUI_PANE_MSG_OFFSET_RIGHT   100.0f
+#define GUI_PANE_MSG_OFFSET_RIGHT   150.0f
 #define GUI_PANE_MSG_OFFSET_BUTTOM  45.0f
 
 
@@ -177,7 +177,7 @@ class ChatGuiBox
 
         CEGUI::PushButton*                          _p_btnOpen;
 
-        CEGUI::StaticImage*                         _p_btnMsgArrived;
+        CEGUI::PushButton*                          _p_btnMsgArrived;
 
         CEGUI::TabControl*                          _p_tabCtrl;
 

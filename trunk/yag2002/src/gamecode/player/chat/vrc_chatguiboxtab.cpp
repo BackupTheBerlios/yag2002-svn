@@ -141,11 +141,14 @@ void ChannelTabPane::updateMemberList( std::vector< std::string >& list )
 
     // set selection background color
     CEGUI::ColourRect col(
-                            CEGUI::colour( 255.0f / 255.0f, 214.0f / 255.0f, 9.0f / 255.0f, 0.8f ),
-                            CEGUI::colour( 12.0f  / 255.0f, 59.0f  / 255.0f, 0.0f         , 0.8f ),
-                            CEGUI::colour( 255.0f / 255.0f, 214.0f / 255.0f, 9.0f / 255.0f, 0.8f ),
-                            CEGUI::colour( 12.0f  / 255.0f, 59.0f  / 255.0f, 0.0f         , 0.8f )
+                            CEGUI::colour( 211.0f / 255.0f, 97.0f  / 255.0f, 0.0f, 0.8f ),
+                            CEGUI::colour( 211.0f / 255.0f, 97.0f  / 255.0f, 0.0f, 0.8f ),
+                            CEGUI::colour( 211.0f / 255.0f, 97.0f  / 255.0f, 0.0f, 0.8f ),
+                            CEGUI::colour( 211.0f / 255.0f, 97.0f  / 255.0f, 0.0f, 0.8f )
                           );
+
+    bool whispernickfound = false;
+    
     // fill up the list
     _p_listbox->resetList();
     std::vector< std::string >::iterator p_beg = list.begin(), p_end = list.end();
@@ -155,12 +158,18 @@ void ChannelTabPane::updateMemberList( std::vector< std::string >& list )
         p_item->setSelectionColours( col );
         p_item->setSelectionBrushImage( "TaharezLook", "ListboxSelectionBrush" );
         _p_listbox->insertItem( p_item, NULL );
+
+        if ( *p_beg == _whisperNick.c_str() )
+        {
+            whispernickfound = true;
+            p_item->setSelected( true );
+        }
     }
 
-    //! TODO: select the last whispered persion!
-    if ( list.size() > 0 )
+    // if the whisper nick name not found after list update then disable whisper mode
+    if ( !whispernickfound )
     {
-        _p_listbox->getListboxItemFromIndex( 0 )->setSelected( true );
+        _p_whisper->setSelected( false );
     }
 }
 
@@ -206,6 +215,11 @@ bool ChannelTabPane::onWhisperChanged( const CEGUI::EventArgs& /*arg*/ )
 
     _whisperMode = _p_whisper->isSelected();
 
+    // store the nick for whisper to
+    CEGUI::ListboxItem* p_sel = _p_listbox->getFirstSelectedItem();
+    if ( p_sel && p_sel->getText().length() )
+        _whisperNick = p_sel->getText();
+
     return true;
 }
 
@@ -248,12 +262,23 @@ bool ChannelTabPane::onEditboxTextChanged( const CEGUI::EventArgs& arg )
             return true;
 
         // check if we are in whisper mode
-        std::string recipient;
+        std::string   recipient;
+        CEGUI::String whispertext;
         if ( _whisperMode )
         {
             CEGUI::ListboxItem* p_sel = _p_listbox->getFirstSelectedItem();
             if ( p_sel && p_sel->getText().length() )
                 recipient = p_sel->getText().c_str();
+
+            // avoid whispering to self!
+            if ( recipient == _configuration._nickname )
+            {
+                recipient = "";
+            }
+            else
+            {
+                whispertext = "[whisper to " + recipient + "] ";
+            }
         }
 
         // send the msg over net
@@ -262,7 +287,7 @@ bool ChannelTabPane::onEditboxTextChanged( const CEGUI::EventArgs& arg )
         // add the msg to local chat box ( if it was not a command )
         if ( _p_editbox->getText().compare( 0, 1, "/" ) )
         {
-            addMessage( _p_editbox->getText(), _configuration._nickname );
+            addMessage( whispertext + _p_editbox->getText(), _configuration._nickname );
         }
         _p_editbox->setText( "" );
     }

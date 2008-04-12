@@ -119,6 +119,9 @@ class ChannelTabPane : public ChatProtocolCallback
         //! Whisper mode
         bool                                        _whisperMode;
 
+        //! Nick name of recipient
+        CEGUI::String                               _whisperNick;
+
         CEGUI::TabControl*                          _p_tabCtrl;
 
         ChatGuiBox*                                 _p_guibox;

@@ -52,11 +52,11 @@ namespace vrc
 #define GUI_TABCTRL_SIZEY           35.0f
 #define GUI_TABCTRL_TAB_HEIGHT      25.0f
 
-#define GUI_CLOSE_BTN_WIDTH         120.0f
-#define GUI_CLOSE_BTN_HEIGHT        24.0f
+#define GUI_CLOSE_BTN_WIDTH         160.0f
+#define GUI_CLOSE_BTN_HEIGHT        25.0f
 
-#define GUI_IRCCONNECT_BTN_WIDTH    110.0f
-#define GUI_IRCCONNECT_BTN_HEIGHT   24.0f
+#define GUI_IRCCONNECT_BTN_WIDTH    160.0f
+#define GUI_IRCCONNECT_BTN_HEIGHT   25.0f
 
 
 ChatGuiBox::ChatGuiBox() :
@@ -165,41 +165,54 @@ void ChatGuiBox::initialize( ChatManager* p_chatMgr )
 
     try
     {
+        // get the imageset with the images; thanks to CrazyEddie for helping out here
+        CEGUI::Imageset* p_iset = vrc::gameutils::GuiUtils::get()->getCustomImageSet();
+        float pixwidth  = p_iset->getImageWidth( IMAGE_NAME_CHAT_NORMAL );
+        float pixheight = p_iset->getImageHeight( IMAGE_NAME_CHAT_NORMAL );
+
         // setup chat box hide button with vrc specific image set
         _p_btnOpen = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", CHATLAYOUT_PREFIX "_btn_openbox_" ) );
         _p_btnOpen->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onClickedOpen, this ) );
         _p_btnOpen->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onHoverOpen, this ) );
         _p_btnOpen->setStandardImageryEnabled( false );
-        _p_btnOpen->setPosition( CEGUI::Point( 0.0f, 0.7f ) );
-        _p_btnOpen->setSize( CEGUI::Size( 0.08f, 0.1f ) );
+        _p_btnOpen->setPosition( CEGUI::Point( 0.005f, 0.7f ) );
+        // set button size according to the image dimensions
+        _p_btnOpen->setSize( CEGUI::Absolute, CEGUI::Size( pixwidth, pixheight ) );
         p_wnd->addChildWindow( _p_btnOpen );
 
         // set editbox open button images
-        const CEGUI::Image* p_image = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_HAND_NORMAL );
+        const CEGUI::Image* p_image = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_CHAT_NORMAL );
         CEGUI::RenderableImage* p_rendImage = new CEGUI::RenderableImage;
         p_rendImage->setImage( p_image );
         _p_btnOpen->setPushedImage( p_rendImage );
         _p_btnOpen->setNormalImage( p_rendImage );
         delete p_rendImage;
 
-        p_image = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_HAND_HOOVER );
+        p_image = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_CHAT_HOOVER );
         p_rendImage = new CEGUI::RenderableImage;
         p_rendImage->setImage( p_image );
         _p_btnOpen->setHoverImage( p_rendImage );
         delete p_rendImage;
 
-        _p_btnMsgArrived = static_cast< CEGUI::StaticImage* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticImage", prefix + "btn_post" ) );
-        _p_btnMsgArrived->setPosition( _p_btnOpen->getPosition() );
+        pixwidth  = p_iset->getImageWidth( IMAGE_NAME_POST );
+        pixheight = p_iset->getImageHeight( IMAGE_NAME_POST );
+        _p_btnMsgArrived = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", prefix + "_btn_post_" ) );
+        _p_btnMsgArrived->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::ChatGuiBox::onClickedOpen, this ) );
+        _p_btnMsgArrived->setStandardImageryEnabled( false );
         _p_btnMsgArrived->setAlpha( 0.9f );
         _p_btnMsgArrived->setAlwaysOnTop( true );
-        _p_btnMsgArrived->setPosition( CEGUI::Relative, CEGUI::Point( 0.01f, 0.7f ) );
-        _p_btnMsgArrived->setSize( CEGUI::Size( 0.03f, 0.03f ) );
-        _p_btnMsgArrived->setBackgroundEnabled( false );
-        _p_btnMsgArrived->setFrameEnabled( false );
+        _p_btnMsgArrived->setPosition( CEGUI::Relative, CEGUI::Point( 0.025f, 0.74f ) );
+        _p_btnMsgArrived->setSize( CEGUI::Absolute, CEGUI::Size( pixwidth, pixheight ) );
         p_wnd->addChildWindow( _p_btnMsgArrived );
 
         p_image = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_POST );
-        _p_btnMsgArrived->setImage( p_image );
+        p_rendImage = new CEGUI::RenderableImage;
+        p_rendImage->setImage( p_image );
+        _p_btnMsgArrived->setPushedImage( p_rendImage );
+        _p_btnMsgArrived->setNormalImage( p_rendImage );
+        _p_btnMsgArrived->setHoverImage( p_rendImage );
+        delete p_rendImage;
+
         _p_btnMsgArrived->hide();
 
         // create tab control
@@ -367,10 +380,8 @@ void ChatGuiBox::update( float deltaTime )
                 _fadeTimer = 0;
                 // restore the initial size
                 _p_frame->setAlpha( _frameAlphaValue );
-                _p_btnOpen->hide();
                 setEditBoxFocus( true );
                 // let the short message box disappear
-                _p_shortMsgBox->hide();
                 _boxState = BoxVisible;
                 break;
             }
@@ -378,7 +389,6 @@ void ChatGuiBox::update( float deltaTime )
             // fade in the box
             float fadefac = _fadeTimer / FADE_TIME;
             _p_frame->setAlpha( fadefac * _frameAlphaValue );
-            _p_btnOpen->setAlpha( std::max( 0.0f, ( 1.0f - ( _fadeTimer / FADE_TIME ) ) * _frameAlphaValue ) );
         }
         break;
 
@@ -399,7 +409,6 @@ void ChatGuiBox::update( float deltaTime )
             // fade in the box
             float fadefac = std::max( 0.0f, 1.0f - ( _fadeTimer / FADE_TIME ) );
             _p_frame->setAlpha( fadefac * _frameAlphaValue );
-            _p_btnOpen->setAlpha( ( _fadeTimer / FADE_TIME ) * _frameAlphaValue );
         }
         break;
 
@@ -650,9 +659,15 @@ bool ChatGuiBox::onClickedOpen( const CEGUI::EventArgs& /*arg*/ )
     // play click sound
     gameutils::GuiUtils::get()->playSound( SND_NAME_CLOSE_CHANNEL );
 
-    fadeChatbox( false );
-
-    showMsgArrived( false );
+    if ( _boxState == BoxHidden )
+    {
+        fadeChatbox( false );
+        showMsgArrived( false );
+    }
+    else
+    {
+        fadeChatbox( true );
+    }
 
     return true;
 }
