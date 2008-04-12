@@ -1102,6 +1102,7 @@ void DialogGameSettings::show( bool visible )
     else
     {
         _p_settingsDialog->hide();
+        _playerConfigDialog->show( false );
     }
 }
 

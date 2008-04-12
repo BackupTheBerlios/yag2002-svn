@@ -183,10 +183,10 @@ void DialogPlayerConfig::setupControls()
     _p_listbox->setSortingEnabled( true );
     // set selection background color
     CEGUI::ColourRect col(
-                            CEGUI::colour( 255.0f / 255.0f, 214.0f / 255.0f, 9.0f / 255.0f, 0.8f ),
-                            CEGUI::colour( 12.0f  / 255.0f, 59.0f  / 255.0f, 0.0f         , 0.8f ),
-                            CEGUI::colour( 255.0f / 255.0f, 214.0f / 255.0f, 9.0f / 255.0f, 0.8f ),
-                            CEGUI::colour( 12.0f  / 255.0f, 59.0f  / 255.0f, 0.0f         , 0.8f )
+                            CEGUI::colour( 211.0f / 255.0f, 97.0f  / 255.0f, 0.0f, 0.8f ),
+                            CEGUI::colour( 211.0f / 255.0f, 97.0f  / 255.0f, 0.0f, 0.8f ),
+                            CEGUI::colour( 211.0f / 255.0f, 97.0f  / 255.0f, 0.0f, 0.8f ),
+                            CEGUI::colour( 211.0f / 255.0f, 97.0f  / 255.0f, 0.0f, 0.8f )
                           );
     // fill up the list
     _p_listbox->resetList();

@@ -79,7 +79,7 @@ _dragging( false )
     getAttributeManager().addAttribute( "levelDimensions",      _levelDimensions  );
     getAttributeManager().addAttribute( "stretch",              _stretch          );
     getAttributeManager().addAttribute( "offset",               _offset           );
-    getAttributeManager().addAttribute( "nameDisplayPostion",   _nameDisplayPos   );
+    getAttributeManager().addAttribute( "nameDisplayPosition",  _nameDisplayPos   );
     getAttributeManager().addAttribute( "nameDisplaySize",      _nameDisplaySize  );
     getAttributeManager().addAttribute( "nameDisplayColor",     _nameDisplayColor );
 }
@@ -310,16 +310,20 @@ CEGUI::StaticImage* EnMapView::createMarkerElement( const CEGUI::Image* p_img )
 
     try
     {
+        // get the imageset with the images; thanks to CrazyEddie for helping out here
+        CEGUI::Imageset* p_iset = vrc::gameutils::GuiUtils::get()->getCustomImageSet();
+        float pixwidth  = p_iset->getImageWidth( IMAGE_NAME_CROSSHAIR );
+        float pixheight = p_iset->getImageHeight( IMAGE_NAME_CROSSHAIR );
+
         p_staticimg = static_cast< CEGUI::StaticImage* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticImage", std::string( MAPVIEW_WND "playermarker" ) + postfix.str() ) );
         p_staticimg->setMetricsMode( CEGUI::Absolute );
-        p_staticimg->setSize( CEGUI::Size( 10.0f, 10.0f ) );
+        p_staticimg->setSize( CEGUI::Absolute, CEGUI::Size( pixwidth, pixheight ) );
         p_staticimg->setPosition( CEGUI::Point( 0.0f, 0.0f ) );
         p_staticimg->setAlpha( 1.0f );
         p_staticimg->setImage( p_img );
         p_staticimg->setBackgroundEnabled( false );
         p_staticimg->setFrameEnabled( false );
         p_staticimg->setAlwaysOnTop( true );
-
     }
     catch ( const CEGUI::Exception& e )
     {
