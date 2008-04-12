@@ -140,8 +140,7 @@ void VoiceNetwork::updateVoiceClients( yaf3d::BaseEntity* p_playerentity, bool j
         if ( p_maphit == _voiceClientMap.end() )
         {
             EnPlayer* p_player = static_cast< EnPlayer* >( p_playerentity );
-            assert( ( p_player->isVoiceChatEnabled() ) &&
-                    "internal error, player has no voice chat support!" );
+            assert( ( p_player->isVoiceChatEnabled() ) && "internal error, player has no voice chat support!" );
 
             int sid = p_player->getNetworkID();
             _voiceClientMap[ p_playerentity ] = sid ;

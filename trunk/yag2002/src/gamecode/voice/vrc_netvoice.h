@@ -40,6 +40,7 @@ namespace vrc
 
 #define ENTITY_NAME_NETWORKVOICE    "NetworkVoice"
 
+class VoiceGui;
 class VoiceTransport;
 class BaseVoiceInput;
 class NetworkSoundCodec;
@@ -60,6 +61,9 @@ class EnNetworkVoice :
         //! Initialize
         void                                        initialize();
 
+        //! Call this when the voice configuration has been changed ( e.g. by voice gui ).
+        void                                        updateConfiguration();
+
         //! This entity needs updating
         void                                        updateEntity( float deltaTime );
 
@@ -67,7 +71,7 @@ class EnNetworkVoice :
         void                                        destroySender( unsigned int senderID );
 
     protected:
-        
+
         //! Handle notifications
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
@@ -102,6 +106,9 @@ class EnNetworkVoice :
         //! Voice network manager
         VoiceNetwork*                               _p_voiceNetwork;
 
+        //! Voice gui
+        VoiceGui*                                   _p_voiceGui;
+
         //! Used for transporting voice packets over network
         VoiceTransport*                             _p_transport;
 
@@ -120,8 +127,14 @@ class EnNetworkVoice :
         //! Sender input gain
         float                                       _inputGain;
 
+        //! Mute the sender?
+        bool                                        _inputMute;
+
         //! Identifies whether the voice chat is activated
         bool                                        _active;
+
+        //! Flag idenfying the networking state
+        bool                                        _networkingEstablished;
 };
 
 //! Entity type definition used for type registry

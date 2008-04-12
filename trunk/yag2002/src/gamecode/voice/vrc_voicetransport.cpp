@@ -139,6 +139,7 @@ void VoiceTransport::getClientInfo( int sid, CallbackVoiceData* p_cb )
 {
     log_verbose << "VoiceTransport: requesting client info for sid " << sid << std::endl;
 
+    assert( _p_NATClient && "invalid nat client object!" );
     _p_NATClient->requestClientInfo( sid, this );
     _sidRecvMap[ sid ] = p_cb;
 }

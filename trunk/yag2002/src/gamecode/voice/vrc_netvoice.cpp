@@ -34,10 +34,11 @@
 #include "vrc_voicesender.h"
 #include "vrc_voicereceiver.h"
 #include "vrc_voiceinput.h"
+#include "vrc_voicegui.h"
 #include "vrc_natclient.h"
 #include "vrc_codec.h"
-#include <RNXPURL/Inc/NetworkEmulation.h>
-
+#include "../player/vrc_player.h"
+#include "../player/vrc_playerimpl.h"
 
 //! Define this for getting voice input from file instead of microphone device; it is used for testing.
 //#define INPUT_TEST
@@ -55,11 +56,14 @@ EnNetworkVoice::EnNetworkVoice():
 _spotRange( 20.0f ),
 _p_receiver( NULL ),
 _p_voiceNetwork( NULL ),
+_p_voiceGui( NULL ),
 _p_transport( NULL ),
 _p_codec( NULL ),
 _p_soundInput( NULL ),
 _inputGain( 1.0f ),
-_active( false )
+_inputMute( false ),
+_active( false ),
+_networkingEstablished( false )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "spotRange", _spotRange  );
@@ -69,6 +73,9 @@ EnNetworkVoice::~EnNetworkVoice()
 {
     if ( _active )
         destroyVoiceChat();
+
+    if ( _p_voiceGui )
+        delete _p_voiceGui;
 }
 
 void EnNetworkVoice::handleNotification( const yaf3d::EntityNotification& notification )
@@ -80,9 +87,17 @@ void EnNetworkVoice::handleNotification( const yaf3d::EntityNotification& notifi
 
             // reflect the settings in menu
             setupNetworkVoice();
+
+            // update the voice gui
+            if ( _p_voiceGui )
+                _p_voiceGui->updateVoiceConfiguration();
+
             break;
 
         case YAF3D_NOTIFY_NETWORKING_ESTABLISHED:
+
+            // now the networking to server is established
+            _networkingEstablished = true;
 
             if ( _p_transport )
                 _p_transport->initialize();
@@ -104,22 +119,47 @@ void EnNetworkVoice::initialize()
 
     // register entity in order to get notifications (e.g. from menu entity)
     yaf3d::EntityManager::get()->registerNotification( this, true );
+
+    // register for getting periodic updates
+    yaf3d::EntityManager::get()->registerUpdate( this, true );
+}
+
+void EnNetworkVoice::updateConfiguration()
+{
+    setupNetworkVoice();
+
+    // update the voice chat enable flag
+    bool voicechat = true;
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_ENABLE, voicechat );
+
+    EnPlayer* p_player = dynamic_cast< EnPlayer* >( vrc::gameutils::PlayerUtils::get()->getLocalPlayer() );
+    assert ( p_player && "invalid player object type!" );
+    p_player->getPlayerImplementation()->enableVoiceChat( voicechat );
 }
 
 void EnNetworkVoice::setupNetworkVoice()
 {
+    // setup the voice gui
+    if ( !_p_voiceGui )
+    {
+        _p_voiceGui = new VoiceGui( this );
+        _p_voiceGui->initialize();
+    }
+
     // check if voice chat is enabled
     bool voicechatenable;
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_ENABLE, voicechatenable );
+
+    // get further menu settings for voice chat, takes effect only when voice is enabled
+    unsigned int  inputdev   = 0;
+    float         outputgain = 1.0f;
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_INPUT_MUTE, _inputMute );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_OUTPUT_GAIN, outputgain );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_INPUT_GAIN, _inputGain );
+    yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_INPUT_DEVICE, inputdev );
+
     if ( voicechatenable )
     {
-        // get further menu settings for voice chat
-        float outputgain;
-        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_OUTPUT_GAIN, outputgain );
-        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_INPUT_GAIN, _inputGain );
-        unsigned int  inputdev;
-        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_INPUT_DEVICE, inputdev );
-
         // is voice chat already active?
         if ( !_active )
         {
@@ -129,6 +169,7 @@ void EnNetworkVoice::setupNetworkVoice()
         {
             // just update the input and output gain
             _p_soundInput->setInputGain( _inputGain );
+            _p_soundInput->stop( _inputMute );
             _p_receiver->setOutputGain( outputgain );
             _p_soundInput->setInputDevice( inputdev );
         }
@@ -173,9 +214,15 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
         _p_soundInput->stop( true );
 #endif
 
-        assert( !_p_transport && "transport layer already exists!" );
-        // setup the transport layer
-        _p_transport = new VoiceTransport;
+        // setup the transport layer if not already exists
+        if ( !_p_transport )
+        {
+            _p_transport = new VoiceTransport;
+        }
+        // if the networking is already established then initialize the transport layer
+        // otherwise we have to wait for networking to establish which is handled in notification handler
+        if ( _networkingEstablished )
+            _p_transport->initialize();
 
         _inputGain = inputgain;
 
@@ -216,9 +263,6 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
         return;
     }
 
-    // register for getting periodic updates
-    yaf3d::EntityManager::get()->registerUpdate( this, true );
-
     // set callback to get notifications on changed voice chat list
     vrc::gameutils::PlayerUtils::get()->registerCallbackVoiceChatPlayerListChanged( this, true );
 
@@ -227,6 +271,16 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
 
     // set active flag
     _active = true;
+
+    // setup the initial player list with enabled voice chat
+    {
+        const std::vector< yaf3d::BaseEntity* >& players = gameutils::PlayerUtils::get()->getRemotePlayersVoiceChat();
+        std::vector< yaf3d::BaseEntity* >::const_iterator p_beg = players.begin(), p_end = players.end();
+        for ( ; p_beg != p_end; ++p_beg )
+        {
+            onVoiceChatPlayerListChanged( true, *p_beg );
+        }
+    }
 }
 
 void EnNetworkVoice::destroyVoiceChat()
@@ -269,21 +323,12 @@ void EnNetworkVoice::destroyVoiceChat()
             delete _p_codec;
             _p_codec = NULL;
         }
-
-        if ( _p_transport )
-        {
-            delete _p_transport;
-            _p_transport = NULL;
-        }
     }
     catch ( const NetworkSoundException& e )
     {
         log_error << ENTITY_NAME_NETWORKVOICE << ":" << getInstanceName() << "  a problem occurred during shutdown." << std::endl;
         log_error << "  reason: " << e.what() << std::endl;
     }
-
-    // deregister from getting periodic updates
-    yaf3d::EntityManager::get()->registerUpdate( this, false );
 
     // deregister from getting notifications on changed voice chat list
     vrc::gameutils::PlayerUtils::get()->registerCallbackVoiceChatPlayerListChanged( this, false );
@@ -357,15 +402,18 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
         }
         else
         {
-            // create a new sender
-            int sid = p_vmapent->second;
-            BaseNetworkSoundImplementation* p_sender = new VoiceSender( sid, _p_soundInput, _p_transport );
-            p_sender->initialize();
-            _sendersMap[ p_entity ] = p_sender;
+            if ( _p_transport )
+            {
+                // create a new sender
+                int sid = p_vmapent->second;
+                BaseNetworkSoundImplementation* p_sender = new VoiceSender( sid, _p_soundInput, _p_transport );
+                p_sender->initialize();
+                _sendersMap[ p_entity ] = p_sender;
 
-            // continue grabbing input if it was stopped before
-            if ( _sendersMap.size() == 1 )
-                _p_soundInput->stop( false );
+                // continue grabbing input if it was stopped before
+                if ( ( _sendersMap.size() == 1 ) && !_inputMute )
+                    _p_soundInput->stop( false );
+            }
         }
     }
     else
@@ -413,7 +461,7 @@ void EnNetworkVoice::onVoiceChatPlayerListChanged( bool joining, yaf3d::BaseEnti
         }
         else
         {
-            log_error << "EnNetworkVoice: leaving player could not be found in sender map" << std::endl;
+            log_warning << "EnNetworkVoice: leaving player could not be found in sender map" << std::endl;
         }
     }
 }
