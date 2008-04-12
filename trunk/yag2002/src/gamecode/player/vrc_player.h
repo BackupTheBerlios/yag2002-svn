@@ -89,6 +89,9 @@ class EnPlayer : public yaf3d::BaseEntity
         //! Is voice chat enabled for this player?
         inline bool                                 isVoiceChatEnabled();
 
+        //! Enable/disable voice chat
+        void                                        enableVoiceChat( bool en );
+
         //! Get last update time
         inline float                                getDeltaTime() const;
 

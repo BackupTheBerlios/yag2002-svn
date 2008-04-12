@@ -95,6 +95,9 @@ class BasePlayerImplementation
         //! Call this for directly changing player name ( can be used for remote and local players )
         void                                        changePlayerName( const std::string& name );
 
+        //! Enable / disable voice chat, note that not all implementations support this feature!
+        virtual void                                enableVoiceChat( bool /*en*/ ) {}
+
         //! Set player's position.
         inline void                                 setPlayerPosition( const osg::Vec3f& pos );
 

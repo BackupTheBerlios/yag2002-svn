@@ -314,8 +314,8 @@ void PlayerNetworking::RPC_EnableVoiceChat( bool en )
 {
     _p_playerImpl->getPlayerEntity()->setVoiceChatEnabled( en );
 
-    if ( _voiceChat == en )
-        return;
+    //if ( _voiceChat == en )
+    //    return;
 
     _voiceChat = en;
 

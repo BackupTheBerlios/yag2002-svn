@@ -194,6 +194,12 @@ void EnPlayer::postInitialize()
     yaf3d::EntityManager::get()->registerUpdate( this, true );
 }
 
+void EnPlayer::enableVoiceChat( bool en )
+{
+    if ( _p_playerImpl )
+        _p_playerImpl->enableVoiceChat( en );
+}
+
 void EnPlayer::spawn()
 {
     osg::Quat  rotation;

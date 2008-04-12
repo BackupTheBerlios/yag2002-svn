@@ -72,6 +72,9 @@ class PlayerImplClient : public BasePlayerImplementation, public yaf3d::SessionN
         //! Networking callback for getting notified when server dicsonnection occures because of network problems or server shutdown
         void                                        onServerDisconnect( int sessionID );
 
+        //! Overriden method for enable / disable voice chat; the client implementation supports this feature;
+        void                                        enableVoiceChat( bool en );
+
     protected:
 
         //! Get the configuration settings

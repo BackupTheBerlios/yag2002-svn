@@ -311,6 +311,13 @@ void PlayerImplClient::getConfiguration()
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, playername );
     _p_player->setPlayerName( playername );
 
+    if ( _p_playerNetworking )
+    {
+        bool voicechat = false;
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_ENABLE, voicechat );
+        _p_playerNetworking->enableVoiceChat( voicechat );
+    }
+
     // setup key bindings if the handler is already created (e.g. remote clients have no handler)
     if ( _p_inputHandler )
     {
@@ -428,6 +435,12 @@ void PlayerImplClient::update( float deltaTime )
 
     // update sound
     getPlayerSound()->updatePosition( _currentPos );
+}
+
+void PlayerImplClient::enableVoiceChat( bool en )
+{
+    assert( _p_playerNetworking && "invalid networking object!" );
+    _p_playerNetworking->enableVoiceChat( en );
 }
 
 } // namespace vrc
