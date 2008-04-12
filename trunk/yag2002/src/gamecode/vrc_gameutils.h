@@ -70,6 +70,7 @@ namespace gameutils
 #define VRC_GS_FX_VOLUME                    "volumeFX"
 #define VRC_GS_VOICECHAT_ENABLE             "voiceChatEnable"
 #define VRC_GS_VOICECHAT_INPUT_DEVICE       "voiceChatInputDevice"
+#define VRC_GS_VOICE_INPUT_MUTE             "voiceInputMute"
 #define VRC_GS_VOICE_INPUT_GAIN             "voiceInputGain"
 #define VRC_GS_VOICE_OUTPUT_GAIN            "voiceOutputGain"
 #define VRC_GS_VOICE_PORT                   "voicePort"
@@ -100,10 +101,20 @@ namespace gameutils
 //! VRC specific GUI imageset and elements
 #define VRC_IMAGE_SET                       "VRCImageSet"
 #define VRC_IMAGE_SET_FILE                  "gui/imagesets/VRCImageSet.imageset"
-#define IMAGE_NAME_FOOT_NORMAL              "FootNormal"
-#define IMAGE_NAME_FOOT_HOOVER              "FootHoover"
-#define IMAGE_NAME_HAND_NORMAL              "HandNormal"
-#define IMAGE_NAME_HAND_HOOVER              "HandHoover"
+#define IMAGE_NAME_VOICE_NORMAL             "VoiceNormal"
+#define IMAGE_NAME_VOICE_HOOVER             "VoiceHoover"
+#define IMAGE_NAME_VOICE_DISABLE_NORMAL     "VoiceDisableNormal"
+#define IMAGE_NAME_VOICE_DISABLE_HOOVER     "VoiceDisableHoover"
+#define IMAGE_NAME_VOICE_MUTE_NORMAL        "VoiceMuteNormal"
+#define IMAGE_NAME_VOICE_MUTE_HOOVER        "VoiceMuteHoover"
+#define IMAGE_NAME_VOICE_MUTEDIS_NORMAL     "VoiceMuteDisableNormal"
+#define IMAGE_NAME_VOICE_MUTEDIS_HOOVER     "VoiceMuteDisableHoover"
+#define IMAGE_NAME_VOICE_MENU               "VoiceMenu"
+#define IMAGE_NAME_VOICE_DISABLE            "VoiceDisable"
+#define IMAGE_NAME_CHAT_NORMAL              "ChatNormal"
+#define IMAGE_NAME_CHAT_HOOVER              "ChatHoover"
+#define IMAGE_NAME_INV_NORMAL               "InventoryNormal"
+#define IMAGE_NAME_INV_HOOVER               "InventoryHoover"
 #define IMAGE_NAME_CROSSHAIR                "Crosshair"
 #define IMAGE_NAME_POST                     "Post"
 #define IMAGE_NAME_SOUND_ON                 "SoundOn"
@@ -160,6 +171,8 @@ class VRCStateHandler : public yaf3d::GameState::CallbackStateChange
         bool                                        _voiceChatEnable;
 
         unsigned int                                _voiceChatInputDev;
+
+        bool                                        _voiceInputMute;
 
         float                                       _voiceInputGain;
 

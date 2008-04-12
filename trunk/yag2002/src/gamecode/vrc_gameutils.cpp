@@ -79,6 +79,7 @@ _fxEnable( true ),
 _fxVolume( VRC_GS_DEFAULT_SOUND_VOLUME ),
 _voiceChatEnable( true ),
 _voiceChatInputDev( 0 ),
+_voiceInputMute( false ),
 _voiceInputGain( VRC_GS_DEFAULT_SOUND_VOLUME ),
 _voiceOutputGain( VRC_GS_DEFAULT_SOUND_VOLUME ),
 _voicePort( VRC_GS_DEFAULT_VOICE_PORT ),
@@ -124,6 +125,7 @@ void VRCStateHandler::onStateChange( unsigned int state )
             yaf3d::Configuration::get()->addSetting( VRC_GS_FX_VOLUME,              _fxVolume           );
             yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_ENABLE,       _voiceChatEnable    );
             yaf3d::Configuration::get()->addSetting( VRC_GS_VOICECHAT_INPUT_DEVICE, _voiceChatInputDev  );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_VOICE_INPUT_MUTE,       _voiceInputMute     );
             yaf3d::Configuration::get()->addSetting( VRC_GS_VOICE_INPUT_GAIN,       _voiceInputGain     );
             yaf3d::Configuration::get()->addSetting( VRC_GS_VOICE_OUTPUT_GAIN,      _voiceOutputGain    );
             yaf3d::Configuration::get()->addSetting( VRC_GS_VOICE_PORT,             _voicePort          );
