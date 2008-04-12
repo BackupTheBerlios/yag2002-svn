@@ -1536,6 +1536,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\voice\vrc_voicegui.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\voice\vrc_voicegui.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\voice\vrc_voiceinput.cpp"
 					>
 				</File>
