@@ -30,6 +30,7 @@
 
 #include <base.h>
 #include "log.h"
+#include "utils.h"
 
 namespace yaf3d
 {
@@ -42,7 +43,8 @@ Log yaf3dlog;
 Log::Log() :
 std::basic_ostream< char >( &_stream ),
 _severity( L_DEBUG ),
-_printSeverityLevel( true )
+_printSeverityLevel( true ),
+_enableTimeStamp( true )
 {
     _stream.setLog( this );
 }
@@ -133,9 +135,19 @@ void Log::removeSink( const std::string& sinkname )
     assert( NULL && "sink name does not exist!" );
 }
 
+void Log::setSeverity( unsigned int severity )
+{
+    _severity = severity;
+}
+
 void Log::enableSeverityLevelPrinting( bool en )
 {
     _printSeverityLevel = en;
+}
+
+void Log::enableTimeStamp( bool en )
+{
+    _enableTimeStamp = en;
 }
 
 void Log::out( const std::string& msg )
@@ -149,11 +161,6 @@ void Log::out( const std::string& msg )
             ( ( *p_sink )->_p_stream )->flush();
         }
     }
-}
-
-void Log::setSeverity( unsigned int severity )
-{
-    _severity = severity;
 }
 
 //---------------------------
@@ -207,7 +214,12 @@ std::basic_ios< char >::int_type Log::LogStreamBuf::overflow( int_type c )
             // add a carriage return to end of line
             _msg[ _msg.length() - 1 ] = '\r';
             _msg += "\n";
-            _p_log->out( severity + _msg );
+
+            if ( _p_log->_enableTimeStamp )
+                 _p_log->out( "[" + getFormatedTime() + "] " + severity + _msg );
+            else
+                _p_log->out( severity + _msg );
+
             _msg = "";
         }
     }

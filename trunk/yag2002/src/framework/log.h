@@ -91,6 +91,9 @@ class Log : public std::basic_ostream< char >
         //! Enables/disables severity level printing in output, the default is 'enabled'.
         void                                        enableSeverityLevelPrinting( bool en );
 
+        //! Enable/disable timestamps, the default is 'enabled'.
+        void                                        enableTimeStamp( bool en );
+
         //! Struct for setting new loglevel via stream operator <<
         struct LogLevel
         {
@@ -115,6 +118,9 @@ class Log : public std::basic_ostream< char >
 
         //! Severity level printing 
         bool                                        _printSeverityLevel;
+
+        //! Time stamp enable/disable flag
+        bool                                        _enableTimeStamp;
 
         //! Log sink 
         class Sink
