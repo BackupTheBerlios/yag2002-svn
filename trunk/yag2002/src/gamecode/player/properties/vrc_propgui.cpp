@@ -117,14 +117,14 @@ void PropertyGui::setupGui()
         p_maingui->addChildWindow( _p_btnOpen );
 
         // set editbox open button images
-        const CEGUI::Image* p_image = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_HAND_NORMAL ); //! TODO: take a proper image
+        const CEGUI::Image* p_image = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_INV_NORMAL );
         CEGUI::RenderableImage* p_rendImage = new CEGUI::RenderableImage;
         p_rendImage->setImage( p_image );
         _p_btnOpen->setPushedImage( p_rendImage );
         _p_btnOpen->setNormalImage( p_rendImage );
         delete p_rendImage;
 
-        p_image = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_HAND_HOOVER ); //! TODO: take a proper image
+        p_image = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_INV_HOOVER );
         p_rendImage = new CEGUI::RenderableImage;
         p_rendImage->setImage( p_image );
         _p_btnOpen->setHoverImage( p_rendImage );
