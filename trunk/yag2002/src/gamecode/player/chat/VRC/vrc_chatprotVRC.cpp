@@ -504,8 +504,8 @@ void ChatNetworkingVRC::joined( const std::string& channel, const std::string& n
 {
     vrc::ChatConnectionConfig cfg( *_p_config );
     cfg._nickname = name;
-	// onJoinedChannel can cause further registration, hence we operate on a temorary callback list
-	ProtocolCallbackList tmpcallbacks = _protocolCallbacks;
+    // onJoinedChannel can cause further registration, hence we operate on a temorary callback list
+    ProtocolCallbackList tmpcallbacks = _protocolCallbacks;
     ProtocolCallbackList::iterator p_beg = tmpcallbacks.begin(), p_end = tmpcallbacks.end();
     for ( ; p_beg != p_end; ++p_beg )
         if ( ( p_beg->first == channel ) || ( p_beg->first == "*" ) )
