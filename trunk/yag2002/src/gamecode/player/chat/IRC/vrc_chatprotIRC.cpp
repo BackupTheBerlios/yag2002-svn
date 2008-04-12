@@ -282,7 +282,7 @@ void ChatNetworkingIRC::send( const CEGUI::String& msg, const std::string& chann
         return;
 
     std::string smsg( reinterpret_cast< const char* >( msg.c_str() ) );
-    if ( smsg[ 0 ] == '/' )
+    if ( ( smsg[ 0 ] == '/' ) || recipient.length() )
     {
         std::vector< std::string > args;
         yaf3d::explode( smsg, " ", &args );
@@ -296,6 +296,11 @@ void ChatNetworkingIRC::send( const CEGUI::String& msg, const std::string& chann
                 text += ( " " + args[ cnt ] );
 
             irc_cmd_msg( _p_session, args[ 1 ].c_str(), text.c_str() );
+            return;
+        }
+        else if ( recipient.length() )
+        {
+            irc_cmd_msg( _p_session, recipient.c_str(), msg.c_str() );
             return;
         }
 
