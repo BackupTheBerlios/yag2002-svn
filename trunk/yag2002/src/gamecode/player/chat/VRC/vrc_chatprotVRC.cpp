@@ -370,21 +370,13 @@ void ImplChatNetworkingVRC::postChatText( const CEGUI::String& text, const std::
 
         }
         // all commands with one single argument go here
-        else if ( args.size() == 2 )
+        else if ( ( args.size() > 1 ) && ( ( args[ 0 ] == "/nick" ) || ( args[ 0 ] == "/NICK" ) ) )
         {
-            if ( ( args[ 0 ] == "/nick" ) || ( args[ 0 ] == "/NICK" ) )
-            {
-                tChatData chatdata;
-                chatdata._sessionID = _clientSID;
-                strcpy( chatdata._nickname, args[ 1 ].c_str() );
-                NOMINATED_REPLICAS_FUNCTION_CALL( 1, &_serverSID, RPC_RequestChangeNickname( chatdata ) );
-                return;
-            }
-            else
-            {
-                _p_protVRC->recvMessage( "", "", VRC_CMD_LIST );
-                return;
-            }
+            tChatData chatdata;
+            chatdata._sessionID = _clientSID;
+            strcpy( chatdata._nickname, &( text.c_str()[ 6 ] ) );
+            NOMINATED_REPLICAS_FUNCTION_CALL( 1, &_serverSID, RPC_RequestChangeNickname( chatdata ) );
+            return;
         }
         else
         {
