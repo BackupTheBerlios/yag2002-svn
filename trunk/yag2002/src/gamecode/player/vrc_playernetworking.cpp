@@ -90,16 +90,20 @@ PlayerNetworking::~PlayerNetworking()
 
     // remove ghost from simulation ( server and client )
 
+    // remove remote player form voice chat list
+    if ( isRemoteClient() )
+    {
+        // remove voice chat notify registration
+        if ( _voiceChat && ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client ) )
+            vrc::gameutils::PlayerUtils::get()->removeRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
+    }
+
     // we have to delete player associated entities only if we are not unloading the level or quitting/shutdown
     if ( !( yaf3d::GameState::get()->getState() & ( yaf3d::GameState::LeavingLevel | yaf3d::GameState::Quitting | yaf3d::GameState::Shutdown ) ) )
     {
         // filter server and remoteclient objects ( no clients' local objects )
         if ( isRemoteClient() )
         {
-            // remove voice chat notify registration
-            if ( _voiceChat && ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client ) )
-                vrc::gameutils::PlayerUtils::get()->removeRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
-
             // PlayerNetworking has created the player implementation, so set its networking and other components to NULL in order to avoid deleting it also by player's implementation
             _p_playerImpl->setPlayerNetworking( NULL );
             _p_playerImpl->setPlayerSound( NULL );
