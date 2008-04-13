@@ -33,7 +33,6 @@
 #include "vrc_menu.h"
 #include "vrc_dialogsettings.h"
 #include "vrc_dialogplayercfg.h"
-#include "../sound/vrc_2dsound.h"
 #include "vrc_microinput.h"
 
 namespace vrc
@@ -391,13 +390,12 @@ void DialogGameSettings::setupControls()
         _p_keyChatMode->setText( cfg_mode.c_str() );
         _keyBindingLookup.push_back( std::make_pair( cfg_mode, _p_keyChatMode ) );
 
-        float  cfg_mousesensitivity;
-        yaf3d::Configuration::get()->getSettingValue( VRC_GS_MOUSESENS, cfg_mousesensitivity );
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_MOUSESENS, _mouseSensitivity );
         bool   cfg_mouseInverted;
         yaf3d::Configuration::get()->getSettingValue( VRC_GS_INVERTMOUSE, cfg_mouseInverted );
         // setup scrollbar position
         _p_mouseSensivity->setDocumentSize( VRC_GS_MAX_MOUSESENS );
-        _p_mouseSensivity->setScrollPosition( cfg_mousesensitivity );
+        _p_mouseSensivity->setScrollPosition( _mouseSensitivity );
         // setup chekbox
         _p_mouseInvert->setSelected( cfg_mouseInverted );
     }
