@@ -137,6 +137,15 @@ void EnNetworkVoice::updateConfiguration()
     p_player->getPlayerImplementation()->enableVoiceChat( voicechat );
 }
 
+void EnNetworkVoice::setInputOutputGain( float input, float output )
+{
+    if ( _p_soundInput )
+        _p_soundInput->setInputGain( input );
+
+    if ( _p_receiver )
+        _p_receiver->setOutputGain( output );
+}
+
 void EnNetworkVoice::setupNetworkVoice()
 {
     // setup the voice gui

@@ -64,6 +64,9 @@ class EnNetworkVoice :
         //! Call this when the voice configuration has been changed ( e.g. by voice gui ).
         void                                        updateConfiguration();
 
+        //! Get input / output gains
+        void                                        setInputOutputGain( float input, float output );
+
         //! This entity needs updating
         void                                        updateEntity( float deltaTime );
 

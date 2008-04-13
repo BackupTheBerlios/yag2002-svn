@@ -128,17 +128,9 @@ void VoiceGui::updateVoiceConfiguration()
     _p_checkboxMute->setSelected( inputmute );
 
     if ( voicenable )
-    {
-        _p_volumeInput->enable();
-        _p_volumeOutput->enable();
         _p_checkboxOnOff->setSelected( false );
-    }
     else
-    {
-        _p_volumeInput->disable();
-        _p_volumeOutput->disable();
         _p_checkboxOnOff->setSelected( true );
-    }
 
     updateButtonImages( voicenable, inputmute );
 }
@@ -176,10 +168,15 @@ void VoiceGui::updateButtonImages( bool voicenable, bool inputmute )
         }
     }
 
-    if ( inputmute )
+    if ( inputmute || !voicenable )
         _p_volumeInput->disable();
     else
         _p_volumeInput->enable();
+
+    if ( voicenable )
+        _p_volumeOutput->enable();
+    else
+        _p_volumeOutput->disable();
 }
 
 CEGUI::PushButton* VoiceGui::createVoiceButton()
@@ -269,12 +266,14 @@ CEGUI::Window* VoiceGui::createVoiceMenu()
         p_wnd->addChildWindow( p_wndbackgrnd );
 
         _p_volumeInput = static_cast< CEGUI::Scrollbar* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/HorizontalScrollbar", VOICELAYOUT_PREFIX "_wnd_voicemenu_volin_" ) );
+        _p_volumeInput->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::VoiceGui::onInputVolumeChanging, this ) );
         _p_volumeInput->subscribeEvent( CEGUI::Scrollbar::EventThumbTrackEnded, CEGUI::Event::Subscriber( &vrc::VoiceGui::onInputVolumeChanged, this ) );
         _p_volumeInput->setPosition( CEGUI::Point( 0.036f, 0.1f ) );
         _p_volumeInput->setSize( CEGUI::Size( 0.62f, 0.18f ) );
         p_wnd->addChildWindow( _p_volumeInput );
 
         _p_volumeOutput = static_cast< CEGUI::Scrollbar* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/HorizontalScrollbar", VOICELAYOUT_PREFIX "_wnd_voicemenu_volout_" ) );
+        _p_volumeOutput->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::VoiceGui::onOutputVolumeChanging, this ) );
         _p_volumeOutput->subscribeEvent( CEGUI::Scrollbar::EventThumbTrackEnded, CEGUI::Event::Subscriber( &vrc::VoiceGui::onOutputVolumeChanged, this ) );
         _p_volumeOutput->setPosition( CEGUI::Point( 0.036f, 0.71f ) );
         _p_volumeOutput->setSize( CEGUI::Size( 0.62f, 0.18f ) );
@@ -338,9 +337,6 @@ bool VoiceGui::onClickedOpen( const CEGUI::EventArgs& /*arg*/ )
 
 bool VoiceGui::onOnOffChanged( const CEGUI::EventArgs& /*arg*/ )
 {
-    // play mouse over sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_HOVER );
-
     // set the state in configuration
     bool  voicenable = !_p_checkboxOnOff->isSelected();
     yaf3d::Configuration::get()->setSettingValue( VRC_GS_VOICECHAT_ENABLE, voicenable );
@@ -396,6 +392,17 @@ bool VoiceGui::onInputVolumeChanged( const CEGUI::EventArgs& /*arg*/ )
     return true;
 }
 
+bool VoiceGui::onInputVolumeChanging( const CEGUI::EventArgs& /*arg*/ )
+{
+    // update configuration
+    float inputgain  = _p_volumeInput->getScrollPosition();
+    float outputgain = _p_volumeOutput->getScrollPosition();
+
+    _p_netVoice->setInputOutputGain( inputgain, outputgain );
+
+    return true;
+}
+
 bool VoiceGui::onOutputVolumeChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // update configuration
@@ -404,6 +411,17 @@ bool VoiceGui::onOutputVolumeChanged( const CEGUI::EventArgs& /*arg*/ )
 
     // update the net voice instance so the changes can take place
     _p_netVoice->updateConfiguration();
+
+    return true;
+}
+
+bool VoiceGui::onOutputVolumeChanging( const CEGUI::EventArgs& /*arg*/ )
+{
+    // update configuration
+    float inputgain  = _p_volumeInput->getScrollPosition();
+    float outputgain = _p_volumeOutput->getScrollPosition();
+
+    _p_netVoice->setInputOutputGain( inputgain, outputgain );
 
     return true;
 }

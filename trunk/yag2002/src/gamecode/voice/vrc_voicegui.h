@@ -77,11 +77,17 @@ class VoiceGui
         //! Callback for changed checkbox 'Mute'
         bool                                        onMuteChanged( const CEGUI::EventArgs& arg );
 
-        //! Callback changed input volume scrollbar
+        //! Callback for changed input volume scrollbar
         bool                                        onInputVolumeChanged( const CEGUI::EventArgs& arg );
 
-        //! Callback changed output volume scrollbar
+        //! Callback for input volume scrollbar changing
+        bool                                        onInputVolumeChanging( const CEGUI::EventArgs& arg );
+
+        //! Callback for changed output volume scrollbar
         bool                                        onOutputVolumeChanged( const CEGUI::EventArgs& arg );
+
+        //! Callback for output volume scrollbar changing
+        bool                                        onOutputVolumeChanging( const CEGUI::EventArgs& arg );
 
         //! The net voice entity object
         EnNetworkVoice*                             _p_netVoice;
