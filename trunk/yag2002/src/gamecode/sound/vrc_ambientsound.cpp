@@ -25,37 +25,51 @@
  #
  #   author:            boto (botorabi at users.sourceforge.net) 
  #
+ #   04/16/2008         changed EnAmbientSound entity to En2DSound
  #
  ################################################################*/
 
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
-#include "vrc_ambientsound.h"
+#include "vrc_2dsound.h"
 
 namespace vrc
 {
 
-//! Implement and register the ambient sound entity factory
-YAF3D_IMPL_ENTITYFACTORY( AmbientSoundEntityFactory )
+//! Implement and register the 2d sound entity factory
+YAF3D_IMPL_ENTITYFACTORY( TwoDSoundEntityFactory )
+
+//! Attenuation update period for non-ambient sound
+#define SND_UPDATE_ATTN_PERIOD  0.1f
 
 
-EnAmbientSound::EnAmbientSound() :
+En2DSound::En2DSound() :
 _loop( true ),
 _autoPlay( true ),
 _volume( 0.8f ),
+_ambient( true ),
+_minDistance( 0.0f ),
+_maxDistance( 100.0f ),
+_attenuation( 1.0f ),
+_updateTimer( 0.0f ),
 _soundGroup( "Music" ),
 _soundID( 0 ),
-_p_channel( NULL )
+_p_channel( NULL ),
+_p_player( NULL )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "soundFile",    _soundFile  );
-    getAttributeManager().addAttribute( "soundGroup",   _soundGroup );
-    getAttributeManager().addAttribute( "loop",         _loop       );
-    getAttributeManager().addAttribute( "autoPlay",     _autoPlay   );
-    getAttributeManager().addAttribute( "volume",       _volume     );
+    getAttributeManager().addAttribute( "soundFile",    _soundFile   );
+    getAttributeManager().addAttribute( "soundGroup",   _soundGroup  );
+    getAttributeManager().addAttribute( "loop",         _loop        );
+    getAttributeManager().addAttribute( "autoPlay",     _autoPlay    );
+    getAttributeManager().addAttribute( "volume",       _volume      );
+    getAttributeManager().addAttribute( "ambient",      _ambient     );
+    getAttributeManager().addAttribute( "position",     _position    );
+    getAttributeManager().addAttribute( "minDistance",  _minDistance );
+    getAttributeManager().addAttribute( "maxDistance",  _maxDistance );
 }
 
-EnAmbientSound::~EnAmbientSound()
+En2DSound::~En2DSound()
 {
     // release sound
     if ( _soundID > 0 )
@@ -66,12 +80,12 @@ EnAmbientSound::~EnAmbientSound()
         }
         catch ( const yaf3d::SoundException& e )
         {
-            log_error << ENTITY_NAME_AMBIENTSOUND << ":" << getInstanceName() << " problem releasing sound, reason: " << e.what() << std::endl;
+            log_error << ENTITY_NAME_2DSOUND << ":" << getInstanceName() << " problem releasing sound, reason: " << e.what() << std::endl;
         }
     }
 }
 
-void EnAmbientSound::handleNotification( const yaf3d::EntityNotification& notification )
+void En2DSound::handleNotification( const yaf3d::EntityNotification& notification )
 {
     // handle menu entring / leaving
     switch( notification.getId() )
@@ -108,20 +122,77 @@ void EnAmbientSound::handleNotification( const yaf3d::EntityNotification& notifi
         }
         break;
 
+        case YAF3D_NOTIFY_UNLOAD_LEVEL:
+        {
+            // nothing to do atm
+        }
+        break;
+
         default:
             ;
     }
 }
 
-void EnAmbientSound::initialize()
+void En2DSound::initialize()
 {
     // register entity in order to get menu notifications
     yaf3d::EntityManager::get()->registerNotification( this, true );
+
+    // setup the sound
     setupSound();
+
+    // if the sound is ambient then we need no update
+    if ( !_ambient && _soundID )
+        yaf3d::EntityManager::get()->registerUpdate( this, true );
 }
 
-void EnAmbientSound::setupSound()
+void En2DSound::updateEntity( float deltaTime )
 {
+    // we don't need to recalculate the attenuation every frame
+    _updateTimer += deltaTime;
+    if ( _updateTimer > SND_UPDATE_ATTN_PERIOD )
+    {
+        _updateTimer -= SND_UPDATE_ATTN_PERIOD;
+    }
+    else
+    {
+        return;
+    }
+
+    // we need a valid player object for calculating the attenuation of non-ambient sound
+    if ( !_p_player )
+    {
+        _p_player = gameutils::PlayerUtils::get()->getLocalPlayer();
+        if ( !_p_player )
+            return;
+    }
+
+    const osg::Vec3f& playerpos = _p_player->getPosition();
+    float             distance  = ( playerpos - _position ).length();
+    if ( ( distance < _minDistance ) || ( distance > _maxDistance ) )
+    {
+        _attenuation = 0.0f;
+    }
+    else
+    {
+        _attenuation = 1.0f - ( ( distance - _minDistance ) / ( _maxDistance - _minDistance ) );
+    }
+
+    yaf3d::SoundManager::get()->setSoundVolume( _soundID, _attenuation * _volume );
+}
+
+void En2DSound::setupSound()
+{
+    // check for ambient sound
+    if ( !_ambient )
+    {
+        if ( _minDistance > _maxDistance )
+        {
+            log_warning << ENTITY_NAME_2DSOUND << ": min distance > max distance for a non-ambient sound, fallback to ambient sound!" << std::endl;
+            _ambient = true;
+        }
+    }
+
     // check if sound is enabled in menu system
     bool skiptypecheck = false;
     unsigned int soundgroup = yaf3d::SoundManager::get()->getSoundGroupIdFromString( _soundGroup );
@@ -134,7 +205,7 @@ void EnAmbientSound::setupSound()
     else if ( soundgroup == yaf3d::SoundManager::SoundGroupCommon )
         skiptypecheck = true;
     else
-        log_error << ENTITY_NAME_AMBIENTSOUND << ":" << getInstanceName() << " invalid sound group type" << std::endl;
+        log_error << ENTITY_NAME_2DSOUND << ":" << getInstanceName() << " invalid sound group type" << std::endl;
 
 
     // sound group Common is always created
@@ -153,7 +224,7 @@ void EnAmbientSound::setupSound()
                 }
                 catch ( const yaf3d::SoundException& e )
                 {
-                    log_error << ENTITY_NAME_AMBIENTSOUND << ":" << getInstanceName() << " problem releasing sound, reason: " << e.what() << std::endl;
+                    log_error << ENTITY_NAME_2DSOUND << ":" << getInstanceName() << " problem releasing sound, reason: " << e.what() << std::endl;
                 }
                 return;
             }
@@ -179,12 +250,12 @@ void EnAmbientSound::setupSound()
     } 
     catch ( const yaf3d::SoundException& e )
     {
-        log_error << ENTITY_NAME_AMBIENTSOUND << ":" << getInstanceName() << "  error loading sound file " << _soundFile << std::endl;
+        log_error << ENTITY_NAME_2DSOUND << ":" << getInstanceName() << "  error loading sound file " << _soundFile << std::endl;
         log_error << "  reason: " << e.what() << std::endl;
     }
 }
 
-void EnAmbientSound::startPlaying( bool cont )
+void En2DSound::startPlaying( bool cont )
 {
     if ( _soundID > 0 )
     {
@@ -195,7 +266,7 @@ void EnAmbientSound::startPlaying( bool cont )
     }
 }
 
-void EnAmbientSound::stopPlaying( bool pause )
+void En2DSound::stopPlaying( bool pause )
 {
     if ( _soundID > 0 )
     {
@@ -210,7 +281,7 @@ void EnAmbientSound::stopPlaying( bool pause )
     }
 }
 
-void EnAmbientSound::setVolume( float volume )
+void En2DSound::setVolume( float volume )
 {
     if ( _soundID > 0 )
     {
@@ -219,7 +290,7 @@ void EnAmbientSound::setVolume( float volume )
     }    
 }
 
-float EnAmbientSound::getVolume()
+float En2DSound::getVolume()
 {
     return _volume;
 }
