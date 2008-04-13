@@ -32,7 +32,6 @@
 #include <vrc_gameutils.h>
 #include "vrc_chatguibox.h"
 #include "vrc_chatguiboxtab.h"
-#include "../../sound/vrc_ambientsound.h"
 
 namespace vrc
 {
