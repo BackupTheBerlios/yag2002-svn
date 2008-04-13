@@ -42,7 +42,7 @@ class DialogGameSettings;
 class DialogLevelSelect;
 class DialogLogin;
 class MenuInputHandler;
-class EnAmbientSound;
+class En2DSound;
 class IntroControl;
 class EnCamera;
 
@@ -181,7 +181,7 @@ class EnMenu :  public yaf3d::BaseEntity
         bool                                        onButtonHover( const CEGUI::EventArgs& arg );
 
         //! Creates a sound entity with given filename
-        EnAmbientSound*                             setupSound( const std::string& filename, float volume, bool loop ) const;
+        En2DSound*                                  setupSound( const std::string& filename, float volume, bool loop ) const;
 
         //! Create a scene for menu
         bool                                        createMenuScene();
@@ -228,9 +228,11 @@ class EnMenu :  public yaf3d::BaseEntity
 
         EnCamera*                                   _p_cameraControl;
 
-        EnAmbientSound*                             _p_introSound;
+        En2DSound*                                  _p_introSound;
 
-        EnAmbientSound*                             _p_backgrdSound;
+        float                                       _introTimeScale;
+
+        En2DSound*                                  _p_backgrdSound;
 
         float                                       _backgrdSoundVolume;
 

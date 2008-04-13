@@ -37,7 +37,7 @@ namespace vrc
 {
 
 class DialogGameSettings;
-class EnAmbientSound;
+class En2DSound;
 class EnMenu;
 
 namespace gameutils

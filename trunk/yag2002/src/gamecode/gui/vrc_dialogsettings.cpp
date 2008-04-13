@@ -33,7 +33,7 @@
 #include "vrc_menu.h"
 #include "vrc_dialogsettings.h"
 #include "vrc_dialogplayercfg.h"
-#include "../sound/vrc_ambientsound.h"
+#include "../sound/vrc_2dsound.h"
 #include "vrc_microinput.h"
 
 namespace vrc
@@ -106,6 +106,8 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
 
     _p_settingsDialog->hide();
 
+    CEGUI::PushButton* p_inputtest = NULL;
+
     try
     {
         // setup dialog
@@ -149,32 +151,23 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
             CEGUI::TabPane* p_paneControl = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( SDLG_PREFIX "pane_control" ) );
 
             _p_keyMoveForward  = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_forward" ) );
-            _p_keyMoveForward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedForward, this ) );
 
             _p_keyMoveBackward = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_backward" ) );
-            _p_keyMoveBackward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedBackward, this ) );
 
             _p_keyMoveLeft     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_left" ) );
-            _p_keyMoveLeft->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedLeft, this ) );
 
             _p_keyMoveRight    = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_right" ) );
-            _p_keyMoveRight->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedRight, this ) );
 
             _p_keyJump         = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_jump" ) );
-            _p_keyJump->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedJump, this ) );
 
             _p_keyCameraMode   = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_camera" ) );
-            //! NOTE: the camera switch mode is disabled until we have implemented a camera physics in order to avoid going through meshes!
-            //_p_keyCameraMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedCameraMode, this ) );
             _p_keyCameraMode->setVisible( false );
             _p_keyCameraMode->disable();
 
             _p_keyChatMode     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_chatmode" ) );
-            _p_keyChatMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedChatMode, this ) );
-
+            
             _p_mouseSensivity = static_cast< CEGUI::Scrollbar* >( p_paneControl->getChild( SDLG_PREFIX "sb_mousesensivity" ) );
-            _p_mouseSensivity->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onMouseSensitivityChanged, this ) );
-
+            
             _p_mouseInvert = static_cast< CEGUI::Checkbox* >( p_paneControl->getChild( SDLG_PREFIX "cbx_mouseinvert" ) );
         }
 
@@ -196,11 +189,9 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
 
             // get fullscreen checkbox
             _p_enableFullscreen = static_cast< CEGUI::Checkbox* >( p_paneDisplay->getChild( SDLG_PREFIX "cb_fullscreen" ) );
-            _p_enableFullscreen->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onFullscreenChanged, this ) );
 
             // get dynamic shadow checkbox
             _p_enableDynShadow = static_cast< CEGUI::Checkbox* >( p_paneDisplay->getChild( SDLG_PREFIX "cb_shadows" ) );
-            _p_enableDynShadow->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onDynShadowChanged, this ) );
 
             // dynamic shadows need glsl, set the checkbox initial value
             yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, _cfgShadows );
@@ -225,41 +216,29 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
 
             // get music on/off
             _p_enableMusic = static_cast< CEGUI::Checkbox* >( p_paneSoundVoice->getChild( SDLG_PREFIX "cbx_music" ) );
-            _p_enableMusic->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onEnableMusicChanged, this ) );
             // music volume
             _p_volumeMusic = static_cast< CEGUI::Scrollbar* >( p_paneSoundVoice->getChild( SDLG_PREFIX "sb_musicvolume" ) );
-            _p_volumeMusic->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onMusicVolumeChanged, this ) );
-
             // get fx on/off
             _p_enableFX = static_cast< CEGUI::Checkbox* >( p_paneSoundVoice->getChild( SDLG_PREFIX "cbx_fx" ) );
-            _p_enableFX->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onEnableFXChanged, this ) );
             // fx volume
             _p_volumeFX = static_cast< CEGUI::Scrollbar* >( p_paneSoundVoice->getChild( SDLG_PREFIX "sb_fxvolume" ) );
-            _p_volumeFX->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onFXVolumeChanged, this ) );
 
             // get voice chat on/off
             _p_enableVoiceChat = static_cast< CEGUI::Checkbox* >( p_paneSoundVoice->getChild( SDLG_PREFIX "cbx_voicechat" ) );
-            _p_enableVoiceChat->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onEnableVoiceChatChanged, this ) );
 
             // input devices
             _inputDevices = static_cast< CEGUI::Combobox* >( p_paneSoundVoice->getChild( SDLG_PREFIX "cbox_voiceinputdevice" ) );
-            _inputDevices->subscribeEvent( CEGUI::Combobox::EventListSelectionAccepted, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onVoiceInputDeviceChanged, this ) );
 
             // input gain
             _p_voiceInputGain = static_cast< CEGUI::Scrollbar* >( p_paneSoundVoice->getChild( SDLG_PREFIX "sb_voiceinputgain" ) );
             _p_voiceInputGain->setDocumentSize( 1.0f ); // the scrollbar works in range 0...1
-            _p_voiceInputGain->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onVoiceInputGainChanged, this ) );
 
             // output gain
             _p_voiceOutputGain = static_cast< CEGUI::Scrollbar* >( p_paneSoundVoice->getChild( SDLG_PREFIX "sb_voiceoutputgain" ) );
             _p_voiceOutputGain->setDocumentSize( 1.0f ); // the scrollbar works in range 0...1
-            _p_voiceOutputGain->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onVoiceOutputGainChanged, this ) );
 
-            CEGUI::PushButton* p_inputtest = static_cast< CEGUI::PushButton* >( p_paneSoundVoice->getChild( SDLG_PREFIX "btn_voicetest" ) );
-            p_inputtest->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onVoiceTestClicked, this ) );
-
+            p_inputtest = static_cast< CEGUI::PushButton* >( p_paneSoundVoice->getChild( SDLG_PREFIX "btn_voicetest" ) );
             _p_enablePortForwarding = static_cast< CEGUI::Checkbox* >( p_paneSoundVoice->getChild( SDLG_PREFIX "cbx_portforward" ) );
-            _p_enablePortForwarding->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onEnablePortForwardingChanged, this ) );
             _p_portForwarding = static_cast< CEGUI::Editbox* >( p_paneSoundVoice->getChild( SDLG_PREFIX "text_portforwarding" ) );
         }
     }
@@ -276,6 +255,32 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
 
     // setup all control contents
     setupControls();
+
+
+    // now register the event callbacks; note: we do that after setting up the controls, otherwise all sounds get activated on setup!
+
+    _p_keyMoveForward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedForward, this ) );
+    _p_keyMoveBackward->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedBackward, this ) );
+    _p_keyMoveLeft->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedLeft, this ) );
+    _p_keyMoveRight->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedRight, this ) );
+    _p_keyJump->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedJump, this ) );
+    //! NOTE: the camera switch mode is disabled until we have implemented a camera physics in order to avoid going through meshes!
+    //_p_keyCameraMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedCameraMode, this ) );
+    _p_keyChatMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedChatMode, this ) );
+    _p_mouseSensivity->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onMouseSensitivityChanged, this ) );
+    _p_enableFullscreen->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onFullscreenChanged, this ) );
+    _p_enableDynShadow->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onDynShadowChanged, this ) );
+
+    _p_enableMusic->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onEnableMusicChanged, this ) );
+    _p_volumeMusic->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onMusicVolumeChanged, this ) );
+    _p_enableFX->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onEnableFXChanged, this ) );
+    _p_volumeFX->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onFXVolumeChanged, this ) );
+    _p_enableVoiceChat->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onEnableVoiceChatChanged, this ) );
+    _inputDevices->subscribeEvent( CEGUI::Combobox::EventListSelectionAccepted, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onVoiceInputDeviceChanged, this ) );
+    _p_voiceInputGain->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onVoiceInputGainChanged, this ) );
+    _p_voiceOutputGain->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onVoiceOutputGainChanged, this ) );
+    p_inputtest->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onVoiceTestClicked, this ) );
+    _p_enablePortForwarding->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onEnablePortForwardingChanged, this ) );
 
     return true;
 }
@@ -678,9 +683,6 @@ void DialogGameSettings::onPlayerConfigDialogClose()
 
 bool DialogGameSettings::onClickedCancel( const CEGUI::EventArgs& /*arg*/ )
 {
-    // play mouse click sound
-    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
-
     if ( !isDirty() )
         return true;
 

@@ -31,7 +31,7 @@
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
 #include "vrc_intro.h"
-#include "../sound/vrc_ambientsound.h"
+#include "../sound/vrc_2dsound.h"
 
 namespace vrc
 {
@@ -47,7 +47,8 @@ _p_introSound( NULL ),
 _p_wndIntro( NULL ),
 _p_introImage( NULL ),
 _p_imageSet( NULL ),
-_introTimer( 0 )
+_introTimer( 0.0f ),
+_introTimeScale( 1.0f )
 {
 }
 
@@ -90,9 +91,14 @@ bool IntroControl::initialize( const std::string& intoImage )
     return true;
 }
 
-void IntroControl::setIntroSound( EnAmbientSound* p_sound )
+void IntroControl::setIntroSound( En2DSound* p_sound )
 {
     _p_introSound = p_sound;
+}
+
+void IntroControl::setIntroTimeScale( float scale )
+{
+    _introTimeScale = scale;
 }
 
 void IntroControl::update( float deltaTime )
@@ -100,7 +106,7 @@ void IntroControl::update( float deltaTime )
     if ( _introState == Stopped )
         return;
 
-    _introTimer += deltaTime;
+    _introTimer += deltaTime * _introTimeScale;
     if ( _introTimer > INTRO_FADEIN_TIME )
     {
         _intoImageSize = CEGUI::Size( 1.0f, 1.0f );

@@ -36,7 +36,7 @@
 namespace vrc
 {
 
-class EnAmbientSound;
+class En2DSound;
 
 class IntroControl
 {
@@ -58,7 +58,10 @@ class IntroControl
         void                                        stop();
 
         //! Set intro sound object, this sound is played on intro start.
-        void                                        setIntroSound( EnAmbientSound* p_sound );
+        void                                        setIntroSound( En2DSound* p_sound );
+
+        //! Set the time scale for opening intro picture
+        void                                        setIntroTimeScale( float scale );
 
     protected:
 
@@ -70,7 +73,7 @@ class IntroControl
             Stopped
         }                                           _introState;
 
-        EnAmbientSound*                             _p_introSound;
+        En2DSound*                                  _p_introSound;
 
         CEGUI::Window*                              _p_wndIntro;
 
@@ -81,6 +84,8 @@ class IntroControl
         CEGUI::Imageset*                            _p_imageSet;
 
         float                                       _introTimer;
+
+        float                                       _introTimeScale;
 };
 
 }

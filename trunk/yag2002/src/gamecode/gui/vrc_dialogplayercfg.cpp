@@ -32,7 +32,7 @@
 #include <vrc_gameutils.h>
 #include "vrc_dialogplayercfg.h"
 #include "vrc_dialogsettings.h"
-#include "../sound/vrc_ambientsound.h"
+#include "../sound/vrc_2dsound.h"
 
 namespace vrc
 {

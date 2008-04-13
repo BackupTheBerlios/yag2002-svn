@@ -35,7 +35,7 @@
 #include "vrc_dialogsettings.h"
 #include "vrc_dialoglevelselect.h"
 #include "vrc_intro.h"
-#include "../sound/vrc_ambientsound.h"
+#include "../sound/vrc_2dsound.h"
 #include "../visuals/vrc_camera.h"
 #include "../visuals/vrc_skybox.h"
 #include "../visuals/vrc_fog.h"
@@ -166,6 +166,7 @@ _menuSoundState( SoundStopped ),
 _levelSelectionState( ForStandalone ),
 _p_cameraControl( NULL ),
 _p_introSound( NULL ),
+_introTimeScale( 0.5f ),
 _p_backgrdSound( NULL ),
 _backgrdSoundVolume( 1.0f ),
 _p_menuWindow( NULL ),
@@ -191,6 +192,7 @@ _levelLoaded( false )
     getAttributeManager().addAttribute( "loadingOverlayTexture"     , _loadingOverlayTexture    );
     getAttributeManager().addAttribute( "introductionSound"         , _introductionSound        );
     getAttributeManager().addAttribute( "introductionSoundVolume"   , _introductionSoundVolume  );
+    getAttributeManager().addAttribute( "introductionTimeScale"     , _introTimeScale           );
     getAttributeManager().addAttribute( "backgroundSound"           , _backgroundSound          );
     getAttributeManager().addAttribute( "backgroundSoundVolume"     , _backgroundSoundVolume    );
     getAttributeManager().addAttribute( "idleTimeout"               , _menuIdleTimeout          );
@@ -268,9 +270,6 @@ void EnMenu::handleNotification( const yaf3d::EntityNotification& notification )
 
 void EnMenu::initialize()
 {
-    // mute the master volume as otherwise the onchange callbacks cause playing various sounds on start-up
-    yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMaster, 0.0f );
-
     // setup sounds
     if ( _introductionSound.length() )
         _p_introSound = setupSound( _introductionSound, _introductionSoundVolume, false );
@@ -387,6 +386,7 @@ void EnMenu::initialize()
         return;
     // set the click and intro sound objects
     _intro->setIntroSound( _p_introSound );
+    _intro->setIntroTimeScale( _introTimeScale );
 
     // create input handler
     _p_inputHandler = new MenuInputHandler( this );
@@ -401,9 +401,6 @@ void EnMenu::initialize()
 
     // start intro
     beginIntro();
-
-    // now restore the master volume ( see above )
-    yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupMaster, 1.0f );
 
     // this entity needs updates initially for getting the intro running
     yaf3d::EntityManager::get()->registerUpdate( this, true );
@@ -454,19 +451,19 @@ bool EnMenu::createMenuScene()
     return true;
 }
 
-EnAmbientSound* EnMenu::setupSound( const std::string& filename, float volume, bool loop ) const
+En2DSound* EnMenu::setupSound( const std::string& filename, float volume, bool loop ) const
 {
     // manually create an entity of type AmbientSound without adding it to pool as we use the entity locally
     //  and do not need managed destruction or searchable ability for the entity
-    EnAmbientSound* p_ent = dynamic_cast< EnAmbientSound* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_AMBIENTSOUND, filename, false ) );
+    En2DSound* p_ent = dynamic_cast< En2DSound* >( yaf3d::EntityManager::get()->createEntity( ENTITY_NAME_2DSOUND, filename, false ) );
     if ( !p_ent )
     {
-        log_error << "*** EnMenu: cannot create sound entity of type '" << ENTITY_NAME_AMBIENTSOUND << "'" << std::endl;
+        log_error << "*** EnMenu: cannot create sound entity of type '" << ENTITY_NAME_2DSOUND << "'" << std::endl;
         return NULL;
     }
 
-    // all menu sounds are of type Common
-    std::string sndgroup( "Common" );
+    // all menu sounds are of type Music
+    std::string sndgroup = yaf3d::SoundManager::get()->getSoundGroupStringFromId( yaf3d::SoundManager::SoundGroupMusic );
 
     // setup entity parameters
     p_ent->getAttributeManager().setAttributeValue( "soundFile",   filename );
