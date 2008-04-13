@@ -38,13 +38,15 @@ YAF3D_SINGLETON_IMPL( vrc::gameutils::PlayerUtils )
 YAF3D_SINGLETON_IMPL( vrc::gameutils::GuiUtils )
 
 #define GUI_SND_FILE_CLICK                  "gui/sound/click.wav"
-#define GUI_SND_VOL_CLICK                   0.2f
+#define GUI_SND_VOL_CLICK                   1.0f
 #define GUI_SND_FILE_HOVER                  "gui/sound/hover.wav"
-#define GUI_SND_VOL_HOVER                   0.2f
+#define GUI_SND_VOL_HOVER                   1.0f
 #define GUI_SND_FILE_SCROLLBAR              "gui/sound/scrollbar.wav"
-#define GUI_SND_VOL_SCROLLBAR               0.2f
+#define GUI_SND_VOL_SCROLLBAR               1.0f
 #define GUI_SND_FILE_ATTENTION              "gui/sound/attention.wav"
-#define GUI_SND_VOL_ATTENTION               0.2f
+#define GUI_SND_VOL_ATTENTION               1.0f
+//! This sets the master volume of all gui sounds
+#define GUI_SND_MASTER_VOL                  0.6f
 
 //! The main game logic script file
 #define VRC_LOGIC_SCRIPTFILE                "script/logic/gamelogic.lua"
@@ -472,6 +474,7 @@ unsigned int GuiUtils::createSound( const std::string& name, const std::string& 
         soundID = yaf3d::SoundManager::get()->createSound( yaf3d::SoundManager::SoundGroupCommon, filename, volume, false, yaf3d::SoundManager::fmodDefaultCreationFlags2D );
         // give the gui sound a high priority
         yaf3d::SoundManager::get()->getSoundResource( soundID )->getChannel()->setPriority( 100 );
+        yaf3d::SoundManager::get()->setGroupVolume( yaf3d::SoundManager::SoundGroupCommon, GUI_SND_MASTER_VOL );
     }
     catch ( const yaf3d::SoundException& e )
     {
