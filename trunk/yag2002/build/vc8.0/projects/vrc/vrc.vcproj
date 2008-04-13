@@ -796,19 +796,19 @@
 				Name="sound"
 				>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\sound\vrc_2dsound.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\sound\vrc_2dsound.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\sound\vrc_3dsound.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\gamecode\sound\vrc_3dsound.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\..\src\gamecode\sound\vrc_ambientsound.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\..\src\gamecode\sound\vrc_ambientsound.h"
 					>
 				</File>
 			</Filter>
