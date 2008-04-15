@@ -198,6 +198,7 @@ class EnMenu :  public yaf3d::BaseEntity
             BeginLoadingLevel,
             PrepareLoadingLevel,
             LoadingLevel,
+            FadeIntoLevel,
             PrepareUnloadLevel,
             UnloadLevel,
             Quitting,

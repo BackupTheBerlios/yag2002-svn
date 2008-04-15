@@ -57,6 +57,9 @@ namespace vrc
 #define BCKRGD_SND_FADEIN_PERIOD        2.0f
 #define BCKRGD_SND_FADEOUT_PERIOD       1.5f
 
+//! Time for fading out the menu after loading a level
+#define FADE_INTOLEVEL_TIME             1.0f
+
 //! Input handler class for menu, it handles ESC key press and toggles the menu gui
 class MenuInputHandler : public vrc::gameutils::GenericInputHandler< EnMenu >
 {
@@ -803,12 +806,11 @@ void EnMenu::updateEntity( float deltaTime )
 
             // leave the menu system
             leave();
+
+            // now fade out the loading window
             _menuState = Hidden;
 
-            // disable level select dialog now freeing up the resources ( texures )
             _levelSelectDialog->enable( false );
-
-             _p_menuWindow->disable();
 
             // set the proper game state
             yaf3d::GameState::get()->setState( yaf3d::GameState::MainLoop );
@@ -1041,8 +1043,7 @@ void EnMenu::leave()
 
     // set menu state
     _menuState = Hidden;
-
-    // hide the loading window
+    // hide the loading pic
     _p_loadingWindow->hide();
 }
 

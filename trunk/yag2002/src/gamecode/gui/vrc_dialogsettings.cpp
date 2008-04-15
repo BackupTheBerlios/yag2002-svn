@@ -42,6 +42,10 @@ namespace vrc
 #define SDLG_PREFIX                 "sd_"
 #define PLAYER_CONFIG_GUI_LAYOUT    "gui/playerconfig.xml"
 
+//! Max voice input/output volumes
+#define VOICE_INPUT_MAX_VOL         2.0f
+#define VOICE_OUTPUT_MAX_VOL        2.0f
+
 DialogGameSettings::DialogGameSettings( EnMenu* p_menuEntity ) :
 _busy( false ),
 _p_settingsDialog( NULL ),
@@ -230,11 +234,11 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
 
             // input gain
             _p_voiceInputGain = static_cast< CEGUI::Scrollbar* >( p_paneSoundVoice->getChild( SDLG_PREFIX "sb_voiceinputgain" ) );
-            _p_voiceInputGain->setDocumentSize( 1.0f ); // the scrollbar works in range 0...1
+            _p_voiceInputGain->setDocumentSize( VOICE_INPUT_MAX_VOL ); // the scrollbar works in range 0...VOICE_INPUT_MAX_VOL
 
             // output gain
             _p_voiceOutputGain = static_cast< CEGUI::Scrollbar* >( p_paneSoundVoice->getChild( SDLG_PREFIX "sb_voiceoutputgain" ) );
-            _p_voiceOutputGain->setDocumentSize( 1.0f ); // the scrollbar works in range 0...1
+            _p_voiceOutputGain->setDocumentSize( VOICE_OUTPUT_MAX_VOL ); // the scrollbar works in range 0...VOICE_OUTPUT_MAX_VOL
 
             p_inputtest = static_cast< CEGUI::PushButton* >( p_paneSoundVoice->getChild( SDLG_PREFIX "btn_voicetest" ) );
             _p_enablePortForwarding = static_cast< CEGUI::Checkbox* >( p_paneSoundVoice->getChild( SDLG_PREFIX "cbx_portforward" ) );
@@ -254,7 +258,6 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
 
     // setup all control contents
     setupControls();
-
 
     // now register the event callbacks; note: we do that after setting up the controls, otherwise all sounds get activated on setup!
 
@@ -391,23 +394,21 @@ void DialogGameSettings::setupControls()
         _keyBindingLookup.push_back( std::make_pair( cfg_mode, _p_keyChatMode ) );
 
         yaf3d::Configuration::get()->getSettingValue( VRC_GS_MOUSESENS, _mouseSensitivity );
-        bool   cfg_mouseInverted;
-        yaf3d::Configuration::get()->getSettingValue( VRC_GS_INVERTMOUSE, cfg_mouseInverted );
         // setup scrollbar position
         _p_mouseSensivity->setDocumentSize( VRC_GS_MAX_MOUSESENS );
         _p_mouseSensivity->setScrollPosition( _mouseSensitivity );
-        // setup chekbox
-        _p_mouseInvert->setSelected( cfg_mouseInverted );
+
+        // setup chekbox for inverted mouse
+        bool cfg_mouseinvert = false;
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_INVERTMOUSE, cfg_mouseinvert );
+        _p_mouseInvert->setSelected( cfg_mouseinvert );
     }
 
     // get display settings
     {
         bool fullscreen;
         yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_FULLSCREEN, fullscreen );
-        if ( fullscreen )
-            _p_enableFullscreen->setSelected( true );
-        else
-            _p_enableFullscreen->setSelected( false );
+        _p_enableFullscreen->setSelected( fullscreen );
 
         unsigned int width, height, colorbits;
         std::stringstream resolution;
@@ -416,6 +417,10 @@ void DialogGameSettings::setupControls()
         yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_COLORBITS, colorbits );
         resolution << width << "x" << height << "@" << colorbits;
         _p_resolution->setText( resolution.str().c_str() );
+
+        // get the dynamic shadow settings on shutdown
+        yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, _cfgShadows );
+        _p_enableDynShadow->setSelected( _cfgShadows );
     }
 
     // get sound/voice settings
