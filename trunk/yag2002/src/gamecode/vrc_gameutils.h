@@ -111,6 +111,7 @@ namespace gameutils
 #define IMAGE_NAME_VOICE_MUTEDIS_HOOVER     "VoiceMuteDisableHoover"
 #define IMAGE_NAME_VOICE_MENU               "VoiceMenu"
 #define IMAGE_NAME_VOICE_DISABLE            "VoiceDisable"
+#define IMAGE_NAME_VOICE_CONNECTION         "VoiceConnection"
 #define IMAGE_NAME_CHAT_NORMAL              "ChatNormal"
 #define IMAGE_NAME_CHAT_HOOVER              "ChatHoover"
 #define IMAGE_NAME_INV_NORMAL               "InventoryNormal"
