@@ -51,8 +51,14 @@ class VoiceGui
         //! Initialize the gui
         void                                        initialize();
 
+        //! Update the gui, this is used for animations
+        void                                        update( float deltaTime );
+
         //! Update the gui values regarding to game settings which may change using the main options menu
         void                                        updateVoiceConfiguration();
+
+        //! Let the connection icon display.
+        void                                        showConnectingIcon( bool con );
 
     protected:
 
@@ -61,6 +67,9 @@ class VoiceGui
 
         //! Create the voice menu
         CEGUI::Window*                              createVoiceMenu();
+
+        //! Create connection button
+        CEGUI::PushButton*                          createConnectionButton();
 
         //! Update the voice button images given the voice and mute states
         void                                        updateButtonImages( bool voicenable, bool inputmute );
@@ -95,6 +104,9 @@ class VoiceGui
         //! Voice button
         CEGUI::PushButton*                          _p_btnVoice;
 
+        //! Voice connection button
+        CEGUI::PushButton*                          _p_btnConnection;
+
         //! Voice menu
         CEGUI::Window*                              _p_wndVoiceMenu;
 
@@ -125,6 +137,19 @@ class VoiceGui
 
         //! Output volume
         CEGUI::Scrollbar*                           _p_volumeOutput;
+
+        // current connection state
+        enum
+        {
+            eIdle,
+            eConnectionIconDisplay
+        }                                           _connectionIconState;
+
+        //! Start showing the connection icon
+        bool                                        _connectionIconShow;
+
+        //! Timer for connection icon
+        float                                       _connectionIconTimer;
 };
 
 } // namespace vrc

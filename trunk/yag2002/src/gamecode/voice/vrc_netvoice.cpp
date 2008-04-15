@@ -355,6 +355,9 @@ void EnNetworkVoice::updateEntity( float deltaTime )
     if ( _p_voiceNetwork )
         _p_voiceNetwork->update( deltaTime );
 
+    // update voice gui
+    _p_voiceGui->update( deltaTime );
+
     // update senders
     SenderMap::iterator p_beg = _sendersMap.begin(), p_end = _sendersMap.end();
     for ( ; p_beg != p_end; ++p_beg )
@@ -365,11 +368,16 @@ void EnNetworkVoice::updateEntity( float deltaTime )
         {
             delete p_sender;
             _sendersMap.erase( p_beg );
+            _p_voiceGui->showConnectingIcon( true );
             break;
         }
         else
         {
             p_beg->second->update( deltaTime );
+
+            // update the connection icon
+            if ( !p_sender->isConnected() )
+                _p_voiceGui->showConnectingIcon( true );
         }
     }
 }
@@ -437,6 +445,9 @@ void EnNetworkVoice::updateHotspot( yaf3d::BaseEntity* p_entity, bool joining )
             // stop input grabbing when no senders exist
             if ( _sendersMap.size() == 0 )
                 _p_soundInput->stop( true );
+
+            // update the connection icon
+            _p_voiceGui->showConnectingIcon( true );
         }
     }
 }

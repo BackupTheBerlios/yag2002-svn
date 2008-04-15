@@ -33,8 +33,11 @@
 #include "vrc_voicegui.h"
 #include "vrc_netvoice.h"
 
-
+//! GUI ressource prefix
 #define VOICELAYOUT_PREFIX       "voicegui_"
+
+// Minimal time for showing up the connection icon
+#define GUI_CON_UPDATE_PERIOD    1.0f
 
 
 namespace vrc
@@ -43,6 +46,7 @@ namespace vrc
 VoiceGui::VoiceGui( EnNetworkVoice* p_netvoice ) :
  _p_netVoice( p_netvoice ),
  _p_btnVoice( NULL ),
+ _p_btnConnection( NULL ),
  _p_wndVoiceMenu( NULL ),
  _p_imageNormal( NULL ),
  _p_imageHoover( NULL ),
@@ -55,7 +59,10 @@ VoiceGui::VoiceGui( EnNetworkVoice* p_netvoice ) :
  _p_checkboxOnOff( NULL ),
  _p_checkboxMute( NULL ),
  _p_volumeInput( NULL ),
- _p_volumeOutput( NULL )
+ _p_volumeOutput( NULL ),
+ _connectionIconState( eIdle ),
+ _connectionIconShow( false ),
+ _connectionIconTimer( 0.0f )
 {
 }
 
@@ -68,6 +75,9 @@ VoiceGui::~VoiceGui()
 
         if ( _p_wndVoiceMenu )
             CEGUI::WindowManager::getSingleton().destroyWindow( _p_wndVoiceMenu );
+
+        if ( _p_btnConnection )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_btnConnection );
 
         // release button images
         if ( _p_imageNormal )
@@ -108,6 +118,44 @@ void VoiceGui::initialize()
         p_wnd->addChildWindow( _p_wndVoiceMenu );
         _p_wndVoiceMenu->hide();
     }
+
+    _p_btnConnection = createConnectionButton();
+    if ( _p_btnConnection )
+    {
+        p_wnd->addChildWindow( _p_btnConnection );
+       _p_btnConnection->hide();
+    }
+}
+
+void VoiceGui::update( float deltaTime )
+{
+    switch ( _connectionIconState )
+    {
+        case eIdle:
+        {
+            if ( _connectionIconShow )
+            {
+                _p_btnConnection->show();
+                _connectionIconState = eConnectionIconDisplay;
+            }
+        }
+        break;
+
+        case eConnectionIconDisplay:
+        {
+            _connectionIconTimer += deltaTime;
+            if ( _connectionIconTimer > GUI_CON_UPDATE_PERIOD )
+            {
+                _p_btnConnection->hide();
+                _connectionIconTimer = 0.0f;
+                _connectionIconState = eIdle;
+            }
+        }
+        break;
+
+        default:
+            assert( NULL && "invalid state voice gui state!" );
+    }
 }
 
 void VoiceGui::updateVoiceConfiguration()
@@ -133,6 +181,11 @@ void VoiceGui::updateVoiceConfiguration()
         _p_checkboxOnOff->setSelected( true );
 
     updateButtonImages( voicenable, inputmute );
+}
+
+void VoiceGui::showConnectingIcon( bool con )
+{
+    _connectionIconShow = con;
 }
 
 void VoiceGui::updateButtonImages( bool voicenable, bool inputmute )
@@ -232,6 +285,42 @@ CEGUI::PushButton* VoiceGui::createVoiceButton()
         p_image = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_VOICE_MUTEDIS_HOOVER );
         _p_imageMuteDisableHoover = new CEGUI::RenderableImage;
         _p_imageMuteDisableHoover->setImage( p_image );
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log_error << "VoiceGui: problem setting up voice button" << std::endl;
+        log_error << "   reason: " << e.getMessage() << std::endl;
+        return NULL;
+    }
+
+    return p_btn;
+}
+
+CEGUI::PushButton* VoiceGui::createConnectionButton()
+{
+    CEGUI::PushButton* p_btn = NULL;
+    try
+    {
+        // create the voice connection button for only display
+        p_btn = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", VOICELAYOUT_PREFIX "_btn_voice_con_" ) );
+
+        // get the imageset with the images
+        CEGUI::Imageset* p_iset = vrc::gameutils::GuiUtils::get()->getCustomImageSet();
+        float pixwidth  = p_iset->getImageWidth( IMAGE_NAME_VOICE_CONNECTION );
+        float pixheight = p_iset->getImageHeight( IMAGE_NAME_VOICE_CONNECTION );
+
+        const CEGUI::Image* p_image = vrc::gameutils::GuiUtils::get()->getCustomImage( IMAGE_NAME_VOICE_CONNECTION );
+        CEGUI::RenderableImage* p_renderable = new CEGUI::RenderableImage;
+        p_renderable->setImage( p_image );
+        p_btn->setStandardImageryEnabled( false );
+        p_btn->setPosition( CEGUI::Relative, CEGUI::Point( 0.025f, 0.84f ) );
+        p_btn->setPushedImage( p_renderable );
+        p_btn->setNormalImage( p_renderable );
+        p_btn->setHoverImage( p_renderable );
+        p_btn->setAlpha( 0.9f );
+        p_btn->setAlwaysOnTop( true );
+        // set button size according to the image dimensions
+        p_btn->setSize( CEGUI::Absolute, CEGUI::Size( pixwidth, pixheight ) );
     }
     catch ( const CEGUI::Exception& e )
     {

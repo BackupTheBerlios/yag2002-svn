@@ -56,7 +56,10 @@ class VoiceSender : public BaseNetworkSoundImplementation, public BaseVoiceInput
         virtual                                     ~VoiceSender();
 
         //! Returns flase if the sender is dead, i.e. it had lost connection to receiver
-        inline bool                                 isAlive();
+        inline bool                                 isAlive() const;
+
+        //! Return true if the connection is established, otherwise false
+        inline bool                                 isConnected() const;
 
         //! Let the sender die.
         inline void                                 die();
@@ -132,9 +135,14 @@ class VoiceSender : public BaseNetworkSoundImplementation, public BaseVoiceInput
     friend class BaseVoiceInput::CallbackInputStream;
 };
 
-inline bool VoiceSender::isAlive()
+inline bool VoiceSender::isAlive() const
 {
     return _isAlive;
+}
+
+inline bool VoiceSender::isConnected() const
+{
+    return _senderState == eConnectionReady;
 }
 
 inline void VoiceSender::die()
