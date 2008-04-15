@@ -194,9 +194,6 @@ void PlayerImplClient::postInitialize()
     // local client specific setup
     if ( !_isRemoteClient )
     {
-        // set us as local player entity in player utility; other entities may need us
-        vrc::gameutils::PlayerUtils::get()->setLocalPlayer( getPlayerEntity() );
-
         // attach camera entity
         {
             log_debug << "   - searching for camera entity '" << PLAYER_CAMERA_ENTITIY_NAME << "'..." << std::endl;
@@ -261,9 +258,6 @@ void PlayerImplClient::postInitialize()
     }
     else // setup remote client ( note, the remote instance names have a postfix )
     {
-        // set us as remote player entity in player utility
-        vrc::gameutils::PlayerUtils::get()->addRemotePlayer( getPlayerEntity() );
-
         // attach physics entity
         {
             log_debug << "   - searching for physics entity '" << _playerAttributes._physicsEntity + _loadingPostFix << "' ..." << std::endl;
@@ -355,6 +349,18 @@ void PlayerImplClient::setNetworkInitialized( bool init )
     // update player's actual position and rotation once per frame
     getPlayerEntity()->setPosition( _currentPos );
     getPlayerEntity()->setRotation( _currentRot );
+
+    // set the player in player utils when it is initialized! otherwise the initial translation and rotation get visible for other objects.
+    if ( !_isRemoteClient )
+    {
+        // set us as local player entity in player utility; other entities may need us
+        vrc::gameutils::PlayerUtils::get()->setLocalPlayer( getPlayerEntity() );
+    }
+    else
+    {
+        // set us as remote player entity in player utility
+        vrc::gameutils::PlayerUtils::get()->addRemotePlayer( getPlayerEntity() );
+    }
 }
 
 void PlayerImplClient::update( float deltaTime )
