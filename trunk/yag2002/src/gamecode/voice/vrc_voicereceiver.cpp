@@ -446,7 +446,7 @@ bool VoiceReceiver::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddr
             return false;
         }
 
-        log_debug << "  -> connection request from sender: " << senderaddr.Export() << std::endl;
+        //log_verbose << "  -> connection request from sender: " << senderaddr.Export() << std::endl;
 
         // get the network id of connecting sender
         int sid = *( reinterpret_cast< int* >( p_packet->_p_buffer ) );
@@ -567,7 +567,7 @@ bool VoiceReceiver::recvPacket( VoicePaket* p_packet, const RNReplicaNet::XPAddr
         case VOICE_PAKET_TYPE_CON_CLOSE:
         {
             // remove senders which do not respond anymore; this call modifies _soundNodeMap!
-            log_debug << "  -> voice sender leaves, members in group " << _soundNodeMap.size() + 1 << std::endl;
+            log_verbose << "  -> voice sender leaves, members in group " << _soundNodeMap.size() + 1 << std::endl;
 
             destroyConnection( p_soundnode->_senderID );
         }

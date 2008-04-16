@@ -111,7 +111,7 @@ void VoiceSender::initialize() throw( NetworkSoundException )
 
 void VoiceSender::recvClientAddress( int /*sid*/, const RNReplicaNet::XPAddress& address )
 {
-    log_verbose << "  <- trying to connect the receiver: " << address.Export() << std::endl;
+    //log_verbose << "  <- trying to connect the receiver: " << address.Export() << std::endl;
     _receiverAddress = address;
     _p_transport->registerReceiver( this, true );
 
@@ -140,7 +140,7 @@ void VoiceSender::update( float deltaTime )
         _p_sendSocket->Send( reinterpret_cast< char* >( _p_voicePacket ), VOICE_PAKET_HEADER_SIZE + _p_voicePacket->_length, _receiverAddress );
         _senderState = eRequestConnection;
 
-        log_verbose << "  <- requesting " << _receiverAddress.Export() << " for joining voice session " << " ... " << std::endl;
+        //log_verbose << "  <- requesting " << _receiverAddress.Export() << " for joining voice session " << " ... " << std::endl;
 
         return;
     }
