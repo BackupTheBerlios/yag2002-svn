@@ -35,21 +35,20 @@
 namespace vrc
 {
 
-//! Default destruction timeout for messagebox in seconds
-#define MSGBOX_DESTRUCTION_TIMEOUT      10.0f
-
 //! Implement and register the entity factory
 YAF3D_IMPL_ENTITYFACTORY( NetworkNotificationEntityFactory )
 
 EnNetworkNotification::EnNetworkNotification() :
+_displayTime( 5.0f ),
 _p_msgBox( NULL ),
 _p_networking( NULL ),
-_destructionTimeOut( MSGBOX_DESTRUCTION_TIMEOUT ),
-_cnt( 0.0f )
+_destructionTimeOut( 0.0f ),
+_timer( 0.0f )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "version",             _version            );
-    getAttributeManager().addAttribute( "msgOfDay",            _msgOfDay           );
+    getAttributeManager().addAttribute( "version",     _version     );
+    getAttributeManager().addAttribute( "msgOfDay",    _msgOfDay    );
+    getAttributeManager().addAttribute( "displayTime", _displayTime );
 }
 
 EnNetworkNotification::~EnNetworkNotification()
@@ -57,7 +56,7 @@ EnNetworkNotification::~EnNetworkNotification()
     if ( _p_msgBox )
     {
         _p_msgBox->destroy();
-        _p_msgBox = NULL;                
+        _p_msgBox = NULL;
     }
 
     if ( _p_networking )
@@ -185,23 +184,29 @@ void EnNetworkNotification::createMessagBox( const std::string& title, const std
     _p_msgBox = new yaf3d::MessageBoxDialog( title, text, yaf3d::MessageBoxDialog::OK, true );
     _p_msgBox->setClickCallback( new ClickClb( this ) );
     _p_msgBox->show();
+    _p_msgBox->setAlpha( 0.0f );
 
     if ( destructionTimeout > 0.0f )
         _destructionTimeOut = destructionTimeout;
     else
-        _destructionTimeOut = MSGBOX_DESTRUCTION_TIMEOUT;
+        _destructionTimeOut = _displayTime;
 }
 
 void EnNetworkNotification::updateEntity( float deltaTime )
 {
-    if ( _p_msgBox )    
+    if ( _p_msgBox )
     {       
-        _cnt += deltaTime;
-        if ( _cnt > _destructionTimeOut )
+        _timer += deltaTime;
+
+        // fade-in the box to full opaque after half of the destruction time
+        float alpha = ( 2.0f * _timer ) / _destructionTimeOut;
+        _p_msgBox->setAlpha( std::min( alpha, 1.0f ) );
+
+        if ( _timer > _destructionTimeOut )
         {
             _p_msgBox->destroy();
             _p_msgBox = NULL;
-            _cnt      = 0.0f;
+            _timer    = 0.0f;
         }
     }
 }

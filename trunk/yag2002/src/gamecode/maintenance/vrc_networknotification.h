@@ -104,11 +104,14 @@ class EnNetworkNotification :  public yaf3d::BaseEntity
                 EnNetworkNotification*                       _p_entity;
         };
 
-        //! Version information       
+        //! Version information
         std::string                                 _version;
 
         //! Message of the day
         std::string                                 _msgOfDay;
+
+        //! Display time
+        float                                       _displayTime;
 
         //! The messagebox
         yaf3d::MessageBoxDialog*                    _p_msgBox;
@@ -119,8 +122,8 @@ class EnNetworkNotification :  public yaf3d::BaseEntity
         //! Timeout for destruction of messagebox if the user not already done by clicking on Ok button
         float                                       _destructionTimeOut;
 
-        //! Messagebox destruction counter
-        float                                       _cnt;
+        //! Messagebox destruction timer
+        float                                       _timer;
 };
 
 //! Entity type definition used for type registry
