@@ -49,9 +49,16 @@ VoiceTransport::~VoiceTransport()
 
 void VoiceTransport::initialize()
 {
-    _p_NATClient = new NATClient;
-    _p_NATClient->initialize();
-    _p_socket = _p_NATClient->getSocket();
+    if ( !_p_NATClient )
+    {
+        _p_NATClient = new NATClient;
+        _p_NATClient->initialize();
+        _p_socket = _p_NATClient->getSocket();
+    }
+    else
+    {
+        log_error << "VoiceTransport: transport layer is already initialized!" << std::endl;
+    }
 }
 
 void VoiceTransport::update( float deltaTime )
