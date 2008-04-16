@@ -60,7 +60,7 @@ VoiceGui::VoiceGui( EnNetworkVoice* p_netvoice ) :
  _p_checkboxMute( NULL ),
  _p_volumeInput( NULL ),
  _p_volumeOutput( NULL ),
- _connectionIconState( eIdle ),
+ _connectionIconState( eConnectionIconHide ),
  _connectionIconShow( false ),
  _connectionIconTimer( 0.0f )
 {
@@ -131,12 +131,15 @@ void VoiceGui::update( float deltaTime )
 {
     switch ( _connectionIconState )
     {
-        case eIdle:
+        case eConnectionIconHide:
         {
             if ( _connectionIconShow )
             {
-                _p_btnConnection->show();
+                if ( _p_btnConnection )
+                    _p_btnConnection->show();
+
                 _connectionIconState = eConnectionIconDisplay;
+                _connectionIconShow  = false;
             }
         }
         break;
@@ -146,9 +149,11 @@ void VoiceGui::update( float deltaTime )
             _connectionIconTimer += deltaTime;
             if ( _connectionIconTimer > GUI_CON_UPDATE_PERIOD )
             {
-                _p_btnConnection->hide();
+                if ( _p_btnConnection )
+                    _p_btnConnection->hide();
+
                 _connectionIconTimer = 0.0f;
-                _connectionIconState = eIdle;
+                _connectionIconState = eConnectionIconHide;
             }
         }
         break;

@@ -57,7 +57,7 @@ class VoiceGui
         //! Update the gui values regarding to game settings which may change using the main options menu
         void                                        updateVoiceConfiguration();
 
-        //! Let the connection icon display.
+        //! Let the connection icon display for some period of time. The icon disappears automatically if not triggered again.
         void                                        showConnectingIcon( bool con );
 
     protected:
@@ -141,7 +141,7 @@ class VoiceGui
         // current connection state
         enum
         {
-            eIdle,
+            eConnectionIconHide,
             eConnectionIconDisplay
         }                                           _connectionIconState;
 
