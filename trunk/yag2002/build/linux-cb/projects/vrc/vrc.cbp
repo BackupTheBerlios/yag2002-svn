@@ -268,10 +268,10 @@
 		<Unit filename="../../../../src/gamecode/scripting/vrc_script.inl" />
 		<Unit filename="../../../../src/gamecode/scripting/vrc_testscript.cpp" />
 		<Unit filename="../../../../src/gamecode/scripting/vrc_testscript.h" />
+		<Unit filename="../../../../src/gamecode/sound/vrc_2dsound.cpp" />
+		<Unit filename="../../../../src/gamecode/sound/vrc_2dsound.h" />
 		<Unit filename="../../../../src/gamecode/sound/vrc_3dsound.cpp" />
 		<Unit filename="../../../../src/gamecode/sound/vrc_3dsound.h" />
-		<Unit filename="../../../../src/gamecode/sound/vrc_ambientsound.cpp" />
-		<Unit filename="../../../../src/gamecode/sound/vrc_ambientsound.h" />
 		<Unit filename="../../../../src/gamecode/storage/database/vrc_account.cpp" />
 		<Unit filename="../../../../src/gamecode/storage/database/vrc_account.h" />
 		<Unit filename="../../../../src/gamecode/storage/database/vrc_basestorage.cpp" />
@@ -417,6 +417,8 @@
 		<Unit filename="../../../../src/gamecode/voice/vrc_netvoice.h" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_networksoundimpl.cpp" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_networksoundimpl.h" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_voicegui.cpp" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_voicegui.h" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_voiceinput.cpp" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_voiceinput.h" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_voicenetwork.cpp" />
