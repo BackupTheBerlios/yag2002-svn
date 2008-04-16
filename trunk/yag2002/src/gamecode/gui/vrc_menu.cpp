@@ -58,7 +58,8 @@ namespace vrc
 #define BCKRGD_SND_FADEOUT_PERIOD       1.5f
 
 //! Time for fading out the menu after loading a level
-#define FADE_INTOLEVEL_TIME             1.0f
+#define FADE_INTOLEVEL_TIME             2.0f
+
 
 //! Input handler class for menu, it handles ESC key press and toggles the menu gui
 class MenuInputHandler : public vrc::gameutils::GenericInputHandler< EnMenu >
@@ -184,7 +185,8 @@ _p_clientLevelFiles( NULL ),
 _p_inputHandler( NULL ),
 _soundFadingCnt( 0.0f ),
 _idleCounter( 0.0f ),
-_levelLoaded( false )
+_levelLoaded( false ),
+_fadeIntoLevelTimer( 0.0f )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "menuConfig"                , _menuConfig               );
@@ -772,11 +774,6 @@ void EnMenu::updateEntity( float deltaTime )
             // store level scene's static mesh for later switching
             _levelScene = yaf3d::LevelManager::get()->getStaticMesh();
 
-            // free up the client level file object which was previously used for getting the loading pic
-            if ( _p_clientLevelFiles )
-                delete _p_clientLevelFiles;
-            _p_clientLevelFiles = NULL;
-
             // now start client networking when we joined to a session
             if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client )
             {
@@ -808,12 +805,41 @@ void EnMenu::updateEntity( float deltaTime )
             leave();
 
             // now fade out the loading window
-            _menuState = Hidden;
-
-            _levelSelectDialog->enable( false );
+            _menuState = FadeIntoLevel;
 
             // set the proper game state
             yaf3d::GameState::get()->setState( yaf3d::GameState::MainLoop );
+        }
+        break;
+
+        case FadeIntoLevel:
+        {
+            _fadeIntoLevelTimer += deltaTime;
+            float alpha = 1.0f - ( _fadeIntoLevelTimer / FADE_INTOLEVEL_TIME );
+            _p_loadingWindow->setAlpha( alpha );
+
+            if ( _fadeIntoLevelTimer > FADE_INTOLEVEL_TIME )
+            {
+                _fadeIntoLevelTimer = 0.0f;
+
+                // restore the alpha and hide the loading window now
+                _p_loadingWindow->removeChildWindow( _p_loadingOverly );
+                _p_loadingWindow->setAlpha( 1.0f );
+                _p_loadingWindow->hide();
+
+                // disable level select dialog now freeing up the resources ( textures )
+                _levelSelectDialog->enable( false );
+                _p_menuWindow->disable();
+
+                // change to state hidden
+                _menuState = Hidden;
+
+                // free up the client level file object which was previously used for getting the loading pic
+                if ( _p_clientLevelFiles )
+                    delete _p_clientLevelFiles;
+                _p_clientLevelFiles = NULL;
+
+            }
         }
         break;
 
@@ -1043,8 +1069,6 @@ void EnMenu::leave()
 
     // set menu state
     _menuState = Hidden;
-    // hide the loading pic
-    _p_loadingWindow->hide();
 }
 
 void EnMenu::switchMenuScene( bool tomenu )

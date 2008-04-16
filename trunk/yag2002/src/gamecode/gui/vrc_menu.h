@@ -274,6 +274,9 @@ class EnMenu :  public yaf3d::BaseEntity
         //! Shows that a level is already loaded
         bool                                        _levelLoaded;
 
+        //! Menu fade out timer used after loading a level
+        float                                       _fadeIntoLevelTimer;
+
     friend class DialogGameSettings;
     friend class DialogLevelSelect;
     friend class DialogLogin;
