@@ -238,7 +238,7 @@ void MessageBoxDialog::show()
 
 void MessageBoxDialog::setClickCallback( MessageBoxDialog::ClickCallback* p_clb )
 {
-    _p_clb   = p_clb;
+    _p_clb = p_clb;
 }
 
 void MessageBoxDialog::processClick( unsigned int btn )
@@ -299,6 +299,11 @@ void MessageBoxDialog::setText( const std::string& text )
     // convert std string to cegui's string
     CEGUI::String t( text.c_str() );
     _p_msgtext->setText( t );
+}
+
+void MessageBoxDialog::setAlpha( float alpha )
+{
+    _p_wnd->setAlpha( alpha );
 }
 
 } // namespace yaf3d

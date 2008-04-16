@@ -109,6 +109,9 @@ class MessageBoxDialog
         //! Set the message text
         void                                    setText( const std::string& text );
 
+        //! Set the transparency [0..1]
+        void                                    setAlpha( float alpha );
+
         //! Don't wait for button click, destroy the messagebox imediately.
         void                                    destroy();
 
