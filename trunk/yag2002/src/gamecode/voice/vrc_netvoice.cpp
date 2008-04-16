@@ -457,7 +457,7 @@ void EnNetworkVoice::onVoiceChatPlayerListChanged( bool joining, yaf3d::BaseEnti
     if ( !_active )
         return;
 
-    log_verbose << "EnNetworkVoice: voice chat player changed, player " << p_entity->getInstanceName() << ( joining ? " joining" : " leaving" ) << std::endl;
+    //log_verbose << "EnNetworkVoice: voice chat player changed, player " << p_entity->getInstanceName() << ( joining ? " joining" : " leaving" ) << std::endl;
 
     // let the voice network manager update its internal client list when a new client is joining
     if ( joining )
@@ -478,10 +478,6 @@ void EnNetworkVoice::onVoiceChatPlayerListChanged( bool joining, yaf3d::BaseEnti
 
             // remove also the player from voice receiver immediately
             _p_receiver->removePlayer( p_entity );
-        }
-        else
-        {
-            log_warning << "EnNetworkVoice: leaving player could not be found in sender map" << std::endl;
         }
     }
 }
