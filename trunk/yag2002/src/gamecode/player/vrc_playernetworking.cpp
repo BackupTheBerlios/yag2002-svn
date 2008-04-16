@@ -51,6 +51,7 @@ _positionZ( 0 ),
 _yaw( 0 ),
 _cmdAnimFlags( 0 ),
 _voiceChat( false ),
+_voiceChatEnable( false ),
 _remoteClient( false ),
 _remoteClientInitialized( false ),
 _p_playerImpl( p_playerImpl ),
@@ -74,6 +75,7 @@ _loadedPlayerEntity( NULL )
         // set the voice chat flag so it can be set by replicas on initialization
         yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_ENABLE, _voiceChat );
         _p_playerImpl->getPlayerEntity()->setVoiceChatEnabled( _voiceChat );
+        _voiceChatEnable = _voiceChat;
 
         // if a public host is given then set our ip to that host ip
         std::string publichost;
@@ -185,6 +187,8 @@ void PlayerNetworking::PostObjectCreate()
                 _p_playerImpl->getPlayerEntity()->setVoiceChatEnabled( _voiceChat );
                 if ( _voiceChat )
                     vrc::gameutils::PlayerUtils::get()->addRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
+
+                _voiceChatEnable = _voiceChat;
             }
 
             // request initialization data from server
@@ -305,6 +309,8 @@ void PlayerNetworking::RPC_Initialize( tInitializationData initData )
     if ( _voiceChat )
         vrc::gameutils::PlayerUtils::get()->addRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
 
+    _voiceChatEnable = _voiceChat;
+
     // set the connection status
     vrc::PlayerImplClient* p_playerClient = dynamic_cast< vrc::PlayerImplClient* >( _p_playerImpl );
     assert( p_playerClient && "the player object must be a client implementation if this function is called!" );
@@ -318,10 +324,11 @@ void PlayerNetworking::RPC_EnableVoiceChat( bool en )
 {
     _p_playerImpl->getPlayerEntity()->setVoiceChatEnabled( en );
 
-    //if ( _voiceChat == en )
-    //    return;
+    if ( _voiceChatEnable == en )
+        return;
 
-    _voiceChat = en;
+    _voiceChatEnable = en;
+    _voiceChat       = en;
 
     // only relevant for remote clients
     if ( ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client ) && isRemoteClient() )
@@ -431,7 +438,7 @@ void PlayerNetworking::initialize( const osg::Vec3f& pos, const std::string& pla
 void PlayerNetworking::enableVoiceChat( bool en )
 { // this method must be called only on local client
 
-    _voiceChat = en;
+    _voiceChatEnable = en;
     _p_playerImpl->getPlayerEntity()->setVoiceChatEnabled( en );
     // call the rpc on all replicated clients
     ALL_REPLICAS_FUNCTION_CALL( RPC_EnableVoiceChat( en ) );
@@ -439,7 +446,7 @@ void PlayerNetworking::enableVoiceChat( bool en )
 
 bool PlayerNetworking::isEnabledVoiceChat()
 {
-    return _voiceChat;
+    return _voiceChatEnable;
 }
 
 void PlayerNetworking::DataBlockPacketDataReceived( const RNReplicaNet::DataBlock* /*p_datablock*/ )

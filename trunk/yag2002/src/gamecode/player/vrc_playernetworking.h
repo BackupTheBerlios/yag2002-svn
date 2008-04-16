@@ -146,6 +146,8 @@ class PlayerNetworking : _RO_DO_PUBLIC_RO( PlayerNetworking )
 
         //-------
 
+        bool                                        _voiceChatEnable;
+
         bool                                        _remoteClient;
 
         bool                                        _remoteClientInitialized;
