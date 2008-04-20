@@ -64,7 +64,7 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			player/properties/vrc_propgui.cpp \
 			scripting/vrc_script.cpp \
 			sound/vrc_3dsound.cpp \
-			sound/vrc_ambientsound.cpp \
+			sound/vrc_2dsound.cpp \
 			storage/vrc_storageclient.cpp \
 			storage/vrc_storagenetworking.cpp \
 			storage/vrc_storageserver.cpp \
@@ -129,6 +129,7 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			visuals/vrc_terrain.cpp \
 			visuals/vrc_water.cpp \
 			voice/vrc_codec.cpp \
+			voice/vrc_voicegui.cpp \
 			voice/vrc_netvoice.cpp \
 			voice/vrc_networksoundimpl.cpp \
 			voice/vrc_voiceinput.cpp \
