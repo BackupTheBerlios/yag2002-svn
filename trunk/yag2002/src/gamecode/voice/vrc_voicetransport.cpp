@@ -161,6 +161,8 @@ void VoiceTransport::receiveAddressMap( int sid, RNReplicaNet::XPAddress& addres
 
     // use the callback
     _sidRecvMap[ sid ]->recvClientAddress( sid, address );
+    // remove the sid entry
+    _sidRecvMap.erase( _sidRecvMap.find( sid ) );
 }
 
 } // namespace vrc
