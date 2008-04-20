@@ -62,8 +62,7 @@ _p_codec( NULL ),
 _p_soundInput( NULL ),
 _inputGain( 1.0f ),
 _inputMute( false ),
-_active( false ),
-_networkingEstablished( false )
+_active( false )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "spotRange", _spotRange  );
@@ -76,6 +75,9 @@ EnNetworkVoice::~EnNetworkVoice()
 
     if ( _p_voiceGui )
         delete _p_voiceGui;
+
+    if ( _p_transport )
+        delete _p_transport;
 }
 
 void EnNetworkVoice::handleNotification( const yaf3d::EntityNotification& notification )
@@ -96,15 +98,20 @@ void EnNetworkVoice::handleNotification( const yaf3d::EntityNotification& notifi
 
         case YAF3D_NOTIFY_NETWORKING_ESTABLISHED:
 
-            // now the networking to server is established
-            _networkingEstablished = true;
-
+            // when the networking is established then initialize the transport layer
             if ( _p_transport )
+            {
                 _p_transport->initialize();
+            }
+            else
+            {
+                log_error << "EnNetworkVoice: transport layer not ready!" << std::endl;
+            }
 
             break;
 
         case YAF3D_NOTIFY_SHUTDOWN:
+
             break;
 
         default:
@@ -202,10 +209,13 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
     try
     {
         // create sound codec
+        assert( ( _p_codec == NULL ) && "voice codec already exists" );
         _p_codec = new NetworkSoundCodec;
         _p_codec->setEncoderComplexity( VOICE_CODEC_COMPLEXITY );
         _p_codec->setEncoderQuality( VOICE_CODEC_QUALITY );
         _p_codec->setupEncoder();
+
+        assert( ( _p_soundInput == NULL ) && "voice input already exists" );
 
 #ifdef INPUT_TEST
         _p_soundInput = new VoiceFileInput( INPUT_TEST_FILE, NULL, _p_codec );
@@ -213,9 +223,6 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
         _p_soundInput->setInputGain( _inputGain );
         _p_soundInput->stop( true );
 #else
-
-        //unsigned int inputdevice;
-        //yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_INPUT_DEVICE, inputdevice );
         _p_soundInput = new VoiceMicrophoneInput( NULL, _p_codec );
         _p_soundInput->initialize();
         _p_soundInput->setInputGain( _inputGain );
@@ -223,19 +230,16 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
         _p_soundInput->stop( true );
 #endif
 
+        _inputGain = inputgain;
+
         // setup the transport layer if not already exists
         if ( !_p_transport )
         {
             _p_transport = new VoiceTransport;
         }
-        // if the networking is already established then initialize the transport layer
-        // otherwise we have to wait for networking to establish which is handled in notification handler
-        if ( _networkingEstablished )
-            _p_transport->initialize();
-
-        _inputGain = inputgain;
 
         // create a sound receiver
+        assert( ( _p_receiver == NULL ) && "voice receiver already exists" );
         _p_receiver = new VoiceReceiver( this, _p_transport );
         _p_receiver->initialize();
         _p_receiver->setOutputGain( outputgain );

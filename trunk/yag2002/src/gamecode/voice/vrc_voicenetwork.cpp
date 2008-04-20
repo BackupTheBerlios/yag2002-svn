@@ -153,6 +153,13 @@ void VoiceNetwork::updateVoiceClients( yaf3d::BaseEntity* p_playerentity, bool j
         {
             _voiceClientMap.erase( p_maphit );
         }
+
+        // remove the entry also from hotspot map
+        VoiceClientMap::iterator p_hs = _hotspotMap.find( p_playerentity ), p_hsEnd = _hotspotMap.end();
+        if ( p_hs != p_hsEnd )
+        {
+            _hotspotMap.erase( p_hs );
+        }
     }
 }
 
