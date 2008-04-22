@@ -100,7 +100,7 @@ class BaseNode : public RefCount< BaseNode >
         std::vector< BaseNodePtr >&                 getChildren();
 
         //! Get node parents
-        std::vector< BaseNodePtr >&                 getParents();
+        std::vector< BaseNode* >&                   getParents();
 
         //! Set the node position on draw panel
         void                                        setPosition( const Eigen::Vector3f& pos );
@@ -141,7 +141,7 @@ class BaseNode : public RefCount< BaseNode >
         std::vector< BaseNodePtr >                  _children;
 
         //! Node parents
-        std::vector< BaseNodePtr >                  _parents;
+        std::vector< BaseNode* >                    _parents;
 };
 
 } // namespace beditor

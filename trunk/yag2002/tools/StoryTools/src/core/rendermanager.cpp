@@ -95,6 +95,9 @@ void RenderManager::shutdown()
     if ( _topNode.getRef() )
         _topNode->removeChildren();
 
+    if ( _p_font )
+        delete _p_font;
+
     destroy();
 }
 

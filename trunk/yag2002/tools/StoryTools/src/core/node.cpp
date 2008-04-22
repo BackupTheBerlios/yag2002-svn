@@ -184,26 +184,26 @@ void BaseNode::removeChildren()
 
 bool BaseNode::addParent( BaseNode* p_parent )
 {
-    std::vector< BaseNodePtr >::iterator p_currparent = _parents.begin(), p_end = _parents.end();
+    std::vector< BaseNode* >::iterator p_currparent = _parents.begin(), p_end = _parents.end();
     for ( ; p_currparent != p_end; ++p_currparent )
     {
-        if ( p_currparent->getRef() == p_parent )
+        if ( ( *p_currparent ) == p_parent )
         {
             assert( NULL && "parent already exists!" );
             return false;
         }
     }
 
-    _parents.push_back( BaseNodePtr( p_parent ) );
+    _parents.push_back( p_parent );
     return true;
 }
 
 bool BaseNode::removeParent( BaseNode* p_node )
 {
-    std::vector< BaseNodePtr >::iterator p_currparent = _parents.begin(), p_end = _parents.end();
+    std::vector< BaseNode* >::iterator p_currparent = _parents.begin(), p_end = _parents.end();
     for ( ; p_currparent != p_end; ++p_currparent )
     {
-        if ( p_currparent->getRef() == p_node )
+        if ( ( *p_currparent ) == p_node )
             break;
     }
 
@@ -225,7 +225,7 @@ std::vector< BaseNodePtr >& BaseNode::getChildren()
     return _children;
 }
 
-std::vector< BaseNodePtr >& BaseNode::getParents()
+std::vector< BaseNode* >& BaseNode::getParents()
 {
     return _parents;
 }
