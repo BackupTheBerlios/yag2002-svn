@@ -273,6 +273,18 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
             _p_transport = NULL;
         }
 
+        if ( _p_codec )
+        {
+            delete _p_codec;
+            _p_codec = NULL;
+        }
+
+        if ( _p_soundInput )
+        {
+            delete _p_soundInput;
+            _p_soundInput = NULL;
+        }
+
         return;
     }
 
