@@ -1,0 +1,60 @@
+/* The network object for Objects */
+
+namespace vrc
+{
+
+object ObjectNetworking
+{
+    datablock Function;
+    datablock NData;
+
+    networking
+    {
+        NData _actorType;
+        { 
+            Reliable();
+        }
+
+        NData _actorID;
+        { 
+            Reliable();
+        }
+
+        NData _p_meshFile;
+        { 
+            Reliable();
+        }
+
+        NData _positionX;
+        { 
+            Reliable();
+        }
+
+        NData _positionY;
+        { 
+            Reliable();
+        }
+
+        NData _positionZ;
+        { 
+            Reliable();
+        }
+
+        NData _rotationZ;
+        { 
+            Reliable();
+        }
+
+        NData _maxPickDistance;
+        { 
+            Reliable();
+        }
+
+        NData _maxHeighlightDistance;
+        { 
+            Reliable();
+        }
+    }
+}
+
+} // namespace vrc

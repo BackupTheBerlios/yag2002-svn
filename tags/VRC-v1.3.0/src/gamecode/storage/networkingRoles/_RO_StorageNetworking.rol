@@ -1,0 +1,27 @@
+/* The Storage object */
+
+namespace vrc
+{
+
+object StorageNetworking
+{
+    datablock Function;
+
+    extern RPC_RequestAccountInfo( tAccountInfoData );
+    extern RPC_AccountInfoResult( tAccountInfoData );
+
+    networking
+    {
+        Function RPC_RequestAccountInfo;
+        { 
+            Reliable();
+        }
+
+        Function RPC_AccountInfoResult;
+        { 
+            Reliable();
+        }
+    }
+}
+
+} // namespace vrc

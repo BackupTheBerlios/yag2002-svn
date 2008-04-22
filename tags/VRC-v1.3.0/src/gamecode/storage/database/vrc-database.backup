@@ -1,0 +1,946 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Started on 2007-11-10 22:31:19
+
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = off;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET escape_string_warning = off;
+
+--
+-- TOC entry 1662 (class 0 OID 0)
+-- Dependencies: 4
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
+--
+
+COMMENT ON SCHEMA public IS 'VRC data storage';
+
+
+--
+-- TOC entry 279 (class 2612 OID 16599)
+-- Name: plpgsql; Type: PROCEDURAL LANGUAGE; Schema: -; Owner: postgres
+--
+
+--CREATE PROCEDURAL LANGUAGE plpgsql;
+
+
+SET search_path = public, pg_catalog;
+
+--
+-- TOC entry 22 (class 1255 OID 16806)
+-- Dependencies: 279 4
+-- Name: user_delete(character varying, character varying); Type: FUNCTION; Schema: public; Owner: vrcserver
+--
+
+CREATE FUNCTION user_delete(r_login_name character varying, r_passwd character varying) RETURNS integer
+    AS $$
+DECLARE
+
+   cnt             integer := 0;
+
+BEGIN
+
+    SELECT INTO cnt count(*) FROM user_accounts WHERE user_accounts.login_name = r_login_name AND passwd = r_passwd;
+
+    -- check if a user with given login name exists
+    IF ( cnt = 0 ) THEN
+        RETURN -1;
+    ELSIF ( cnt > 1 ) THEN -- check if more than one user with same login name exist (this should not happen in normal case!)
+        RETURN -2;
+    END IF;
+
+    -- delete in cascade all the user account and data
+    DELETE FROM user_accounts WHERE user_accounts.login_name = r_login_name;
+
+    RETURN 1;
+
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.user_delete(r_login_name character varying, r_passwd character varying) OWNER TO vrcserver;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- TOC entry 1291 (class 1259 OID 16974)
+-- Dependencies: 1632 1633 1634 1635 1636 1637 1638 4
+-- Name: user_accounts; Type: TABLE; Schema: public; Owner: vrcserver; Tablespace: 
+--
+
+CREATE TABLE user_accounts (
+    account_id integer NOT NULL,
+    name character varying(32) DEFAULT ''::character varying,
+    login_name character varying(16) NOT NULL,
+    passwd character(32) DEFAULT ''::bpchar NOT NULL,
+    email character varying(64) DEFAULT ''::character varying,
+    last_login timestamp without time zone,
+    online_time interval DEFAULT '00:00:00'::interval,
+    priviledges integer DEFAULT 0 NOT NULL,
+    status integer DEFAULT 0,
+    user_data_id integer DEFAULT 0 NOT NULL
+);
+
+
+ALTER TABLE public.user_accounts OWNER TO vrcserver;
+
+--
+-- TOC entry 1664 (class 0 OID 0)
+-- Dependencies: 1291
+-- Name: TABLE user_accounts; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON TABLE user_accounts IS 'User accounts';
+
+
+--
+-- TOC entry 1665 (class 0 OID 0)
+-- Dependencies: 1291
+-- Name: COLUMN user_accounts.account_id; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN user_accounts.account_id IS 'Unique account ID';
+
+
+--
+-- TOC entry 1666 (class 0 OID 0)
+-- Dependencies: 1291
+-- Name: COLUMN user_accounts.name; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN user_accounts.name IS 'User''s real name';
+
+
+--
+-- TOC entry 1667 (class 0 OID 0)
+-- Dependencies: 1291
+-- Name: COLUMN user_accounts.login_name; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN user_accounts.login_name IS 'Unique user login name (nick name)';
+
+
+--
+-- TOC entry 1668 (class 0 OID 0)
+-- Dependencies: 1291
+-- Name: COLUMN user_accounts.passwd; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN user_accounts.passwd IS 'Encrypted password';
+
+
+--
+-- TOC entry 1669 (class 0 OID 0)
+-- Dependencies: 1291
+-- Name: COLUMN user_accounts.email; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN user_accounts.email IS 'E-Mail address';
+
+
+--
+-- TOC entry 1670 (class 0 OID 0)
+-- Dependencies: 1291
+-- Name: COLUMN user_accounts.last_login; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN user_accounts.last_login IS 'Last login date';
+
+
+--
+-- TOC entry 1671 (class 0 OID 0)
+-- Dependencies: 1291
+-- Name: COLUMN user_accounts.online_time; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN user_accounts.online_time IS 'Total online time';
+
+
+--
+-- TOC entry 1672 (class 0 OID 0)
+-- Dependencies: 1291
+-- Name: COLUMN user_accounts.priviledges; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN user_accounts.priviledges IS 'User Priviledges as bit field';
+
+
+--
+-- TOC entry 1673 (class 0 OID 0)
+-- Dependencies: 1291
+-- Name: COLUMN user_accounts.status; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN user_accounts.status IS 'Status such as online, afk, etc.';
+
+
+--
+-- TOC entry 1674 (class 0 OID 0)
+-- Dependencies: 1291
+-- Name: COLUMN user_accounts.user_data_id; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN user_accounts.user_data_id IS 'Reference to user data';
+
+
+--
+-- TOC entry 23 (class 1255 OID 17145)
+-- Dependencies: 279 4 274
+-- Name: user_getaccountdata(character varying); Type: FUNCTION; Schema: public; Owner: vrcserver
+--
+
+CREATE FUNCTION user_getaccountdata(r_login_name character varying) RETURNS user_accounts
+    AS $$
+DECLARE
+
+   user_account    user_accounts%ROWTYPE;
+
+   -- online flag
+   fonline         INTEGER := 1;
+
+BEGIN
+
+    SELECT INTO user_account * FROM user_accounts WHERE user_accounts.login_name = r_login_name;
+
+    -- check if the user exists
+    IF ( user_account IS NULL ) THEN
+        RETURN NULL;
+    END IF;
+
+    -- reset the online flag
+    IF ( user_account.status & fonline ) THEN
+        -- clear the passwd field
+        user_account.passwd = '';
+        RETURN user_account;
+    END IF;
+
+    RETURN NULL;
+
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.user_getaccountdata(r_login_name character varying) OWNER TO vrcserver;
+
+--
+-- TOC entry 1293 (class 1259 OID 17044)
+-- Dependencies: 1640 1641 1642 4
+-- Name: user_data; Type: TABLE; Schema: public; Owner: vrcserver; Tablespace: 
+--
+
+CREATE TABLE user_data (
+    user_data_id integer NOT NULL,
+    user_account_id integer NOT NULL,
+    user_inventory_id integer DEFAULT 0 NOT NULL,
+    user_mailbox_id integer DEFAULT 0 NOT NULL,
+    user_skills_id integer DEFAULT 0 NOT NULL
+);
+
+
+ALTER TABLE public.user_data OWNER TO vrcserver;
+
+--
+-- TOC entry 1675 (class 0 OID 0)
+-- Dependencies: 1293
+-- Name: TABLE user_data; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON TABLE user_data IS 'User specific data';
+
+
+--
+-- TOC entry 1676 (class 0 OID 0)
+-- Dependencies: 1293
+-- Name: COLUMN user_data.user_data_id; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN user_data.user_data_id IS 'Unique user data ID';
+
+
+--
+-- TOC entry 1677 (class 0 OID 0)
+-- Dependencies: 1293
+-- Name: COLUMN user_data.user_account_id; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN user_data.user_account_id IS 'Reference to user account';
+
+
+--
+-- TOC entry 1678 (class 0 OID 0)
+-- Dependencies: 1293
+-- Name: COLUMN user_data.user_inventory_id; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN user_data.user_inventory_id IS 'Reference to user inventory. A reference to 0 means no inventory exists (needed for maintenance, not for normal operation!).';
+
+
+--
+-- TOC entry 1679 (class 0 OID 0)
+-- Dependencies: 1293
+-- Name: COLUMN user_data.user_mailbox_id; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN user_data.user_mailbox_id IS 'Reference to user mailbox. A reference to 0 means no mailbox exists (needed for maintenance, not for normal operation!).';
+
+
+--
+-- TOC entry 1680 (class 0 OID 0)
+-- Dependencies: 1293
+-- Name: COLUMN user_data.user_skills_id; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN user_data.user_skills_id IS 'Reference to user skills. A reference to 0 means no skills exist (needed for maintenance, not for normal operation!).';
+
+
+--
+-- TOC entry 24 (class 1255 OID 17147)
+-- Dependencies: 276 279 4
+-- Name: user_getdata(integer); Type: FUNCTION; Schema: public; Owner: vrcserver
+--
+
+CREATE FUNCTION user_getdata(r_uid integer) RETURNS user_data
+    AS $$
+DECLARE
+
+   user_acc    user_accounts%ROWTYPE;
+   user_dat    user_data%ROWTYPE;
+   -- online flag
+   fonline     INTEGER := 1;
+
+BEGIN
+
+    SELECT INTO user_acc * FROM user_accounts WHERE user_accounts.account_id = r_uid;
+
+    -- check if the user exists
+    IF ( user_acc IS NULL ) THEN
+        RAISE NOTICE 'could not find user account!';
+        RETURN NULL;
+    END IF;
+
+    -- check the online flag
+    IF ( user_acc.status & fonline ) THEN
+	SELECT INTO user_dat * FROM user_data WHERE user_account_id = r_uid;
+	IF ( user_dat IS NULL ) THEN
+	    RAISE NOTICE 'user data not found!';
+	END IF;
+    ELSE
+        RAISE NOTICE 'user not online!';
+        RETURN NULL;
+    END IF;
+
+    RETURN user_dat;
+
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.user_getdata(r_uid integer) OWNER TO vrcserver;
+
+--
+-- TOC entry 1287 (class 1259 OID 16953)
+-- Dependencies: 1627 1628 4
+-- Name: inventory; Type: TABLE; Schema: public; Owner: vrcserver; Tablespace: 
+--
+
+CREATE TABLE inventory (
+    inventory_id integer NOT NULL,
+    user_data_id integer DEFAULT 0 NOT NULL,
+    inv_jetpack character varying DEFAULT 'fuel:0,maxSpeed:0,engine:0'::character varying NOT NULL
+);
+
+
+ALTER TABLE public.inventory OWNER TO vrcserver;
+
+--
+-- TOC entry 1681 (class 0 OID 0)
+-- Dependencies: 1287
+-- Name: TABLE inventory; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON TABLE inventory IS 'User inventory';
+
+
+--
+-- TOC entry 1682 (class 0 OID 0)
+-- Dependencies: 1287
+-- Name: COLUMN inventory.inventory_id; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN inventory.inventory_id IS 'Unique inventory ID';
+
+
+--
+-- TOC entry 1683 (class 0 OID 0)
+-- Dependencies: 1287
+-- Name: COLUMN inventory.user_data_id; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN inventory.user_data_id IS 'Reference to user data';
+
+
+--
+-- TOC entry 1684 (class 0 OID 0)
+-- Dependencies: 1287
+-- Name: COLUMN inventory.inv_jetpack; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN inventory.inv_jetpack IS 'Inventory Jetppack. Commas are attribute field separators.';
+
+
+--
+-- TOC entry 25 (class 1255 OID 17146)
+-- Dependencies: 279 270 4
+-- Name: user_getinventory(integer); Type: FUNCTION; Schema: public; Owner: vrcserver
+--
+
+CREATE FUNCTION user_getinventory(r_dataid integer) RETURNS inventory
+    AS $$
+DECLARE
+
+   user_acc    user_accounts%ROWTYPE;
+   user_dat    user_data%ROWTYPE;
+   user_inv    inventory%ROWTYPE;
+   -- online flag
+   fonline     INTEGER := 1;
+
+BEGIN
+
+    SELECT INTO user_acc * FROM user_accounts WHERE user_accounts.user_data_id = r_dataId;
+
+    -- check if the user exists
+    IF ( user_acc IS NULL ) THEN
+        RAISE NOTICE 'could not find user account!';
+        RETURN NULL;
+    END IF;
+
+    -- check the online flag
+    IF ( user_acc.status & fonline ) THEN
+	SELECT INTO user_dat * FROM user_data WHERE user_data.user_data_id = r_dataId;
+	IF ( user_dat IS NULL ) THEN
+	    RAISE NOTICE 'user data not found!';
+	END IF;
+    ELSE
+        RAISE NOTICE 'user not online!';
+        RETURN NULL;
+    END IF;
+
+    SELECT INTO user_inv * FROM inventory WHERE inventory.user_data_id = r_dataId;
+
+    RETURN user_inv;
+
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.user_getinventory(r_dataid integer) OWNER TO vrcserver;
+
+--
+-- TOC entry 19 (class 1255 OID 16648)
+-- Dependencies: 4 279
+-- Name: user_login(character varying, character varying); Type: FUNCTION; Schema: public; Owner: vrcserver
+--
+
+CREATE FUNCTION user_login(login_name character varying, passwd character varying) RETURNS integer
+    AS $$
+DECLARE
+
+   user        user_accounts%ROWTYPE;
+
+   -- banned flag
+   fbanned     INTEGER := 16;
+   -- online flag
+   fonline     INTEGER := 1;
+
+BEGIN
+
+    SELECT INTO user * FROM user_accounts WHERE user_accounts.login_name = login_name;
+
+    -- check if the user exists
+    IF ( user IS NULL ) THEN
+        RETURN -1;
+    END IF;
+
+    -- check the password
+    IF ( user.passwd != passwd ) THEN
+        RETURN -2;
+    END IF;
+
+    -- check the banned flag
+    IF ( ( user.status & fbanned ) = fbanned ) THEN
+        RETURN -3;
+    END IF;
+
+    -- set the online flag
+    UPDATE user_accounts SET status = ( user.status | fonline ) WHERE user_accounts.login_name = login_name;
+
+    -- set the "last login" column
+    UPDATE user_accounts SET last_login = now() WHERE user_accounts.login_name = login_name;
+ 
+    RETURN 1;
+
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.user_login(login_name character varying, passwd character varying) OWNER TO vrcserver;
+
+--
+-- TOC entry 20 (class 1255 OID 16649)
+-- Dependencies: 4 279
+-- Name: user_logout(character varying); Type: FUNCTION; Schema: public; Owner: vrcserver
+--
+
+CREATE FUNCTION user_logout(r_login_name character varying) RETURNS integer
+    AS $$
+DECLARE
+
+   user        user_accounts%ROWTYPE;
+   -- online flag
+   fonline     INTEGER := 1;
+
+BEGIN
+
+    SELECT INTO user * FROM user_accounts WHERE user_accounts.login_name = r_login_name;
+
+    -- check if the user exists
+    IF ( user IS NULL ) THEN
+        RETURN -1;
+    END IF;
+
+    -- reset the online flag
+    IF ( user.status & fonline ) THEN
+        UPDATE user_accounts SET status = ( user.status & ~fonline ) WHERE user_accounts.login_name = r_login_name;
+        -- update the "online time"
+        UPDATE user_accounts SET online_time = online_time + now() - last_login WHERE user_accounts.login_name = r_login_name;
+    ELSE
+        RETURN -2;
+    END IF;
+
+    RETURN 1;
+
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.user_logout(r_login_name character varying) OWNER TO vrcserver;
+
+--
+-- TOC entry 21 (class 1255 OID 16650)
+-- Dependencies: 279 4
+-- Name: user_register(character varying, character varying, character varying, character varying); Type: FUNCTION; Schema: public; Owner: vrcserver
+--
+
+CREATE FUNCTION user_register(r_login_name character varying, r_passwd character varying, r_name character varying, r_email character varying) RETURNS integer
+    AS $$
+DECLARE
+
+   cnt      integer := 0;
+   acc_id   integer := 0;
+   data_id  integer := 0;
+   inv_id   integer := 0;
+   mb_id    integer := 0;
+   sk_id    integer := 0;
+
+BEGIN
+
+    SELECT INTO cnt count(*) FROM user_accounts WHERE user_accounts.login_name = r_login_name;
+
+    -- check if a user with given login name already exists
+    IF ( cnt > 0 ) THEN
+        RETURN -1;
+    END IF;
+
+    -- create the user data and set the reference to account
+    acc_id   := nextval('user_accounts_account_id_seq'); 
+    data_id  := nextval('user_data_user_data_id_seq'); 
+    inv_id   := nextval('inventory_inventory_id_seq');
+    mb_id    := nextval('mailboxes_mailbox_id_seq');
+    sk_id    := nextval('skill_skill_id_seq');
+
+    SET CONSTRAINTS ALL DEFERRED;
+
+    -- create user account, set also the last login column
+    INSERT INTO user_accounts ( account_id, user_data_id, login_name, passwd, name, email, last_login ) VALUES ( acc_id, data_id, r_login_name, r_passwd, r_name, r_email, now() );
+
+    -- create the user data
+    INSERT INTO user_data ( user_account_id, user_data_id, user_inventory, user_mailbox, user_skills ) VALUES ( acc_id, data_id, inv_id, mb_id, sk_id );
+
+    --create inventory
+    INSERT INTO inventory ( inventory_id, user_data_id ) VALUES ( inv_id, data_id );
+
+    -- create skills
+    INSERT INTO skills ( skill_id, user_data_id ) VALUES ( sk_id, data_id );
+
+    -- create mailbox
+    INSERT INTO mailboxes ( mailbox_id, user_data_id ) VALUES ( mb_id, data_id );
+
+    SET CONSTRAINTS ALL IMMEDIATE;
+
+    RETURN 1;
+
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.user_register(r_login_name character varying, r_passwd character varying, r_name character varying, r_email character varying) OWNER TO vrcserver;
+
+--
+-- TOC entry 1286 (class 1259 OID 16951)
+-- Dependencies: 4 1287
+-- Name: inventory_inventory_id_seq; Type: SEQUENCE; Schema: public; Owner: vrcserver
+--
+
+CREATE SEQUENCE inventory_inventory_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.inventory_inventory_id_seq OWNER TO vrcserver;
+
+--
+-- TOC entry 1685 (class 0 OID 0)
+-- Dependencies: 1286
+-- Name: inventory_inventory_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: vrcserver
+--
+
+ALTER SEQUENCE inventory_inventory_id_seq OWNED BY inventory.inventory_id;
+
+
+--
+-- TOC entry 1289 (class 1259 OID 16965)
+-- Dependencies: 1630 4
+-- Name: mailboxes; Type: TABLE; Schema: public; Owner: vrcserver; Tablespace: 
+--
+
+CREATE TABLE mailboxes (
+    mailbox_id integer NOT NULL,
+    user_data_id integer DEFAULT 0 NOT NULL
+);
+
+
+ALTER TABLE public.mailboxes OWNER TO vrcserver;
+
+--
+-- TOC entry 1686 (class 0 OID 0)
+-- Dependencies: 1289
+-- Name: TABLE mailboxes; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON TABLE mailboxes IS 'User mailbox';
+
+
+--
+-- TOC entry 1687 (class 0 OID 0)
+-- Dependencies: 1289
+-- Name: COLUMN mailboxes.user_data_id; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN mailboxes.user_data_id IS 'Reference to user data';
+
+
+--
+-- TOC entry 1288 (class 1259 OID 16963)
+-- Dependencies: 1289 4
+-- Name: mailboxes_mailbox_id_seq; Type: SEQUENCE; Schema: public; Owner: vrcserver
+--
+
+CREATE SEQUENCE mailboxes_mailbox_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.mailboxes_mailbox_id_seq OWNER TO vrcserver;
+
+--
+-- TOC entry 1688 (class 0 OID 0)
+-- Dependencies: 1288
+-- Name: mailboxes_mailbox_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: vrcserver
+--
+
+ALTER SEQUENCE mailboxes_mailbox_id_seq OWNED BY mailboxes.mailbox_id;
+
+
+--
+-- TOC entry 1284 (class 1259 OID 16674)
+-- Dependencies: 1625 4
+-- Name: skills; Type: TABLE; Schema: public; Owner: vrcserver; Tablespace: 
+--
+
+CREATE TABLE skills (
+    skill_id integer NOT NULL,
+    user_data_id integer DEFAULT 0 NOT NULL
+);
+
+
+ALTER TABLE public.skills OWNER TO vrcserver;
+
+--
+-- TOC entry 1689 (class 0 OID 0)
+-- Dependencies: 1284
+-- Name: TABLE skills; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON TABLE skills IS 'User skills';
+
+
+--
+-- TOC entry 1690 (class 0 OID 0)
+-- Dependencies: 1284
+-- Name: COLUMN skills.user_data_id; Type: COMMENT; Schema: public; Owner: vrcserver
+--
+
+COMMENT ON COLUMN skills.user_data_id IS 'Reference to user data';
+
+
+--
+-- TOC entry 1285 (class 1259 OID 16676)
+-- Dependencies: 1284 4
+-- Name: skill_skill_id_seq; Type: SEQUENCE; Schema: public; Owner: vrcserver
+--
+
+CREATE SEQUENCE skill_skill_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.skill_skill_id_seq OWNER TO vrcserver;
+
+--
+-- TOC entry 1691 (class 0 OID 0)
+-- Dependencies: 1285
+-- Name: skill_skill_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: vrcserver
+--
+
+ALTER SEQUENCE skill_skill_id_seq OWNED BY skills.skill_id;
+
+
+--
+-- TOC entry 1290 (class 1259 OID 16972)
+-- Dependencies: 1291 4
+-- Name: user_accounts_account_id_seq; Type: SEQUENCE; Schema: public; Owner: vrcserver
+--
+
+CREATE SEQUENCE user_accounts_account_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.user_accounts_account_id_seq OWNER TO vrcserver;
+
+--
+-- TOC entry 1692 (class 0 OID 0)
+-- Dependencies: 1290
+-- Name: user_accounts_account_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: vrcserver
+--
+
+ALTER SEQUENCE user_accounts_account_id_seq OWNED BY user_accounts.account_id;
+
+
+--
+-- TOC entry 1292 (class 1259 OID 17042)
+-- Dependencies: 1293 4
+-- Name: user_data_user_data_id_seq; Type: SEQUENCE; Schema: public; Owner: vrcserver
+--
+
+CREATE SEQUENCE user_data_user_data_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.user_data_user_data_id_seq OWNER TO vrcserver;
+
+--
+-- TOC entry 1693 (class 0 OID 0)
+-- Dependencies: 1292
+-- Name: user_data_user_data_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: vrcserver
+--
+
+ALTER SEQUENCE user_data_user_data_id_seq OWNED BY user_data.user_data_id;
+
+
+--
+-- TOC entry 1626 (class 2604 OID 16955)
+-- Dependencies: 1286 1287 1287
+-- Name: inventory_id; Type: DEFAULT; Schema: public; Owner: vrcserver
+--
+
+ALTER TABLE inventory ALTER COLUMN inventory_id SET DEFAULT nextval('inventory_inventory_id_seq'::regclass);
+
+
+--
+-- TOC entry 1629 (class 2604 OID 16967)
+-- Dependencies: 1288 1289 1289
+-- Name: mailbox_id; Type: DEFAULT; Schema: public; Owner: vrcserver
+--
+
+ALTER TABLE mailboxes ALTER COLUMN mailbox_id SET DEFAULT nextval('mailboxes_mailbox_id_seq'::regclass);
+
+
+--
+-- TOC entry 1624 (class 2604 OID 16688)
+-- Dependencies: 1285 1284
+-- Name: skill_id; Type: DEFAULT; Schema: public; Owner: vrcserver
+--
+
+ALTER TABLE skills ALTER COLUMN skill_id SET DEFAULT nextval('skill_skill_id_seq'::regclass);
+
+
+--
+-- TOC entry 1631 (class 2604 OID 16976)
+-- Dependencies: 1291 1290 1291
+-- Name: account_id; Type: DEFAULT; Schema: public; Owner: vrcserver
+--
+
+ALTER TABLE user_accounts ALTER COLUMN account_id SET DEFAULT nextval('user_accounts_account_id_seq'::regclass);
+
+
+--
+-- TOC entry 1639 (class 2604 OID 17046)
+-- Dependencies: 1293 1292 1293
+-- Name: user_data_id; Type: DEFAULT; Schema: public; Owner: vrcserver
+--
+
+ALTER TABLE user_data ALTER COLUMN user_data_id SET DEFAULT nextval('user_data_user_data_id_seq'::regclass);
+
+
+--
+-- TOC entry 1646 (class 2606 OID 16962)
+-- Dependencies: 1287 1287
+-- Name: pk_inventory; Type: CONSTRAINT; Schema: public; Owner: vrcserver; Tablespace: 
+--
+
+ALTER TABLE ONLY inventory
+    ADD CONSTRAINT pk_inventory PRIMARY KEY (inventory_id);
+
+
+--
+-- TOC entry 1648 (class 2606 OID 16969)
+-- Dependencies: 1289 1289
+-- Name: pk_mailbox_id; Type: CONSTRAINT; Schema: public; Owner: vrcserver; Tablespace: 
+--
+
+ALTER TABLE ONLY mailboxes
+    ADD CONSTRAINT pk_mailbox_id PRIMARY KEY (mailbox_id);
+
+
+--
+-- TOC entry 1644 (class 2606 OID 16700)
+-- Dependencies: 1284 1284
+-- Name: pk_skill_id; Type: CONSTRAINT; Schema: public; Owner: vrcserver; Tablespace: 
+--
+
+ALTER TABLE ONLY skills
+    ADD CONSTRAINT pk_skill_id PRIMARY KEY (skill_id);
+
+
+--
+-- TOC entry 1654 (class 2606 OID 17051)
+-- Dependencies: 1293 1293
+-- Name: pk_user_data; Type: CONSTRAINT; Schema: public; Owner: vrcserver; Tablespace: 
+--
+
+ALTER TABLE ONLY user_data
+    ADD CONSTRAINT pk_user_data PRIMARY KEY (user_data_id);
+
+
+--
+-- TOC entry 1650 (class 2606 OID 16985)
+-- Dependencies: 1291 1291
+-- Name: uid; Type: CONSTRAINT; Schema: public; Owner: vrcserver; Tablespace: 
+--
+
+ALTER TABLE ONLY user_accounts
+    ADD CONSTRAINT uid PRIMARY KEY (account_id);
+
+
+--
+-- TOC entry 1652 (class 2606 OID 16987)
+-- Dependencies: 1291 1291
+-- Name: unique_ulogin; Type: CONSTRAINT; Schema: public; Owner: vrcserver; Tablespace: 
+--
+
+ALTER TABLE ONLY user_accounts
+    ADD CONSTRAINT unique_ulogin UNIQUE (login_name);
+
+
+--
+-- TOC entry 1656 (class 2606 OID 17127)
+-- Dependencies: 1293 1287 1653
+-- Name: inv_user_data; Type: FK CONSTRAINT; Schema: public; Owner: vrcserver
+--
+
+ALTER TABLE ONLY inventory
+    ADD CONSTRAINT inv_user_data FOREIGN KEY (user_data_id) REFERENCES user_data(user_data_id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 1657 (class 2606 OID 17132)
+-- Dependencies: 1293 1289 1653
+-- Name: mb_user_id; Type: FK CONSTRAINT; Schema: public; Owner: vrcserver
+--
+
+ALTER TABLE ONLY mailboxes
+    ADD CONSTRAINT mb_user_id FOREIGN KEY (user_data_id) REFERENCES user_data(user_data_id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 1655 (class 2606 OID 17137)
+-- Dependencies: 1293 1284 1653
+-- Name: sk_user_id; Type: FK CONSTRAINT; Schema: public; Owner: vrcserver
+--
+
+ALTER TABLE ONLY skills
+    ADD CONSTRAINT sk_user_id FOREIGN KEY (user_data_id) REFERENCES user_data(user_data_id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 1658 (class 2606 OID 17067)
+-- Dependencies: 1293 1649 1291
+-- Name: user_account; Type: FK CONSTRAINT; Schema: public; Owner: vrcserver
+--
+
+ALTER TABLE ONLY user_data
+    ADD CONSTRAINT user_account FOREIGN KEY (user_account_id) REFERENCES user_accounts(account_id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 1663 (class 0 OID 0)
+-- Dependencies: 4
+-- Name: public; Type: ACL; Schema: -; Owner: postgres
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM postgres;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO vrcserver;
+
+
+-- Completed on 2007-11-10 22:31:19
+
+--
+-- PostgreSQL database dump complete
+--
+
