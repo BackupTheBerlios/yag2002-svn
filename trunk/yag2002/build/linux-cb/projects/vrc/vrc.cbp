@@ -432,6 +432,7 @@
 		<Unit filename="../../../../src/gamecode/voice/vrc_voicetestutils.inl" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_voicetransport.cpp" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_voicetransport.h" />
+		<Unit filename="../../../../src/gamecode/vrc_config.h" />
 		<Unit filename="../../../../src/gamecode/vrc_exceptionlogger.cpp" />
 		<Unit filename="../../../../src/gamecode/vrc_exceptionlogger.h" />
 		<Unit filename="../../../../src/gamecode/vrc_gameutils.cpp" />
