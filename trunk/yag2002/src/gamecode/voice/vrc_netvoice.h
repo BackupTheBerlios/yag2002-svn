@@ -135,6 +135,9 @@ class EnNetworkVoice :
 
         //! Identifies whether the voice chat is activated
         bool                                        _active;
+
+        //! Flag showing if the client networking is established.
+        bool                                        _networkingEstablished;
 };
 
 //! Entity type definition used for type registry

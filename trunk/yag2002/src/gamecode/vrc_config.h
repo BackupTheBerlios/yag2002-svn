@@ -38,9 +38,9 @@
 
 //! Set the VRC version string
 #ifdef VRC_BUILD_PUBLISH
-  #define VRC_VERSION         "1.3.0"
+  #define VRC_VERSION         "1.3.1"
 #else
-  #define VRC_VERSION         "1.3.0 - Dev"
+  #define VRC_VERSION         "1.3.1 - Dev"
 #endif
 
 #endif // _VRC_CONFIG_H_

@@ -156,9 +156,6 @@ void PlayerImplClient::initialize()
     _currentRot = getPlayerEntity()->getRotation();
     _moveDir    = _currentRot * _moveDir;
 
-    // get configuration settings for player control keys
-    getConfiguration();
-
     // if the player networking component is created already then this implementation is created
     //  for a remote client on local machine, otherwise it's a local client.
     if ( !getPlayerNetworking() )
@@ -179,6 +176,9 @@ void PlayerImplClient::initialize()
     // actions to be taken for local client
     if ( !_isRemoteClient )
     {
+        // get configuration settings for player control keys, only for local player
+        getConfiguration();
+
         // get player's remote client config file so its ghosts load the right config while they get setup on remote machines
         std::string playerconfig;
         gameutils::PlayerUtils::get()->getPlayerConfig( yaf3d::GameState::get()->getMode(), true, playerconfig );

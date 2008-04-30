@@ -62,7 +62,8 @@ _p_codec( NULL ),
 _p_soundInput( NULL ),
 _inputGain( 1.0f ),
 _inputMute( false ),
-_active( false )
+_active( false ),
+_networkingEstablished( false )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "spotRange", _spotRange  );
@@ -107,6 +108,9 @@ void EnNetworkVoice::handleNotification( const yaf3d::EntityNotification& notifi
             {
                 log_error << "EnNetworkVoice: transport layer not ready!" << std::endl;
             }
+
+            // set the flag, used for defered initialization
+            _networkingEstablished = true;
 
             break;
 
@@ -236,6 +240,10 @@ void EnNetworkVoice::createVoiceChat( float inputgain, float outputgain )
         if ( !_p_transport )
         {
             _p_transport = new VoiceTransport;
+            // if the voice chat was initially disabled and the user enables it then the networking is already established
+            // in this case we have to initialized the transport layer immediately.
+            if ( _networkingEstablished )
+                _p_transport->initialize();
         }
 
         // create a sound receiver

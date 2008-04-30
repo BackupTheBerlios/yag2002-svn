@@ -185,8 +185,6 @@ void PlayerNetworking::PostObjectCreate()
 
                 // is voice chat enabled?
                 _p_playerImpl->getPlayerEntity()->setVoiceChatEnabled( _voiceChat );
-                if ( _voiceChat )
-                    vrc::gameutils::PlayerUtils::get()->addRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
 
                 _voiceChatEnable = _voiceChat;
             }
@@ -306,6 +304,7 @@ void PlayerNetworking::RPC_Initialize( tInitializationData initData )
     // is voice chat enabled?
     _p_playerImpl->getPlayerEntity()->setIPAdress( _ip );
     _p_playerImpl->getPlayerEntity()->setVoiceChatEnabled( _voiceChat );
+
     if ( _voiceChat )
         vrc::gameutils::PlayerUtils::get()->addRemotePlayerVoiceChat( _p_playerImpl->getPlayerEntity() );
 
