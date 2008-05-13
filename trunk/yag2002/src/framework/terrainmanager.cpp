@@ -339,8 +339,20 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
             TerrainConfig::ListLodRange::const_iterator      p_lodrange      = config._lodRanges.begin();
             for ( ; p_lodresolution != p_lodresolutionEnd; ++p_lodresolution, ++p_lodrange )
             {
+                // check for 2^N+1 heightmap size
+                bool towNplus1 = ( ( sizeX & 1 ) == 1 ) | ( ( sizeY & 1 ) == 1 );
+                bool patchbuild = false;
+                // we do not create patches for the border
+                if ( towNplus1 )
+                    if ( ( cntX < ( sizeX - 1 ) ) && ( cntY < ( sizeY - 1 ) ) )
+                        patchbuild = p_patch->build( tga, config._scale, cntX, cntY, patchPixelsX, patchPixelsY, ( *p_lodresolution ).first, ( *p_lodresolution ).second );
+                    else
+                        continue;
+                else
+                    patchbuild = p_patch->build( tga, config._scale, cntX, cntY, patchPixelsX, patchPixelsY, ( *p_lodresolution ).first, ( *p_lodresolution ).second );
+
                 // build LOD
-                if ( !p_patch->build( tga, config._scale, cntX, cntY, patchPixelsX, patchPixelsY, ( *p_lodresolution ).first, ( *p_lodresolution ).second ) )
+                if ( !patchbuild )
                 {
                     log_error << "Terrain Manager: could not build patch LOD level 0!" << std::endl;
                     continue;
@@ -355,19 +367,19 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
                 {
                     // build the detail texture map 0 coordinates
                     if ( !p_patch->buildTexCoords( 2, config._detailmap0Repeat ) )
-                        log_error << "Terrain Manager: could not build deatial texture 0 coordinates!" << std::endl;
+                        log_error << "Terrain Manager: could not build detail texture 0 coordinates!" << std::endl;
 
                     // build the detail texture map 1 coordinates
                     if ( !p_patch->buildTexCoords( 3, config._detailmap1Repeat ) )
-                        log_error << "Terrain Manager: could not build deatial texture 1 coordinates!" << std::endl;
+                        log_error << "Terrain Manager: could not build detail texture 1 coordinates!" << std::endl;
 
                     // build the detail texture map 2 coordinates
                     if ( !p_patch->buildTexCoords( 4, config._detailmap2Repeat ) )
-                        log_error << "Terrain Manager: could not build deatial texture 2 coordinates!" << std::endl;
+                        log_error << "Terrain Manager: could not build detail texture 2 coordinates!" << std::endl;
 
                     // build the detail texture map 3 coordinates
                     if ( !p_patch->buildTexCoords( 5, config._detailmap3Repeat ) )
-                        log_error << "Terrain Manager: could not build deatial texture 3 coordinates!" << std::endl;
+                        log_error << "Terrain Manager: could not build detail texture 3 coordinates!" << std::endl;
                 }
 
                 // add lod node and set its range
