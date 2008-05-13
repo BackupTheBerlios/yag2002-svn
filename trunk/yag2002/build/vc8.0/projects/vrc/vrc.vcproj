@@ -1872,6 +1872,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_storydialog.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_storydialog.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\gamelogic\vrc_storyengine.cpp"
 					>
 				</File>
