@@ -159,7 +159,8 @@ BaseObject::~BaseObject()
     }
 
     // remove us from events listeners
-    StorySystem::get()->removeActor( getActorID(), this );
+    if ( yaf3d::GameState::get()->getState() != yaf3d::GameState::LeavingLevel )
+        StorySystem::get()->removeActor( getActorID(), this );
 
     // remove this object from the object list
     std::vector< BaseObject* >::iterator p_beg = _objects.begin(), p_end = _objects.end();
