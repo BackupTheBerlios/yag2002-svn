@@ -124,10 +124,10 @@ static const char _glslTerrainV[] =
     "{\n"
     "   gl_Position      = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
     "   baseTexCoords    = gl_MultiTexCoord0.st;\n"
-    "   detail0TexCoords = gl_MultiTexCoord1.st;\n"
-    "   detail1TexCoords = gl_MultiTexCoord2.st;\n"
-    "   detail2TexCoords = gl_MultiTexCoord3.st;\n"
-    "   detail3TexCoords = gl_MultiTexCoord4.st;\n"
+    "   detail0TexCoords = gl_MultiTexCoord2.st;\n"
+    "   detail1TexCoords = gl_MultiTexCoord3.st;\n"
+    "   detail2TexCoords = gl_MultiTexCoord4.st;\n"
+    "   detail3TexCoords = gl_MultiTexCoord5.st;\n"
     "}\n"
 ;
 
