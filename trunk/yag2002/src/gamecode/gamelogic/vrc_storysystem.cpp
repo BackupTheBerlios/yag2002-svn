@@ -37,8 +37,10 @@
 #define SCRIPTING_LOG_FILE_NAME     "storysystem"
 
 
-//! TODO: implement a console cmd for showing the console and remove this define
-//#define ENABLE_CONSOLE
+//! Debug console for story system
+#ifndef VRC_BUILD_PUBLISH
+    #define ENABLE_CONSOLE
+#endif
 
 //! Implement the singleton
 YAF3D_SINGLETON_IMPL( vrc::StorySystem )
@@ -65,13 +67,11 @@ StorySystem::StorySystem() :
     //!TODO show up the console only in dev builds!
     if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Server )
     {
-//! TODO: implement a console cmd for showing the console
 #ifdef ENABLE_CONSOLE
         _p_console = new ConsoleGUI;
         _p_console->initialize( "story system output", 0.1f, 0.68f, 0.84f, 0.29f, false, true );
         _p_log->addSink( "console", *_p_console, yaf3d::Log::L_VERBOSE );
 #endif
-
     }
 
     storylog_info << "date " << yaf3d::getFormatedDateAndTime() << std::endl;
@@ -171,17 +171,19 @@ bool StorySystem::addActor( unsigned int actorID, StoryEventReceiver* p_receiver
 {
     if ( _sendEventsToActors )
     {
-        storylog_error << "StoryEngine: trying to modify the actor list during event receiving phase!" << std::endl;
+        storylog_error << "StorySystem: trying to modify the actor list during event receiving phase!" << std::endl;
         return false;
     }
 
     if ( _actors.find( actorID ) != _actors.end() )
     {
-        storylog_error << "StoryEngine: actor already exists in receiver list" << std::endl;
+        storylog_error << "StorySystem: actor already exists in receiver list" << std::endl;
         return false;
     }
 
     _actors[ actorID ] = p_receiver;
+
+    storylog_debug << "StorySystem: actor added, id " << actorID << std::endl;
 
     return true;
 }
@@ -190,17 +192,19 @@ bool StorySystem::removeActor( unsigned int actorID, StoryEventReceiver* /*p_rec
 {
     if ( _sendEventsToActors )
     {
-        storylog_error << "StoryEngine: trying to modify the actor list during event receiving phase!" << std::endl;
+        storylog_error << "StorySystem: trying to modify the actor list during event receiving phase!" << std::endl;
         return false;
     }
 
     if ( _actors.find( actorID ) == _actors.end() )
     {
-        storylog_error << "StoryEngine: cannot remove actor from receiver list, it does not exist" << std::endl;
+        storylog_error << "StorySystem: cannot remove actor from receiver list, it does not exist" << std::endl;
         return false;
     }
 
     _actors.erase( _actors.find( actorID ) );
+
+    storylog_debug << "StorySystem: actor removed, id " << actorID << std::endl;
 
     return true;
 }
@@ -217,6 +221,8 @@ void StorySystem::sendEvent( const StoryEvent& event )
         if ( _p_networking )
             _p_networking->sendEvent( event );
     }
+
+    storylog_debug << "StorySystem: send event from " << event.getSourceID() << " to " << event.getTargetID() << std::endl;
 }
 
 void StorySystem::receiveEvent( const StoryEvent& event )
@@ -224,7 +230,9 @@ void StorySystem::receiveEvent( const StoryEvent& event )
 
     // pass the event to actors now
     unsigned int eventfilter = event.getFilter();
-    unsigned int targetID = event.getTargetID();
+    unsigned int targetID    = event.getTargetID();
+
+    storylog_debug << "StorySystem: receive event from " << event.getSourceID() << " for " << event.getTargetID() << std::endl;
 
     if ( yaf3d::GameState::get()->getMode() & ( yaf3d::GameState::Client | yaf3d::GameState::Standalone ) )
     {
@@ -237,7 +245,7 @@ void StorySystem::receiveEvent( const StoryEvent& event )
             Actors::iterator p_actor = _actors.find( targetID );
             if ( p_actor == _actors.end() )
             {
-                storylog_error << "Story->Actor: event cannot be passed to unknown target ID: " << targetID << std::endl;
+                storylog_error << "StorySystem Story->Actor: event cannot be passed to unknown target ID: " << targetID << std::endl;
             }
             else
             {
@@ -258,7 +266,7 @@ void StorySystem::receiveEvent( const StoryEvent& event )
         }
         else
         {
-            storylog_warning << "Story->Actor: trying to send a wrong event type, target ID: " << targetID << std::endl;
+            storylog_warning << "StorySystem Story->Actor: trying to send a wrong event type, target ID: " << targetID << std::endl;
         }
 
         // reset the actor sending events flag
@@ -275,12 +283,12 @@ void StorySystem::receiveEvent( const StoryEvent& event )
             }
             else
             {
-                storylog_warning << "Story->Actor: event could not be sent as networking not ready, target ID: " << targetID << std::endl;
+                storylog_warning << "StorySystem Story->Actor: event could not be sent as networking not ready, target ID: " << targetID << std::endl;
             }
         }
         else
         {
-            storylog_warning << "Story->Actor (server): trying to send a wrong event type, target ID: " << targetID << std::endl;
+            storylog_warning << "StorySystem Story->Actor (server): trying to send a wrong event type, target ID: " << targetID << std::endl;
         }
     }
 }
