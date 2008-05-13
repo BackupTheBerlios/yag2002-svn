@@ -586,9 +586,13 @@ void EnPlayerPhysics::initializePhysics( const osg::Vec3f& pos, const osg::Quat&
     mat *= mat.rotate( rot );
     mat.setTrans( pos );
 
+    //! NOTE: it seems that sometimes the raycasting does not work, i don't know why
+    //        so let the player fall into the ground!
+
     // find ground under the initial position and adapt body matrix
-    float z = findGround( _p_world, pos, 1000.0f );
-    mat.ptr()[ 14 ] = z + _dimensions._v[ 2 ] + 0.2f; // add an offset of player height plus 0.2 meters
+    //float z = findGround( _p_world, pos, 1000.0f );
+    //mat.ptr()[ 14 ] = z + _dimensions._v[ 2 ] + 0.2f; // add an offset of player height plus 0.2 meters
+
     // set the matrix for both the rigid body and the entity
     NewtonBodySetMatrix ( _p_body, mat.ptr() );
     physicsSetTransform ( _p_body, mat.ptr() );
