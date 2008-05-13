@@ -40,8 +40,11 @@
 namespace vrc
 {
 
+//! NOTE: console command is not available in published version
+#ifndef VRC_BUILD_PUBLISH
 //! Implement and register the statistics entity factory
 YAF3D_IMPL_ENTITYFACTORY( ConsoleEntityFactory )
+#endif
 
 EnConsole::EnConsole() :
 _enable( false ),
@@ -326,7 +329,7 @@ void EnConsole::autoCompleteCmd( const std::string& cmd )
     }
     else // we have one single match
     {
-        _p_ioHandler->setCmdLine( *p_beg );        
+        _p_ioHandler->setCmdLine( *p_beg );
     }
 }
 
