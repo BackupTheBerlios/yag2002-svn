@@ -297,6 +297,17 @@ int BaseScript< T >::exposedMethodProxy( lua_State* p_state )
                     log_error << std::endl;
                 }
             }
+            else if ( lua_isboolean( p_state, cnt ) )
+            {
+                if ( typeinfo == typeid( bool ) )
+                    arguments.template setValue< bool >( cnt - 1, lua_toboolean( p_state, cnt ) ? true : false );
+                else
+                {
+                    log_error << "script error: exposed method called with unsupported or wrong parameter type, file: " << p_instance->getScriptFileName() << ", method name: " << p_entry->_methodName;
+                    p_instance->printParamsInfo( arguments );
+                    log_error << std::endl;
+                }
+            }
         }
     }
 
@@ -321,6 +332,8 @@ int BaseScript< T >::exposedMethodProxy( lua_State* p_state )
                 lua_pushnumber( p_instance->_p_state, GET_SCRIPT_PARAMVALUE( returnvalues, index, double ) );
             else if ( tinfo == typeid( std::string ) )
                 lua_pushstring( p_instance->_p_state, ( GET_SCRIPT_PARAMVALUE( returnvalues, index, std::string ) ).c_str() );
+            else if ( tinfo == typeid( bool ) )
+                lua_pushboolean( p_instance->_p_state, ( GET_SCRIPT_PARAMVALUE( returnvalues, index, bool ) ) ? 1 : 0 );
         }
     }
 
@@ -353,7 +366,7 @@ void BaseScript< T >::callScriptFunction( const std::string& fcnname, Params* co
     if ( !_valid )
     {
         log_error << "script error: cannot call function of invalid script: " << _scriptFile << std::endl;
-        return;
+        throw( ScriptingException( "BasicScript: invalid script, cannot call script function" ) );
     }
 
     // get number of return values
