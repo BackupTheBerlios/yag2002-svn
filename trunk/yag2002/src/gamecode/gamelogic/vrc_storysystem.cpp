@@ -53,6 +53,7 @@ StorySystem::StorySystem() :
  _p_networking( NULL ),
  _p_log( NULL ),
  _p_console( NULL ),
+ _p_dialog( NULL ),
  _sendEventsToActors( false )
 {
     std::string filename( SCRIPTING_LOG_FILE_NAME "_server.log" );
@@ -223,6 +224,67 @@ void StorySystem::sendEvent( const StoryEvent& event )
     }
 
     storylog_debug << "StorySystem: send event from " << event.getSourceID() << " to " << event.getTargetID() << std::endl;
+}
+
+void StorySystem::openDialog( const StoryDialogParams& params )
+{
+    assert( ( yaf3d::GameState::get()->getMode() & ( yaf3d::GameState::Server | yaf3d::GameState::Standalone ) ) && "openDialog called in an invalid game mode!" );
+
+    // server mode
+    if ( _p_networking )
+    {
+        _p_networking->sendOpenDialog( params );
+    }
+    // stand-alone mode
+    else
+    {
+        receiveOpenDialog( params );
+    }
+}
+
+void StorySystem::receiveDialogResults( const StoryDialogResults& results )
+{
+    assert(  ( yaf3d::GameState::get()->getMode() & ( yaf3d::GameState::Server | yaf3d::GameState::Standalone ) ) && "onDialogResult called in an invalid game mode!" );
+    assert( _p_storyEngine && "story engine not created!" );
+
+    // propagate the dialog results to story engine
+    _p_storyEngine->processDialogResults( results );
+}
+
+void StorySystem::receiveOpenDialog( const StoryDialogParams& params )
+{
+    assert( ( yaf3d::GameState::get()->getMode() & yaf3d::GameState::Client ) && "receiveOpenDialog called in an invalid game mode!" );
+
+    if ( _p_dialog )
+    {
+        log_warning << "StorySystem: forced closing an open dialog" << std::endl;
+        delete _p_dialog;
+    }
+
+    // create a new dialog
+    _p_dialog = new StoryDialog( params, this );
+}
+
+void StorySystem::onDialogResult( const StoryDialogResults& results )
+{
+    assert(  ( yaf3d::GameState::get()->getMode() & ( yaf3d::GameState::Client | yaf3d::GameState::Standalone ) ) && "onDialogResult called in an invalid game mode!" );
+
+    if ( _p_networking )
+    {
+        _p_networking->sendDialogResults( results );
+    }
+    // stand-alone mode
+    else
+    {
+        receiveDialogResults( results );
+    }
+
+    // close the dialog now
+    if ( _p_dialog )
+    {
+        delete _p_dialog;
+        _p_dialog = NULL;
+    }
 }
 
 void StorySystem::receiveEvent( const StoryEvent& event )

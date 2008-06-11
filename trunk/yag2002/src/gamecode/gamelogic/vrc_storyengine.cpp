@@ -170,6 +170,7 @@ void StoryBookLoader::lbeginStory( const Params& arguments, Params& /*returnvalu
 
 //! Implementation of story engine
 StoryEngine::StoryEngine() :
+ _dialogIDs( 1000 ),
  _time( 0 )
 {
     _p_log = StorySystem::get()->getStoryLog();
@@ -272,6 +273,51 @@ void StoryEngine::processEvent( const StoryEvent& event )
     {
         StorySystem::get()->receiveEvent( event );
     }
+}
+
+unsigned int StoryEngine::registerDialog( Story* p_story )
+{
+    // create a new dialog ID
+    _dialogIDs ++;
+
+    _dialogs[ _dialogIDs ] = p_story;
+
+    return _dialogIDs;
+}
+
+void StoryEngine::openDialog( const StoryDialogParams& params )
+{
+    StorySystem::get()->openDialog( params );
+}
+
+void StoryEngine::deregisterDialog( unsigned int dialogID )
+{
+    Dialogs::iterator p_dialog = _dialogs.find( dialogID );
+
+    if ( p_dialog == _dialogs.end() )
+    {
+        log_error << "StoryEngine: try to de-register a dialog ID which does not exists " << dialogID << std::endl;
+        return;
+    }
+
+    // remove the dialog ID from lookup
+    _dialogs.erase( p_dialog );
+}
+
+void StoryEngine::processDialogResults( const StoryDialogResults& results )
+{
+    // find the story identified by the dialog id in internal dialog lookup
+    Dialogs::iterator p_dialog = _dialogs.find( results._id );
+
+    if ( p_dialog == _dialogs.end() )
+    {
+        log_error << "StoryEngine: dialog results received with an invalid dialog ID " << results._id << std::endl;
+        return;
+    }
+
+    // propagate the results to story
+    //! NOTE: a call of this method can modify _dialogs when new dialogs are created by this call. so p_dialog may be invalid after this call!
+    p_dialog->second->processDialogResutls( results );
 }
 
 void StoryEngine::update( float deltaTime )

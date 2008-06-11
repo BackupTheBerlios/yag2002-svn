@@ -38,6 +38,8 @@ namespace vrc
 {
 
 class StoryEvent;
+class StoryDialogParams;
+class StoryDialogResults;
 
 class StoryNetworking : _RO_DO_PUBLIC_RO( StoryNetworking )
 {
@@ -49,7 +51,13 @@ class StoryNetworking : _RO_DO_PUBLIC_RO( StoryNetworking )
         virtual                                    ~StoryNetworking();
 
         //! Send an event over network It is used by server and clients.
-        bool                                        sendEvent( const StoryEvent& event );
+        void                                        sendEvent( const StoryEvent& event );
+
+        //! Send a command to client for opening a dialog. This method is used on server.
+        void                                        sendOpenDialog( const StoryDialogParams& params );
+
+        //! Send the dialog results to server. This method is used on clients.
+        void                                        sendDialogResults( const StoryDialogResults& results );
 
     protected:
 
@@ -61,6 +69,12 @@ class StoryNetworking : _RO_DO_PUBLIC_RO( StoryNetworking )
 
         //! Client requests the server to perform an action
         void                                        RPC_ReceiveEvent( tEventData event );
+
+        //! Server requests the client to open a dialog
+        void                                        RPC_OpenDialog( tDialogData dialog );
+
+        //! Client delivers the dialog results to server.
+        void                                        RPC_ReceiveDialogResults( tDialogResultsData dialogresults );
 
         //-----------------------------------------------------------------------------------//
 

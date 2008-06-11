@@ -29,6 +29,7 @@
 
 #include <vrc_main.h>
 #include "vrc_storydialog.h"
+#include "vrc_story.h"
 
 //! GUI name prefix
 #define STORY_DLG   "_storydlg"
@@ -37,11 +38,33 @@
 namespace vrc
 {
 
-StoryDialog::StoryDialog( unsigned int dialogID, DialogCallback* p_cb ) :
- _dialogID( dialogID ),
+StoryDialog::StoryDialog( DialogCallback* p_cb ) :
+ _dialogID( 0 ),
+ _networkID( 0 ),
+ _sourceID( 0 ),
  _p_cb( p_cb ),
- _p_wnd( NULL )
+ _p_wnd( NULL ),
+ _abortClicked( false )
 {
+}
+
+StoryDialog::StoryDialog( const StoryDialogParams& params, DialogCallback* p_cb ) :
+ _dialogID( params._id ),
+ _networkID( params._destNetworkID ),
+ _sourceID( params._sourceID ),
+ _p_cb( p_cb ),
+ _p_wnd( NULL ),
+ _abortClicked( false )
+{
+    std::vector< StoryDialogParams::ChoiceInput >::const_iterator p_choice = params._choices.begin(), p_choiceEnd = params._choices.end();
+    for ( ; p_choice != p_choiceEnd; ++p_choice )
+        addChoice( p_choice->first, p_choice->second );
+
+    std::vector< StoryDialogParams::TextInput >::const_iterator p_textinput = params._textFields.begin(), p_textinputEnd = params._textFields.end();
+    for ( ; p_textinput != p_textinputEnd; ++p_textinput )
+        addInputText( p_textinput->first, p_textinput->second );
+
+    createDialog( params._id, params._title, params._text );
 }
 
 StoryDialog::~StoryDialog()
@@ -49,11 +72,36 @@ StoryDialog::~StoryDialog()
     closeDialog();
 }
 
-void StoryDialog::addAnswer( unsigned int type, std::string answertext )
+void StoryDialog::addChoice( std::string fieldname, bool defaultselection )
 {
     assert( ( _p_wnd == NULL ) && "the dialog is already created! do not call this method after dialog creation." );
 
-    _answers.push_back( std::make_pair( type, answertext ) );
+    InputField field;
+    field._fieldType = eChoice;
+    field._fieldName = fieldname;
+    field._defaultSelection = defaultselection;
+    _inputs.push_back( field );
+}
+
+void StoryDialog::addInputText( std::string fieldname, const std::string& defaultvalue )
+{
+    assert( ( _p_wnd == NULL ) && "the dialog is already created! do not call this method after dialog creation." );
+
+    InputField field;
+    field._fieldType = eString;
+    field._fieldName = fieldname;
+    field._defaultValue = defaultvalue;
+    _inputs.push_back( field );
+}
+
+void StoryDialog::clearDialog()
+{
+    _inputs.clear();
+    _choices.clear();
+    _textFields.clear();
+    _dialogID     = 0;
+    _abortClicked = false;
+    closeDialog();
 }
 
 void StoryDialog::setDialogCallback( DialogCallback* p_cb )
@@ -61,135 +109,16 @@ void StoryDialog::setDialogCallback( DialogCallback* p_cb )
     _p_cb = p_cb;
 }
 
-#if 0 //! TODO: remove this proof of concept
-void StoryDialog::createDialog( const std::string& title, const std::string& text )
+bool StoryDialog::createDialog( unsigned int dialogID, const std::string& title, const std::string& text )
 {
     if ( _p_wnd )
     {
         log_error << "StoryDialog: the gui is already created." << std::endl;
-        return;
+        return false;
     }
 
-    CEGUI::Window* p_mainwnd = gameutils::GuiUtils::get()->getMainGuiWindow();
-
-    try
-    {
-        // we need unique gui element names
-        static unsigned int num = 0;
-        std::stringstream numstr;
-        numstr << num;
-        num++;
-
-        // determine the text extends
-        CEGUI::Font* p_font = yaf3d::GuiManager::get()->getFont( YAF3D_GUI_FONT8 ); // we take the font with pointsize 8
-        assert( p_font && "font does not exist!" );
-
-#if 0
-        // consider line breaks in text
-        std::vector< std::string > lines;
-        yaf3d::explode( dialogtext, "\n", &lines );
-        float textwidth  = 0.0f;
-        // get maximal line width
-        for ( std::size_t cnt = 0; cnt < lines.size(); ++cnt )
-        {
-            float lineextend = p_font->getTextExtent( lines[ cnt ] );
-            if ( textwidth < lineextend )
-                textwidth = lineextend;
-        }
-        std::vector< Answer >::const_iterator p_beg = _answers.begin(), p_end = _answers.end();
-        for ( ; p_beg != p_end; ++p_beg )
-        {
-            if ( p_beg->first == eChoice )
-            {
-                float lineextend = p_font->getTextExtent( p_beg->second ) + 0.1f;
-                if ( textwidth < lineextend )
-                    textwidth = lineextend;
-            }
-        }
-
-        float textheight = p_font->getLineSpacing() * ( float( lines.size() ) + float( _answers.size() ) * 1.5f );
-
-        // consider the box border width and a small margin
-        textheight += 20.0f;
-        textwidth  += 30.0f;
-
-        // now calculate the text width and height in projection screen coords
-        float width, height;
-        yaf3d::GuiManager::get()->getGuiArea( width, height );
-        textwidth  /= width;
-        textheight /= height;
-
-        float dialogtextheight = float( lines.size() ) / ( float( lines.size() ) + float( _answers.size() ) * 1.5f );
-#endif
-
-        _p_wnd = static_cast< CEGUI::FrameWindow* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/FrameWindow", STORY_DLG "mainFrame" + numstr.str() ) );
-//        _p_wnd->subscribeEvent( CEGUI::FrameWindow::EventCloseClicked, CEGUI::Event::Subscriber( &vrc::StoryDialog::onClickedClose, this ) );
-
-        _p_wnd->setSize( CEGUI::Size( 0.25f, 0.30f ) );
-        _p_wnd->setPosition( CEGUI::Point( 0.005f, 0.25f ) );
-        _p_wnd->setAlpha( 0.8f );
-        _p_wnd->setAlwaysOnTop( true );
-        _p_wnd->setText( title );
-
-        // create the text gui
-        CEGUI::MultiLineEditbox* p_text = static_cast< CEGUI::MultiLineEditbox* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/MultiLineEditbox", STORY_DLG "text" + numstr.str() ) );
-        p_text->setSize( CEGUI::Size( 1.0f, 1.0f ) );
-        p_text->setPosition( CEGUI::Point( 0.0f, 0.0f ) );
-        p_text->setFont( YAF3D_GUI_FONT8 );
-        //p_text->setHorizontalFormatting( CEGUI::StaticText::LeftAligned );
-        //p_text->setVerticalFormatting( CEGUI::StaticText::TopAligned );
-        p_text->setReadOnly( true );
-        _p_wnd->addChildWindow( p_text );
-        // set the title and text
-        p_text->setText( text );
-
-#if 0
-        // create the answer gui elements
-        /*std::vector< Answer >::const_iterator*/ p_beg = _answers.begin(), p_end = _answers.end();
-        for ( ; p_beg != p_end; ++p_beg )
-        {
-            std::stringstream answernumstr;
-            answernumstr << num;
-            num++;
-
-            // we take a fix line height
-            dialogtextheight += 0.15f;
-
-            if ( p_beg->first == eChoice )
-            {
-                CEGUI::RadioButton* p_answer = static_cast< CEGUI::RadioButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/RadioButton", STORY_DLG "answer" + answernumstr.str() ) );
-                p_answer->setSize( CEGUI::Size( 1.0f, 0.1f ) );
-                p_answer->setPosition( CEGUI::Point( 0.1f, dialogtextheight ) );
-                p_answer->setFont( YAF3D_GUI_FONT8 );
-                // set the answer text
-                p_answer->setText( p_beg->second );
-                p_answer->setAlwaysOnTop( true );
-                p_text->addChildWindow( p_answer );
-            }
-        }
-#endif
-        // create the answer gui
-//        createAnswers( p_text, _answers );
-
-        // append the dialog to main window
-        p_mainwnd->addChildWindow( _p_wnd );
-    }
-    catch ( const CEGUI::Exception& e )
-    {
-        log_error << "StoryDialog: problem creating gui" << std::endl;
-        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
-    }
-}
-
-#endif
-
-void StoryDialog::createDialog( const std::string& title, const std::string& text )
-{
-    if ( _p_wnd )
-    {
-        log_error << "StoryDialog: the gui is already created." << std::endl;
-        return;
-    }
+    // set the dialog ID.
+    _dialogID = dialogID;
 
     CEGUI::Window* p_mainwnd = gameutils::GuiUtils::get()->getMainGuiWindow();
 
@@ -219,39 +148,40 @@ void StoryDialog::createDialog( const std::string& title, const std::string& tex
             if ( textwidth < lineextend )
                 textwidth = lineextend;
         }
-        std::vector< Answer >::const_iterator p_beg = _answers.begin(), p_end = _answers.end();
+        std::vector< InputField >::const_iterator p_beg = _inputs.begin(), p_end = _inputs.end();
         for ( ; p_beg != p_end; ++p_beg )
         {
-            if ( p_beg->first == eChoice )
+            if ( p_beg->_fieldType == eChoice )
             {
-                float lineextend = p_font->getTextExtent( p_beg->second ) + 0.1f;
+                float lineextend = p_font->getTextExtent( p_beg->_fieldName ) + 0.1f;
                 if ( textwidth < lineextend )
                     textwidth = lineextend;
             }
-            else if ( p_beg->first == eString )
+            else if ( p_beg->_fieldType == eString )
             {
-                float lineextend = p_font->getTextExtent( p_beg->second ) + 0.25f;
+                float lineextend = p_font->getTextExtent( p_beg->_fieldName ) + 0.25f;
                 if ( textwidth < lineextend )
                     textwidth = lineextend;
             }
         }
 
         // consider the box border width and a small margin
-        float textheight = p_font->getLineSpacing() * ( float( lines.size() ) + float( _answers.size() ) * 1.5f );
+        float textheight = p_font->getLineSpacing() * ( float( lines.size() ) + float( _inputs.size() ) * 1.5f );
         textheight += 30.0f;
         textwidth  += 30.0f;
+        textwidth  = std::max( 250.0f, textwidth );
 
-        float answerareaheight = float( lines.size() ) / ( float( lines.size() ) + float( _answers.size() ) * 2.0f );
+        float inputareaheight = float( lines.size() ) / ( float( lines.size() ) + float( _inputs.size() ) * 2.0f );
 
         _p_wnd = CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", STORY_DLG "mainWnd" + numstr.str() );
-        _p_wnd->setSize( CEGUI::Absolute, CEGUI::Size( textwidth, textheight + 40.0f ) );
+        _p_wnd->setSize( CEGUI::Absolute, CEGUI::Size( textwidth, textheight + 72.50f ) ); // consider the buttons
         _p_wnd->setPosition( CEGUI::Point( 0.01f, 0.25f ) );
         _p_wnd->setAlpha( 0.9f );
         _p_wnd->setAlwaysOnTop( true );
 
         // the dialog colors
-        CEGUI::colour color( 0.3f, 0.3f, 0.3f, 0.7f );
-        CEGUI::colour colorframe( 0.2f, 0.2f, 0.2f, 0.5f );
+        CEGUI::colour color( 0.2f, 0.2f, 0.2f, 0.5f ); // ( 0.3f, 0.3f, 0.3f, 0.7f );
+        CEGUI::colour colorframe( 0.2f, 0.2f, 0.2f, 0.45f );
 
         // create the title gui
         CEGUI::StaticText* p_title = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", STORY_DLG "title" + numstr.str() ) );
@@ -280,39 +210,52 @@ void StoryDialog::createDialog( const std::string& title, const std::string& tex
         p_text->setText( text );
         _p_wnd->addChildWindow( p_text );
 
-        // begin of height position for answer gui elements
-        answerareaheight += 0.1f;
+        // begin of height position for input gui elements
+        inputareaheight += 0.1f;
 
-        // create the answer gui elements
-        p_beg = _answers.begin(), p_end = _answers.end();
+        // create the input gui elements
+        long long selectionindex = 1; // selection index
+        long long textindex      = 1; // text field index
+        p_beg = _inputs.begin(), p_end = _inputs.end();
         for ( ; p_beg != p_end; ++p_beg )
         {
             std::stringstream answernumstr;
             answernumstr << num;
             num++;
 
-            CEGUI::Window* p_answer = NULL;
+            CEGUI::Window* p_input = NULL;
 
-            if ( p_beg->first == eChoice )
+            if ( p_beg->_fieldType == eChoice )
             {
-                p_answer = CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/RadioButton", STORY_DLG "answer" + answernumstr.str() );
-                p_answer->setSize( CEGUI::Size( 1.0f, 0.15f ) );
-                p_answer->setText( p_beg->second );
+                p_input = CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/RadioButton", STORY_DLG "input" + answernumstr.str() );
+                p_input->setSize( CEGUI::Size( 1.0f, 0.15f ) );
+                p_input->setText( p_beg->_fieldName );
+                p_input->setUserData( reinterpret_cast< void* >( selectionindex++ ) );
+
+                static_cast< CEGUI::RadioButton* >( p_input )->setSelected( p_beg->_defaultSelection );
+
+                // add the radio button to list for later value query
+                _choices.push_back( reinterpret_cast< CEGUI::RadioButton* >( p_input ) );
             }
-            else if ( p_beg->first == eString )
+            else if ( p_beg->_fieldType == eString )
             {
-                p_answer = CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", STORY_DLG "answer" + answernumstr.str() );
-                p_answer->setSize( CEGUI::Size( 0.15f, 0.13f ) );
+                p_input = CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Editbox", STORY_DLG "input" + answernumstr.str() );
+                p_input->setSize( CEGUI::Size( 0.15f, 0.13f ) );
+                p_input->setUserData( reinterpret_cast< void* >( textindex++ ) );
+                p_input->setText( p_beg->_defaultValue );
 
                 CEGUI::StaticText* p_desc = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", STORY_DLG "answerdesc" + answernumstr.str() ) );
                 p_desc->setSize( CEGUI::Size( 0.75f, 0.13f ) );
-                p_desc->setPosition( CEGUI::Point( 0.23f, answerareaheight ) );
+                p_desc->setPosition( CEGUI::Point( 0.23f, inputareaheight ) );
                 p_desc->setFont( YAF3D_GUI_FONT8 );
                 p_desc->setAlwaysOnTop( true );
                 p_desc->setBackgroundEnabled( false );
                 p_desc->setFrameEnabled( false );
-                p_desc->setText( p_beg->second );
+                p_desc->setText( p_beg->_fieldName );
                 p_text->addChildWindow( p_desc );
+
+                // add the text field to list for later value query
+                _textFields.push_back( reinterpret_cast< CEGUI::Editbox* >( p_input ) );
             }
             else
             {
@@ -320,14 +263,33 @@ void StoryDialog::createDialog( const std::string& title, const std::string& tex
                 continue;
             }
 
-            p_answer->setPosition( CEGUI::Point( 0.05f, answerareaheight ) );
-            p_answer->setFont( YAF3D_GUI_FONT8 );
-            p_answer->setAlwaysOnTop( true );
-            p_text->addChildWindow( p_answer );
+            p_input->setPosition( CEGUI::Point( 0.05f, inputareaheight ) );
+            p_input->setFont( YAF3D_GUI_FONT8 );
+            p_input->setAlwaysOnTop( true );
+            p_text->addChildWindow( p_input );
 
             // we take a fix line height
-            answerareaheight += 0.16f;
+            inputareaheight += 0.16f;
         }
+
+        // append the ok and cancel buttons to box
+        CEGUI::PushButton* p_btnok    = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", STORY_DLG "btnok" + numstr.str() ) );
+        p_btnok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::StoryDialog::onClickedOk, this ) );
+        p_btnok->setSize( CEGUI::Absolute, CEGUI::Size( 100.0f, 30.0f ) );
+        p_btnok->setPosition( CEGUI::Absolute, CEGUI::Point( textwidth - 100.0f, textheight + 42.50f ) );
+        p_btnok->setFont( YAF3D_GUI_FONT8 );
+        p_btnok->setAlwaysOnTop( true );
+        p_btnok->setText( "Ok" );
+        _p_wnd->addChildWindow( p_btnok );
+
+        CEGUI::PushButton* p_btnabort = static_cast< CEGUI::PushButton* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/Button", STORY_DLG "btncancel" + numstr.str() ) );
+        p_btnabort->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::StoryDialog::onClickedAbort, this ) );
+        p_btnabort->setSize( CEGUI::Absolute, CEGUI::Size( 100.0f, 30.0f ) );
+        p_btnabort->setPosition( CEGUI::Absolute, CEGUI::Point( textwidth - 202.50f, textheight + 42.50f ) );
+        p_btnabort->setFont( YAF3D_GUI_FONT8 );
+        p_btnabort->setAlwaysOnTop( true );
+        p_btnabort->setText( "Abort" );
+        _p_wnd->addChildWindow( p_btnabort );
 
         // append the dialog to main window
         p_mainwnd->addChildWindow( _p_wnd );
@@ -336,7 +298,10 @@ void StoryDialog::createDialog( const std::string& title, const std::string& tex
     {
         log_error << "StoryDialog: problem creating gui" << std::endl;
         log_out << "      reason: " << e.getMessage().c_str() << std::endl;
+        return false;
     }
+
+    return true;
 }
 
 void StoryDialog::closeDialog()
@@ -365,14 +330,112 @@ void StoryDialog::show( bool en )
 
 unsigned int StoryDialog::getChoice()
 {
-    // TODO
-    return 0;
+    unsigned int choice = 0;
+    // search for selected radio button
+    std::vector< CEGUI::RadioButton* >::iterator p_radio = _choices.begin(), p_end = _choices.end();
+    for ( ; p_radio != p_end; ++p_radio )
+    {
+        if ( ( *p_radio )->isSelected() )
+        {
+            choice = static_cast< unsigned int >( reinterpret_cast< long long >( ( *p_radio )->getUserData() ) );
+            break;
+        }
+    }
+
+    return choice;
+}
+
+void StoryDialog::setChoice( unsigned int index )
+{
+    // search for radio button and select it
+    std::vector< CEGUI::RadioButton* >::iterator p_radio = _choices.begin(), p_end = _choices.end();
+    for ( ; p_radio != p_end; ++p_radio )
+    {
+        unsigned int idx = static_cast< unsigned int >( reinterpret_cast< long long >( ( *p_radio )->getUserData() ) );
+        if ( idx == index )
+        {
+            ( *p_radio )->setSelected( true );
+        }
+        else
+        {
+            ( *p_radio )->setSelected( false );
+        }
+    }
 }
 
 std::string StoryDialog::getText( unsigned int num )
 {
-    // TODO
-    return std::string( "" );
+    if ( num > _textFields.size() || !num )
+    {
+        log_error << "StoryDialog: invalid text field index " << num << std::endl;
+        return std::string( "" );
+    }
+
+    return std::string( _textFields[ num - 1 ]->getText().c_str() );
+}
+
+void StoryDialog::setText( unsigned int num, const std::string& text )
+{
+    if ( num > _textFields.size() || !num )
+    {
+        log_error << "StoryDialog: invalid text field index " << num << std::endl;
+        return;
+    }
+
+    _textFields[ num - 1 ]->setText( text );
+}
+
+unsigned int StoryDialog::getCountTextInput() const
+{
+    return _textFields.size();
+}
+
+bool StoryDialog::onClickedOk( const CEGUI::EventArgs& /*arg*/ )
+{
+    _abortClicked = false;
+
+    if ( _p_cb )
+    {
+        // collect the dialog results and call the callback method
+        StoryDialogResults results;
+        results._dialogAbort   = _abortClicked;
+        results._id            = _dialogID;
+        results._choice        = getChoice();
+        results._destNetworkID = getNetworkID();
+        results._sourceID      = getSourceID();
+
+        unsigned int  cntvalues = getCountTextInput();
+        for ( unsigned int cnt = 1; cnt <= cntvalues; cnt++ )
+            results._textFields.push_back( getText( cnt ) );
+
+        _p_cb->onDialogResult( results );
+    }
+
+    return true;
+}
+
+bool StoryDialog::onClickedAbort( const CEGUI::EventArgs& /*arg*/ )
+{
+    _abortClicked = true;
+
+    if ( _p_cb )
+    {
+        // notify about aborting the dialog via callback method
+        StoryDialogResults results;
+        results._dialogAbort   = _abortClicked;
+        results._id            = _dialogID;
+        results._destNetworkID = getNetworkID();
+        results._sourceID      = getSourceID();
+
+        _p_cb->onDialogResult( results );
+    }
+
+    return true;
+}
+
+bool StoryDialog::clickedAbort() const
+{
+    return _abortClicked;
 }
 
 } // namespace vrc

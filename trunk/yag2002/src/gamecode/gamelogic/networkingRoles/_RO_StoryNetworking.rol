@@ -9,9 +9,23 @@ object StoryNetworking
 
     extern RPC_ReceiveEvent( tEventData );
 
+    extern RPC_OpenDialog( tDialogData );
+
+    extern RPC_ReceiveDialogResults( tDialogResultsData );
+
     networking
     {
         Function RPC_ReceiveEvent;
+        { 
+            Reliable();
+        }
+
+        Function RPC_OpenDialog;
+        { 
+            Reliable();
+        }
+
+        Function RPC_ReceiveDialogResults;
         { 
             Reliable();
         }

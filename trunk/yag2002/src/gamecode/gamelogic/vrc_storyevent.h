@@ -78,6 +78,8 @@ class StoryEvent
                                                                 unsigned int targetID,
                                                                 unsigned int filter,
 
+                                                                int          networkID,
+
                                                                 unsigned int uiParam1 = 0,
                                                                 unsigned int uiParam2 = 0,
                                                                 float        fParam1 = 0.0f,
@@ -105,6 +107,9 @@ class StoryEvent
         //! Get target ID. This specifies an instance of a target type.
         unsigned int                                getTargetID() const { return _targetID; }
 
+        //! Get the network ID of sender. This can be used to identify the event sending client.
+        int                                         getNetworkID() const { return _networkID; }
+
         //! Get generic event parameters.
         unsigned int                                getUIParam1() const { return _uiParam1; }
         unsigned int                                getUIParam2() const { return _uiParam2; }
@@ -125,6 +130,9 @@ class StoryEvent
 
         //! Event's target instance, this specefies an instance of a target type
         unsigned int                                _targetID;
+
+        //! Event sender's network session ID
+        int                                         _networkID;
 
         //! Event type
         unsigned int                                _eventType;

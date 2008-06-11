@@ -37,6 +37,7 @@
 #include <gamelogic/vrc_story.h>
 #include <gamelogic/vrc_storyevent.h>
 #include <gamelogic/vrc_storyactor.h>
+#include "vrc_storydialog.h"
 
 namespace vrc
 {
@@ -66,12 +67,13 @@ class StorySystemException : public std::runtime_error
 
 
 class Story;
-class StoryEngine;
-class StoryNetworking;
 class ConsoleGUI;
+class StoryEngine;
+class StoryDialog;
+class StoryNetworking;
 
 //! Story system singleton providing all necessary functionality for running stories
-class StorySystem : public yaf3d::Singleton< StorySystem >, public yaf3d::BaseEntity
+class StorySystem : public yaf3d::Singleton< StorySystem >, public yaf3d::BaseEntity, public StoryDialog::DialogCallback
 {
     public:
 
@@ -101,6 +103,18 @@ class StorySystem : public yaf3d::Singleton< StorySystem >, public yaf3d::BaseEn
 
         //! This method is called by networking in client mode or by story engine in server/standalone mode
         void                                        receiveEvent( const StoryEvent& event );
+
+        //! Open a dialog. An openened dialog is closed by client's dialog gui and its results is propagated via a script callback.
+        void                                        openDialog( const StoryDialogParams& params );
+
+        //! This method is called by networking in client mode when a requested dialog must be opened.
+        void                                        receiveOpenDialog( const StoryDialogParams& params );
+
+        //! This method is called by networking in server mode when the client delivers the dialog results.
+        void                                        receiveDialogResults( const StoryDialogResults& results );
+
+        //! Callback for story dialog's gui delivering the dialog results. This method is used on clients.
+        void                                        onDialogResult( const StoryDialogResults& results );
 
         //! Entity related method overides
         //  ###############################
@@ -133,6 +147,9 @@ class StorySystem : public yaf3d::Singleton< StorySystem >, public yaf3d::BaseEn
 
         //! Debug console
         ConsoleGUI*                                 _p_console;
+
+        //! Dialog object used on client.
+        StoryDialog*                                _p_dialog;
 
         //! Typedef for actors < ID, callback object >.
         typedef std::map< unsigned int, StoryEventReceiver* > Actors;

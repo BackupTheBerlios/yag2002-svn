@@ -37,6 +37,9 @@
 
 using namespace RNReplicaNet;
 
+//! Separator used for formatting dialog choice and input text fields for transfer
+#define DIALOG_STRING_SEPARATOR  "\250"
+
 namespace vrc
 {
 
@@ -61,7 +64,7 @@ void StoryNetworking::PostObjectCreate()
     StorySystem::get()->setNetworking( this );
 }
 
-bool StoryNetworking::sendEvent( const StoryEvent& event )
+void StoryNetworking::sendEvent( const StoryEvent& event )
 {
     // copy the event data into networking paket
     tEventData eventdata;
@@ -72,6 +75,7 @@ bool StoryNetworking::sendEvent( const StoryEvent& event )
     eventdata._sourceID       = event.getSourceID();
     eventdata._targetType     = event.getTargetType();
     eventdata._targetID       = event.getTargetID();
+    eventdata._sessionID      = event.getNetworkID();
     eventdata._uiParam[ 0 ]   = event.getUIParam1();
     eventdata._uiParam[ 1 ]   = event.getUIParam2();
     eventdata._fParam[ 0 ]    = event.getFParam1();
@@ -89,8 +93,101 @@ bool StoryNetworking::sendEvent( const StoryEvent& event )
 
     // call the receive event on clients or server
     MASTER_FUNCTION_CALL( RPC_ReceiveEvent( eventdata ) );
+}
 
-    return true;
+void StoryNetworking::sendOpenDialog( const StoryDialogParams& params )
+{ // this method is called only by server
+
+    assert( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server );
+
+    tDialogData dialog;
+    dialog._sessionID = params._destNetworkID;
+    dialog._id        = params._id;
+    dialog._sourceID  = params._sourceID;
+
+    memset( &dialog._p_title, 0, sizeof( dialog._p_title ) );
+    memset( &dialog._p_text, 0, sizeof( dialog._p_text ) );
+    memset( &dialog._p_choiceText, 0, sizeof( dialog._p_choiceText ) );
+    memset( &dialog._p_inputFieldText, 0, sizeof( dialog._p_inputFieldText ) );
+    memset( &dialog._p_inputFieldTextDefaults, 0, sizeof( dialog._p_inputFieldTextDefaults ) );
+
+    // copy title and text
+    memcpy( dialog._p_title, params._title.c_str(), std::min( params._title.length(), sizeof( dialog._p_title ) ) );
+    memcpy( dialog._p_text, params._text.c_str(), std::min( params._text.length(), sizeof( dialog._p_text ) ) );
+
+    // format the choices into proper string ready for transfer
+    std::stringstream choicestr;
+    unsigned int      choicedefault = 0;
+    std::vector< StoryDialogParams::ChoiceInput >::const_iterator p_choice = params._choices.begin(), p_choiceEnd = params._choices.end();
+    for ( unsigned int index = 0; p_choice != p_choiceEnd; ++p_choice, ++index )
+    {
+        choicestr << p_choice->first << DIALOG_STRING_SEPARATOR; // append a string separator sign
+        if ( p_choice->second )
+            choicedefault = index;
+    }
+
+    if ( choicestr.str().length() > sizeof( dialog._p_choiceText ) )
+        log_error << "StoryNetworking: dialog choice strings excees the max length " << sizeof( dialog._p_choiceText ) << std::endl;
+
+    memcpy( dialog._p_choiceText, choicestr.str().c_str(), std::min( choicestr.str().length(), sizeof( dialog._p_choiceText ) - 1 ) );
+    dialog._p_choiceText[ sizeof( dialog._p_choiceText ) - 1 ] = 0;
+    dialog._choiceDefault = choicedefault;
+
+    // format the input text fields into proper string ready for transfer
+    std::stringstream inputfieldstr;
+    std::stringstream inputfielddeafultstr;
+    std::vector< StoryDialogParams::TextInput >::const_iterator p_textinput = params._textFields.begin(), p_textinputEnd = params._textFields.end();
+    for ( ; p_textinput != p_textinputEnd; ++p_textinput )
+    {
+        inputfieldstr << p_textinput->first << DIALOG_STRING_SEPARATOR;       // append a string separator sign
+        inputfielddeafultstr << p_textinput->second << DIALOG_STRING_SEPARATOR;
+    }
+
+    if ( inputfieldstr.str().length() > sizeof( dialog._p_inputFieldText ) )
+        log_error << "StoryNetworking: dialog input text strings excees the max length " << sizeof( dialog._p_inputFieldText ) << std::endl;
+
+    if ( inputfielddeafultstr.str().length() > sizeof( dialog._p_inputFieldTextDefaults ) )
+        log_error << "StoryNetworking: dialog input text value strings excees the max length " << sizeof( dialog._p_inputFieldTextDefaults ) << std::endl;
+
+    memcpy( dialog._p_inputFieldText, inputfieldstr.str().c_str(), std::min( inputfieldstr.str().length(), sizeof( dialog._p_inputFieldText ) - 1 ) );
+    memcpy( dialog._p_inputFieldTextDefaults, inputfielddeafultstr.str().c_str(), std::min( inputfielddeafultstr.str().length(), sizeof( dialog._p_inputFieldTextDefaults ) - 1 ) );
+    dialog._p_inputFieldText[ sizeof( dialog._p_inputFieldText ) - 1 ] = 0;
+    dialog._p_inputFieldTextDefaults[ sizeof( dialog._p_inputFieldTextDefaults ) - 1 ] = 0;
+
+    // send out the network message to client now
+    NOMINATED_REPLICAS_FUNCTION_CALL( 1, &params._destNetworkID, RPC_OpenDialog( dialog ) );
+}
+
+void StoryNetworking::sendDialogResults( const StoryDialogResults& results )
+{ // this method is called on clients
+
+    assert( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client );
+
+    tDialogResultsData dialogresults;
+
+    dialogresults._sessionID   = results._destNetworkID;
+    dialogresults._sourceID    = results._sourceID;
+    dialogresults._id          = results._id;
+    dialogresults._choice      = results._choice;
+    dialogresults._dialogAbort = results._dialogAbort;
+
+    memset( dialogresults._p_inputFieldValues, 0, sizeof( dialogresults._p_inputFieldValues ) );
+
+    std::stringstream inputfieldvalues;
+    std::vector< std::string >::const_iterator p_textinput = results._textFields.begin(), p_textinputEnd = results._textFields.end();
+    for ( ; p_textinput != p_textinputEnd; ++p_textinput )
+    {
+        inputfieldvalues << *p_textinput << DIALOG_STRING_SEPARATOR;       // append a string separator sign
+    }
+
+    if ( inputfieldvalues.str().length() > sizeof( results._textFields ) )
+        log_error << "StoryNetworking: dialog result's input text strings excees the max length " << sizeof( results._textFields ) << std::endl;
+
+    memcpy( dialogresults._p_inputFieldValues, inputfieldvalues.str().c_str(), std::min( inputfieldvalues.str().length(), sizeof( dialogresults._p_inputFieldValues ) - 1 ) );
+    dialogresults._p_inputFieldValues[ sizeof( dialogresults._p_inputFieldValues ) - 1 ] = 0;
+
+    // send out the network message to server now
+    MASTER_FUNCTION_CALL( RPC_ReceiveDialogResults( dialogresults ) );
 }
 
 void StoryNetworking::RPC_ReceiveEvent( tEventData eventdata )
@@ -117,6 +214,7 @@ void StoryNetworking::RPC_ReceiveEvent( tEventData eventdata )
                         eventdata._targetType,
                         eventdata._targetID,
                         eventdata._filter,
+                        eventdata._sessionID,
                         eventdata._uiParam[ 0 ],
                         eventdata._uiParam[ 1 ],
                         eventdata._fParam[ 0 ],
@@ -129,29 +227,92 @@ void StoryNetworking::RPC_ReceiveEvent( tEventData eventdata )
         StorySystem::get()->sendEvent( event );
     else
         StorySystem::get()->receiveEvent( event );
+}
 
-#if 0
+void StoryNetworking::RPC_OpenDialog( tDialogData dialog )
+{ // this method is called on clients only
 
-    std::vector< float > args;
-    std::vector< float > result;
-    result.push_back( 0.0f ); // return value: success / fail
-    result.push_back( 0.0f ); // respawn time
+    assert( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client );
 
-    if ( !GameLogic::get()->requestAction( action._actionType, action._paramUint[ 0 ], action._paramUint[ 1 ], args, result ) )
+    // dialogs open only on triggering client
+    // note: actually, the server calls this rpc on the right client; this is only a further check.
+    if ( dialog._sessionID != yaf3d::NetworkDevice::get()->getSessionID() )
     {
-        log_error << "StoryNetworking: problem executing required action: " << action._actionType << std::endl;
-        action._actionResult = -1;
-    }
-    else
-    {
-        // push the result of action into first uint parameter
-        action._actionResult = int( result[ 0 ] );
-        // push the respawn time to first float parameter
-        action._paramFloat[ 0 ] = result[ 1 ];
+        log_warning << "StoryNetworking: rpc open dialog has been called on wrong client!" << std::endl;
+        return;
     }
 
-    ALL_REPLICAS_FUNCTION_CALL( RPC_ActionResult( action ) );
-#endif
+    // terminate the strings for being on safe side
+    dialog._p_title[ sizeof( dialog._p_title ) - 1 ] = 0;
+    dialog._p_text[ sizeof( dialog._p_text ) - 1 ] = 0;
+    dialog._p_choiceText[ sizeof( dialog._p_choiceText ) - 1 ] = 0;
+    dialog._p_inputFieldText[ sizeof( dialog._p_inputFieldText ) - 1 ] = 0;
+    dialog._p_inputFieldTextDefaults[ sizeof( dialog._p_inputFieldTextDefaults ) - 1 ] = 0;
+
+    StoryDialogParams params;
+    params._id            = dialog._id;
+    params._destNetworkID = dialog._sessionID;
+    params._sourceID      = dialog._sourceID;
+    params._title         = dialog._p_title;
+    params._text          = dialog._p_text;
+
+    // reconstruct the choices
+    std::vector< std::string > choices;
+
+    yaf3d::explode( dialog._p_choiceText, DIALOG_STRING_SEPARATOR, &choices );
+    
+    std::vector< std::string >::const_iterator p_choice = choices.begin(), p_choiceEnd = choices.end();
+    for ( unsigned int index = 0; p_choice != p_choiceEnd; ++p_choice, ++index )
+    {
+        params._choices.push_back( std::make_pair( *p_choice, index == dialog._choiceDefault ) );
+    }
+
+    // reconstruct the input fields
+    std::vector< std::string > inputfields;
+    std::vector< std::string > inputfielddefaults;
+
+    yaf3d::explode( dialog._p_inputFieldText, DIALOG_STRING_SEPARATOR, &inputfields );
+    yaf3d::explode( dialog._p_inputFieldTextDefaults, DIALOG_STRING_SEPARATOR, &inputfielddefaults );
+
+    if ( inputfields .size() != inputfielddefaults.size() )
+        log_error << "StoryNetworking: received a dialog open request with different count of input field / default value counts " << inputfields .size() << ", " << inputfielddefaults .size() << std::endl;
+
+    std::vector< std::string >::const_iterator p_inputfield = inputfields.begin(), p_inputfieldEnd = inputfields.end();
+    std::vector< std::string >::const_iterator p_inputfielddefault = inputfielddefaults.begin(), p_inputfielddefaultEnd = inputfielddefaults.end();
+    for ( ; ( p_inputfield != p_inputfieldEnd ) && ( p_inputfielddefault != p_inputfielddefaultEnd ); ++p_inputfield, ++p_inputfielddefault )
+    {
+        params._textFields.push_back( std::make_pair( *p_inputfield, *p_inputfielddefault ) );
+    }
+
+    // pass the dialog open request to story system
+    StorySystem::get()->receiveOpenDialog( params );
+}
+
+void StoryNetworking::RPC_ReceiveDialogResults( tDialogResultsData dialogresults )
+{ // this method is called on server
+
+    assert( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server );
+
+    StoryDialogResults results;
+
+    results._destNetworkID = dialogresults._sessionID;
+    results._sourceID      = dialogresults._sourceID;
+    results._id            = dialogresults._id;
+    results._choice        = dialogresults._choice;
+    results._dialogAbort   = dialogresults._dialogAbort;
+
+    std::vector< std::string > inputvalues;
+
+    yaf3d::explode( dialogresults._p_inputFieldValues, DIALOG_STRING_SEPARATOR, &inputvalues );
+
+    std::vector< std::string >::const_iterator p_inputfield = inputvalues.begin(), p_inputfieldEnd = inputvalues.end();
+    for ( ; p_inputfield != p_inputfieldEnd; ++p_inputfield )
+    {
+        results._textFields.push_back( *p_inputfield );
+    }
+
+    // pass the dialog results to story system
+    StorySystem::get()->receiveDialogResults( results );
 }
 
 } // namespace vrc

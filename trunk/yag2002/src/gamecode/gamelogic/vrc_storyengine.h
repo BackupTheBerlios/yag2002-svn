@@ -38,6 +38,9 @@
 namespace vrc
 {
 
+class StoryDialogParams;
+class StoryDialogResults;
+
 //! Story builder class responsible for checking incoming events and creating new stories
 class StoryEngine
 {
@@ -52,6 +55,18 @@ class StoryEngine
 
         //! Process the event and check if new stoies can be created caused by the event. This is called by story system.
         void                                        processEvent( const StoryEvent& event );
+
+        //! Register a dialog for given story and return a unique dialog ID. This ID is used for later de-registration. Returns 0 if something went wrong.
+        unsigned int                                registerDialog( Story* p_story );
+
+        //! Open a dialog used by Story.
+        void                                        openDialog( const StoryDialogParams& params );
+
+        //! De-register a previously registered dialog with given ID.
+        void                                        deregisterDialog( unsigned int dialogID );
+
+        //! Process incoming dialog results. The results contains the dialog ID which is used for lookup in registered story dialogs.
+        void                                        processDialogResults( const StoryDialogResults& results );
 
         //! Update the active stories, used by StorySystem.
         void                                        update( float deltaTime );
@@ -95,6 +110,15 @@ class StoryEngine
 
         //! Event queue
         EventQueue                                  _eventQueue;
+
+        //! Type for dialog lookup
+        typedef std::map< unsigned int /*dialog ID*/, Story* >  Dialogs;
+
+        //! Dialog lookup used for propagating dialog results to proper stories
+        Dialogs                                     _dialogs;
+
+        //! Unique dialog ID generator
+        unsigned int                                _dialogIDs;
 
         //! Current story time
         unsigned int                                _time;
