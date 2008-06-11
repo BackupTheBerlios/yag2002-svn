@@ -106,6 +106,9 @@ class BaseObject : public yaf3d::BaseEntity, public StoryEventReceiver, public B
         //! Check object distance
         bool                                        checkObjectDistance();
 
+        //! Get the valid session ID if in networking mode.
+        int                                         getNetworkID() const;
+
         //! Called when an event arrives
         virtual void                                onReceiveEvent( const StoryEvent& event );
 

@@ -58,7 +58,7 @@ EnObjectWood::~EnObjectWood()
 void EnObjectWood::onObjectUse()
 {
     // TODO: make something useful
-    StoryEvent event( StoryEvent::eTypePickItem, getActorType(), getActorID(), 0, 0, StoryEvent::eFilterStoryPublic, 10, 20, 10.0f, 20.0f, "picking wood" );
+    StoryEvent event( StoryEvent::eTypePickItem, getActorType(), getActorID(), 0, 0, StoryEvent::eFilterStoryPublic, getNetworkID(), 10, 20, 10.0f, 20.0f, "picking wood" );
     StorySystem::get()->sendEvent( event );
 }
 

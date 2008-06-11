@@ -471,6 +471,14 @@ bool BaseObject::checkObjectDistance()
     return true;
 }
 
+int BaseObject::getNetworkID() const
+{
+    if ( yaf3d::GameState::get()->getMode() & ( yaf3d::GameState::Client |  yaf3d::GameState::Server ) )
+        return yaf3d::NetworkDevice::get()->getSessionID();
+
+    return 0;
+}
+
 void BaseObject::checkCameraFocus()
 {
     // reset the hit flag
