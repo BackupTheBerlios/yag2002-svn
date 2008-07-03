@@ -61,14 +61,13 @@ _enable( true )
 
 EnFog::~EnFog()
 {
+    _instCount--;
     if ( _p_fog && _instCount < 1 )
     {
         osg::StateSet* p_stateset = yaf3d::Application::get()->getSceneView()->getGlobalStateSet();
         p_stateset->removeAttribute( _p_fog );
         _p_fog = NULL;
     }
-
-    _instCount--;
 }
 
 void EnFog::handleNotification( const yaf3d::EntityNotification& notification )
