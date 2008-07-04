@@ -35,6 +35,7 @@
 #include "vrc_chatguibox.h"
 #include "vrc_chatguictrl.h"
 #include "vrc_chatprotocol.h"
+#include "../vrc_player.h"
 
 namespace vrc
 {
@@ -42,6 +43,8 @@ namespace vrc
 // application window notification stuff
 #define APP_WINDOW_NOTIFY_INTERVAL  0.7f
 #define APP_WINDOW_NOTIFY_COUNT     6
+#define FLOATING_TEXT_TIME          5.0f
+
 
 ChatManager::ChatManager() :
 _p_chatNetworkingVRC( NULL ),
@@ -280,8 +283,20 @@ void ChatManager::onReceiveSystemMessage( const std::string& msg )
 void ChatManager::onReceive( const std::string& channel, const std::string& sender, const CEGUI::String& msg )
 {
     std::string smsg( reinterpret_cast< const char* >( msg.c_str() ) );
+    smsg = channel + " [" + sender + "] " + smsg;
     if ( !_serverMode )
-        notifyAppWindow( channel + " [" + sender + "] " + smsg );
+        notifyAppWindow( smsg );
+
+    // update the floating text
+    vrc::EnPlayer* p_player = NULL;
+    const std::vector< yaf3d::BaseEntity* >& remoteplayers = vrc::gameutils::PlayerUtils::get()->getRemotePlayers();
+    std::vector< yaf3d::BaseEntity* >::const_iterator p_remoteplayer = remoteplayers.begin(), p_end = remoteplayers.end();
+    for ( ; p_remoteplayer != p_end; ++p_remoteplayer )
+    {
+        p_player = dynamic_cast< vrc::EnPlayer* >( *p_remoteplayer );
+        if ( p_player->getPlayerName() == sender )
+            p_player->displayFloatingText( smsg, FLOATING_TEXT_TIME );
+    }
 }
 
 void ChatManager::onAppWindowStateChange( unsigned int state )

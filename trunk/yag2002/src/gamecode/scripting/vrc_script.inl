@@ -279,6 +279,12 @@ int BaseScript< T >::exposedMethodProxy( lua_State* p_state )
                     arguments.template setValue< unsigned int >( cnt - 1, static_cast< unsigned int >( lua_tonumber( p_state, cnt ) ) );
                 else if ( typeinfo == typeid( double ) )
                     arguments.template setValue< double >( cnt - 1, lua_tonumber( p_state, cnt ) );
+                else if ( typeinfo == typeid( std::string ) )
+                {
+                    std::stringstream valstr;
+                    valstr << lua_tonumber( p_state, cnt );
+                    arguments.template setValue< std::string >( cnt - 1, valstr.str() );
+                }
                 else
                 {
                     log_error << "script error: exposed method called with unsupported or wrong parameter type, file: " << p_instance->getScriptFileName() << ", method name: " << p_entry->_methodName;

@@ -232,12 +232,22 @@ void BasePlayerImplementation::setPlayerName( const std::string& name )
     {
         _playerName = name;
     }
+
+    if ( _p_playerAnimation )
+    {
+        _p_playerAnimation->setPlayerText( name );
+    }
 }
 
 void BasePlayerImplementation::changePlayerName( const std::string& name )
 {
     // this method is called only by networking component in order to notify a changed player name ( remote and local players )
     _playerName = name;
+
+    if ( _p_playerAnimation )
+    {
+        _p_playerAnimation->setPlayerText( name );
+    }
 }
 
 } // namespace vrc

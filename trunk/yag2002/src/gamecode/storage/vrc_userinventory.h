@@ -45,15 +45,12 @@ class InventoryItem
 {
     public:
 
-                                                    InventoryItem( unsigned int itemID, const std::string& name );
+                                                    InventoryItem( const std::string& name );
 
                                                     ~InventoryItem();
 
         //! Get the item name
         inline const std::string&                   getName() const;
-
-        //! Get the item ID
-        inline unsigned int                         getID() const;
 
         //! Get the item count
         inline unsigned int                         getCount() const;
@@ -62,13 +59,14 @@ class InventoryItem
         template< class Type >
         bool                                        getParamValue( const std::string& paramName, Type& value );
 
+        //! Set the value of given parameter
+        template< class Type >
+        bool                                        setParamValue( const std::string& paramName, Type& value );
+
         //! Get the item parameters.
         inline std::map< std::string, std::string >& getParams();
 
     protected:
-
-        //! Global unique item identifier
-        unsigned int                                _itemID;
 
         //! Item name
         std::string                                 _name;
@@ -88,18 +86,30 @@ class UserInventory
 {
     public:
 
+        //! Type for item container
+        typedef std::map< std::string /*item name*/, InventoryItem* >    Items;
+
+    public:
+
+        //! Create user inventory for user with given ID. The ID is used on server for finding users' inventory.
         explicit                                    UserInventory( unsigned int userID );
 
                                                     ~UserInventory();
 
         //! Get the user items
-        std::vector< InventoryItem* >&              getItems();
+        Items&                                      getItems();
 
-        //! Get item with given name
+        //! Get item given its name. Returns NULL if no item with given name exists.
         InventoryItem*                              getItem( const std::string& itemName );
 
-        //! Add given item to inventory. The item parameters are encrypted in itemString.
-        bool                                        addItem( const std::string& itemName, unsigned int itemID, const std::string& itemString );
+        //! Import the items from given the items in a packed string form.
+        void                                        importItems( const std::string& data );
+
+        //! Export the items to a packed string form and store the data in 'data'.
+        void                                        exportItems( std::string& data );
+
+        //! Add given item to inventory. The item parameters are packed in itemString.
+        bool                                        addItem( const std::string& itemName, const std::string& itemString );
 
         //! Increase the count of item with given name by given count. Returns false if the item with given name does not exist in inventory.
         bool                                        increaseItem( const std::string& itemName, unsigned int count = 1 );
@@ -131,7 +141,7 @@ class UserInventory
         bool                                        _cached;
 
         //! User items
-        std::vector< InventoryItem* >               _items;
+        Items                                       _items;
 
     friend class StorageServer;
     friend class StoragePostgreSQL;

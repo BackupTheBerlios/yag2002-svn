@@ -52,6 +52,7 @@ namespace gameutils
 
 //! Game code's configuration setting names
 #define VRC_GS_PLAYER_NAME                  "playerName"
+#define VRC_GS_FLOATING_PLAYER_TEXT         "playerFloatingText"
 #define VRC_GS_PLAYER_CONFIG_DIR            "playerConfigDir"
 #define VRC_GS_PLAYER_CONFIG                "playerConfig"
 #define VRC_GS_KEY_MOVE_FORWARD             "moveForward"
@@ -136,6 +137,8 @@ class VRCStateHandler : public yaf3d::GameState::CallbackStateChange
     protected:
 
         std::string                                 _playerName;
+
+        bool                                        _playerDisplayText;
 
         std::string                                 _playerConfig;
 

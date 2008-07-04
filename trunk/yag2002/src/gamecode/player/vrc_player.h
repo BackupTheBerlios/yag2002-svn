@@ -101,6 +101,9 @@ class EnPlayer : public yaf3d::BaseEntity
         //! Set player name
         void                                        setPlayerName( const std::string& name );
 
+        //! Display a floating text on player position for given duration.
+        void                                        displayFloatingText( const std::string& text, float duration = 3.0f );
+
         //! Entity attribute container
         class PlayerAttributes
         {

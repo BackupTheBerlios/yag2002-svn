@@ -31,15 +31,16 @@
 #include "vrc_userinventory.h"
 
 
-//! Seperator character for parameter name/value formatting
-#define VRC_PARAM_SEPERATOR     '='
+//! Packed item format specific defines
+#define VRC_INV_ITEM_SEPARATOR              "@"
+#define VRC_INV_ITEM_PARAM_SEPARATOR        ","
+#define VRC_INV_ITEM_PARAM_VAL_SEPERATOR    '='
 
 
 namespace vrc
 {
 
-InventoryItem::InventoryItem( unsigned int itemID, const std::string& name ) :
- _itemID( itemID ),
+InventoryItem::InventoryItem( const std::string& name ) :
  _name( name ),
  _itemCount( 1 )
 {
@@ -47,23 +48,6 @@ InventoryItem::InventoryItem( unsigned int itemID, const std::string& name ) :
 
 InventoryItem::~InventoryItem()
 {
-}
-
-// partial specialization of templated method for std::string
-template<>
-bool InventoryItem::getParamValue( const std::string& paramName, std::string& value )
-{
-    std::map< std::string, std::string >::iterator p_item;
-    p_item = _params.find( paramName );
-    if ( p_item == _params.end() )
-    {
-        log_error << "InventoryItem " << _name << ": invalid parameter name " << paramName << std::endl;
-        return false;
-    }
-
-    value = p_item->second;
-
-    return true;
 }
 
 UserInventory::UserInventory( unsigned int userID ) :
@@ -78,7 +62,7 @@ UserInventory::~UserInventory()
     removeAllItems();
 }
 
-std::vector< InventoryItem* >& UserInventory::getItems()
+UserInventory::Items& UserInventory::getItems()
 {
     return _items;
 }
@@ -86,20 +70,74 @@ std::vector< InventoryItem* >& UserInventory::getItems()
 void UserInventory::removeAllItems()
 {
     // delete the items in list
-    std::vector< InventoryItem* >::iterator p_item = _items.begin(), p_end= _items.end();
+    Items::iterator p_item = _items.begin(), p_end= _items.end();
     for ( ; p_item != p_end; ++p_item )
-        delete ( *p_item );
+        delete p_item->second;
 
     _items.clear();
 }
 
-bool UserInventory::addItem( const std::string& itemName, unsigned int itemID, const std::string& itemString )
+InventoryItem* UserInventory::getItem( const std::string& itemName )
 {
+    if ( _items.find( itemName ) == _items.end() )
+        return NULL;
+
+    return _items.find( itemName )->second;
+}
+
+void UserInventory::importItems( const std::string& data )
+{
+    std::vector< std::string > packeditems;
+    yaf3d::explode( data, VRC_INV_ITEM_SEPARATOR, &packeditems );
+    std::vector< std::string >::iterator p_packeditem = packeditems.begin(), p_packeditemEnd = packeditems.end();
+
+    // go through all items and add them to inventory
+    for ( ; p_packeditem != p_packeditemEnd; ++p_packeditem )
+    {
+        std::string& itemname = *p_packeditem;
+        std::string::size_type pos = p_packeditem->find( VRC_INV_ITEM_PARAM_SEPARATOR );
+        if ( ( pos == std::string::npos ) || !pos )
+            continue;
+
+        std::string itemprops = itemname.substr( pos );
+        addItem( itemname.substr( 0, pos ), itemprops );
+    }
+}
+
+void UserInventory::exportItems( std::string& data )
+{
+    data = "";
+
+    Items::iterator p_item = _items.begin(), p_end= _items.end();
+    for ( ; p_item != p_end; ++p_item )
+    {
+        InventoryItem* p_invitem = p_item->second;
+
+        // item name
+        data += p_invitem->getName() + VRC_INV_ITEM_PARAM_VAL_SEPERATOR;
+
+        // item properties
+        std::map< std::string, std::string >::const_iterator p_param = p_invitem->getParams().begin(), p_end = p_invitem->getParams().end();
+        for ( ; p_param != p_end; ++ p_param )
+            data += p_param->first + VRC_INV_ITEM_PARAM_VAL_SEPERATOR + p_param->second + VRC_INV_ITEM_PARAM_VAL_SEPERATOR;
+
+        data += VRC_INV_ITEM_SEPARATOR;
+    }
+}
+
+bool UserInventory::addItem( const std::string& itemName, const std::string& itemString )
+{
+    if ( _items.find( itemName ) != _items.end() )
+    {
+        log_error << "UserInventory: error in user inventory data, multiple items with the same name detected" << std::endl;
+        return false;
+    }
+
     // prepare the inventory string for value extraction
     std::vector< std::string > fields;
-    yaf3d::explode( itemString, ",", &fields );
+    yaf3d::explode( itemString, VRC_INV_ITEM_PARAM_SEPARATOR, &fields );
 
-    InventoryItem* p_item = new InventoryItem( itemID, itemName );
+    InventoryItem* p_item = new InventoryItem( itemName );
 
     // fill in the parameter name and values
     std::vector< std::string >::iterator p_param = fields.begin(), p_end = fields.end();
@@ -115,7 +153,7 @@ bool UserInventory::addItem( const std::string& itemName, unsigned int itemID, c
             char c = ( *p_param )[ cnt ];
             if ( parsetoken )
             {
-                if ( c != VRC_PARAM_SEPERATOR )
+                if ( c != VRC_INV_ITEM_PARAM_VAL_SEPERATOR )
                     token += c;
                 else
                     parsetoken = false;
@@ -130,64 +168,53 @@ bool UserInventory::addItem( const std::string& itemName, unsigned int itemID, c
     }
 
     // add the item to inventory
-    _items.push_back( p_item );
+    _items[ itemName ] = p_item;
 
     return true;
 }
 
 bool UserInventory::increaseItem( const std::string& itemName, unsigned int count )
 {
-    std::vector< InventoryItem* >::iterator p_item = _items.begin(), p_end= _items.end();
-    for ( ; p_item != p_end; ++p_item )
+    if ( _items.find( itemName ) == _items.end() )
     {
-        InventoryItem* p_invitem = *p_item;
-        if ( p_invitem->getName() == itemName )
-        {
-            p_invitem->_itemCount += count;
-            return true;
-        }
+        log_warning << "UserInventory: could not find item for increasing" << std::endl;
+        return false;
     }
 
-    return false;
+    InventoryItem* p_invitem = _items[ itemName ];
+    p_invitem->_itemCount += count;
+
+    return true;
 }
 
 bool UserInventory::decreaseItem( const std::string& itemName, unsigned int count )
 {
-    std::vector< InventoryItem* >::iterator p_item = _items.begin(), p_end= _items.end();
-    for ( ; p_item != p_end; ++p_item )
+    if ( _items.find( itemName ) == _items.end() )
     {
-        InventoryItem* p_invitem = *p_item;
-        if ( p_invitem->getName() == itemName )
-        {
-            if ( int( p_invitem->_itemCount ) - int( count ) > 0 )
-            {
-                p_invitem->_itemCount -= count;
-            }
-            else
-            {
-                p_invitem->_itemCount = 0;
-            }
-            return true;
-        }
+        log_warning << "UserInventory: could not find item for decreasing" << std::endl;
+        return false;
     }
 
-    return false;
+    InventoryItem* p_invitem = _items[ itemName ];
+    p_invitem->_itemCount -= count;
+
+    return true;
 }
 
 bool UserInventory::removeItem( const std::string& itemName )
 {
-    std::vector< InventoryItem* >::iterator p_item = _items.begin(), p_end= _items.end();
-    for ( ; p_item != p_end; ++p_item )
+    if ( _items.find( itemName ) == _items.end() )
     {
-        if ( ( *p_item )->getName() == itemName )
-        {
-            _items.erase( p_item );
-            delete ( *p_item );
-            return true;
-        }
+        log_warning << "UserInventory: could not find item for removing" << std::endl;
+        return false;
     }
 
-    return false;
+    InventoryItem* p_invitem = _items[ itemName ];
+    delete p_invitem;
+
+    _items.erase( _items.find( itemName ) );
+
+    return true;
 }
 
 } // namespace vrc

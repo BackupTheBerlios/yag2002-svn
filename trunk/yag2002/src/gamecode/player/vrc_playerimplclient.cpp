@@ -100,6 +100,9 @@ void PlayerImplClient::handleNotification( const yaf3d::EntityNotification& noti
 
                 if ( _cameraMode == Ego )
                     addToSceneGraph();
+
+                // disable the floating text in menu
+                _p_playerAnimation->enableTextDisplay( false );
             }
             break;
 
@@ -126,6 +129,13 @@ void PlayerImplClient::handleNotification( const yaf3d::EntityNotification& noti
                 // if we are in ego mode then disable player avatar rendering
                 if ( _cameraMode == Ego )
                     removeFromSceneGraph();
+
+                // update the floating text setting
+                {
+                    bool displaytext = true;
+                    yaf3d::Configuration::get()->getSettingValue( VRC_GS_FLOATING_PLAYER_TEXT, displaytext );
+                    _p_playerAnimation->enableTextDisplay( displaytext );
+                }
             }
         }
         break;
@@ -340,6 +350,13 @@ void PlayerImplClient::getConfiguration()
         yaf3d::Configuration::get()->getSettingValue( VRC_GS_INVERTMOUSE, _p_inputHandler->_invertedMouse );
         yaf3d::Configuration::get()->getSettingValue( VRC_GS_MOUSESENS, _p_inputHandler->_mouseSensitivity );
     }
+
+    if ( _p_playerAnimation )
+    {
+        bool displaytext = true;
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_FLOATING_PLAYER_TEXT, displaytext );
+        _p_playerAnimation->enableTextDisplay( displaytext );
+    }
 }
 
 void PlayerImplClient::setNetworkInitialized( bool init )
@@ -447,6 +464,12 @@ void PlayerImplClient::enableVoiceChat( bool en )
 {
     assert( _p_playerNetworking && "invalid networking object!" );
     _p_playerNetworking->enableVoiceChat( en );
+}
+
+void PlayerImplClient::displayFloatingText( const std::string& text, float duration )
+{
+    if ( _p_playerAnimation )
+        _p_playerAnimation->displayText( text, duration );
 }
 
 } // namespace vrc

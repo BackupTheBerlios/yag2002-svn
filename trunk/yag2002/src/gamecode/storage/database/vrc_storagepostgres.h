@@ -68,8 +68,8 @@ class StoragePostgreSQL : public BaseStorage
         //! Get user data for given uid. The user must be successfully logged in.
         bool                                    getUserData( unsigned int userID, UserData& data );
 
-        //! Get user inventory for given data ID ( use getUserData for getting the dataID ). The user must be successfully logged in.
-        bool                                    getUserInventory( unsigned int dataID, UserInventory* p_inv );
+        //! Get user inventory for given user ID. The user must be successfully logged in.
+        bool                                    getUserInventory( unsigned int userID, UserInventory* p_inv );
 
     protected:
 

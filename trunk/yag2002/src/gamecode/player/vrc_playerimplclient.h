@@ -75,6 +75,9 @@ class PlayerImplClient : public BasePlayerImplementation, public yaf3d::SessionN
         //! Overriden method for enable / disable voice chat; the client implementation supports this feature;
         void                                        enableVoiceChat( bool en );
 
+        //! Display a floating text for given duration.
+        virtual void                                displayFloatingText( const std::string& text, float duration );
+
     protected:
 
         //! Get the configuration settings

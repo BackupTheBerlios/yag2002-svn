@@ -519,7 +519,7 @@ void BaseObject::checkCameraFocus()
                 continue;
 
             // is there another object more near to camera and in focus?
-            if ( dist2 > ( *p_beg )->_ray.length2() && ( *p_beg )->_highlight )
+            if ( ( dist2 > ( *p_beg )->_ray.length2() ) && ( *p_beg )->_highlight )
                 return;
         }
 

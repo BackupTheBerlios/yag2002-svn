@@ -187,16 +187,16 @@ void PropertyGui::updateInventory()
                           );
 
     // fill up the list with user inventory items
-    std::vector< InventoryItem* >& invlist = _p_userInventory->getItems();
-    std::vector< InventoryItem* >::iterator p_invitem = invlist.begin(), p_end = invlist.end();
+    UserInventory::Items& invlist = _p_userInventory->getItems();
+    UserInventory::Items::iterator p_invitem = invlist.begin(), p_end = invlist.end();
     CEGUI::ListboxTextItem * p_selitem = NULL;
     for ( ; p_invitem != p_end; ++p_invitem )
     {
-        CEGUI::ListboxTextItem * p_item = new CEGUI::ListboxTextItem( ( *p_invitem )->getName() );
+        CEGUI::ListboxTextItem * p_item = new CEGUI::ListboxTextItem( p_invitem->first );
         p_item->setSelectionColours( col );
         p_item->setSelectionBrushImage( "TaharezLook", "ListboxSelectionBrush" );
         // set the inventory item object as list item object
-        p_item->setUserData( *p_invitem );
+        p_item->setUserData( p_invitem->second );
         _p_listboxItems->insertItem( p_item, NULL );
         // set the selection to first item in list
         if ( !p_selitem )

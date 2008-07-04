@@ -161,6 +161,9 @@ class BasePlayerImplementation
         //! Get player's attributes, note that these attributes may be changed by implementation instances.
         inline EnPlayer::PlayerAttributes&          getPlayerAttributes();
 
+        //! Display a floating text for given duration. Note that some player implementations may not support this functionality.
+        virtual void                                displayFloatingText( const std::string& text, float duration = 3.0f ) {}
+
         //! Camera mode
         enum CameraMode
         {

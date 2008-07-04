@@ -38,10 +38,6 @@ inline const std::string& InventoryItem::getName() const
     return _name;
 }
 
-inline unsigned int InventoryItem::getID() const
-{
-    return _itemID;
-}
 
 inline unsigned int InventoryItem::getCount() const
 {
@@ -60,23 +56,31 @@ bool InventoryItem::getParamValue( const std::string& paramName, Type& value )
     p_item = _params.find( paramName );
     if ( p_item == _params.end() )
     {
-        log_error << "InventoryItem " << _name << ": invalid parameter name " << paramName << std::endl;
+        log_error << "InventoryItem " << _name << ": (get) parameter does not exist: " << paramName << std::endl;
         return false;
     }
 
-    std::string val = p_item->second;
-    if ( typeid( Type ) == typeid( int ) )
+    std::stringstream valstr;
+    valstr << p_item->second;
+    valstr >> value;
+
+    return true;
+}
+
+template< class Type >
+bool InventoryItem::setParamValue( const std::string& paramName, Type& value )
+{
+    std::map< std::string, std::string >::iterator p_item;
+    p_item = _params.find( paramName );
+    if ( p_item == _params.end() )
     {
-        sscanf_s( val.c_str(), "%d", &value, val.length() );
+        log_error << "InventoryItem " << _name << ": (set) parameter does not exist: " << paramName << std::endl;
+        return false;
     }
-    else if ( typeid( Type ) == typeid( unsigned int ) )
-    {
-        sscanf_s( val.c_str(), "%u", &value, val.length() );
-    }
-    else if ( typeid( Type ) == typeid( float ) )
-    {
-        sscanf_s( val.c_str(), "%f", &value, val.length() );
-    }
+
+    std::stringstream valstr;
+    valstr << value;
+    p_item->second = valstr.str();
 
     return true;
 }

@@ -63,6 +63,7 @@ std::auto_ptr< VRCStateHandler > _autoptr_VRCStateHandler = std::auto_ptr< VRCSt
 // Implementation of game state handler
 VRCStateHandler::VRCStateHandler() :
 _playerName( "NoName" ),
+_playerDisplayText( true ),
 _playerConfig( VRC_GS_DEFAULT_PLAYER_CONFIG ),
 _playerConfigDir( "player" ),
 _mouseSensitivity( 1.0f ),
@@ -109,6 +110,7 @@ void VRCStateHandler::onStateChange( unsigned int state )
         {
             // register settings
             yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_NAME,            _playerName         );
+            yaf3d::Configuration::get()->addSetting( VRC_GS_FLOATING_PLAYER_TEXT,   _playerDisplayText  );
             yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_CONFIG_DIR,      _playerConfigDir    );
             yaf3d::Configuration::get()->addSetting( VRC_GS_PLAYER_CONFIG,          _playerConfig       );
             yaf3d::Configuration::get()->addSetting( VRC_GS_KEY_MOVE_FORWARD,       _moveForward        );

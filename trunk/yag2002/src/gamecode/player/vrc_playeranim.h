@@ -43,6 +43,8 @@
 
 #include <osgCal/CoreModel>
 #include <osgCal/Model>
+//! TODO: put this header to framework's base.h
+#include <osgText/Text>
 
 namespace vrc
 {
@@ -61,16 +63,20 @@ class EnPlayerAnimation  : public yaf3d::BaseEntity
 
         virtual                                     ~EnPlayerAnimation();
 
-        /**
-        * Set player association before using this entity.
-        * \param p_player                           Player instance
-        */
+        //! Set player association before using this entity.
         void                                        setPlayer( BasePlayerImplementation* p_player );
 
-        /**
-        * Initializing function
-        */
+        //! Initializing function
         void                                        initialize();
+
+        //! Enable / disable the text display
+        void                                        enableTextDisplay( bool en );
+
+        //! Set the default player text for display
+        void                                        setPlayerText( const std::string& text );
+
+        //! Display a text for given duration, after the duration is expired the player text is displayed.
+        void                                        displayText( const std::string& text, float duration = 3.0f );
 
         //! Idle animation
         void                                        animIdle();
@@ -117,6 +123,9 @@ class EnPlayerAnimation  : public yaf3d::BaseEntity
         //! Read config file and setup animation
         bool                                        setupAnimation( const std::string& rootDir, const std::string& configfilename );
 
+        //! Create a tex node for displaying the player specific info (e.g. player name)
+        osg::ref_ptr< osgText::Text >               createTextNode();
+
         // entity attributes
         //----------------------------------------------------------//
 
@@ -133,9 +142,25 @@ class EnPlayerAnimation  : public yaf3d::BaseEntity
 
         osg::ref_ptr< osg::PositionAttitudeTransform > _animNode;
 
+        osg::ref_ptr< osg::Geode >                  _playerTextGeode;
+
+        osg::ref_ptr < osgText::Text >              _playerText;
+
         bool                                        _renderingEnabled;
 
         bool                                        _useTexture;
+
+        //! Enable / disable the player text
+        bool                                        _enableDisplayText;
+
+        // Default player text to display
+        std::string                                 _displayText;
+
+        //! Timer used for displaying a text
+        float                                       _textDisplayTimer;
+
+        //! Flag identifying whether the player text is currently visible
+        bool                                        _textVisible;
 
         //! offset position
         osg::Vec3f                                  _position;

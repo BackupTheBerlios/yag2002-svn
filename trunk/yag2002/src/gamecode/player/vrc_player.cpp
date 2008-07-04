@@ -240,6 +240,15 @@ void EnPlayer::setPlayerName( const std::string& name )
     _p_playerImpl->setPlayerName( name );
 }
 
+void EnPlayer::displayFloatingText( const std::string& text, float duration )
+{
+    if ( !_p_playerImpl )
+        return;
+
+    // delegate this call to the player implementation
+    _p_playerImpl->displayFloatingText( text, duration );
+}
+
 void EnPlayer::updateEntity( float deltaTime )
 {
     _deltaTime = deltaTime;

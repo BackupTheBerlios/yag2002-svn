@@ -35,6 +35,10 @@
 #include "vrc_playeranim.h"
 #include "vrc_playerimpl.h"
 
+
+#define PLAYERTEXT_FONT_PATH    "gui/font/vaground.ttf"
+
+
 namespace vrc
 {
 
@@ -155,6 +159,9 @@ _anim( eIdle ),
 _p_player( NULL ),
 _renderingEnabled( true ),
 _useTexture( true ),
+_enableDisplayText( true ),
+_textDisplayTimer( 0.0f ),
+_textVisible( false ),
 _scale( 1.0f ),
 _maxLODDistance( 50.0f ),
 _divMaxLODDistance( 1.0f / 50.0f ),
@@ -176,7 +183,13 @@ _IdAnimTurn( -1 )
 EnPlayerAnimation::~EnPlayerAnimation()
 {
     if ( _animNode.get() )
-        _animNode = NULL; // delete the anim node
+        _animNode = NULL;
+
+    if ( _playerText.get() )
+        _playerText = NULL;
+
+    if ( _playerTextGeode.get() )
+        _playerTextGeode = NULL;
 }
 
 void EnPlayerAnimation::initialize()
@@ -216,6 +229,13 @@ void EnPlayerAnimation::initialize()
     _animNode->setAttitude( quat );
     _animNode->addChild( _model.get() );
 
+    // add a text node to player's character
+    {
+        osg::ref_ptr< osgText::Text > text = createTextNode();
+        _playerTextGeode = new osg::Geode;
+        _playerTextGeode->addDrawable( text.get() );
+    }
+
     // calculate LOD distance internal var
     _divMaxLODDistance = 1.0f / _maxLODDistance;
 
@@ -230,7 +250,17 @@ void EnPlayerAnimation::initialize()
     log_info << "  initializing player animation instance completed" << std::endl;
 }
 
-void EnPlayerAnimation::updateEntity( float /*deltaTime*/ )
+void EnPlayerAnimation::enableTextDisplay( bool en )
+{
+    _enableDisplayText = en;
+
+    // avoid adding the text geode to transformation node more then once
+    _p_player->getPlayerEntity()->removeTransformationNode( _playerTextGeode.get() );
+    if ( _enableDisplayText )
+        _p_player->getPlayerEntity()->appendTransformationNode( _playerTextGeode.get() );
+}
+
+void EnPlayerAnimation::updateEntity( float deltaTime )
 {
     // set proper LOD
     if ( _p_player )
@@ -247,6 +277,39 @@ void EnPlayerAnimation::updateEntity( float /*deltaTime*/ )
             lod = 1.0f;
 
         _model->setLOD( lod );
+
+        // update player text related stuff
+        if ( _enableDisplayText )
+        {
+            // don't draw the text if the player is too far from camera
+            if ( lod < 0.11f )
+            {
+                if ( _textVisible )
+                {
+                    _p_player->getPlayerEntity()->removeTransformationNode( _playerTextGeode.get() );
+                    _textVisible = false;
+                }
+            }
+            else if ( lod > 0.13f )
+            {
+                if ( !_textVisible )
+                {
+                    _p_player->getPlayerEntity()->appendTransformationNode( _playerTextGeode.get() );
+                    _textVisible = true;
+                }
+            }
+
+            // re-display the player text after the timeout
+            if ( _textDisplayTimer < 0 )
+            {
+                _playerText->setText( _displayText );
+                _textDisplayTimer = 0;
+            }
+            else if ( _textDisplayTimer > 0 )
+            {
+                _textDisplayTimer -= deltaTime;
+            }
+        }
     }
 }
 
@@ -352,7 +415,6 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
         log_error << "***  failed to open model configuration file: " << file << std::endl;
         return false;
     }
-
 
     // set cal3d's texture coord loading mode
     CalLoader::setLoadingMode( LOADER_INVERT_V_COORD );
@@ -518,6 +580,41 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
     _model->create( _coreModel.get() );
 
     return true;
+}
+
+osg::ref_ptr< osgText::Text > EnPlayerAnimation::createTextNode()
+{
+    osg::Vec3 pos( 0.0f, 0.0f, 1.0f );
+    std::string fontpath = yaf3d::Application::get()->getMediaPath() + PLAYERTEXT_FONT_PATH;
+    osg::ref_ptr < osgText::Font > font = osgText::readFontFile( fontpath );
+    osg::ref_ptr < osgText::Text > text = new osgText::Text;
+    text->setFont( font.get() );
+    text->setCharacterSize( 100.0f );
+    text->setPosition( pos );
+    text->setAlignment( osgText::Text::CENTER_BASE_LINE );
+    text->setAutoRotateToScreen( true );
+    text->setAxisAlignment( osgText::Text::SCREEN );
+    text->setColor( osg::Vec4f( 1.0f, 1.0f, 1.0f, 1.0f ) );
+    text->setFontResolution( 32, 32 );
+    text->setCharacterSizeMode( osgText::Text::SCREEN_COORDS ); // this mode does not look good: OBJECT_COORDS_WITH_MAXIMUM_SCREEN_SIZE_CAPPED_BY_FONT_HEIGHT
+    text->setDrawMode( osgText::Text::TEXT | osgText::Text::BOUNDINGBOX );
+    text->setText( "NoName" );
+
+    _playerText = text;
+
+    return text;
+}
+
+void EnPlayerAnimation::setPlayerText( const std::string& text )
+{
+    _displayText = text;
+    _playerText->setText( text );
+}
+
+void EnPlayerAnimation::displayText( const std::string& text, float duration )
+{
+    _playerText->setText( text );
+    _textDisplayTimer = duration;
 }
 
 unsigned char EnPlayerAnimation::getAnimationFlags()

@@ -586,6 +586,9 @@ void EnPlayerPhysics::initializePhysics( const osg::Vec3f& pos, const osg::Quat&
     mat *= mat.rotate( rot );
     mat.setTrans( pos );
 
+    // just to be sure that the body is active
+    NewtonWorldUnfreezeBody( _p_world, _p_body );
+
     //! NOTE: it seems that sometimes the raycasting does not work, i don't know why
     //        so let the player fall into the ground!
 

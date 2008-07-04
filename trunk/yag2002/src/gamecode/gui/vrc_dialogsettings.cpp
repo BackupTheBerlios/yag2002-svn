@@ -67,6 +67,7 @@ _mouseInverted( false ),
 _p_resolution( NULL ),
 _p_enableFullscreen( NULL ),
 _p_enableDynShadow( NULL ),
+_p_enableFloatingPlayerText( NULL ),
 _p_enableMusic( NULL ),
 _p_volumeMusic( NULL ),
 _volumeMusic( 1.0f ),
@@ -196,6 +197,9 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
             // get dynamic shadow checkbox
             _p_enableDynShadow = static_cast< CEGUI::Checkbox* >( p_paneDisplay->getChild( SDLG_PREFIX "cb_shadows" ) );
 
+            // get floating player text checkbox
+            _p_enableFloatingPlayerText = static_cast< CEGUI::Checkbox* >( p_paneDisplay->getChild( SDLG_PREFIX "cb_floatingtext" ) );
+
             // dynamic shadows need glsl, set the checkbox initial value
             yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, _cfgShadows );
             if ( yaf3d::isGlslAvailable() )
@@ -272,6 +276,7 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
     _p_mouseSensivity->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onMouseSensitivityChanged, this ) );
     _p_enableFullscreen->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onFullscreenChanged, this ) );
     _p_enableDynShadow->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onDynShadowChanged, this ) );
+    _p_enableFloatingPlayerText->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onFloatingTextChanged, this ) );
 
     _p_enableMusic->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onEnableMusicChanged, this ) );
     _p_volumeMusic->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onMusicVolumeChanged, this ) );
@@ -421,6 +426,11 @@ void DialogGameSettings::setupControls()
         // get the dynamic shadow settings on shutdown
         yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, _cfgShadows );
         _p_enableDynShadow->setSelected( _cfgShadows );
+
+        // get the floating player text settings on shutdown
+        bool floatingtext = true;
+        yaf3d::Configuration::get()->getSettingValue( VRC_GS_FLOATING_PLAYER_TEXT, floatingtext );
+        _p_enableFloatingPlayerText->setSelected( floatingtext );
     }
 
     // get sound/voice settings
@@ -588,6 +598,9 @@ bool DialogGameSettings::onClickedOk( const CEGUI::EventArgs& /*arg*/ )
         yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SCREENWIDTH, width );
         yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_SCREENHEIGHT, height );
         yaf3d::Configuration::get()->setSettingValue( YAF3D_GS_COLORBITS, colorbits );
+
+        bool floatingtext = _p_enableFloatingPlayerText->isSelected();
+        yaf3d::Configuration::get()->setSettingValue( VRC_GS_FLOATING_PLAYER_TEXT, floatingtext );
     }
 
     // set sound/voice settings
@@ -825,6 +838,13 @@ bool DialogGameSettings::onFullscreenChanged( const CEGUI::EventArgs& /*arg*/ )
 }
 
 bool DialogGameSettings::onDynShadowChanged( const CEGUI::EventArgs& /*arg*/ )
+{
+    // play sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+    return true;
+}
+
+bool DialogGameSettings::onFloatingTextChanged( const CEGUI::EventArgs& /*arg*/ )
 {
     // play sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );

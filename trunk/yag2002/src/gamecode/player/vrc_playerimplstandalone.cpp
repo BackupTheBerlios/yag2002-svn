@@ -172,8 +172,12 @@ void PlayerImplStandalone::postInitialize()
     _p_playerAnimation = dynamic_cast< EnPlayerAnimation* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_PLANIM, _playerAttributes._animationEntity ) );
     if ( _p_playerAnimation )
     {
-        _p_playerAnimation->setPlayer( this );
         log_debug << "   -  animation entity successfully attached" << std::endl;
+
+        _p_playerAnimation->setPlayer( this );
+        
+        // in stand-alone mode do not display player text
+        _p_playerAnimation->enableTextDisplay( false );
 
         if ( _cameraMode == Ego ) // in ego mode we won't render our character
         {

@@ -145,6 +145,9 @@ class Story : public BaseScript< Story >, public yaf3d::RefCount< Story >
         //! Create the dialog function bindings.
         void                                        createDialogFuntions();
 
+        //! Create the inventory function bindings.
+        void                                        createInventoryFunctions();
+
         //! Create a concrete story as clone with given owner ID and name
         yaf3d::SmartPtr< Story >                    clone( unsigned int ownerID, const std::string& name );
 
@@ -203,6 +206,15 @@ class Story : public BaseScript< Story >, public yaf3d::RefCount< Story >
 
         //! Given a dialog handle and input field index return field's string value. This script function can only be used in processDialogResults.
         void                                        ldialogGetStringInput( const Params& arguments, Params& returnvalues );
+
+        //! Does an inventory item exist?
+        void                                        linvGetItemExist( const Params& arguments, Params& returnvalues );
+
+        //! Get the value of a item property.
+        void                                        linvGetItemProperty( const Params& arguments, Params& returnvalues );
+
+        //! Set the value of a item property.
+        void                                        linvSetItemProperty( const Params& arguments, Params& returnvalues );
 
         // ############################
 

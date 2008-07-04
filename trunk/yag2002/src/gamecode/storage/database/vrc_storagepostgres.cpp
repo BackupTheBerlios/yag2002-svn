@@ -60,6 +60,10 @@
 #define F_USERDATA_MAILBOX_ID   "user_mailbox_id"
 #define F_USERDATA_SKILLS_ID    "user_skills_id"
 
+#define F_INV_ID                "inventory_id"
+#define F_INV_DATA              "inv_data"
+#define F_INV_USER_DATA_ID      "user_data_id"
+
 
 namespace vrc
 {
@@ -343,42 +347,38 @@ bool StoragePostgreSQL::getUserData( unsigned int userID, UserData& data )
     return true;
 }
 
-bool StoragePostgreSQL::getUserInventory( unsigned int dataID, UserInventory* p_inv )
+bool StoragePostgreSQL::getUserInventory( unsigned int userID, UserInventory* p_inv )
 {
     pqxx::result res;
     try
     {
         pqxx::work transaction( *_p_databaseConnection, "inventory" );
         std::string query;
-        std::stringstream dataId;
-        dataId << dataID;
+        std::stringstream userid;
+        userid << userID;
 
         // call the function for user inventory
-        query = std::string( "SELECT * FROM " FCN_USER_INV "( " + dataId.str() + " );" );
+        query = std::string( "SELECT * FROM " FCN_USER_INV "( " + userid.str() + " );" );
 
         res = transaction.exec( query );
 
-        if ( res.size() < 1 )
+        if ( res[ 0 ][ F_INV_ID ].is_null() )
         {
-            log_error << "PostgreSQL: internal error when getting user inventory: " << dataID << std::endl;
+            log_warning << "PostgreSQL: trying to get a non-existing user inventory: " << userID << std::endl;
             return false;
         }
 
-        // add the inventory items
-        unsigned int inv_id;
-        std::string  jetpack;
-        res[ 0 ][ "inventory_id" ].to( inv_id );
-        {
-            res[ 0 ][ "inv_jetpack" ].to( jetpack );
-            p_inv->addItem( "Jetpack", inv_id, jetpack );
-        }
+        // import the inventory items
+        std::string  invdata;
+        res[ 0 ][ F_INV_DATA ].to( invdata );
+        p_inv->importItems( invdata );
 
         // commit the transaction
         transaction.commit();
     }
     catch( const std::exception& e )
     {
-        log_info << "PostgreSQL: problem on getting user inventory: " << dataID << ", reason: " << e.what()  << std::endl;
+        log_info << "PostgreSQL: problem on getting user inventory: " << userID << ", reason: " << e.what()  << std::endl;
         return false;
     }
 

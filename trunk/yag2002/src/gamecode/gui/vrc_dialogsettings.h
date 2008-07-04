@@ -147,6 +147,9 @@ class DialogGameSettings
         //! Dialog callback for dynamic shadow checkbox
         bool                                        onDynShadowChanged( const CEGUI::EventArgs& arg );
 
+        //! Dialog callback for floating player text checkbox
+        bool                                        onFloatingTextChanged( const CEGUI::EventArgs& arg );
+
         //! Dialog callback for enable music checkbox
         bool                                        onEnableMusicChanged( const CEGUI::EventArgs& arg );
 
@@ -223,6 +226,8 @@ class DialogGameSettings
         CEGUI::Checkbox*                            _p_enableFullscreen;
 
         CEGUI::Checkbox*                            _p_enableDynShadow;
+
+        CEGUI::Checkbox*                            _p_enableFloatingPlayerText;
 
         CEGUI::Checkbox*                            _p_enableMusic;
 

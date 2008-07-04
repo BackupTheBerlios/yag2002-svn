@@ -32,18 +32,25 @@
 #include "vrc_story.h"
 #include "vrc_storysystem.h"
 #include "vrc_storyengine.h"
+#include <storage/vrc_storageserver.h>
+#include <storage/vrc_userinventory.h>
 
 
+//! Scope of exposed script functions
 #define SCRIPT_INTERFACE_NAME               "story"
+
+//! Script function names
 #define FCN_INITIALIZE                      "initialize"
 #define FCN_PROC_EVENT                      "processEvent"
 #define FCN_PROC_DIALOG_RESULTS             "processDialogResults"
 #define FCN_UPDATE                          "update"
+
+//! Name of exposed methods
 #define EXPOSED_METHOD_LOG                  "log"
 #define EXPOSED_METHOD_BEGIN_STORY          "begin"
 #define EXPOSED_METHOD_CLOSE_STORY          "close"
 #define EXPOSED_METHOD_SEND_EVENT           "sendEvent"
-
+//! Dialog related methods
 #define EXPOSED_METHOD_DLG_CREATE           "dialogCreate"
 #define EXPOSED_METHOD_DLG_DESTROY          "dialogDestroy"
 #define EXPOSED_METHOD_DLG_SET_TITLE        "dialogSetTitle"
@@ -54,6 +61,13 @@
 #define EXPOSED_METHOD_DLG_GET_ABORTED      "dialogGetAborted"
 #define EXPOSED_METHOD_DLG_GET_CHOICE       "dialogGetChoice"
 #define EXPOSED_METHOD_DLG_GET_STR_INPUT    "dialogGetStringInput"
+//! Inventory related methodss
+#define EXPOSED_METHOD_INV_GET_ITEM_EXSITS  "invGetItemExist"
+#define EXPOSED_METHOD_INV_GET_ITEM_PROP    "invGetItemProperty"
+#define EXPOSED_METHOD_INV_SET_ITEM_PROP    "invSetItemProperty"
+#define EXPOSED_METHOD_INV_ADD_ITEM         "invAddItem"
+#define EXPOSED_METHOD_INV_ADD_ITEM_PROP    "invAddItemProp"
+#define EXPOSED_METHOD_INV_STORE            "invStore"
 
 
 namespace vrc
@@ -177,6 +191,9 @@ bool Story::setup( const std::string& scriptfile )
 
         // create the dialog's exposed function bindings
         createDialogFuntions();
+
+        // create the inventory's exposed function bindings
+        createInventoryFunctions();
 
         // execute the script after exposing methods
         execute();
@@ -327,6 +344,78 @@ void Story::createDialogFuntions()
     // ######
 }
 
+void Story::createInventoryFunctions()
+{
+//#define EXPOSED_METHOD_INV_GET_ITEM_EXSITS  "invGetItemExist"
+//#define     "invGetItemProperty"
+//#define     "invSetItemProperty"
+//#define EXPOSED_METHOD_INV_ADD_ITEM         "invAddItem"
+//#define EXPOSED_METHOD_INV_ADD_ITEM_PROP    "invAddItemProp"
+//#define EXPOSED_METHOD_INV_STORE            "invStore"
+
+
+    Params arguments;
+    Params returnsvalues;
+
+    // expose method for checking if an inventory item exists having the pseudo-signatur: bool invGetItemExist( unsigned int userID, unsigned int networkID, string itemName )
+    {
+        unsigned int userID    = 0;
+        unsigned int networkID = 0;
+        std::string  itemname;
+        bool         ret = false;
+        arguments.add( userID );
+        arguments.add( networkID );
+        arguments.add( itemname );
+        returnsvalues.add( ret );
+        exposeMethod( EXPOSED_METHOD_INV_GET_ITEM_EXSITS, &Story::linvGetItemExist, arguments, returnsvalues );
+    }
+
+    arguments.clear();
+    returnsvalues.clear();
+
+    // expose method for getting item property having the pseudo-signatur: string invGetItemProperty( unsigned int userID, unsigned int networkID, string itemName, string itemPropertyName )
+    // returns an empty string if the item or property does not exist.
+    {
+        unsigned int userID    = 0;
+        unsigned int networkID = 0;
+        std::string  itemname;
+        std::string  itempropname;
+        std::string  ret;
+        arguments.add( userID );
+        arguments.add( networkID );
+        arguments.add( itemname );
+        arguments.add( itempropname );
+        returnsvalues.add( ret );
+        exposeMethod( EXPOSED_METHOD_INV_GET_ITEM_PROP, &Story::linvGetItemProperty, arguments, returnsvalues );
+    }
+
+    arguments.clear();
+    returnsvalues.clear();
+
+    // expose method for getting item property having the pseudo-signatur: bool invSetItemProperty( unsigned int userID, unsigned int networkID, string itemName, string itemPropertyName, string itemPropertyValue )
+    // returns false if the item or property does not exist.
+    {
+        unsigned int userID    = 0;
+        unsigned int networkID = 0;
+        std::string  itemname;
+        std::string  itempropname;
+        std::string  itempropvalue;
+        bool         ret = false;
+        arguments.add( userID );
+        arguments.add( networkID );
+        arguments.add( itemname );
+        arguments.add( itempropname );
+        arguments.add( itempropvalue );
+        returnsvalues.add( ret );
+        exposeMethod( EXPOSED_METHOD_INV_SET_ITEM_PROP, &Story::linvSetItemProperty, arguments, returnsvalues );
+    }
+
+    arguments.clear();
+    returnsvalues.clear();
+
+    // TODO: continue here
+}
+
 StoryPtr Story::clone( unsigned int ownerID, const std::string& name )
 {
     assert( ownerID && "invalid owner ID!" );
@@ -397,6 +486,8 @@ void Story::processDialogResutls( const StoryDialogResults& results )
 
     // set the update parameter
     Params arguments;
+    arguments.add( results._sourceID );
+    arguments.add( results._destNetworkID );
     arguments.add( handle );
 
     try
@@ -789,5 +880,93 @@ void Story::ldialogGetStringInput( const Params& arguments, Params& returnvalues
     std::string ret( _p_dialogResults->_textFields[ fieldindex - 1 ] );
     SET_SCRIPT_PARAMVALUE( returnvalues, 0, std::string, ret );
 }
+
+void Story::linvGetItemExist( const Params& arguments, Params& returnvalues )
+{
+    unsigned int userID    = GET_SCRIPT_PARAMVALUE( arguments, 0, unsigned int );
+    unsigned int networkID = GET_SCRIPT_PARAMVALUE( arguments, 1, unsigned int );
+    std::string  itemname  = GET_SCRIPT_PARAMVALUE( arguments, 2, std::string );
+
+    UserInventory* p_inv = StorageServer::get()->getUserInventory( userID, networkID );
+    if ( !p_inv )
+    {
+        bool ret = false;
+        SET_SCRIPT_PARAMVALUE( returnvalues, 0, bool, ret );
+        storylog_warning << "story " << getName() << ": could not get inventory, user ID " << userID << ", network ID " << networkID << std::endl;
+        return;
+    }
+
+    bool exists = true;
+    if ( !p_inv->getItem( itemname ) )
+        exists = false;
+
+    SET_SCRIPT_PARAMVALUE( returnvalues, 0, bool, exists );
+}
+
+void Story::linvGetItemProperty( const Params& arguments, Params& returnvalues )
+{
+    unsigned int userID    = GET_SCRIPT_PARAMVALUE( arguments, 0, unsigned int );
+    unsigned int networkID = GET_SCRIPT_PARAMVALUE( arguments, 1, unsigned int );
+    std::string  itemname  = GET_SCRIPT_PARAMVALUE( arguments, 2, std::string );
+    std::string  propname  = GET_SCRIPT_PARAMVALUE( arguments, 3, std::string );
+
+    UserInventory* p_inv = StorageServer::get()->getUserInventory( userID, networkID );
+    if ( !p_inv )
+    {
+        std::string ret;
+        SET_SCRIPT_PARAMVALUE( returnvalues, 0, std::string, ret );
+        storylog_warning << "story " << getName() << ": (get item property) could not get inventory, user ID " << userID << ", network ID " << networkID << std::endl;
+        return;
+    }
+
+    InventoryItem* p_item = p_inv->getItem( itemname );
+    if ( !p_item )
+    {
+        std::string ret;
+        SET_SCRIPT_PARAMVALUE( returnvalues, 0, std::string, ret );
+        return;
+    }
+
+    std::string propvalue;
+    p_item->getParamValue( propname, propvalue );
+    SET_SCRIPT_PARAMVALUE( returnvalues, 0, std::string, propvalue );
+}
+
+void Story::linvSetItemProperty( const Params& arguments, Params& returnvalues )
+{
+    unsigned int userID    = GET_SCRIPT_PARAMVALUE( arguments, 0, unsigned int );
+    unsigned int networkID = GET_SCRIPT_PARAMVALUE( arguments, 1, unsigned int );
+    std::string  itemname  = GET_SCRIPT_PARAMVALUE( arguments, 2, std::string );
+    std::string  propname  = GET_SCRIPT_PARAMVALUE( arguments, 3, std::string );
+    std::string  propval   = GET_SCRIPT_PARAMVALUE( arguments, 4, std::string );
+
+    UserInventory* p_inv = StorageServer::get()->getUserInventory( userID, networkID );
+    if ( !p_inv )
+    {
+        bool ret = false;
+        SET_SCRIPT_PARAMVALUE( returnvalues, 0, bool, ret );
+        storylog_warning << "story " << getName() << ": (set item property) could not get inventory, user ID " << userID << ", network ID " << networkID << std::endl;
+        return;
+    }
+
+    InventoryItem* p_item = p_inv->getItem( itemname );
+    if ( !p_item )
+    {
+        bool ret = false;
+        SET_SCRIPT_PARAMVALUE( returnvalues, 0, bool, ret );
+        return;
+    }
+
+    // set the property value
+    p_item->setParamValue( propname, propval );
+
+    bool ret = true;
+    SET_SCRIPT_PARAMVALUE( returnvalues, 0, bool, ret );
+}
+
+//todo expose the inventory functions:
+//
+//1. add item and add item property
+//2. store inventoy
 
 } // namespace vrc

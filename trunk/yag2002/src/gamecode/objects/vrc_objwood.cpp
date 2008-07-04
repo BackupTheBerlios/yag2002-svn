@@ -58,18 +58,18 @@ EnObjectWood::~EnObjectWood()
 void EnObjectWood::onObjectUse()
 {
     // TODO: make something useful
-    StoryEvent event( StoryEvent::eTypePickItem, getActorType(), getActorID(), 0, 0, StoryEvent::eFilterStoryPublic, getNetworkID(), 10, 20, 10.0f, 20.0f, "picking wood" );
+    StoryEvent event( StoryEvent::eTypePickItem, getActorType(), getActorID(), StoryEvent::eTypePickItem, StorageClient::get()->getUserID(), StoryEvent::eFilterStoryPublic, getNetworkID(), 10, 20, 10.0f, 20.0f, "picking wood" );
     StorySystem::get()->sendEvent( event );
 }
 
 void EnObjectWood::onEventReceived( const StoryEvent& event )
 {
-    UserInventory* p_inv = gameutils::PlayerUtils::get()->getPlayerInventory();
-    if ( !p_inv->increaseItem( ITEM_NAME_OBJ_WOOD, 1 ) )
-    {
-        //! TODO ...assemble the item string out of entity attributes
-        p_inv->addItem( ITEM_NAME_OBJ_WOOD, getActorID(), "test=10,test2=21" );
-    }
+    //UserInventory* p_inv = gameutils::PlayerUtils::get()->getPlayerInventory();
+    //if ( !p_inv->increaseItem( ITEM_NAME_OBJ_WOOD, 1 ) )
+    //{
+    //    //! TODO ...assemble the item string out of entity attributes
+    //    p_inv->addItem( ITEM_NAME_OBJ_WOOD, getActorID(), "test=10,test2=21" );
+    //}
 
     //! TODO: get the respawn time from object attributes
     disappear( 5.0f );

@@ -34,13 +34,13 @@
 #define _VRC_CONFIG_H_
 
 //! Build version, set this define for publishing releases
-#define VRC_BUILD_PUBLISH
+//#define VRC_BUILD_PUBLISH
 
 //! Set the VRC version string
 #ifdef VRC_BUILD_PUBLISH
-  #define VRC_VERSION         "1.3.1"
+  #define VRC_VERSION         "1.4.0"
 #else
-  #define VRC_VERSION         "1.3.1 - Dev"
+  #define VRC_VERSION         "1.4.0 - Dev"
 #endif
 
 #endif // _VRC_CONFIG_H_

@@ -295,31 +295,31 @@ bool StorageServer::getUserAccount( unsigned int userID, int sessionID, UserAcco
     return true;
 }
 
-bool StorageServer::getUserInventory( unsigned int userID, int sessionID, UserInventory* p_inv )
+UserInventory* StorageServer::getUserInventory( unsigned int userID, int sessionID )
 {
     if ( !_connectionEstablished )
-        return false;
+        return NULL;
 
     std::map< int, UserState* >::iterator p_user = _userCache.find( sessionID );
     if ( p_user == _userCache.end() )
     {
         log_info << "*** StorageServer: request for user inventory cannot be processed; user / session ID mismatch." << std::endl;
-        return false;
+        return NULL;
     }
 
     if ( !p_user->second->_p_userInventory->isCached() )
     {
         // get user inventory
-        if ( !_p_storage->getUserInventory( userID, p_inv ) )
+        if ( !_p_storage->getUserInventory( userID, p_user->second->_p_userInventory ) )
         {
             log_error << "StorageServer: could not retrieve user inventory, user ID " << userID << std::endl;
-            return false;
+            return NULL;
         }
 
         p_user->second->_p_userInventory->setCached( true );
     }
 
-    return true;
+    return p_user->second->_p_userInventory;
 }
 
 } // namespace vrc
