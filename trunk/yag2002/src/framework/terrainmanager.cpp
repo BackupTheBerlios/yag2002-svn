@@ -301,7 +301,7 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
     _p_stateSet->setTextureAttributeAndModes( 0, p_basetex, osg::StateAttribute::ON );
     // enable alpha function for making holes into the terrain on rendering
     osg::AlphaFunc* p_alphaFunc = new osg::AlphaFunc;
-    p_alphaFunc->setFunction( osg::AlphaFunc::GREATER,0.7f );
+    p_alphaFunc->setFunction( osg::AlphaFunc::GREATER, 0.7f );
     _p_stateSet->setAttributeAndModes( p_alphaFunc, osg::StateAttribute::ON );
 
     // set detail textures only when glsl is available
