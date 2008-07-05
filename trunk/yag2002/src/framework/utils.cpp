@@ -701,7 +701,6 @@ std::string getCurrentWorkingDirectory()
 
     char buf[ 512 ];
     GetCurrentDirectory( sizeof( buf ), buf );
-    return std::string( buf );
 
 #endif
 #ifdef LINUX
@@ -846,9 +845,6 @@ bool checkDirectory( const std::string& dir )
     return ( stat( dir.c_str(), &fileInfo ) < 0 ) ? false : true;
 
 #endif
-
-    // platform not supported
-    return false;
 }
 
 YAF3D_SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string& params )
@@ -907,9 +903,6 @@ YAF3D_SPAWN_PROC_ID spawnApplication( const std::string& cmd, const std::string&
     return static_cast< YAF3D_SPAWN_PROC_ID >( pid );
 
 #endif
-
-    // platform not supported
-    return static_cast< YAF3D_SPAWN_PROC_ID >( 0 );
 }
 
 // helper class for enumerateDisplaySettings

@@ -55,6 +55,8 @@
 #    define WIN32_LEAN_AND_MEAN
 #    include <windows.h>
 #    include <shellapi.h>
+#    // disable the warnings about auto-creation of assignment operator
+#    pragma warning ( disable: 4512 )
 #  endif
 #endif
 

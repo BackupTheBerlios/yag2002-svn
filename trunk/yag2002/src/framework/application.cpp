@@ -195,7 +195,7 @@ bool Application::initialize( int argc, char **argv )
     {
         // take the first cpu for our application
         DWORD_PTR  processAffinityMask = 0x1;
-        BOOL       res = SetProcessAffinityMask( GetCurrentProcess(), processAffinityMask );
+        SetProcessAffinityMask( GetCurrentProcess(), processAffinityMask );
     }
 #endif
 

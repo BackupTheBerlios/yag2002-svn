@@ -88,7 +88,7 @@ void EnNATServer::initialize()
     yaf3d::EntityManager::get()->registerUpdate( this, true );
 }
 
-void EnNATServer::updateEntity( float deltaTime )
+void EnNATServer::updateEntity( float /*deltaTime*/ )
 {
     static tNATData s_data;
 

@@ -62,7 +62,7 @@ void EnObjectWood::onObjectUse()
     StorySystem::get()->sendEvent( event );
 }
 
-void EnObjectWood::onEventReceived( const StoryEvent& event )
+void EnObjectWood::onEventReceived( const StoryEvent& /*event*/ )
 {
     //UserInventory* p_inv = gameutils::PlayerUtils::get()->getPlayerInventory();
     //if ( !p_inv->increaseItem( ITEM_NAME_OBJ_WOOD, 1 ) )

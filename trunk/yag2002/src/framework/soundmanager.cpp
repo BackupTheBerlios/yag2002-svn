@@ -233,7 +233,6 @@ unsigned int SoundManager::getSoundGroupIdFromString( const std::string& soundgr
         return SoundGroupFX;
 
     throw SoundException( "Invalid sound group name: " + soundgroup );
-    return 0;
 }
 
 std::string SoundManager::getSoundGroupStringFromId( unsigned int soundgroup ) throw ( SoundException )
@@ -250,8 +249,6 @@ std::string SoundManager::getSoundGroupStringFromId( unsigned int soundgroup ) t
     std::stringstream str;
     str << "Invalid sound group id: " <<  soundgroup;
     throw SoundException( str.str() );
-
-    return 0;
 }
 
 unsigned int SoundManager::createSound( unsigned int soundgroup, const std::string& file, float volume, bool autoplay, unsigned int flags ) throw ( SoundException )

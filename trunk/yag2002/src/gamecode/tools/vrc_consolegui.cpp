@@ -125,10 +125,12 @@ bool ConsoleGUI::initialize(
         return false;
     }
 
+    enableTimeStamp( enabletimestamp );
+
     return true;
 }
 
-bool ConsoleGUI::onClickedClose( const CEGUI::EventArgs& arg )
+bool ConsoleGUI::onClickedClose( const CEGUI::EventArgs& /*arg*/ )
 {
     _p_wnd->deactivate();
     _p_wnd->hide();

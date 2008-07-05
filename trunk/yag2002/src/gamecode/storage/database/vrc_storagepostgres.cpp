@@ -100,8 +100,6 @@ bool StoragePostgreSQL::initialize( const ConnectionData& connData )
 
             // remove sensitive data from memory -- is this method really secure enough on stringstream!?
             conargs.str( "" );
-
-            return true;
         }
         catch ( const std::exception& e )
         {
@@ -293,7 +291,7 @@ bool StoragePostgreSQL::registerUser( const std::string& name, const std::string
     return true;
 }
 
-bool StoragePostgreSQL::updateUserAccount( const UserAccount& acc )
+bool StoragePostgreSQL::updateUserAccount( const UserAccount& /*acc*/ )
 {
     //! TODO ...
 

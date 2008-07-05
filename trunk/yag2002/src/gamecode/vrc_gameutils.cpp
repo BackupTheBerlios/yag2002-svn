@@ -434,7 +434,6 @@ const CEGUI::Image* GuiUtils::getCustomImage( const std::string& name )
     {
         log_error << "GuiUtils: problem getting image " << VRC_IMAGE_SET << "/" <<  name << std::endl;
         log_out << "   reason: " << e.getMessage().c_str() << std::endl;
-        return NULL;
     }
 
     return NULL;

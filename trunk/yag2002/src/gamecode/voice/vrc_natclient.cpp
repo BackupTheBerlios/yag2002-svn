@@ -181,7 +181,7 @@ void NATClient::update( float deltaTime )
     }
 }
 
-bool NATClient::receivePacket( char* p_buffer, int len, const RNReplicaNet::XPAddress& senderaddr )
+bool NATClient::receivePacket( char* p_buffer, int /*len*/, const RNReplicaNet::XPAddress& senderaddr )
 {
     tNATData* p_data = reinterpret_cast< tNATData* >( p_buffer );
     if ( ( p_data->_cmd & NAT_CMD_MASK ) != NAT_CMD_MASK )

@@ -346,7 +346,7 @@ void BaseObject::enable( bool en )
         // enable shadow only if it is enabled in configuration
         if ( shadow && _shadowEnable )
         {
-            yaf3d::ShadowManager::get()->addShadowNode( getTransformationNode(), yaf3d::ShadowManager::eThrowShadow );
+            yaf3d::ShadowManager::get()->addShadowNode( getTransformationNode(), static_cast< unsigned int >( yaf3d::ShadowManager::eThrowShadow ) );
             yaf3d::ShadowManager::get()->updateShadowArea();
         }
         else

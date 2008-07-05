@@ -287,11 +287,18 @@ bool StorageServer::getUserAccount( unsigned int userID, int sessionID, UserAcco
     std::map< int, UserState* >::iterator p_user = _userCache.find( sessionID );
     if ( p_user == _userCache.end() )
     {
-        log_info << "*** StorageServer: request for user inventory cannot be processed, user / session ID mismatch!" << std::endl;
+        log_info << "*** StorageServer: request for user account cannot be processed, invalid session ID!" << std::endl;
+        return false;
+    }
+
+    if ( p_user->second->_userAccount._userID != userID )
+    {
+        log_warning << "*** StorageServer: request for user account cannot be processed, user / session ID mismatch!" << std::endl;
         return false;
     }
 
     *p_account = p_user->second->_userAccount;
+
     return true;
 }
 

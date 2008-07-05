@@ -82,7 +82,7 @@ class ConsoleGUI : public std::basic_ostream< char >
         bool                                        onInputTextChanged( const CEGUI::EventArgs& arg );
 
         //! Override this method to get input from console
-        virtual void                                processInput( const std::string& cmd ) {}
+        virtual void                                processInput( const std::string& /*cmd*/ ) {}
 
         //! GUI window object
         CEGUI::FrameWindow*                         _p_wnd;

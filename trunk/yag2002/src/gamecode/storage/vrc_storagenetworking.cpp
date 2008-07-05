@@ -82,7 +82,7 @@ void StorageNetworking::RPC_RequestAccountInfo( tAccountInfoData info )
 
     info._p_lastLogin[ 0 ]  = 0;
     info._p_onlineTime[ 0 ] = 0;
-    info._priviledges       = -1;
+    info._priviledges       = static_cast< unsigned int >( -1 );
 
     UserAccount acc;
     if ( !StorageServer::get()->getUserAccount( info._userID, info._sessionCookie, &acc ) )
