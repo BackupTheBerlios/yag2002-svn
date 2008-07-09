@@ -234,6 +234,10 @@ void EnPlayerAnimation::initialize()
         osg::ref_ptr< osgText::Text > text = createTextNode();
         _playerTextGeode = new osg::Geode;
         _playerTextGeode->addDrawable( text.get() );
+
+        // disable the lighting in stateset in order to avoid messed up text color (thanks to nhv from osg channel on freenode)
+        osg::StateSet* p_stateset = _playerTextGeode->getOrCreateStateSet();
+        p_stateset->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
     }
 
     // calculate LOD distance internal var
