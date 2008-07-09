@@ -258,6 +258,9 @@ void EnPlayerAnimation::enableTextDisplay( bool en )
 {
     _enableDisplayText = en;
 
+    if ( !_playerTextGeode.get() )
+        return;
+
     // avoid adding the text geode to transformation node more then once
     _p_player->getPlayerEntity()->removeTransformationNode( _playerTextGeode.get() );
     if ( _enableDisplayText )
@@ -593,7 +596,7 @@ osg::ref_ptr< osgText::Text > EnPlayerAnimation::createTextNode()
     osg::ref_ptr < osgText::Font > font = osgText::readFontFile( fontpath );
     osg::ref_ptr < osgText::Text > text = new osgText::Text;
     text->setFont( font.get() );
-    text->setCharacterSize( 100.0f );
+    text->setCharacterSize( 50.0f );
     text->setPosition( pos );
     text->setAlignment( osgText::Text::CENTER_BASE_LINE );
     text->setAutoRotateToScreen( true );
