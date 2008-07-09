@@ -287,15 +287,24 @@ void ChatManager::onReceive( const std::string& channel, const std::string& send
     if ( !_serverMode )
         notifyAppWindow( smsg );
 
-    // update the floating text
-    vrc::EnPlayer* p_player = NULL;
-    const std::vector< yaf3d::BaseEntity* >& remoteplayers = vrc::gameutils::PlayerUtils::get()->getRemotePlayers();
-    std::vector< yaf3d::BaseEntity* >::const_iterator p_remoteplayer = remoteplayers.begin(), p_end = remoteplayers.end();
-    for ( ; p_remoteplayer != p_end; ++p_remoteplayer )
+    // VRC's internal chat protocol has an empty channel name, show up the floating text only for VRC chat protocol traffic
+    if ( !channel.length() )
     {
-        p_player = dynamic_cast< vrc::EnPlayer* >( *p_remoteplayer );
-        if ( p_player->getPlayerName() == sender )
-            p_player->displayFloatingText( smsg, FLOATING_TEXT_TIME );
+        // update the floating text
+        vrc::EnPlayer* p_player = NULL;
+        const std::vector< yaf3d::BaseEntity* >& remoteplayers = vrc::gameutils::PlayerUtils::get()->getRemotePlayers();
+        std::vector< yaf3d::BaseEntity* >::const_iterator p_remoteplayer = remoteplayers.begin(), p_end = remoteplayers.end();
+        for ( ; p_remoteplayer != p_end; ++p_remoteplayer )
+        {
+            p_player = dynamic_cast< vrc::EnPlayer* >( *p_remoteplayer );
+            assert( p_player && "invalid player object type!" );
+
+            if ( p_player->getPlayerName() == sender )
+            {
+                p_player->displayFloatingText( smsg, FLOATING_TEXT_TIME );
+                break;
+            }
+        }
     }
 }
 
