@@ -177,6 +177,9 @@ class EnPlayerAnimation  : public yaf3d::BaseEntity
         //! One over max LOD distance
         float                                       _divMaxLODDistance;
 
+        //! Font for floating text
+        std::string                                 _font;
+
         // animation ids
         int                                         _IdAnimIdle;
         int                                         _IdAnimWalk;

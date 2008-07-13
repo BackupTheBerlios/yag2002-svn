@@ -165,6 +165,7 @@ _textVisible( false ),
 _scale( 1.0f ),
 _maxLODDistance( 50.0f ),
 _divMaxLODDistance( 1.0f / 50.0f ),
+_font( PLAYERTEXT_FONT_PATH ),
 _IdAnimIdle( -1 ),
 _IdAnimWalk( -1 ),
 _IdAnimRun( -1 ),
@@ -178,6 +179,7 @@ _IdAnimTurn( -1 )
     getAttributeManager().addAttribute( "rotation"       , _rotation       );
     getAttributeManager().addAttribute( "scale"          , _scale          );
     getAttributeManager().addAttribute( "maxLODDistance" , _maxLODDistance );
+    getAttributeManager().addAttribute( "font"           , _font           );
 }
 
 EnPlayerAnimation::~EnPlayerAnimation()
@@ -592,7 +594,7 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
 osg::ref_ptr< osgText::Text > EnPlayerAnimation::createTextNode()
 {
     osg::Vec3 pos( 0.0f, 0.0f, 1.0f );
-    std::string fontpath = yaf3d::Application::get()->getMediaPath() + PLAYERTEXT_FONT_PATH;
+    std::string fontpath = yaf3d::Application::get()->getMediaPath() + _font;
     osg::ref_ptr < osgText::Font > font = osgText::readFontFile( fontpath );
     osg::ref_ptr < osgText::Text > text = new osgText::Text;
     text->setFont( font.get() );
@@ -604,7 +606,10 @@ osg::ref_ptr< osgText::Text > EnPlayerAnimation::createTextNode()
     text->setColor( osg::Vec4f( 1.0f, 1.0f, 1.0f, 1.0f ) );
     text->setFontResolution( 32, 32 );
     text->setCharacterSizeMode( osgText::Text::SCREEN_COORDS ); // this mode does not look good: OBJECT_COORDS_WITH_MAXIMUM_SCREEN_SIZE_CAPPED_BY_FONT_HEIGHT
-    text->setDrawMode( osgText::Text::TEXT | osgText::Text::BOUNDINGBOX );
+    text->setDrawMode( osgText::Text::TEXT /*| osgText::Text::BOUNDINGBOX*/ );
+    text->setBackdropType( osgText::Text::OUTLINE ); // for better readability
+    text->setBackdropOffset( 0.1f );
+
     text->setText( "NoName" );
 
     _playerText = text;
