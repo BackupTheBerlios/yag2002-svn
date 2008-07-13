@@ -301,7 +301,7 @@ void ChatManager::onReceive( const std::string& channel, const std::string& send
 
             if ( p_player->getPlayerName() == sender )
             {
-                p_player->displayFloatingText( smsg, FLOATING_TEXT_TIME );
+                p_player->displayFloatingText( msg.c_str(), FLOATING_TEXT_TIME );
                 break;
             }
         }
