@@ -36,7 +36,7 @@
 #include "vrc_playerimpl.h"
 
 
-#define PLAYERTEXT_FONT_PATH    "gui/font/vaground.ttf"
+#define PLAYERTEXT_FONT_PATH    "gui/fonts/vaground.ttf"
 
 
 namespace vrc
@@ -311,7 +311,7 @@ void EnPlayerAnimation::updateEntity( float deltaTime )
             // re-display the player text after the timeout
             if ( _textDisplayTimer < 0 )
             {
-                _playerText->setText( _displayText );
+                _playerText->setText( _displayText.c_str(), osgText::String::ENCODING_UTF8 );
                 _textDisplayTimer = 0;
             }
             else if ( _textDisplayTimer > 0 )
@@ -596,9 +596,15 @@ osg::ref_ptr< osgText::Text > EnPlayerAnimation::createTextNode()
     osg::Vec3 pos( 0.0f, 0.0f, 1.0f );
     std::string fontpath = yaf3d::Application::get()->getMediaPath() + _font;
     osg::ref_ptr < osgText::Font > font = osgText::readFontFile( fontpath );
+    
+    if ( !font.get() )
+    {
+        log_warning << "could not find font " << fontpath << " for player's floating text" << std::endl;
+        log_warning << " using built-in font" << std::endl;
+    }
     osg::ref_ptr < osgText::Text > text = new osgText::Text;
     text->setFont( font.get() );
-    text->setCharacterSize( 50.0f );
+    text->setCharacterSize( 22.0f );
     text->setPosition( pos );
     text->setAlignment( osgText::Text::CENTER_BASE_LINE );
     text->setAutoRotateToScreen( true );
@@ -620,12 +626,13 @@ osg::ref_ptr< osgText::Text > EnPlayerAnimation::createTextNode()
 void EnPlayerAnimation::setPlayerText( const std::string& text )
 {
     _displayText = text;
-    _playerText->setText( text );
+    // we also accept encoded text in utf8
+    _playerText->setText( text.c_str(), osgText::String::ENCODING_UTF8 );
 }
 
 void EnPlayerAnimation::displayText( const std::string& text, float duration )
 {
-    _playerText->setText( text );
+    _playerText->setText( text.c_str(), osgText::String::ENCODING_UTF8 );
     _textDisplayTimer = duration;
 }
 
