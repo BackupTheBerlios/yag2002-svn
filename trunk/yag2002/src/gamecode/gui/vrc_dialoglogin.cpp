@@ -101,7 +101,6 @@ bool DialogLogin::initialize( const std::string& layoutfile )
         CEGUI::PushButton* p_btncancel = static_cast< CEGUI::PushButton* >( _p_loginDialog->getChild( LOGINDLG_PREFIX "btn_cancel" ) );
         p_btncancel->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogLogin::onClickedCancel, this ) );
 
-
         // get the login and passwd edit boxes
         _p_login = static_cast< CEGUI::Editbox* >( _p_loginDialog->getChild( LOGINDLG_PREFIX "text_username" ) );
         _p_passwd = static_cast< CEGUI::Editbox* >( _p_loginDialog->getChild( LOGINDLG_PREFIX "text_password" ) );
@@ -152,6 +151,11 @@ bool DialogLogin::onClickedRegistration( const CEGUI::EventArgs& /*arg*/ )
             // setup create registration button
             CEGUI::PushButton* p_btnregister = static_cast< CEGUI::PushButton* >( _p_registrationDialog->getChild( REGDLG_PREFIX "btn_create_account" ) );
             p_btnregister->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogLogin::onClickedRegistrationCreate, this ) );
+
+            // make sure that the edit box displays the first line
+            CEGUI::MultiLineEditbox* p_termscond = static_cast< CEGUI::MultiLineEditbox* >( _p_registrationDialog->getChild( REGDLG_PREFIX "st_conditions" ) );
+            if ( p_termscond->getText().length() > 0 )
+                p_termscond->setCaratIndex( 1 );
 
             // get registration edit fields
             _p_regNickName = static_cast< CEGUI::Editbox* >( _p_registrationDialog->getChild( REGDLG_PREFIX "text_username" ) );
