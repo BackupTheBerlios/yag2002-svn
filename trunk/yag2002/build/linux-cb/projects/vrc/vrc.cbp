@@ -148,6 +148,8 @@
 		<Unit filename="../../../../src/gamecode/gamelogic/vrc_story.h" />
 		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storyactor.cpp" />
 		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storyactor.h" />
+		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storydialog.cpp" />
+		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storydialog.h" />
 		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storyengine.cpp" />
 		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storyengine.h" />
 		<Unit filename="../../../../src/gamecode/gamelogic/vrc_storyevent.cpp" />
