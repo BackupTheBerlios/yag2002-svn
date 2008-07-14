@@ -214,8 +214,8 @@ bool StoryDialog::createDialog( unsigned int dialogID, const std::string& title,
         inputareaheight += 0.1f;
 
         // create the input gui elements
-        long long selectionindex = 1; // selection index
-        long long textindex      = 1; // text field index
+        long int selectionindex = 1; // selection index
+        long int textindex      = 1; // text field index
         p_beg = _inputs.begin(), p_end = _inputs.end();
         for ( ; p_beg != p_end; ++p_beg )
         {
@@ -337,7 +337,7 @@ unsigned int StoryDialog::getChoice()
     {
         if ( ( *p_radio )->isSelected() )
         {
-            choice = static_cast< unsigned int >( reinterpret_cast< long long >( ( *p_radio )->getUserData() ) );
+            choice = static_cast< unsigned int >( reinterpret_cast< long int >( ( *p_radio )->getUserData() ) );
             break;
         }
     }
@@ -351,7 +351,7 @@ void StoryDialog::setChoice( unsigned int index )
     std::vector< CEGUI::RadioButton* >::iterator p_radio = _choices.begin(), p_end = _choices.end();
     for ( ; p_radio != p_end; ++p_radio )
     {
-        unsigned int idx = static_cast< unsigned int >( reinterpret_cast< long long >( ( *p_radio )->getUserData() ) );
+        unsigned int idx = static_cast< unsigned int >( reinterpret_cast< long int >( ( *p_radio )->getUserData() ) );
         if ( idx == index )
         {
             ( *p_radio )->setSelected( true );
