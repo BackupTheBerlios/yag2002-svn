@@ -31,7 +31,7 @@
 #define _VRC_PROPGUI_H_
 
 #include <vrc_main.h>
-
+#include <storage/vrc_storageclient.h>
 
 namespace vrc
 {
@@ -39,7 +39,7 @@ namespace vrc
 class UserInventory;
 
 //! Class for player's property gui
-class PropertyGui
+class PropertyGui : public StorageClient::AccountInfoResult
 {
     public:
 
@@ -60,6 +60,9 @@ class PropertyGui
 
         //! Update the item description
         void                                        updateItemDescription();
+
+        //! Update the profile display
+        void                                        updateProfile();
 
         //! Callback for mouse over open button
         bool                                        onHoverOpen( const CEGUI::EventArgs& arg );
@@ -82,6 +85,12 @@ class PropertyGui
         //! Callback for inventory item drop button
         bool                                        onClickedItemDrop( const CEGUI::EventArgs& arg );
 
+        //! Callback for profile Ok button
+        bool                                        onClickedProfileOk( const CEGUI::EventArgs& arg );
+
+        //! Callback for getting user's account info from StorageClient
+        virtual void                                accountInfoResult( tAccountInfoData& info );
+
         //! User inventory
         UserInventory*                              _p_userInventory;
 
@@ -99,6 +108,21 @@ class PropertyGui
 
         //! Inventory pane: description field
         CEGUI::MultiLineEditbox*                    _p_editboxItem;
+
+        //! Profile pane: nick name
+        CEGUI::Editbox*                             _p_editboxNickName;
+
+        //! Profile pane: member since
+        CEGUI::Editbox*                             _p_editboxMemberSince;
+
+        //! Profile pane: total online time
+        CEGUI::Editbox*                             _p_editboxOnlineTime;
+
+        //! Profile pane: status
+        CEGUI::Editbox*                             _p_editboxStatus;
+
+        //! Profile pane: about me text
+        CEGUI::MultiLineEditbox*                    _p_editboxAboutMe;
 };
 
 } // namespace vrc

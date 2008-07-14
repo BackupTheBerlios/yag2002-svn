@@ -272,7 +272,7 @@ bool StorageServer::validateClient( unsigned int userID, int sessionID )
     std::map< int, UserState* >::iterator p_end = _userCache.end(), p_user = _userCache.find( sessionID );
     if ( ( p_user == p_end ) || ( p_user->second->_userAccount.getUserId() != userID ) )
     {
-        log_info << "*** StorageServer: client validation failed: user ID " << userID << ", session ID " << sessionID << std::endl;
+        log_warning << "*** StorageServer: client validation failed: user ID " << userID << ", session ID " << sessionID << std::endl;
         return false;
     }
 
@@ -287,7 +287,7 @@ bool StorageServer::getUserAccount( unsigned int userID, int sessionID, UserAcco
     std::map< int, UserState* >::iterator p_user = _userCache.find( sessionID );
     if ( p_user == _userCache.end() )
     {
-        log_info << "*** StorageServer: request for user account cannot be processed, invalid session ID!" << std::endl;
+        log_warning << "*** StorageServer: request for user account cannot be processed, invalid session ID " << sessionID << std::endl;
         return false;
     }
 
@@ -302,6 +302,33 @@ bool StorageServer::getUserAccount( unsigned int userID, int sessionID, UserAcco
     return true;
 }
 
+bool StorageServer::updateUserAccount( unsigned int userID, int sessionID, const UserAccount& account )
+{
+    if ( !_connectionEstablished )
+        return false;
+
+    std::map< int, UserState* >::iterator p_user = _userCache.find( sessionID );
+    if ( p_user == _userCache.end() )
+    {
+        log_warning << "*** StorageServer: request for user account update cannot be processed, invalid session ID " << sessionID << std::endl;
+        return false;
+    }
+
+    if ( p_user->second->_userAccount._userID != userID )
+    {
+        log_warning << "*** StorageServer: request for user account update cannot be processed, user / session ID mismatch!" << std::endl;
+        return false;
+    }
+
+    // update the cache
+    p_user->second->_userAccount._userDescription = account._userDescription;
+
+    // update the account in database
+    _p_storage->updateUserAccount( account );
+
+    return true;
+}
+
 UserInventory* StorageServer::getUserInventory( unsigned int userID, int sessionID )
 {
     if ( !_connectionEstablished )
@@ -310,7 +337,7 @@ UserInventory* StorageServer::getUserInventory( unsigned int userID, int session
     std::map< int, UserState* >::iterator p_user = _userCache.find( sessionID );
     if ( p_user == _userCache.end() )
     {
-        log_info << "*** StorageServer: request for user inventory cannot be processed; user / session ID mismatch." << std::endl;
+        log_warning << "*** StorageServer: request for user inventory cannot be processed; user / session ID mismatch " << sessionID << std::endl;
         return NULL;
     }
 
@@ -319,7 +346,7 @@ UserInventory* StorageServer::getUserInventory( unsigned int userID, int session
         // get user inventory
         if ( !_p_storage->getUserInventory( userID, p_user->second->_p_userInventory ) )
         {
-            log_error << "StorageServer: could not retrieve user inventory, user ID " << userID << std::endl;
+            log_error << "*** StorageServer: could not retrieve user inventory, user ID " << userID << std::endl;
             return NULL;
         }
 

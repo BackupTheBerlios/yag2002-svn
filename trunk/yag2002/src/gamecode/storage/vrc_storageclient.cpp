@@ -86,8 +86,17 @@ bool StorageClient::requestAccountInfo( unsigned int userID, class AccountInfoRe
     if ( !_p_networking )
         return false;
 
-    //! TODO: ...
     _p_networking->requestAccountInfo( userID, p_cb );
+
+    return true;
+}
+
+bool StorageClient::updateAccountInfo( unsigned int userID, tAccountInfoData& info )
+{
+    if ( !_p_networking )
+        return false;
+
+    _p_networking->updateAccountInfo( userID, info );
 
     return true;
 }

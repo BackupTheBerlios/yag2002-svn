@@ -56,6 +56,9 @@ class UserAccount
         //! Get e-mail address
         const std::string&                      getEmail() const;
 
+        //! Get date of registration
+        const std::string&                      getRegistrationDate() const;
+
         //! Get last login time stamp as string
         const std::string&                      getLastLogin() const;
 
@@ -65,15 +68,22 @@ class UserAccount
         //! Get user priviledges
         unsigned int                            getPriviledges() const;
 
+        //! Get user description
+        const std::string&                      getUserDescription() const;
+
         std::string                             _userName;
 
         std::string                             _nickName;
 
         std::string                             _email;
 
+        std::string                             _registrationDate;
+
         std::string                             _lastLogin;
 
         std::string                             _onlineTime;
+
+        std::string                             _userDescription;
 
         unsigned int                            _userID;
 

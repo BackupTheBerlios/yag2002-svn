@@ -68,6 +68,9 @@ class StorageNetworking : _RO_DO_PUBLIC_RO( StorageNetworking )
         //! Request the server for account information, used by client. The callback is called when the result arrives.
         void                                        requestAccountInfo( unsigned int userID, CallbackAccountInfoResult* p_callback );
 
+        //! Update the user account info, used by client. Note: currently, only the user description can be updated.
+        void                                        updateAccountInfo( unsigned int userID, const tAccountInfoData& info );
+
     protected:
 
         // Internal RN Overrides, do not use these methods!
@@ -75,6 +78,9 @@ class StorageNetworking : _RO_DO_PUBLIC_RO( StorageNetworking )
 
         //! Request the server for account info.
         void                                        RPC_RequestAccountInfo( tAccountInfoData info );
+
+        //! Request the server for updating account info.
+        void                                        RPC_RequestUpdateAccountInfo( tAccountInfoData info );
 
         //! Result of account info called on client.
         void                                        RPC_AccountInfoResult( tAccountInfoData info );

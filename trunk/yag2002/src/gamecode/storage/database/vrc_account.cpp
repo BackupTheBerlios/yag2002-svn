@@ -59,6 +59,11 @@ const std::string& UserAccount::getEmail() const
     return _email;
 }
 
+const std::string& UserAccount::getRegistrationDate() const
+{
+    return _registrationDate;
+}
+
 const std::string& UserAccount::getLastLogin() const
 {
     return _lastLogin;
@@ -78,6 +83,12 @@ unsigned int UserAccount::getPriviledges() const
 {
     return _priviledges;
 }
+
+const std::string& UserAccount::getUserDescription() const
+{
+    return _userDescription;
+}
+
 
 UserData::UserData() :
  _userID( 0 ),

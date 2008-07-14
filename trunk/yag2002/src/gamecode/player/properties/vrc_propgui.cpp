@@ -44,7 +44,12 @@ PropertyGui::PropertyGui( UserInventory* p_inv ) :
  _p_btnOpen( NULL ),
  _p_listboxItems( NULL ),
  _p_imageItem( NULL ),
- _p_editboxItem( NULL )
+ _p_editboxItem( NULL ),
+ _p_editboxNickName( NULL ),
+ _p_editboxMemberSince( NULL ),
+ _p_editboxOnlineTime( NULL ),
+ _p_editboxStatus( NULL ),
+ _p_editboxAboutMe( NULL )
 {
     setupGui();
 }
@@ -107,12 +112,8 @@ void PropertyGui::setupGui()
         _p_btnOpen->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::PropertyGui::onClickedOpen, this ) );
         _p_btnOpen->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::PropertyGui::onHoverOpen, this ) );
         _p_btnOpen->setStandardImageryEnabled( false );
-        _p_btnOpen->setPosition( CEGUI::Point( 0.0f, 0.6f ) );
+        _p_btnOpen->setPosition( CEGUI::Point( 0.005f, 0.6f ) );
         _p_btnOpen->setSize( CEGUI::Size( 0.08f, 0.1f ) );
-
-        //! TODO: this button is currently disabled, it will be re-enabled later
-        _p_btnOpen->disable();
-        _p_btnOpen->hide();
 
         p_maingui->addChildWindow( _p_btnOpen );
 
@@ -137,19 +138,43 @@ void PropertyGui::setupGui()
         // get content of pane Inventory
         //#############################
         {
-            CEGUI::TabPane*    p_paneInventory = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( PDLG_PREFIX "pane_inventory" ) );
+            CEGUI::TabPane* p_paneInventory = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( PDLG_PREFIX "pane_inventory" ) );
 
             _p_listboxItems = static_cast< CEGUI::Listbox* >( p_paneInventory->getChild( PDLG_PREFIX "listbox_items" ) );
             _p_listboxItems->subscribeEvent( CEGUI::Listbox::EventSelectionChanged, CEGUI::Event::Subscriber( &vrc::PropertyGui::onItemSelChanged, this ) );
 
-            _p_imageItem    = static_cast< CEGUI::StaticImage* >( p_paneInventory->getChild( PDLG_PREFIX "image_item" ) );
-            _p_editboxItem   = static_cast< CEGUI::MultiLineEditbox* >( p_paneInventory->getChild( PDLG_PREFIX "item_description" ) );
+            _p_imageItem   = static_cast< CEGUI::StaticImage* >( p_paneInventory->getChild( PDLG_PREFIX "image_item" ) );
+            _p_editboxItem = static_cast< CEGUI::MultiLineEditbox* >( p_paneInventory->getChild( PDLG_PREFIX "item_description" ) );
 
             CEGUI::PushButton* p_btnitemuse = static_cast< CEGUI::PushButton* >( p_paneInventory->getChild( PDLG_PREFIX "btn_item_use" ) );
             p_btnitemuse->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::PropertyGui::onClickedItemUse, this ) );
 
             CEGUI::PushButton* p_btnitemdrop = static_cast< CEGUI::PushButton* >( p_paneInventory->getChild( PDLG_PREFIX "btn_item_drop" ) );
             p_btnitemdrop->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::PropertyGui::onClickedItemDrop, this ) );
+        }
+
+        //! TODO: get content of pane Skills
+        //#############################
+        {
+        }
+
+        // get content of pane Profile
+        //#############################
+        {
+            CEGUI::TabPane* p_paneProfile = static_cast< CEGUI::TabPane* >( p_tabctrl->getTabContents( PDLG_PREFIX "pane_profile" ) );
+
+            _p_editboxNickName    = static_cast< CEGUI::Editbox* >( p_paneProfile->getChild( PDLG_PREFIX "eb_nickname" ) );
+
+            _p_editboxMemberSince = static_cast< CEGUI::Editbox* >( p_paneProfile->getChild( PDLG_PREFIX "eb_membersince" ) );
+
+            _p_editboxOnlineTime  = static_cast< CEGUI::Editbox* >( p_paneProfile->getChild( PDLG_PREFIX "eb_onlinetime" ) );
+
+            _p_editboxStatus      = static_cast< CEGUI::Editbox* >( p_paneProfile->getChild( PDLG_PREFIX "eb_status" ) );
+
+            _p_editboxAboutMe     = static_cast< CEGUI::MultiLineEditbox* >( p_paneProfile->getChild( PDLG_PREFIX "eb_aboutme" ) );
+
+            CEGUI::PushButton* p_btprofileok = static_cast< CEGUI::PushButton* >( p_paneProfile->getChild( PDLG_PREFIX "btn_profile_ok" ) );
+            p_btprofileok->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::PropertyGui::onClickedProfileOk, this ) );
         }
     }
     catch ( const CEGUI::Exception& e )
@@ -161,9 +186,6 @@ void PropertyGui::setupGui()
 
     // hide the inventory frame
     _p_frame->hide();
-
-    // update the inventory pane
-    updateInventory();
 }
 
 void PropertyGui::updateInventory()
@@ -239,6 +261,14 @@ void PropertyGui::updateItemDescription()
     _p_editboxItem->setText( description );
 }
 
+void PropertyGui::updateProfile()
+{
+    if ( !StorageClient::get()->requestAccountInfo( StorageClient::get()->getUserID(), this ) )
+    {
+        log_warning << "PropertyGui: cannot get account info" << std::endl;
+    }
+}
+
 bool PropertyGui::onHoverOpen( const CEGUI::EventArgs& /*arg*/ )
 {
     // play mouse over sound
@@ -250,6 +280,10 @@ bool PropertyGui::onClickedOpen( const CEGUI::EventArgs& /*arg*/ )
 {
     // update inventory
     updateInventory();
+
+    // update profile
+    updateProfile();
+
     // center to screen
     _p_frame->setPosition( CEGUI::Point( 0.25f, 0.2f ) );
     _p_frame->show();
@@ -317,4 +351,81 @@ bool PropertyGui::onClickedItemDrop( const CEGUI::EventArgs& /*arg*/ )
 
     return true;
 }
+
+bool PropertyGui::onClickedProfileOk( const CEGUI::EventArgs& /*arg*/ )
+{
+    // play mouse click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
+    assert( _p_editboxAboutMe );
+
+    // update the user description on server
+    tAccountInfoData info;
+    info._userID = StorageClient::get()->getUserID();
+    strcpy_s( info._p_userDescription, sizeof( info._p_userDescription ) - 1, _p_editboxAboutMe->getText().c_str() );
+    info._p_userDescription[ sizeof( info._p_userDescription ) - 1 ] = 0;
+
+    if ( !StorageClient::get()->updateAccountInfo( StorageClient::get()->getUserID(), info ) )
+    {
+        log_warning << "PropertyGui: cannot update account info" << std::endl;
+    }
+
+    return true;
+}
+
+void PropertyGui::accountInfoResult( tAccountInfoData& info )
+{
+    assert( _p_editboxNickName );
+    assert( _p_editboxMemberSince );
+    assert( _p_editboxOnlineTime );
+    assert( _p_editboxAboutMe );
+
+    // format the online time and registration date
+    std::vector< std::string > fields;
+    std::string regdate, onlinetime, status;
+
+    yaf3d::explode( info._p_onlineTime, ":", &fields );
+    if ( fields.size() > 0 )
+    {
+        onlinetime += fields[ 0 ];
+
+        // set the status depending on online time
+        std::stringstream str;
+        str << fields[ 0 ];
+        unsigned int hours = 0;
+        str >> hours;
+        if ( hours < 1 )
+        {
+            status = "Fresh meat";
+        }
+        else if ( hours < 10 )
+        {
+            status = "Knows some";
+        }
+        else
+        {
+            status = "Stone-Washed";
+        }
+    }
+    if ( fields.size() > 1 )
+    {
+        onlinetime += ":" + fields[ 1 ];
+    }
+
+    fields.clear();
+    yaf3d::explode( info._p_registrationDate, " ", &fields );
+    if ( fields.size() > 0 )
+        regdate = fields[ 0 ];
+
+    //! TODO: there are also other priviledge flags such as admin, moderator, banned etc.!
+    //if ( info._priviledges )
+    //    status = "Moderator";
+
+    _p_editboxNickName->setText( info._p_nickName );
+    _p_editboxMemberSince->setText( regdate );
+    _p_editboxOnlineTime->setText( onlinetime );
+    _p_editboxStatus->setText( status );
+    _p_editboxAboutMe->setText( info._p_userDescription );
+}
+
 } // namespace vrc

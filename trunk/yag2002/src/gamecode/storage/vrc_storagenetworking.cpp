@@ -71,8 +71,22 @@ void StorageNetworking::requestAccountInfo( unsigned int userID, CallbackAccount
     // call the account info rpc on server
     tAccountInfoData info;
     memset( &info, 0, sizeof( info ) );
-    info._userID = userID;
+    info._userID        = userID;
+    info._sessionCookie = yaf3d::NetworkDevice::get()->getSessionID();
+
     MASTER_FUNCTION_CALL( RPC_RequestAccountInfo( info ) );
+}
+
+void StorageNetworking::updateAccountInfo( unsigned int userID, const tAccountInfoData& info )
+{
+    tAccountInfoData updateinfo;
+    memset( &updateinfo, 0, sizeof( updateinfo ) );
+    updateinfo._sessionCookie = yaf3d::NetworkDevice::get()->getSessionID();
+    updateinfo._userID        = userID;
+    strcpy_s( updateinfo._p_userDescription, sizeof( updateinfo._p_userDescription ) - 1, info._p_userDescription );
+    updateinfo._p_userDescription[ sizeof( updateinfo._p_userDescription ) - 1 ]   = 0;
+
+    MASTER_FUNCTION_CALL( RPC_RequestUpdateAccountInfo( updateinfo ) );
 }
 
 void StorageNetworking::RPC_RequestAccountInfo( tAccountInfoData info )
@@ -80,27 +94,56 @@ void StorageNetworking::RPC_RequestAccountInfo( tAccountInfoData info )
 
     log_debug << "StorageNetworking: user ID '" << info._userID << "' requests for account info ..." << std::endl;
 
-    info._p_lastLogin[ 0 ]  = 0;
-    info._p_onlineTime[ 0 ] = 0;
+    info._p_lastLogin[ 0 ]        = 0;
+    info._p_onlineTime[ 0 ]       = 0;
+    info._p_nickName[ 0 ]         = 0;
+    info._p_registrationDate[ 0 ] = 0;
+    info._p_userDescription[ 0 ]  = 0;
     info._priviledges       = static_cast< unsigned int >( -1 );
 
     UserAccount acc;
     if ( !StorageServer::get()->getUserAccount( info._userID, info._sessionCookie, &acc ) )
     {
-        log_info << "StorageNetworking: could not retrieve account info for user: " << info._userID << std::endl;
+        log_warning << "StorageNetworking: could not retrieve account info for user: " << info._userID << std::endl;
     }
     else
     {
         // fill in the account info
         memset( info._p_lastLogin, 0, sizeof( info._p_lastLogin ) );
         memset( info._p_onlineTime, 0, sizeof( info._p_onlineTime ) );
+        memset( info._p_nickName, 0, sizeof( info._p_nickName ) );
+        memset( info._p_registrationDate, 0, sizeof( info._p_registrationDate ) );
+        memset( info._p_userDescription, 0, sizeof( info._p_userDescription ) );
+
         strcpy_s( info._p_lastLogin, sizeof( info._p_lastLogin ) - 1, acc.getLastLogin().c_str() );
         strcpy_s( info._p_onlineTime, sizeof( info._p_onlineTime ) - 1, acc.getOnlineTime().c_str() );
+        strcpy_s( info._p_nickName, sizeof( info._p_nickName ) - 1, acc.getNickname().c_str() );
+        strcpy_s( info._p_registrationDate, sizeof( info._p_registrationDate ) - 1, acc.getRegistrationDate().c_str() );
+        strcpy_s( info._p_userDescription, sizeof( info._p_userDescription ) - 1, acc.getUserDescription().c_str() );
+
+        info._p_lastLogin[ sizeof( info._p_lastLogin ) - 1 ]               = 0;
+        info._p_onlineTime[ sizeof( info._p_onlineTime ) - 1 ]             = 0;
+        info._p_nickName[ sizeof( info._p_nickName ) - 1 ]                 = 0;
+        info._p_registrationDate[ sizeof( info._p_registrationDate ) - 1 ] = 0;
+        info._p_userDescription[ sizeof( info._p_userDescription ) - 1 ]   = 0;
+
         info._priviledges = acc.getPriviledges();
     }
 
     // sent out the account info result
     ALL_REPLICAS_FUNCTION_CALL( RPC_AccountInfoResult( info ) );
+}
+
+void StorageNetworking::RPC_RequestUpdateAccountInfo( tAccountInfoData info )
+{
+    //! NOTE: currently, only the user description can be updated!
+    UserAccount acc;
+    acc._userDescription = info._p_userDescription;
+    acc._userID          = info._userID;
+    if ( !StorageServer::get()->updateUserAccount( info._userID, info._sessionCookie, acc ) )
+    {
+        log_warning << "StorageNetworking: could not update account info for user: " << info._userID << std::endl;
+    }
 }
 
 void StorageNetworking::RPC_AccountInfoResult( tAccountInfoData info )

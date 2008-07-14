@@ -86,6 +86,9 @@ void PlayerImplStandalone::handleNotification( const yaf3d::EntityNotification& 
             if ( _cameraMode == Ego )
                 addToSceneGraph();
 
+
+_p_playerAnimation->enableTextDisplay( false );
+
             break;
 
         case YAF3D_NOTIFY_MENU_LEAVE:
@@ -106,6 +109,10 @@ void PlayerImplStandalone::handleNotification( const yaf3d::EntityNotification& 
             // if we are in ego mode then disable player avatar rendering
             if ( _cameraMode == Ego )
                 removeFromSceneGraph();
+
+
+_p_playerAnimation->enableTextDisplay( true );
+
         }
         break;
 

@@ -46,11 +46,14 @@
 #define F_USERACC_LASTLOGIN     "last_login"
 #define F_USERACC_ONLINETIME    "online_time"
 #define F_USERACC_PRIV          "priviledges"
+#define F_USERACC_REGDATE       "registration_date"
+#define F_USERACC_USERDESC      "user_description"
 
 //! Stored procesures
 #define FCN_USER_LOGIN          "user_login"
 #define FCN_USER_LOGOUT         "user_logout"
 #define FCN_USER_GET_ACC        "user_getaccountdata"
+#define FCN_USER_UPDATE_ACC     "user_updateaccountdata"
 #define FCN_USER_REGISTER       "user_register"
 #define FCN_USER_DATA           "user_getdata"
 #define FCN_USER_INV            "user_getinventory"
@@ -201,6 +204,8 @@ bool StoragePostgreSQL::loginUser( const std::string login, const std::string pa
         res[ 0 ][ F_USERACC_PRIV ].to ( acc._priviledges );
         res[ 0 ][ F_USERACC_LASTLOGIN ].to ( acc._lastLogin );
         res[ 0 ][ F_USERACC_ONLINETIME ].to ( acc._onlineTime );
+        res[ 0 ][ F_USERACC_REGDATE ].to ( acc._registrationDate );
+        res[ 0 ][ F_USERACC_USERDESC ].to ( acc._userDescription );
 
         acc._nickName =  login;
 
@@ -209,7 +214,7 @@ bool StoragePostgreSQL::loginUser( const std::string login, const std::string pa
     }
     catch( const std::exception& e )
     {
-        log_info << "PostgreSQL: problem on logging in user " << login << ", reason: " << e.what()  << std::endl;
+        log_error << "PostgreSQL: problem on logging in user " << login << ", reason: " << e.what()  << std::endl;
         return false;
     }
 
@@ -229,7 +234,7 @@ bool StoragePostgreSQL::logoutUser( const std::string login )
 
         if ( res.size() < 1 )
         {
-            log_info << "PostgreSQL: 1) internal error on loggin out user " << login << std::endl;
+            log_error << "PostgreSQL: 1) internal error on loggin out user " << login << std::endl;
             return false;
         }
 
@@ -267,7 +272,7 @@ bool StoragePostgreSQL::registerUser( const std::string& name, const std::string
 
         if ( res.size() < 1 )
         {
-            log_info << "PostgreSQL: internal error, could register user " << login << std::endl;
+            log_error << "PostgreSQL: internal error, could register user " << login << std::endl;
             return false;
         }
 
@@ -291,11 +296,42 @@ bool StoragePostgreSQL::registerUser( const std::string& name, const std::string
     return true;
 }
 
-bool StoragePostgreSQL::updateUserAccount( const UserAccount& /*acc*/ )
+bool StoragePostgreSQL::updateUserAccount( const UserAccount& acc )
 {
-    //! TODO ...
+    try
+    {
+        pqxx::work transaction( *_p_databaseConnection, "updateaccount" );
+        std::string query;
 
-    return false;
+        // update the user account
+        std::stringstream userid;
+        userid << acc._userID;
+        query = std::string( "SELECT " FCN_USER_UPDATE_ACC "( '" + userid.str() + "', '" + acc._userDescription + "' );" );
+        pqxx::result res = transaction.exec( query );
+
+        if ( res.size() < 1 )
+        {
+            log_error << "PostgreSQL: 1) internal error on updating user account, user ID " << acc._userID << std::endl;
+            return false;
+        }
+
+        int retvalue;
+        res[ 0 ][ FCN_USER_UPDATE_ACC ].to( retvalue );
+        if ( retvalue < 0 )
+        {
+            log_warning << "PostgreSQL: 2) cannot update user account, user ID " << acc._userID << " : " << retvalue << std::endl;
+        }
+
+        // commit the update
+        transaction.commit();
+    }
+    catch( const std::exception& e )
+    {
+        log_error << "PostgreSQL: problem on acc._userDescription, user ID " << acc._userID << ", reason: " << e.what()  << std::endl;
+        return false;
+    }
+
+    return true;
 }
 
 bool StoragePostgreSQL::getUserData( unsigned int userID, UserData& data )
