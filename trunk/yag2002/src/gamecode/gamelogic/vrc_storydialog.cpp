@@ -38,6 +38,12 @@
 namespace vrc
 {
 
+#ifdef WIN32
+    #define VOID_NUM    long long
+#else
+    #define VOID_NUM    long int
+#endif
+
 StoryDialog::StoryDialog( DialogCallback* p_cb ) :
  _dialogID( 0 ),
  _networkID( 0 ),
@@ -214,8 +220,8 @@ bool StoryDialog::createDialog( unsigned int dialogID, const std::string& title,
         inputareaheight += 0.1f;
 
         // create the input gui elements
-        long int selectionindex = 1; // selection index
-        long int textindex      = 1; // text field index
+        VOID_NUM selectionindex = 1; // selection index
+        VOID_NUM textindex      = 1; // text field index
         p_beg = _inputs.begin(), p_end = _inputs.end();
         for ( ; p_beg != p_end; ++p_beg )
         {
@@ -337,7 +343,7 @@ unsigned int StoryDialog::getChoice()
     {
         if ( ( *p_radio )->isSelected() )
         {
-            choice = static_cast< unsigned int >( reinterpret_cast< long int >( ( *p_radio )->getUserData() ) );
+            choice = static_cast< unsigned int >( reinterpret_cast< VOID_NUM >( ( *p_radio )->getUserData() ) );
             break;
         }
     }
@@ -351,7 +357,7 @@ void StoryDialog::setChoice( unsigned int index )
     std::vector< CEGUI::RadioButton* >::iterator p_radio = _choices.begin(), p_end = _choices.end();
     for ( ; p_radio != p_end; ++p_radio )
     {
-        unsigned int idx = static_cast< unsigned int >( reinterpret_cast< long int >( ( *p_radio )->getUserData() ) );
+        unsigned int idx = static_cast< unsigned int >( reinterpret_cast< VOID_NUM >( ( *p_radio )->getUserData() ) );
         if ( idx == index )
         {
             ( *p_radio )->setSelected( true );
