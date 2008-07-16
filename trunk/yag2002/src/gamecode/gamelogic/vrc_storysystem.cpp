@@ -39,7 +39,7 @@
 
 //! Debug console for story system
 #ifndef VRC_BUILD_PUBLISH
-    #define ENABLE_CONSOLE
+//    #define ENABLE_CONSOLE
 #endif
 
 //! Implement the singleton
@@ -253,7 +253,7 @@ void StorySystem::receiveDialogResults( const StoryDialogResults& results )
 
 void StorySystem::receiveOpenDialog( const StoryDialogParams& params )
 {
-    assert( ( yaf3d::GameState::get()->getMode() & yaf3d::GameState::Client ) && "receiveOpenDialog called in an invalid game mode!" );
+    //assert( ( yaf3d::GameState::get()->getMode() & yaf3d::GameState::Client ) && "receiveOpenDialog called in an invalid game mode!" );
 
     if ( _p_dialog )
     {

@@ -65,6 +65,9 @@ class StoragePostgreSQL : public BaseStorage
         //! Update the user account. 'acc' must have a valid user ID and the user must have been successfully logged in before.
         bool                                    updateUserAccount( const UserAccount& acc );
 
+        //! Get public user account information. 'acc' must contain a nickname.
+        bool                                    getPublicUserAccountInfo( UserAccount& acc );
+
         //! Get user data for given uid. The user must be successfully logged in.
         bool                                    getUserData( unsigned int userID, UserData& data );
 

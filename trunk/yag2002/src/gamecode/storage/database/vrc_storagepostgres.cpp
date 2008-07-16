@@ -39,33 +39,36 @@
 #define TBL_NAME_USERINVENTORY  "inventory"
 
 //! Fileds of user account table
-#define F_USERACC_UID           "account_id"
-#define F_USERACC_NAME          "name"
-#define F_USERACC_LOGIN         "login_name"
-#define F_USERACC_EMAIL         "email"
-#define F_USERACC_LASTLOGIN     "last_login"
-#define F_USERACC_ONLINETIME    "online_time"
-#define F_USERACC_PRIV          "priviledges"
-#define F_USERACC_REGDATE       "registration_date"
-#define F_USERACC_USERDESC      "user_description"
+#define F_USERACC_UID               "account_id"
+#define F_USERACC_NAME              "name"
+#define F_USERACC_LOGIN             "login_name"
+#define F_USERACC_EMAIL             "email"
+#define F_USERACC_LASTLOGIN         "last_login"
+#define F_USERACC_ONLINETIME        "online_time"
+#define F_USERACC_PRIV              "priviledges"
+#define F_USERACC_STATUS            "status"
+#define F_USERACC_REGDATE           "registration_date"
+#define F_USERACC_USERDESC          "user_description"
 
 //! Stored procesures
-#define FCN_USER_LOGIN          "user_login"
-#define FCN_USER_LOGOUT         "user_logout"
-#define FCN_USER_GET_ACC        "user_getaccountdata"
-#define FCN_USER_UPDATE_ACC     "user_updateaccountdata"
-#define FCN_USER_REGISTER       "user_register"
-#define FCN_USER_DATA           "user_getdata"
-#define FCN_USER_INV            "user_getinventory"
+#define FCN_INIT_DB                 "init_db"
+#define FCN_USER_LOGIN              "user_login"
+#define FCN_USER_LOGOUT             "user_logout"
+#define FCN_USER_GET_ACC            "user_getaccountdata"
+#define FCN_USER_UPDATE_ACC         "user_updateaccountdata"
+#define FCN_USER_PUBLIC_ACC_INFO    "user_getpublicinfo"
+#define FCN_USER_REGISTER           "user_register"
+#define FCN_USER_DATA               "user_getdata"
+#define FCN_USER_INV                "user_getinventory"
 
-#define F_USERDATA_DATA_ID      "user_data_id"
-#define F_USERDATA_INV_ID       "user_inventory_id"
-#define F_USERDATA_MAILBOX_ID   "user_mailbox_id"
-#define F_USERDATA_SKILLS_ID    "user_skills_id"
+#define F_USERDATA_DATA_ID          "user_data_id"
+#define F_USERDATA_INV_ID           "user_inventory_id"
+#define F_USERDATA_MAILBOX_ID       "user_mailbox_id"
+#define F_USERDATA_SKILLS_ID        "user_skills_id"
 
-#define F_INV_ID                "inventory_id"
-#define F_INV_DATA              "inv_data"
-#define F_INV_USER_DATA_ID      "user_data_id"
+#define F_INV_ID                    "inventory_id"
+#define F_INV_DATA                  "inv_data"
+#define F_INV_USER_DATA_ID          "user_data_id"
 
 
 namespace vrc
@@ -125,6 +128,22 @@ bool StoragePostgreSQL::initialize( const ConnectionData& connData )
         return false;
     }
 
+    // call the database function for initialization
+    try
+    {
+        pqxx::work transaction( *_p_databaseConnection, "init_db" );
+        std::string query( "SELECT " FCN_INIT_DB "();" );
+        pqxx::result res = transaction.exec( query );
+
+        // commit the transaction
+        transaction.commit();
+    }
+    catch( const std::exception& e )
+    {
+        log_error << "PostgreSQL: problem on initializing the database, reason: " << e.what()  << std::endl;
+        return false;
+    }
+
     return true;
 }
 
@@ -139,7 +158,7 @@ void StoragePostgreSQL::release()
 
 bool StoragePostgreSQL::loginUser( const std::string login, const std::string passwd, UserAccount& acc )
 {
-     pqxx::result res;
+    pqxx::result res;
     try
     {
         std::string enc_passwd = pqxx::encrypt_password( "_", passwd );
@@ -184,6 +203,13 @@ bool StoragePostgreSQL::loginUser( const std::string login, const std::string pa
             }
             break;
 
+            case -4:
+            {
+                log_info << "PostgreSQL: player is already logged in: " << login << std::endl;
+                return false;
+            }
+            break;
+
             default:
                 ;
         }
@@ -202,6 +228,7 @@ bool StoragePostgreSQL::loginUser( const std::string login, const std::string pa
         res[ 0 ][ F_USERACC_NAME ].to ( acc._userName );
         res[ 0 ][ F_USERACC_EMAIL ].to ( acc._email );
         res[ 0 ][ F_USERACC_PRIV ].to ( acc._priviledges );
+        res[ 0 ][ F_USERACC_STATUS ].to ( acc._status );
         res[ 0 ][ F_USERACC_LASTLOGIN ].to ( acc._lastLogin );
         res[ 0 ][ F_USERACC_ONLINETIME ].to ( acc._onlineTime );
         res[ 0 ][ F_USERACC_REGDATE ].to ( acc._registrationDate );
@@ -327,7 +354,42 @@ bool StoragePostgreSQL::updateUserAccount( const UserAccount& acc )
     }
     catch( const std::exception& e )
     {
-        log_error << "PostgreSQL: problem on acc._userDescription, user ID " << acc._userID << ", reason: " << e.what()  << std::endl;
+        log_error << "PostgreSQL: problem on updating account, user ID " << acc._userID << ", reason: " << e.what()  << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool StoragePostgreSQL::getPublicUserAccountInfo( UserAccount& acc )
+{
+    try
+    {
+        pqxx::work transaction( *_p_databaseConnection, "publicinfo" );
+        std::string query;
+
+        // find the user with given name
+        query = std::string( "SELECT * FROM " FCN_USER_PUBLIC_ACC_INFO "( '" + acc.getNickname() + "' );" );
+        pqxx::result res = transaction.exec( query );
+
+        if ( res.size() < 1 )
+        {
+            log_warning << "PostgreSQL: trying to get public info of a non-existing user " << acc.getNickname() << std::endl;
+            return false;
+        }
+
+        res[ 0 ][ F_USERACC_LOGIN ].to ( acc._nickName );
+        res[ 0 ][ F_USERACC_STATUS ].to ( acc._status );
+        res[ 0 ][ F_USERACC_ONLINETIME ].to ( acc._onlineTime );
+        res[ 0 ][ F_USERACC_REGDATE ].to ( acc._registrationDate );
+        res[ 0 ][ F_USERACC_USERDESC ].to ( acc._userDescription );
+
+        // commit the update
+        transaction.commit();
+    }
+    catch( const std::exception& e )
+    {
+        log_error << "PostgreSQL: problem on getting public user info " << acc.getNickname() << ", reason: " << e.what()  << std::endl;
         return false;
     }
 

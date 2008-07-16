@@ -61,6 +61,9 @@ class BaseStorage
         //! Update the user account. 'acc' must have a valid user ID and the user must have been successfully logged in before.
         virtual bool                            updateUserAccount( const UserAccount& acc ) = 0;
 
+        //! Get public user account information. 'acc' must contain a nickname.
+        virtual bool                            getPublicUserAccountInfo( UserAccount& acc ) = 0;
+
         //! Get user data for given user ID. The user must be successfully logged in.
         virtual bool                            getUserData( unsigned int userID, UserData& data ) = 0;
 

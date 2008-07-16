@@ -91,6 +91,16 @@ bool StorageClient::requestAccountInfo( unsigned int userID, class AccountInfoRe
     return true;
 }
 
+bool StorageClient::requestPublicAccountInfo( const std::string& username, class AccountInfoResult* p_cb )
+{
+    if ( !_p_networking )
+        return false;
+
+    _p_networking->requestPublicAccountInfo( username, p_cb );
+
+    return true;
+}
+
 bool StorageClient::updateAccountInfo( unsigned int userID, tAccountInfoData& info )
 {
     if ( !_p_networking )

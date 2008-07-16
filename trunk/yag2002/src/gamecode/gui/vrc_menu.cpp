@@ -1134,7 +1134,7 @@ void EnMenu::onLoginDialogClose( bool btnlogin )
         if ( !nodeinfo.getAccessGranted() )
         {
             accessDenied = true;
-            throw yaf3d::NetworkException( "Access denied! Check your login." );
+            throw yaf3d::NetworkException( "Access denied! Check your login.\nAnother reason can be that someone is\nalready logged in with your account data." );
         }
     }
     catch ( const yaf3d::NetworkException& e )
@@ -1142,7 +1142,7 @@ void EnMenu::onLoginDialogClose( bool btnlogin )
         log_warning << "cannot connect to server\n reason: " << e.what() << std::endl;
 
         // create a call back for Ok button of messagebox
-        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Attention", e.what(), yaf3d::MessageBoxDialog::OK, true );
+        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "Cannot log in", e.what(), yaf3d::MessageBoxDialog::OK, true );
 
         class MsgOkClick: public yaf3d::MessageBoxDialog::ClickCallback
         {

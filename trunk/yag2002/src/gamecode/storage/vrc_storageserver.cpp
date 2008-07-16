@@ -279,7 +279,7 @@ bool StorageServer::validateClient( unsigned int userID, int sessionID )
     return true;
 }
 
-bool StorageServer::getUserAccount( unsigned int userID, int sessionID, UserAccount* p_account )
+bool StorageServer::getUserAccount( unsigned int userID, int sessionID, UserAccount& account )
 {
     if ( !_connectionEstablished )
         return false;
@@ -297,7 +297,7 @@ bool StorageServer::getUserAccount( unsigned int userID, int sessionID, UserAcco
         return false;
     }
 
-    *p_account = p_user->second->_userAccount;
+    account = p_user->second->_userAccount;
 
     return true;
 }
@@ -327,6 +327,14 @@ bool StorageServer::updateUserAccount( unsigned int userID, int sessionID, const
     _p_storage->updateUserAccount( account );
 
     return true;
+}
+
+bool StorageServer::getPublicUserAccountInfo( UserAccount& account )
+{
+    if ( !_connectionEstablished )
+        return false;
+
+    return _p_storage->getPublicUserAccountInfo( account );
 }
 
 UserInventory* StorageServer::getUserInventory( unsigned int userID, int sessionID )

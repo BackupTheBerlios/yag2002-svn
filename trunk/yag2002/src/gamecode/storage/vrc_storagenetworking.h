@@ -68,6 +68,9 @@ class StorageNetworking : _RO_DO_PUBLIC_RO( StorageNetworking )
         //! Request the server for account information, used by client. The callback is called when the result arrives.
         void                                        requestAccountInfo( unsigned int userID, CallbackAccountInfoResult* p_callback );
 
+        //! Request the server for public account information of given user.
+        void                                        requestPublicAccountInfo( const std::string& username, class CallbackAccountInfoResult* p_callback );
+
         //! Update the user account info, used by client. Note: currently, only the user description can be updated.
         void                                        updateAccountInfo( unsigned int userID, const tAccountInfoData& info );
 
@@ -87,6 +90,9 @@ class StorageNetworking : _RO_DO_PUBLIC_RO( StorageNetworking )
 
         //! Account info callback
         CallbackAccountInfoResult*                  _p_accountInfoCallback;
+
+        //! Account's public info callback
+        CallbackAccountInfoResult*                  _p_accountPublicInfoCallback;
 
     friend class _MAKE_RO( StorageNetworking );
 };

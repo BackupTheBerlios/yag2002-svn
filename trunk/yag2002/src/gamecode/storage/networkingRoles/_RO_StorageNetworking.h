@@ -24,6 +24,8 @@ typedef struct _tAccountInfoData
 
     unsigned int    _priviledges;
 
+    unsigned int    _status;
+
 } tAccountInfoData;
 
 

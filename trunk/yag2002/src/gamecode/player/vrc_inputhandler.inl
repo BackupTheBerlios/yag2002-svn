@@ -160,6 +160,14 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         {
             if ( !_chatSwitch )
             {
+                // set the picking lock
+                unsigned int ctrlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
+                if ( !_toggleChatMode )
+                    ctrlmodes |= gameutils::PlayerUtils::eLockPicking;
+                else
+                    ctrlmodes &= ~( gameutils::PlayerUtils::eLockPicking );
+                gameutils::PlayerUtils::get()->setPlayerControlModes( ctrlmodes );
+
                 // this method has an side effect on _enable (see below)
                 enable( _toggleChatMode );
                 _toggleChatMode = !_toggleChatMode;

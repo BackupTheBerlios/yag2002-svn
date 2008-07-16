@@ -84,10 +84,13 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >, public yaf3
         bool                                        validateClient( unsigned int userID, int sessionID );
 
         //! Get the user account information. The userID and sessionID must both match for any network connection!
-        bool                                        getUserAccount( unsigned int userID, int sessionID, UserAccount* p_account );
+        bool                                        getUserAccount( unsigned int userID, int sessionID, UserAccount& account );
 
         //! Update the user account info (only the user description can be updated).
         bool                                        updateUserAccount( unsigned int userID, int sessionID, const UserAccount& account );
+
+        //! Get the user's public account information. Fill in the nickname in p_account before calling this method. Returns false if the user does not exist.
+        bool                                        getPublicUserAccountInfo( UserAccount& account );
 
         //! Get the inventory of given user. The userID and sessionID must both match for any network connection! Returns NULL if something went wrong.
         UserInventory*                              getUserInventory( unsigned int userID, int sessionID );

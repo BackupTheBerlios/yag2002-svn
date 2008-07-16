@@ -88,8 +88,11 @@ class StorageClient : public yaf3d::Singleton< vrc::StorageClient >, public yaf3
                 virtual void                        accountInfoResult( tAccountInfoData& info ) = 0;
         };
 
-        //! Request the server for account info
+        //! Request the server for account info, this is used by a successfully logged in user.
         bool                                        requestAccountInfo( unsigned int userID, class AccountInfoResult* p_cb );
+
+        //! Request the server for public account information of given user.
+        bool                                        requestPublicAccountInfo( const std::string& username, class AccountInfoResult* p_cb );
 
         //! Update the user account info. Note: currently, only the user description can be updated.
         bool                                        updateAccountInfo( unsigned int userID, tAccountInfoData& info );

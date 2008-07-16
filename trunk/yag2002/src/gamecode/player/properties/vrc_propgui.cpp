@@ -98,7 +98,7 @@ void PropertyGui::setupGui()
         _p_frame = static_cast< CEGUI::FrameWindow* >( p_layout );
         if ( !_p_frame )
         {
-            log_error << "PropertyGui: missing main gui frame with name 'frame'" << std::endl;
+            log_error << "PropertyGui: missing main gui frame" << std::endl;
             return;
         }
 
@@ -278,6 +278,11 @@ bool PropertyGui::onHoverOpen( const CEGUI::EventArgs& /*arg*/ )
 
 bool PropertyGui::onClickedOpen( const CEGUI::EventArgs& /*arg*/ )
 {
+    // check the player control mode, skip the open request if another gui is open
+    unsigned int ctrlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
+    if ( ctrlmodes & gameutils::PlayerUtils::eLockLooking )
+        return true;
+
     // update inventory
     updateInventory();
 
@@ -290,7 +295,6 @@ bool PropertyGui::onClickedOpen( const CEGUI::EventArgs& /*arg*/ )
     _p_btnOpen->hide();
 
     // lock the player control
-    unsigned int ctrlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
     ctrlmodes |= ( gameutils::PlayerUtils::eLockPicking | gameutils::PlayerUtils::eLockCameraSwitch | gameutils::PlayerUtils::eLockLooking | gameutils::PlayerUtils::eLockMovement );
     gameutils::PlayerUtils::get()->setPlayerControlModes( ctrlmodes );
 
@@ -361,6 +365,7 @@ bool PropertyGui::onClickedProfileOk( const CEGUI::EventArgs& /*arg*/ )
 
     // update the user description on server
     tAccountInfoData info;
+    memset( &info, 0, sizeof( info ) );
     info._userID = StorageClient::get()->getUserID();
     strcpy_s( info._p_userDescription, sizeof( info._p_userDescription ) - 1, _p_editboxAboutMe->getText().c_str() );
     info._p_userDescription[ sizeof( info._p_userDescription ) - 1 ] = 0;

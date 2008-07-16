@@ -36,7 +36,8 @@ namespace vrc
 //! Implementation of class UserAccount
 UserAccount::UserAccount() :
  _userID( static_cast< unsigned int >( -1 ) ),
- _priviledges( 0 )
+ _priviledges( 0 ),
+ _status( 0 )
 {
 }
 
@@ -82,6 +83,11 @@ unsigned int UserAccount::getUserId() const
 unsigned int UserAccount::getPriviledges() const
 {
     return _priviledges;
+}
+
+unsigned int UserAccount::getStatus() const
+{
+    return _status;
 }
 
 const std::string& UserAccount::getUserDescription() const

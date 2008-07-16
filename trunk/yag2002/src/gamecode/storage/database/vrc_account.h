@@ -68,6 +68,9 @@ class UserAccount
         //! Get user priviledges
         unsigned int                            getPriviledges() const;
 
+        //! Get user status
+        unsigned int                            getStatus() const;
+
         //! Get user description
         const std::string&                      getUserDescription() const;
 
@@ -88,6 +91,8 @@ class UserAccount
         unsigned int                            _userID;
 
         unsigned int                            _priviledges;
+
+        unsigned int                            _status;
 };
 
 

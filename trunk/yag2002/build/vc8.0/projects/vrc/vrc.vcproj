@@ -474,6 +474,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playerpicker.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\player\vrc_playerpicker.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\player\vrc_playersound.cpp"
 					>
 				</File>
