@@ -261,6 +261,8 @@
 		<Unit filename="../../../../src/gamecode/player/vrc_playernetworking.h" />
 		<Unit filename="../../../../src/gamecode/player/vrc_playerphysics.cpp" />
 		<Unit filename="../../../../src/gamecode/player/vrc_playerphysics.h" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playerpicker.cpp" />
+		<Unit filename="../../../../src/gamecode/player/vrc_playerpicker.h" />
 		<Unit filename="../../../../src/gamecode/player/vrc_playersound.cpp" />
 		<Unit filename="../../../../src/gamecode/player/vrc_playersound.h" />
 		<Unit filename="../../../../src/gamecode/player/vrc_spawnpoint.cpp" />
