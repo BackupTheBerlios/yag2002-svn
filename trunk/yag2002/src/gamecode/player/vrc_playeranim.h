@@ -43,8 +43,7 @@
 
 #include <osgCal/CoreModel>
 #include <osgCal/Model>
-//! TODO: put this header to framework's base.h
-#include <osgText/Text>
+
 
 namespace vrc
 {

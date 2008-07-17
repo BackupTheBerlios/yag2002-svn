@@ -25,8 +25,6 @@
  #
  #   author:            boto (botorabi at users.sourceforge.net) 
  #
- #
- #
  ################################################################*/
 
 
@@ -85,6 +83,7 @@
 #include <osg/Transform>
 #include <osg/ClipNode>
 #include <osg/Material>
+#include <osgText/Text>
 #include <osg/Stencil>
 #include <osg/Texture>
 #include <osg/TexMat>
