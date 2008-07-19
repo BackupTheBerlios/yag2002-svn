@@ -86,8 +86,7 @@ void PlayerImplStandalone::handleNotification( const yaf3d::EntityNotification& 
             if ( _cameraMode == Ego )
                 addToSceneGraph();
 
-
-_p_playerAnimation->enableTextDisplay( false );
+            _p_playerAnimation->enableTextDisplay( false );
 
             break;
 
@@ -110,8 +109,7 @@ _p_playerAnimation->enableTextDisplay( false );
             if ( _cameraMode == Ego )
                 removeFromSceneGraph();
 
-
-_p_playerAnimation->enableTextDisplay( true );
+            _p_playerAnimation->enableTextDisplay( true );
 
         }
         break;

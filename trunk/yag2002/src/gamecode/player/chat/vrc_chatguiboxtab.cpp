@@ -406,9 +406,18 @@ void ChannelTabPane::onLeftChannel( const ChatConnectionConfig& cfg )
     }
     else
     {
-        addMessage( cfg._nickname + " left the chat room", "* " );
-        // trigger updating the listbox
-        _configuration._p_protocolHandler->requestMemberList( _configuration._channel );
+        // check if the user was in this channel
+        std::vector< std::string >::iterator p_name = _nickNames.begin(), p_end = _nickNames.end();
+        for ( ; p_name != p_end; ++p_name )
+        {
+            if ( *p_name == cfg._nickname )
+            {
+                addMessage( cfg._nickname + " left the chat room", "* " );
+                // trigger updating the listbox
+                _configuration._p_protocolHandler->requestMemberList( _configuration._channel );
+                break;
+            }
+        }
     }
 }
 

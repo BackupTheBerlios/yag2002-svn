@@ -156,6 +156,22 @@ void StoragePostgreSQL::release()
     _p_databaseConnection = NULL;
 }
 
+std::string StoragePostgreSQL::cleanString( const std::string& str )
+{
+    std::string::size_type len = str.length();
+    std::string            cleanstr;
+    // replace special characters in string
+    for ( std::string::size_type cnt = 0; cnt < len; cnt++ )
+    {
+        if ( str[ cnt ] == '\'' )
+            cleanstr += "''";
+        else
+            cleanstr += str[ cnt ];
+    }
+
+    return cleanstr;
+}
+
 bool StoragePostgreSQL::loginUser( const std::string login, const std::string passwd, UserAccount& acc )
 {
     pqxx::result res;
@@ -293,8 +309,8 @@ bool StoragePostgreSQL::registerUser( const std::string& name, const std::string
         pqxx::work transaction( *_p_databaseConnection, "register" );
         std::string query;
 
-        // logout the user
-        query = std::string( "SELECT " FCN_USER_REGISTER "( '" + login + "', '" + enc_passwd + "', '" + name + "', '" + email + "' );" );
+        // register a new user
+        query = std::string( "SELECT " FCN_USER_REGISTER "( '" + cleanString( login ) + "', '" + enc_passwd + "', '" + cleanString( name ) + "', '" + cleanString( email ) + "' );" );
         pqxx::result res = transaction.exec( query );
 
         if ( res.size() < 1 )

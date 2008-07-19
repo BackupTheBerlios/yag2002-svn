@@ -113,7 +113,12 @@ void PropertyGui::setupGui()
         _p_btnOpen->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::PropertyGui::onHoverOpen, this ) );
         _p_btnOpen->setStandardImageryEnabled( false );
         _p_btnOpen->setPosition( CEGUI::Point( 0.005f, 0.6f ) );
-        _p_btnOpen->setSize( CEGUI::Size( 0.08f, 0.1f ) );
+        // get the imageset with the images and set the button size
+        CEGUI::Imageset* p_iset = vrc::gameutils::GuiUtils::get()->getCustomImageSet();
+        float pixwidth  = p_iset->getImageWidth( IMAGE_NAME_INV_NORMAL );
+        float pixheight = p_iset->getImageHeight( IMAGE_NAME_INV_NORMAL );
+        // set button size according to the image dimensions
+        _p_btnOpen->setSize( CEGUI::Absolute, CEGUI::Size( pixwidth, pixheight ) );
 
         p_maingui->addChildWindow( _p_btnOpen );
 

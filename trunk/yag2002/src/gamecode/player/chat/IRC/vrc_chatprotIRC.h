@@ -112,7 +112,7 @@ class ChatNetworkingIRC : public OpenThreads::Thread, public BaseChatProtocol
         ChatConnectionConfig*                       _p_config;
 
         //! A list of names in current channel
-        std::vector< std::string >                 _nickNames;
+        std::map< std::string, std::string >        _nickNames;
 
     friend void event_numeric( irc_session_t *p_session, unsigned int event, const char* p_origin, const char** pp_params, unsigned int count );
     friend void event_nick( irc_session_t* p_session, const char* p_event, const char* p_origin, const char** pp_params, unsigned int count );

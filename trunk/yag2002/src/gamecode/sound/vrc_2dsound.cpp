@@ -148,6 +148,10 @@ void En2DSound::initialize()
 
 void En2DSound::updateEntity( float deltaTime )
 {
+    // first check if the sound is active
+    if ( !_soundID )
+        return;
+
     // we don't need to recalculate the attenuation every frame
     _updateTimer += deltaTime;
     if ( _updateTimer > SND_UPDATE_ATTN_PERIOD )

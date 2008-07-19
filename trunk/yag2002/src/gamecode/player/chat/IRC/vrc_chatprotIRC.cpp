@@ -102,6 +102,15 @@ void event_join( irc_session_t * session, const char * /*event*/, const char * o
     p_ctx->_p_handler->joined( params[ 0 ], origin );
 }
 
+void event_quit( irc_session_t * session, const char * /*event*/, const char * origin, const char ** params, unsigned int /*count*/ )
+{
+    if ( !origin )
+        return;
+
+    IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
+    p_ctx->_p_handler->left( "", origin ); // let the channel name blank so it means the user quitted
+}
+
 void event_nick( irc_session_t * session, const char * /*event*/, const char * origin, const char ** params, unsigned int /*count*/ )
 {
     if ( !origin )
@@ -149,10 +158,8 @@ void event_numeric( irc_session_t * session, unsigned int event, const char * /*
         std::string namestring( params[ 3 ] );
 
         yaf3d::explode( namestring, " ", &names );
-        // fill the list
-        p_ctx->_p_handler->_nickNames.clear();
         for ( size_t cnt = 0; cnt < names.size(); ++cnt )
-            p_ctx->_p_handler->_nickNames.push_back( names[ cnt ] );
+            p_ctx->_p_handler->_nickNames[ names[ cnt ] ] = names[ cnt ];
     }
     // this signalized the end of name list transmission
     else if ( event == LIBIRC_RFC_RPL_ENDOFNAMES )
@@ -229,7 +236,7 @@ void event_channel( irc_session_t * session, const char * /*event*/, const char 
     
     // the string conversion in CEGUI can fail, we skip the message in this situation
     try
-    {        
+    {
         // a hack for getting utf8 into cegui string
         const CEGUI::utf8* p_buf = reinterpret_cast< const CEGUI::utf8* >( params[ 1 ] );
         std::size_t len = strlen( params[ 1 ] );
@@ -371,41 +378,60 @@ void ChatNetworkingIRC::requestMemberList( const std::string& channel )
 
 void ChatNetworkingIRC::getMemberList( const std::string& /*channel*/, std::vector< std::string >& list )
 {
-    // currently 'channel' is unused in VRC protocol!
-    std::vector< std::string >::iterator p_beg = _nickNames.begin(), p_end = _nickNames.end();
+    // currently 'channel' is unused in IRC protocol!
+    std::map< std::string, std::string >::iterator p_beg = _nickNames.begin(), p_end = _nickNames.end();
     for ( ; p_beg != p_end; ++p_beg )
-        list.push_back( *p_beg );
+        list.push_back( p_beg->first );
 }
 
 void ChatNetworkingIRC::connected()
 {
+    // this call is in another thread context then the drawing context, so use the draw mutex!
+    yaf3d::Application::get()->getDrawMutex().lock();
+
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
     for ( ; p_beg != p_end; ++p_beg )
         p_beg->second->onConnection( *_p_config );
+
+    yaf3d::Application::get()->getDrawMutex().unlock();
 }
 
 void ChatNetworkingIRC::left( const std::string& channel, const std::string& name )
 {
+    // this call is in another thread context then the drawing context, so use the draw mutex!
+    yaf3d::Application::get()->getDrawMutex().lock();
+
+    //! NOTE: if channel is empty then it means that a user quitted, if it contains a channel name then it means that the user left only that channel
     vrc::ChatConnectionConfig cfg( *_p_config );
     cfg._nickname = name;
     cfg._channel  = channel;
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
     for ( ; p_beg != p_end; ++p_beg )
-        if ( ( p_beg->first == channel ) || ( p_beg->first == "*" ) )
+        if ( !channel.length() || ( p_beg->first == channel ) || ( p_beg->first == "*" ) )
             p_beg->second->onLeftChannel( cfg );
+
+    yaf3d::Application::get()->getDrawMutex().unlock();
 }
 
 void ChatNetworkingIRC::recvKicked( const std::string& channel, const std::string& kicker, const std::string& kicked )
 {
+    // this call is in another thread context then the drawing context, so use the draw mutex!
+    yaf3d::Application::get()->getDrawMutex().lock();
+
     ProtocolCallbackList localcopy = _protocolCallbacks;
     ProtocolCallbackList::iterator p_beg = localcopy.begin(), p_end = localcopy.end();
     // send the kick notification unfiltered
     for ( ; p_beg != p_end; ++p_beg )
         p_beg->second->onKicked( channel, kicker, kicked );
+
+    yaf3d::Application::get()->getDrawMutex().unlock();
 }
 
 void ChatNetworkingIRC::joined( const std::string& channel, const std::string& name )
 {
+    // this call is in another thread context then the drawing context, so use the draw mutex!
+    yaf3d::Application::get()->getDrawMutex().lock();
+
     vrc::ChatConnectionConfig cfg( *_p_config );
     cfg._nickname = name;
     cfg._channel  = channel;
@@ -417,10 +443,15 @@ void ChatNetworkingIRC::joined( const std::string& channel, const std::string& n
             p_beg->second->onJoinedChannel( cfg );
 
     requestMemberList( channel );
+
+    yaf3d::Application::get()->getDrawMutex().unlock();
 }
 
 void ChatNetworkingIRC::recvMessage( const std::string& channel, const std::string& sender, const CEGUI::String& msg )
 {
+    // this call is in another thread context then the drawing context, so use the draw mutex!
+    yaf3d::Application::get()->getDrawMutex().lock();
+
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
     for ( ; p_beg != p_end; ++p_beg )
     {
@@ -428,29 +459,46 @@ void ChatNetworkingIRC::recvMessage( const std::string& channel, const std::stri
         if ( ( channel == p_beg->first ) || ( p_beg->first == "*" ) )
             p_beg->second->onReceive( channel, sender, msg );
     }
+
+    yaf3d::Application::get()->getDrawMutex().unlock();
 }
 
 void ChatNetworkingIRC::recvMemberList( const std::string& channel )
 {
+    // this call is in another thread context then the drawing context, so use the draw mutex!
+    yaf3d::Application::get()->getDrawMutex().lock();
+
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
     for ( ; p_beg != p_end; ++p_beg )
         // check also for unfiltered callbacks ( '*' )
         if ( ( channel == p_beg->first ) || ( p_beg->first == "*" ) )
             p_beg->second->onReceiveMemberList( channel );
+
+    yaf3d::Application::get()->getDrawMutex().unlock();
 }
 
 void ChatNetworkingIRC::recvSystemMessage( const std::string& msg )
 {
+    // this call is in another thread context then the drawing context, so use the draw mutex!
+    yaf3d::Application::get()->getDrawMutex().lock();
+
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
     for ( ; p_beg != p_end; ++p_beg )
         p_beg->second->onReceiveSystemMessage( msg );
+
+    yaf3d::Application::get()->getDrawMutex().unlock();
 }
 
 void ChatNetworkingIRC::recvNicknameChange( const std::string& /*channel*/, const std::string& newname, const std::string& oldname )
 {
+    // this call is in another thread context then the drawing context, so use the draw mutex!
+    yaf3d::Application::get()->getDrawMutex().lock();
+
     ProtocolCallbackList::iterator p_beg = _protocolCallbacks.begin(), p_end = _protocolCallbacks.end();
     for ( ; p_beg != p_end; ++p_beg )
         p_beg->second->onNicknameChanged( newname, oldname );
+
+    yaf3d::Application::get()->getDrawMutex().unlock();
 }
 
 void ChatNetworkingIRC::createConnection( const ChatConnectionConfig& conf ) throw ( ChatExpection )
@@ -469,15 +517,22 @@ void ChatNetworkingIRC::createConnection( const ChatConnectionConfig& conf ) thr
     }
 
 #ifdef WIN32
-    // start up winsock
-    WORD    version;
-    WSADATA data;
-    int     err;
-    version = MAKEWORD( 2, 2 );
-    err = WSAStartup( version, &data );
-    if ( err != 0 )
     {
-        throw ChatExpection( "Cannot setup ms winsock" );
+        // start up winsock only once
+        static bool _wsaInitialized = false;
+        if ( !_wsaInitialized )
+        {
+            _wsaInitialized = true;
+            WORD    version;
+            WSADATA data;
+            int     err;
+            version = MAKEWORD( 2, 2 );
+            err = WSAStartup( version, &data );
+            if ( err != 0 )
+            {
+                throw ChatExpection( "Cannot setup ms winsock" );
+            }
+        }
     }
 #endif
 
@@ -487,6 +542,7 @@ void ChatNetworkingIRC::createConnection( const ChatConnectionConfig& conf ) thr
     callbacks.event_connect = event_connect;
     callbacks.event_nick    = event_nick;
     callbacks.event_join    = event_join;
+    callbacks.event_quit    = event_quit;
     callbacks.event_numeric = event_numeric;
     callbacks.event_channel = event_channel;
     callbacks.event_kick    = event_kick;
@@ -540,7 +596,12 @@ void ChatNetworkingIRC::run()
     try
     {
         // start the IRC protocol loop
-        irc_run( _p_session );
+        if ( irc_run( _p_session ) )
+        {
+            std::string ircserver = _p_config ? _p_config->_serverURL : "Unknown";
+            log_warning << "*** irc client has problems connection to irc server '" << ircserver << "'" << std::endl;
+            recvSystemMessage( "*** irc client has problems connection to irc server '" + ircserver + "'" );
+        }
     }
     catch ( ... )
     {

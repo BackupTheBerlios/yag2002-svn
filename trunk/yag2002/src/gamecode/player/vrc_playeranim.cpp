@@ -237,6 +237,9 @@ void EnPlayerAnimation::initialize()
         _playerTextGeode = new osg::Geode;
         _playerTextGeode->addDrawable( text.get() );
 
+        // make sure that the text is not used für throwing dynamic shadow
+        _playerTextGeode->setNodeMask( yaf3d::ShadowManager::eReceiveShadow );
+
         // disable the lighting in stateset in order to avoid messed up text color (thanks to nhv from osg channel on freenode)
         osg::StateSet* p_stateset = _playerTextGeode->getOrCreateStateSet();
         p_stateset->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
@@ -330,6 +333,11 @@ void EnPlayerAnimation::handleNotification( const yaf3d::EntityNotification& not
         case YAF3D_NOTIFY_MENU_LEAVE:
         {
             setupShader();
+
+            // update the floating display text state
+            bool floatingtextenabled = false;
+            yaf3d::Configuration::get()->getSettingValue( VRC_GS_FLOATING_PLAYER_TEXT, floatingtextenabled );
+            enableTextDisplay( floatingtextenabled );
         }
         break;
 

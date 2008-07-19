@@ -116,6 +116,17 @@ EnPlayerPicker::~EnPlayerPicker()
 
     // dergister from callback
     gameutils::PlayerUtils::get()->registerCallbackPlayerListChanged( this, false );
+
+    try
+    {
+        if ( _p_frame )
+            CEGUI::WindowManager::getSingleton().destroyWindow( _p_frame );
+    }
+    catch ( const CEGUI::Exception& e )
+    {
+        log_error << "EnPlayerPicker: problem destroying gui." << std::endl;
+        log_out << "      reason: " << e.getMessage().c_str() << std::endl;
+    }
 }
 
 void EnPlayerPicker::handleNotification( const yaf3d::EntityNotification& notification )
@@ -125,11 +136,15 @@ void EnPlayerPicker::handleNotification( const yaf3d::EntityNotification& notifi
     {
         case YAF3D_NOTIFY_MENU_ENTER:
         {
+            if ( _p_inputHandler )
+                _p_inputHandler->enable( false );
         }
         break;
 
         case YAF3D_NOTIFY_MENU_LEAVE:
         {
+            if ( _p_inputHandler )
+                _p_inputHandler->enable( true );
         }
         break;
 

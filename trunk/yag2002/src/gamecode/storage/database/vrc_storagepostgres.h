@@ -82,7 +82,10 @@ class StoragePostgreSQL : public BaseStorage
         //! Release the connection to database
        void                                     release();
 
-        pqxx::connection*                       _p_databaseConnection;
+       //! Given a string prepare it for using in a SQL expression.
+       std::string                              cleanString( const std::string& str );
+
+       pqxx::connection*                        _p_databaseConnection;
 };
 
 } // namespace vrc
