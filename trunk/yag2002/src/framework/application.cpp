@@ -665,7 +665,7 @@ void Application::updateStandalone( float deltaTime )
     // update physics
     _p_physics->update( deltaTime );
 
-    // update viewer
+    // update the scene
     _p_viewer->update();
 
     // same some cpu usage when app window is minimized
@@ -675,8 +675,12 @@ void Application::updateStandalone( float deltaTime )
         _p_guiManager->update( deltaTime );
         // update sound system
         _p_soundManager->update( deltaTime );
-        // draw the scene
-        _p_viewer->draw();
+        // draw the scene, lock the draw mutex as some thready may need to update the drawables asynchronously
+        if ( !_drawMutex.trylock() )
+        {
+            _p_viewer->draw();
+            _drawMutex.unlock();
+        }
     }
 
     // check for termination
@@ -699,7 +703,7 @@ void Application::updateClient( float deltaTime )
     // update physics
     _p_physics->update( deltaTime );
 
-    // update viewer
+    // update the scene
     _p_viewer->update();
 
     // same some cpu usage when app window is minimized
@@ -707,12 +711,14 @@ void Application::updateClient( float deltaTime )
     {
         // update gui manager
         _p_guiManager->update( deltaTime );
-
         // update sound system
         _p_soundManager->update( deltaTime );
-
-        // draw the scene
-        _p_viewer->draw();
+        // draw the scene, lock the draw mutex as some thready may need to update the drawables asynchronously
+        if ( !_drawMutex.trylock() )
+        {
+            _p_viewer->draw();
+            _drawMutex.unlock();
+        }
     }
 
     // check for termination

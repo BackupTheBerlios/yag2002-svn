@@ -37,6 +37,11 @@ inline osgSDL::Viewer* Application::getViewer()
     return _p_viewer;
 }
 
+OpenThreads::Mutex& Application::getDrawMutex()
+{
+    return _drawMutex;
+}
+
 inline osgUtil::SceneView* Application::getSceneView( int num )
 {
     assert( _p_viewer && "viewer is not created!" );

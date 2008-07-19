@@ -72,6 +72,9 @@ class Application : public Singleton< Application >
         //! Get osgProducer's viewer instance for this application
         inline osgSDL::Viewer*                      getViewer();
 
+        //! Get the draw mutex, it is locked in drawing phase. Use this if asynchronous threads need to update the drawables.
+        inline OpenThreads::Mutex&                  getDrawMutex();
+
         //! Get the scene view for given view port ( the default is 0 )
         inline osgUtil::SceneView*                  getSceneView( int num = 0 );
 
@@ -125,6 +128,8 @@ class Application : public Singleton< Application >
         GameState*                                  _p_gameState;
 
         osgSDL::Viewer*                             _p_viewer;
+
+        OpenThreads::Mutex                          _drawMutex;
 
         unsigned int                                _screenWidth;
 

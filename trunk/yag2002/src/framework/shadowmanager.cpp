@@ -87,7 +87,9 @@ class ShadowSceneCullCallback : public osg::NodeCallback
                                                     {
                                                         osgUtil::CullVisitor* p_cullvisitor = static_cast< osgUtil::CullVisitor* >( p_nv );
                                                         p_cullvisitor->pushStateSet( _p_stateSet.get() );
-                                                        //p_cullvisitor->setTraversalMask( ShadowManager::eReceiveShadow );
+                                                        //! NOTE: the lower 4 bibbles are reserved for physics and other flags! in order to explicitely exclude a mesh form this phase
+                                                        //        use a nodemask with bits set in the bibbels between 4 and 7, e.g. 0x00010000
+                                                        p_cullvisitor->setTraversalMask( ShadowManager::eReceiveShadow | 0x0000ffff );
                                                         traverse( p_node, p_cullvisitor );
                                                         p_cullvisitor->popStateSet();
                                                     }
@@ -98,7 +100,9 @@ class ShadowSceneCullCallback : public osg::NodeCallback
 
                                                         // get the bounds of receiving nodes
                                                         osg::ComputeBoundsVisitor bv( osg::NodeVisitor::TRAVERSE_ACTIVE_CHILDREN );
-                                                        //bv.setTraversalMask( ShadowManager::eReceiveShadow );
+                                                        //! NOTE: the lower 4 bibbles are reserved for physics and other flags! in order to explicitely exclude a mesh form this phase
+                                                        //        use a nodemask with bits set in the bibbels between 4 and 7, e.g. 0x00010000
+                                                        bv.setTraversalMask( ShadowManager::eReceiveShadow | 0x0000ffff );
                                                         p_node->traverse( bv );
                                                         _shadowBB = bv.getBoundingBox();
 
@@ -137,7 +141,9 @@ class ShadowSceneCullCallback : public osg::NodeCallback
                                                     }
 
                                                     // collect the shadow throwing nodes in camera group
-//                                                    p_nv->setTraversalMask( ShadowManager::eThrowShadow );
+                                                    //! NOTE: the lower 4 bibbles are reserved for physics and other flags! in order to explicitely exclude a mesh form this phase
+                                                    //        use a nodemask with bits set in the bibbels between 4 and 7, e.g. 0x00010000
+                                                    p_nv->setTraversalMask( ShadowManager::eThrowShadow | 0x0000ffff );
                                                     _p_camera->accept( *p_nv );
 
                                                     // update the texture generation matrix
@@ -189,7 +195,7 @@ class ShadowSceneCullCallback : public osg::NodeCallback
                                                     _p_texgenMatrix->set( osg::Matrixf::inverse( yaf3d::Application::get()->getSceneView()->getViewMatrix() ) * _MVPT );
 
                                                     // collect the shadow throwing nodes in camera group
-                                                    //p_nv->setTraversalMask( ShadowManager::eThrowShadow );
+                                                    p_nv->setTraversalMask( ShadowManager::eThrowShadow );
                                                     _p_camera->accept( *p_nv );
 #endif
 
@@ -551,7 +557,7 @@ void ShadowManager::displayShadowMap( bool enable )
             _debugDisplay = createDebugDisplay( _p_shadowMapTexture );
             // add the preview pic for shadow map
             _shadowedGroup->addChild( _debugDisplay.get() );
-//            Application::get()->getSceneRootNode()->addChild( _debugDisplay.get() );
+            //Application::get()->getSceneRootNode()->addChild( _debugDisplay.get() );
         }
     }
     else
@@ -560,7 +566,7 @@ void ShadowManager::displayShadowMap( bool enable )
             return;
 
         _shadowedGroup->removeChild( _debugDisplay.get() );
-//        Application::get()->getSceneRootNode()->removeChild( _debugDisplay.get() );
+        //Application::get()->getSceneRootNode()->removeChild( _debugDisplay.get() );
         _debugDisplay = NULL;
     }
 }
