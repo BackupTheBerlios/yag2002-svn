@@ -12,6 +12,8 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			networking/_Def_replicaregs.cpp \
 			gamelogic/vrc_storyactor.cpp \
 			gamelogic/vrc_story.cpp \
+			gamelogic/vrc_storyactor.cpp \
+			gamelogic/vrc_storydialog.cpp \
 			gamelogic/vrc_storyengine.cpp \
 			gamelogic/vrc_storyevent.cpp \
 			gamelogic/vrc_storynetworking.cpp \
@@ -49,6 +51,7 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			player/vrc_playerphysics.cpp \
 			player/vrc_playersound.cpp \
 			player/vrc_playernamedisp.cpp \
+			player/vrc_playerpicker.cpp \
 			player/vrc_spawnpoint.cpp \
 			player/chat/vrc_chatmgr.cpp \
 			player/chat/vrc_chatguibox.cpp \
@@ -103,9 +106,9 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			tools/console/vrc_cmdregistry.cpp \
 			tools/console/vrc_cmdrenderingmode.cpp \
 			tools/console/vrc_cmdserverstart.cpp \
-                        tools/console/vrc_cmdshadowdisplaymap.cpp \
-                        tools/console/vrc_cmdshadowlight.cpp \
-                        tools/console/vrc_cmdshadowpolyoffset.cpp \
+			tools/console/vrc_cmdshadowdisplaymap.cpp \
+			tools/console/vrc_cmdshadowlight.cpp \
+			tools/console/vrc_cmdshadowpolyoffset.cpp \
 			tools/console/vrc_cmdshowfps.cpp \
 			tools/console/vrc_cmdshowplayerinfo.cpp \
 			tools/console/vrc_cmdshutdown.cpp \
@@ -137,8 +140,8 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			voice/vrc_voicereceiver.cpp \
 			voice/vrc_voicesender.cpp \
 			voice/vrc_voicetestutils.cpp \
-                        voice/vrc_voicetransport.cpp \
-                        voice/vrc_natserver.cpp \
+			voice/vrc_voicetransport.cpp \
+			voice/vrc_natserver.cpp \
 			voice/vrc_natclient.cpp
 
 
