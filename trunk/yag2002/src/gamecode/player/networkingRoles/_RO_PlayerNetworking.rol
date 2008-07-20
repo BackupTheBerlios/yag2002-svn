@@ -31,6 +31,8 @@ object PlayerNetworking
             SetMinDistance(0.2f);
             SetMaxError(0.5f);
             SetMaxDistance(1.0f);
+           	SetForceSendMaximumUpdates(3);
+            SetUpdateDelayMinimum(0.3f);
             Quadratic();
         }
         Predict_Float _positionY;
@@ -39,6 +41,8 @@ object PlayerNetworking
             SetMinDistance(0.2f);
             SetMaxError(0.5f);
             SetMaxDistance(1.0f);
+           	SetForceSendMaximumUpdates(3);
+            SetUpdateDelayMinimum(0.3f);
             Quadratic();
         }
         Predict_Float _positionZ;
@@ -47,6 +51,8 @@ object PlayerNetworking
             SetMinDistance(0.2f);
             SetMaxError(0.5f);
             SetMaxDistance(1.0f);
+           	SetForceSendMaximumUpdates(3);
+            SetUpdateDelayMinimum(0.3f);
             Quadratic();
         }
 
@@ -54,6 +60,8 @@ object PlayerNetworking
         {
             SetMinError(0.05f);
             SetMaxError(0.1f);
+           	SetForceSendMaximumUpdates(3);
+            SetUpdateDelayMinimum(0.3f);
             Linear();
         }
 

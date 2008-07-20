@@ -145,6 +145,8 @@ class EnPlayerAnimation  : public yaf3d::BaseEntity
 
         osg::ref_ptr < osgText::Text >              _playerText;
 
+        osg::ref_ptr< osg::PositionAttitudeTransform > _playerTextTransform;
+
         bool                                        _renderingEnabled;
 
         bool                                        _useTexture;

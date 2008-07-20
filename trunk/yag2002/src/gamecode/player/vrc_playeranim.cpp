@@ -190,8 +190,11 @@ EnPlayerAnimation::~EnPlayerAnimation()
     if ( _playerText.get() )
         _playerText = NULL;
 
-    if ( _playerTextGeode.get() )
-        _playerTextGeode = NULL;
+    if ( _playerTextTransform.get() )
+    {
+        yaf3d::LevelManager::get()->getEntityNodeGroup()->removeChild( _playerTextTransform.get() );
+        _playerTextTransform = NULL;
+    }
 }
 
 void EnPlayerAnimation::initialize()
@@ -237,12 +240,13 @@ void EnPlayerAnimation::initialize()
         _playerTextGeode = new osg::Geode;
         _playerTextGeode->addDrawable( text.get() );
 
-        // make sure that the text is not used für throwing dynamic shadow
-        _playerTextGeode->setNodeMask( yaf3d::ShadowManager::eReceiveShadow );
-
         // disable the lighting in stateset in order to avoid messed up text color (thanks to nhv from osg channel on freenode)
         osg::StateSet* p_stateset = _playerTextGeode->getOrCreateStateSet();
         p_stateset->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
+
+        // create the transform node for the floating text
+        _playerTextTransform = new osg::PositionAttitudeTransform;
+        yaf3d::LevelManager::get()->getEntityNodeGroup()->addChild( _playerTextTransform.get() );
     }
 
     // calculate LOD distance internal var
@@ -267,9 +271,9 @@ void EnPlayerAnimation::enableTextDisplay( bool en )
         return;
 
     // avoid adding the text geode to transformation node more then once
-    _p_player->getPlayerEntity()->removeTransformationNode( _playerTextGeode.get() );
+    _playerTextTransform->removeChild( _playerTextGeode.get() );
     if ( _enableDisplayText )
-        _p_player->getPlayerEntity()->appendTransformationNode( _playerTextGeode.get() );
+        _playerTextTransform->addChild( _playerTextGeode.get() );
 }
 
 void EnPlayerAnimation::updateEntity( float deltaTime )
@@ -293,12 +297,15 @@ void EnPlayerAnimation::updateEntity( float deltaTime )
         // update player text related stuff
         if ( _enableDisplayText )
         {
+            // update the current position
+            _playerTextTransform->setPosition( _p_player->getPlayerPosition() );
+
             // don't draw the text if the player is too far from camera
             if ( lod < 0.11f )
             {
                 if ( _textVisible )
                 {
-                    _p_player->getPlayerEntity()->removeTransformationNode( _playerTextGeode.get() );
+                    _playerTextTransform->removeChild( _playerTextGeode.get() );
                     _textVisible = false;
                 }
             }
@@ -306,7 +313,7 @@ void EnPlayerAnimation::updateEntity( float deltaTime )
             {
                 if ( !_textVisible )
                 {
-                    _p_player->getPlayerEntity()->appendTransformationNode( _playerTextGeode.get() );
+                    _playerTextTransform->addChild( _playerTextGeode.get() );
                     _textVisible = true;
                 }
             }

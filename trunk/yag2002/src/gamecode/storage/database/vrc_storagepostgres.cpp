@@ -183,7 +183,7 @@ bool StoragePostgreSQL::loginUser( const std::string login, const std::string pa
         std::string query;
 
         // call the function for user login
-        query = std::string( "SELECT " FCN_USER_LOGIN "( '" + login + "', '" + enc_passwd + "' );" );
+        query = std::string( "SELECT " FCN_USER_LOGIN "( '" + cleanString( login ) + "', '" + enc_passwd + "' );" );
 
         res = transaction.exec( query );
 
@@ -231,7 +231,7 @@ bool StoragePostgreSQL::loginUser( const std::string login, const std::string pa
         }
 
         // retrieve the account data
-        query = std::string( "SELECT * FROM " FCN_USER_GET_ACC "( '" + login + "' );" );
+        query = std::string( "SELECT * FROM " FCN_USER_GET_ACC "( '" + cleanString( login ) + "' );" );
         res = transaction.exec( query );
 
         if ( res.size() < 1 )
@@ -272,7 +272,7 @@ bool StoragePostgreSQL::logoutUser( const std::string login )
         std::string query;
 
         // logout the user
-        query = std::string( "SELECT " FCN_USER_LOGOUT "( '" + login + "' );" );
+        query = std::string( "SELECT " FCN_USER_LOGOUT "( '" + cleanString( login ) + "' );" );
         pqxx::result res = transaction.exec( query );
 
         if ( res.size() < 1 )
@@ -349,7 +349,7 @@ bool StoragePostgreSQL::updateUserAccount( const UserAccount& acc )
         // update the user account
         std::stringstream userid;
         userid << acc._userID;
-        query = std::string( "SELECT " FCN_USER_UPDATE_ACC "( '" + userid.str() + "', '" + acc._userDescription + "' );" );
+        query = std::string( "SELECT " FCN_USER_UPDATE_ACC "( '" + userid.str() + "', '" + cleanString( acc._userDescription ) + "' );" );
         pqxx::result res = transaction.exec( query );
 
         if ( res.size() < 1 )
@@ -385,7 +385,7 @@ bool StoragePostgreSQL::getPublicUserAccountInfo( UserAccount& acc )
         std::string query;
 
         // find the user with given name
-        query = std::string( "SELECT * FROM " FCN_USER_PUBLIC_ACC_INFO "( '" + acc.getNickname() + "' );" );
+        query = std::string( "SELECT * FROM " FCN_USER_PUBLIC_ACC_INFO "( '" + cleanString( acc.getNickname() ) + "' );" );
         pqxx::result res = transaction.exec( query );
 
         if ( res.size() < 1 )
