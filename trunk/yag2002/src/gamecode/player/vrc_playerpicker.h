@@ -114,6 +114,9 @@ class EnPlayerPicker :
         //! Maximal distance for considering another player as pickable
         float                                       _maxPickDistance;
 
+        //! Highlight pickable player by mesh or color?
+        bool                                        _highlightByMesh;
+
         //! Mesh file for the picking sign
         std::string                                 _signMeshFile;
 

@@ -29,15 +29,20 @@
 
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
-#include "../visuals/vrc_camera.h"
 #include "vrc_playerimpl.h"
 #include "../storage/vrc_storageclient.h"
+#include "../visuals/vrc_camera.h"
+#include "vrc_playeranim.h"
 #include "vrc_playerpicker.h"
 
 
 //! Gui related defines
 #define PLAYERINFO_DLG_PREFIX       "pinfo_"
 #define PLAYERINFO_GUI_LAYOUT       "gui/userprofile.xml"
+
+//! Player highlighting by color
+#define HIGHLIGHT_COL_PERIOD        0.5f  /* color animation period in secods */
+#define HIGHLIGHT_COL_STRENGTH      0.35f  /* color strength for animation */
 
 
 namespace vrc
@@ -84,6 +89,7 @@ bool EnPlayerPicker::PickerInputHandler::handle( const osgGA::GUIEventAdapter& e
 //! Implementation of player picker
 EnPlayerPicker::EnPlayerPicker() :
  _p_inputHandler( NULL ),
+ _highlightByMesh( false ),
  _maxPickDistance( 10.0f ),
  _detectionAngle( 20.0f ),
  _viewAngle( 0.0f ),
@@ -102,6 +108,7 @@ EnPlayerPicker::EnPlayerPicker() :
     getAttributeManager().addAttribute( "maxPickDistance" , _maxPickDistance );
     getAttributeManager().addAttribute( "detectionAngle"  , _detectionAngle  );
     getAttributeManager().addAttribute( "signMeshFile"    , _signMeshFile    );
+    getAttributeManager().addAttribute( "highlightByMesh" , _highlightByMesh );
 }
 
 EnPlayerPicker::~EnPlayerPicker()
@@ -157,7 +164,7 @@ void EnPlayerPicker::initialize()
 {
     // get the sign mesh
     _signMesh = yaf3d::LevelManager::get()->loadMesh( _signMeshFile, true );
-    if ( !_signMesh.get() )
+    if ( _highlightByMesh && !_signMesh.get() )
     {
         log_warning << "*** cannot get the sign mesh " << _signMeshFile << ", deactivating entity" << std::endl;
         return;
@@ -194,6 +201,18 @@ void EnPlayerPicker::updateEntity( float deltaTime )
     {
         _pickCheckTimer += deltaTime;
     }
+
+    if ( !_highlightByMesh && _p_pickedPlayer )
+    {
+        // animate the highlight color
+        static float coltime = 0.0f;
+        coltime += deltaTime;
+        float col = sinf( coltime * ( 2.0f / HIGHLIGHT_COL_PERIOD ) ) / ( ( 1.0f / HIGHLIGHT_COL_STRENGTH ) * osg::PI );
+        osg::Vec3f color( col, col, col );
+
+        EnPlayerAnimation* p_anim = _p_pickedPlayer->getPlayerImplementation()->getPlayerAnimation();
+        p_anim->setHighlightColor( color );
+    }
 }
 
 void EnPlayerPicker::onPlayerListChanged( bool /*localplayer*/, bool joining, yaf3d::BaseEntity* p_entity )
@@ -215,7 +234,17 @@ void EnPlayerPicker::checkPicking()
     {
         if ( _p_pickedPlayer )
         {
-            _p_pickedPlayer->getTransformationNode()->removeChild( _signMesh.get() );
+            if ( _highlightByMesh )
+            {
+                _p_pickedPlayer->getTransformationNode()->removeChild( _signMesh.get() );
+            }
+            else
+            {
+                // reset the animation color
+                osg::Vec3f color( 0.0f, 0.0f, 0.0f );
+                EnPlayerAnimation* p_anim = _p_pickedPlayer->getPlayerImplementation()->getPlayerAnimation();
+                p_anim->setHighlightColor( color );
+            }
             _p_pickedPlayer = NULL;
         }
         return;
@@ -272,13 +301,26 @@ void EnPlayerPicker::checkPicking()
             _p_pickedPlayer->getTransformationNode()->removeChild( _signMesh.get() );
         }
         _p_pickedPlayer = p_playerentity;
-        _p_pickedPlayer->getTransformationNode()->addChild( _signMesh.get() );
+
+        if ( _highlightByMesh )
+            _p_pickedPlayer->getTransformationNode()->addChild( _signMesh.get() );
     }
     else
     {
         if ( _p_pickedPlayer )
         {
-            _p_pickedPlayer->getTransformationNode()->removeChild( _signMesh.get() );
+            if ( _highlightByMesh )
+            {
+                _p_pickedPlayer->getTransformationNode()->removeChild( _signMesh.get() );
+            }
+            else
+            {
+                // reset the animation color
+                osg::Vec3f color( 0.0f, 0.0f, 0.0f );
+                EnPlayerAnimation* p_anim = _p_pickedPlayer->getPlayerImplementation()->getPlayerAnimation();
+                p_anim->setHighlightColor( color );
+            }
+
             _p_pickedPlayer = NULL;
         }
     }

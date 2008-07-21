@@ -71,6 +71,9 @@ class EnPlayerAnimation  : public yaf3d::BaseEntity
         //! Enable / disable the text display
         void                                        enableTextDisplay( bool en );
 
+        //! Set the highlight color of player character. It takes only effect if shaders are supported.
+        void                                        setHighlightColor( const osg::Vec3f& color );
+
         //! Set the default player text for display
         void                                        setPlayerText( const std::string& text );
 
@@ -140,6 +143,8 @@ class EnPlayerAnimation  : public yaf3d::BaseEntity
         osg::ref_ptr< osgCal::CoreModel >           _coreModel;
 
         osg::ref_ptr< osg::PositionAttitudeTransform > _animNode;
+
+        osg::ref_ptr< osg::Uniform >                _highlightColor;
 
         osg::ref_ptr< osg::Geode >                  _playerTextGeode;
 

@@ -78,6 +78,7 @@ static const char glsl_fp[] =
     "varying vec3 normal,lightDir,halfVector;                                       \n"
     "varying vec2 texCoords;                                                        \n"
     "uniform sampler2D tex;                                                         \n"
+    "uniform vec4 addColor;                                                         \n"
     "                                                                               \n"
     "void main()                                                                    \n"
     "{                                                                              \n"
@@ -97,7 +98,7 @@ static const char glsl_fp[] =
     "   }                                                                           \n"
     "                                                                               \n"
     "   vec4 texcolor = texture2D(tex,texCoords);                                   \n"
-    "   gl_FragColor = color * texcolor;                                            \n"
+    "   gl_FragColor = color * texcolor + addColor;                                 \n"
     "}                                                                              \n"
 ;
 
@@ -129,6 +130,7 @@ static const char glsl_fp_notex[] =
     "*/                                                                             \n"
     "varying vec4 diffuse,ambient;                                                  \n"
     "varying vec3 normal,lightDir,halfVector;                                       \n"
+    "uniform vec4 addColor;                                                         \n"
     "                                                                               \n"
     "void main()                                                                    \n"
     "{                                                                              \n"
@@ -147,7 +149,7 @@ static const char glsl_fp_notex[] =
     "               pow(NdotHV, gl_FrontMaterial.shininess * 100.0);                \n"
     "   }                                                                           \n"
     "                                                                               \n"
-    "   gl_FragColor = color;                                                       \n"
+    "   gl_FragColor = color + addColor;                                            \n"
     "}                                                                              \n"
 ;
 
@@ -274,6 +276,14 @@ void EnPlayerAnimation::enableTextDisplay( bool en )
     _playerTextTransform->removeChild( _playerTextGeode.get() );
     if ( _enableDisplayText )
         _playerTextTransform->addChild( _playerTextGeode.get() );
+}
+
+void EnPlayerAnimation::setHighlightColor( const osg::Vec3f& color )
+{
+    if ( !_highlightColor.get() )
+        return;
+
+    _highlightColor->set( osg::Vec4f( color, 0.0f ) );
 }
 
 void EnPlayerAnimation::updateEntity( float deltaTime )
@@ -410,6 +420,10 @@ void EnPlayerAnimation::setupShader()
         {
             p_stateSet = _animNode->getOrCreateStateSet();
             p_stateSet->setAttributeAndModes( _useTexture ? s_programTex.get() : s_programNoTex.get(), osg::StateAttribute::ON );
+
+            _highlightColor = new osg::Uniform( "addColor", osg::Vec4f( 0.0f, 0.0f, 0.0f, 0.0f ) );
+            p_stateSet->addUniform( _highlightColor.get() );
+
             _animNode->setStateSet( p_stateSet );
         }
     }
