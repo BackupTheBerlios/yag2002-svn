@@ -57,6 +57,7 @@ void StorageClient::shutdown()
     log_info << "StorageClient: shutting down" << std::endl;
 
     yaf3d::NetworkDevice::get()->setAuthCallback( NULL );
+
     // destroy the singleton
     destroy();
 }
@@ -70,6 +71,8 @@ void StorageClient::initialize() throw ( StorageClientException )
 
 void StorageClient::setNetworking( StorageNetworking* p_networking )
 {
+    assert( ( _p_networking == NULL ) && "networking object already set!" );
+
     _p_networking = p_networking;
 }
 
@@ -101,12 +104,12 @@ bool StorageClient::requestPublicAccountInfo( const std::string& username, class
     return true;
 }
 
-bool StorageClient::updateAccountInfo( unsigned int userID, tAccountInfoData& info )
+bool StorageClient::updateAccountInfo( tAccountInfoData& info )
 {
     if ( !_p_networking )
         return false;
 
-    _p_networking->updateAccountInfo( userID, info );
+    _p_networking->updateAccountInfo( getUserID(), info );
 
     return true;
 }

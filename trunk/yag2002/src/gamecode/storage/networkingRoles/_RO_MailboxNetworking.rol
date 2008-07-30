@@ -1,0 +1,39 @@
+/* The Mailbox object */
+
+namespace vrc
+{
+
+object MailboxNetworking
+{
+    datablock Function;
+
+    extern RPC_RequestMailCommand( tMailRequest );
+    extern RPC_RequestSendMail( unsigned int, tMailContent );
+    extern RPC_Response( tMailRequest );
+    extern RPC_SendMail( tMailContent );
+
+    networking
+    {
+        Function RPC_RequestMailCommand;
+        {
+            Reliable();
+        }
+
+        Function RPC_RequestSendMail;
+        {
+            Reliable();
+        }
+
+        Function RPC_Response;
+        {
+            Reliable();
+        }
+
+        Function RPC_SendMail;
+        {
+            Reliable();
+        }
+    }
+}
+
+} // namespace vrc

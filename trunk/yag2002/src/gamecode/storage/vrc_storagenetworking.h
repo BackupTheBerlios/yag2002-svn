@@ -44,15 +44,14 @@ class StorageNetworking : _RO_DO_PUBLIC_RO( StorageNetworking )
 {
     public:
 
-        explicit                                   StorageNetworking();
+                                                    StorageNetworking();
 
         virtual                                    ~StorageNetworking();
 
-        //! Object can now be initialized in scene
+        //! Object has been created.
         void                                        PostObjectCreate();
 
         //! Callback class for account info retrieval.
-        //!  Note: only one request can by handled at the same time.
         class CallbackAccountInfoResult
         {
             public:
@@ -61,7 +60,7 @@ class StorageNetworking : _RO_DO_PUBLIC_RO( StorageNetworking )
 
                 virtual                             ~CallbackAccountInfoResult() {}
 
-                //! If granted is true then the authentification was successfull.
+                //! Get the account information.
                 virtual void                        accountInfoResult( tAccountInfoData& info ) = 0;
         };
 
@@ -77,7 +76,7 @@ class StorageNetworking : _RO_DO_PUBLIC_RO( StorageNetworking )
     protected:
 
         // Internal RN Overrides, do not use these methods!
-        //-----------------------------------------------------------------------------------//
+        //-----------------------------------------------//
 
         //! Request the server for account info.
         void                                        RPC_RequestAccountInfo( tAccountInfoData info );

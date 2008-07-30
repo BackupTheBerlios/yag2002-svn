@@ -41,6 +41,7 @@ namespace vrc
 //! Class declarations
 class UserInventory;
 class StorageNetworking;
+
 namespace gameutils
 {
     class VRCStateHandler;
@@ -95,7 +96,7 @@ class StorageClient : public yaf3d::Singleton< vrc::StorageClient >, public yaf3
         bool                                        requestPublicAccountInfo( const std::string& username, class AccountInfoResult* p_cb );
 
         //! Update the user account info. Note: currently, only the user description can be updated.
-        bool                                        updateAccountInfo( unsigned int userID, tAccountInfoData& info );
+        bool                                        updateAccountInfo( tAccountInfoData& info );
 
         //! Get the unique user account ID
         unsigned int                                getUserID() const;

@@ -32,6 +32,7 @@
 #include "vrc_gameutils.h"
 #include "storage/vrc_storageclient.h"
 #include "storage/vrc_storageserver.h"
+#include "storage/vrc_mailboxclient.h"
 #include "gamelogic/vrc_storysystem.h"
 
 YAF3D_SINGLETON_IMPL( vrc::gameutils::PlayerUtils )
@@ -225,6 +226,9 @@ void VRCStateHandler::onStateChange( unsigned int state )
                 }
             }
 
+            // initialize the mailbox client
+            MailboxClient::get()->initialize();
+
             // setup the game logic
             if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Standalone )
             {
@@ -246,6 +250,9 @@ void VRCStateHandler::onStateChange( unsigned int state )
         {
             // shutdown the user interaction system
             StorySystem::get()->shutdown();
+
+            // shotdown the mailbox client
+            MailboxClient::get()->shutdown();
 
             if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Client )
             {

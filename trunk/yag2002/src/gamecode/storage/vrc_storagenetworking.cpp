@@ -55,8 +55,7 @@ StorageNetworking::~StorageNetworking()
 }
 
 void StorageNetworking::PostObjectCreate()
-{ // a new client has joined
-
+{
     // set the networking object in storage client
     StorageClient::get()->setNetworking( this );
 }

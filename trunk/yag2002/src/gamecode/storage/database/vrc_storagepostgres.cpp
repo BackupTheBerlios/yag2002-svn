@@ -35,11 +35,11 @@
 
 
 //! Database table names
-#define TBL_NAME_USERACCOUNTS   "user_accounts"
-#define TBL_NAME_USERINVENTORY  "inventory"
+#define TBL_NAME_USERACCOUNTS       "user_account"
+#define TBL_NAME_USERINVENTORY      "inventory"
 
 //! Fileds of user account table
-#define F_USERACC_UID               "account_id"
+#define F_USERACC_UID               "id_account"
 #define F_USERACC_NAME              "name"
 #define F_USERACC_LOGIN             "login_name"
 #define F_USERACC_EMAIL             "email"
@@ -50,7 +50,16 @@
 #define F_USERACC_REGDATE           "registration_date"
 #define F_USERACC_USERDESC          "user_description"
 
-//! Stored procesures
+#define F_USERDATA_DATA_ID          "id_user_data"
+#define F_USERDATA_INV_ID           "fk_id_user_inventory"
+#define F_USERDATA_MAILBOX_ID       "fk_id_user_mailbox"
+#define F_USERDATA_SKILLS_ID        "fk_id_user_skills"
+
+#define F_INV_ID                    "id_inventory"
+#define F_INV_USER_DATA_ID          "fk_id_user_data"
+#define F_INV_DATA                  "inv_data"
+
+//! Storage functions
 #define FCN_INIT_DB                 "init_db"
 #define FCN_USER_LOGIN              "user_login"
 #define FCN_USER_LOGOUT             "user_logout"
@@ -60,16 +69,6 @@
 #define FCN_USER_REGISTER           "user_register"
 #define FCN_USER_DATA               "user_getdata"
 #define FCN_USER_INV                "user_getinventory"
-
-#define F_USERDATA_DATA_ID          "user_data_id"
-#define F_USERDATA_INV_ID           "user_inventory_id"
-#define F_USERDATA_MAILBOX_ID       "user_mailbox_id"
-#define F_USERDATA_SKILLS_ID        "user_skills_id"
-
-#define F_INV_ID                    "inventory_id"
-#define F_INV_DATA                  "inv_data"
-#define F_INV_USER_DATA_ID          "user_data_id"
-
 
 namespace vrc
 {

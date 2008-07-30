@@ -31,11 +31,11 @@
 #ifndef _VRC_MYSQLSTORAGE_H_
 #define _VRC_MYSQLSTORAGE_H_
 
-//! This causes to use the shared lib of pqxx
-#define PQXX_SHARED
-
 #include <vrc_main.h>
 #include "vrc_basestorage.h"
+
+//! This causes to use the shared lib of pqxx
+#define PQXX_SHARED
 #include <pqxx/connection.hxx>
 
 
@@ -43,6 +43,7 @@ namespace vrc
 {
 
 class UserInventory;
+class StorageServer;
 
 
 class StoragePostgreSQL : public BaseStorage
@@ -85,7 +86,11 @@ class StoragePostgreSQL : public BaseStorage
        //! Given a string prepare it for using in a SQL expression.
        std::string                              cleanString( const std::string& str );
 
+       //! Postgres database connection
        pqxx::connection*                        _p_databaseConnection;
+
+       //! The storage server needs the database connection
+       friend class StorageServer;
 };
 
 } // namespace vrc

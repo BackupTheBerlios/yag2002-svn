@@ -375,7 +375,7 @@ bool PropertyGui::onClickedProfileOk( const CEGUI::EventArgs& /*arg*/ )
     strcpy_s( info._p_userDescription, sizeof( info._p_userDescription ) - 1, _p_editboxAboutMe->getText().c_str() );
     info._p_userDescription[ sizeof( info._p_userDescription ) - 1 ] = 0;
 
-    if ( !StorageClient::get()->updateAccountInfo( StorageClient::get()->getUserID(), info ) )
+    if ( !StorageClient::get()->updateAccountInfo( info ) )
     {
         log_warning << "PropertyGui: cannot update account info" << std::endl;
     }
