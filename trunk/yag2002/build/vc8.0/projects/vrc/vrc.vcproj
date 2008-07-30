@@ -1668,6 +1668,22 @@
 				Name="storage"
 				>
 				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_mailboxclient.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_mailboxclient.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_mailboxnetworking.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\gamecode\storage\vrc_mailboxnetworking.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\gamecode\storage\vrc_storageclient.cpp"
 					>
 				</File>
@@ -1706,6 +1722,50 @@
 				<Filter
 					Name="nw-roles"
 					>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\networkingRoles\_RO_MailboxNetworking.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug-Server|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release-Server|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								PrecompiledHeaderThrough=""
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\networkingRoles\_RO_MailboxNetworking.h"
+						>
+					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\storage\networkingRoles\_RO_StorageNetworking.cpp"
 						>
@@ -1763,6 +1823,14 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_basemailbox.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_basemailbox.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_basestorage.cpp"
 						>
 					</File>
@@ -1772,6 +1840,14 @@
 					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_connectiondata.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_mailboxpostgres.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_mailboxpostgres.h"
 						>
 					</File>
 					<File
