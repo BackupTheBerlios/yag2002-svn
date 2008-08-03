@@ -91,9 +91,8 @@ class CEGUIDrawable : public osg::Drawable
                                                         _activeContextID = 0;
                                                         // create a gui renderbin and make the gui drawable to be drawn in this render bin ( last stage of rendering )
                                                         osg::ref_ptr< osgUtil::RenderBin > renderbin = new osgUtil::RenderBin( osgUtil::RenderBin::SORT_BACK_TO_FRONT );
-                                                        osgUtil::RenderBin::addRenderBinPrototype( "GUIBin", renderbin.get() );
                                                         osg::StateSet* p_stateset = new osg::StateSet;
-                                                        p_stateset->setRenderBinDetails( 1000, "GUIBin", osg::StateSet::USE_RENDERBIN_DETAILS );
+                                                        p_stateset->setRenderBinDetails( 1000, "RenderBin", osg::StateSet::USE_RENDERBIN_DETAILS );
                                                         setStateSet( p_stateset );
                                                     }
 
