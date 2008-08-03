@@ -739,6 +739,42 @@
 						>
 					</File>
 				</Filter>
+				<Filter
+					Name="mailbox"
+					>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\mailbox\vrc_mailboxgui.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\mailbox\vrc_mailboxgui.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\mailbox\vrc_mailboxguimain.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\mailbox\vrc_mailboxguimain.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\mailbox\vrc_mailboxguisend.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\mailbox\vrc_mailboxguisend.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\mailbox\vrc_mailboxguiview.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\mailbox\vrc_mailboxguiview.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="platform"
@@ -1820,14 +1856,6 @@
 					</File>
 					<File
 						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_account.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_basemailbox.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\..\..\src\gamecode\storage\database\vrc_basemailbox.h"
 						>
 					</File>
 					<File
