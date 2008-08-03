@@ -47,9 +47,6 @@ class PropertyGui : public StorageClient::AccountInfoResult
 
         virtual                                     ~PropertyGui();
 
-        //! Enable/disable the GUI. Disable the GUI when entering the menu, and enable it when leaving the menu
-        void                                        enable( bool en );
-
     protected:
 
         //! Setup the GUI

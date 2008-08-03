@@ -54,10 +54,14 @@ namespace vrc
 //! Entity name
 #define ENTITY_NAME_PLAYER                "Player"
 
+
+//! Class pre-declarations
+class MailboxGui;
 class PropertyGui;
-class EnPlayerAnimation;
 class UserInventory;
+class EnPlayerAnimation;
 class BasePlayerImplementation;
+
 
 //! Player entity
 class EnPlayer : public yaf3d::BaseEntity
@@ -186,6 +190,9 @@ class EnPlayer : public yaf3d::BaseEntity
 
         //! User inventory
         UserInventory*                              _p_userInventory;
+
+        //! Player's mailbox GUI
+        MailboxGui*                                 _p_mailboxGui;
 
         //! Network IP address, used for getting remote clients' ip address
         std::string                                 _ipAddress;

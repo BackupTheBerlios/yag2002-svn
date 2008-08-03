@@ -31,7 +31,7 @@
 #define _VRC_MAILBOXPOSTGRES_H_
 
 #include <vrc_main.h>
-#include "vrc_basemailbox.h"
+#include "../vrc_mailboxclient.h"
 
 //! This causes to use the shared lib of pqxx
 #define PQXX_SHARED
@@ -40,7 +40,8 @@
 namespace vrc
 {
 
-class MailboxPostgres : public BaseMailbox
+//! Database access for the mailbox functionality
+class MailboxPostgres
 {
     public:
 
@@ -50,25 +51,25 @@ class MailboxPostgres : public BaseMailbox
         virtual                                 ~MailboxPostgres();
 
         //! Get mail headers with given attribute (see Content::Attributes), they are stored in 'headers' without body.
-        virtual bool                            getMailHeaders( unsigned int userID, unsigned int attribute, const std::string& folder, std::vector< Content >& headers );
+        bool                                    getMailHeaders( unsigned int userID, unsigned int attribute, const std::string& folder, std::vector< MailboxContent >& headers );
 
         //! Get mail with given ID.
-        virtual bool                            getMail( unsigned int userID, unsigned int mailID, Content& mailcontent );
+        bool                                    getMail(  unsigned int userID, unsigned int mailID, MailboxContent& mailcontent );
 
         //! Send mail
-        virtual bool                            sendMail( unsigned int userID, const Content& mailcontent );
+        bool                                    sendMail(  unsigned int userID, const MailboxContent& mailcontent );
 
         //! Delete mail with given ID.
-        virtual bool                            deleteMail( unsigned int userID, unsigned int mailID );
+        bool                                    deleteMail(  unsigned int userID, unsigned int mailID );
 
         //! Move mail with given ID to 'destfolder'. The destination folder must exist.
-        virtual bool                            moveMail( unsigned int userID, unsigned int mailID, const std::string& destfolder );
+        bool                                    moveMail(  unsigned int userID, unsigned int mailID, const std::string& destfolder );
 
         //! Create a new mail folder.
-        virtual bool                            createMailFolder( unsigned int userID, const std::string& folder );
+        bool                                    createMailFolder(  unsigned int userID, const std::string& folder );
 
         //! Delete the given mail folder.
-        virtual bool                            deleteMailFolder( unsigned int userID, const std::string& folder );
+        bool                                    deleteMailFolder(  unsigned int userID, const std::string& folder );
 
     protected:
 

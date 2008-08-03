@@ -71,21 +71,6 @@ PropertyGui::~PropertyGui()
     }
 }
 
-void PropertyGui::enable( bool en )
-{
-    if ( _p_frame )
-    {
-        if ( en )
-        {
-            _p_frame->activate();
-        }
-        else
-        {
-            _p_frame->deactivate();
-        }
-    }
-}
-
 void PropertyGui::setupGui()
 {
     assert( _p_userInventory && "invalid user inventory!" );

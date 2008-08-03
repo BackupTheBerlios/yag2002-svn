@@ -117,6 +117,8 @@ namespace gameutils
 #define IMAGE_NAME_CHAT_HOOVER              "ChatHoover"
 #define IMAGE_NAME_INV_NORMAL               "InventoryNormal"
 #define IMAGE_NAME_INV_HOOVER               "InventoryHoover"
+#define IMAGE_NAME_MAILBOX_NORMAL           "MailboxNormal"
+#define IMAGE_NAME_MAILBOX_HOOVER           "MailboxHoover"
 #define IMAGE_NAME_CROSSHAIR                "Crosshair"
 #define IMAGE_NAME_POST                     "Post"
 #define IMAGE_NAME_SOUND_ON                 "SoundOn"

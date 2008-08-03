@@ -47,7 +47,7 @@ typedef struct _tMailContent
     //! Mail body
     char            _body[ 512 ];
 
-    //! Mail attributes, see BaseMailbox::Content::Attributes
+    //! Mail attributes, see MailboxContent::Attributes
     unsigned int    _attributes;
 
 } tMailContent;
@@ -62,14 +62,14 @@ class _RO_MailboxNetworking : public RNReplicaNet::ReplicaObject
 	void Call_RPC_RequestMailCommand(tMailRequest);
 	typedef void(tDBFV_RPC_RequestMailCommand)(tMailRequest);
 	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_RequestSendMail)
-	void Call_RPC_RequestSendMail(unsigned int,tMailContent);
-	typedef void(tDBFV_RPC_RequestSendMail)(unsigned int,tMailContent);
+	void Call_RPC_RequestSendMail(tMailContent);
+	typedef void(tDBFV_RPC_RequestSendMail)(tMailContent);
 	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_Response)
 	void Call_RPC_Response(tMailRequest);
 	typedef void(tDBFV_RPC_Response)(tMailRequest);
 	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_SendMail)
-	void Call_RPC_SendMail(tMailContent content );
-	typedef void(tDBFV_RPC_SendMail)(tMailContent content );
+	void Call_RPC_SendMail(tMailContent);
+	typedef void(tDBFV_RPC_SendMail)(tMailContent);
 	_RO_DEF_REGISTERDATABLOCKS(MailboxNetworking)
 };
 } // namespace vrc

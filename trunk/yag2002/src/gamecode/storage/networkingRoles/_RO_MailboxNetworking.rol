@@ -8,7 +8,7 @@ object MailboxNetworking
     datablock Function;
 
     extern RPC_RequestMailCommand( tMailRequest );
-    extern RPC_RequestSendMail( unsigned int, tMailContent );
+    extern RPC_RequestSendMail( tMailContent );
     extern RPC_Response( tMailRequest );
     extern RPC_SendMail( tMailContent );
 

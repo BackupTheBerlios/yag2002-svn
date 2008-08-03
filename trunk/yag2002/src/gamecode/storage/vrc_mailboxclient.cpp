@@ -33,6 +33,7 @@
 #include "vrc_mailboxnetworking.h"
 
 
+
 //! Implement the singleton
 YAF3D_SINGLETON_IMPL( vrc::MailboxClient )
 
@@ -40,8 +41,15 @@ namespace vrc
 {
 
 MailboxClient::MailboxClient() :
- _p_networking( NULL )
+ _p_networking( NULL ),
+ _p_cbResponse( NULL )
 {
+
+//! TODO: remove this, it is only for developing the client/networking code
+//        later, the networking object is automatically replicated on client!
+_p_networking = new MailboxNetworking;
+_p_networking->setMailboxResponseCallback( this );
+
 }
 
 MailboxClient::~MailboxClient()
@@ -68,60 +76,109 @@ void MailboxClient::setNetworking( MailboxNetworking* p_networking )
     assert( ( _p_networking == NULL ) && "networking object already set!" );
 
     _p_networking = p_networking;
+    _p_networking->setMailboxResponseCallback( this );
+}
 
-    //! TODO: remove this test code
+void MailboxClient::mailboxNetworkingResponse( const MailboxContent& mailcontent, unsigned int status, const std::string& response )
+{
+    if ( !_p_cbResponse )
     {
-        BaseMailbox::Content content;
-        content._from = "boto";
-        content._to   = "someone, nokky, micha";
-        content._cc   = "cc_reciepient";
-        content._subject = "test mail";
-        content._body    = "this is a test mail with special characters ÄÖÜäöüßßß\nand this is the second line of e-mail :-)";
-        _p_networking->sendMail( 42, content );
+        log_error << "MailboxClient: unexpected response from server" << std::endl;
+        return;
     }
 
+    log_debug << "MailboxClient: server responds '" << response << "'" << std::endl;
+
+    _p_cbResponse->mailboxResponse( mailcontent, status, response );
+    _p_cbResponse = NULL; // reset the callback
 }
 
-bool MailboxClient::getMailHeaders( unsigned int userID, unsigned int attribute, const std::string& folder, std::vector< Content >& headers )
+void MailboxClient::getMailFolders( MailboxResponseCallback* p_cbResponse )
 {
-    //! TODO: use _p_networking for sending out the request to server
-    return false;
+    assert( p_cbResponse && "invalid callback object" );
+
+    if ( !_p_networking )
+        return;
+
+    _p_cbResponse = p_cbResponse;
+    _p_networking->getMailFolders();
 }
 
-bool MailboxClient::getMail( unsigned int userID, unsigned int mailID, Content& mailcontent )
+void MailboxClient::getMailHeaders( MailboxResponseCallback* p_cbResponse, unsigned int attribute, const std::string& folder )
 {
-    //! TODO
-    return false;
+    assert( p_cbResponse && "invalid callback object" );
+
+    if ( !_p_networking )
+        return;
+
+    _p_cbResponse = p_cbResponse;
+    _p_networking->getMailHeaders( attribute, folder );
 }
 
-bool MailboxClient::sendMail( unsigned int userID, const Content& mailcontent )
+void MailboxClient::getMail( MailboxResponseCallback* p_cbResponse, unsigned int mailID )
 {
-    //! TODO
-    return false;
+    assert( p_cbResponse && "invalid callback object" );
+
+    if ( !_p_networking )
+        return;
+
+    _p_cbResponse = p_cbResponse;
+    _p_networking->getMail( mailID );
 }
 
-bool MailboxClient::deleteMail( unsigned int userID, unsigned int mailID )
+void MailboxClient::sendMail( MailboxResponseCallback* p_cbResponse, const MailboxContent& mailcontent )
 {
-    //! TODO
-    return false;
+    assert( p_cbResponse && "invalid callback object" );
+
+    if ( !_p_networking )
+        return;
+
+    _p_cbResponse = p_cbResponse;
+    _p_networking->sendMail( mailcontent );
 }
 
-bool MailboxClient::moveMail( unsigned int userID, unsigned int mailID, const std::string& destfolder )
+void MailboxClient::deleteMail( MailboxResponseCallback* p_cbResponse, unsigned int mailID )
 {
-    //! TODO
-    return false;
+    assert( p_cbResponse && "invalid callback object" );
+
+    if ( !_p_networking )
+        return;
+
+    _p_cbResponse = p_cbResponse;
+    _p_networking->deleteMail( mailID );
 }
 
-bool MailboxClient::createMailFolder( unsigned int userID, const std::string& folder )
+void MailboxClient::moveMail( MailboxResponseCallback* p_cbResponse, unsigned int mailID, const std::string& destfolder )
 {
-    //! TODO
-    return false;
+    assert( p_cbResponse && "invalid callback object" );
+
+    if ( !_p_networking )
+        return;
+
+    _p_cbResponse = p_cbResponse;
+    _p_networking->moveMail( mailID, destfolder );
 }
 
-bool MailboxClient::deleteMailFolder( unsigned int userID, const std::string& folder )
+void MailboxClient::createMailFolder( MailboxResponseCallback* p_cbResponse, const std::string& folder )
 {
-    //! TODO
-    return false;
+    assert( p_cbResponse && "invalid callback object" );
+
+    if ( !_p_networking )
+        return;
+
+    _p_cbResponse = p_cbResponse;
+    _p_networking->createMailFolder( folder );
+}
+
+void MailboxClient::deleteMailFolder( MailboxResponseCallback* p_cbResponse, const std::string& folder )
+{
+    assert( p_cbResponse && "invalid callback object" );
+
+    if ( !_p_networking )
+        return;
+
+    _p_cbResponse = p_cbResponse;
+    _p_networking->deleteMailFolder( folder );
 }
 
 } // namespace vrc

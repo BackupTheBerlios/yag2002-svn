@@ -39,6 +39,7 @@
 #include "vrc_playerimplclient.h"
 #include "vrc_spawnpoint.h"
 #include "properties/vrc_propgui.h"
+#include "mailbox/vrc_mailboxgui.h"
 #include "../storage/vrc_storageclient.h"
 #include "../storage/vrc_userinventory.h"
 
@@ -53,6 +54,7 @@ _gameMode( yaf3d::GameState::get()->getMode() ),
 _p_playerImpl( NULL ),
 _p_propertyGui( NULL ),
 _p_userInventory( NULL ),
+_p_mailboxGui( NULL ),
 _networkID( -1 ),
 _voiceChatEnabled( false ),
 _deltaTime( 0.03f )
@@ -84,6 +86,9 @@ EnPlayer::~EnPlayer()
 
     if ( _p_propertyGui )
         delete _p_propertyGui;
+
+    if ( _p_mailboxGui )
+        delete _p_mailboxGui;
 }
 
 void EnPlayer::handleNotification( const yaf3d::EntityNotification& notification )
@@ -96,15 +101,11 @@ void EnPlayer::handleNotification( const yaf3d::EntityNotification& notification
     {
         case YAF3D_NOTIFY_MENU_ENTER:
         {
-            if ( _p_propertyGui )
-                _p_propertyGui->enable( false );
         }
         break;
 
         case YAF3D_NOTIFY_MENU_LEAVE:
         {
-            if ( _p_propertyGui )
-                _p_propertyGui->enable( true );
         }
         break;
 
@@ -134,6 +135,10 @@ void EnPlayer::initialize()
             _p_propertyGui = new PropertyGui( _p_userInventory );
             // set the inventory in player utils
             gameutils::PlayerUtils::get()->setPlayerInventory( _p_userInventory );
+
+            //! FIXME: remove this later, it is just for debugging. a mailbox in standalone mode makes no sense
+            // create the mailbox gui
+            _p_mailboxGui = new MailboxGui;
         }
         break;
 
@@ -156,6 +161,9 @@ void EnPlayer::initialize()
 
                 // create the property gui with given user inventory
                 _p_propertyGui = new PropertyGui( _p_userInventory );
+
+                // create the mailbox gui
+                _p_mailboxGui = new MailboxGui;
             }
         }
         break;

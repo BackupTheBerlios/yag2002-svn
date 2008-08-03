@@ -36,6 +36,7 @@
 #include "vrc_mailboxclient.h"
 #include <RNReplicaNet/Inc/DataBlock_Function.h>
 
+
 using namespace RNReplicaNet;
 
 namespace vrc
@@ -58,42 +59,97 @@ void MailboxNetworking::PostObjectCreate()
     MailboxClient::get()->setNetworking( this );
 }
 
-void MailboxNetworking::setMailboxResponseCallback( CallbackMailboxResponse* p_cb )
+void MailboxNetworking::setMailboxResponseCallback( CallbackMailboxNetwrokingResponse* p_cb )
 {
     _p_mailboxResponseCallback = p_cb;
 }
 
-void MailboxNetworking::getMailHeaders( unsigned int userID, unsigned int attribute )
+void MailboxNetworking::getMailFolders()
+{
+    assert( _p_mailboxResponseCallback && "invalid callback object" );
+
+//! TODO: send the command over network
+
+MailboxContent content;
+content._folders.push_back( "Inbox" );
+content._folders.push_back( "Sent" );
+_p_mailboxResponseCallback->mailboxNetworkingResponse( content, MailboxContent::eRecvFolders, "OK - folders" );
+}
+
+void MailboxNetworking::getMailHeaders( unsigned int attribute, const std::string& folder )
+{
+    assert( _p_mailboxResponseCallback && "invalid callback object" );
+
+    //! TODO: use _p_networking for sending out the request to server
+
+//!TODO just for testing, remove this later!
+MailboxContent content;
+MailboxHeader  header;
+header._id = 10;
+header._from = "user1";
+header._date = "2008-08-03";
+header._subject = "blaa";
+content._headers.push_back( header );
+
+header._id = 20;
+header._from = "user2";
+header._date = "2008-08-01";
+header._subject = "blaa2";
+content._headers.push_back( header );
+
+header._id = 30;
+header._from = "user2";
+header._date = "2008-08-05";
+header._subject = "blaa2";
+content._headers.push_back( header );
+
+
+_p_mailboxResponseCallback->mailboxNetworkingResponse( content, MailboxContent::eRecvHeaders, "OK - get mail headers" );
+}
+
+void MailboxNetworking::getMail( unsigned int mailID )
+{
+    //! TODO
+
+//!TODO just for testing, remove this later!
+MailboxContent content;
+content._header._id = 10;
+content._header._from = "user1";
+content._header._to   = "nokky, boto, kami";
+content._header._cc = "thunder, jenseman";
+content._header._date = "2008-08-03";
+content._header._subject = "blaa";
+content._body = "this is a test mail which you have in front of your face :-) ÄÖÜßäöü\nthis is the second line,\n this is the 3rd line \n";
+
+_p_mailboxResponseCallback->mailboxNetworkingResponse( content, MailboxContent::eRecvMail, "OK - get mail" );
+
+}
+
+void MailboxNetworking::sendMail( const MailboxContent& mailcontent )
+{
+    //! TODO
+MailboxContent content;
+_p_mailboxResponseCallback->mailboxNetworkingResponse( content, MailboxContent::eSendMail, "OK - send mail" );
+}
+
+void MailboxNetworking::deleteMail( unsigned int mailID )
+{
+    //! TODO
+//MailboxContent content;
+//_p_mailboxResponseCallback->mailboxNetworkingResponse( content, MailboxContent::eDeleteMail, "OK - send mail" );
+}
+
+void MailboxNetworking::moveMail( unsigned int mailID, const std::string& destfolder )
 {
     //! TODO
 }
 
-void MailboxNetworking::getMail( unsigned int userID, unsigned int mailID )
+void MailboxNetworking::createMailFolder( const std::string& folder )
 {
     //! TODO
 }
 
-void MailboxNetworking::sendMail( unsigned int userID, const BaseMailbox::Content& mailcontent )
-{
-    //! TODO
-}
-
-void MailboxNetworking::deleteMail( unsigned int userID, unsigned int mailID )
-{
-    //! TODO
-}
-
-void MailboxNetworking::moveMail( unsigned int userID, unsigned int mailID, const std::string& destfolder )
-{
-    //! TODO
-}
-
-void MailboxNetworking::createMailFolder( unsigned int userID, const std::string& folder )
-{
-    //! TODO
-}
-
-void MailboxNetworking::deleteMailFolder( unsigned int userID, const std::string& folder )
+void MailboxNetworking::deleteMailFolder( const std::string& folder )
 {
     //! TODO
 }
@@ -116,7 +172,7 @@ void MailboxNetworking::RPC_RequestMailCommand( tMailRequest request )
 
 }
 
-void MailboxNetworking::RPC_RequestSendMail( unsigned int userID, tMailContent content )
+void MailboxNetworking::RPC_RequestSendMail( tMailContent content )
 {
     //! TODO
 }

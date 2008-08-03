@@ -4,6 +4,7 @@
 #pragma warning(disable : 4786)
 #endif
 #include "../vrc_mailboxnetworking.h"
+
 using namespace vrc;
 _RO_DO_STD_FRAMEWORK(MailboxNetworking)
 #include "RNReplicaNet/Inc/DataBlock_Function.h"
@@ -19,20 +20,15 @@ _RO_DO_MEMBERFUNC_CRACK_END(MailboxNetworking,RPC_RequestMailCommand)
 value1
 _RO_DO_MEMBERFUNC_CRACK_END2()
 _RO_DO_MEMBERFUNC_PRESTAGE_DEF(MailboxNetworking,RPC_RequestSendMail)
-unsigned int value1,
-tMailContent value2
+tMailContent value1
 _RO_DO_MEMBERFUNC_PRESTAGE(RPC_RequestSendMail)
-_RO_DO_MEMBERFUNC_ADDVAR2(value1,unsigned int)
-_RO_DO_MEMBERFUNC_ADDVAR2(value2,tMailContent)
+_RO_DO_MEMBERFUNC_ADDVAR2(value1,tMailContent)
 _RO_DO_MEMBERFUNC_POSTSTAGE(RPC_RequestSendMail)
 _RO_DO_MEMBERFUNC_CRACK_START(MailboxNetworking,RPC_RequestSendMail)
-unsigned int value1;
-tMailContent value2;
+tMailContent value1;
 _RO_DO_MEMBERFUNC_MESSAGE_CRACK(value1)
-_RO_DO_MEMBERFUNC_MESSAGE_CRACK(value2)
 _RO_DO_MEMBERFUNC_CRACK_END(MailboxNetworking,RPC_RequestSendMail)
-value1,
-value2
+value1
 _RO_DO_MEMBERFUNC_CRACK_END2()
 _RO_DO_MEMBERFUNC_PRESTAGE_DEF(MailboxNetworking,RPC_Response)
 tMailRequest value1
