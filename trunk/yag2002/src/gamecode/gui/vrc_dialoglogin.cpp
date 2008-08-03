@@ -154,8 +154,7 @@ bool DialogLogin::onClickedRegistration( const CEGUI::EventArgs& /*arg*/ )
 
             // make sure that the edit box displays the first line
             CEGUI::MultiLineEditbox* p_termscond = static_cast< CEGUI::MultiLineEditbox* >( _p_registrationDialog->getChild( REGDLG_PREFIX "st_conditions" ) );
-            if ( p_termscond->getText().length() > 0 )
-                p_termscond->setCaratIndex( 1 );
+            p_termscond->ensureCaratIsVisible();
 
             // get registration edit fields
             _p_regNickName = static_cast< CEGUI::Editbox* >( _p_registrationDialog->getChild( REGDLG_PREFIX "text_username" ) );
