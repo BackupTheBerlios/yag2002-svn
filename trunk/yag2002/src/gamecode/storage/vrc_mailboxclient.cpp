@@ -19,7 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # class for mailbox functionality used by storage client
+ # class for mailbox functionality used by client
  #
  #   date of creation:  07/29/2008
  #
@@ -33,7 +33,6 @@
 #include "vrc_mailboxnetworking.h"
 
 
-
 //! Implement the singleton
 YAF3D_SINGLETON_IMPL( vrc::MailboxClient )
 
@@ -44,12 +43,6 @@ MailboxClient::MailboxClient() :
  _p_networking( NULL ),
  _p_cbResponse( NULL )
 {
-
-//! TODO: remove this, it is only for developing the client/networking code
-//        later, the networking object is automatically replicated on client!
-_p_networking = new MailboxNetworking;
-_p_networking->setMailboxResponseCallback( this );
-
 }
 
 MailboxClient::~MailboxClient()
@@ -73,10 +66,9 @@ void MailboxClient::shutdown()
 
 void MailboxClient::setNetworking( MailboxNetworking* p_networking )
 {
-    assert( ( _p_networking == NULL ) && "networking object already set!" );
-
     _p_networking = p_networking;
-    _p_networking->setMailboxResponseCallback( this );
+    if ( _p_networking )
+        _p_networking->setMailboxResponseCallback( this );
 }
 
 void MailboxClient::mailboxNetworkingResponse( const MailboxContent& mailcontent, unsigned int status, const std::string& response )
@@ -90,7 +82,6 @@ void MailboxClient::mailboxNetworkingResponse( const MailboxContent& mailcontent
     log_debug << "MailboxClient: server responds '" << response << "'" << std::endl;
 
     _p_cbResponse->mailboxResponse( mailcontent, status, response );
-    _p_cbResponse = NULL; // reset the callback
 }
 
 void MailboxClient::getMailFolders( MailboxResponseCallback* p_cbResponse )

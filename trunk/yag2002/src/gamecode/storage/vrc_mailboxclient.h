@@ -19,7 +19,7 @@
  ****************************************************************/
 
 /*###############################################################
- # class for mailbox functionality used by storage client
+ # class for mailbox functionality used by client
  #
  #   date of creation:  07/29/2008
  #
@@ -32,6 +32,7 @@
 
 #include <vrc_main.h>
 #include "vrc_mailboxnetworking.h"
+#include "database/vrc_basemailboxstorage.h"
 
 namespace vrc
 {
@@ -48,94 +49,6 @@ namespace gameutils
 #define VRC_DEFAULT_MAILFOLDER_INBOX      "Inbox"
 #define VRC_DEFAULT_MAILFOLDER_SENT       "Sent"
 
-
-//! Mail header
-class MailboxHeader
-{
-    public:
-                                                MailboxHeader() :
-                                                 _attributes( 0 ),
-                                                 _id( 0 )
-                                                {
-                                                }
-
-        virtual                                 ~MailboxHeader() {}
-
-        //! Sender
-        std::string                             _from;
-
-        //! Comma separated recipients
-        std::string                             _to;
-
-        //! Comma separated copy recipients
-        std::string                             _cc;
-
-        //! Timestamp of receipt or send
-        std::string                             _date;
-
-        //! Mail subject
-        std::string                             _subject;
-
-        //! Mail attribute
-        enum Attributes
-        {
-            //! New mail, still not read
-            eNotRead        = 0x01,
-            //! Normal priority mail
-            ePriorityNormal = 0x02,
-            //! High priority mail
-            ePriorityHigh   = 0x04,
-            //! All attributes
-            eAll            = 0x07
-        };
-
-        //! Mail attributes, see Attributes
-        unsigned int                            _attributes;
-
-        //! Unique mail ID
-        unsigned int                            _id;
-};
-
-//! Class for transfering mail content
-class MailboxContent
-{
-    public:
-                                                MailboxContent() :
-                                                 _status( 0 )
-                                                {
-                                                }
-
-        virtual                                 ~MailboxContent() {}
-
-        //! Mail header
-        MailboxHeader                           _header;
-
-        //! Mail body
-        std::string                             _body;
-
-        //! Used only on request for getting mailbox folders.
-        std::vector< std::string >              _folders;
-
-        //! List of headers, used for retrieving only the headers, no bodies.
-        std::vector< MailboxHeader >            _headers;
-
-        //! Flags indicating mail content transfer status set by server. The bitfields are combined.
-        enum TransferStatus
-        {
-            eRecvFolders     = 0x0100,
-            eRecvHeaders     = 0x0200,
-            eRecvMail        = 0x0400,
-            eRecvReply       = 0x0800,
-            eRecvForward     = 0x1000,
-            eSendMail        = 0x2000,
-
-            eOk              = 0x0000,
-            eError           = 0x0001
-        };
-
-        //! Transfer status, combination of TransferStatus flags
-        unsigned int                            _status;
-};
 
 //! Callback class for mailbox responses.
 class MailboxResponseCallback
@@ -159,7 +72,7 @@ class MailboxResponseCallback
 };
 
 
-//! Mailbox client side implementation
+//! Mailbox' client side implementation
 class MailboxClient : public yaf3d::Singleton< vrc::MailboxClient >, public MailboxNetworking::CallbackMailboxNetwrokingResponse
 {
     public:

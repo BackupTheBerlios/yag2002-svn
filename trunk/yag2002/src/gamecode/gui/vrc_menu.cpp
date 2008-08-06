@@ -414,9 +414,6 @@ void EnMenu::initialize()
     // we register ourself to get notifications. interesting one is the shutdown notification
     //  as we have to trigger the destruction ourself as this entity is persistent.
     yaf3d::EntityManager::get()->registerNotification( this, true );
-
-//! TODO: remove this
-MailboxGui* p_test = new MailboxGui;
 }
 
 bool EnMenu::createMenuScene()

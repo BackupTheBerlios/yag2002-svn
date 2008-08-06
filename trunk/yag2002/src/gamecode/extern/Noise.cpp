@@ -175,8 +175,6 @@ void normalize3(double v[3])
 void initNoise(void)
 {
    int i, j, k;
-
-   srand(30757);
    for (i = 0 ; i < B ; ++i) {
       p[i] = i;
       g1[i] = (double)((rand() % (B + B)) - B) / B;

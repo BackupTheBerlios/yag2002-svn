@@ -35,53 +35,117 @@
 namespace vrc
 {
 
-MailboxPostgres::MailboxPostgres( pqxx::connection* p_database ) :
+MailboxPostgreSQL::MailboxPostgreSQL( pqxx::connection* p_database ) :
  _p_databaseConnection( p_database )
 {
     assert( _p_databaseConnection && "invalid database object!" );
 }
 
-MailboxPostgres::~MailboxPostgres()
+MailboxPostgreSQL::~MailboxPostgreSQL()
 {
 }
 
-bool MailboxPostgres::getMailHeaders(  unsigned int userID, unsigned int attribute, const std::string& folder, std::vector< MailboxContent >& headers )
+bool MailboxPostgreSQL::getMailFolders( unsigned int userID, std::vector< std::string >& folders )
+{
+//! TODO: remove the test code
+folders.push_back( "Inbox" );
+folders.push_back( "Sent" );
+
+    return true;
+}
+
+bool MailboxPostgreSQL::getMailHeaders(  unsigned int userID, unsigned int attribute, const std::string& folder, std::vector< MailboxHeader >& headers )
+{
+    //! TODO
+
+//!TODO just for testing, remove this later!
+    if ( folder == "Inbox" )
+    {
+MailboxHeader  header;
+header._id = 10;
+header._from = "Inbox-user1";
+header._date = "2008-08-03";
+header._subject = "blaa";
+headers.push_back( header );
+
+header._id = 20;
+header._from = "Inbox-user2";
+header._date = "2008-08-01";
+header._subject = "blaa2";
+headers.push_back( header );
+
+header._id = 30;
+header._from = "Inbox-user2";
+header._date = "2008-08-05";
+header._subject = "blaa2";
+headers.push_back( header );
+    }
+    else
+    {
+MailboxHeader  header;
+header._id = 10;
+header._from = "Sent-user1";
+header._date = "2008-08-03";
+header._subject = "blaa";
+headers.push_back( header );
+
+header._id = 20;
+header._from = "Sent-user2";
+header._date = "2008-08-01";
+header._subject = "blaa2";
+headers.push_back( header );
+
+header._id = 30;
+header._from = "Sent-user2";
+header._date = "2008-08-05";
+header._subject = "blaa2";
+headers.push_back( header );
+    }
+
+    return true;
+}
+
+bool MailboxPostgreSQL::getMail(  unsigned int userID, unsigned int mailID, MailboxContent& mailcontent )
+{
+    //! TODO
+
+log_debug << "MailboxPostgreSQL: deliver mail for " << userID << ", " << mailID << std::endl;
+mailcontent._header._id = mailID;
+mailcontent._header._from = "thunder";
+mailcontent._header._to = "me";
+mailcontent._header._cc = "nokky,kami";
+mailcontent._header._date = "2008-08-05";
+mailcontent._header._subject = "this is a very very very long header, i know";
+mailcontent._body = "this is a dummy body ÄÖÜßüäö \nthis is the next line\n third line";
+
+    return true;
+}
+
+bool MailboxPostgreSQL::sendMail(  unsigned int userID, const MailboxContent& mailcontent )
 {
     //! TODO
     return false;
 }
 
-bool MailboxPostgres::getMail(  unsigned int userID, unsigned int mailID, MailboxContent& mailcontent )
+bool MailboxPostgreSQL::deleteMail(  unsigned int userID, unsigned int mailID )
 {
     //! TODO
     return false;
 }
 
-bool MailboxPostgres::sendMail(  unsigned int userID, const MailboxContent& mailcontent )
+bool MailboxPostgreSQL::moveMail(  unsigned int userID, unsigned int mailID, const std::string& destfolder )
 {
     //! TODO
     return false;
 }
 
-bool MailboxPostgres::deleteMail(  unsigned int userID, unsigned int mailID )
+bool MailboxPostgreSQL::createMailFolder(  unsigned int userID, const std::string& folder )
 {
     //! TODO
     return false;
 }
 
-bool MailboxPostgres::moveMail(  unsigned int userID, unsigned int mailID, const std::string& destfolder )
-{
-    //! TODO
-    return false;
-}
-
-bool MailboxPostgres::createMailFolder(  unsigned int userID, const std::string& folder )
-{
-    //! TODO
-    return false;
-}
-
-bool MailboxPostgres::deleteMailFolder(  unsigned int userID, const std::string& folder )
+bool MailboxPostgreSQL::deleteMailFolder(  unsigned int userID, const std::string& folder )
 {
     //! TODO
     return false;

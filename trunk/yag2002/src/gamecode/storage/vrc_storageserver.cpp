@@ -31,10 +31,12 @@
 
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
+#include "vrc_userinventory.h"
 #include "vrc_storageserver.h"
 #include "vrc_storagenetworking.h"
-#include "vrc_userinventory.h"
+#include "vrc_mailboxnetworking.h"
 #include "database/vrc_storagepostgres.h"
+#include "database/vrc_mailboxpostgres.h"
 #include "database/vrc_account.h"
 #include "database/vrc_connectiondata.h"
 
@@ -80,7 +82,9 @@ namespace vrc
 StorageServer::StorageServer() :
  _connectionEstablished( false ),
  _p_networking( NULL ),
- _p_storage( NULL )
+ _p_storage( NULL ),
+ _p_mailboxNetworking( NULL ),
+ _p_mailbox( NULL )
 {
 }
 
@@ -181,6 +185,11 @@ void StorageServer::initialize() throw ( StorageServerException )
     _p_networking = new StorageNetworking();
     _p_networking->Publish();
 
+    // setup the mailbox
+    _p_mailbox = new MailboxPostgreSQL( ( dynamic_cast< StoragePostgreSQL* >( _p_storage ) )->_p_databaseConnection );
+    _p_mailboxNetworking = new MailboxNetworking( _p_mailbox );
+    _p_mailboxNetworking->Publish();
+
     // set the authentification callback in network device, whenever a client connects then 'authentify' is called.
     yaf3d::NetworkDevice::get()->setAuthCallback( this );
 
@@ -277,6 +286,18 @@ bool StorageServer::validateClient( unsigned int userID, int sessionID )
     }
 
     return true;
+}
+
+unsigned int StorageServer::getUserID( int sessionID )
+{
+    std::map< int, UserState* >::iterator p_end = _userCache.end(), p_user = _userCache.find( sessionID );
+    if ( p_user == p_end )
+    {
+        log_warning << "*** StorageServer: no user logged in with session ID " << sessionID << std::endl;
+        return 0;
+    }
+
+    return p_user->second->_userAccount.getUserId();
 }
 
 bool StorageServer::getUserAccount( unsigned int userID, int sessionID, UserAccount& account )

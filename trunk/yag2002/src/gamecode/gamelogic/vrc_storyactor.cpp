@@ -48,13 +48,6 @@ BaseStoryActor::BaseStoryActor( unsigned int type ) :
 {
     // create pseudo-random number for actor ID
     int number = 0;
-    if ( !s_numseed )
-    {
-        time_t t = time( NULL );
-        s_numseed = static_cast< unsigned int >( t );
-        srand( s_numseed );
-    }
-
     do
     {
         number = rand();

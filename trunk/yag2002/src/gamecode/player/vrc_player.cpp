@@ -135,10 +135,6 @@ void EnPlayer::initialize()
             _p_propertyGui = new PropertyGui( _p_userInventory );
             // set the inventory in player utils
             gameutils::PlayerUtils::get()->setPlayerInventory( _p_userInventory );
-
-            //! FIXME: remove this later, it is just for debugging. a mailbox in standalone mode makes no sense
-            // create the mailbox gui
-            _p_mailboxGui = new MailboxGui;
         }
         break;
 
@@ -151,19 +147,25 @@ void EnPlayer::initialize()
                 _p_playerImpl = new PlayerImplClient( this );
                 _p_playerImpl->initialize();
 
-                // create the player inventory for clients without authentification (guests)
-                _p_userInventory = gameutils::PlayerUtils::get()->getPlayerInventory();
-                if ( !_p_userInventory )
-                    _p_userInventory = new UserInventory( 0 );
+                //  create mailbox and inventory gui only if the server authentification is enabled
+                bool auth = true;
+                yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_AUTH, auth );
+                if ( auth )
+                {
+                    // create the player inventory for clients without authentification (guests)
+                    _p_userInventory = gameutils::PlayerUtils::get()->getPlayerInventory();
+                    if ( !_p_userInventory )
+                        _p_userInventory = new UserInventory( 0 );
 
-                // set the inventory in player utils
-                gameutils::PlayerUtils::get()->setPlayerInventory( _p_userInventory );
+                    // set the inventory in player utils
+                    gameutils::PlayerUtils::get()->setPlayerInventory( _p_userInventory );
 
-                // create the property gui with given user inventory
-                _p_propertyGui = new PropertyGui( _p_userInventory );
+                    // create the property gui with given user inventory
+                    _p_propertyGui = new PropertyGui( _p_userInventory );
 
-                // create the mailbox gui
-                _p_mailboxGui = new MailboxGui;
+                    // create the mailbox gui
+                    _p_mailboxGui = new MailboxGui;
+                }
             }
         }
         break;

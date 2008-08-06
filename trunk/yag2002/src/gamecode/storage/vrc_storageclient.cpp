@@ -71,8 +71,6 @@ void StorageClient::initialize() throw ( StorageClientException )
 
 void StorageClient::setNetworking( StorageNetworking* p_networking )
 {
-    assert( ( _p_networking == NULL ) && "networking object already set!" );
-
     _p_networking = p_networking;
 }
 

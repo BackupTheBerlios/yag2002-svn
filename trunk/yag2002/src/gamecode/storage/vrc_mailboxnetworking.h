@@ -36,12 +36,14 @@
 
 #include <vrc_main.h>
 #include "networkingRoles/_RO_MailboxNetworking.h"
-
+#include <RNReplicaNet/Inc/DataBlock_Function.h>
 
 namespace vrc
 {
 
 class MailboxContent;
+class BaseMailboxStorage;
+
 
 //! Networking class for delivering mails.
 class MailboxNetworking : _RO_DO_PUBLIC_RO( MailboxNetworking )
@@ -63,7 +65,7 @@ class MailboxNetworking : _RO_DO_PUBLIC_RO( MailboxNetworking )
 
     public:
 
-                                                    MailboxNetworking();
+        explicit                                   MailboxNetworking( BaseMailboxStorage* p_storage = NULL );
 
         virtual                                    ~MailboxNetworking();
 
@@ -105,20 +107,36 @@ class MailboxNetworking : _RO_DO_PUBLIC_RO( MailboxNetworking )
         // Internal RN Overrides, do not use these methods!
         //-----------------------------------------------//
 
-        //! Called by client for requesting a mail command such as move, delete, get mail headers, etc.
-        void                                        RPC_RequestMailCommand( tMailRequest request );
-
-        //! Called by client for sending an email.
-        void                                        RPC_RequestSendMail( tMailContent content );
+        //! Called by client for requesting a mail command such as send, get, move, delete, get mail headers, etc.
+        void                                        RPC_RequestMailCommand( tMailData data );
 
         //! Called by server for responding to a request.
-        void                                        RPC_Response( tMailRequest );
+        void                                        RPC_Response( tMailData data );
 
-        //! Called by server to deliver mails to clients. This can be called only by game server.
-        void                                        RPC_SendMail( tMailContent content );
+        //! Mailbox commands used for transfer
+        enum MailboxCmds
+        {
+            eMailboxCmdGetFolders   = 0x0001,
+            eMailboxCmdGetHeaders   = 0x0002,
+            eMailboxCmdGetMail      = 0x0004,
+            eMailboxCmdMoveMail     = 0x0008,
+            eMailboxCmdDeleMail     = 0x0010,
+            eMailboxCmdCreateFolder = 0x0020,
+            eMailboxCmdDeleFolder   = 0x0040,
+            eMailboxCmdSendMail     = 0x0080
+        };
+
+        // !Used for serializing mail data into data buffer. 'p_buffer' contains the packed data and the method returns the length of data.
+        unsigned int                                packData( const std::vector< std::string >& elements, const std::string& separator, char* p_buffer );
+
+        // !Used for deserializing mail data into data buffer. After the call 'elements' contains the uppacked data. It returns the length of 'elements'.
+        unsigned int                                unpackData( std::vector< std::string >& elements, const std::string& separator, char* p_buffer, unsigned int buffersize );
 
         //! Mailbox results callback
         CallbackMailboxNetwrokingResponse*          _p_mailboxResponseCallback;
+
+        //! Mailbox storage used on server, only on server!
+        BaseMailboxStorage*                         _p_mailboxStorage;
 
     friend class _MAKE_RO( MailboxNetworking );
 };

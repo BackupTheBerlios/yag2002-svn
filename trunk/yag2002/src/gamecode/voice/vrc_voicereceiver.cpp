@@ -172,7 +172,6 @@ _spotRange( 20.0f ),
 _cutoffRange( 0.0f )
 {
     // setup sender ID enumeration
-    srand( static_cast< unsigned int >( time( NULL ) ) );
     _senderID = static_cast< unsigned int >( rand() );
 }
 

@@ -42,6 +42,8 @@ namespace vrc
 
 //! Class declarations
 class StorageNetworking;
+class MailboxNetworking;
+class BaseMailboxStorage;
 class BaseStorage;
 class Account;
 
@@ -82,6 +84,9 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >, public yaf3
 
         //! Returns true if the user ID and session ID match.
         bool                                        validateClient( unsigned int userID, int sessionID );
+
+        //! Get the user ID of a logged in user given a session ID.
+        unsigned int                                getUserID( int sessionID );
 
         //! Get the user account information. The userID and sessionID must both match for any network connection!
         bool                                        getUserAccount( unsigned int userID, int sessionID, UserAccount& account );
@@ -124,6 +129,12 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >, public yaf3
 
         //! Data base storage
         BaseStorage*                                _p_storage;
+
+        //! Mailbox networking
+        MailboxNetworking*                          _p_mailboxNetworking;
+
+        //! Mailbox
+        BaseMailboxStorage*                         _p_mailbox;
 
         //! Struct used for user cache
         class UserState

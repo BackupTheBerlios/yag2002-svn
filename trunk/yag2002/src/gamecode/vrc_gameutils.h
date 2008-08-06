@@ -42,14 +42,6 @@ class UserInventory;
 namespace gameutils
 {
 
-//! Application name for server
-#ifdef WIN32
-    #define VRC_SERVER_APP_NAME             "vrc-server.exe"
-#endif
-#ifdef LINUX
-    #define VRC_SERVER_APP_NAME             "vrc"
-#endif
-
 //! Game code's configuration setting names
 #define VRC_GS_PLAYER_NAME                  "playerName"
 #define VRC_GS_FLOATING_PLAYER_TEXT         "playerFloatingText"
