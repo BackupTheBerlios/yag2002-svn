@@ -29,9 +29,10 @@
  ################################################################*/
 
 #include <base.h>
-#include "network.h"
 #include "log.h"
 #include "utils.h"
+#include "network.h"
+#include "gamestate.h"
 #include "configuration.h"
 #include <RNPlatform/Inc/FreewareCode.h>
 #include <RNXPSockets/Inc/XPSocket.h>
@@ -117,6 +118,8 @@ std::string resolveHostName( const std::string& host )
 Networking::Networking() :
 _numSessions( 0 )
 {
+    // enable the mechanism to create custom session IDs.
+    SetSessionIDCallback( true );
 }
 
 Networking::~Networking()
@@ -197,6 +200,12 @@ void Networking::LeaverSessionIDPost( const int sessionID )
         log_debug << "NetworkDevice: leaving network session (" << sessionID << ")" << std::endl;
     }
 
+    // remove the session id from cache, too
+    if (yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
+    {
+        _sessionIDCache.erase( *p_beg );
+    }
+
     _sessionIDs.erase( p_beg );
     _numSessions--;
 
@@ -204,9 +213,27 @@ void Networking::LeaverSessionIDPost( const int sessionID )
     std::vector< SessionNotifyCallback* >::iterator p_cbbeg = _sessionCallbacks.begin(), p_cbend = _sessionCallbacks.end();
     for ( ; p_cbbeg != p_cbend; ++p_cbbeg )
         ( *p_cbbeg )->onSessionLeft( sessionID );
-
 }
 
+int Networking::CallbackGetSessionID()
+{ // this is called on server for creating unique session IDs
+
+    assert( ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server ) && "invalid game mode!" );
+
+    // generate a new session ID
+    int id = 0;
+    do
+    {
+        id = rand();
+    }
+    while ( !id || ( _sessionIDCache.find( id ) != _sessionIDCache.end() ) );
+
+    _sessionIDCache.insert( id );
+
+    return id;
+}
+
+// !Implementation of network device
 NetworkDevice::NetworkDevice() :
 _mode( NONE ),
 _p_session( NULL ),

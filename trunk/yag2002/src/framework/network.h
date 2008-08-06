@@ -217,11 +217,17 @@ class Networking: public RNReplicaNet::ReplicaNet
         //! Overridden method for getting notified when a session leaves
         void                                        LeaverSessionIDPost( const int sessionID );
 
+        //! Overridden method for creating custom session IDs.
+        virtual int                                 CallbackGetSessionID();
+
         //! Number of joined sessions
         int                                         _numSessions;
 
         //! A list of joined sessions ids
         std::vector< int >                          _sessionIDs;
+
+        //! Cache used for generating unique session IDs
+        std::set < int >                            _sessionIDCache;
 
         std::vector< SessionNotifyCallback* >       _sessionCallbacks;
 

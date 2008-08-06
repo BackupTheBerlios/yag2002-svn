@@ -199,6 +199,10 @@ bool Application::initialize( int argc, char **argv )
     }
 #endif
 
+    // seed the standard pseudo random generator
+    time_t t = time( NULL );
+    srand( static_cast< unsigned int >( t ) );
+
     std::string arg_levelname;
     // use an ArgumentParser object to manage the program arguments.
     osg::ArgumentParser arguments( &argc,argv );
