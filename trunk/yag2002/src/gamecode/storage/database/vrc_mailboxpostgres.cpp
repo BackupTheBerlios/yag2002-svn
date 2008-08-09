@@ -30,6 +30,11 @@
 
 #include <vrc_main.h>
 #include "vrc_mailboxpostgres.h"
+#include <pqxx/transaction.hxx>
+
+//! Mailbox database function names
+#define FCN_MAIL_GETFOLDERS     "mail_getfolders"
+#define FCN_MAIL_GETHEADERS     "mail_getheaders"
 
 
 namespace vrc
@@ -47,59 +52,115 @@ MailboxPostgreSQL::~MailboxPostgreSQL()
 
 bool MailboxPostgreSQL::getMailFolders( unsigned int userID, std::vector< std::string >& folders )
 {
-//! TODO: remove the test code
-folders.push_back( "Inbox" );
-folders.push_back( "Sent" );
+    pqxx::result res;
+    try
+    {
+        pqxx::work        transaction( *_p_databaseConnection, "mail_getfolders" );
+        std::string       query;
+        std::stringstream userid;
+        userid << userID;
+
+        // call the function for user login
+        query = std::string( "SELECT " FCN_MAIL_GETFOLDERS "(" + userid.str() + ");" );
+
+        res = transaction.exec( query );
+
+        if ( res.size() < 1 )
+        {
+            log_error << "MailboxPostgreSQL: internal error when getting mail folders for user: " << userID << std::endl;
+            return false;
+        }
+
+        // get the return value of the login function
+        std::string retvalue;
+        res[ 0 ][ FCN_MAIL_GETFOLDERS ].to( retvalue );
+        if ( !retvalue.length() )
+        {
+            log_warning << "MailboxPostgreSQL: user has no mailbox folders" << std::endl;
+            return false;
+        }
+
+        folders.clear();
+        yaf3d::explode( retvalue, ";", &folders );
+
+        // commit the transaction
+        transaction.commit();
+    }
+    catch( const std::exception& e )
+    {
+        log_error << "MailboxPostgreSQL: problem on getting user's mailbox " << userID << ", reason: " << e.what()  << std::endl;
+        return false;
+    }
 
     return true;
 }
 
-bool MailboxPostgreSQL::getMailHeaders(  unsigned int userID, unsigned int attribute, const std::string& folder, std::vector< MailboxHeader >& headers )
+bool MailboxPostgreSQL::getMailHeaders(  unsigned int userID, unsigned int attributes, const std::string& folder, std::vector< MailboxHeader >& headers )
 {
-    //! TODO
-
-//!TODO just for testing, remove this later!
-    if ( folder == "Inbox" )
+    if ( !folder.length() )
     {
-MailboxHeader  header;
-header._id = 10;
-header._from = "Inbox-user1";
-header._date = "2008-08-03";
-header._subject = "blaa";
-headers.push_back( header );
-
-header._id = 20;
-header._from = "Inbox-user2";
-header._date = "2008-08-01";
-header._subject = "blaa2";
-headers.push_back( header );
-
-header._id = 30;
-header._from = "Inbox-user2";
-header._date = "2008-08-05";
-header._subject = "blaa2";
-headers.push_back( header );
+        log_warning << "MailboxPostgreSQL: invalid folder for get mail headers, user: " << userID << std::endl;
+        return false;
     }
-    else
+
+    pqxx::result res;
+    try
     {
-MailboxHeader  header;
-header._id = 10;
-header._from = "Sent-user1";
-header._date = "2008-08-03";
-header._subject = "blaa";
-headers.push_back( header );
+        pqxx::work        transaction( *_p_databaseConnection, "mail_getheaders" );
+        std::string       query;
+        std::stringstream userid;
+        userid << userID;
+        std::stringstream attr;
+        attr << attributes;
 
-header._id = 20;
-header._from = "Sent-user2";
-header._date = "2008-08-01";
-header._subject = "blaa2";
-headers.push_back( header );
+        // call the function for user login
+        query = std::string( "SELECT * FROM " FCN_MAIL_GETHEADERS "(" + userid.str() + "," + attr.str() + ",'" + folder + "');" );
 
-header._id = 30;
-header._from = "Sent-user2";
-header._date = "2008-08-05";
-header._subject = "blaa2";
-headers.push_back( header );
+        res = transaction.exec( query );
+
+        // empty folder?
+        if ( !res.size() )
+        {
+            return true;
+        }
+        // setup the header list
+        for ( unsigned int cnt = 0; cnt < res.size(); cnt++ )
+        {
+            // get the return value of the login function
+            std::string retvalue;
+            res[ cnt ][ 0].to( retvalue );
+            if ( !retvalue.length() )
+            {
+                log_warning << "MailboxPostgreSQL: invalid mail header detected" << std::endl;
+                continue;
+            }
+
+            MailboxHeader header;
+            std::vector< std::string > elements;
+            yaf3d::explode( retvalue, ";", &elements );
+            if ( elements.size() < 5 )
+            {
+                log_error << "MailboxPostgreSQL: invalid mail header data detected: " << retvalue << std::endl;
+                continue;
+            }
+            header._from = elements[ 0 ];
+            header._to   = elements[ 1 ];
+            header._cc   = elements[ 2 ];
+            header._date = elements[ 3 ];
+            // note: the subject text can contain semicolons!
+            for ( unsigned int h = 4; h < elements.size(); h++ )
+                header._subject += elements[ h ];
+
+            headers.push_back( header );
+        }
+
+        // commit the transaction
+        transaction.commit();
+    }
+    catch( const std::exception& e )
+    {
+        log_error << "MailboxPostgreSQL: problem on getting user's mail headers " << userID << ", reason: " << e.what()  << std::endl;
+        return false;
     }
 
     return true;
@@ -123,8 +184,16 @@ mailcontent._body = "this is a dummy body ÄÖÜßüäö \nthis is the next line\n thir
 
 bool MailboxPostgreSQL::sendMail(  unsigned int userID, const MailboxContent& mailcontent )
 {
-    //! TODO
-    return false;
+
+//! TODO
+log_debug << "MailboxPostgreSQL: send mail for user " << userID << std::endl;
+log_debug << " TO:"  << mailcontent._header._to << std::endl;
+log_debug << " CC:"  << mailcontent._header._cc << std::endl;
+log_debug << " Subject:"  << mailcontent._header._subject << std::endl;
+log_debug << " Attr:"  << mailcontent._header._attributes << std::endl;
+log_debug << " Body:"  << mailcontent._body << std::endl;
+
+    return true;
 }
 
 bool MailboxPostgreSQL::deleteMail(  unsigned int userID, unsigned int mailID )

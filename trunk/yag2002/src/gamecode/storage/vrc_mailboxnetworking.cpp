@@ -112,16 +112,33 @@ void MailboxNetworking::getMail( unsigned int mailID )
 
 void MailboxNetworking::sendMail( const MailboxContent& mailcontent )
 {
-    //! TODO
-MailboxContent content;
-_p_mailboxResponseCallback->mailboxNetworkingResponse( content, MailboxContent::eSendMail, "OK - send mail" );
+    tMailData request;
+    request._header._cmd     = eMailboxCmdSendMail;
+    request._header._mailID  = 0;
+    request._header._status  = MailboxContent::eSendMail;
+
+    // pack the data into buffer
+    std::vector< std::string > packdata;
+    packdata.push_back( mailcontent._header._to );
+    packdata.push_back( mailcontent._header._cc );
+    packdata.push_back( mailcontent._header._subject );
+    std::stringstream attributes;
+    attributes << mailcontent._header._attributes;
+    packdata.push_back( attributes.str() );
+    packdata.push_back( mailcontent._body );
+    request._header._dataLen = packData( packdata, VRC_MAILPROT_SEPARATOR, request._p_data );
+    // send out the request
+    MASTER_FUNCTION_CALL( RPC_RequestMailCommand( request ) );
 }
 
 void MailboxNetworking::deleteMail( unsigned int mailID )
 {
-    //! TODO
-//MailboxContent content;
-//_p_mailboxResponseCallback->mailboxNetworkingResponse( content, MailboxContent::eDeleteMail, "OK - send mail" );
+    tMailData request;
+    request._header._cmd     = eMailboxCmdDeleMail;
+    request._header._mailID  = mailID;
+    request._header._status  = MailboxContent::eDeleteMail;
+    request._header._dataLen = 0;
+    MASTER_FUNCTION_CALL( RPC_RequestMailCommand( request ) );
 }
 
 void MailboxNetworking::moveMail( unsigned int mailID, const std::string& destfolder )
@@ -146,7 +163,7 @@ unsigned int MailboxNetworking::packData( const std::vector< std::string >& elem
     unsigned int len = 0;
     for ( std::size_t cnt = 0; cnt < elements.size(); cnt++ )
     {
-        len += elements[ cnt ].length();
+        len += elements[ cnt ].length() + separator.length();
         // just to be paranoid a little
         if ( len < VRC_MAILBOXDATA_MAXLEN )
         {
@@ -191,6 +208,9 @@ void MailboxNetworking::RPC_RequestMailCommand( tMailData request )
     {
         case eMailboxCmdGetFolders:
         {
+            request._header._status = MailboxContent::eRecvFolders;
+            request._header._mailID = 0;
+
             std::vector< std::string > folders;
             if ( !_p_mailboxStorage->getMailFolders( userID, folders ) )
             {
@@ -202,8 +222,7 @@ void MailboxNetworking::RPC_RequestMailCommand( tMailData request )
             }
 
             // setup the response packet and send it to client
-            request._header._mailID = 0;
-            request._header._status = MailboxContent::eRecvFolders | MailboxContent::eOk;
+            request._header._status |= MailboxContent::eOk;
 
             // pack the data with semicolon separation
             unsigned int len = packData( folders, VRC_MAILPROT_SEPARATOR, request._p_data );
@@ -329,13 +348,69 @@ void MailboxNetworking::RPC_RequestMailCommand( tMailData request )
 
         case eMailboxCmdSendMail:
         {
-            //! TODO
+            request._header._status = MailboxContent::eSendMail;
+            request._p_data[ std::min( request._header._dataLen, static_cast< unsigned int >( VRC_MAILBOXDATA_MAXLEN ) ) ] = 0;
+
+            // get the mail content
+            MailboxContent             content;
+            std::vector< std::string > packdata;
+            if ( !unpackData( packdata, VRC_MAILPROT_SEPARATOR, request._p_data, request._header._dataLen ) )
+            {
+                request._header._status |= MailboxContent::eError;
+                strncpy( request._p_data, "ERROR - send mail, cannot send requested mail [1]", sizeof( request._p_data ) );
+                request._header._dataLen = strnlen( request._p_data, sizeof( request._p_data ) );
+                NOMINATED_REPLICAS_FUNCTION_CALL( 1, &sessionID, RPC_Response( request ) );
+                break;
+            }
+
+            content._header._to      = packdata[ 0 ];
+            content._header._cc      = packdata[ 1 ];
+            content._header._subject = packdata[ 2 ];
+            std::stringstream attributes;
+            attributes << packdata[ 3 ];
+            attributes >> content._header._attributes;
+            content._body = packdata[ 4 ];
+
+            // try to send the mail
+            if ( !_p_mailboxStorage->sendMail( userID, content ) )
+            {
+                request._header._status |= MailboxContent::eError;
+                strncpy( request._p_data, "ERROR - send mail, cannot send requested mail [2]", sizeof( request._p_data ) );
+                request._header._dataLen = strnlen( request._p_data, sizeof( request._p_data ) );
+                NOMINATED_REPLICAS_FUNCTION_CALL( 1, &sessionID, RPC_Response( request ) );
+                break;
+            }
+
+            request._header._mailID  = 0;
+            request._header._dataLen = 0;
+            request._header._status  |= MailboxContent::eOk;
+
+            // send out the mail content to client
+            NOMINATED_REPLICAS_FUNCTION_CALL( 1, &sessionID, RPC_Response( request ) );
         }
         break;
 
         case eMailboxCmdDeleMail:
         {
-            //! TODO
+            request._header._status = MailboxContent::eDeleteMail;
+
+            // try to get the mail with given id
+            MailboxContent content;
+            if ( !_p_mailboxStorage->deleteMail( userID, request._header._mailID ) )
+            {
+                request._header._status |= MailboxContent::eError;
+                strncpy( request._p_data, "ERROR - delete mail", sizeof( request._p_data ) );
+                request._header._dataLen = strnlen( request._p_data, sizeof( request._p_data ) );
+                NOMINATED_REPLICAS_FUNCTION_CALL( 1, &sessionID, RPC_Response( request ) );
+                break;
+            }
+
+            request._header._mailID  = 0;
+            request._header._dataLen = 0;
+            request._header._status  |= MailboxContent::eOk;
+
+            // send out the mail content to client
+            NOMINATED_REPLICAS_FUNCTION_CALL( 1, &sessionID, RPC_Response( request ) );
         }
         break;
 
@@ -485,13 +560,33 @@ void MailboxNetworking::RPC_Response( tMailData response )
 
         case eMailboxCmdSendMail:
         {
-            //! TODO
+            MailboxContent content;
+            content._status = response._header._status;
+
+            if ( response._header._status & MailboxContent::eError )
+            {
+                _p_mailboxResponseCallback->mailboxNetworkingResponse( content, response._header._status, response._p_data );
+                log_warning << "MailboxNetworking: error occured on sending mail '" << response._p_data << "'" << std::endl;
+                break;
+            }
+
+            _p_mailboxResponseCallback->mailboxNetworkingResponse( content, MailboxContent::eSendMail, "OK - send mail" );
         }
         break;
 
         case eMailboxCmdDeleMail:
         {
-            //! TODO
+            MailboxContent content;
+            content._status = response._header._status;
+
+            if ( response._header._status & MailboxContent::eError )
+            {
+                _p_mailboxResponseCallback->mailboxNetworkingResponse( content, response._header._status, response._p_data );
+                log_warning << "MailboxNetworking: error occured on deleting mail '" << response._p_data << "'" << std::endl;
+                break;
+            }
+
+            _p_mailboxResponseCallback->mailboxNetworkingResponse( content, MailboxContent::eDeleteMail, "OK - delete mail" );
         }
         break;
 

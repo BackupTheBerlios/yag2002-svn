@@ -54,7 +54,7 @@ class MailboxPostgreSQL : public BaseMailboxStorage
         bool                                    getMailFolders( unsigned int userID, std::vector< std::string >& folders );
 
         //! Get mail headers with given attribute (see Content::Attributes), they are stored in 'headers'.
-        bool                                    getMailHeaders( unsigned int userID, unsigned int attribute, const std::string& folder, std::vector< MailboxHeader >& headers );
+        bool                                    getMailHeaders( unsigned int userID, unsigned int attributes, const std::string& folder, std::vector< MailboxHeader >& headers );
 
         //! Get mail with given ID.
         bool                                    getMail(  unsigned int userID, unsigned int mailID, MailboxContent& mailcontent );
