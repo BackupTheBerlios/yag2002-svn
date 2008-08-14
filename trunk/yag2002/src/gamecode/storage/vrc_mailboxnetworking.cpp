@@ -328,7 +328,6 @@ void MailboxNetworking::RPC_RequestMailCommand( tMailData request )
             std::vector< std::string > fields;
             fields.push_back( mailid.str() );
             fields.push_back( attributes.str() );
-
             fields.push_back( content._header._from );
             fields.push_back( content._header._to );
             fields.push_back( content._header._cc );

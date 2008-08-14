@@ -76,6 +76,9 @@ class MailboxPostgreSQL : public BaseMailboxStorage
 
     protected:
 
+       //! Given a string prepare it for using in a SQL expression.
+       std::string                              cleanString( const std::string& str );
+
        //! Postgres database connection
        pqxx::connection*                        _p_databaseConnection;
 };

@@ -35,6 +35,22 @@
 //! Mailbox database function names
 #define FCN_MAIL_GETFOLDERS     "mail_getfolders"
 #define FCN_MAIL_GETHEADERS     "mail_getheaders"
+#define FCN_MAIL_GETHEADER      "mail_getheader"
+#define FCN_MAIL_GETBODY        "mail_getbody"
+#define FCN_MAIL_SEND           "mail_send"
+
+//! Mail table fields
+#define F_MAIL_FROM             "sender"
+#define F_MAIL_TO               "recipient"
+#define F_MAIL_CC               "cc"
+#define F_MAIL_ATTR             "attributes"
+#define F_MAIL_DATE             "creation_date"
+#define F_MAIL_SUBJECT          "subject"
+#define F_MAIL_FOLDER           "folder"
+#define F_MAIL_BODY_ID          "fk_id_mailbody"
+
+//! Mail body table fields
+#define F_MAILBODY_BODY         "body"
 
 
 namespace vrc
@@ -48,6 +64,22 @@ MailboxPostgreSQL::MailboxPostgreSQL( pqxx::connection* p_database ) :
 
 MailboxPostgreSQL::~MailboxPostgreSQL()
 {
+}
+
+std::string MailboxPostgreSQL::cleanString( const std::string& str )
+{
+    std::string::size_type len = str.length();
+    std::string            cleanstr;
+    // replace special characters in string
+    for ( std::string::size_type cnt = 0; cnt < len; cnt++ )
+    {
+        if ( str[ cnt ] == '\'' )
+            cleanstr += "''";
+        else
+            cleanstr += str[ cnt ];
+    }
+
+    return cleanstr;
 }
 
 bool MailboxPostgreSQL::getMailFolders( unsigned int userID, std::vector< std::string >& folders )
@@ -103,9 +135,9 @@ bool MailboxPostgreSQL::getMailHeaders(  unsigned int userID, unsigned int attri
         return false;
     }
 
-    pqxx::result res;
     try
     {
+        pqxx::result res;
         pqxx::work        transaction( *_p_databaseConnection, "mail_getheaders" );
         std::string       query;
         std::stringstream userid;
@@ -113,7 +145,7 @@ bool MailboxPostgreSQL::getMailHeaders(  unsigned int userID, unsigned int attri
         std::stringstream attr;
         attr << attributes;
 
-        // call the function for user login
+        // call the function
         query = std::string( "SELECT * FROM " FCN_MAIL_GETHEADERS "(" + userid.str() + "," + attr.str() + ",'" + folder + "');" );
 
         res = transaction.exec( query );
@@ -126,7 +158,7 @@ bool MailboxPostgreSQL::getMailHeaders(  unsigned int userID, unsigned int attri
         // setup the header list
         for ( unsigned int cnt = 0; cnt < res.size(); cnt++ )
         {
-            // get the return value of the login function
+            // get the fields
             std::string retvalue;
             res[ cnt ][ 0].to( retvalue );
             if ( !retvalue.length() )
@@ -138,17 +170,24 @@ bool MailboxPostgreSQL::getMailHeaders(  unsigned int userID, unsigned int attri
             MailboxHeader header;
             std::vector< std::string > elements;
             yaf3d::explode( retvalue, ";", &elements );
-            if ( elements.size() < 5 )
+            if ( elements.size() < 7 )
             {
                 log_error << "MailboxPostgreSQL: invalid mail header data detected: " << retvalue << std::endl;
                 continue;
             }
-            header._from = elements[ 0 ];
-            header._to   = elements[ 1 ];
-            header._cc   = elements[ 2 ];
-            header._date = elements[ 3 ];
+
+            std::stringstream attr, id;
+            id << elements[ 0 ];
+            id >> header._id;
+            attr << elements[ 1 ];
+            attr >> header._attributes;
+            header._from = elements[ 2 ];
+            header._to   = elements[ 3 ];
+            header._cc   = elements[ 4 ];
+            header._date = elements[ 5 ];
+
             // note: the subject text can contain semicolons!
-            for ( unsigned int h = 4; h < elements.size(); h++ )
+            for ( unsigned int h = 6; h < elements.size(); h++ )
                 header._subject += elements[ h ];
 
             headers.push_back( header );
@@ -168,30 +207,156 @@ bool MailboxPostgreSQL::getMailHeaders(  unsigned int userID, unsigned int attri
 
 bool MailboxPostgreSQL::getMail(  unsigned int userID, unsigned int mailID, MailboxContent& mailcontent )
 {
-    //! TODO
+    try
+    {
+        pqxx::result resheader, resbody;
+        pqxx::work        transaction( *_p_databaseConnection, "mail_get" );
+        std::string       query;
+        std::stringstream userid, mailid;
 
-log_debug << "MailboxPostgreSQL: deliver mail for " << userID << ", " << mailID << std::endl;
-mailcontent._header._id = mailID;
-mailcontent._header._from = "thunder";
-mailcontent._header._to = "me";
-mailcontent._header._cc = "nokky,kami";
-mailcontent._header._date = "2008-08-05";
-mailcontent._header._subject = "this is a very very very long header, i know";
-mailcontent._body = "this is a dummy body ÄÖÜßüäö \nthis is the next line\n third line";
+        userid << userID;
+        mailid << mailID;
+
+        // get mail header
+        query = std::string( "SELECT * FROM " FCN_MAIL_GETHEADER "(" + userid.str() + "," + mailid.str() + ");" );
+
+        resheader = transaction.exec( query );
+
+        // can find the header?
+        if ( !resheader.size() )
+        {
+            log_error << "MailboxPostgreSQL: problem getting mail header: " << userID << ", mail ID " << mailID << std::endl;
+            return false;
+        }
+
+        resheader[ 0 ][ F_MAIL_FROM ].to ( mailcontent._header._from );
+        resheader[ 0 ][ F_MAIL_TO ].to ( mailcontent._header._to );
+        resheader[ 0 ][ F_MAIL_CC ].to ( mailcontent._header._cc );
+        resheader[ 0 ][ F_MAIL_ATTR ].to ( mailcontent._header._attributes );
+        resheader[ 0 ][ F_MAIL_DATE ].to ( mailcontent._header._date );
+        resheader[ 0 ][ F_MAIL_SUBJECT ].to ( mailcontent._header._subject );
+        resheader[ 0 ][ F_MAIL_SUBJECT ].to ( mailcontent._header._subject );
+
+        std::string mailbodyid;
+        resheader[ 0 ][ F_MAIL_BODY_ID ].to ( mailbodyid );
+
+        // get mail body
+        query = std::string( "SELECT * FROM " FCN_MAIL_GETBODY "(" + userid.str() + "," + mailbodyid + ");" );
+
+        resbody = transaction.exec( query );
+
+        // can find the header?
+        if ( !resbody.size() )
+        {
+            log_error << "MailboxPostgreSQL: problem getting mail body: " << userID << ", mailbody ID " << mailbodyid << std::endl;
+            return false;
+        }
+
+        resbody[ 0 ][ F_MAILBODY_BODY ].to ( mailcontent._body );
+
+        // commit the transaction
+        transaction.commit();
+    }
+    catch( const std::exception& e )
+    {
+        log_error << "MailboxPostgreSQL: problem on getting mail: " << userID << ", reason: " << e.what()  << std::endl;
+        return false;
+    }
 
     return true;
 }
 
 bool MailboxPostgreSQL::sendMail(  unsigned int userID, const MailboxContent& mailcontent )
 {
+    try
+    {
+        pqxx::result res;
+        pqxx::work        transaction( *_p_databaseConnection, "mail_send" );
+        std::string       query;
+        std::stringstream userid;
+        userid << userID;
+        std::stringstream attr;
+        attr << mailcontent._header._attributes;
 
-//! TODO
-log_debug << "MailboxPostgreSQL: send mail for user " << userID << std::endl;
-log_debug << " TO:"  << mailcontent._header._to << std::endl;
-log_debug << " CC:"  << mailcontent._header._cc << std::endl;
-log_debug << " Subject:"  << mailcontent._header._subject << std::endl;
-log_debug << " Attr:"  << mailcontent._header._attributes << std::endl;
-log_debug << " Body:"  << mailcontent._body << std::endl;
+        // strip out white spaces from names
+        std::string to, cc;
+        for ( std::size_t cnt = 0; cnt < mailcontent._header._to.size(); cnt++ )
+        {
+            if ( mailcontent._header._to[ cnt ] != ' ' )
+                to += mailcontent._header._to[ cnt ];
+        }
+        for ( std::size_t cnt = 0; cnt < mailcontent._header._cc.size(); cnt++ )
+        {
+            if ( mailcontent._header._cc[ cnt ] != ' ' )
+                cc += mailcontent._header._cc[ cnt ];
+        }
+
+        // make sure that the names are not repeated in the cc and to fields
+        std::map< std::string, std::string > tomap;
+        std::map< std::string, std::string > ccmap;
+        std::vector< std::string > names;
+        yaf3d::explode( to, ",", &names );
+
+        for ( std::size_t cnt = 0; cnt < names.size(); cnt++ )
+        {
+            tomap[ names[ cnt ] ] = names[ cnt ];
+        }
+
+        names.clear();
+        yaf3d::explode( cc, ",", &names );
+        for ( std::size_t cnt = 0; cnt < names.size(); cnt++ )
+        {
+            if ( tomap.find( names[ cnt ] ) == tomap.end() )
+                ccmap[ names[ cnt ] ] = names[ cnt ];
+        }
+
+        // re-assemble the cc and to fields via comma separation
+        to.clear();
+        cc.clear();
+        std::map< std::string, std::string >::iterator p_to = tomap.begin(), p_toend = tomap.end();
+        std::map< std::string, std::string >::iterator p_cc = ccmap.begin(), p_ccend = ccmap.end();;
+        for ( std::size_t cnt = 0; p_to != p_toend; ++p_to, cnt++ )
+        {
+            to += "'" + p_to->first + "'";
+            if ( cnt != tomap.size() - 1 )
+                to += ",";
+        }
+
+        for ( std::size_t cnt = 0; p_cc != p_ccend; ++p_cc, cnt++ )
+        {
+            cc += "'" + p_cc->first + "'";
+            if ( cnt != ccmap.size() - 1 )
+                cc += ",";
+        }
+
+        // call the function for user login
+        query = std::string( "SELECT " FCN_MAIL_SEND "(" + userid.str() + "," + attr.str() + ",ARRAY[" + to + "], ARRAY[" + cc + "], '" + cleanString( mailcontent._header._subject ) + "', '" +  cleanString( mailcontent._body ) + "');" );
+
+        res = transaction.exec( query );
+
+        // empty folder?
+        if ( !res.size() )
+        {
+            log_error << "MailboxPostgreSQL: problem on sending mail " << userID << std::endl;
+            return false;
+        }
+
+        int retvalue;
+        res[ 0 ][ FCN_MAIL_SEND ].to( retvalue );
+        if ( retvalue < 0 )
+        {
+            log_error << "MailboxPostgreSQL: problem on sending mail " << userID << ", error code: " << retvalue  << std::endl;
+            return false;
+        }
+
+        // commit the transaction
+        transaction.commit();
+    }
+    catch( const std::exception& e )
+    {
+        log_error << "MailboxPostgreSQL: problem on sending mail " << userID << ", reason: " << e.what()  << std::endl;
+        return false;
+    }
 
     return true;
 }
