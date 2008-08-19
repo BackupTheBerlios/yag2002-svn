@@ -129,21 +129,6 @@ void StorageServer::initialize() throw ( StorageServerException )
     std::string  dbpasswd;
     unsigned int dbport;
 
-    // get the password from console
-    std::cout << "################################" << std::endl;
-    std::cout << ">>> enter the database password: ";
-    int c = 0;
-    do
-    {
-        c = _getch();
-        if ( c != LINE_TERM )
-            dbpasswd += c;
-    }
-    while ( c != LINE_TERM );
-    std::cout << std::endl;
-    std::cout << "################################" << std::endl;
-    std::cout << std::endl;
-
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_DB_IP, dbip );
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_DB_NAME, dbname );
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_DB_USER, dbuser );
@@ -154,22 +139,44 @@ void StorageServer::initialize() throw ( StorageServerException )
     connData._port   = dbport;
     connData._dbname = dbname;
     connData._user   = dbuser;
-    connData._passwd = dbpasswd;
 
     // setup the storage
     _p_storage = new StoragePostgreSQL();
 
-    // initialize the storage
-    if ( !_p_storage->initialize( connData ) )
+    // retry the db connection up to 3 times
+    bool         dbinitialized = false;
+    unsigned int retrycnt      = 3;
+    while ( retrycnt-- > 0 )
     {
-        // remove sensitive data from memory
-        for ( std::size_t cnt = 0; cnt < connData._passwd.size(); cnt++ )
-            connData._passwd[ cnt ] = 0;
+        // get the password from console
+        std::cout << "################################" << std::endl;
+        std::cout << ">>> enter the database password: ";
+        int c = 0;
+        do
+        {
+            c = _getch();
+            if ( c != LINE_TERM )
+                dbpasswd += c;
+        }
+        while ( c != LINE_TERM );
+        std::cout << std::endl;
+        std::cout << "################################" << std::endl;
+        std::cout << std::endl;
 
-        for ( std::size_t cnt = 0; cnt < dbpasswd.size(); cnt++ )
-            dbpasswd[ cnt ] = 0;
+        connData._passwd = dbpasswd;
 
-        throw StorageServerException( "Storage backend could not be initialized." );
+        // try to initialize the storage
+        if ( !_p_storage->initialize( connData ) )
+        {
+            _p_storage->release();
+            dbpasswd = "";
+            continue;
+        }
+        else
+        {
+            dbinitialized = true;
+            break;
+        }
     }
 
     // remove sensitive data from memory
@@ -178,6 +185,11 @@ void StorageServer::initialize() throw ( StorageServerException )
 
     for ( std::size_t cnt = 0; cnt < dbpasswd.size(); cnt++ )
         dbpasswd[ cnt ] = 0;
+
+    if ( !dbinitialized )
+    {
+        throw StorageServerException( "Storage backend could not be initialized." );
+    }
 
     log_info << "setup storage ..." << std::endl;
 

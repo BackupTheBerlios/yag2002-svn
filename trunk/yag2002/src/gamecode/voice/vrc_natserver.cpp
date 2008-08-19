@@ -54,10 +54,10 @@ EnNATServer::~EnNATServer()
     {
         _p_socket->Close();
         delete _p_socket;
-    }
 
-    // deregister for getting network session notifications ( client left notification )
-    yaf3d::NetworkDevice::get()->deregisterSessionNotify( this );
+        // deregister for getting network session notifications ( client left notification )
+        yaf3d::NetworkDevice::get()->deregisterSessionNotify( this );
+    }
 
     // clean up the sid / transport map
     std::map< int, NATInfo* >::iterator p_natclient = _sidNATInfoMap.begin(), p_end = _sidNATInfoMap.end();

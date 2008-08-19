@@ -362,6 +362,15 @@ void MailboxNetworking::RPC_RequestMailCommand( tMailData request )
                 break;
             }
 
+            if ( packdata.size() < 5 )
+            {
+                request._header._status |= MailboxContent::eError;
+                strncpy( request._p_data, "ERROR - send mail, bad formatting", sizeof( request._p_data ) );
+                request._header._dataLen = strnlen( request._p_data, sizeof( request._p_data ) );
+                NOMINATED_REPLICAS_FUNCTION_CALL( 1, &sessionID, RPC_Response( request ) );
+                break;
+            }
+
             content._header._to      = packdata[ 0 ];
             content._header._cc      = packdata[ 1 ];
             content._header._subject = packdata[ 2 ];
@@ -561,6 +570,7 @@ void MailboxNetworking::RPC_Response( tMailData response )
         {
             MailboxContent content;
             content._status = response._header._status;
+            response._p_data[ std::min( response._header._dataLen, static_cast< unsigned int >( VRC_MAILBOXDATA_MAXLEN ) ) ] = 0;
 
             if ( response._header._status & MailboxContent::eError )
             {
@@ -577,6 +587,7 @@ void MailboxNetworking::RPC_Response( tMailData response )
         {
             MailboxContent content;
             content._status = response._header._status;
+            response._p_data[ std::min( response._header._dataLen, static_cast< unsigned int >( VRC_MAILBOXDATA_MAXLEN ) ) ] = 0;
 
             if ( response._header._status & MailboxContent::eError )
             {

@@ -106,7 +106,7 @@ void EnNetworkVoice::handleNotification( const yaf3d::EntityNotification& notifi
             }
             else
             {
-                log_error << "EnNetworkVoice: transport layer not ready!" << std::endl;
+                log_warning << "EnNetworkVoice: transport layer not ready!" << std::endl;
             }
 
             // set the flag, used for defered initialization

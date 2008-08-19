@@ -79,7 +79,7 @@ void MailboxClient::mailboxNetworkingResponse( const MailboxContent& mailcontent
         return;
     }
 
-    log_debug << "MailboxClient: server responds '" << response << "'" << std::endl;
+    log_verbose << "MailboxClient: server responds '" << response << "'" << std::endl;
 
     _p_cbResponse->mailboxResponse( mailcontent, status, response );
 }

@@ -321,12 +321,19 @@ bool MailboxPostgreSQL::sendMail(  unsigned int userID, const MailboxContent& ma
             if ( cnt != tomap.size() - 1 )
                 to += ",";
         }
-
-        for ( std::size_t cnt = 0; p_cc != p_ccend; ++p_cc, cnt++ )
+        // consider also empty cc
+        if ( p_cc == p_ccend )
         {
-            cc += "'" + p_cc->first + "'";
-            if ( cnt != ccmap.size() - 1 )
-                cc += ",";
+            cc = "''";
+        }
+        else
+        {
+            for ( std::size_t cnt = 0; p_cc != p_ccend; ++p_cc, cnt++ )
+            {
+                cc += "'" + p_cc->first + "'";
+                if ( cnt != ccmap.size() - 1 )
+                    cc += ",";
+            }
         }
 
         // call the function for user login
