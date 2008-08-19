@@ -101,7 +101,7 @@ FilePtr FileSystem::getFile( const std::string& filename )
     }
 
     char*         p_buffer = new char[ filesize ];
-    PHYSFS_sint64 cnt = PHYSFS_read( p_handle, p_buffer, 1, filesize );
+    PHYSFS_sint64 cnt = PHYSFS_read( p_handle, p_buffer, filesize, 1 );
     PHYSFS_close( p_handle );
 
     if ( cnt < 0 )

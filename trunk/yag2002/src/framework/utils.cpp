@@ -343,8 +343,17 @@ std::string::size_type explode( const std::string& str, const std::string& separ
     while( end < len )
     {
         token = str.find_first_not_of( separators, end );
-        end   = str.find_first_of( separators, token );
 
+        // handle the special case that there is nothing between separators, put an empty string in this case
+        if ( ( token - end ) == 2 )
+        {
+            p_result->push_back( "" );
+            end = str.find_first_of( separators, token );
+            p_result->push_back( str.substr( token, ( end != std::string::npos ) ? ( end - token ) : std::string::npos ) );
+            continue;
+        }
+
+        end = str.find_first_of( separators, token );
         if( token != std::string::npos )
             p_result->push_back( str.substr( token, ( end != std::string::npos ) ? ( end - token ) : std::string::npos ) );
     }
