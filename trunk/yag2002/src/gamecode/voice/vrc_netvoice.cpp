@@ -167,7 +167,7 @@ void EnNetworkVoice::setupNetworkVoice()
     }
 
     // check if voice chat is enabled
-    bool voicechatenable;
+    bool voicechatenable = false;
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_ENABLE, voicechatenable );
 
     // get further menu settings for voice chat, takes effect only when voice is enabled

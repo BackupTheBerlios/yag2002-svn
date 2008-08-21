@@ -23,7 +23,7 @@
  #
  #   date of creation:  01/08/2008
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  ****************************************************************/
 
@@ -39,7 +39,7 @@
 namespace vrc
 {
 
-MailboxGuiSend::MailboxGuiSend( MailboxGuiMain* p_mailbox, const std::string& filename ) : 
+MailboxGuiSend::MailboxGuiSend( MailboxGuiMain* p_mailbox, const std::string& filename ) :
  _p_mailboxGuiMain( p_mailbox ),
  _p_frame( NULL ),
  _p_editboxTo( NULL ),
@@ -181,9 +181,9 @@ void MailboxGuiSend::setupGui( const std::string& filename )
     }
 }
 
-void MailboxGuiSend::mailboxResponse( const MailboxContent& mailcontent, unsigned int status, const std::string& response )
+void MailboxGuiSend::mailboxResponse( const MailboxContent& /*mailcontent*/, unsigned int status, const std::string& response )
 {
-    if ( !_p_frame ) 
+    if ( !_p_frame )
         return;
 
     if ( status & MailboxContent::eError )

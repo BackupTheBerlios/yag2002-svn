@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -25,7 +25,7 @@
  #
  #   date of creation:  03/19/2005
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -47,7 +47,7 @@ _volume( 0.8f ),
 _minDistance( 1.0f ),
 _maxDistance( 15.0f ),
 _p_playerImpl( NULL )
-{ 
+{
     // register attributes
     getAttributeManager().addAttribute( "positionOffset"      , _offset      );
     getAttributeManager().addAttribute( "minDistance"         , _minDistance );
@@ -76,7 +76,7 @@ void EnPlayerSound::handleNotification( const yaf3d::EntityNotification& notific
         case YAF3D_NOTIFY_MENU_LEAVE:
         {
             // respond to sound setting changes in menu for fx sound
-            bool sndenable;
+            bool sndenable = false;
             yaf3d::Configuration::get()->getSettingValue( VRC_GS_FX_ENABLE, sndenable );
             // did we just enabled the fx sound in menu?
             if ( sndenable && ( _mapSounds.size() == 0 ) )
@@ -113,7 +113,7 @@ void EnPlayerSound::postInitialize()
     yaf3d::EntityManager::get()->registerNotification( this, true );
 
     // is fx sound enabled?
-    bool sndenable;
+    bool sndenable = false;
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_FX_ENABLE, sndenable );
     if ( !sndenable )
         return;
@@ -163,7 +163,7 @@ void EnPlayerSound::releaseSounds()
 unsigned int EnPlayerSound::createSound( const std::string& filename )
 {
     unsigned int soundID = 0;
-    try 
+    try
     {
         // player sounds are all FX sounds
         unsigned int soundgroup = yaf3d::SoundManager::get()->getSoundGroupIdFromString( "FX" );
@@ -177,7 +177,7 @@ unsigned int EnPlayerSound::createSound( const std::string& filename )
         return 0;
     }
 
-    return soundID;    
+    return soundID;
 }
 
 void EnPlayerSound::playSoundFx( unsigned int soundName )

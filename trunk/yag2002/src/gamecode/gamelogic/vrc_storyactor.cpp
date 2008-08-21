@@ -34,8 +34,7 @@ namespace vrc
 {
 
 //! Actor ID set used for creating unique IDs
-std::set< int >  s_actorIDs;
-unsigned int     s_numseed = 0;
+static std::set< int >  s_actorIDs;
 
 //! Implementation of object type lookup
 std::map< unsigned int, std::string >*  ActorRegistry::_p_actorTypes = NULL;
@@ -59,6 +58,36 @@ BaseStoryActor::BaseStoryActor( unsigned int type ) :
 
 BaseStoryActor::~BaseStoryActor()
 {
+}
+
+
+//! Implementation of object registry
+void ActorRegistry::registerEntityType( unsigned int ID, const std::string& entitytype )
+{
+    std::map< unsigned int, std::string >::iterator p_end = ActorRegistry::_p_actorTypes->end(), p_type;
+    p_type = ActorRegistry::_p_actorTypes->find( ID );
+
+    if ( p_type != p_end )
+    {
+        log_error << "ActorRegistry: type with ID " << ID << " is already registered!" << std::endl;
+        return;
+    }
+
+    // register type
+    ( *_p_actorTypes )[ ID ] = entitytype;
+}
+
+std::string ActorRegistry::getEntityType( unsigned int ID )
+{
+    std::map< unsigned int, std::string >::iterator p_end = ActorRegistry::_p_actorTypes->end(), p_type;
+    p_type = ActorRegistry::_p_actorTypes->find( ID );
+    if ( p_type == p_end )
+    {
+        log_error << "ActorRegistry: invalid object ID: " << ID << std::endl;
+        return std::string( "" );
+    }
+
+    return p_type->second;
 }
 
 } // namespace vrc

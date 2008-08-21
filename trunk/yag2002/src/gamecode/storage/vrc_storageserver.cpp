@@ -127,7 +127,7 @@ void StorageServer::initialize() throw ( StorageServerException )
     std::string  dbname;
     std::string  dbuser;
     std::string  dbpasswd;
-    unsigned int dbport;
+    unsigned int dbport = 0;
 
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_DB_IP, dbip );
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_DB_NAME, dbname );

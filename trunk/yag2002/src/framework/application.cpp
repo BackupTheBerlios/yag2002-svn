@@ -311,7 +311,7 @@ bool Application::initialize( int argc, char **argv )
     log_out << " * version: " << std::string( YAF3D_VERSION ) << "                          *"  << std::endl;
     log_out << " * project: Yag2002                        *"    << std::endl;
     log_out << " * site:    http://yag2002.sourceforge.net *"    << std::endl;
-    log_out << " * contact: botorabi@gmx.net               *"    << std::endl;
+    log_out << " * contact: botorabi@users.sourceforge.net *"    << std::endl;
     log_out << " *******************************************"    << std::endl;
     log_out << "" << std::endl;
     log_out.enableSeverityLevelPrinting( true );

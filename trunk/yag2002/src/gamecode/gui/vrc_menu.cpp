@@ -1034,7 +1034,7 @@ void EnMenu::enter()
     switchMenuScene( true );
 
     // trigger fading in the menu sound, if music is enabled
-    bool musicenable;
+    bool musicenable = false;
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_MUSIC_ENABLE, musicenable );
     if ( musicenable )
         _menuSoundState = SoundFadeIn;
@@ -1063,7 +1063,7 @@ void EnMenu::leave()
     switchMenuScene( false );
 
     // trigger fading out the menu sound, if music is enabled
-    bool musicenable;
+    bool musicenable = false;
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_MUSIC_ENABLE, musicenable );
     if ( musicenable )
         _menuSoundState = SoundFadeOut;

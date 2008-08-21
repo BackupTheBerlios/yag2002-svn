@@ -60,7 +60,7 @@ const std::string& CmdShadowPolygonOffset::execute( const std::vector< std::stri
         return _cmdResult;
     }
 
-    bool shadow;
+    bool shadow = false;
     yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
     if ( !shadow )
     {

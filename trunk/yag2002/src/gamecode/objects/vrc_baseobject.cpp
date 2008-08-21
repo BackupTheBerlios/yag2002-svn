@@ -52,34 +52,6 @@ std::vector< BaseObject* >              BaseObject::_objects;
 //! Implementation of object input handler
 BaseObject::ObjectInputHandler*         BaseObject::_p_inputHandler;
 
-//! Implementation of object registry
-void ActorRegistry::registerEntityType( unsigned int ID, const std::string& entitytype )
-{
-    std::map< unsigned int, std::string >::iterator p_end = ActorRegistry::_p_actorTypes->end(), p_type;
-    p_type = ActorRegistry::_p_actorTypes->find( ID );
-
-    if ( p_type != p_end )
-    {
-        log_error << "ActorRegistry: type with ID " << ID << " is already registered!" << std::endl;
-        return;
-    }
-
-    // register type
-    ( *_p_actorTypes )[ ID ] = entitytype;
-}
-
-std::string ActorRegistry::getEntityType( unsigned int ID )
-{
-    std::map< unsigned int, std::string >::iterator p_end = ActorRegistry::_p_actorTypes->end(), p_type;
-    p_type = ActorRegistry::_p_actorTypes->find( ID );
-    if ( p_type == p_end )
-    {
-        log_error << "ActorRegistry: invalid object ID: " << ID << std::endl;
-        return std::string( "" );
-    }
-
-    return p_type->second;
-}
 
 //! Implementation of input handler
 BaseObject::ObjectInputHandler::ObjectInputHandler() :
@@ -338,7 +310,7 @@ void BaseObject::enable( bool en )
     if ( _enable )
     {
         // get the shadow flag in configuration
-        bool shadow;
+        bool shadow = false;
         yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SHADOW_ENABLE, shadow );
 
         yaf3d::EntityManager::get()->removeFromScene( this );

@@ -3,14 +3,17 @@ INCLUDES = -I$(top_srcdir)/src/framework $(CEGUI_CFLAGS) $(SDL_CFLAGS) $(OSGSDL_
 noinst_PROGRAMS = vrc
 vrc_LDFLAGS = -L$(top_builddir)/src/framework/.libs 
 
-vrc_LDADD = -lpthread -lYAF3D $(CEGUI_LIBS) $(SDL_LIBS) $(OPENAL_LIBS) $(VORBIS_LIBS)  $(OSGAL_LIBS) $(OSGSDL_LIBS) $(AM_LDFLAGS) \
-$(OSGCAL_LIBS) $(CAL3D_LIBS) -losgCal -lNewton -lRNReplicaNet -lRNXPSession -lRNXPSockets -lRNXPURL -lRNPlatform -lRNXPCompression -lfmodex -lspeex -lspeexdsp -lphysfs -llua5.1 -lpq -lpqxx
+
+vrc_LDADD = -lpthread -lYAF3D $(AM_LDFLAGS) \
+-lOpenThreads -losg -losgDB -losgGA -losgUtil -losgFX -losgText -losgSim -losgSDL -losgCal \
+-lSDL -lSDLmain -lNewton -lfmodex -lspeex -lspeexdsp -lphysfs -llua5.1 -lpq -lpqxx \
+-lRNReplicaNet -lRNXPSession -lRNXPSockets -lRNXPURL -lRNPlatform -lRNXPCompression \
+-lCEGUIBase -lCEGUITaharezLook
 
 vrc_SOURCES = vrc_gameutils.cpp \
 			vrc_main.cpp \
 			extern/Noise.cpp \
 			networking/_Def_replicaregs.cpp \
-			gamelogic/vrc_storyactor.cpp \
 			gamelogic/vrc_story.cpp \
 			gamelogic/vrc_storyactor.cpp \
 			gamelogic/vrc_storydialog.cpp \
@@ -63,18 +66,27 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			player/chat/IRC/libIRC/libircclient.cpp \
 			player/chat/VRC/vrc_chatprotVRC.cpp \
 			player/chat/VRC/networkingRoles/_RO_PlayerChat.cpp \
+			player/mailbox/vrc_mailboxgui.cpp \
+			player/mailbox/vrc_mailboxguimain.cpp \
+			player/mailbox/vrc_mailboxguisend.cpp \
+			player/mailbox/vrc_mailboxguiview.cpp \
 			player/networkingRoles/_RO_PlayerNetworking.cpp \
 			player/properties/vrc_propgui.cpp \
 			scripting/vrc_script.cpp \
 			sound/vrc_3dsound.cpp \
 			sound/vrc_2dsound.cpp \
+			storage/vrc_mailboxclient.cpp \
+			storage/vrc_mailboxnetworking.cpp \
 			storage/vrc_storageclient.cpp \
 			storage/vrc_storagenetworking.cpp \
 			storage/vrc_storageserver.cpp \
 			storage/vrc_userinventory.cpp \
 			storage/database/vrc_account.cpp \
+			storage/database/vrc_basemailboxstorage.cpp \
 			storage/database/vrc_basestorage.cpp \
+			storage/database/vrc_mailboxpostgres.cpp \
 			storage/database/vrc_storagepostgres.cpp \
+			storage/networkingRoles/_RO_MailboxNetworking.cpp \
 			storage/networkingRoles/_RO_StorageNetworking.cpp \
 			tools/vrc_fpsdisplay.cpp \
 			tools/vrc_inspector.cpp \

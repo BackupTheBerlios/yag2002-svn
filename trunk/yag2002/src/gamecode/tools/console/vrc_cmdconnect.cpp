@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  06/15/2005
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -53,8 +53,8 @@ CmdConnect::~CmdConnect()
 const std::string& CmdConnect::execute( const std::vector< std::string >& arguments )
 {
     _cmdResult = "";
-    
-    unsigned int channel;
+
+    unsigned int channel = 0;
     std::string serverip;
     std::string clientname;
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_NAME, clientname );
@@ -97,7 +97,7 @@ const std::string& CmdConnect::execute( const std::vector< std::string >& argume
     // set the game mode to Client before loading the level
     yaf3d::GameState::get()->setMode( yaf3d::GameState::Client );
     std::string playerCfgFile;
-    // load local client's config ( .lvl file ) 
+    // load local client's config ( .lvl file )
     if ( !vrc::gameutils::PlayerUtils::get()->getPlayerConfig( yaf3d::GameState::Client, false, playerCfgFile ) )
     {
         _cmdResult = "* error: cannot determine player configuration file";

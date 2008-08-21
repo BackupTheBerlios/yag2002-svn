@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  03/06/2005
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #   04/16/2008         changed EnAmbientSound entity to En2DSound
  #
@@ -198,10 +198,11 @@ void En2DSound::setupSound()
     }
 
     // check if sound is enabled in menu system
-    bool skiptypecheck = false;
+    bool skiptypecheck      = false;
     unsigned int soundgroup = yaf3d::SoundManager::get()->getSoundGroupIdFromString( _soundGroup );
-    bool sndenable;
+    bool sndenable          = false;
     std::string settingskey;
+
     if ( soundgroup == yaf3d::SoundManager::SoundGroupMusic )
         settingskey = VRC_GS_MUSIC_ENABLE;
     else if ( soundgroup == yaf3d::SoundManager::SoundGroupFX )
@@ -241,7 +242,7 @@ void En2DSound::setupSound()
     else if ( _soundID > 0 )
         return;
 
-    try 
+    try
     {
         unsigned int flags = 0;
         if ( _loop )
@@ -251,7 +252,7 @@ void En2DSound::setupSound()
 
         _soundID    = yaf3d::SoundManager::get()->createSound( soundgroup, _soundFile, _volume, _ambient ? _autoPlay : false, flags );
         _p_channel  = yaf3d::SoundManager::get()->getSoundResource( _soundID )->getChannel();
-    } 
+    }
     catch ( const yaf3d::SoundException& e )
     {
         log_error << ENTITY_NAME_2DSOUND << ":" << getInstanceName() << "  error loading sound file " << _soundFile << std::endl;
@@ -291,7 +292,7 @@ void En2DSound::setVolume( float volume )
     {
         _volume = std::max( std::min( volume, 1.0f ), 0.0f );
         _p_channel->setVolume( _volume );
-    }    
+    }
 }
 
 float En2DSound::getVolume()

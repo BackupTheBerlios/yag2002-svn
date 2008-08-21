@@ -46,8 +46,8 @@ namespace vrc
 {
 
 MailboxNetworking::MailboxNetworking( BaseMailboxStorage* p_storage ) :
- _p_mailboxStorage( p_storage ),
- _p_mailboxResponseCallback( NULL )
+ _p_mailboxResponseCallback( NULL ),
+ _p_mailboxStorage( p_storage )
 {
     // the storage object on clients is NULL, but not on server
     if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
@@ -87,7 +87,7 @@ void MailboxNetworking::getMailFolders()
     MASTER_FUNCTION_CALL( RPC_RequestMailCommand( request ) );
 }
 
-void MailboxNetworking::getMailHeaders( unsigned int attribute, const std::string& folder )
+void MailboxNetworking::getMailHeaders( unsigned int /*attribute*/, const std::string& folder )
 {
     assert( _p_mailboxResponseCallback && "invalid callback object" );
 
@@ -141,17 +141,17 @@ void MailboxNetworking::deleteMail( unsigned int mailID )
     MASTER_FUNCTION_CALL( RPC_RequestMailCommand( request ) );
 }
 
-void MailboxNetworking::moveMail( unsigned int mailID, const std::string& destfolder )
+void MailboxNetworking::moveMail( unsigned int /*mailID*/, const std::string& /*destfolder*/ )
 {
     //! TODO
 }
 
-void MailboxNetworking::createMailFolder( const std::string& folder )
+void MailboxNetworking::createMailFolder( const std::string& /*folder*/ )
 {
     //! TODO
 }
 
-void MailboxNetworking::deleteMailFolder( const std::string& folder )
+void MailboxNetworking::deleteMailFolder( const std::string& /*folder*/ )
 {
     //! TODO
 }

@@ -64,7 +64,7 @@ void NATClient::initialize()
 {
     // create a socket
     std::string serverip;
-    int         voiceChannel;
+    int         voiceChannel = 0;
     serverip = yaf3d::NetworkDevice::get()->getServerIP();
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_PORT, voiceChannel );
     std::stringstream assembledUrl;
@@ -75,7 +75,7 @@ void NATClient::initialize()
 
     // check if ip forwarding is enabled
     _forwardedPort = 0;
-    bool ipforwarding;
+    bool ipforwarding = 0;
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_IP_FWD, ipforwarding );
     if ( ipforwarding )
     {

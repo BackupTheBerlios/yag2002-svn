@@ -169,9 +169,9 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
             _p_keyCameraMode->disable();
 
             _p_keyChatMode     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_chatmode" ) );
-            
+
             _p_mouseSensivity = static_cast< CEGUI::Scrollbar* >( p_paneControl->getChild( SDLG_PREFIX "sb_mousesensivity" ) );
-            
+
             _p_mouseInvert = static_cast< CEGUI::Checkbox* >( p_paneControl->getChild( SDLG_PREFIX "cbx_mouseinvert" ) );
         }
 
@@ -325,7 +325,7 @@ void DialogGameSettings::updateInputDeviceList()
     delete p_micinput;
 
     // set the right device in drop-down list
-    unsigned int inputdevice;
+    unsigned int inputdevice = 0;
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_INPUT_DEVICE, inputdevice );
     if ( inputdevice < inputs.size() )
     {
@@ -355,7 +355,7 @@ void DialogGameSettings::setupControls()
         yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_NAME, cfg_servername );
         std::string cfg_serverip;
         yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_IP, cfg_serverip );
-        unsigned int cfg_serverport;
+        unsigned int cfg_serverport = 0;
         yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_PORT, cfg_serverport );
 
         _p_serverName->setText( cfg_servername );
@@ -411,11 +411,11 @@ void DialogGameSettings::setupControls()
 
     // get display settings
     {
-        bool fullscreen;
+        bool fullscreen = false;
         yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_FULLSCREEN, fullscreen );
         _p_enableFullscreen->setSelected( fullscreen );
 
-        unsigned int width, height, colorbits;
+        unsigned int width = 400, height = 300, colorbits = 32;
         std::stringstream resolution;
         yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SCREENWIDTH, width );
         yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SCREENHEIGHT, height );
@@ -436,7 +436,7 @@ void DialogGameSettings::setupControls()
     // get sound/voice settings
     {
         // Music
-        bool musicenable;
+        bool musicenable = false;
         yaf3d::Configuration::get()->getSettingValue( VRC_GS_MUSIC_ENABLE, musicenable );
         _p_enableMusic->setSelected( musicenable );
 
@@ -454,7 +454,7 @@ void DialogGameSettings::setupControls()
             _p_volumeMusic->setEnabled( true );
 
         // FX
-        bool fxenable;
+        bool fxenable = false;
         yaf3d::Configuration::get()->getSettingValue( VRC_GS_FX_ENABLE, fxenable );
         _p_enableFX->setSelected( fxenable );
 
@@ -471,7 +471,7 @@ void DialogGameSettings::setupControls()
 
         // voice chat
 
-        bool voiceenable;
+        bool voiceenable = false;
         yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_ENABLE, voiceenable );
         _p_enableVoiceChat->setSelected( voiceenable );
 
@@ -503,8 +503,8 @@ void DialogGameSettings::setupControls()
 
         // setup the port forwarding controls
         std::stringstream port;
-        unsigned int      portnum;
-        bool              portfw = false;
+        unsigned int      portnum = 0;
+        bool              portfw  = false;
         yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICE_IP_FWD_PORT, portnum );
         port << portnum;
         _p_portForwarding->setText( ( std::string( "      " ) + port.str() ) );
@@ -975,7 +975,7 @@ bool DialogGameSettings::onVoiceTestClicked( const CEGUI::EventArgs& /*arg*/ )
     if ( !_p_microInput )
     {
         _p_microInput = new MicrophoneInput;
-        unsigned int inputdevice;
+        unsigned int inputdevice = 0;
         yaf3d::Configuration::get()->getSettingValue( VRC_GS_VOICECHAT_INPUT_DEVICE, inputdevice );
         if ( _p_microInput->setInputDevice( inputdevice ) )
         {
