@@ -81,8 +81,10 @@
 				<Option compiler="gcc" />
 				<Option projectResourceIncludeDirsRelation="1" />
 				<Compiler>
+					<Add option="-O3" />
 					<Add option="-pedantic" />
 					<Add option="-W" />
+					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-ansi -pipe -fomit-frame-pointer -fexceptions -fpic" />
 					<Add option="-DLINUX" />
@@ -99,6 +101,8 @@
 					<Add directory="../../../../src/gamecode" />
 				</Compiler>
 				<Linker>
+					<Add library="GL" />
+					<Add library="GLU" />
 					<Add library="OpenThreads" />
 					<Add library="osg" />
 					<Add library="osgDB" />

@@ -46,7 +46,7 @@
 				<Option createDefFile="1" />
 				<Option projectResourceIncludeDirsRelation="2" />
 				<Compiler>
-					<Add option="-O2" />
+					<Add option="-O3" />
 					<Add option="-pedantic" />
 					<Add option="-W" />
 					<Add option="-Wall" />

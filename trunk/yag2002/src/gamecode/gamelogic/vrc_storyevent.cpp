@@ -34,7 +34,7 @@
 namespace vrc
 {
 
-StoryEvent::StoryEvent( 
+StoryEvent::StoryEvent(
                         unsigned int eventType,
                         unsigned int sourceType,
                         unsigned int sourceID,
@@ -52,9 +52,9 @@ StoryEvent::StoryEvent(
  _sourceID( sourceID ),
  _targetType( targetType ),
  _targetID( targetID ),
+ _networkID( networkID ),
  _eventType( eventType ),
  _filter( filter ),
- _networkID( networkID ),
  _uiParam1( uiParam1 ),
  _uiParam2( uiParam2 ),
  _fParam1( fParam1 ),

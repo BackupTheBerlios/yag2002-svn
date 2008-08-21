@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  07/16/2008
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  ################################################################*/
 
@@ -89,8 +89,8 @@ bool EnPlayerPicker::PickerInputHandler::handle( const osgGA::GUIEventAdapter& e
 //! Implementation of player picker
 EnPlayerPicker::EnPlayerPicker() :
  _p_inputHandler( NULL ),
- _highlightByMesh( false ),
  _maxPickDistance( 10.0f ),
+ _highlightByMesh( false ),
  _detectionAngle( 20.0f ),
  _viewAngle( 0.0f ),
  _pickCheckTimer( 0.0f ),
@@ -254,11 +254,11 @@ void EnPlayerPicker::checkPicking()
     const osg::Vec3f& campos      = p_playercamera->getCameraPosition() + p_playercamera->getCameraOffsetPosition();
     const osg::Quat&  camrotlocal = p_playercamera->getLocalRotation();
     const osg::Quat&  camrot      = p_playercamera->getCameraRotation();
-    
+
     // calculate the player look direction
     osg::Vec3f lookdir( 0.0f, 1.0f, 0.0f );
     lookdir = camrotlocal * camrot * lookdir;
-    
+
     // a line between a remote client and camera
     osg::Vec3f  line;
     osg::Vec3f  maxdist( 1000000.0f, 0.0f, 0.0f );
@@ -440,7 +440,7 @@ void EnPlayerPicker::updateGui( tAccountInfoData& info )
     _p_frame->show();
 }
 
-bool EnPlayerPicker::onClickedClose( const CEGUI::EventArgs& arg )
+bool EnPlayerPicker::onClickedClose( const CEGUI::EventArgs& /*arg*/ )
 {
     _p_frame->hide();
 
