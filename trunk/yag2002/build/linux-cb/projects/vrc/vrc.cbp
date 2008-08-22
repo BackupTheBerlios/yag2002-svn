@@ -199,7 +199,10 @@
 		<Unit filename="../../../../src/gamecode/physics/vrc_geomemitter.h" />
 		<Unit filename="../../../../src/gamecode/physics/vrc_physicsbase.cpp" />
 		<Unit filename="../../../../src/gamecode/physics/vrc_physicsbase.h" />
-		<Unit filename="../../../../src/gamecode/physics/vrc_physicsbase.inl" />
+		<Unit filename="../../../../src/gamecode/physics/vrc_physicsbase.inl">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="../../../../src/gamecode/physics/vrc_physicsbox.cpp" />
 		<Unit filename="../../../../src/gamecode/physics/vrc_physicsbox.h" />
 		<Unit filename="../../../../src/gamecode/physics/vrc_physicscylinder.cpp" />
@@ -231,7 +234,10 @@
 		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguiboxtab.cpp" />
 		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguiboxtab.h" />
 		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguicondiag.h" />
-		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguicondiag.inl" />
+		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguicondiag.inl">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguictrl.cpp" />
 		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatguictrl.h" />
 		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatmgr.cpp" />
@@ -254,7 +260,10 @@
 		<Unit filename="../../../../src/gamecode/player/properties/vrc_propgui.h" />
 		<Unit filename="../../../../src/gamecode/player/vrc_inputhandler.cpp" />
 		<Unit filename="../../../../src/gamecode/player/vrc_inputhandler.h" />
-		<Unit filename="../../../../src/gamecode/player/vrc_inputhandler.inl" />
+		<Unit filename="../../../../src/gamecode/player/vrc_inputhandler.inl">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="../../../../src/gamecode/player/vrc_player.cpp" />
 		<Unit filename="../../../../src/gamecode/player/vrc_player.h" />
 		<Unit filename="../../../../src/gamecode/player/vrc_playeranim.cpp" />
@@ -281,7 +290,10 @@
 		<Unit filename="../../../../src/gamecode/player/vrc_spawnpoint.h" />
 		<Unit filename="../../../../src/gamecode/scripting/vrc_script.cpp" />
 		<Unit filename="../../../../src/gamecode/scripting/vrc_script.h" />
-		<Unit filename="../../../../src/gamecode/scripting/vrc_script.inl" />
+		<Unit filename="../../../../src/gamecode/scripting/vrc_script.inl">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="../../../../src/gamecode/scripting/vrc_testscript.cpp" />
 		<Unit filename="../../../../src/gamecode/scripting/vrc_testscript.h" />
 		<Unit filename="../../../../src/gamecode/sound/vrc_2dsound.cpp" />
@@ -315,7 +327,10 @@
 		<Unit filename="../../../../src/gamecode/storage/vrc_storageserver.h" />
 		<Unit filename="../../../../src/gamecode/storage/vrc_userinventory.cpp" />
 		<Unit filename="../../../../src/gamecode/storage/vrc_userinventory.h" />
-		<Unit filename="../../../../src/gamecode/storage/vrc_userinventory.inl" />
+		<Unit filename="../../../../src/gamecode/storage/vrc_userinventory.inl">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="../../../../src/gamecode/tools/console/vrc_basecmd.cpp" />
 		<Unit filename="../../../../src/gamecode/tools/console/vrc_basecmd.h" />
 		<Unit filename="../../../../src/gamecode/tools/console/vrc_cmdcd.cpp" />
@@ -417,7 +432,10 @@
 		<Unit filename="../../../../src/gamecode/visuals/vrc_lightmanager.h" />
 		<Unit filename="../../../../src/gamecode/visuals/vrc_lod.cpp" />
 		<Unit filename="../../../../src/gamecode/visuals/vrc_lod.h" />
-		<Unit filename="../../../../src/gamecode/visuals/vrc_lod.inl" />
+		<Unit filename="../../../../src/gamecode/visuals/vrc_lod.inl">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="../../../../src/gamecode/visuals/vrc_mesh.cpp" />
 		<Unit filename="../../../../src/gamecode/visuals/vrc_mesh.h" />
 		<Unit filename="../../../../src/gamecode/visuals/vrc_observer.cpp" />
@@ -455,7 +473,10 @@
 		<Unit filename="../../../../src/gamecode/voice/vrc_voicesender.h" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_voicetestutils.cpp" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_voicetestutils.h" />
-		<Unit filename="../../../../src/gamecode/voice/vrc_voicetestutils.inl" />
+		<Unit filename="../../../../src/gamecode/voice/vrc_voicetestutils.inl">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="../../../../src/gamecode/voice/vrc_voicetransport.cpp" />
 		<Unit filename="../../../../src/gamecode/voice/vrc_voicetransport.h" />
 		<Unit filename="../../../../src/gamecode/vrc_config.h" />

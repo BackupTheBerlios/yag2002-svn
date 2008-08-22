@@ -73,15 +73,24 @@
 		</VirtualTargets>
 		<Unit filename="../../../../src/framework/application.cpp" />
 		<Unit filename="../../../../src/framework/application.h" />
-		<Unit filename="../../../../src/framework/application.inl" />
+		<Unit filename="../../../../src/framework/application.inl">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="../../../../src/framework/attributemanager.cpp" />
 		<Unit filename="../../../../src/framework/attributemanager.h" />
-		<Unit filename="../../../../src/framework/attributemanager.inl" />
+		<Unit filename="../../../../src/framework/attributemanager.inl">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="../../../../src/framework/base.cpp" />
 		<Unit filename="../../../../src/framework/base.h" />
 		<Unit filename="../../../../src/framework/baseentity.cpp" />
 		<Unit filename="../../../../src/framework/baseentity.h" />
-		<Unit filename="../../../../src/framework/baseentity.inl" />
+		<Unit filename="../../../../src/framework/baseentity.inl">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="../../../../src/framework/configuration.cpp" />
 		<Unit filename="../../../../src/framework/configuration.h" />
 		<Unit filename="../../../../src/framework/entitymanager.cpp" />
@@ -113,15 +122,24 @@
 		<Unit filename="../../../../src/framework/physics_helpers.h" />
 		<Unit filename="../../../../src/framework/settings.cpp" />
 		<Unit filename="../../../../src/framework/settings.h" />
-		<Unit filename="../../../../src/framework/settings.inl" />
+		<Unit filename="../../../../src/framework/settings.inl">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="../../../../src/framework/shadercontainer.cpp" />
 		<Unit filename="../../../../src/framework/shadercontainer.h" />
 		<Unit filename="../../../../src/framework/shadowmanager.cpp" />
 		<Unit filename="../../../../src/framework/shadowmanager.h" />
 		<Unit filename="../../../../src/framework/singleton.h" />
-		<Unit filename="../../../../src/framework/singleton.inl" />
+		<Unit filename="../../../../src/framework/singleton.inl">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="../../../../src/framework/smartptr.h" />
-		<Unit filename="../../../../src/framework/smartptr.inl" />
+		<Unit filename="../../../../src/framework/smartptr.inl">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="../../../../src/framework/soundmanager.cpp" />
 		<Unit filename="../../../../src/framework/soundmanager.h" />
 		<Unit filename="../../../../src/framework/terrainmanager.cpp" />
