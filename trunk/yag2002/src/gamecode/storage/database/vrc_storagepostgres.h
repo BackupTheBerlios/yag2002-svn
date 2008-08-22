@@ -33,9 +33,6 @@
 
 #include <vrc_main.h>
 #include "vrc_basestorage.h"
-
-//! This causes to use the shared lib of pqxx
-#define PQXX_SHARED
 #include <pqxx/connection.hxx>
 
 
