@@ -128,7 +128,7 @@ bool MailboxPostgreSQL::getMailFolders( unsigned int userID, std::vector< std::s
     return true;
 }
 
-bool MailboxPostgreSQL::getMailHeaders(  unsigned int userID, unsigned int attributes, const std::string& folder, std::vector< MailboxHeader >& headers )
+bool MailboxPostgreSQL::getMailHeaders( unsigned int userID, unsigned int attributes, const std::string& folder, std::vector< MailboxHeader >& headers )
 {
     if ( !folder.length() )
     {
@@ -206,7 +206,7 @@ bool MailboxPostgreSQL::getMailHeaders(  unsigned int userID, unsigned int attri
     return true;
 }
 
-bool MailboxPostgreSQL::getMail(  unsigned int userID, unsigned int mailID, MailboxContent& mailcontent )
+bool MailboxPostgreSQL::getMail( unsigned int userID, unsigned int mailID, MailboxContent& mailcontent )
 {
     try
     {
@@ -267,7 +267,7 @@ bool MailboxPostgreSQL::getMail(  unsigned int userID, unsigned int mailID, Mail
     return true;
 }
 
-bool MailboxPostgreSQL::sendMail(  unsigned int userID, const MailboxContent& mailcontent )
+bool MailboxPostgreSQL::sendMail( unsigned int userID, const MailboxContent& mailcontent )
 {
     try
     {
@@ -369,7 +369,7 @@ bool MailboxPostgreSQL::sendMail(  unsigned int userID, const MailboxContent& ma
     return true;
 }
 
-bool MailboxPostgreSQL::deleteMail(  unsigned int userID, unsigned int mailID )
+bool MailboxPostgreSQL::deleteMail( unsigned int userID, unsigned int mailID )
 {
     try
     {
@@ -412,19 +412,19 @@ bool MailboxPostgreSQL::deleteMail(  unsigned int userID, unsigned int mailID )
     return true;
 }
 
-bool MailboxPostgreSQL::moveMail(  unsigned int userID, unsigned int mailID, const std::string& destfolder )
+bool MailboxPostgreSQL::moveMail( unsigned int /*userID*/, unsigned int /*mailID*/, const std::string& /*destfolder*/ )
 {
     //! TODO
     return false;
 }
 
-bool MailboxPostgreSQL::createMailFolder(  unsigned int userID, const std::string& folder )
+bool MailboxPostgreSQL::createMailFolder( unsigned int /*userID*/, const std::string& /*folder*/ )
 {
     //! TODO
     return false;
 }
 
-bool MailboxPostgreSQL::deleteMailFolder(  unsigned int userID, const std::string& folder )
+bool MailboxPostgreSQL::deleteMailFolder( unsigned int /*userID*/, const std::string& /*folder*/ )
 {
     //! TODO
     return false;

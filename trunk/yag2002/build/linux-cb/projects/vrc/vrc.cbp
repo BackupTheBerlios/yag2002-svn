@@ -101,8 +101,6 @@
 					<Add directory="../../../../src/gamecode" />
 				</Compiler>
 				<Linker>
-					<Add library="GL" />
-					<Add library="GLU" />
 					<Add library="OpenThreads" />
 					<Add library="osg" />
 					<Add library="osgDB" />
