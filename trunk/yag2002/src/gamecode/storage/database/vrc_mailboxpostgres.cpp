@@ -38,6 +38,7 @@
 #define FCN_MAIL_GETHEADER      "mail_getheader"
 #define FCN_MAIL_GETBODY        "mail_getbody"
 #define FCN_MAIL_SEND           "mail_send"
+#define FCN_MAIL_DELETE         "mail_delete"
 
 //! Mail table fields
 #define F_MAIL_FROM             "sender"
@@ -160,7 +161,7 @@ bool MailboxPostgreSQL::getMailHeaders(  unsigned int userID, unsigned int attri
         {
             // get the fields
             std::string retvalue;
-            res[ cnt ][ 0].to( retvalue );
+            res[ cnt ][ 0 ].to( retvalue );
             if ( !retvalue.length() )
             {
                 log_warning << "MailboxPostgreSQL: invalid mail header detected" << std::endl;
@@ -370,8 +371,45 @@ bool MailboxPostgreSQL::sendMail(  unsigned int userID, const MailboxContent& ma
 
 bool MailboxPostgreSQL::deleteMail(  unsigned int userID, unsigned int mailID )
 {
-    //! TODO
-    return false;
+    try
+    {
+        pqxx::result res;
+        pqxx::work        transaction( *_p_databaseConnection, "mail_delete" );
+        std::string       query;
+        std::stringstream userid, mailid;
+
+        userid << userID;
+        mailid << mailID;
+
+        // get mail header
+        query = std::string( "SELECT * FROM " FCN_MAIL_DELETE "(" + userid.str() + "," + mailid.str() + ");" );
+
+        res = transaction.exec( query );
+
+        if ( !res.size() )
+        {
+            log_error << "MailboxPostgreSQL: problem deleting mail: " << userID << ", mail ID " << mailID << std::endl;
+            return false;
+        }
+
+        int retvalue;
+        res[ 0 ][ FCN_MAIL_DELETE ].to( retvalue );
+        if ( retvalue != 1 )
+        {
+            log_error << "MailboxPostgreSQL: cannot delete mail: " << userID << ", mail ID " << mailID << std::endl;
+            return false;
+        }
+
+        // commit the transaction
+        transaction.commit();
+    }
+    catch( const std::exception& e )
+    {
+        log_error << "MailboxPostgreSQL: problem on getting mail: " << userID << ", reason: " << e.what()  << std::endl;
+        return false;
+    }
+
+    return true;
 }
 
 bool MailboxPostgreSQL::moveMail(  unsigned int userID, unsigned int mailID, const std::string& destfolder )

@@ -345,18 +345,33 @@ bool MailboxGuiMain::onClickedReply( const CEGUI::EventArgs& /*arg*/ )
     CEGUI::ListboxItem* p_selitem = _p_listHeaders->getNextSelected( NULL );
     unsigned int id = static_cast< unsigned int >( reinterpret_cast< VOID_NUM >( p_selitem->getUserData() ) );
 
-    // first we retrieve the content, then send a reply
+    // first we retrieve the content, then send a reply ( sending is done in callback method below )
     MailboxClient::get()->getMail( this, id );
 
     return true;
 }
 
-bool MailboxGuiMain::onClickedDelete( const CEGUI::EventArgs& /*arg*/ )
+bool MailboxGuiMain::onClickedDelete( const CEGUI::EventArgs& arg )
 {
-    //! TODO ...
+    if ( !_p_listHeaders->getSelectedCount() )
+    {
+        yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "", "First select a mail in list for viewing.", yaf3d::MessageBoxDialog::OK, true );
+        p_msg->show();
+        return true;
+    }
 
-    yaf3d::MessageBoxDialog* p_msg = new yaf3d::MessageBoxDialog( "", "DELETE under construction", yaf3d::MessageBoxDialog::OK, true );
-    p_msg->show();
+    // play click sound
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
+    // get the selected mail id
+    CEGUI::ListboxItem* p_selitem = _p_listHeaders->getNextSelected( NULL );
+    unsigned int id = static_cast< unsigned int >( reinterpret_cast< VOID_NUM >( p_selitem->getUserData() ) );
+
+    // first we retrieve the content, then send a reply
+    MailboxClient::get()->deleteMail( this, id );
+
+    // update the folder
+    onClickedUpdate( arg );
 
     return true;
 }
