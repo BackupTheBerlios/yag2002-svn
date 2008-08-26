@@ -224,7 +224,8 @@ int Networking::CallbackGetSessionID()
     int id = 0;
     do
     {
-        id = rand();
+        // consider the valid id range for replicanet
+        id = rand() % ( 0xFFFF >> 1 );
     }
     while ( !id || ( _sessionIDCache.find( id ) != _sessionIDCache.end() ) );
 
@@ -353,7 +354,7 @@ void NetworkDevice::setAuthCallback( CallbackAuthentification* p_cb )
     _p_cbAuthentification = p_cb;
 }
 
-void NetworkDevice::setupClient( const std::string& serverIp, int channel, NodeInfo& nodeInfo, const std::string& login, 
+void NetworkDevice::setupClient( const std::string& serverIp, int channel, NodeInfo& nodeInfo, const std::string& login,
                                  const std::string& passwd, bool reguser, const std::string& name, const std::string& email ) throw ( NetworkException )
 {
     log_info << "NetworkDevice: starting client, time: " << yaf3d::getTimeStamp() << std::endl;
@@ -466,7 +467,7 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, NodeI
     memset( &preconnectData, 0, sizeof( PreconnectDataClient ) );
     preconnectData._typeId = ( unsigned char )YAF3DNW_PRECON_DATA_CLIENT;
     preconnectData._state  = eConnecting;
- 
+
     _p_session->DataSend( RNReplicaNet::kReplicaNetUnknownUniqueID, &preconnectData, sizeof( PreconnectDataClient ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
 
     int          sessionId;
@@ -524,7 +525,7 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, NodeI
                             }
 
                             _p_session->DataSend( RNReplicaNet::kReplicaNetUnknownUniqueID, &preconnectData, sizeof( PreconnectDataClient ), RNReplicaNet::ReplicaNet::kPacket_Reliable );
-                            
+
                             // clear the preconnect struct for security reasons
                             memset( &preconnectData, 0, sizeof( PreconnectDataClient ) );
                         }
@@ -554,7 +555,7 @@ void NetworkDevice::setupClient( const std::string& serverIp, int channel, NodeI
 
                             if ( p_data->_p_levelName[ 0 ] )
                                 nodeInfo._levelName = p_data->_p_levelName;
-                            
+
                             if ( p_data->_p_serverName[ 0 ] )
                                 nodeInfo._nodeName  = p_data->_p_serverName;
 
@@ -806,7 +807,7 @@ void NetworkDevice::updateServer( float /*deltaTime*/ )
                     memset( &sendData, 0, sizeof( PreconnectDataServer ) );
                     sendData._typeId = static_cast< unsigned char >( YAF3DNW_PRECON_DATA_SERVER );
                     sendData._protocolVersion = YAF3D_NETWORK_PROT_VERSION;
-                    
+
                     // need for auth?
                     if ( _serverNodeInfo.needAuthentification() )
                         sendData._needAuthentification = true;
@@ -863,7 +864,7 @@ void NetworkDevice::updateServer( float /*deltaTime*/ )
                         memset( &sendData, 0, sizeof( PreconnectDataServer ) );
                         sendData._typeId = static_cast< unsigned char >( YAF3DNW_PRECON_DATA_SERVER );
                         sendData._protocolVersion = YAF3D_NETWORK_PROT_VERSION;
-                        
+
                         // need for auth?
                         if ( _serverNodeInfo.needAuthentification() )
                             sendData._needAuthentification = true;
