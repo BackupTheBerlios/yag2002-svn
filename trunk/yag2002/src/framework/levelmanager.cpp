@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,20 +11,20 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
- # level manager is responsible for loading level configuration 
+ # level manager is responsible for loading level configuration
  #  and setting up the subsystems and entities
  #
  #   date of creation:  02/17/2005
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -39,6 +39,7 @@
 #include "soundmanager.h"
 #include "guimanager.h"
 #include "gamestate.h"
+#include "filesystem.h"
 #include "yaf3dtinyxml/tinyxml.h"
 #include <osgUtil/GLObjectsVisitor>
 
@@ -199,10 +200,18 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
     log_info << "LevelManager: loading entities ..." << std::endl;
 
     // use tiny xml to parser lvl file
-    //  parse in the level configuration
     yaf3dTinyXml::TiXmlDocument doc;
     doc.SetCondenseWhiteSpace( false );
-    if ( !doc.LoadFile( std::string( Application::get()->getMediaPath() + levelFile ).c_str() ) )
+
+    FilePtr file = FileSystem::get()->getFile( levelFile );
+    if ( !file.valid() )
+    {
+        log_error << "LevelManager: file '" << levelFile << "' does not exit" << std::endl;
+        return false;
+    }
+
+    char* p_filebuf = file->getBuffer();
+    if ( !doc.Parse( p_filebuf ) )
     {
         log_error << "LevelManager: cannot load level file: '" << levelFile << "'" << std::endl;
         log_error << "              reason: " << doc.ErrorDesc() << std::endl;
@@ -219,11 +228,11 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
     // get the level entry if one exists
     p_node = doc.FirstChild( YAF3D_LVL_ELEM_LEVEL );
     std::string staticNodeName;
-    if ( p_node ) 
+    if ( p_node )
     {
         // get level name
         p_levelElement = p_node->ToElement();
-        if ( !p_levelElement ) 
+        if ( !p_levelElement )
         {
             log_error << "LevelManager: could not find level element" << std::endl;
             return false;
@@ -232,8 +241,8 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         p_bufName = ( char* )p_levelElement->Attribute( YAF3D_LVL_ELEM_NAME );
         if ( p_bufName )
             staticNodeName = p_bufName;
-        else 
-            return false;  
+        else
+            return false;
     }
     else
     {
@@ -244,7 +253,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
     // get map files, load them and add them to main group
     _levelHasMap = false; // reset the map flag
     p_node = p_levelElement->FirstChild( YAF3D_LVL_ELEM_MAP );
-    do 
+    do
     {
         // a level file can also be without a map
         if ( !p_node )
@@ -253,12 +262,12 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
         _levelHasMap = true;
         p_mapElement = p_node->ToElement();
         p_bufName    = ( char* )p_mapElement->Attribute( YAF3D_LVL_ELEM_NAME );
-        if ( p_bufName == NULL ) 
+        if ( p_bufName == NULL )
         {
             log_error << "LevelManager: missing map name in MAP entry" << std::endl;
             return false;
-        } 
-        else 
+        }
+        else
         {
             log_info << "LevelManager: loading static geometry: " << p_bufName << std::endl;
             osg::Node *p_staticnode = loadStaticWorld( p_bufName );
@@ -284,14 +293,14 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
 
     unsigned int entityCounter = 0;
     p_node = p_levelElement;
-    for ( p_node = p_levelElement->FirstChild( YAF3D_LVL_ELEM_ENTITY ); p_node; p_node = p_node->NextSiblingElement( YAF3D_LVL_ELEM_ENTITY ) ) 
+    for ( p_node = p_levelElement->FirstChild( YAF3D_LVL_ELEM_ENTITY ); p_node; p_node = p_node->NextSiblingElement( YAF3D_LVL_ELEM_ENTITY ) )
     {
         yaf3dTinyXml::TiXmlElement* p_entityElement = p_node->ToElement();
         std::string entitytype, instancename;
         // get entity name
         p_bufName = ( char* )p_entityElement->Attribute( YAF3D_LVL_ENTITY_TYPE );
         std::string enttype;
-        if ( !p_bufName ) 
+        if ( !p_bufName )
         {
             log_debug << "LevelManager: entity has no type, skipping" << std::endl;
             continue;
@@ -324,7 +333,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
 
             case GameState::Server:
                 if ( creationpolicy & BaseEntityFactory::Server )
-                    create = true; 
+                    create = true;
                 break;
 
             case GameState::Client:
@@ -340,7 +349,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
 
         BaseEntity* p_entity = EntityManager::get()->createEntity( entitytype, instancename );
         // could we find entity type
-        if ( !p_entity ) 
+        if ( !p_entity )
         {
             log_error << "LevelManager: could not find entity type '" << entitytype << "', skipping entity!" << std::endl;
             continue;
@@ -373,7 +382,7 @@ bool LevelManager::loadEntities( const std::string& levelFile, std::vector< Base
             if ( !p_paramName || !p_paramType || !p_paramValue )
             {
                 log_error << "LevelManager: incomplete entity parameter entry, skipping" << std::endl;
-                continue;   
+                continue;
             }
 
             AttributeManager& attrMgr = p_entity->getAttributeManager();
@@ -442,7 +451,7 @@ void LevelManager::initializeFirstTime()
     {
         // initialize sound manager
         log_info << "LevelManager: initializing sound system..." << std::endl;
-        try 
+        try
         {
             SoundManager::get()->initialize();
         }
@@ -505,7 +514,7 @@ osg::Node* LevelManager::loadStaticWorld( const std::string& fileName )
     // load given file
     osg::Node* p_loadedModel = loadMesh( fileName, true );
     // if no model has been successfully loaded report failure.
-    if ( !p_loadedModel ) 
+    if ( !p_loadedModel )
     {
         return NULL;
     }
@@ -532,7 +541,7 @@ osg::Node* LevelManager::loadMesh( const std::string& fileName, bool useCache )
     osg::Node* p_loadedModel = osgDB::readNodeFile( Application::get()->getMediaPath() + fileName );
 
     // if no model has been successfully loaded report failure.
-    if ( !p_loadedModel ) 
+    if ( !p_loadedModel )
     {
         log_error << "LevelManager: could not load mesh: " << fileName << std::endl;
         return NULL;
@@ -565,7 +574,7 @@ osg::Node* LevelManager::loadMesh( const std::string& fileName, bool useCache )
 void LevelManager::shutdown()
 {
     // clean up entity manager
-    EntityManager::get()->shutdown(); 
+    EntityManager::get()->shutdown();
 
     if ( GameState::get()->getMode() != GameState::Server )
     {
