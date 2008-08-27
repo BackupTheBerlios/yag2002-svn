@@ -352,9 +352,9 @@ bool Application::initialize( int argc, char **argv )
     {
         FileSystem::get()->initialize( argv );
         FileSystem::get()->mountResource( _mediaPath, "/" );
-        if ( fileExists( _mediaPath + "/"YAF3D_MEDIA_PACK ) )
+        if ( fileExists( _mediaPath + YAF3D_MEDIA_PACK ) )
         {
-            FileSystem::get()->mountResource( _mediaPath + "/"YAF3D_MEDIA_PACK, "/" );
+            FileSystem::get()->mountResource( _mediaPath + YAF3D_MEDIA_PACK, "/" );
         }
     }
     catch ( const FileSystemException& e )

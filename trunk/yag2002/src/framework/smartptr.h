@@ -92,7 +92,7 @@ class RefCount
                                             {
                                             }
 
-    public:
+    protected:
 
         virtual                             ~RefCount() {}
 

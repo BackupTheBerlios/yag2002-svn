@@ -40,11 +40,6 @@
 #define MAILBOX_VIEW_GUI_LAYOUT         "gui/mailview.xml"
 #define MAILBOX_SEND_GUI_LAYOUT         "gui/mailsend.xml"
 
-#ifdef WIN32
-    #define VOID_NUM    long long
-#else
-    #define VOID_NUM    long int
-#endif
 
 namespace vrc
 {

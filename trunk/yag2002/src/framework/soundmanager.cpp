@@ -31,17 +31,108 @@
 #include <base.h>
 #include <fmod_errors.h>
 #include "soundmanager.h"
+#include "filesystem.h"
+#include "utils.h"
 #include "log.h"
 
 //! Max sound sources ( software mixed )
 #define SOUND_MAX_SOFTWARE_CHANNELS     100
 #define SOUND_MAX_VIRTUAL_SOURCES       100
 
+
 namespace yaf3d
 {
 
 YAF3D_SINGLETON_IMPL( SoundManager )
 
+
+//! Callbacks for hooking into file operations, we use our virtual file system instead of fmod's file operations.
+
+//! Struct used for internal vfs house-keeping in callbacks
+typedef struct _VFSInfo
+{
+    char*          _p_buffer;    // data buffer
+    unsigned int   _fileSize;    // total file size
+    unsigned int   _pos;         // current buffer position
+
+} VFSInfo;
+
+FMOD_RESULT F_CALLBACK fileOpenCallback( const char* p_name, int unicode, unsigned int* p_filesize, void** pp_handle, void** pp_userdata )
+{
+    if ( !p_name )
+        return FMOD_ERR_INVALID_PARAM;
+
+    FilePtr file = FileSystem::get()->getFile( p_name );
+    if ( !file.valid() )
+        return FMOD_ERR_FILE_NOTFOUND;
+
+    // setup the vfs structure
+    VFSInfo* p_vfsinfo   = new VFSInfo;
+    p_vfsinfo->_p_buffer = file->releaseBuffer(); // get and detach the file buffer from 'file', so we handle the deletion of buffer ourself in close callback
+    p_vfsinfo->_fileSize = file->getSize();
+    p_vfsinfo->_pos      = 0;
+
+    *p_filesize  = p_vfsinfo->_fileSize;
+    *pp_handle   = p_vfsinfo;
+    *pp_userdata = 0;
+
+    return FMOD_OK;
+}
+
+FMOD_RESULT F_CALLBACK fileCloseCallback( void* p_handle, void* p_userdata )
+{
+    if ( !p_handle )
+        return FMOD_ERR_INVALID_PARAM;
+
+    VFSInfo* p_vfsinfo = reinterpret_cast< VFSInfo* >( p_handle );
+    delete[] p_vfsinfo->_p_buffer;
+    delete p_vfsinfo;
+
+    return FMOD_OK;
+}
+
+FMOD_RESULT F_CALLBACK fileReadCallback( void* p_handle, void* p_buffer, unsigned int sizebytes, unsigned int* p_bytesread, void* p_userdata )
+{
+    if ( !p_handle )
+        return FMOD_ERR_INVALID_PARAM;
+
+    VFSInfo* p_vfsinfo = reinterpret_cast< VFSInfo* >( p_handle );
+
+    // check for requested bytes to read from vfs
+    bool eofreached = false;
+    if ( ( p_vfsinfo->_pos + sizebytes ) > p_vfsinfo->_fileSize )
+    {
+        eofreached = true;
+        // limit the requested package size
+        sizebytes = p_vfsinfo->_fileSize - p_vfsinfo->_pos;
+    }
+
+    *p_bytesread = sizebytes;
+    memcpy( p_buffer, &p_vfsinfo->_p_buffer[ p_vfsinfo->_pos ], sizebytes );
+    p_vfsinfo->_pos += sizebytes;
+
+    if ( eofreached )
+        return FMOD_ERR_FILE_EOF;
+
+    return FMOD_OK;
+}
+
+FMOD_RESULT F_CALLBACK fileSeekCallback( void* p_handle, unsigned int pos, void* p_userdata )
+{
+    if ( !p_handle )
+        return FMOD_ERR_INVALID_PARAM;
+
+    VFSInfo* p_vfsinfo = reinterpret_cast< VFSInfo* >( p_handle );
+    if ( pos > p_vfsinfo->_fileSize )
+        return FMOD_ERR_FILE_COULDNOTSEEK;
+
+    p_vfsinfo->_pos = pos;
+
+    return FMOD_OK;
+}
+
+
+//! Implementation of sound manager
 SoundManager::SoundManager() :
 _p_system( NULL ),
 _soundIDCounter( 0 ),
@@ -172,6 +263,13 @@ void SoundManager::initialize() throw ( SoundException )
         throw SoundException( "Problem initializing sound system, reason: " + std::string( FMOD_ErrorString( result ) ) );
     }
 
+    // setup the virtual file system
+    result = _p_system->setFileSystem( fileOpenCallback, fileCloseCallback, fileReadCallback, fileSeekCallback, -1 );
+    if ( result != FMOD_OK )
+    {
+        log_error << "SoundManager: cannot setup vfs for sound file operation" << std::endl;
+    }
+
     FMOD::ChannelGroup* p_mastergroup;
     result = _p_system->getMasterChannelGroup( &p_mastergroup );
     if ( result != FMOD_OK )
@@ -271,7 +369,7 @@ unsigned int SoundManager::createSound( unsigned int soundgroup, const std::stri
     p_resource->_p_channelGroup = NULL;
 
     // create sound
-    result = _p_system->createSound( std::string( Application::get()->getMediaPath() + file ).c_str(), flags, 0, &p_resource->_p_sound );
+    result = _p_system->createSound( file.c_str(), flags, 0, &p_resource->_p_sound );
     if ( result != FMOD_OK )
     {
         delete p_resource;

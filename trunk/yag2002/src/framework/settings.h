@@ -39,6 +39,8 @@
 
 #include <base.h>
 #include <singleton.h>
+#include <smartptr.h>
+
 
 namespace yaf3d
 {
@@ -46,13 +48,16 @@ namespace yaf3d
 class Application;
 class Settings;
 
+//! Typedef for the settings smart pointer
+typedef SmartPtr< Settings >   SettingsPtr;
+
 //! Settings manager ( look at the end of file for an usage example )
 class SettingsManager : public Singleton< SettingsManager >
 {
     public:
 
         //! Create a new named profile and its associated file.
-        Settings*                               createProfile( const std::string& profilename, const std::string& filename );
+        SettingsPtr                            createProfile( const std::string& profilename, const std::string& filename );
 
         //! Destroy given profile if it exists.
         void                                    destroyProfile( const std::string& profilename );
@@ -64,7 +69,7 @@ class SettingsManager : public Singleton< SettingsManager >
         bool                                    storeProfile( const std::string& profilename );
 
         //! Given a profile name return its instance, returns NULL if the profile does not exist.
-        Settings*                               getProfile( const std::string& profilename );
+        SettingsPtr                             getProfile( const std::string& profilename );
 
     protected:
 
@@ -74,15 +79,18 @@ class SettingsManager : public Singleton< SettingsManager >
 
         void                                    shutdown();
 
-        std::map< std::string, Settings* >      _profiles;
+        std::map< std::string, SettingsPtr >    _profiles;
 
     friend class Singleton< SettingsManager >;
     friend class Application;
 };
 
 //! Class for managing game settings
-class Settings
+class Settings : public RefCount< Settings >
 {
+    //! Set the smart pointer class as friend
+    DECLARE_SMARTPTR_ACCESS( Settings )
+
     public:
 
         //! Base class for all types of settings
@@ -141,9 +149,23 @@ class Settings
 
         };
 
-        //! Register one single setting
+        //! Constructor
+                                                Settings();
+
+        //! Set file name associated with this settings instance. If file name is set then the load method can be called with default arguments.
+        void                                    setFileName( const std::string& filename );
+
+        //! Register one single setting. Use this method for registering all tokens before calling 'load'.
         template< typename TypeT >
         bool                                    registerSetting( const std::string& token, const TypeT& value );
+
+        //! Load settings from given file. If filename is empty the preset file name is used.
+        //! If readonly is true then the file is loaded from virtual file system, and the settings cannot be written back.
+        bool                                    load( bool readonly = false, const std::string& filename = "" );
+
+        //! Store settings. If filename is empty the already loaded file is used for storing.
+        //! NOTE: if the settings file was loaded in read-only mode then an attempt to store will fail!
+        bool                                    store( const std::string& filename = "" );
 
         //! Get token value
         template< class TypeT >
@@ -153,30 +175,15 @@ class Settings
         template< class TypeT >
         bool                                    setValue( const std::string& token, const TypeT& value );
 
+        //! Find the setting with given name in settings list 
+        SettingBase*                            findSetting( const std::string& token );
+
         //! Get all storage objects for settings
         inline const std::vector< Settings::SettingBase* >& getAllSettingStorages() const;
 
     protected:
 
-                                                Settings();
-
         virtual                                 ~Settings();
-
-        Settings&                               operator = ( const Settings& );
-
-                                                Settings( const Settings& );
-
-        //! Load settings from given file. If filename is empty the preset file name is used.
-        bool                                    load( const std::string& filename = "" );
-
-        //! Store settings. If filename is empty the already loaded file is used for storing.
-        bool                                    store( const std::string& filename = "" );
-
-        //! Set file name associated with this settings instance
-        void                                    setFileName( const std::string& filename );
-
-        //! Find the setting with given name in settings list 
-        SettingBase*                            findSetting( const std::string& token );
 
         //! Helper method for writing one setting of type string
         bool                                    write( const std::string& token, const std::string& value );
@@ -225,8 +232,6 @@ class Settings
 
         //! Shows that a setting file has been successfully loaded
         bool                                    _loaded;
-
-    friend class SettingsManager;
 };
 
 
@@ -240,7 +245,7 @@ class Settings
 /**
 Usage example:
 
-    Settings* p_settings = SettingsManager::get()->createProfile( "gamesettings", rootpath + "settings.cfg" );
+    SettingsPtr settings = SettingsManager::get()->createProfile( "gamesettings", rootpath + "settings.cfg" );
     bool   value_bool    = true;
     int    value_int     = 12345;
     float  value_float   = 0.98765f;
@@ -248,21 +253,21 @@ Usage example:
     Vec3f  value_vec     = Vec3f( 1.1f, 2.2f, 3.3f );
 
     // register token/default value settings
-    p_settings->registerSetting( "token_bool",   value_bool   );
-    p_settings->registerSetting( "token_int",    value_int    );
-    p_settings->registerSetting( "token_float",  value_float  );
-    p_settings->registerSetting( "token_string", value_string );
-    p_settings->registerSetting( "token_vec",    value_vec    );
+    settings->registerSetting( "token_bool",   value_bool   );
+    settings->registerSetting( "token_int",    value_int    );
+    settings->registerSetting( "token_float",  value_float  );
+    settings->registerSetting( "token_string", value_string );
+    settings->registerSetting( "token_vec",    value_vec    );
     
     // load profile
     SettingsManager::get()->loadProfile( "gamesettings" );
     
     // get loaded values
-    p_settings->getValue( "token_bool",   value_bool );
-    p_settings->getValue( "token_int",    value_int );
-    p_settings->getValue( "token_float",  value_float );
-    p_settings->getValue( "token_string", value_string );
-    p_settings->getValue( "token_vec",    value_vec );
+    settings->getValue( "token_bool",   value_bool );
+    settings->getValue( "token_int",    value_int );
+    settings->getValue( "token_float",  value_float );
+    settings->getValue( "token_string", value_string );
+    settings->getValue( "token_vec",    value_vec );
 
     // modify the settings
     value_bool = value_bool ? false : true;
@@ -272,11 +277,11 @@ Usage example:
     value_vec    += Vec3f( 1.0f, 1.0f, 1.0f );
 
     // set the modified settings
-    p_settings->setValue( "token_bool",   value_bool );
-    p_settings->setValue( "token_int",    value_int );
-    p_settings->setValue( "token_float",  value_float );
-    p_settings->setValue( "token_string", value_string );
-    p_settings->setValue( "token_vec",    value_vec );
+    settings->setValue( "token_bool",   value_bool );
+    settings->setValue( "token_int",    value_int );
+    settings->setValue( "token_float",  value_float );
+    settings->setValue( "token_string", value_string );
+    settings->setValue( "token_vec",    value_vec );
 
     // store back changes ( into associated file )
     SettingsManager::get()->storeProfile( "gamesettings" );

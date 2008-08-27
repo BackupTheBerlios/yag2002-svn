@@ -32,10 +32,10 @@
 #include "log.h"
 #include "utils.h"
 #include "physics.h"
-#include "levelmanager.h"
+#include "filesystem.h"
 #include "application.h"
+#include "levelmanager.h"
 #include "physics_helpers.h"
-#include <osg/Transform>
 
 namespace yaf3d
 {
@@ -187,10 +187,15 @@ void serializationCallback( void* p_serializeHandle, const void* p_buffer, size_
 
 void deserializationCallback( void* p_serializeHandle, void* p_buffer, size_t size )
 {
-    std::ifstream* p_stream  = static_cast< std::ifstream* >( p_serializeHandle );
-    char*          p_charbuf = static_cast< char* >( p_buffer );
+    File* p_file    = reinterpret_cast< File* >( p_serializeHandle );
+    unsigned int bytesread = 0;
+    char* p_charbuf = static_cast< char* >( p_buffer );
+    char* p_srcbuf  = p_file->readBuffer( size, bytesread );
+
+    assert( ( bytesread == size ) && "invalid buffer access for physics data" );
+
     for ( size_t cnt = 0; cnt < size; ++cnt )
-        p_stream->get( p_charbuf[ cnt ] );
+        p_charbuf[ cnt ] = p_srcbuf[ cnt ];
 }
 
 bool Physics::serialize( const std::string& meshFile, const std::string& outputFile )
@@ -255,10 +260,10 @@ bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelF
     std::string file = cleanPath( levelFile );
     std::vector< std::string > path;
     explode( file, "/", &path );
-    file = yaf3d::Application::get()->getMediaPath() + YAF3DPHYSICS_MEDIA_FOLDER + path[ path.size() - 1 ] + YAF3DPHYSICS_SERIALIZE_POSTFIX;
-    std::ifstream serializationfile;
-    serializationfile.open( file.c_str(), std::ios_base::binary | std::ios_base::in );
-    if ( !serializationfile )
+    file = YAF3DPHYSICS_MEDIA_FOLDER + path[ path.size() - 1 ] + YAF3DPHYSICS_SERIALIZE_POSTFIX;
+    // try to get the file from vfs
+    FilePtr serfile = FileSystem::get()->getFile( file );
+    if ( !serfile.valid() )
     {
         log_warning << "Physics: no serialization file for physics static geometry exists, building on-the-fly ..." << std::endl;
 
@@ -290,14 +295,12 @@ bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelF
         // start timer
         osg::Timer_t start_tick = osg::Timer::instance()->tick();
 
-        p_collision = NewtonCreateTreeCollisionFromSerialization( _p_world, NULL, deserializationCallback, &serializationfile );
+        p_collision = NewtonCreateTreeCollisionFromSerialization( _p_world, NULL, deserializationCallback, serfile.getRef() );
         assert( p_collision && "internal error, something went wrong during physics deserialization!" );
 
         // stop timer and give out the time messure
         osg::Timer_t end_tick = osg::Timer::instance()->tick();
         log_debug << "Physics: elapsed time for deserializing physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << std::endl;
-
-        serializationfile.close();
     }
 
     _p_body = NewtonCreateBody( _p_world, p_collision );

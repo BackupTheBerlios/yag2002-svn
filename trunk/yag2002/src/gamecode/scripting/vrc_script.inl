@@ -143,15 +143,19 @@ void BaseScript< T >::loadScript( const std::string& luaModuleName, const std::s
 {
     _scriptFile = scriptfile;
 
-    std::string file( yaf3d::Application::get()->getMediaPath() + scriptfile );
-
     assert( ( _p_state == NULL ) && "script file already created!" );
 
     _p_state = lua_open();
 
     setupLuaLibs( _p_state, usedlibs );
 
-    int status = luaL_loadfile( _p_state, file.c_str() );
+    // get the script from virtual file system
+    yaf3d::FilePtr file = yaf3d::FileSystem::get()->getFile( scriptfile );
+    if ( !file.valid() )
+        throw ScriptingException( std::string( "BaseScript: Script file '" ) + scriptfile + "' does not exist" );
+
+    int status = luaL_loadbuffer( _p_state, file->getBuffer(), file->getSize(), scriptfile.c_str() );
+
     std::string errormsg;
     if ( status != 0 )
     {
@@ -171,7 +175,7 @@ void BaseScript< T >::loadScript( const std::string& luaModuleName, const std::s
     _methodTableIndex = lua_gettop( _p_state );
 
     // make the script path accessible to script so it can include other scripts using this vaiable 'scriptpath'
-    std::string scriptpath( yaf3d::extractPath( file ) );
+    std::string scriptpath( yaf3d::extractPath( scriptfile ) );
     scriptpath += "/";
     lua_pushstring( _p_state, SCRIPT_PATH_VAR );
     lua_pushlstring( _p_state, scriptpath.c_str(), scriptpath.length() );
@@ -180,6 +184,10 @@ void BaseScript< T >::loadScript( const std::string& luaModuleName, const std::s
     lua_pushstring( _p_state, luaModuleName.c_str() );
     lua_pushvalue( _p_state, _methodTableIndex );
     lua_settable( _p_state, LUA_GLOBALSINDEX );
+
+    // override the global dofile to our own one, which makes use of the virtual file system
+    lua_pushcfunction( _p_state, vfsDoFile );
+    lua_setglobal( _p_state, "dofile" );
 
     _valid = true;
 }
@@ -345,6 +353,25 @@ int BaseScript< T >::exposedMethodProxy( lua_State* p_state )
 
     // return number of return values
     return returnvalues.size();
+}
+
+template< class T >
+int BaseScript< T >::vfsDoFile( lua_State* p_state )
+{
+    const char* p_fname = luaL_optstring( p_state, 1, NULL );
+    int n = lua_gettop( p_state );
+
+    yaf3d::FilePtr file = yaf3d::FileSystem::get()->getFile( p_fname );
+    if ( !file.valid() )
+        lua_error( p_state );
+
+    int status = luaL_loadbuffer( p_state, file->getBuffer(), file->getSize(), p_fname );
+    if ( status != 0 )
+        lua_error( p_state );
+
+    lua_call( p_state, 0, LUA_MULTRET );
+
+    return lua_gettop( p_state ) - n;
 }
 
 template< class T >

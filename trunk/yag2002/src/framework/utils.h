@@ -164,6 +164,13 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
 
 #endif // LINUX
 
+//! This macro is used for casting a void pointer to a number
+#ifdef WIN32
+    #define VOID_NUM    long long
+#else
+    #define VOID_NUM    long int
+#endif
+
 } // namespace yaf3d
 
 #endif //_UTILS_H_

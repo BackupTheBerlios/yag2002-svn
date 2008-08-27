@@ -41,6 +41,7 @@
 #include <soundmanager.h>
 #include <application.h>
 #include <baseentity.h>
+#include <filesystem.h>
 #include <guimanager.h>
 #include <singleton.h>
 #include <guimsgbox.h>

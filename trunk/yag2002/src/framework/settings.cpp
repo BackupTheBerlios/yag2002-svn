@@ -31,7 +31,7 @@
 #include <base.h>
 #include "log.h"
 #include "settings.h"
-
+#include "filesystem.h"
 
 namespace yaf3d
 {
@@ -45,13 +45,6 @@ SettingsManager::SettingsManager()
 
 SettingsManager::~SettingsManager()
 {
-    // delete all profiles
-    std::map< std::string, Settings* >::iterator pp_profile = _profiles.begin(), pp_profileEnd = _profiles.end();
-    while ( pp_profile != pp_profileEnd )
-    {
-        delete pp_profile->second;
-        ++pp_profile;
-    }
 }
 
 void SettingsManager::shutdown()
@@ -62,49 +55,48 @@ void SettingsManager::shutdown()
     destroy();
 }
 
-Settings* SettingsManager::createProfile( const std::string& profilename, const std::string& filename )
+SettingsPtr SettingsManager::createProfile( const std::string& profilename, const std::string& filename )
 {
-    std::map< std::string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
+    std::map< std::string, SettingsPtr >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile != pp_profileEnd )
     {
         log_error << "*** requested profile '" << profilename << "' already exists!" << std::endl;
         return NULL;
     }
 
-    Settings* p_settings = new Settings;
-    p_settings->setFileName( filename );
-    _profiles.insert( make_pair( profilename, p_settings ) );
-    return p_settings;
+    SettingsPtr settings = new Settings;
+    settings->setFileName( filename );
+    _profiles.insert( make_pair( profilename, settings ) );
+    return settings;
 }
 
 void SettingsManager::destroyProfile( const std::string& profilename )
 {
-    std::map< std::string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
+    std::map< std::string, SettingsPtr >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile == pp_profileEnd )
     {
         log_error << "*** profile '" << profilename << "' does not exist!" << std::endl;
         return;
     }
 
-    delete pp_profile->second;
     _profiles.erase( pp_profile );
 }
 
 bool SettingsManager::loadProfile( const std::string& profilename )
 {
-    std::map< std::string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
+    std::map< std::string, SettingsPtr >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile == pp_profileEnd )
     {
         log_error << "*** profile '" << profilename << "' does not exist!" << std::endl;
         return false;
     }
 
-    return pp_profile->second->load();
+    return pp_profile->second->load( false, "" );
 }
 
 bool SettingsManager::storeProfile( const std::string& profilename )
 {
-    std::map< std::string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
+    std::map< std::string, SettingsPtr >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile == pp_profileEnd )
     {
         log_error << "*** profile '" << profilename << "' does not exist!" << std::endl;
@@ -114,9 +106,9 @@ bool SettingsManager::storeProfile( const std::string& profilename )
     return pp_profile->second->store();
 }
 
-Settings* SettingsManager::getProfile( const std::string& profilename )
+SettingsPtr SettingsManager::getProfile( const std::string& profilename )
 {
-    std::map< std::string, Settings* >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
+    std::map< std::string, SettingsPtr >::iterator pp_profile = _profiles.find( profilename ), pp_profileEnd = _profiles.end();
     if ( pp_profile != pp_profileEnd )
         return pp_profile->second;
     
@@ -137,46 +129,67 @@ Settings::~Settings()
         delete ( *pp_setting );
 }
 
-bool Settings::load( const std::string& filename )
+bool Settings::load( bool readonly, const std::string& filename )
 {
-    std::string openfile = filename;
-    if ( !filename.length() )
-        openfile = _settingsFile;
-
-    std::auto_ptr< std::fstream > p_stream( new std::fstream );
-
-    p_stream->open( openfile.c_str(), std::ios_base::binary | std::ios_base::in );
-    // if the file does not exist then create one
-    if ( !*p_stream )
-    {   
-        p_stream->open( openfile.c_str(), std::ios_base::binary | std::ios_base::out );
-        log_warning << "*** settings file '" << openfile << "' does not exist. one has been created." << std::endl;
-        _loaded   = true;
-        return false;
-    }
-
-    // get file size
-    p_stream->seekg( 0, std::ios_base::end );
-    int filesize = ( int )p_stream->tellg();
-    // check for empty file
-    if ( filesize == 0 )
+    // check if settings file is read-only, if so then load it from vfs
+    if ( readonly )
     {
-        p_stream->close();
-        return false;
+        FilePtr file = FileSystem::get()->getFile( filename );
+        if ( !file.valid() )
+        {
+            log_warning << "*** read-only settings file '" << filename << "' does not exist." << std::endl;
+            return false;
+        }
+
+        _fileBuffer = "";
+        _fileBuffer = file->getBuffer();
+        _fileBuffer += "\n"; // terminate the buffer std::string by a CR
+
+        _settingsFile = "";
     }
+    else
+    {
+        std::string openfile = filename;
+        if ( !filename.length() )
+            openfile = _settingsFile;
 
-    p_stream->seekg( 0, std::ios_base::beg );
+        std::auto_ptr< std::fstream > p_stream( new std::fstream );
 
-    // load the settings into the file buffer
-    _fileBuffer = "";
-    char* p_buf = new char[ filesize ];
-    p_stream->read( p_buf, filesize );
-    p_buf[ filesize - 1 ] = 0;
-    _fileBuffer = p_buf;
-    _fileBuffer += "\n"; // terminate the buffer std::string by a CR
-    delete[] p_buf;
+        p_stream->open( openfile.c_str(), std::ios_base::binary | std::ios_base::in );
+        // if the file does not exist then create one
+        if ( !*p_stream )
+        {   
+            p_stream->open( openfile.c_str(), std::ios_base::binary | std::ios_base::out );
+            log_warning << "*** settings file '" << openfile << "' does not exist. one has been created." << std::endl;
+            _loaded   = true;
+            return false;
+        }
 
-    p_stream->close();
+        // get file size
+        p_stream->seekg( 0, std::ios_base::end );
+        int filesize = ( int )p_stream->tellg();
+        // check for empty file
+        if ( filesize == 0 )
+        {
+            p_stream->close();
+            return false;
+        }
+
+        p_stream->seekg( 0, std::ios_base::beg );
+
+        // load the settings into the file buffer
+        _fileBuffer = "";
+        char* p_buf = new char[ filesize ];
+        p_stream->read( p_buf, filesize );
+        p_buf[ filesize - 1 ] = 0;
+        _fileBuffer = p_buf;
+        _fileBuffer += "\n"; // terminate the buffer std::string by a CR
+        delete[] p_buf;
+
+        p_stream->close();
+
+        _settingsFile = openfile;
+    }
 
     // format the intput
     size_t tokens = _settings.size();
@@ -205,8 +218,7 @@ bool Settings::load( const std::string& filename )
             assert( NULL && "unsupported setting type" );
     }
 
-    _settingsFile = openfile;
-    _loaded       = true;
+    _loaded = true;
 
     return true;
 }

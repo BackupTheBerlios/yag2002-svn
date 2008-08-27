@@ -117,7 +117,7 @@ class Configuration : public Singleton< Configuration >
         void                                    shutdown();
 
         //! Configuration settings
-        Settings*                               _p_settings;
+        SettingsPtr                             _settings;
 
         //! Standard settings
         std::string                             _logLevel;
@@ -161,19 +161,19 @@ class Configuration : public Singleton< Configuration >
 template< typename TypeT >
 inline bool Configuration::addSetting( const std::string& name, TypeT& value )
 {
-    return _p_settings->registerSetting( name, value );
+    return _settings->registerSetting( name, value );
 }
 
 template< typename TypeT >
 inline bool Configuration::getSettingValue( const std::string& name, TypeT& value )
 {
-    return _p_settings->getValue( name, value );
+    return _settings->getValue( name, value );
 }
 
 template< typename TypeT >
 inline bool Configuration::setSettingValue( const std::string& name, const TypeT& value )
 {
-    return _p_settings->setValue( name, value );
+    return _settings->setValue( name, value );
 }
 
 } // namespace yaf3d

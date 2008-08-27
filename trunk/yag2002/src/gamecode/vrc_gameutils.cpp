@@ -533,7 +533,7 @@ bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& 
 
     std::string playercfgdir;
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_CONFIG_DIR, playercfgdir );
-    cfg = yaf3d::Application::get()->getMediaPath() + playercfgdir + "/";
+    cfg = playercfgdir + "/";
     // if no cfgfile given then get the settings
     if ( !cfgfile.length() )
     {
@@ -549,13 +549,7 @@ bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& 
     }
 
     // load player config
-    std::string profile( cfg );
-    yaf3d::Settings* p_settings = yaf3d::SettingsManager::get()->createProfile( profile, cfg );
-    if ( !p_settings )
-    {
-        log_error << "GuiUtils: cannot find player settings: " << cfg << std::endl;
-        return false;
-    }
+    yaf3d::SettingsPtr settings = new yaf3d::Settings;
     std::string key, value;
     switch ( mode )
     {
@@ -577,10 +571,9 @@ bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& 
         default:
             return false;
     }
-    p_settings->registerSetting( key, value );
-    yaf3d::SettingsManager::get()->loadProfile( profile );
-    p_settings->getValue( key, levelfile );
-    yaf3d::SettingsManager::get()->destroyProfile( profile );
+    settings->registerSetting( key, value );
+    settings->load( true, cfg ); // open the settings in read-only mode
+    settings->getValue( key, levelfile );
 
     return true;
 }
@@ -764,9 +757,8 @@ void PlayerUtils::registerCallbackVoiceChatPlayerListChanged( CallbackPlayerList
 LevelFiles::LevelFiles( const std::string& dir )
 {
     // get level file names
-    std::string searchdir = yaf3d::Application::get()->getMediaPath() + dir;
     std::vector< std::string > files;
-    yaf3d::getDirectoryListing( files, searchdir, "lvl" );
+    yaf3d::FileSystem::get()->listFiles( files, dir, "lvl" );
 
     static unsigned int s_postfix = 0;
     std::stringstream   postfix;

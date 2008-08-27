@@ -53,35 +53,29 @@ _p_settingsDialog( p_menuEntity )
     // get the player config folder
     std::string playercfgdir;
     yaf3d::Configuration::get()->getSettingValue( VRC_GS_PLAYER_CONFIG_DIR, playercfgdir );
+    playercfgdir += "/";
 
     // get player file names
-    std::string searchdir = yaf3d::Application::get()->getMediaPath() + playercfgdir + "/";
     std::vector< std::string > filelisting;
-    yaf3d::getDirectoryListing( filelisting, searchdir, PLAYER_CFG_POSTFIX );
+    yaf3d::FileSystem::get()->listFiles( filelisting, playercfgdir, PLAYER_CFG_POSTFIX );
 
     // setup the preview pics for StaticImage field
     if ( filelisting.size() > 0 )
     {
         for ( size_t cnt = 0; cnt < filelisting.size(); ++cnt )
         {
-            // get the preview pic and player name out of player config file
-            //! Note: all player types must have unique names!
-            std::string profile( filelisting[ cnt ] );
-            yaf3d::Settings* p_settings = yaf3d::SettingsManager::get()->createProfile( profile, searchdir + filelisting[ cnt ] );
-            if ( !p_settings )
-            {
-                log_error << "DialogPlayerConfig: cannot find player settings: " << searchdir + filelisting[ cnt ] << std::endl;
-                continue;
-            }
+            yaf3d::SettingsPtr settings = new yaf3d::Settings;
+
             std::string playertype;
             std::string previewPic;
-            p_settings->registerSetting( "previewPic", previewPic );
-            p_settings->registerSetting( "name", playertype );
+            settings->registerSetting( "previewPic", previewPic );
+            settings->registerSetting( "name", playertype );
 
-            yaf3d::SettingsManager::get()->loadProfile( profile );
-            p_settings->getValue( "previewPic", previewPic );
-            p_settings->getValue( "name", playertype );
-            yaf3d::SettingsManager::get()->destroyProfile( profile );
+            // load the settings
+            settings->load( true, playercfgdir + filelisting[ cnt ] );
+
+            settings->getValue( "previewPic", previewPic );
+            settings->getValue( "name", playertype );
             //-----------------------------------
 
             // store the player type name and its associated config file name

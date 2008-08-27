@@ -254,6 +254,9 @@ class BaseScript
         */
         static int                              exposedMethodProxy( lua_State* p_state );
 
+        //! 'dofile' function using the virtual file system.
+        static int                              vfsDoFile( lua_State* p_state );
+
     protected:
 
         //! Setup specified Lua libraries, used during creation

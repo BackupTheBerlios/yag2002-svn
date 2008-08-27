@@ -31,6 +31,7 @@
 #include <base.h>
 #include "utils.h"
 #include "application.h"
+#include "filesystem.h"
 #include "log.h"
 #include <errno.h>
 #include <SDL_syswm.h>
@@ -388,9 +389,28 @@ std::string extractFileName( const std::string& fullpath )
 
 std::string cleanPath( const std::string& path )
 {
+    // substitude backslashes by forwardslaches
     std::string cleanpath = path;
     for ( std::string::iterator i = cleanpath.begin(), e = cleanpath.end(); i != e; ++i )
         if ( *i == '\\') *i = '/';
+
+    // resolve directory changes
+    std::string::size_type pos = 0, posback = 0;
+    do
+    {
+        std::string tmp( cleanpath );
+        pos = tmp.find( "/../" );
+        if ( ( pos != std::string::npos ) && ( pos > 1 ) )
+        {
+            posback = tmp.rfind( "/", pos - 1 );
+            if ( posback != std::string::npos )
+            {
+                cleanpath = tmp.substr( 0, posback );
+                cleanpath += tmp.substr( pos + 3 );
+            }
+        }
+    }
+    while ( pos != std::string::npos );
 
     return cleanpath;
 }
@@ -411,6 +431,7 @@ ImageTGA::~ImageTGA()
 
 bool ImageTGA::load( const std::string& filename )
 {
+#if 0
     // try to read in the file
     FILE* p_file = fopen( filename.c_str(), "rb" );
     if ( !p_file )
@@ -431,6 +452,13 @@ bool ImageTGA::load( const std::string& filename )
     unsigned char* p_orgbuffer = p_buffer;
     fread( p_buffer, 1, filesize, p_file );
     fclose( p_file );
+#endif
+
+    FilePtr file = FileSystem::get()->getFile( filename );
+    if ( !file.valid() || !file->getSize() )
+        return false;
+
+    unsigned char* p_buffer = reinterpret_cast< unsigned char* >( file->getBuffer() );
 
     short width = 0, height = 0;        // The dimensions of the image
     char  length = 0;                  // The length in bytes to the pixels
@@ -541,7 +569,6 @@ bool ImageTGA::load( const std::string& filename )
         // Else return a NULL for a bad or unsupported pixel format
         else
         {
-            delete[] p_orgbuffer;
             return false;
         }
     }
@@ -636,8 +663,6 @@ bool ImageTGA::load( const std::string& filename )
     _channels = channels;
     _sizeX    = width;
     _sizeY    = height;
-
-    delete[] p_orgbuffer;
 
     return true;
 }

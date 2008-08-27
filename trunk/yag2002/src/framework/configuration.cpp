@@ -41,7 +41,7 @@ namespace yaf3d
 YAF3D_SINGLETON_IMPL( Configuration )
 
 Configuration::Configuration() :
-_p_settings( SettingsManager::get()->createProfile( YAF3D_GAMESETTING_PROFILENAME, Application::get()->getMediaPath() + YAF3D_GAMESETTING_FILENAME ) ),
+_settings( SettingsManager::get()->createProfile( YAF3D_GAMESETTING_PROFILENAME, Application::get()->getMediaPath() + YAF3D_GAMESETTING_FILENAME ) ),
 _logLevel( "error" ),
 _screenWidth( 600 ),
 _screenHeight( 400 ),
@@ -57,22 +57,22 @@ _serverPort( YAF3D_GS_DEFAULT_SERVERPORT ),
 _serverAuthentification( YAF3D_GS_DEFAULT_SERVERAUTH )
 {
     // register standard settings
-    _p_settings->registerSetting( YAF3D_GS_LOG_LEVEL,         _logLevel               );
-    _p_settings->registerSetting( YAF3D_GS_KEYBOARD,          _keyboardType           );
-    _p_settings->registerSetting( YAF3D_GS_SCREENWIDTH,       _screenWidth            );
-    _p_settings->registerSetting( YAF3D_GS_SCREENHEIGHT,      _screenHeight           );
-    _p_settings->registerSetting( YAF3D_GS_COLORBITS,         _colorBits              );
-    _p_settings->registerSetting( YAF3D_GS_FULLSCREEN,        _fullScreen             );
-    _p_settings->registerSetting( YAF3D_GS_SHADOW_ENABLE,     _shadowEnable           );
-    _p_settings->registerSetting( YAF3D_GS_SHADOW_TEXSIZEX,   _shadowTexSizeX         );
-    _p_settings->registerSetting( YAF3D_GS_SHADOW_TEXSIZEY,   _shadowTexSizeY         );
-    _p_settings->registerSetting( YAF3D_GS_SHADOW_TEXCHANNEL, _shadowTexChannel       );
-    _p_settings->registerSetting( YAF3D_GS_GUISCHEME,         _guiScheme              );
-    _p_settings->registerSetting( YAF3D_GS_SERVER_NAME,       _serverName             );
-    _p_settings->registerSetting( YAF3D_GS_SERVER_IP,         _serverIP               );
-    _p_settings->registerSetting( YAF3D_GS_SERVER_PORT,       _serverPort             );
-    _p_settings->registerSetting( YAF3D_GS_SERVER_AUTH,       _serverAuthentification );
-    _p_settings->registerSetting( YAF3D_GS_PUBLIC_HOST,       _publicHost             );
+    _settings->registerSetting( YAF3D_GS_LOG_LEVEL,         _logLevel               );
+    _settings->registerSetting( YAF3D_GS_KEYBOARD,          _keyboardType           );
+    _settings->registerSetting( YAF3D_GS_SCREENWIDTH,       _screenWidth            );
+    _settings->registerSetting( YAF3D_GS_SCREENHEIGHT,      _screenHeight           );
+    _settings->registerSetting( YAF3D_GS_COLORBITS,         _colorBits              );
+    _settings->registerSetting( YAF3D_GS_FULLSCREEN,        _fullScreen             );
+    _settings->registerSetting( YAF3D_GS_SHADOW_ENABLE,     _shadowEnable           );
+    _settings->registerSetting( YAF3D_GS_SHADOW_TEXSIZEX,   _shadowTexSizeX         );
+    _settings->registerSetting( YAF3D_GS_SHADOW_TEXSIZEY,   _shadowTexSizeY         );
+    _settings->registerSetting( YAF3D_GS_SHADOW_TEXCHANNEL, _shadowTexChannel       );
+    _settings->registerSetting( YAF3D_GS_GUISCHEME,         _guiScheme              );
+    _settings->registerSetting( YAF3D_GS_SERVER_NAME,       _serverName             );
+    _settings->registerSetting( YAF3D_GS_SERVER_IP,         _serverIP               );
+    _settings->registerSetting( YAF3D_GS_SERVER_PORT,       _serverPort             );
+    _settings->registerSetting( YAF3D_GS_SERVER_AUTH,       _serverAuthentification );
+    _settings->registerSetting( YAF3D_GS_PUBLIC_HOST,       _publicHost             );
 }
 
 Configuration::~Configuration()
@@ -91,7 +91,7 @@ bool Configuration::store()
 
 void Configuration::getConfigurationAsString( std::vector< std::pair< std::string, std::string > >& settings )
 {
-    const std::vector< Settings::SettingBase* >& settingStorages = _p_settings->getAllSettingStorages();
+    const std::vector< Settings::SettingBase* >& settingStorages = _settings->getAllSettingStorages();
     std::vector< Settings::SettingBase* >::const_iterator p_beg = settingStorages.begin(), p_end = settingStorages.end();
     for( ; p_beg != p_end; ++p_beg )
     {
@@ -102,37 +102,37 @@ void Configuration::getConfigurationAsString( std::vector< std::pair< std::strin
         if ( settings_typeinfo == typeid( bool ) )
         {
             bool value = false;
-            _p_settings->getValue( token, value );
+            _settings->getValue( token, value );
             tokenvalue << ( value ? "true" : "false" );
         }
         else if ( settings_typeinfo == typeid( int ) )
         {
             int value = 0;
-            _p_settings->getValue( token, value );
+            _settings->getValue( token, value );
             tokenvalue << value;
         }
         else if ( settings_typeinfo == typeid( unsigned int ) )
         {
             unsigned int value = 0;
-            _p_settings->getValue( token, value );
+            _settings->getValue( token, value );
             tokenvalue << value;
         }
         else if ( settings_typeinfo == typeid( std::string ) )
         {
             std::string value;
-            _p_settings->getValue( token, value );
+            _settings->getValue( token, value );
             tokenvalue << value;
         }
         else if ( settings_typeinfo == typeid( float ) )
         {
             float value = 0.0f;
-            _p_settings->getValue( token, value );
+            _settings->getValue( token, value );
             tokenvalue << value;
         }
         else if ( settings_typeinfo == typeid( osg::Vec3f ) )
         {
             osg::Vec3f value;
-            _p_settings->getValue( token, value );
+            _settings->getValue( token, value );
             tokenvalue << value.x() << " " << value.y() << " " << value.z();
         }
         settings.push_back( make_pair( token, tokenvalue.str() ) );
@@ -141,7 +141,7 @@ void Configuration::getConfigurationAsString( std::vector< std::pair< std::strin
 
 bool Configuration::setSettingValueAsString( const std::string& name, const std::string& valuestring )
 {
-    const std::vector< Settings::SettingBase* >& settingStorages = _p_settings->getAllSettingStorages();
+    const std::vector< Settings::SettingBase* >& settingStorages = _settings->getAllSettingStorages();
     std::vector< Settings::SettingBase* >::const_iterator p_beg = settingStorages.begin(), p_end = settingStorages.end();
     for ( ; p_beg != p_end; ++p_beg )
     {
@@ -155,7 +155,7 @@ bool Configuration::setSettingValueAsString( const std::string& name, const std:
         if ( settings_typeinfo == typeid( bool ) )
         {
             bool value = ( valuestring == "true" ) ? true : false;
-            _p_settings->setValue( token, value );
+            _settings->setValue( token, value );
             break;
         }
         else if ( settings_typeinfo == typeid( int ) )
@@ -163,7 +163,7 @@ bool Configuration::setSettingValueAsString( const std::string& name, const std:
             tokenvalue << valuestring;
             int value = -1;
             tokenvalue >> value;
-            _p_settings->setValue( token, value );
+            _settings->setValue( token, value );
             break;
         }
         else if ( settings_typeinfo == typeid( unsigned int ) )
@@ -171,13 +171,13 @@ bool Configuration::setSettingValueAsString( const std::string& name, const std:
             tokenvalue << valuestring;
             unsigned int value = ( unsigned int )-1;
             tokenvalue >> value;
-            _p_settings->setValue( token, value );
+            _settings->setValue( token, value );
             break;
         }
         else if ( settings_typeinfo == typeid( std::string ) )
         {
             std::string value = valuestring;
-            _p_settings->setValue( token, value );
+            _settings->setValue( token, value );
             break;
         }
         else if ( settings_typeinfo == typeid( float ) )
@@ -185,7 +185,7 @@ bool Configuration::setSettingValueAsString( const std::string& name, const std:
             tokenvalue << valuestring;
             float value = -1;
             tokenvalue >> value;
-            _p_settings->setValue( token, value );
+            _settings->setValue( token, value );
             break;
         }
         else if ( settings_typeinfo == typeid( osg::Vec3f ) )
@@ -193,7 +193,7 @@ bool Configuration::setSettingValueAsString( const std::string& name, const std:
             tokenvalue << valuestring;
             osg::Vec3f value;
             tokenvalue >> value._v[ 0 ] >> value._v[ 1 ] >> value._v[ 2 ];
-            _p_settings->setValue( token, value );
+            _settings->setValue( token, value );
             break;
         }
     }

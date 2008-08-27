@@ -67,7 +67,7 @@ class FileSystemException : public std::runtime_error
 
 
 //! File class containing the content of a file as buffer
-class File : RefCount< File >
+class File : public RefCount< File >
 {
     //! Set the smart pointer class as friend
     DECLARE_SMARTPTR_ACCESS( File )
@@ -75,41 +75,44 @@ class File : RefCount< File >
     public:
 
         //! Get the full path of file.
-        const std::string&                          getPath() const { return _path; }
+        const std::string&                          getPath() const;
 
         //! Get the buffer ( file size ).
-        unsigned int                                getSize() const { return _size; }
+        unsigned int                                getSize() const;
 
         //! Get a buffer with the content of the file.
-        char*                                       getBuffer() { return _p_buffer; }
+        char*                                       getBuffer();
 
-        //! Release the control on buffer. On destruction, the buffer will not be destroyed then.
-        char*                                       releaseBuffer()
-                                                    {
-                                                        char* p_tmp = _p_buffer;
-                                                        _p_buffer = NULL;
-                                                        return p_tmp;
-                                                    }
+        //! Read 'count' bytes from buffer at current position. Returns the actual read bytes in 'byesread'.
+        char*                                       readBuffer( unsigned int count, unsigned int& bytesread );
+
+        //! Read 'count' bytes from buffer at given position.  Returns the actual read bytes in 'byesread'.
+        char*                                       readBuffer( unsigned int pos, unsigned int count, unsigned int& bytesread );
+
+        //! Set current buffer position. Return false if the position exceeds the buffer size.
+        bool                                        setBufferPos( unsigned int pos );
+
+        //! Return current buffer position.
+        unsigned int                                getBufferPos() const;
+
+        //! Release the control on buffer. On destruction, the buffer will not be destroyed then when File is destroyed.
+        //! NOTE: The user has to care about the buffer deletion when it is no longer needed. Use array deletion 'delete[]'.
+        char*                                       releaseBuffer();
 
     protected:
 
-                                                    File( char* p_buf, unsigned int size, const std::string& path ) :
-                                                     _p_buffer( p_buf ),
-                                                     _size( size ),
-                                                     _path( path )
-                                                     {}
+                                                    File( char* p_buf, unsigned int size, const std::string& path );
 
-        virtual                                     ~File()
-                                                    {
-                                                        if ( _p_buffer )
-                                                            delete[] _p_buffer;
-                                                    }
+        virtual                                     ~File();
 
         //! File buffer
         char*                                       _p_buffer;
 
         //! File size
         unsigned int                                _size;
+
+        //! Current buffer position
+        unsigned int                                _pos;
 
         //! File's full path
         std::string                                 _path;
@@ -129,8 +132,8 @@ class FileSystem : public Singleton< FileSystem >
         //! Get the file with given name. If the file could not be loaded then the file pointer object will be invalid ( use the function valid() of smart pointer to chek ).
         FilePtr                                     getFile( const std::string& filename );
 
-        //! Get a list of files of given directory.
-        std::vector< std::string >                  listFiles( const std::string& dir ) const;
+        //! Get a list of files in given directory. Filter the files with given extension, of ext is not empty. Return the count of files.
+        unsigned int                                listFiles( std::vector< std::string >& files, const std::string& dir, const std::string& ext = "" ) const;
 
     protected:
 

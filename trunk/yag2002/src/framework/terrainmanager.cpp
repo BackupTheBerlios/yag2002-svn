@@ -160,8 +160,8 @@ unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( T
 
     // currently we accept only tga files as heightmap
     ImageTGA tga;
-    if ( !tga.load( mediapath + config._fileHeightmap ) )
-        throw TerrainException( std::string( "cannot load heightmap image" ) + mediapath + config._fileHeightmap );
+    if ( !tga.load( config._fileHeightmap ) )
+        throw TerrainException( std::string( "cannot load heightmap image" ) + config._fileHeightmap );
 
     unsigned int sizeX = 0, sizeY = 0;
     tga.getSize( sizeX, sizeY );

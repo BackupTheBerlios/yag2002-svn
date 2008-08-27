@@ -38,12 +38,6 @@
 namespace vrc
 {
 
-#ifdef WIN32
-    #define VOID_NUM    long long
-#else
-    #define VOID_NUM    long int
-#endif
-
 StoryDialog::StoryDialog( DialogCallback* p_cb ) :
  _dialogID( 0 ),
  _networkID( 0 ),

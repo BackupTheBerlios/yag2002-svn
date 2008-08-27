@@ -36,7 +36,7 @@
 #include "vrc_playerimpl.h"
 
 
-#define PLAYERTEXT_FONT_PATH    "gui/fonts/vaground.ttf"
+#define PLAYERTEXT_FONT_PATH    "anim/vaground.ttf"
 
 
 namespace vrc
