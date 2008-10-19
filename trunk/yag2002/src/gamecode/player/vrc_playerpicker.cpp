@@ -395,17 +395,11 @@ void EnPlayerPicker::updateGui( tAccountInfoData& info )
         unsigned int hours = 0;
         str >> hours;
         if ( hours < 1 )
-        {
             status = "Fresh meat";
-        }
         else if ( hours < 10 )
-        {
             status = "Knows some";
-        }
         else
-        {
             status = "Stone-Washed";
-        }
     }
     if ( fields.size() > 1 )
     {

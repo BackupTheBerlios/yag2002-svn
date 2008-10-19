@@ -396,6 +396,7 @@ bool StoragePostgreSQL::getPublicUserAccountInfo( UserAccount& acc )
 
         res[ 0 ][ F_USERACC_LOGIN ].to ( acc._nickName );
         res[ 0 ][ F_USERACC_STATUS ].to ( acc._status );
+        res[ 0 ][ F_USERACC_PRIV ].to ( acc._priviledges );
         res[ 0 ][ F_USERACC_ONLINETIME ].to ( acc._onlineTime );
         res[ 0 ][ F_USERACC_REGDATE ].to ( acc._registrationDate );
         res[ 0 ][ F_USERACC_USERDESC ].to ( acc._userDescription );

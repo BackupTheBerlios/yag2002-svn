@@ -159,7 +159,7 @@ void StorageNetworking::RPC_RequestAccountInfo( tAccountInfoData info )
     info._p_onlineTime[ 0 ]       = 0;
     info._p_registrationDate[ 0 ] = 0;
     info._p_userDescription[ 0 ]  = 0;
-    info._priviledges       = static_cast< unsigned int >( -1 );
+    info._priviledges             = static_cast< unsigned int >( -1 );
 
     UserAccount acc;
     // requesting for private or public account information?
@@ -195,6 +195,7 @@ void StorageNetworking::RPC_RequestAccountInfo( tAccountInfoData info )
             info._p_userDescription[ sizeof( info._p_userDescription ) - 1 ]   = 0;
 
             info._priviledges = acc.getPriviledges();
+            info._status      = acc.getStatus();
         }
     }
     else
@@ -225,6 +226,9 @@ void StorageNetworking::RPC_RequestAccountInfo( tAccountInfoData info )
             info._p_registrationDate[ sizeof( info._p_registrationDate ) - 1 ] = 0;
             info._p_onlineTime[ sizeof( info._p_onlineTime ) - 1 ]             = 0;
             info._p_userDescription[ sizeof( info._p_userDescription ) - 1 ]   = 0;
+
+            info._priviledges = acc.getPriviledges();
+            info._status      = acc.getStatus();
         }
     }
 

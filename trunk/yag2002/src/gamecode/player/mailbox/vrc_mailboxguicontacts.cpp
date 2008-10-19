@@ -49,7 +49,7 @@ MailboxGuiContacts::MailboxGuiContacts( MailboxGuiSend* p_mailboxsend, const std
  _p_btnDetails( NULL ),
  _p_editboxTo( NULL ),
  _p_editboxCC( NULL ),
- _p_detailsWnd( NULL )
+ _p_detailsGui( NULL )
 {
     assert( _p_mailboxGuiSend && "invalid mailbox object!" );
     setupGui( filename );
@@ -61,6 +61,9 @@ MailboxGuiContacts::~MailboxGuiContacts()
     {
         if ( _p_frame )
             CEGUI::WindowManager::getSingleton().destroyWindow( _p_frame );
+
+        if ( _p_detailsGui )
+            delete _p_detailsGui;
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -81,8 +84,8 @@ void MailboxGuiContacts::viewContacts()
 
     _showDetails = false;
 
-    if ( _p_detailsWnd )
-        _p_detailsWnd->hide();
+    if ( _p_detailsGui )
+        _p_detailsGui->hide();
 
     // request for user's contacts
     StorageClient::get()->requestUserContacts( this );
@@ -141,10 +144,18 @@ void MailboxGuiContacts::setupGui( const std::string& filename )
         _p_editboxTo  = static_cast< CEGUI::Editbox* >( p_frame->getChild( MAILBOX_CONTACTS_DLG_PREFIX "text_to" ) );
         _p_editboxCC  = static_cast< CEGUI::Editbox* >( p_frame->getChild( MAILBOX_CONTACTS_DLG_PREFIX "text_cc" ) );
 
-        // get the details gui part
-        _p_detailsWnd = static_cast< CEGUI::StaticText* >( p_frame->getChild( MAILBOX_CONTACTS_DLG_PREFIX "st_detailswindow" ) );
-        _p_detailsWnd->hide();
+        // setup the details gui part
+        CEGUI::StaticText* p_detailsWnd = static_cast< CEGUI::StaticText* >( p_frame->getChild( MAILBOX_CONTACTS_DLG_PREFIX "st_detailswindow" ) );
+        _p_detailsGui = new ContactDetails( p_detailsWnd );
 
+        _p_detailsGui->_p_editMemberSince  = static_cast< CEGUI::Editbox* >( p_detailsWnd->getChild( MAILBOX_CONTACTS_DLG_PREFIX "eb_memsince" ) );
+        _p_detailsGui->_p_editStatus       = static_cast< CEGUI::Editbox* >( p_detailsWnd->getChild( MAILBOX_CONTACTS_DLG_PREFIX "eb_status" ) );
+        _p_detailsGui->_p_cbOnline         = static_cast< CEGUI::Checkbox* >( p_detailsWnd->getChild( MAILBOX_CONTACTS_DLG_PREFIX "cb_online" ) );
+        _p_detailsGui->_p_editABout        = static_cast< CEGUI::MultiLineEditbox* >( p_detailsWnd->getChild( MAILBOX_CONTACTS_DLG_PREFIX "eb_about" ) );
+
+        _p_detailsGui->hide();
+
+        // store the frame for later usage
         _p_frame = p_frame;
     }
     catch ( const CEGUI::Exception& e )
@@ -187,15 +198,73 @@ void MailboxGuiContacts::contactsResult( bool success, const std::vector< std::s
         _p_listContacts->setItemSelectState( static_cast< size_t >( 0 ), true );
 }
 
+void MailboxGuiContacts::accountInfoResult( tAccountInfoData& info )
+{
+    if ( !_p_detailsGui )
+        return;
+
+    std::string status, memsince;
+    std::vector< std::string > fields;
+
+    //! TODO: extracting user status and registration time out of the account data should be moved to a common place,
+    //        atm, the player picker implements the same stuff redundantly.
+    //##########
+    yaf3d::explode( info._p_registrationDate, " ", &fields );
+    if ( fields.size() > 0 )
+        memsince = fields[ 0 ];
+
+    fields.clear();
+    yaf3d::explode( info._p_onlineTime, ":", &fields );
+    if ( fields.size() > 0 )
+    {
+        // set the status depending on online time
+        std::stringstream str;
+        str << fields[ 0 ];
+        unsigned int hours = 0;
+        str >> hours;
+        if ( hours < 1 )
+            status = "Fresh meat";
+        else if ( hours < 10 )
+            status = "Knows some";
+        else
+            status = "Stone-Washed";
+    }
+    //##########
+
+    _p_detailsGui->_p_editStatus->setText( status );
+    _p_detailsGui->_p_editMemberSince->setText( memsince );
+
+    _p_detailsGui->_p_editABout->setText( info._p_userDescription );
+
+    if ( info._status & tAccountInfoData::eLoggedIn )
+        _p_detailsGui->_p_cbOnline->setSelected( true );
+    else
+        _p_detailsGui->_p_cbOnline->setSelected( false );
+
+}
+
 bool MailboxGuiContacts::onClickedDetails( const CEGUI::EventArgs& /*arg*/ )
 {
+    // don't show up the details gui if no list elements exist
+    if ( !_p_listContacts->getItemCount() && !_showDetails )
+        return true;
+
     _showDetails = !_showDetails;
     _p_btnDetails->setText( _showDetails ? ">>" : "<<" );
 
     if ( _showDetails )
-        _p_detailsWnd->show();
+    {
+        // first show the gui then select the first item for getting detailed info on selected contact
+        _p_detailsGui->show();
+
+        // select the first entry ( the gui must be visible in order the selection to work here! )
+        CEGUI::EventArgs args;
+        onListContactSelChanged( args );
+    }
     else
-        _p_detailsWnd->hide();
+    {
+        _p_detailsGui->hide();
+    }
 
     return true;
 }
@@ -277,6 +346,12 @@ bool MailboxGuiContacts::onListContactSelChanged( const CEGUI::EventArgs& /*arg*
     if ( !_showDetails )
         return true;
 
+    // clear the gui elements
+    _p_detailsGui->_p_editStatus->setText( "" );
+    _p_detailsGui->_p_editMemberSince->setText( "" );
+    _p_detailsGui->_p_cbOnline->setSelected( false );
+    _p_detailsGui->_p_editABout->setText( "" );
+
     // get selection
     CEGUI::ListboxItem* p_sel = _p_listContacts->getFirstSelectedItem();
     if ( !p_sel )
@@ -286,10 +361,8 @@ bool MailboxGuiContacts::onListContactSelChanged( const CEGUI::EventArgs& /*arg*
     if ( !sel.length() )
         return true;
 
-    //! TODO: request contact details...
-    // StorageClient::get()->requestPublicAccountInfo( sel, this );
-
-//...
+    // get the user contacts
+    StorageClient::get()->requestPublicAccountInfo( sel, this );
 
     return true;
 }

@@ -69,6 +69,9 @@ class MailboxGuiContacts : public StorageClient::AccountInfoResult
         //! Callback for storage client requests
         void                                        contactsResult( bool success, const std::vector< std::string >& contacts );
 
+        //! Callback for storage client requests
+        void                                        accountInfoResult( tAccountInfoData& info );
+
         //! Callback for details button
         bool                                        onClickedDetails( const CEGUI::EventArgs& arg );
 
@@ -103,7 +106,42 @@ class MailboxGuiContacts : public StorageClient::AccountInfoResult
         CEGUI::PushButton*                          _p_btnAddCC;
         CEGUI::Editbox*                             _p_editboxTo;
         CEGUI::Editbox*                             _p_editboxCC;
-        CEGUI::StaticText*                          _p_detailsWnd;
+
+        //! Helper class for holding details gui stuff together
+        class ContactDetails
+        {
+            public:
+                                                     ContactDetails( CEGUI::StaticText* p_wnd ) :
+                                                     _p_wnd( p_wnd ),
+                                                     _p_editMemberSince( NULL ),
+                                                     _p_editStatus( NULL ),
+                                                     _p_cbOnline( NULL ),
+                                                     _p_editABout( NULL )
+                                                     {
+                                                     }
+
+                void                                hide()
+                                                    {
+                                                        if ( _p_wnd )
+                                                            _p_wnd->hide();
+                                                    }
+
+                void                                show()
+                                                    {
+                                                        if ( _p_wnd )
+                                                            _p_wnd->show();
+                                                    }
+
+                CEGUI::StaticText*                   _p_wnd;
+                CEGUI::Editbox*                      _p_editMemberSince;
+                CEGUI::Editbox*                      _p_editStatus;
+                CEGUI::Checkbox*                     _p_cbOnline;
+                CEGUI::MultiLineEditbox*             _p_editABout;
+
+        };
+
+        ContactDetails*                             _p_detailsGui;
+
 };
 
 } // namespace vrc

@@ -11,6 +11,19 @@ namespace vrc
 
 typedef struct _tAccountInfoData
 {
+    //! Status flags
+    enum Status
+    {
+        eLoggedIn       = 0x01,
+        eBanned         = 0x10
+    };
+
+    //! Priviledge flags
+    enum Privileges
+    {
+        eModerator      = 0x02
+    };
+
     unsigned int    _sessionCookie;
 
     unsigned int    _userID;
