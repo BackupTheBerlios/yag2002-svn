@@ -273,7 +273,7 @@ bool MailboxGuiMain::onClickedSend( const CEGUI::EventArgs& /*arg*/ )
     // play click sound
     gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
 
-    _p_mailboxGuiSend->sendMail();
+    _p_mailboxGuiSend->viewSendMail();
     _p_frame->hide();
 
     return true;

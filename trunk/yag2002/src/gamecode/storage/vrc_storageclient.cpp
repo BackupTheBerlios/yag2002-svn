@@ -112,6 +112,16 @@ bool StorageClient::updateAccountInfo( tAccountInfoData& info )
     return true;
 }
 
+bool StorageClient::requestUserContacts( class AccountInfoResult* p_cb )
+{
+    if ( !_p_networking )
+        return false;
+
+    _p_networking->requestContacts( getUserID(), p_cb );
+
+    return true;
+}
+
 unsigned int StorageClient::getUserID() const
 {
     return _userID;

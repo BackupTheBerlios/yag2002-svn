@@ -54,6 +54,7 @@
 #define F_USERDATA_INV_ID           "fk_id_user_inventory"
 #define F_USERDATA_MAILBOX_ID       "fk_id_user_mailbox"
 #define F_USERDATA_SKILLS_ID        "fk_id_user_skills"
+#define F_USERDATA_CONTACTS         "contacts"
 
 #define F_INV_ID                    "id_inventory"
 #define F_INV_USER_DATA_ID          "fk_id_user_data"
@@ -444,6 +445,7 @@ bool StoragePostgreSQL::getUserData( unsigned int userID, UserData& data )
             res[ 0 ][ F_USERDATA_INV_ID ].to( data._inventoryID );
             res[ 0 ][ F_USERDATA_MAILBOX_ID ].to( data._mailboxID );
             res[ 0 ][ F_USERDATA_SKILLS_ID ].to( data._skillsID );
+            res[ 0 ][ F_USERDATA_CONTACTS ].to( data._contacts );
         }
 
         // commit the transaction

@@ -30,7 +30,11 @@
 #include <vrc_main.h>
 #include <vrc_gameutils.h>
 #include "vrc_mailboxguimain.h"
+#include "vrc_mailboxguicontacts.h"
 #include "vrc_mailboxguisend.h"
+
+//! Contacts gui file name
+#define MAILBOX_CONTACTS_GUI_LAYOUT "gui/mailcontacts.xml"
 
 //! Gui ressource related defines
 #define MAILBOX_SEND_DLG_PREFIX     "mailboxsend_"
@@ -41,6 +45,7 @@ namespace vrc
 
 MailboxGuiSend::MailboxGuiSend( MailboxGuiMain* p_mailbox, const std::string& filename ) :
  _p_mailboxGuiMain( p_mailbox ),
+ _p_mailboxGuiContacts( NULL ),
  _p_frame( NULL ),
  _p_editboxTo( NULL ),
  _p_editboxCC( NULL ),
@@ -57,6 +62,9 @@ MailboxGuiSend::~MailboxGuiSend()
     {
         if ( _p_frame )
             CEGUI::WindowManager::getSingleton().destroyWindow( _p_frame );
+
+        if ( _p_mailboxGuiContacts )
+            delete _p_mailboxGuiContacts;
     }
     catch ( const CEGUI::Exception& e )
     {
@@ -70,7 +78,7 @@ CEGUI::FrameWindow* MailboxGuiSend::getFrame()
     return _p_frame;
 }
 
-void MailboxGuiSend::sendMail()
+void MailboxGuiSend::viewSendMail()
 {
     if ( !_p_frame )
         return;
@@ -147,6 +155,8 @@ void MailboxGuiSend::assembleMailbody( const MailboxContent& content, std::strin
 
 void MailboxGuiSend::setupGui( const std::string& filename )
 {
+    _p_mailboxGuiContacts = new MailboxGuiContacts( this, MAILBOX_CONTACTS_GUI_LAYOUT );
+
     try
     {
         CEGUI::Window* p_maingui = gameutils::GuiUtils::get()->getMainGuiWindow();
@@ -167,6 +177,9 @@ void MailboxGuiSend::setupGui( const std::string& filename )
         CEGUI::PushButton* p_btnsend = static_cast< CEGUI::PushButton* >( p_frame->getChild( MAILBOX_SEND_DLG_PREFIX "btn_send" ) );
         p_btnsend->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::MailboxGuiSend::onClickedSend, this ) );
 
+        CEGUI::PushButton* p_btncontacts = static_cast< CEGUI::PushButton* >( p_frame->getChild( MAILBOX_SEND_DLG_PREFIX "btn_contacts" ) );
+        p_btncontacts->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::MailboxGuiSend::onClickedContacts, this ) );
+
         _p_editboxTo      = static_cast< CEGUI::Editbox* >( p_frame->getChild( MAILBOX_SEND_DLG_PREFIX "text_to" ) );
         _p_editboxCC      = static_cast< CEGUI::Editbox* >( p_frame->getChild( MAILBOX_SEND_DLG_PREFIX "text_cc" ) );
         _p_editboxSubject = static_cast< CEGUI::Editbox* >( p_frame->getChild( MAILBOX_SEND_DLG_PREFIX "text_subject" ) );
@@ -179,6 +192,8 @@ void MailboxGuiSend::setupGui( const std::string& filename )
         log_error << "MailboxGuiSend: cannot setup gui layout." << std::endl;
         log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
+
+    _p_mailboxGuiContacts->getFrame()->hide();
 }
 
 void MailboxGuiSend::mailboxResponse( const MailboxContent& /*mailcontent*/, unsigned int status, const std::string& response )
@@ -192,11 +207,24 @@ void MailboxGuiSend::mailboxResponse( const MailboxContent& /*mailcontent*/, uns
         p_msg->show();
         return;
     }
+
+    _p_mailboxGuiMain->sendOnClose();
 }
 
 unsigned int MailboxGuiSend::mailboxGetUserID() const
 {
     return _userID;
+}
+
+bool MailboxGuiSend::onClickedContacts( const CEGUI::EventArgs& /*arg*/ )
+{
+    gameutils::GuiUtils::get()->playSound( GUI_SND_NAME_CLICK );
+
+    _p_mailboxGuiContacts->setRecipients( _p_editboxTo->getText().c_str(), _p_editboxCC->getText().c_str() );
+    _p_mailboxGuiContacts->viewContacts();
+    _p_frame->hide();
+
+    return true;
 }
 
 bool MailboxGuiSend::onClickedSend( const CEGUI::EventArgs& /*arg*/ )
@@ -236,9 +264,22 @@ bool MailboxGuiSend::onClickedSend( const CEGUI::EventArgs& /*arg*/ )
 
     MailboxClient::get()->sendMail( this, content );
 
-    _p_mailboxGuiMain->sendOnClose();
-
     return true;
+}
+
+void MailboxGuiSend::onCloseContacts( bool ok )
+{
+    _p_frame->show();
+    _p_mailboxGuiContacts->getFrame()->hide();
+
+    if ( !ok )
+        return;
+
+    // update the To and CC fields
+    std::string to, cc;
+    _p_mailboxGuiContacts->getRecipients( to, cc );
+    _p_editboxTo->setText( to );
+    _p_editboxCC->setText( cc );
 }
 
 bool MailboxGuiSend::onClickedCancelSend( const CEGUI::EventArgs& /*arg*/ )

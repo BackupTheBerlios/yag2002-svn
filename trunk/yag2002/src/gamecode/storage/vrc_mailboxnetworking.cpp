@@ -383,7 +383,8 @@ void MailboxNetworking::RPC_RequestMailCommand( tMailData request )
             if ( !_p_mailboxStorage->sendMail( userID, content ) )
             {
                 request._header._status |= MailboxContent::eError;
-                strncpy( request._p_data, "ERROR - send mail, cannot send requested mail [2]", sizeof( request._p_data ) );
+                // in case of error the result strings is in content's body
+                strncpy( request._p_data, content._body.c_str(), sizeof( request._p_data ) );
                 request._header._dataLen = strnlen( request._p_data, sizeof( request._p_data ) );
                 NOMINATED_REPLICAS_FUNCTION_CALL( 1, &sessionID, RPC_Response( request ) );
                 break;

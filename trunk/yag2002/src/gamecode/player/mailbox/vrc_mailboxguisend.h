@@ -37,6 +37,8 @@ namespace vrc
 {
 
 class MailboxGui;
+class MailboxGuiMain;
+class MailboxGuiContacts;
 
 //! Class for player's mail send gui
 class MailboxGuiSend : public MailboxResponseCallback
@@ -52,7 +54,7 @@ class MailboxGuiSend : public MailboxResponseCallback
         CEGUI::FrameWindow*                         getFrame();
 
         //! Setup the send gui for sending a mail.
-        void                                        sendMail();
+        void                                        viewSendMail();
 
         //! Setup the send gui for a mail reply.
         void                                        replyMail( const MailboxContent& content );
@@ -74,14 +76,23 @@ class MailboxGuiSend : public MailboxResponseCallback
         //! Used for reply and forward mails
         void                                        assembleMailbody( const MailboxContent& content, std::string& body, bool reply );
 
-        //! Callback for on-close event or cancle button
+        //! Callback for contacts button
+        bool                                        onClickedContacts( const CEGUI::EventArgs& arg );
+
+        //! Callback for cancel button
         bool                                        onClickedCancelSend( const CEGUI::EventArgs& arg );
 
         //! Callback for send button
         bool                                        onClickedSend( const CEGUI::EventArgs& arg );
 
+        //! Called when contacts gui is closed by pressing Ok or Cancel button
+        void                                        onCloseContacts( bool ok );
+
         //! Main gui object
         MailboxGuiMain*                             _p_mailboxGuiMain;
+
+        //! Contacts gui
+        MailboxGuiContacts*                         _p_mailboxGuiContacts;
 
         //! Frame object
         CEGUI::FrameWindow*                         _p_frame;
@@ -91,6 +102,8 @@ class MailboxGuiSend : public MailboxResponseCallback
         CEGUI::Editbox*                             _p_editboxCC;
         CEGUI::Editbox*                             _p_editboxSubject;
         CEGUI::MultiLineEditbox*                    _p_editboxBody;
+
+    friend class MailboxGuiContacts;
 };
 
 } // namespace vrc

@@ -56,8 +56,8 @@ class MailboxPostgreSQL : public BaseMailboxStorage
         //! Get mail with given ID.
         bool                                    getMail(  unsigned int userID, unsigned int mailID, MailboxContent& mailcontent );
 
-        //! Send mail
-        bool                                    sendMail(  unsigned int userID, const MailboxContent& mailcontent );
+        //! Send mail. It stores the restult string into mail body in case of error.
+        bool                                    sendMail(  unsigned int userID, MailboxContent& mailcontent );
 
         //! Delete mail with given ID.
         bool                                    deleteMail(  unsigned int userID, unsigned int mailID );

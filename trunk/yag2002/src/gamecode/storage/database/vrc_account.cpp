@@ -134,4 +134,9 @@ unsigned int UserData::getSkillsId() const
     return _skillsID;
 }
 
+const std::string& UserData::getContacts() const
+{
+    return _contacts;
+}
+
 } // namespace vrc

@@ -1,10 +1,13 @@
-/* Auto-generated with RNROLCompiler V2.7.0.0 don't edit */
+/* Auto-generated with RNROLCompiler V2.8.0.0 don't edit */
 #ifndef ___RO_StorageNetworking_h__
 #define ___RO_StorageNetworking_h__
 #include "RNReplicaNet/Inc/ReplicaObject.h"
 #include "RNReplicaNet/Inc/Define_RO.h"
 namespace vrc
 {
+
+//! Max data length for transfering generic data
+#define VRC_SNDATA_MAXLEN   2000
 
 typedef struct _tAccountInfoData
 {
@@ -29,6 +32,37 @@ typedef struct _tAccountInfoData
 } tAccountInfoData;
 
 
+//! Type for trasfering user contacts
+typedef struct _tUserContacts
+{
+    // Command types
+    enum
+    {
+        eUnknown         = 0x00,
+        eRequestContacts = 0x10,
+        eUpdateContacts  = 0x20,
+        eRestuls         = 0x40,
+        eError           = 0x80
+    };
+
+    //! Session cookie
+    unsigned int    _sessionCookie;
+
+    // !User id
+    unsigned int    _userID;
+
+    //! Command
+    unsigned int    _cmd;
+
+    //! Length of data
+    unsigned int    _dataLen;
+
+    //! Data buffer
+    char            _p_data[ VRC_SNDATA_MAXLEN ];
+
+} tUserContacts;
+
+
 _RO_DEF_ALLOCATEFUNC(StorageNetworking)
 class _MAKE_BASE(StorageNetworking);
 class _RO_StorageNetworking : public RNReplicaNet::ReplicaObject
@@ -43,6 +77,12 @@ class _RO_StorageNetworking : public RNReplicaNet::ReplicaObject
 	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_AccountInfoResult)
 	void Call_RPC_AccountInfoResult(tAccountInfoData);
 	typedef void(tDBFV_RPC_AccountInfoResult)(tAccountInfoData);
+	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_RequestContacts)
+	void Call_RPC_RequestContacts(tUserContacts);
+	typedef void(tDBFV_RPC_RequestContacts)(tUserContacts);
+	_RO_DO_DEFBLOCK_FUNCTION_VAR(RPC_ContactsResult)
+	void Call_RPC_ContactsResult(tUserContacts);
+	typedef void(tDBFV_RPC_ContactsResult)(tUserContacts);
 	_RO_DEF_REGISTERDATABLOCKS(StorageNetworking)
 };
 } // namespace vrc

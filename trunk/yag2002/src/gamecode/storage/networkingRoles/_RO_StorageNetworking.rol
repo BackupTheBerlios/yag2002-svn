@@ -10,6 +10,8 @@ object StorageNetworking
     extern RPC_RequestAccountInfo( tAccountInfoData );
     extern RPC_RequestUpdateAccountInfo( tAccountInfoData );
     extern RPC_AccountInfoResult( tAccountInfoData );
+    extern RPC_RequestContacts( tUserContacts );
+    extern RPC_ContactsResult( tUserContacts );
 
     networking
     {
@@ -25,6 +27,16 @@ object StorageNetworking
 
         Function RPC_AccountInfoResult;
         { 
+            Reliable();
+        }
+
+        Function RPC_RequestContacts;
+        {
+            Reliable();
+        }
+
+        Function RPC_ContactsResult;
+        {
             Reliable();
         }
     }

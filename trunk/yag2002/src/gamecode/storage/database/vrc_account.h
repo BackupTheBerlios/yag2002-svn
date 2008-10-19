@@ -120,6 +120,9 @@ class UserData
         //! Get skills ID
         unsigned int                            getSkillsId() const;
 
+        //! Get user contants ( comma separated string )
+        const std::string&                      getContacts() const;
+
         //! Account ID
         unsigned int                            _userID;
 
@@ -134,6 +137,9 @@ class UserData
 
         //! Skills ID
         unsigned int                            _skillsID;
+
+        //! Comma separated contacts string
+        std::string                             _contacts;
 };
 
 } // namespace vrc

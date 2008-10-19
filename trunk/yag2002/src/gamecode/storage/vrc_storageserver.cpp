@@ -370,6 +370,40 @@ bool StorageServer::getPublicUserAccountInfo( UserAccount& account )
     return _p_storage->getPublicUserAccountInfo( account );
 }
 
+//! Get user contacts in comma separated names' string.
+bool StorageServer::getUserContacts( unsigned int userID, int sessionID, std::string& contacts )
+{
+    if ( !_connectionEstablished )
+        return false;
+
+    std::map< int, UserState* >::iterator p_user = _userCache.find( sessionID );
+    if ( p_user == _userCache.end() )
+    {
+        log_warning << "*** StorageServer: request for user contacts cannot be processed, invalid session ID " << sessionID << std::endl;
+        return false;
+    }
+
+    if ( p_user->second->_userAccount._userID != userID )
+    {
+        log_warning << "*** StorageServer: request for user accounts cannot be processed, user / session ID mismatch!" << std::endl;
+        return false;
+    }
+
+    UserData data;
+    if ( !_p_storage->getUserData( userID, data ) )
+        return false;
+
+    contacts = data.getContacts();
+
+    return true;
+}
+
+bool StorageServer::updateUserContacts( unsigned int userID, int sessionID, const std::string& contacts )
+{
+//! TODO
+    return true;
+}
+
 UserInventory* StorageServer::getUserInventory( unsigned int userID, int sessionID )
 {
     if ( !_connectionEstablished )

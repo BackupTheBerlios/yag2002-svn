@@ -86,7 +86,10 @@ class StorageClient : public yaf3d::Singleton< vrc::StorageClient >, public yaf3
 
                 virtual                             ~AccountInfoResult() {}
 
-                virtual void                        accountInfoResult( tAccountInfoData& info ) = 0;
+                virtual void                        accountInfoResult( tAccountInfoData& info ) {}
+
+                //! Get the user contact list. Used when requestContacts called before. If 'success is false then something went wrong.
+                virtual void                        contactsResult( bool success, const std::vector< std::string >& contacts ) {}
         };
 
         //! Request the server for account info, this is used by a successfully logged in user.
@@ -97,6 +100,9 @@ class StorageClient : public yaf3d::Singleton< vrc::StorageClient >, public yaf3
 
         //! Update the user account info. Note: currently, only the user description can be updated.
         bool                                        updateAccountInfo( tAccountInfoData& info );
+
+        //! Request for user contact list.
+        bool                                        requestUserContacts( class AccountInfoResult* p_cb );
 
         //! Get the unique user account ID
         unsigned int                                getUserID() const;

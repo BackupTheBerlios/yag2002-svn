@@ -147,7 +147,7 @@ class BaseMailboxStorage
         virtual bool                            getMail(  unsigned int userID, unsigned int mailID, MailboxContent& mailcontent ) = 0;
 
         //! Send mail
-        virtual bool                            sendMail(  unsigned int userID, const MailboxContent& mailcontent ) = 0;
+        virtual bool                            sendMail(  unsigned int userID, MailboxContent& mailcontent ) = 0;
 
         //! Delete mail with given ID.
         virtual bool                            deleteMail(  unsigned int userID, unsigned int mailID ) = 0;

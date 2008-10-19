@@ -97,6 +97,12 @@ class StorageServer : public yaf3d::Singleton< vrc::StorageServer >, public yaf3
         //! Get the user's public account information. Fill in the nickname in p_account before calling this method. Returns false if the user does not exist.
         bool                                        getPublicUserAccountInfo( UserAccount& account );
 
+        //! Get user contacts in comma separated names' string.
+        bool                                        getUserContacts( unsigned int userID, int sessionID, std::string& contacts );
+
+        //! Update user contacts.
+        bool                                        updateUserContacts( unsigned int userID, int sessionID, const std::string& contacts );
+
         //! Get the inventory of given user. The userID and sessionID must both match for any network connection! Returns NULL if something went wrong.
         UserInventory*                              getUserInventory( unsigned int userID, int sessionID );
 

@@ -60,8 +60,11 @@ class StorageNetworking : _RO_DO_PUBLIC_RO( StorageNetworking )
 
                 virtual                             ~CallbackAccountInfoResult() {}
 
-                //! Get the account information.
-                virtual void                        accountInfoResult( tAccountInfoData& info ) = 0;
+                //! Get the account information. Used when requestPublicAccountInfo called before.
+                virtual void                        accountInfoResult( tAccountInfoData& info ) {}
+
+                //! Get the user contact list. Used when requestContacts called before. If 'success is false then something went wrong.
+                virtual void                        contactsResult( bool success, const std::vector< std::string >& contacts ) {}
         };
 
         //! Request the server for account information, used by client. The callback is called when the result arrives.
@@ -72,6 +75,12 @@ class StorageNetworking : _RO_DO_PUBLIC_RO( StorageNetworking )
 
         //! Update the user account info, used by client. Note: currently, only the user description can be updated.
         void                                        updateAccountInfo( unsigned int userID, const tAccountInfoData& info );
+
+        //! Request for the contact list. 'contactsResult' of callback object will be called when result arrives.
+        void                                        requestContacts( unsigned int userID, CallbackAccountInfoResult* p_callback );
+
+        //! Update the contact list.
+        void                                        updateContacts( unsigned int userID, const std::vector< std::string >& contacts );
 
     protected:
 
@@ -87,11 +96,20 @@ class StorageNetworking : _RO_DO_PUBLIC_RO( StorageNetworking )
         //! Result of account info called on client.
         void                                        RPC_AccountInfoResult( tAccountInfoData info );
 
+        //! Request for user contacts.
+        void                                        RPC_RequestContacts( tUserContacts data );
+
+        //! User contacts request result.
+        void                                        RPC_ContactsResult( tUserContacts data );
+
         //! Account info callback
         CallbackAccountInfoResult*                  _p_accountInfoCallback;
 
         //! Account's public info callback
         CallbackAccountInfoResult*                  _p_accountPublicInfoCallback;
+
+        //! Contact list result callback
+        CallbackAccountInfoResult*                  _p_contactsCallback;
 
     friend class _MAKE_RO( StorageNetworking );
 };

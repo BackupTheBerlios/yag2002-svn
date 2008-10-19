@@ -267,7 +267,7 @@ bool MailboxPostgreSQL::getMail( unsigned int userID, unsigned int mailID, Mailb
     return true;
 }
 
-bool MailboxPostgreSQL::sendMail( unsigned int userID, const MailboxContent& mailcontent )
+bool MailboxPostgreSQL::sendMail( unsigned int userID, MailboxContent& mailcontent )
 {
     try
     {
@@ -362,6 +362,8 @@ bool MailboxPostgreSQL::sendMail( unsigned int userID, const MailboxContent& mai
     }
     catch( const std::exception& e )
     {
+        // store the error code into mail body in case of error
+        mailcontent._body = e.what();
         log_error << "MailboxPostgreSQL: problem on sending mail " << userID << ", reason: " << e.what()  << std::endl;
         return false;
     }
