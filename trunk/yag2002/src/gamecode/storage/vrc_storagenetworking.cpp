@@ -26,7 +26,7 @@
  #
  #   date of creation:  09/25/2007
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -277,6 +277,20 @@ void StorageNetworking::RPC_RequestContacts ( tUserContacts data )
     int          sessionID = GetProcessingDataBlocksFromSessionID();
     unsigned int userID    = StorageServer::get()->getUserID( sessionID );
 
+    if ( data._userID != userID )
+    {
+        log_warning << "StorageNetworking: requesting for contacts, mismatch in user ID: (" << data._userID << ", expected " << userID << ")" << std::endl;
+        log_warning << "StorageNetworking: skip handling" << std::endl;
+        return;
+    }
+
+    if ( static_cast< int >( data._sessionCookie ) != sessionID )
+    {
+        log_warning << "StorageNetworking: requesting for contacts, mismatch in session ID: (" << data._sessionCookie << ", expected " << sessionID << ")" << std::endl;
+        log_warning << "StorageNetworking: skip handling" << std::endl;
+        return;
+    }
+
     switch ( data._cmd )
     {
         case tUserContacts::eRequestContacts:
@@ -287,7 +301,7 @@ void StorageNetworking::RPC_RequestContacts ( tUserContacts data )
             response._cmd = tUserContacts::eRestuls;
 
             // if the call fails the reason can be picked up in 'contacts'
-            if ( !StorageServer::get()->getUserContacts( data._userID, data._sessionCookie, contacts ) )
+            if ( !StorageServer::get()->getUserContacts( userID, data._sessionCookie, contacts ) )
             {
                 log_error << "StorageNetworking: cannot get contacts, " << data._userID << ", reason: " << contacts << std::endl;
                 response._cmd |= tUserContacts::eError;

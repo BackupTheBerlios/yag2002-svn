@@ -23,7 +23,7 @@
  #
  #   date of creation:  18/10/2008
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  ****************************************************************/
 
@@ -44,9 +44,9 @@ MailboxGuiContacts::MailboxGuiContacts( MailboxGuiSend* p_mailboxsend, const std
  _p_frame( NULL ),
  _showDetails( false ),
  _p_listContacts( NULL ),
+ _p_btnDetails( NULL ),
  _p_btnAddTO( NULL ),
  _p_btnAddCC( NULL ),
- _p_btnDetails( NULL ),
  _p_editboxTo( NULL ),
  _p_editboxCC( NULL ),
  _p_detailsGui( NULL )

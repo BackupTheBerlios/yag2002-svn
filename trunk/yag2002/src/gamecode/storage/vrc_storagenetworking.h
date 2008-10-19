@@ -61,10 +61,10 @@ class StorageNetworking : _RO_DO_PUBLIC_RO( StorageNetworking )
                 virtual                             ~CallbackAccountInfoResult() {}
 
                 //! Get the account information. Used when requestPublicAccountInfo called before.
-                virtual void                        accountInfoResult( tAccountInfoData& info ) {}
+                virtual void                        accountInfoResult( tAccountInfoData& /*info*/ ) {}
 
                 //! Get the user contact list. Used when requestContacts called before. If 'success is false then something went wrong.
-                virtual void                        contactsResult( bool success, const std::vector< std::string >& contacts ) {}
+                virtual void                        contactsResult( bool /*success*/, const std::vector< std::string >& /*contacts*/ ) {}
         };
 
         //! Request the server for account information, used by client. The callback is called when the result arrives.

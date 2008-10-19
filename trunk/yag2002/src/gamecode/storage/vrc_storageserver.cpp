@@ -398,9 +398,10 @@ bool StorageServer::getUserContacts( unsigned int userID, int sessionID, std::st
     return true;
 }
 
-bool StorageServer::updateUserContacts( unsigned int userID, int sessionID, const std::string& contacts )
+bool StorageServer::updateUserContacts( unsigned int /*userID*/, int /*sessionID*/, const std::string& /*contacts*/ )
 {
-//! TODO
+    //! TODO
+
     return true;
 }
 

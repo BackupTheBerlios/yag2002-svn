@@ -86,10 +86,10 @@ class StorageClient : public yaf3d::Singleton< vrc::StorageClient >, public yaf3
 
                 virtual                             ~AccountInfoResult() {}
 
-                virtual void                        accountInfoResult( tAccountInfoData& info ) {}
+                virtual void                        accountInfoResult( tAccountInfoData& /*info*/ ) {}
 
                 //! Get the user contact list. Used when requestContacts called before. If 'success is false then something went wrong.
-                virtual void                        contactsResult( bool success, const std::vector< std::string >& contacts ) {}
+                virtual void                        contactsResult( bool /*success*/, const std::vector< std::string >& /*contacts*/ ) {}
         };
 
         //! Request the server for account info, this is used by a successfully logged in user.
