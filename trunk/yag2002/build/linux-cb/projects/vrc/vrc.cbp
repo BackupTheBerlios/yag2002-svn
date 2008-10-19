@@ -246,8 +246,9 @@
 		<Unit filename="../../../../src/gamecode/player/chat/vrc_chatserverVRC.h" />
 		<Unit filename="../../../../src/gamecode/player/mailbox/vrc_mailboxgui.cpp" />
 		<Unit filename="../../../../src/gamecode/player/mailbox/vrc_mailboxgui.h" />
-		<Unit filename="../../../../src/gamecode/player/mailbox/vrc_mailboxguimain.cpp" />
-		<Unit filename="../../../../src/gamecode/player/mailbox/vrc_mailboxguimain.h" />
+      <Unit filename="../../../../src/gamecode/player/mailbox/vrc_mailboxguicontacts.cpp" />
+      <Unit filename="../../../../src/gamecode/player/mailbox/vrc_mailboxguimain.cpp" />
+      <Unit filename="../../../../src/gamecode/player/mailbox/vrc_mailboxguimain.h" />
 		<Unit filename="../../../../src/gamecode/player/mailbox/vrc_mailboxguisend.cpp" />
 		<Unit filename="../../../../src/gamecode/player/mailbox/vrc_mailboxguisend.h" />
 		<Unit filename="../../../../src/gamecode/player/mailbox/vrc_mailboxguiview.cpp" />

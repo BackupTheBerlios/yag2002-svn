@@ -67,6 +67,7 @@ vrc_SOURCES = vrc_gameutils.cpp \
 			player/chat/VRC/vrc_chatprotVRC.cpp \
 			player/chat/VRC/networkingRoles/_RO_PlayerChat.cpp \
 			player/mailbox/vrc_mailboxgui.cpp \
+			player/mailbox/vrc_mailboxguicontacts.cpp \
 			player/mailbox/vrc_mailboxguimain.cpp \
 			player/mailbox/vrc_mailboxguisend.cpp \
 			player/mailbox/vrc_mailboxguiview.cpp \
