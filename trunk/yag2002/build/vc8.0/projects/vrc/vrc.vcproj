@@ -751,6 +751,14 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\..\..\src\gamecode\player\mailbox\vrc_mailboxguicontacts.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\src\gamecode\player\mailbox\vrc_mailboxguicontacts.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\..\..\src\gamecode\player\mailbox\vrc_mailboxguimain.cpp"
 						>
 					</File>
