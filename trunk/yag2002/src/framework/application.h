@@ -52,16 +52,16 @@ class Application : public Singleton< Application >
     public:
 
         //! Initialize application. Returns false if something goes wrong.
-        virtual bool                                initialize( int argc, char **argv );
+        bool                                        initialize( int argc, char **argv );
 
         //! Start main loop.
-        virtual void                                run();
+        void                                        run();
 
         //! Exit application
-        virtual void                                stop();
+        void                                        stop();
 
         //! Shutdown application
-        virtual void                                shutdown();
+        void                                        shutdown();
 
         //! Retrieve the media path root where the multimedia content resides
         inline const std::string&                   getMediaPath() const;
@@ -71,6 +71,9 @@ class Application : public Singleton< Application >
 
         //! Get osgProducer's viewer instance for this application
         inline osgSDL::Viewer*                      getViewer();
+
+        //! Get the update mutex, it is locked in updating phase.
+        inline OpenThreads::Mutex&                  getUpdateMutex();
 
         //! Get the draw mutex, it is locked in drawing phase. Use this if asynchronous threads need to update the drawables.
         inline OpenThreads::Mutex&                  getDrawMutex();
@@ -96,12 +99,7 @@ class Application : public Singleton< Application >
         //! Handle key input Ctrl+C
         void                                        handleCtrlC();
 
-    protected:
-
-
-                                                    Application();
-
-        virtual                                     ~Application();
+        //! The update methods below can be used when the main loop is not polled by 'run' method.
 
         //! Update for standalone mode
         void                                        updateStandalone( float deltaTime );
@@ -111,6 +109,12 @@ class Application : public Singleton< Application >
 
         //! Update for client mode
         void                                        updateClient( float deltaTime );
+
+    protected:
+
+                                                    Application();
+
+        virtual                                     ~Application();
 
         //! Uses by application window state handler
         inline void                                 setAppWindowMinimized( bool en );
@@ -128,6 +132,8 @@ class Application : public Singleton< Application >
         GameState*                                  _p_gameState;
 
         osgSDL::Viewer*                             _p_viewer;
+
+        OpenThreads::Mutex                          _updateMutex;
 
         OpenThreads::Mutex                          _drawMutex;
 

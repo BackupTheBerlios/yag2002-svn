@@ -37,6 +37,11 @@ inline osgSDL::Viewer* Application::getViewer()
     return _p_viewer;
 }
 
+OpenThreads::Mutex& Application::getUpdateMutex()
+{
+    return _updateMutex;
+}
+
 OpenThreads::Mutex& Application::getDrawMutex()
 {
     return _drawMutex;

@@ -571,14 +571,6 @@ bool Application::initialize( int argc, char **argv )
         }
     }
 
-    return true;
-}
-
-void Application::run()
-{
-    // set game state
-    _p_gameState->setState( GameState::StartRunning );
-
     // store sound manager reference for faster access in loop
     _p_soundManager = SoundManager::get();
 
@@ -587,6 +579,17 @@ void Application::run()
 
     // setup local app window state handler
     _p_appWindowStateHandler = new AppWindowStateHandler( this );
+
+    return true;
+}
+
+//! TODO: move to class
+bool _stopApplication = false;
+
+void Application::run()
+{
+    // set game state
+    _p_gameState->setState( GameState::StartRunning );
 
     // now the network can start
     if ( GameState::get()->getMode() == GameState::Client )
@@ -627,8 +630,7 @@ void Application::run()
         }
         else if ( deltaTime < LOWER_UPDATE_PERIOD_LIMIT )
         {
-
-            // limit the upper fps to about 60 frames / second ( there are crash problems in some gpu cards when vsynch is disabled )
+            // limit the upper fps to about 60 frames / second ( there are crash problems in some gpu cards when vsync is disabled )
             do
             {
                 OpenThreads::Thread::microSleep( 100 );
@@ -638,22 +640,33 @@ void Application::run()
             while ( deltaTime < LOWER_UPDATE_PERIOD_LIMIT );
         }
 
-        // update game
-        if ( GameState::get()->getMode() == GameState::Server )
-            updateServer( deltaTime );
-        else if ( GameState::get()->getMode() == GameState::Client )
-            updateClient( deltaTime );
-        else updateStandalone( deltaTime );
-
-        // calculate new delta-time
-        lastTick  = curTick;
-        curTick   = timer.tick();
-        deltaTime = timer.delta_s( lastTick, curTick );
-
-        // we handle Ctrl+C in main thread context
-        if ( _ctrlCPressed )
+        // update the simulation, lock it in order to give a chance to asynchronous threads for accessing resources
+        if ( !_updateMutex.trylock() )
         {
-            _p_gameState->setState( GameState::Quitting );
+            // update game
+            if ( GameState::get()->getMode() == GameState::Server )
+                updateServer( deltaTime );
+            else if ( GameState::get()->getMode() == GameState::Client )
+                updateClient( deltaTime );
+            else updateStandalone( deltaTime );
+
+            // calculate new delta-time
+            lastTick  = curTick;
+            curTick   = timer.tick();
+            deltaTime = timer.delta_s( lastTick, curTick );
+
+            // we handle Ctrl+C in main thread context
+            if ( _ctrlCPressed )
+            {
+                _p_gameState->setState( GameState::Quitting );
+            }
+
+            // check for stopping application
+            if ( _stopApplication )
+                _p_gameState->setState( GameState::Quitting );
+
+            // unlock the update mutex
+            _updateMutex.unlock();
         }
 
         // check heap if enabled ( used for detecting heap corruptions )
@@ -758,7 +771,7 @@ void Application::updateServer( float deltaTime )
 
 void Application::stop()
 {
-    _p_gameState->setState( GameState::Quitting );
+    _stopApplication = true;
 }
 
 } // namespace yaf3d
