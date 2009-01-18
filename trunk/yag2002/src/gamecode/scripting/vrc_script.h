@@ -52,7 +52,7 @@ namespace vrc
 /**
 * 'params' is a Params object.
 * 'index'  is the index in 'params' object for desired value.
-* 'type'   is the type of parameter at specified index. Supported types are: float, double, int, std::string
+* 'type'   is the type of parameter at specified index. Supported types are: float, double, int, unsigned int, std::string, and bool
 * 'value'  is the value to be set at given index in params object.
 *
 * Note: there are no typechecks provided. Make sure that you use these macros -- in particular 'index' and 'type' -- according to
