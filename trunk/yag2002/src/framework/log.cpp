@@ -51,10 +51,7 @@ _enableTimeStamp( true )
 
 Log::~Log()
 {
-    // delete all allocated streams, except the std streams
-    std::vector< Sink* >::iterator p_sink = _sinks.begin(), p_sinkEnd = _sinks.end();
-    for ( ; p_sink != p_sinkEnd; p_sink++ )
-        delete *p_sink;
+    reset();
 }
 
 bool Log::addSink( const std::string& sinkname, const std::string& filename, unsigned int loglevel )
@@ -71,7 +68,7 @@ bool Log::addSink( const std::string& sinkname, const std::string& filename, uns
     {
         if ( ( *p_sink )->_name == sinkname )
         {
-            log_error << "sink name '" << sinkname << "' already exists!" << std::endl;
+            log_warning << "sink name '" << sinkname << "' already exists!" << std::endl;
             return false;
         }
     }
@@ -108,7 +105,7 @@ bool Log::addSink( const std::string& sinkname, std::ostream& sink, unsigned int
     {
         if ( ( *p_beg )->_name == sinkname )
         {
-            log_error << "sink name '" << sinkname << "' already exists!"  << std::endl;
+            log_warning << "sink name '" << sinkname << "' already exists!"  << std::endl;
             return false;
         }
     }
@@ -148,6 +145,16 @@ void Log::enableSeverityLevelPrinting( bool en )
 void Log::enableTimeStamp( bool en )
 {
     _enableTimeStamp = en;
+}
+
+void Log::reset()
+{
+    // delete all allocated streams, except the std streams
+    std::vector< Sink* >::iterator p_sink = _sinks.begin(), p_sinkEnd = _sinks.end();
+    for ( ; p_sink != p_sinkEnd; p_sink++ )
+        delete *p_sink;
+
+    _sinks.clear();
 }
 
 void Log::out( const std::string& msg )
@@ -228,7 +235,7 @@ std::basic_ios< char >::int_type Log::LogStreamBuf::overflow( int_type c )
 
 std::ostream& Log::operator << ( const Log::LogLevel& ll )
 {
-    setSeverity( ll._level );    
+    setSeverity( ll._level );
     return *this;
 }
 

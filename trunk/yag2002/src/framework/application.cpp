@@ -118,6 +118,7 @@ class AppWindowStateHandler : public GameState::CallbackAppWindowStateChange
 YAF3D_SINGLETON_IMPL( Application )
 
 Application::Application():
+_stopApplication( false ),
 _p_networkDevice( NULL ),
 _p_entityManager( EntityManager::get() ),
 _p_guiManager( NULL ),
@@ -583,9 +584,6 @@ bool Application::initialize( int argc, char **argv )
     return true;
 }
 
-//! TODO: move to class
-bool _stopApplication = false;
-
 void Application::run()
 {
     // set game state
@@ -685,7 +683,7 @@ void Application::updateStandalone( float deltaTime )
     // update the scene
     _p_viewer->update();
 
-    // same some cpu usage when app window is minimized
+    // save some cpu usage when app window is minimized
     if ( !_appWindowMinimized )
     {
         // update gui manager
@@ -723,7 +721,7 @@ void Application::updateClient( float deltaTime )
     // update the scene
     _p_viewer->update();
 
-    // same some cpu usage when app window is minimized
+    // save some cpu usage when app window is minimized
     if ( !_appWindowMinimized )
     {
         // update gui manager

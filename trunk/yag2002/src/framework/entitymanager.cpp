@@ -94,14 +94,13 @@ void EntityManager::updateEntityLists()
     _internalState = UpdatingEntities;
 
     // delete queued entities for deletion
-    std::vector< BaseEntity* >::iterator p_delentity = _queueDeletedEntities.begin(), p_delentityEnd = _queueDeletedEntities.end();
-    for ( ; p_delentity != p_delentityEnd; ++p_delentity )
+    while ( _queueDeletedEntities.size() )
     {
-        BaseEntity* p_rementity = *p_delentity;
+        BaseEntity* p_rementity = _queueDeletedEntities.front();
+        _queueDeletedEntities.pop();
         // remove entity from pool and delete it
         removeFromEntityPool( p_rementity, true );
     }
-    _queueDeletedEntities.clear();
 
     // add new to be updated entities into update entity list, or remove those which are deregistered
     std::vector< std::pair< BaseEntity*, bool > >::iterator p_beg = _queueUpdateEntities.begin(), p_end = _queueUpdateEntities.end();
@@ -530,7 +529,7 @@ void EntityManager::updateEntities( float deltaTime  )
 void EntityManager::deleteEntity( BaseEntity* p_entity )
 {
     // enqueue entity for deletion. the real deletion will occur on next update phase
-    _queueDeletedEntities.push_back( p_entity );
+    _queueDeletedEntities.push( p_entity );
 }
 
 void EntityManager::deleteAllEntities()
@@ -541,7 +540,7 @@ void EntityManager::deleteAllEntities()
         // delete only if entity is not persistent
         if ( !( ( *p_beg )->isPersistent() ) )
         {
-            _queueDeletedEntities.push_back( *p_beg );
+            _queueDeletedEntities.push( *p_beg );
         }
     }
 
@@ -582,14 +581,15 @@ void EntityManager::getPersistentEntities( std::vector< BaseEntity* >& entities 
 
 // entity factory base class
 //-----------------------
-BaseEntityFactory::BaseEntityFactory( const std::string& entityTypeName, unsigned int ntype ) : 
+BaseEntityFactory::BaseEntityFactory( const std::string& entityTypeName, unsigned int creationpolicy, unsigned int initpolicy ) :
 _typeTypeName( entityTypeName ),
-_creationPolicy( ntype )
+_creationPolicy( creationpolicy ),
+_initializationPolicy( initpolicy )
 {
     // register factory
     EntityManager::get()->registerFactory( this, true );
 }
-        
+
 BaseEntityFactory::~BaseEntityFactory()
 {
     // deregister factory

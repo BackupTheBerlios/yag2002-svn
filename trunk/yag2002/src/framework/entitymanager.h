@@ -179,7 +179,7 @@ class EntityManager : public Singleton< EntityManager >
         std::vector< BaseEntity* >                  _updateEntities;
 
         //! List of entities to be deleted on next update
-        std::vector< BaseEntity* >                  _queueDeletedEntities;
+        std::queue< BaseEntity* >                   _queueDeletedEntities;
 
         //! List of entities to be added / removed to / from update list on next update
         std::vector< std::pair< BaseEntity*, bool > > _queueUpdateEntities;
@@ -228,7 +228,26 @@ class BaseEntityFactory
 {
     public:
 
-                                                    BaseEntityFactory( const std::string& entityTypeName, unsigned int ntype );
+        //! Entity's creation policy. This is used by level loader in order to decide whether to create an entity described by a level file
+        //!  depending on the game mode ( server, client, or standalone ).
+        enum CreationPolicy
+        {
+            Standalone     = 0x0001,
+            Server         = 0x0002,
+            Client         = 0x0004
+        };
+
+        //! Entity's initialization policy. Some entities can be created and initialized any time, others may need the initialization only
+        //!  during a particular state. E.g. entities using the physics system need the initialization during physics setup which occurs on level loading.
+        enum InitializationPolicy
+        {
+            OnLoadingLevel = 0x0010,                          // init only during level loading
+            OnRunningLevel = 0x0020,                          // init only after level loading during the game is running
+            AnyTime        = OnLoadingLevel | OnRunningLevel  // can init any time
+        };
+
+
+                                                    BaseEntityFactory( const std::string& entityTypeName, unsigned int creationpolicy, unsigned int initpolicy = AnyTime );
 
         virtual                                     ~BaseEntityFactory();
 
@@ -240,17 +259,11 @@ class BaseEntityFactory
         //! Get creation policy. It can be a bitwise-or of BaseEntityFactory::Standalone, BaseEntityFactory::Server, and BaseEntityFactory::Client.
         inline unsigned int                         getCreationPolicy() const;
 
+        //! Get initialization policy.
+        inline unsigned int                         getInitializationPolicy() const;
+
         //! Comparision operator for entity factories
         inline bool                                 operator == ( const BaseEntityFactory& factory ) const;
-
-        //! Entity's creation policy. This is used by level loader in order to decide whether to create an entity described by a level file
-        //!  depending on the game mode ( server, client, or standalone ).
-        enum CreationPolicy
-        {
-            Standalone = 0x1,
-            Server     = 0x2,
-            Client     = 0x4
-        };
 
     protected:
 
@@ -259,6 +272,8 @@ class BaseEntityFactory
         const std::string                           _typeTypeName;
 
         unsigned int                                _creationPolicy;
+
+        unsigned int                                _initializationPolicy;
 };
 
 } // namespace yaf3d
@@ -287,6 +302,11 @@ inline bool yaf3d::BaseEntityFactory::operator == ( const yaf3d::BaseEntityFacto
 inline unsigned int yaf3d::BaseEntityFactory::getCreationPolicy() const
 {
     return _creationPolicy;
+}
+
+inline unsigned int yaf3d::BaseEntityFactory::getInitializationPolicy() const
+{
+    return _initializationPolicy;
 }
 
 inline void yaf3d::BaseEntityFactory::setEntityType( yaf3d::BaseEntity* p_entity ) const

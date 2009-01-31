@@ -119,6 +119,8 @@ class Application : public Singleton< Application >
         //! Uses by application window state handler
         inline void                                 setAppWindowMinimized( bool en );
 
+        bool                                        _stopApplication;
+
         NetworkDevice*                              _p_networkDevice;
 
         EntityManager*                              _p_entityManager;

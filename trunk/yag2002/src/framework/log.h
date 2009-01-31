@@ -94,6 +94,9 @@ class Log : public std::basic_ostream< char >
         //! Enable/disable timestamps, the default is 'enabled'.
         void                                        enableTimeStamp( bool en );
 
+        //! Reset the log system, all registered sinks are removed.
+        void                                        reset();
+
         //! Struct for setting new loglevel via stream operator <<
         struct LogLevel
         {

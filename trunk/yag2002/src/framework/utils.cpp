@@ -408,6 +408,11 @@ std::string cleanPath( const std::string& path )
                 cleanpath = tmp.substr( 0, posback );
                 cleanpath += tmp.substr( pos + 3 );
             }
+            else
+            {
+                cleanpath = cleanpath.substr( pos + 4 );
+                pos = std::string::npos;
+            }
         }
     }
     while ( pos != std::string::npos );

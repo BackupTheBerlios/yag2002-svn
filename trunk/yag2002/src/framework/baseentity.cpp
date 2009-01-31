@@ -32,6 +32,8 @@
 #include "baseentity.h"
 #include "log.h"
 #include "entitymanager.h"
+#include "gamestate.h"
+
 
 namespace yaf3d
 {
@@ -84,9 +86,16 @@ BaseEntity* BaseEntity::clone( const std::string& instanceName, osg::Group* p_sc
         osg::PositionAttitudeTransform* p_trans = new osg::PositionAttitudeTransform( *_p_transformNode /*, osg::CopyOp::DEEP_COPY_ALL*/ );
         p_entity->setTransformationNode( p_trans );
         if ( !p_scenegroup )
-             EntityManager::get()->addToScene( p_entity, _p_transformNode->getParent( 0 ) );
+        {
+            if ( _p_transformNode->getParents().size() )
+                EntityManager::get()->addToScene( p_entity, _p_transformNode->getParent( 0 ) );
+            else
+                log_warning << "BaseEntity: clonee has no transformation node parent" << std::endl;
+        }
         else
+        {
             p_scenegroup->addChild( p_trans );
+        }
     }
 
     return p_entity;
@@ -98,8 +107,21 @@ BaseEntity* BaseEntity::cloneAndInitialize( const std::string& instanceName, osg
     if ( !p_entity )
         return NULL;
 
-    p_entity->initialize();
-    p_entity->postInitialize();
+    // consider the initialization policy
+    BaseEntityFactory* p_factory = EntityManager::get()->getEntityFactory( p_entity->getTypeName() );
+    assert( p_factory && "entity factory could not be found!" );
+
+    unsigned int initpolicy = p_factory->getInitializationPolicy();
+
+    if ( ( initpolicy == BaseEntityFactory::AnyTime ) ||
+         ( ( initpolicy == BaseEntityFactory::OnLoadingLevel ) && ( GameState::get()->getState() == GameState::StartingLevel ) ) ||
+         ( ( initpolicy == BaseEntityFactory::OnRunningLevel ) && ( GameState::get()->getState() == GameState::MainLoop ) )
+       )
+    {
+        p_entity->initialize();
+        p_entity->postInitialize();
+    }
+
     return p_entity;
 }
 

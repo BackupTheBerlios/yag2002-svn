@@ -129,10 +129,10 @@ class FileSystem : public Singleton< FileSystem >
 {
     public:
 
-        //! Get the file with given name. If the file could not be loaded then the file pointer object will be invalid ( use the function valid() of smart pointer to chek ).
+        //! Get the file with given name. If the file could not be loaded then the file pointer object will be invalid ( use the function valid() of smart pointer to check ).
         FilePtr                                     getFile( const std::string& filename );
 
-        //! Get a list of files in given directory. Filter the files with given extension, of ext is not empty. Return the count of files.
+        //! Get a list of files in given directory. Filter the files with given extension, if ext is not empty. Return the count of files.
         unsigned int                                listFiles( std::vector< std::string >& files, const std::string& dir, const std::string& ext = "" ) const;
 
     protected:

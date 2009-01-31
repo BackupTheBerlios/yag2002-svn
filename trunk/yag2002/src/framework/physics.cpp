@@ -453,8 +453,16 @@ void Physics::setupMaterials()
 int Physics::createMaterialID( const std::string& materialType )
 {
     std::map< std::string, int >::iterator id = _materials.find( materialType );
-    assert( _p_world && "physics world has not been created, first initialize the physics system" );
-    assert( id == _materials.end() && "material already exists!" );
+    if ( !_p_world )
+    {
+        log_error << "Physics: physics world has not been created, first initialize the physics system: " << materialType << std::endl;
+        return -1;
+    }
+    if ( id != _materials.end() )
+    {
+        log_error << "Physics: trying to create a material which already exists: " << materialType << std::endl;
+        return -1;
+    }
 
     int matID = NewtonMaterialCreateGroupID( _p_world );
     _materials.insert( make_pair( materialType, matID ) );
@@ -464,7 +472,12 @@ int Physics::createMaterialID( const std::string& materialType )
 int Physics::getMaterialId( const std::string& materialType )
 {
     std::map< std::string, int >::iterator id = _materials.find( materialType );
-    assert( id != _materials.end() && "requesting for an invalid material id!" );
+    if ( id == _materials.end() )
+    {
+        log_error << "Physics: requesting for an invalid material id: " << materialType << std::endl;
+        return -1;
+    }
+
     return id->second;
 }
 
