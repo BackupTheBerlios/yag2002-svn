@@ -267,6 +267,9 @@ void EnMenu::handleNotification( const yaf3d::EntityNotification& notification )
         // we have to trigger the deletion ourselves! ( we disabled auto-deletion for this entity )
         case YAF3D_NOTIFY_SHUTDOWN:
             yaf3d::EntityManager::get()->deleteEntity( this );
+            if ( _p_cameraControl )
+                delete _p_cameraControl;
+            _p_cameraControl = NULL;
             break;
 
         default:

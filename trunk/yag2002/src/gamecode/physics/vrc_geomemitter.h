@@ -87,7 +87,10 @@ class GeomEmitteEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     GeomEmitteEntityFactory() : 
-                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_GEOMEMITTER, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_GEOMEMITTER,
+                                                                               yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client,
+                                                                               yaf3d::BaseEntityFactory::OnLoadingLevel
+                                                                              )
                                                     {}
 
         virtual                                     ~GeomEmitteEntityFactory() {}

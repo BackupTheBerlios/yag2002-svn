@@ -88,7 +88,10 @@ class PhysicsBoxEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     PhysicsBoxEntityFactory() : 
-                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PHYSICSBOX, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PHYSICSBOX,
+                                                                               yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client,
+                                                                               yaf3d::BaseEntityFactory::OnLoadingLevel
+                                                                              )
                                                     {}
 
         virtual                                     ~PhysicsBoxEntityFactory() {}

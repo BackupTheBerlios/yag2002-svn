@@ -98,7 +98,10 @@ class PhysicsCylinderEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     PhysicsCylinderEntityFactory() : 
-                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PHYSICSCYLINDER, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PHYSICSCYLINDER,
+                                                                               yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client,
+                                                                               yaf3d::BaseEntityFactory::OnLoadingLevel
+                                                                              )
                                                     {}
 
         virtual                                     ~PhysicsCylinderEntityFactory() {}

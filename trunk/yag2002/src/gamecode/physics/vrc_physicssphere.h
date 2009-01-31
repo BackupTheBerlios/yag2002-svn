@@ -94,7 +94,10 @@ class PhysicsSphereEntityFactory : public yaf3d::BaseEntityFactory
 {
     public:
                                                     PhysicsSphereEntityFactory() : 
-                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PHYSICSSPHERE, yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client )
+                                                     yaf3d::BaseEntityFactory( ENTITY_NAME_PHYSICSSPHERE,
+                                                                               yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client,
+                                                                               yaf3d::BaseEntityFactory::OnLoadingLevel
+                                                                              )
                                                     {}
 
         virtual                                     ~PhysicsSphereEntityFactory() {}

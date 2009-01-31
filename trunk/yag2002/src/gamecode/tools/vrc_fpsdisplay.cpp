@@ -40,7 +40,7 @@ namespace vrc
 YAF3D_IMPL_ENTITYFACTORY( FPSDisplayEntityFactory )
 
 EnFPSDisplay::EnFPSDisplay() :
-_position( osg::Vec3f( 0.001f, 0.001f, 0 ) ),
+_position( osg::Vec2f( 0.001f, 0.001f ) ),
 _fpsTimer( 0 ),
 _fps( 0 ),
 _enable( true ),
@@ -97,13 +97,17 @@ void EnFPSDisplay::initialize()
 {
     try
     {
-        _p_wnd = CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", STAT_WND "mainWnd" );
+        std::stringstream num;
+        static int uniquenum = 0;
+        num << uniquenum++;
+
+        _p_wnd = CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", std::string( STAT_WND "mainWnd" ) + num.str() );
         _p_wnd->setSize( CEGUI::Size( 0.1f, 0.05f ) );
         _p_wnd->setPosition( CEGUI::Point( _position.x(), _position.y() ) );
         _p_wnd->setAlpha( 0.7f );
         _p_wnd->setAlwaysOnTop( true );
 
-        _p_outputText = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", STAT_WND "output" ) );
+        _p_outputText = static_cast< CEGUI::StaticText* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticText", std::string( STAT_WND "output" ) + num.str() ) );
         _p_outputText->setSize( CEGUI::Size( 1.0f, 1.0f ) );
         _p_outputText->setPosition( CEGUI::Point( 0.0f, 0.0f ) );
         _p_outputText->setHorizontalFormatting( CEGUI::StaticText::HorzCentred );

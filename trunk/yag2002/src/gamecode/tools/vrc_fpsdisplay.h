@@ -60,7 +60,7 @@ class EnFPSDisplay :  public yaf3d::BaseEntity
 
     protected:
 
-        osg::Vec3f                                  _position;
+        osg::Vec2f                                  _position;
 
 
     protected:

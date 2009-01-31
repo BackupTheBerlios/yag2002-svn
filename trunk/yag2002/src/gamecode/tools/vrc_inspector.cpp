@@ -158,6 +158,14 @@ class InspectorIH : public vrc::gameutils::GenericInputHandler< EnInspector >
                                             {
                                                 delete _p_pickResults;
                                                 _p_pickResults = NULL;
+
+                                                if ( _bboxGeode.valid() )
+                                                {
+                                                    if ( _bboxGeode->getParents().size() )
+                                                        _bboxGeode->getParent( 0 )->removeChild( _bboxGeode.get() );
+
+                                                    _bboxGeode = NULL;
+                                                }
                                             }
 
         bool                                handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
@@ -628,11 +636,12 @@ _fpsCounter( 0 ),
 _fps( 0 )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "position", _position );
-    getAttributeManager().addAttribute( "rotation", _rotation );
-    getAttributeManager().addAttribute( "maxSpeed", _maxSpeed );
-    getAttributeManager().addAttribute( "farClip",  _farClip );
-    getAttributeManager().addAttribute( "fov",      _fov );
+    getAttributeManager().addAttribute( "position",     _position );
+    getAttributeManager().addAttribute( "rotation",     _rotation );
+    getAttributeManager().addAttribute( "maxSpeed",     _maxSpeed );
+    getAttributeManager().addAttribute( "farClip",      _farClip );
+    getAttributeManager().addAttribute( "fov",          _fov );
+    getAttributeManager().addAttribute( "persistent",   _isPersistent );
 }
 
 EnInspector::~EnInspector()
@@ -640,12 +649,22 @@ EnInspector::~EnInspector()
     try
     {
         CEGUI::WindowManager::getSingleton().destroyWindow( _p_wndMain );
+        CEGUI::WindowManager::getSingleton().destroyWindow( _p_wndPicker );
     }
     catch ( const CEGUI::Exception& e )
     {
         log_error << "EnInspector: problem cleaning up entity." << std::endl;
         log_out << "      reason: " << e.getMessage().c_str() << std::endl;
     }
+
+    if ( _inputHandler.valid() )
+    {
+        _inputHandler->destroyHandler();
+        _inputHandler = NULL;
+    }
+
+    if ( _p_cameraEntity )
+        yaf3d::EntityManager::get()->deleteEntity( _p_cameraEntity );
 }
 
 void EnInspector::handleNotification( const yaf3d::EntityNotification& notification )

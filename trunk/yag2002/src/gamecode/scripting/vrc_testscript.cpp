@@ -35,7 +35,7 @@ namespace vrc
 {
 
 //! Implement and register the entity factory
-YAF3D_IMPL_ENTITYFACTORY( TestScriptEntityFactory )
+//YAF3D_IMPL_ENTITYFACTORY( TestScriptEntityFactory )
 
 EnTestScript::EnTestScript()
 {
