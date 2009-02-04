@@ -63,6 +63,8 @@ _enable( true )
 
 EnSpotLight::~EnSpotLight()
 {
+    if ( _lightSource.valid() )
+        _lightSource->setCullCallback( NULL );
 }
 
 void EnSpotLight::handleNotification( const yaf3d::EntityNotification& notification )

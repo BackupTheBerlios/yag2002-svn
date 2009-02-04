@@ -295,7 +295,8 @@ std::string getTimeStamp()
 {
     time_t t;
     time( &t );
-    return std::string( asctime( localtime( &t ) ) );
+    std::string str( asctime( localtime( &t ) ) );
+    return str.substr( 0, str.length() - 2 );
 }
 
 std::string getFormatedDate()

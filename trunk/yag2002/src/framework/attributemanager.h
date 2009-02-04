@@ -84,6 +84,12 @@ class BaseEntityAttribute
         virtual unsigned int                        getType() const = 0;
 
         /**
+        * Get attribute type as string
+        * \retrun                                   Attribute type
+        */
+        virtual std::string                         getTypeAsString() const = 0;
+
+        /**
         * Get type info of this attribute
         * \return                                   Type info
         */
@@ -129,6 +135,12 @@ class EntityAttribute : public BaseEntityAttribute
         * \retrun                                   Attribute type
         */
         unsigned int                                getType() const;
+
+        /**
+        * Get attribute type as string
+        * \retrun                                   Attribute type as string
+        */
+        std::string                                 getTypeAsString() const;
 
         /**
         * Get type info of this attribute
@@ -181,9 +193,9 @@ class AttributeManager
 
         /**
         * Get all attribute names and values as string.
-        * \param attributes                         The result will be stored in this list.
+        * \param attributes                         The result will be stored in this list. The inner vector contains a tuple of: <Name, Value, Type>.
         */
-        void                                        getAttributesAsString( std::vector< std::pair< std::string, std::string > >& attributes );
+        void                                        getAttributesAsString( std::vector< std::vector< std::string > >& attributes );
 
         /**
         * Get attribute value given its name. This method does a type check.

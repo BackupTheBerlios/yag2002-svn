@@ -212,8 +212,11 @@ bool Settings::load( bool readonly, const std::string& filename )
         if ( settings_typeinfo == typeid( float ) ) {
             read( p_setting->getTokenName(), static_cast< Setting< float >* >( p_setting )->_value );
         } else 
-         if ( settings_typeinfo == typeid( osg::Vec3f ) ) {
+        if ( settings_typeinfo == typeid( osg::Vec3f ) ) {
              read( p_setting->getTokenName(), static_cast< Setting< osg::Vec3f >* >( p_setting )->_value );
+        } else 
+        if ( settings_typeinfo == typeid( osg::Vec2f ) ) {
+             read( p_setting->getTokenName(), static_cast< Setting< osg::Vec2f >* >( p_setting )->_value );
         } else 
             assert( NULL && "unsupported setting type" );
     }
@@ -277,6 +280,9 @@ bool Settings::store( const std::string& filename )
         } else
         if ( settings_typeinfo == typeid( osg::Vec3f ) ) {
             write( p_setting->getTokenName(), static_cast< Setting< osg::Vec3f >* >( p_setting )->_value );
+        } else
+        if ( settings_typeinfo == typeid( osg::Vec2f ) ) {
+            write( p_setting->getTokenName(), static_cast< Setting< osg::Vec2f >* >( p_setting )->_value );
         } else
             assert( NULL && "unsupported setting type" );
     }
@@ -377,6 +383,17 @@ bool Settings::read( const std::string& token, osg::Vec3f& value )
     return true;
 }
 
+bool Settings::read( const std::string& token, osg::Vec2f& value )
+{
+    std::string  strvalue;
+    if ( read( token, strvalue ) == false ) 
+        return false;
+
+    std::stringstream strstream( strvalue );
+    strstream >> value._v [ 0 ] >> value._v [ 1 ];
+    return true;
+}
+
 bool Settings::write( const std::string& token, const std::string& value )
 {
     // clean up the string first! some utf8 or unicode strings may be in the settings file.
@@ -425,6 +442,14 @@ bool Settings::write( const std::string& token, const osg::Vec3f& value )
 {
     std::stringstream str;
     str << token << "=" << value._v[ 0 ] << " " << value._v[ 1 ] << " " << value._v[ 2 ] << "\r\n";
+    _fileBuffer += str.str();
+    return true;
+}
+
+bool Settings::write( const std::string& token, const osg::Vec2f& value )
+{
+    std::stringstream str;
+    str << token << "=" << value._v[ 0 ] << " " << value._v[ 1 ] << "\r\n";
     _fileBuffer += str.str();
     return true;
 }

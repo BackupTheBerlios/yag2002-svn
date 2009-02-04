@@ -45,7 +45,8 @@ YAF3D_IMPL_ENTITYFACTORY( NATServerEntityFactory )
 EnNATServer::EnNATServer() :
  _p_socket( NULL )
 {
-    assert( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server && "this entity can be created only on server!" );
+    if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Server )
+        log_warning << "NATServer: this entity can be created only on server!" << std::endl;
 }
 
 EnNATServer::~EnNATServer()

@@ -59,6 +59,8 @@ _enable( true )
 
 EnPointLight::~EnPointLight()
 {
+    if ( _lightSource.valid() )
+        _lightSource->setCullCallback( NULL );
 }
 
 void EnPointLight::handleNotification( const yaf3d::EntityNotification& notification )
@@ -142,9 +144,9 @@ void EnPointLight::initialize()
         else
             addToTransformationNode( mesh.get() );
     }
-    
+
     // register entity in order to get menu notifications
-    yaf3d::EntityManager::get()->registerNotification( this, true );    
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 osg::ref_ptr< osg::Light > EnPointLight::setupLight()

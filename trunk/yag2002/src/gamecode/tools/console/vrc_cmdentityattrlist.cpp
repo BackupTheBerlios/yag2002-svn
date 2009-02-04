@@ -66,14 +66,14 @@ const std::string& CmdEntityAttributeList::execute( const std::vector< std::stri
         return _cmdResult;
     }
 
-    std::vector< std::pair< std::string, std::string > > attributes;
+    std::vector< std::vector< std::string > > attributes;
     p_entity->getAttributeManager().getAttributesAsString( attributes );
 
     std::string info;
-    std::vector< std::pair< std::string, std::string > >::iterator p_beg = attributes.begin(), p_end = attributes.end();
+    std::vector< std::vector< std::string > >::iterator p_beg = attributes.begin(), p_end = attributes.end();
     for ( ; p_beg != p_end; ++p_beg )
     {
-        info += p_beg->first + "  [  " + p_beg->second + "  ] \n";
+        info += ( *p_beg )[ 0 ] + "  [  " + ( *p_beg )[ 1 ] + "  ] \n";
     }
     _cmdResult = info;
 

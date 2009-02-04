@@ -205,6 +205,7 @@ bool Application::initialize( int argc, char **argv )
     srand( static_cast< unsigned int >( t ) );
 
     std::string arg_levelname;
+    bool        arg_nodefaultlvl = false;
     // use an ArgumentParser object to manage the program arguments.
     osg::ArgumentParser arguments( &argc,argv );
     osg::ArgumentParser::Parameter levelparam( arg_levelname );
@@ -221,6 +222,11 @@ bool Application::initialize( int argc, char **argv )
     else if ( ( argpos = arguments.find( "-client" ) ) != 0 )
     {
         GameState::get()->setMode( GameState::Client );
+        arguments.remove( argpos );
+    }
+    if ( ( argpos = arguments.find( "-nodefaultlevel" ) ) != 0 )
+    {
+        arg_nodefaultlvl = true;
         arguments.remove( argpos );
     }
 
@@ -517,7 +523,7 @@ bool Application::initialize( int argc, char **argv )
         EntityNotification notification( YAF3D_NOTIFY_MENU_LEAVE );
         EntityManager::get()->sendNotification( notification );
     }
-    else // check for any level file name, so we try to start in Standalone mode
+    else if ( !arg_nodefaultlvl ) // check for any level file name, so we try to start in Standalone mode if not no-default-level option is given
     {
         std::string defaultlevel = arg_levelname.length() ? ( std::string( YAF3D_LEVEL_SALONE_DIR ) + arg_levelname ) : std::string( YAF3D_DEFAULT_LEVEL );
         log_info << "Application: loading level file '" << defaultlevel << "'" << std::endl;
@@ -544,6 +550,17 @@ bool Application::initialize( int argc, char **argv )
             EntityNotification notification( YAF3D_NOTIFY_MENU_LEAVE );
             EntityManager::get()->sendNotification( notification );
         }
+    }
+
+    if ( arg_nodefaultlvl )
+    {
+        // set game mode to standalone
+        GameState::get()->setMode( GameState::Standalone );
+
+        // setup the level manager
+        LevelManager::get()->finalizeLoading();
+        // setup the root node
+        _rootSceneNode->addChild( LevelManager::get()->getTopNodeGroup().get() );
     }
 
     // setup the shadow mananger now

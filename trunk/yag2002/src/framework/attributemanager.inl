@@ -72,6 +72,27 @@ unsigned int EntityAttribute< TypeT >::getType() const
 }
 
 template< class TypeT >
+std::string EntityAttribute< TypeT >::getTypeAsString() const
+{
+    if ( _type == EntityAttributeType::INTEGER )
+        return "Integer";
+    else if ( _type == EntityAttributeType::FLOAT )
+        return "Float";
+    else if ( _type == EntityAttributeType::BOOL )
+        return "Bool";
+    else if ( _type == EntityAttributeType::VECTOR2 )
+        return "Vector2";
+    else if ( _type == EntityAttributeType::VECTOR3 )
+        return "Vector3";
+    else if ( _type == EntityAttributeType::STRING )
+        return "String";
+
+    assert( NULL && "unsupported attribute type!" );
+
+    return "";
+}
+
+template< class TypeT >
 const std::type_info& EntityAttribute< TypeT >::getTypeInfo() const
 {
     return typeid( TypeT );

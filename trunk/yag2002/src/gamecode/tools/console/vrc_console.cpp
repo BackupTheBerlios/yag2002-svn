@@ -67,9 +67,6 @@ EnConsole::~EnConsole()
     if ( _p_ioHandler )
         _p_ioHandler->shutdown();
 
-    // destroy the cmd registry singleton
-    ConsoleCommandRegistry::get()->destroy();
-
     if ( _p_log )
         closeLog();
 }

@@ -100,7 +100,7 @@ const std::string& CmdEntityDump::execute( const std::vector< std::string >& arg
         _cmdResult = "dumping entity '" +  arguments[ 0 ] + "' to file: " + dumpfile;
         
         yaf3d::BaseEntityFactory* p_factory = yaf3d::EntityManager::get()->getEntityFactory( p_entity->getTypeName() );
-        dumpcontent += dumpEntity( p_entity, p_factory->getCreationPolicy() );
+        dumpcontent += dumpEntity( p_entity, p_factory->getCreationPolicy(), p_factory->getInitializationPolicy() );
     }
     else
     {
@@ -116,7 +116,7 @@ const std::string& CmdEntityDump::execute( const std::vector< std::string >& arg
         for ( ; p_beg != p_end; ++p_beg )
         {
             yaf3d::BaseEntity* p_entity = yaf3d::EntityManager::get()->createEntity( ( *p_beg )->getType() );
-            dumpcontent += dumpEntity( p_entity, ( *p_beg )->getCreationPolicy() );
+            dumpcontent += dumpEntity( p_entity, ( *p_beg )->getCreationPolicy(), ( *p_beg )->getInitializationPolicy() );
             dumpcontent += "\n";
             yaf3d::EntityManager::get()->deleteEntity( p_entity );
         }
@@ -140,11 +140,11 @@ const std::string& CmdEntityDump::execute( const std::vector< std::string >& arg
     return _cmdResult;
 }
 
-std::string CmdEntityDump::dumpEntity( yaf3d::BaseEntity* p_entity, unsigned int creationPolicy )
+std::string CmdEntityDump::dumpEntity( yaf3d::BaseEntity* p_entity, unsigned int creationPolicy, unsigned int initPolicy )
 {
     std::string dump;
 
-    dump = "<Entity Type=\"" + p_entity->getTypeName() + "\" CreationPolicy=\"";
+    dump = "<Entity  Type=\"" + p_entity->getTypeName() + "\" C reationPolicy=\"";
 
     std::string cpolicy;
     if ( creationPolicy & yaf3d::BaseEntityFactory::Standalone )
@@ -154,7 +154,24 @@ std::string CmdEntityDump::dumpEntity( yaf3d::BaseEntity* p_entity, unsigned int
     if ( creationPolicy & yaf3d::BaseEntityFactory::Client )
         cpolicy += " Client ";
 
-    dump += cpolicy + "\" />\n\n";
+    if ( cpolicy.length() )
+        cpolicy = cpolicy.substr( 1, cpolicy.length() - 2 );
+
+    dump += cpolicy + "\"";
+
+    dump += "  InitializationPolicy=\"";
+    std::string ipolicy;
+
+    if ( initPolicy & yaf3d::BaseEntityFactory::OnLoadingLevel )
+        ipolicy += " OnLoadingLevel ";
+
+    if ( initPolicy & yaf3d::BaseEntityFactory::OnRunningLevel )
+        ipolicy += " OnRunningLevel ";
+
+    if ( ipolicy.length() )
+        ipolicy = ipolicy.substr( 1, ipolicy.length() - 2 );
+
+    dump += ipolicy + "\" />\n\n";
 
     yaf3d::AttributeManager& attrmgr = p_entity->getAttributeManager();
     std::vector< yaf3d::BaseEntityAttribute* >& attributes = attrmgr.getAttributes();
@@ -168,37 +185,37 @@ std::string CmdEntityDump::dumpEntity( yaf3d::BaseEntity* p_entity, unsigned int
         {
             case yaf3d::EntityAttributeType::FLOAT:
             {
-                stype = "float\"  ";
+                stype = "Float\"  ";
             }
             break;
 
             case yaf3d::EntityAttributeType::BOOL:
             {
-                stype = "bool\"   ";
+                stype = "Bool\"   ";
             }
             break;
 
             case yaf3d::EntityAttributeType::INTEGER:
             {
-                stype = "integer\"";
+                stype = "Integer\"";
             }
             break;
 
             case yaf3d::EntityAttributeType::VECTOR2:
             {
-                stype = "vector2\"";
+                stype = "Vector2\"";
             }
             break;
 
             case yaf3d::EntityAttributeType::VECTOR3:
             {
-                stype = "vector3\"";
+                stype = "Vector3\"";
             }
             break;
 
             case yaf3d::EntityAttributeType::STRING:
             {
-                stype = "string\" ";
+                stype = "String\" ";
             }
             break;
 

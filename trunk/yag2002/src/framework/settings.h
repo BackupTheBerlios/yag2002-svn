@@ -203,6 +203,9 @@ class Settings : public RefCount< Settings >
         //! Helper method for writing one setting of type Vec3f
         bool                                    write( const std::string& token, const osg::Vec3f& value );
 
+        //! Helper method for writing one setting of type Vec2f
+        bool                                    write( const std::string& token, const osg::Vec2f& value );
+
         //! Helper method for reading given setting and its value of type string
         bool                                    read( const std::string& token, std::string& value );
 
@@ -220,6 +223,9 @@ class Settings : public RefCount< Settings >
 
         //! Helper method for reading given setting and its value of type Vector3d
         bool                                    read( const std::string& token, osg::Vec3f& value );
+
+        //! Helper method for reading given setting and its value of type Vector2d
+        bool                                    read( const std::string& token, osg::Vec2f& value );
 
         //! List of settings
         std::vector< SettingBase* >             _settings;

@@ -39,14 +39,15 @@ AttributeManager::~AttributeManager()
     removeAllAttributes(); 
 }
 
-void AttributeManager::getAttributesAsString( std::vector< std::pair< std::string, std::string > >& attributes )
+void AttributeManager::getAttributesAsString( std::vector< std::vector< std::string > >& attributes )
 {
     std::vector< BaseEntityAttribute* >::iterator p_beg = _attributes.begin(), p_end = _attributes.end();
     for ( ; p_beg != p_end; ++p_beg )
     {
-        BaseEntityAttribute* p_attribute = *p_beg;
-        std::stringstream strvalue;
-        unsigned int type = p_attribute->getType();
+        std::vector< std::string > elems;
+        BaseEntityAttribute*       p_attribute = *p_beg;
+        std::stringstream          strvalue;
+        unsigned int               type = p_attribute->getType();
         switch ( type ) 
         {
             case EntityAttributeType::FLOAT:
@@ -94,7 +95,11 @@ void AttributeManager::getAttributesAsString( std::vector< std::pair< std::strin
             default:
                 assert( NULL && "invalid attribute type!" );
         }
-        attributes.push_back( make_pair( p_attribute->getName(), strvalue.str() ) );
+        elems.push_back( p_attribute->getName() );
+        elems.push_back( strvalue.str() );
+        elems.push_back( p_attribute->getTypeAsString() );
+        attributes.push_back( elems );
+        elems.clear();
     }
 }
 

@@ -69,7 +69,16 @@ void EnCandle::handleNotification( const yaf3d::EntityNotification& notification
             break;
 
         case YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED:
-            break;
+        {
+            _p_pointLightEntity = dynamic_cast< EnPointLight* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_POINTLIGHT, _lightEntity ) );
+            if ( !_p_pointLightEntity )
+            {
+                log_error << "Canlde: cannot find PointLight entity '" << _lightEntity << "', animation disabled!" << std::endl;
+                return;
+            }
+            _p_pointLightEntity->setPosition( _position );
+        }
+        break;
 
         default:
             ;
@@ -88,8 +97,8 @@ void EnCandle::postInitialize()
     _p_pointLightEntity->setPosition( _position );
 
     // register entity in order to get notifications (e.g. from menu entity)
-    yaf3d::EntityManager::get()->registerNotification( this, true );   
-    yaf3d::EntityManager::get()->registerUpdate( this, true );   
+    yaf3d::EntityManager::get()->registerNotification( this, true );
+    yaf3d::EntityManager::get()->registerUpdate( this, true );
 }
 
 void EnCandle::updateEntity( float deltaTime )

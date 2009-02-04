@@ -58,7 +58,7 @@ class CmdEntityDump : public BaseConsoleCommand
 
     protected:
 
-        std::string                                 dumpEntity( yaf3d::BaseEntity* p_entity, unsigned int creationPolicy );
+        std::string                                 dumpEntity( yaf3d::BaseEntity* p_entity, unsigned int creationPolicy, unsigned int initPolicy );
 };
 
 } // namespace vrc
