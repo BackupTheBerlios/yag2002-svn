@@ -137,7 +137,7 @@ void EnFPSDisplay::updateEntity( float deltaTime )
     {
         _fpsTimer -= 1.0f;
         std::stringstream text;
-        text << "FPS " << _fps;
+        text << "FPS " << _fps + 1;
         _p_outputText->setText( text.str().c_str() );
         _fps = 0;
     }

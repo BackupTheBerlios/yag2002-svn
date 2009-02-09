@@ -138,19 +138,9 @@ void EnSpotLight::initialize()
     //  frustum and light radius.
     osg::ref_ptr< LightCallback > cullcallback = new LightCallback( this );
     _lightSource->setCullCallback( cullcallback.get() );
-       
-    // set mesh if one defined
-    if ( _meshFile.length() )
-    {
-        osg::ref_ptr< osg::Node > mesh = yaf3d::LevelManager::get()->loadMesh( _meshFile );
-        if ( !mesh.valid() ) 
-            log_warning << " cannot find mesh file" << _meshFile << std::endl;
-        else
-            addToTransformationNode( mesh.get() );
-    }
 
     // register entity in order to get menu notifications
-    yaf3d::EntityManager::get()->registerNotification( this, true );    
+    yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
 osg::ref_ptr< osg::Light > EnSpotLight::setupLight()
@@ -158,17 +148,16 @@ osg::ref_ptr< osg::Light > EnSpotLight::setupLight()
     osg::ref_ptr< osg::Light > light = new osg::Light;
 
     // setup bounding sphere used for culling
-    osg::Vec3f len = _direction;
-    len.normalize();
-    len *= _maxDistance;
-    osg::Vec3f center( _position + len * 0.5f );
-    _bSphere.set( center, _maxDistance * 0.5f );
+    _bSphere.set( _position, _maxDistance );
 
     // the actual id will be set by light manager
     light->setLightNum( _lightId );
 
+    osg::Vec3f dir = _direction;
+    dir.normalize();
+
     light->setPosition( osg::Vec4( 0.0f, 0.0f, 0.0f, 1.0f ) );
-    light->setDirection( _direction );
+    light->setDirection( dir );
     light->setSpotCutoff( _spotCutOff );
     light->setSpotExponent( _spotExponent );
     light->setAmbient( osg::Vec4( _ambientColor, 1.0f ) );
@@ -180,6 +169,19 @@ osg::ref_ptr< osg::Light > EnSpotLight::setupLight()
 
     // set entity position which is also the light source position
     setPosition( _position );
+
+    // set mesh if one defined
+    if ( _mesh.valid() )
+        removeFromTransformationNode( _mesh.get() );
+
+    if ( _meshFile.length() )
+    {
+        _mesh = yaf3d::LevelManager::get()->loadMesh( _meshFile );
+        if ( !_mesh.valid() ) 
+            log_warning << " cannot find mesh file" << _meshFile << std::endl;
+        else
+            addToTransformationNode( _mesh.get() );
+    }
 
     return light;
 }

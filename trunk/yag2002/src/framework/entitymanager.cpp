@@ -230,6 +230,11 @@ void EntityManager::getAllEntities( std::vector< BaseEntity* >& entities )
         entities.push_back( *p_beg );
 }
 
+std::vector< BaseEntity* >& EntityManager::getRefAllEntities()
+{
+    return _entityPool;
+}
+
 bool EntityManager::registerUpdate( yaf3d::BaseEntity* p_entity, bool reg )
 {
     // check whether the entity is registered for updates

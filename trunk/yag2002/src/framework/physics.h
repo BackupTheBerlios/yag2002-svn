@@ -148,6 +148,9 @@ class Physics : public Singleton< Physics >
         //! Create the material graph
         void                                        setupMaterials();
 
+        //! This callback is used by physics engine to tell us that a body left the physics world.
+        static void                                 bodyLeftPhyiscsWorld( const NewtonBody* body );
+
         NewtonWorld*                                _p_world;
 
         NewtonBody*                                 _p_body;

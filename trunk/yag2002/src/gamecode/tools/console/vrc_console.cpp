@@ -46,6 +46,9 @@ namespace vrc
 YAF3D_IMPL_ENTITYFACTORY( ConsoleEntityFactory )
 #endif
 
+bool EnConsole::_instanceCreated = false;
+
+
 EnConsole::EnConsole() :
 _enable( false ),
 _p_ioHandler( NULL ),
@@ -82,11 +85,6 @@ void EnConsole::handleNotification( const yaf3d::EntityNotification& notificatio
         case YAF3D_NOTIFY_MENU_LEAVE:
             break;
 
-        case YAF3D_NOTIFY_SHUTDOWN:
-
-            yaf3d::EntityManager::get()->deleteEntity( this );
-            break;
-
         case YAF3D_NOTIFY_NEW_LEVEL_INITIALIZED:
 
             if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
@@ -99,6 +97,12 @@ void EnConsole::handleNotification( const yaf3d::EntityNotification& notificatio
             }
             break;
 
+        case YAF3D_NOTIFY_SHUTDOWN:
+
+            yaf3d::EntityManager::get()->deleteEntity( this );
+            _instanceCreated = false;
+            break;
+
         default:
             ;
     }
@@ -106,13 +110,13 @@ void EnConsole::handleNotification( const yaf3d::EntityNotification& notificatio
 
 void EnConsole::initialize()
 {
-    static bool alreadycreated = false;
-    if ( alreadycreated )
+    if ( _instanceCreated )
     {
         log_error << "the console entity can be created only once for entire application run-time."
                                              << "you are trying to create a second instance!" << std::endl;
+        return;
     }
-    alreadycreated = true;
+    _instanceCreated = true;
 
     if ( yaf3d::GameState::get()->getMode() == yaf3d::GameState::Server )
     {

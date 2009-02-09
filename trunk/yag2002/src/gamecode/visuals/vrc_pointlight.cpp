@@ -135,16 +135,6 @@ void EnPointLight::initialize()
     osg::ref_ptr< LightCallback > cullcallback = new LightCallback( this );
     _lightSource->setCullCallback( cullcallback.get() );
 
-    // set mesh if one defined
-    if ( _meshFile.length() )
-    {
-        osg::ref_ptr< osg::Node > mesh = yaf3d::LevelManager::get()->loadMesh( _meshFile );
-        if ( !mesh.valid() ) 
-            log_warning << " cannot find mesh file" << _meshFile << std::endl;
-        else
-            addToTransformationNode( mesh.get() );
-    }
-
     // register entity in order to get menu notifications
     yaf3d::EntityManager::get()->registerNotification( this, true );
 }
@@ -168,6 +158,19 @@ osg::ref_ptr< osg::Light > EnPointLight::setupLight()
 
     // set entity position which is also the light source position
     setPosition( _position );
+
+    // set mesh if one defined
+    if ( _mesh.valid() )
+        removeFromTransformationNode( _mesh.get() );
+
+    if ( _meshFile.length() )
+    {
+        _mesh = yaf3d::LevelManager::get()->loadMesh( _meshFile );
+        if ( !_mesh.valid() ) 
+            log_warning << " cannot find mesh file" << _meshFile << std::endl;
+        else
+            addToTransformationNode( _mesh.get() );
+    }
 
     return light;
 }

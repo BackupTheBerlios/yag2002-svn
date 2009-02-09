@@ -101,8 +101,13 @@ class EntityManager : public Singleton< EntityManager >
         */
         BaseEntity*                                 createEntity( const std::string& type, const std::string& instanceName = "", bool addToPool = true );
 
-        //! Retrieve all existing entities
+        //! Retrieve a copy of all existing entities in pool.
         void                                        getAllEntities( std::vector< BaseEntity* >& entities );
+
+        //! Retrieve the pool list.
+        /*! NOTE: As this method returns a reference to entity pool it should be used with care! It may be used only by authoring tools.
+        */
+        std::vector< BaseEntity* >&                 getRefAllEntities();
 
         //! Delete given entitiy
         /*! \param  p_entity                        Entity to delete

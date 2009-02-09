@@ -1,9 +1,14 @@
 
+boto ( 10/02/2009 )
+
+ - some extensions and adaptations to Application, EntityManger, and BaseEntity needed for 
+   implementing a level editor
+
 boto ( 01/04/2008 )
 
 - added a virutal file system using PhysFS
 
--  added smart pointer class
+- added smart pointer class
 
 boto ( 09/09/2007 )
 

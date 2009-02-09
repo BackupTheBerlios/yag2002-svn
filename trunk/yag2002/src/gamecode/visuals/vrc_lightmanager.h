@@ -80,7 +80,7 @@ class BaseLight
 
         osg::BoundingSphere                         _bSphere;
 
-    protected:
+        osg::ref_ptr< osg::Node >                   _mesh;
 
         // Entity parameters
         osg::Vec3f                                  _position;

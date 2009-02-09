@@ -114,6 +114,10 @@ class EnConsole :  public yaf3d::BaseEntity
         //! Override notification callback
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
+        //! This entity can exist only once
+        static bool                                 _instanceCreated;
+
+        //! Enable/disable entity
         bool                                        _enable;
 
         //! Issue initial command on entity initialization

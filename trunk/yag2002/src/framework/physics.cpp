@@ -328,8 +328,12 @@ bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelF
     bmax[ 3 ] = 1.0f;
     NewtonSetWorldSize( _p_world, bmin, bmax );
 
+    // set the leave callback
+    NewtonSetBodyLeaveWorldEvent ( _p_world, Physics::bodyLeftPhyiscsWorld ); 
+
     return true;
 }
+
 
 void Physics::setupMaterials()
 {
@@ -659,6 +663,11 @@ int Physics::levelContactProcess( const NewtonMaterial* p_material, const Newton
     }
 
     return 1;
+}
+
+void Physics::bodyLeftPhyiscsWorld( const NewtonBody* body )
+{
+    log_warning << "Physics: body left the physics world!" << std::endl;
 }
 
 } // namespace yaf3d
