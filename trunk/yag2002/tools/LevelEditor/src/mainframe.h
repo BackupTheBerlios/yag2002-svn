@@ -87,6 +87,9 @@ class MainFrame: public wxFrame
         //! Called when close icon clicked
         void                                        onCloseWindow( wxCloseEvent& event );
 
+        //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_FILE_NEW
+        void                                        onMenuitemFileNewClick( wxCommandEvent& event );
+
         //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_FILE_OPEN
         void                                        onMenuitemFileOpenClick( wxCommandEvent& event );
 
@@ -134,6 +137,7 @@ class MainFrame: public wxFrame
         enum
         {
             ID_MAINFRAME             = 10000,
+            ID_MENUITEM_FILE_NEW     = 10001,
             ID_MENUITEM_FILE_OPEN    = 10002,
             ID_MENUITEM_FILE_SAVE    = 10003,
             ID_MENUITEM_FILE_SAVE_AS = 10004,

@@ -49,6 +49,8 @@ BEGIN_EVENT_TABLE( MainFrame, wxFrame )
 
     EVT_CLOSE( MainFrame::onCloseWindow )
 
+    EVT_MENU( ID_MENUITEM_FILE_NEW, MainFrame::onMenuitemFileNewClick )
+
     EVT_MENU( ID_MENUITEM_FILE_OPEN, MainFrame::onMenuitemFileOpenClick )
 
     EVT_MENU( ID_TOOL_OPEN, MainFrame::onMenuitemFileOpenClick )
@@ -182,6 +184,7 @@ void MainFrame::createControls()
 {
     wxMenuBar* menuBar = new wxMenuBar;
     _p_menuFile  = new wxMenu;
+    _p_menuFile->Append(ID_MENUITEM_FILE_NEW, _("New ..."), _T(""), wxITEM_NORMAL);
     _p_menuFile->Append(ID_MENUITEM_FILE_OPEN, _("Open"), _T(""), wxITEM_NORMAL);
     _p_menuFile->Append(ID_MENUITEM_FILE_SAVE, _("Save"), _T(""), wxITEM_NORMAL);
     _p_menuFile->Enable(ID_MENUITEM_FILE_SAVE, false);
@@ -230,8 +233,21 @@ void MainFrame::createControls()
 
 void MainFrame::onCloseWindow( wxCloseEvent& event )
 {
-    if ( wxMessageBox( "You really want to quit the editor?", "Attention", wxYES_NO | wxICON_QUESTION ) == wxNO )
-        return;
+    if ( event.CanVeto() )
+    {
+        if ( wxMessageBox( "You really want to quit the editor?", "Attention", wxYES_NO | wxICON_QUESTION ) == wxNO )
+            return;
+
+        // is any level loaded?
+        if ( _levelFileName.length() )
+        {
+            if ( wxMessageBox( "Save before closing?", "Attention", wxYES_NO | wxICON_QUESTION  ) == wxYES )
+            {
+                wxCommandEvent ev;
+                onMenuitemFileSaveClick( ev );
+            }
+        }
+    }
 
     if ( _p_editorApp->getLogWindow() )
         _p_editorApp->getLogWindow()->Destroy();
@@ -240,6 +256,70 @@ void MainFrame::onCloseWindow( wxCloseEvent& event )
         _p_editorApp->getStatsWindow()->Destroy();
 
     event.Skip();
+}
+
+void MainFrame::onMenuitemFileNewClick( wxCommandEvent& event )
+{
+    std::string dir( yaf3d::Application::get()->getMediaPath() );
+    std::string levelfile;
+    bool retry = false;
+
+    do
+    {
+        wxFileDialog dlg( this, "Choose a file name", dir.c_str(), "NewLevel.lvl", "*.lvl" );
+        if ( dlg.ShowModal() == wxID_CANCEL )
+            return;
+
+        std::string path = yaf3d::cleanPath( dlg.GetDirectory().c_str() );
+        path += "/";
+        std::string::size_type pos = 0;
+        if ( ( path.length() > 2 ) && path[ 1 ] == ':' )
+            pos = 2;
+
+        if ( path.find( yaf3d::Application::get()->getMediaPath().substr( pos ), pos ) == std::string::npos )
+        {
+            wxMessageBox( std::string( "Please choose from following folder:\n\n" ) + yaf3d::Application::get()->getMediaPath(), "Attention", wxOK | wxICON_QUESTION );
+            retry = true;
+        }
+        else
+        {
+            if ( wxFileExists( dlg.GetPath() ) )
+            {
+                if ( wxMessageBox( "This file already exists. Overwrite it?", "Attention", wxYES_NO | wxICON_QUESTION  ) == wxNO )
+                {
+                    retry = true;
+                    continue;
+                }
+            }
+
+            retry          = false;
+            levelfile      += dlg.GetPath();
+            _levelFileName = dlg.GetFilename();
+            _levelFulPath  = dlg.GetPath();
+        }
+    }
+    while ( retry );
+
+    levelfile = yaf3d::cleanPath( levelfile );
+    std::string levelname = levelfile.substr( yaf3d::Application::get()->getMediaPath().length() );
+    if ( levelname.substr( levelname.length() - 4 ) == ".lvl" )
+        levelname = levelname.substr( 0, levelname.length() - 4 );
+
+    // write out the level file
+    {
+        ScopedGameUpdateLock lock;
+
+        // get the entities
+        std::vector< yaf3d::BaseEntity* > levelentities;
+
+        // write a blank level file
+        FileOutputLevel out;
+        out.write( levelentities, levelfile, levelname, false );
+    }
+
+    // now open the new file
+    levelfile = yaf3d::cleanPath( levelfile );
+    _p_editorApp->loadLevel( levelfile.substr( yaf3d::Application::get()->getMediaPath().length() ) );
 }
 
 void MainFrame::onMenuitemFileOpenClick( wxCommandEvent& event )
@@ -378,6 +458,12 @@ void MainFrame::onMenuitemFileCloseClick( wxCommandEvent& event )
     if ( !_levelFileName.length() )
         return;
 
+    if ( wxMessageBox( "Save before closing?", "Attention", wxYES_NO | wxICON_QUESTION  ) == wxYES )
+    {
+        wxCommandEvent ev;
+        onMenuitemFileSaveClick( ev );
+    }
+
     // unload the level
     _p_editorApp->unloadLevel();
     _p_notebook->Disable();
@@ -390,8 +476,24 @@ void MainFrame::onMenuitemFileQuitClick( wxCommandEvent& event )
     if ( wxMessageBox( "You really want to quit the editor?", "Attention", wxYES_NO | wxICON_QUESTION ) == wxNO )
         return;
 
+    // is any level loaded?
+    if ( _levelFileName.length() )
+    {
+        // is any level loaded?
+        if ( _levelFileName.length() )
+        {
+            if ( wxMessageBox( "Save before closing?", "Attention", wxYES_NO | wxICON_QUESTION  ) == wxYES )
+            {
+                wxCommandEvent ev;
+                onMenuitemFileSaveClick( ev );
+            }
+        }
+    }
+
     wxCloseEvent ev;
+    ev.SetCanVeto( false );
     onCloseWindow( ev );
+
     Destroy();
 }
 
