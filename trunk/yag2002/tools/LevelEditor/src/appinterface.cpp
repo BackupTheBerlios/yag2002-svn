@@ -58,7 +58,7 @@ void AppInterface::initialize( GameInterface* p_gameiface )
     _p_gameIface = p_gameiface;
 
     // set the picking callback so we get notified when something picked
-    GameNavigator::get()->setPickingCallback( this );
+    GameNavigator::get()->setNotifyCallback( this );
 
     Start( UPDATE_PERIOD );
 }
@@ -70,28 +70,39 @@ void AppInterface::terminate()
 
 void AppInterface::sendCmd( unsigned int cmd, void* p_data )
 {
-    _cmdMutex.lock();
+    //! TODO: figure out why this mutex lock can causes a dead-lock!
+    //while ( _cmdMutex.trylock() )
+    //    OpenThreads::Thread::microSleep( 1000 );
 
     _cmds.push( std::make_pair( cmd, p_data ) );
 
-    _cmdMutex.unlock();
+    //_cmdMutex.unlock();
 }
 
 void AppInterface::Notify()
 {
     dispatchCmd();
 
+    // update the stats window
     unsigned int fps = GameNavigator::get()->getFPS();
     const osg::Vec3f& pos = GameNavigator::get()->getCameraPosition();
     osg::Vec2f rot;
     GameNavigator::get()->getCameraPitchYaw( rot._v[ 0 ], rot._v[ 1 ] );
-    _p_mainFrame->updateStats( fps, pos, rot );
+    _p_mainFrame->updateStatsWindow( fps, pos, rot );
+
+    // update the log window
+    _p_mainFrame->updateLogWindow();
 }
 
 void AppInterface::onEntityPicked( yaf3d::BaseEntity* p_entity )
 {
     // dispatch the result of picking in app loop context
     sendCmd( CMD_PICKING, p_entity );
+}
+
+void AppInterface::onArrowClick( const osg::Vec3f& /*pos*/ )
+{
+    sendCmd( CMD_ARROW_CLICK, NULL );
 }
 
 unsigned int AppInterface::dispatchCmd()
@@ -132,6 +143,12 @@ unsigned int AppInterface::dispatchCmd()
         {
             yaf3d::BaseEntity* p_entity = reinterpret_cast< yaf3d::BaseEntity* >( cmd.second );
             _p_mainFrame->selectEntity( p_entity );
+        }
+        break;
+
+        case CMD_ARROW_CLICK:
+        {
+            _p_mainFrame->notify( MainFrame::NOTIFY_ARROW_CLICK );
         }
         break;
 

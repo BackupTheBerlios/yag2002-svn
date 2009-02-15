@@ -55,6 +55,10 @@ class LogWindow : public std::basic_ostream< char >, public wxDialog
 
         virtual                                     ~LogWindow();
 
+        //! Call this method in application thread context in order to update the log window
+        //  with new messages and other operations such as clear.
+        void                                        update();
+
         //! Enable/disable outputting timestamp for every output
         void                                        enableTimeStamp( bool en );
 
@@ -94,6 +98,10 @@ class LogWindow : public std::basic_ostream< char >, public wxDialog
         bool                                        _enableTimeStamp;
 
         wxTextCtrl*                                 _p_textCtrl;
+
+        std::queue< std::string >                   _msgBuffer;
+
+        OpenThreads::Mutex                          _logMutex;
 
         //! Control identifiers
         enum

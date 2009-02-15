@@ -98,6 +98,10 @@ class EditorSGData: public osg::Referenced
 #define EDITOR_RESID_ICON_LOGWND        3
 #define EDITOR_RESID_BMP_FILEOPEN       20
 #define EDITOR_RESID_BMP_FILESAVE       21
+#define EDITOR_RESID_BMP_ENT_SEL        22
+#define EDITOR_RESID_BMP_ENT_MOVE       23
+#define EDITOR_RESID_BMP_ENT_AUTOPLACE  24
+#define EDITOR_RESID_BMP_ENT_ROTATE     25
 
 //! Available bitmap resources are managed by this singleton
 class BitmapResource: public yaf3d::Singleton< BitmapResource >

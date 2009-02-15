@@ -53,11 +53,7 @@ BEGIN_EVENT_TABLE( MainFrame, wxFrame )
 
     EVT_MENU( ID_MENUITEM_FILE_OPEN, MainFrame::onMenuitemFileOpenClick )
 
-    EVT_MENU( ID_TOOL_OPEN, MainFrame::onMenuitemFileOpenClick )
-
     EVT_MENU( ID_MENUITEM_FILE_SAVE, MainFrame::onMenuitemFileSaveClick )
-
-    EVT_MENU( ID_TOOL_SAVE, MainFrame::onMenuitemFileSaveClick )
 
     EVT_MENU( ID_MENUITEM_FILE_SAVE_AS, MainFrame::onMenuitemFileSaveAsClick )
 
@@ -70,6 +66,18 @@ BEGIN_EVENT_TABLE( MainFrame, wxFrame )
     EVT_MENU( ID_MENUITEM_VIEW_LOG, MainFrame::onMenuitemViewLogClick )
 
     EVT_MENU( ID_MENUITEM_HELP_ABOUT, MainFrame::onMenuitemHelpAboutClick )
+
+    EVT_MENU( ID_TOOL_SAVE, MainFrame::onMenuitemFileSaveClick )
+
+    EVT_MENU( ID_TOOL_OPEN, MainFrame::onMenuitemFileOpenClick )
+
+    EVT_MENU( ID_TOOL_SEL, MainFrame::onToolSelectClickClick )
+
+    EVT_MENU( ID_TOOL_MOVE, MainFrame::onToolMoveClickClick )
+
+    EVT_MENU( ID_TOOL_AUTOPLACE, MainFrame::onToolAutoPlaceClickClick )
+
+    EVT_MENU( ID_TOOL_ROTATE, MainFrame::onToolRotateClickClick )
 
     EVT_NOTEBOOK_PAGE_CHANGED( ID_NOTEBOOK, MainFrame::onNotebookPageChanged )
 
@@ -97,6 +105,8 @@ MainFrame::MainFrame( EditorApp* p_app ) :
     setStatus( "Initializing game platform ..." );
 
     Move( 0, 0 );
+
+    SetMinSize( wxSize( SYMBOL_MAINFRAME_SIZE.x, 400 ) );
 }
 
 MainFrame::~MainFrame()
@@ -141,6 +151,8 @@ void MainFrame::notify( unsigned int id )
             _p_menuFile->Enable( ID_MENUITEM_FILE_SAVE_AS, true );
             _p_menuFile->Enable( ID_MENUITEM_FILE_CLOSE, true );
 
+            // set proper mode
+            GameNavigator::get()->setMode( GameNavigator::EntityPick );
         }
         break;
 
@@ -162,13 +174,24 @@ void MainFrame::notify( unsigned int id )
         }
         break;
 
+        case MainFrame::NOTIFY_ARROW_CLICK:
+        {
+            // this is called when in arrow mode mouse button was clicked
+            if ( GetToolBar() )
+                GetToolBar()->ToggleTool( ID_TOOL_SEL, true );
+
+            // restore picking mode
+            GameNavigator::get()->setMode( GameNavigator::EntityPick );
+        }
+        break;
+
         default:
             assert( NULL && "invalid main frame notification!" );
     }
 
 }
 
-void MainFrame::updateStats( unsigned int fps, const osg::Vec3f& pos, const osg::Vec2f& rot )
+void MainFrame::updateStatsWindow( unsigned int fps, const osg::Vec3f& pos, const osg::Vec2f& rot )
 {
     StatsWindow* p_stats = _p_editorApp->getStatsWindow();
     if ( !p_stats )
@@ -178,6 +201,15 @@ void MainFrame::updateStats( unsigned int fps, const osg::Vec3f& pos, const osg:
     p_stats->setCameraSpeed( GameNavigator::get()->getSpeed() );
     p_stats->setPosition( pos );
     p_stats->setPitchYaw( rot._v[ 0 ], rot._v[ 1 ] );
+}
+
+void MainFrame::updateLogWindow()
+{
+    LogWindow* p_log = _p_editorApp->getLogWindow();
+    if ( !p_log )
+        return;
+
+    p_log->update();
 }
 
 void MainFrame::createControls()
@@ -212,6 +244,10 @@ void MainFrame::createControls()
     p_toolbar->AddTool(ID_TOOL_OPEN, _T(""), BitmapResource::get()->getBitmap( EDITOR_RESID_BMP_FILEOPEN ), itemtoolBitmapDisabled, wxITEM_NORMAL, _("Open a level file"), wxEmptyString);
     p_toolbar->AddTool(ID_TOOL_SAVE, _T(""), BitmapResource::get()->getBitmap( EDITOR_RESID_BMP_FILESAVE ), itemtoolBitmapDisabled, wxITEM_NORMAL, _("Save level file"), wxEmptyString);
     p_toolbar->AddSeparator();
+    p_toolbar->AddTool(ID_TOOL_SEL, _T(""), BitmapResource::get()->getBitmap( EDITOR_RESID_BMP_ENT_SEL ), itemtoolBitmapDisabled, wxITEM_RADIO, _("Select Entity"), wxEmptyString);
+    p_toolbar->AddTool(ID_TOOL_MOVE, _T(""), BitmapResource::get()->getBitmap( EDITOR_RESID_BMP_ENT_MOVE ), itemtoolBitmapDisabled, wxITEM_RADIO, _("Move Entity"), wxEmptyString);
+    p_toolbar->AddTool(ID_TOOL_AUTOPLACE, _T(""), BitmapResource::get()->getBitmap( EDITOR_RESID_BMP_ENT_AUTOPLACE ), itemtoolBitmapDisabled, wxITEM_RADIO, _("Auto-place Entity"), wxEmptyString);
+    p_toolbar->AddTool(ID_TOOL_ROTATE, _T(""), BitmapResource::get()->getBitmap( EDITOR_RESID_BMP_ENT_ROTATE ), itemtoolBitmapDisabled, wxITEM_RADIO, _("Rotate Entity"), wxEmptyString);
     p_toolbar->Realize();
     SetToolBar(p_toolbar);
 
@@ -464,6 +500,9 @@ void MainFrame::onMenuitemFileCloseClick( wxCommandEvent& event )
         onMenuitemFileSaveClick( ev );
     }
 
+    GameNavigator::get()->selectEntity( NULL );
+    GameNavigator::get()->setMode( GameNavigator::EntityPick );
+
     // unload the level
     _p_editorApp->unloadLevel();
     _p_notebook->Disable();
@@ -530,6 +569,28 @@ void MainFrame::onMenuitemHelpAboutClick( wxCommandEvent& event )
     text += "  * Virtual Reality Chat site http://www.vr-fun.net\n";
 
     wxMessageBox( text, "About", wxOK | wxICON_INFORMATION );
+}
+
+void MainFrame::onToolSelectClickClick( wxCommandEvent& event )
+{
+    GameNavigator::get()->setMode( GameNavigator::EntityPick );
+}
+
+void MainFrame::onToolMoveClickClick( wxCommandEvent& event )
+{
+    //! TODO ...
+    GameNavigator::get()->selectEntity( NULL );
+    GameNavigator::get()->setMode( GameNavigator::ShowPickArrow );
+}
+
+void MainFrame::onToolAutoPlaceClickClick( wxCommandEvent& event )
+{
+    GameNavigator::get()->setMode( GameNavigator::EntityPlace );
+}
+
+void MainFrame::onToolRotateClickClick( wxCommandEvent& event )
+{
+    //! TODO
 }
 
 void MainFrame::onNotebookPageChanged( wxNotebookEvent& event )

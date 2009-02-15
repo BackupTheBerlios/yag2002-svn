@@ -76,6 +76,9 @@ class PanelEntities: public wxPanel
         //! Get entity from tree selection. This method validates the stored entity in tree info data.
         yaf3d::BaseEntity*                          findTreeEntity( wxTreeItemId item );
 
+        //! Get tree item for given entity.
+        wxTreeItemId                                findTreeEntity( yaf3d::BaseEntity* p_entity );
+
         //! Swap the entities in entity manager's pool, used by move functionality.
         void                                        swapEntities( wxTreeItemId item1, wxTreeItemId item2 );
 

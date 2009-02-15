@@ -38,7 +38,6 @@
 #define EDITOR_SETTINGS_PROFILE     "editor"
 //! Setting tokens
 #define ES_NAV_ENABLE               "navEnable"
-#define ES_NAV_MODE                 "navMode"
 #define ES_NAV_SPEED                "navSpeed"
 #define ES_NAV_POSITION             "navPosition"
 #define ES_NAV_ROTATION             "navRotation"
@@ -46,7 +45,7 @@
 #define ES_NAV_NEARCLIP             "navNearClip"
 #define ES_NAV_FARCLIP              "navFarClip"
 #define ES_NAV_BKGCOLOR             "navBkgColor"
-
+#define ES_DEFAULT_MESH             "defaultMesh"
 
 class MainFrame;
 class LogWindow;

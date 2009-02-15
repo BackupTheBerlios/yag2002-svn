@@ -60,7 +60,8 @@ class MainFrame: public wxFrame
         {
             NOTIFY_GAME_STARTED   = 0x01,
             NOTIFY_LEVEL_LOADED   = 0x02,
-            NOTIFY_LEVEL_UNLOADED = 0x04
+            NOTIFY_LEVEL_UNLOADED = 0x04,
+            NOTIFY_ARROW_CLICK    = 0x08
         };
 
         explicit                                    MainFrame( EditorApp* p_app );
@@ -77,7 +78,10 @@ class MainFrame: public wxFrame
         void                                        notify( unsigned int id );
 
         //! Update statistics
-        void                                        updateStats( unsigned int fps, const osg::Vec3f& pos, const osg::Vec2f& rot );
+        void                                        updateStatsWindow( unsigned int fps, const osg::Vec3f& pos, const osg::Vec2f& rot );
+
+        //! Update log window content
+        void                                        updateLogWindow();
 
     protected:
 
@@ -114,6 +118,18 @@ class MainFrame: public wxFrame
         //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_ABOUT
         void                                        onMenuitemHelpAboutClick( wxCommandEvent& event );
 
+        //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_SEL
+        void                                        onToolSelectClickClick( wxCommandEvent& event );
+
+        //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_MOVE
+        void                                        onToolMoveClickClick( wxCommandEvent& event );
+
+        //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_AUTOPLACE
+        void                                        onToolAutoPlaceClickClick( wxCommandEvent& event );
+
+        //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_ROTATE
+        void                                        onToolRotateClickClick( wxCommandEvent& event );
+
         //! wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED event handler for ID_NOTEBOOK1
         void                                        onNotebookPageChanged( wxNotebookEvent& event );
 
@@ -149,8 +165,12 @@ class MainFrame: public wxFrame
             ID_TOOLBAR               = 10011,
             ID_TOOL_SAVE             = 10012,
             ID_TOOL_OPEN             = 10013,
-            ID_STATUSBAR             = 10014,
-            ID_NOTEBOOK              = 10015
+            ID_TOOL_SEL              = 10014,
+            ID_TOOL_MOVE             = 10015,
+            ID_TOOL_AUTOPLACE        = 10016,
+            ID_TOOL_ROTATE           = 10017,
+            ID_STATUSBAR             = 10020,
+            ID_NOTEBOOK              = 10030
         };
 };
 

@@ -38,7 +38,7 @@ class MainFrame;
 class GameInterface;
 
 //! Interface to application thread for receiving commands from game thread
-class AppInterface: public wxTimer, public CallbackPicking
+class AppInterface: public wxTimer, public CallbackNavigatorNotify
 {
     public:
 
@@ -50,7 +50,8 @@ class AppInterface: public wxTimer, public CallbackPicking
             CMD_GAME_STARTED    = 0x1002,
             CMD_LEVEL_LOADED    = 0x1004,
             CMD_LEVEL_UNLOADED  = 0x1008,
-            CMD_PICKING         = 0x1010
+            CMD_PICKING         = 0x1010,
+            CMD_ARROW_CLICK     = 0x1020
         };
 
         explicit                                        AppInterface( MainFrame* p_frame );
@@ -73,6 +74,9 @@ class AppInterface: public wxTimer, public CallbackPicking
 
         //! Called when the picker delivers results.
         virtual void                                    onEntityPicked( yaf3d::BaseEntity* p_entity );
+
+        //! Called when the picker delivers results.
+        virtual void                                    onArrowClick( const osg::Vec3f& pos );
 
         //! Dispatch command, returns the count of remaining commands in queue.
         unsigned int                                    dispatchCmd();

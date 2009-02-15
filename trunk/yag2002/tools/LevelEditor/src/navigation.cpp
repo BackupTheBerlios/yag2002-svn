@@ -46,7 +46,7 @@ YAF3D_SINGLETON_IMPL( GameNavigator )
 
 GameNavigator::GameNavigator() :
  _enable( true ),
- _mode( Fly ),
+ _mode( ShowPickArrow ),
  _moveSpeed( 100.0f ),
  _rotationSpeed( 5.0f ),
  _yaw( 0.0f ),
@@ -60,14 +60,15 @@ GameNavigator::GameNavigator() :
  _fpsTimer( 0.0f ),
  _fpsCnt( 0 ),
  _fps( 0 ),
- _pickingEnabled( true ),
  _iscreenWidth( 0.0f ),
  _iscreenHeight( 0.0f ),
  _pickClickCount( 0 ),
- _lastX( 0 ),
- _lastY( 0 ),
+ _lastX( 0.0f ),
+ _currX( 0 ),
+ _lastY( 0.0f ),
+ _currY( 0 ),
  _inputCode( NoCode ),
- _p_cbPicking( NULL ),
+ _p_cbNotify( NULL ),
  _p_selEntity( NULL )
 {
 }
@@ -84,8 +85,20 @@ void GameNavigator::enable( bool en )
 
 void GameNavigator::setMode( unsigned int mode )
 {
+    // lock the game loop first
     ScopedGameUpdateLock lock;
+
     _mode = mode;
+
+    if ( mode & ShowPickArrow )
+    {
+        if ( ( _marker.valid() ) && !yaf3d::Application::get()->getSceneRootNode()->containsNode( _marker.get() ) )
+            yaf3d::Application::get()->getSceneRootNode()->addChild( _marker.get() );
+    }
+    else
+    {
+        yaf3d::Application::get()->getSceneRootNode()->removeChild( _marker.get() );
+    }
 }
 
 unsigned int GameNavigator::getMode() const
@@ -141,9 +154,16 @@ const osg::Vec3f& GameNavigator::getBackgroundColor() const
     return _backgroundColor;
 }
 
-void GameNavigator::setPickingCallback( CallbackPicking* p_cb )
+void GameNavigator::selectEntity( yaf3d::BaseEntity* p_entity )
 {
-    _p_cbPicking = p_cb;
+    ScopedGameUpdateLock lock;
+    _p_selEntity = p_entity;
+    highlightEntity( _p_selEntity );
+}
+
+void GameNavigator::setNotifyCallback( CallbackNavigatorNotify* p_cb )
+{
+    _p_cbNotify = p_cb;
 }
 
 void GameNavigator::initialize()
@@ -221,6 +241,32 @@ void GameNavigator::initialize()
         _p_linesGeom->addPrimitiveSet( new osg::DrawElementsUShort( osg::PrimitiveSet::LINES, 24, indices ) );
         _bboxGeode->addDrawable( _p_linesGeom );
         yaf3d::Application::get()->getSceneRootNode()->addChild( _bboxGeode.get() );
+    }
+
+    // create hit marker
+    {
+        _marker = new osg::PositionAttitudeTransform;
+
+        osg::ref_ptr< osg::Geode > geodepart1 = new osg::Geode;
+        osg::ref_ptr< osg::Geode > geodepart2 = new osg::Geode;
+
+        _marker->addChild( geodepart1.get() );
+        _marker->addChild( geodepart2.get() );
+
+        osg::ref_ptr< osg::TessellationHints > hints = new osg::TessellationHints;
+        hints->setDetailRatio( 1.0f );
+
+        osg::ref_ptr< osg::ShapeDrawable > shape;
+
+        shape = new osg::ShapeDrawable( new osg::Cylinder( osg::Vec3( 0.f, 0.0f, 0.25f ), 0.1f, 0.5f ), hints.get() );
+        shape->setColor(osg::Vec4( 1.0f, 1.0f, 0.5f, 1.0f ) );
+        geodepart1->addDrawable( shape.get() );
+
+        shape = new osg::ShapeDrawable( new osg::Cone(osg::Vec3( 0.0f, 0.0f, 0.5f ), 0.2f, 0.3f ), hints.get() );
+        shape->setColor( osg::Vec4( 1.0f, 1.0f, 0.0f, 1.0f ) );
+        geodepart2->addDrawable( shape.get() );
+
+        _marker->setScale( osg::Vec3f( 3.0f, 3.0f, 4.0f ) );
     }
 }
 
@@ -463,17 +509,113 @@ bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
         yaf3d::Application::get()->getViewer()->requestWarpPointer( _screenMiddleX, _screenMiddleY );
     }
 
-    // pick an object
-    if ( _pickingEnabled )
+    // is there a picking callback?
+    if ( _mode & ShowPickArrow )
     {
-        if ( sdlevent.button.button == SDL_BUTTON_LEFT && eventType == osgGA::GUIEventAdapter::PUSH )
+        if ( eventType == osgGA::GUIEventAdapter::MOVE )
         {
-            float x = sdlevent.motion.x, y = sdlevent.motion.y;
+            // this updates the marker transformation
+            hit( sdlevent.motion.x, sdlevent.motion.y );
+        }
 
-            x = 2.0f * ( x * _iscreenWidth ) - 1.0f;
-            y = 2.0f * ( y * _iscreenHeight ) - 1.0f;
+        if ( _p_cbNotify && ( sdlevent.button.button == SDL_BUTTON_LEFT ) && ( eventType == osgGA::GUIEventAdapter::PUSH ) )
+        {
+            if ( _p_selEntity && _p_selEntity->getTransformationNode() )
+            {
+                _p_selEntity->getTransformationNode()->setPosition( _hitPosition );
+                highlightEntity( _p_selEntity );
+            }
+
+            _p_cbNotify->onArrowClick( _hitPosition );
+        }
+    }
+
+    // placing an entity?
+    if ( _mode & EntityPlace )
+    {
+        static bool btnleftpressed = false;
+        static bool entitymoved    = false;
+        if ( sdlevent.button.button == SDL_BUTTON_LEFT )
+        {
+            // save the current entity selection, pick method can modify it
+            yaf3d::BaseEntity* p_currsel = _p_selEntity;
+
+            // pick another entity?
+            if ( eventType == osgGA::GUIEventAdapter::PUSH )
+            {
+                btnleftpressed = true;
+                entitymoved    = false;
+                _currX         = sdlevent.motion.x;
+                _currY         = sdlevent.motion.y;
+
+                _p_selEntity = pick( sdlevent.motion.x, sdlevent.motion.y, p_currsel );
+                if ( _p_selEntity != p_currsel )
+                {
+                    if ( _p_selEntity && _p_selEntity->getTransformationNode() )
+                    {
+                        _hitPosition = _p_selEntity->getTransformationNode()->getPosition();
+                        if ( _marker.valid() )
+                        {
+                            _marker->setPosition( _hitPosition );
+                            _marker->setAttitude( osg::Quat() );
+                        }
+                    }
+                }
+            }
+            else if ( eventType == osgGA::GUIEventAdapter::RELEASE )
+            {
+                btnleftpressed = false;
+                if ( p_currsel && entitymoved && _p_selEntity->getTransformationNode() )
+                {
+                    p_currsel->getTransformationNode()->setPosition( _hitPosition );
+                    highlightEntity( p_currsel );
+
+                    // update entity position attribute if one exists
+                    osg::Vec3f pos;
+                    if ( p_currsel->getAttributeManager().getAttributeValue( "position", pos ) )
+                    {
+                        p_currsel->getAttributeManager().setAttributeValue( "position", _hitPosition );
+                        yaf3d::EntityManager::get()->sendNotification( YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED, p_currsel );
+
+                        if ( entitymoved && _p_cbNotify )
+                            _p_cbNotify->onEntityPicked( p_currsel );
+
+                    }
+
+                    _marker->setAttitude( osg::Quat() );
+                }
+
+                // reset the moved flag
+                entitymoved = false;
+                _currX = sdlevent.motion.x;
+                _currY = sdlevent.motion.y;
+            }
+            else if ( btnleftpressed && ( eventType == osgGA::GUIEventAdapter::DRAG ) )
+            {
+                if ( ( _currX != sdlevent.motion.x ) || ( _currY != sdlevent.motion.y ) )
+                {
+                    // now store the current x/y screen coords of pointer
+                    _currX = sdlevent.motion.x;
+                    _currY = sdlevent.motion.y;
+
+                    bool didhit = hit( sdlevent.motion.x, sdlevent.motion.y );
+                    if ( entitymoved && didhit && _p_selEntity && _p_selEntity->getTransformationNode() )
+                    {
+                        p_currsel->getTransformationNode()->setPosition( _hitPosition );
+                        highlightEntity( p_currsel );
+                    }
+
+                    entitymoved = true;
+                }
+            }
+        }
+    }
+    else if ( _mode & EntityPick ) // pick an entity
+    {
+        if ( ( sdlevent.button.button == SDL_BUTTON_LEFT ) && ( eventType == osgGA::GUIEventAdapter::PUSH ) )
+        {
             // try to pick something
-            pick( x, -y );
+            pick( sdlevent.motion.x, sdlevent.motion.y );
         }
     }
 
@@ -501,96 +643,37 @@ bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
         _inputCode |= ObjFocus;
     }
 
-    return false;
-}
-
-void GameNavigator::pick( float x, float y )
-{
-    // calculate start and end point of ray
-    osgUtil::SceneView* p_sv = yaf3d::Application::get()->getSceneView();
-    osg::Matrixd vum;
-    vum.set(
-            osg::Matrixd( p_sv->getViewMatrix() ) *
-            osg::Matrixd( p_sv->getProjectionMatrix() )
-            );
-    osg::Matrixd inverseMVPW;
-    inverseMVPW.invert( vum );
-    osg::Vec3 start = osg::Vec3( x, y, -1.0f ) * inverseMVPW;
-    osg::Vec3 end   = osg::Vec3( x, y, 1.0f ) * inverseMVPW;
-
-    // update line segment for intersection test
-    _p_lineSegment->set( start, end );
-
-    // reset multi-click checking if the mouse pointer moved too far since last picking
-    bool resetMultiClick = false;
-    if ( ( fabs( _lastX - x ) > 0.2 ) || ( fabs( _lastY - y ) > 0.2 ) )
+    // if the game window changes focus then stop placing entity! the entity may be destroyed by entity view.
+    if ( sdlevent.active.state & SDL_APPINPUTFOCUS )
     {
-        resetMultiClick = true;
-    }
-    _lastX = x;
-    _lastY = y;
-
-    // we are going to test the complete scenegraph
-    osg::Group* p_grp = yaf3d::Application::get()->getSceneRootNode();
-    osgUtil::IntersectVisitor iv;
-    iv.addLineSegment( _p_lineSegment.get() );
-    // do the intesection test
-    iv.apply( *p_grp );
-
-    std::vector< EditorSGData* > pickedentities;
-    osgUtil::IntersectVisitor::HitList&  hlist = iv.getHitList( _p_lineSegment.get() );
-    osgUtil::IntersectVisitor::HitList::iterator p_beg = hlist.begin(), p_end = hlist.end();
-    // collect all picked nodes
-    for( ; p_beg != p_end; ++p_beg )
-    {
-        osg::NodePath& nodepath = p_beg->getNodePath();
-        osg::NodePath::iterator p_ent = nodepath.begin(), p_entend = nodepath.end();
-        for( ; p_ent != p_entend; ++p_ent )
+        static unsigned int state = 0;
+        if ( sdlevent.active.state == ( SDL_APPINPUTFOCUS | SDL_APPACTIVE ) )
         {
-            osg::Node* p_node = *p_ent;
-            EditorSGData* p_data = dynamic_cast< EditorSGData* >( p_node->getUserData() );
-            // take only nodes with user data including editor's scenegraph entity type
-            if ( !p_data )
-                continue;
-
-            // we want every entity only once in the list; note: the same entity may intersect several times with a ray
-            std::vector< EditorSGData* >::const_iterator p_ebeg = pickedentities.begin(), p_eend = pickedentities.end();
-            for ( ; p_ebeg != p_eend; ++p_ebeg )
+            if ( sdlevent.active.gain == 0 )
+                state = yaf3d::GameState::Minimized;
+            else
             {
-                if ( ( *p_ebeg )->getEntity() == p_data->getEntity() )
-                    break;
+                if ( state == yaf3d::GameState::LostFocus )
+                    state = yaf3d::GameState::GainedFocus;
+                else
+                    state = yaf3d::GameState::Restored;
             }
-
-            // we have picked a new entity
-            if ( p_ebeg == p_eend )
-                pickedentities.push_back( p_data );
         }
+        else if ( sdlevent.active.state & SDL_APPINPUTFOCUS )
+        {
+            if ( sdlevent.active.gain == 0 )
+                state = yaf3d::GameState::LostFocus;
+            else
+                state = yaf3d::GameState::GainedFocus;
+        }
+
+        // need for any handling? not atm.
+        //if ( ( state == yaf3d::GameState::LostFocus ) || ( state == yaf3d::GameState::Minimized ) )
+        //{
+        //}
     }
 
-    // set the picking click count, it is used for selecting occluded drawables
-    if ( !resetMultiClick )
-        ++_pickClickCount;
-    else
-        _pickClickCount = 0;
-
-    yaf3d::BaseEntity* p_selentity = NULL;
-    size_t numpickedents = pickedentities.size();
-    if ( numpickedents > 0 )
-    {
-        // if the mouse pointer moved too far from last position then we take the first entity
-        if ( resetMultiClick )
-        {
-            p_selentity = pickedentities[ 0 ]->getEntity();
-        }
-        else // otherwise take the next entity
-        {
-            p_selentity = pickedentities[ _pickClickCount % numpickedents ]->getEntity();
-        }
-    }
-
-    // is there a picking callback?
-    if ( _p_cbPicking )
-        _p_cbPicking->onEntityPicked( p_selentity );
+    return false;
 }
 
 void GameNavigator::highlightEntity( yaf3d::BaseEntity* p_entity )
@@ -644,7 +727,6 @@ void GameNavigator::highlightEntity( yaf3d::BaseEntity* p_entity )
         colors->push_back( osg::Vec4( 1.0f, 1.0f, 0.0f, 1.0f ) );
         _p_linesGeom->setColorArray( colors );
         _p_linesGeom->setColorBinding( osg::Geometry::BIND_OVERALL );
-
         return;
     }
 
@@ -671,4 +753,217 @@ void GameNavigator::highlightEntity( yaf3d::BaseEntity* p_entity )
     ( *p_vertices )[ 6 ] = bb.corner( 6 ) * accumat;
     ( *p_vertices )[ 7 ] = bb.corner( 7 ) * accumat;
     _p_linesGeom->setVertexArray( p_vertices );
+}
+
+yaf3d::BaseEntity* GameNavigator::pick( unsigned short xpos, unsigned short ypos, yaf3d::BaseEntity* p_entity )
+{
+    float x =  xpos;
+    x = 2.0f * ( x * _iscreenWidth  ) - 1.0f;
+    float y = ypos;
+    y = 2.0f * ( y * _iscreenHeight ) - 1.0f;
+    y = -y;
+
+    // calculate start and end point of ray
+    osgUtil::SceneView* p_sv = yaf3d::Application::get()->getSceneView();
+    osg::Matrixd vum;
+    vum.set(
+            osg::Matrixd( p_sv->getViewMatrix() ) *
+            osg::Matrixd( p_sv->getProjectionMatrix() )
+            );
+    osg::Matrixd inverseMVPW;
+    inverseMVPW.invert( vum );
+    osg::Vec3 start = osg::Vec3( x, y, -1.0f ) * inverseMVPW;
+    osg::Vec3 end   = osg::Vec3( x, y,  1.0f ) * inverseMVPW;
+
+    // update line segment for intersection test
+    _p_lineSegment->set( start, end );
+
+    // reset multi-click checking if the mouse pointer moved too far since last picking
+    bool resetMultiClick = false;
+    if ( ( fabs( _lastX - x ) > 0.2f ) || ( fabs( _lastY - y ) > 0.2f ) )
+    {
+        resetMultiClick = true;
+    }
+    _lastX = x;
+    _lastY = y;
+
+    // we are going to test the complete scenegraph
+    osg::Group* p_grp = yaf3d::Application::get()->getSceneRootNode();
+    osgUtil::IntersectVisitor iv;
+    iv.addLineSegment( _p_lineSegment.get() );
+
+    // do not pick the marker!
+    if ( _marker.valid() )
+        _marker->setNodeMask( 0 );
+
+    // do the intesection test
+    iv.apply( *p_grp );
+
+    // do not pick the marker!
+    if ( _marker.valid() )
+        _marker->setNodeMask( 0xffffffff );
+
+    std::vector< EditorSGData* > pickedentities;
+    osgUtil::IntersectVisitor::HitList& hlist = iv.getHitList( _p_lineSegment.get() );
+    osgUtil::IntersectVisitor::HitList::iterator p_beg = hlist.begin(), p_end = hlist.end();
+    // collect all picked nodes
+    for( ; p_beg != p_end; ++p_beg )
+    {
+        osg::NodePath& nodepath = p_beg->getNodePath();
+        osg::NodePath::iterator p_ent = nodepath.begin(), p_entend = nodepath.end();
+        for( ; p_ent != p_entend; ++p_ent )
+        {
+            osg::Node* p_node = *p_ent;
+            EditorSGData* p_data = dynamic_cast< EditorSGData* >( p_node->getUserData() );
+            // take only nodes with user data including editor's scenegraph entity type
+            if ( !p_data )
+                continue;
+
+            // we want every entity only once in the list; note: the same entity may intersect several times with a ray
+            std::vector< EditorSGData* >::const_iterator p_ebeg = pickedentities.begin(), p_eend = pickedentities.end();
+            for ( ; p_ebeg != p_eend; ++p_ebeg )
+            {
+                // is there any preference for picked entities?
+                if ( ( *p_ebeg )->getEntity() == p_entity )
+                    return p_entity;
+
+                if ( ( *p_ebeg )->getEntity() == p_data->getEntity() )
+                    break;
+            }
+
+            // we have picked a new entity
+            if ( p_ebeg == p_eend )
+                pickedentities.push_back( p_data );
+        }
+    }
+
+    // set the picking click count, it is used for selecting occluded drawables
+    if ( !resetMultiClick )
+        ++_pickClickCount;
+    else
+        _pickClickCount = 0;
+
+    yaf3d::BaseEntity* p_selentity = NULL;
+    size_t numpickedents = pickedentities.size();
+    if ( numpickedents > 0 )
+    {
+        // if the mouse pointer moved too far from last position then we take the first entity
+        if ( resetMultiClick )
+        {
+            p_selentity = pickedentities[ 0 ]->getEntity();
+        }
+        else // otherwise take the next entity
+        {
+            p_selentity = pickedentities[ _pickClickCount % numpickedents ]->getEntity();
+        }
+    }
+
+    // is there a picking callback?
+    if ( _p_cbNotify )
+        _p_cbNotify->onEntityPicked( p_selentity );
+
+    return p_selentity;
+}
+
+bool GameNavigator::hit( unsigned short xpos, unsigned short ypos )
+{
+    float x =  xpos;
+    x = 2.0f * ( x * _iscreenWidth  ) - 1.0f;
+    float y = ypos;
+    y = 2.0f * ( y * _iscreenHeight ) - 1.0f;
+    y = -y;
+
+    // calculate start and end point of ray
+    osgUtil::SceneView* p_sv = yaf3d::Application::get()->getSceneView();
+    osg::Matrixd vum;
+    vum.set(
+            osg::Matrixd( p_sv->getViewMatrix() ) *
+            osg::Matrixd( p_sv->getProjectionMatrix() )
+            );
+    osg::Matrixd inverseMVPW;
+    inverseMVPW.invert( vum );
+    osg::Vec3 start = osg::Vec3( x, y, -1.0f ) * inverseMVPW;
+    osg::Vec3 end   = osg::Vec3( x, y,  1.0f ) * inverseMVPW;
+
+    // update line segment for intersection test
+    _p_lineSegment->set( start, end );
+
+    // we are going to test the complete scenegraph
+    osg::Group* p_grp = yaf3d::Application::get()->getSceneRootNode();
+    osgUtil::IntersectVisitor iv;
+    iv.addLineSegment( _p_lineSegment.get() );
+
+    // do not pick the marker!
+    if ( _marker.valid() )
+        _marker->setNodeMask( 0 );
+
+    // if an entity is placing then exclude it from intersection tests
+    unsigned int nodemask = 0;
+    osg::Node* p_transnode = NULL;
+    if ( _p_selEntity && _p_selEntity->getTransformationNode() )
+    {
+        p_transnode = _p_selEntity->getTransformationNode();
+        nodemask = p_transnode->getNodeMask();
+        p_transnode->setNodeMask( 0 );
+    }
+
+    // do the intesection test
+    iv.apply( *p_grp );
+
+    if ( _marker.valid() )
+        _marker->setNodeMask( 0xffffffff );
+
+    // restore entity's nodemask
+    if ( p_transnode )
+        p_transnode->setNodeMask( nodemask );
+
+    std::vector< EditorSGData* > pickedentities;
+    osgUtil::IntersectVisitor::HitList& hlist = iv.getHitList( _p_lineSegment.get() );
+    osgUtil::IntersectVisitor::HitList::iterator p_beg = hlist.begin(), p_end = hlist.end();
+
+    bool       didhit = false;
+    osg::Vec3f hitpos;
+    osg::Vec3f hitnormal;
+    float      mindist = 0xfffffff;
+
+    // traverse all hit positions and select the nearest one
+    for( ; p_beg != p_end; ++p_beg )
+    {
+        osg::Vec3f ip   = p_beg->getWorldIntersectPoint();
+        osg::Vec3f in   = p_beg->getWorldIntersectNormal();
+        osg::Vec3f hdist = _position - ip;
+
+        // ignore back-facing polygons
+        if ( ( hdist * in ) < 0.0f )
+            continue;
+
+        float currdist = hdist.length();
+        if ( currdist < mindist )
+        {
+            hitpos    = ip;
+            hitnormal = in;
+            mindist   = currdist;
+            didhit    = true;
+        }
+    }
+
+    if ( didhit )
+    {
+        // alight the marker with hit normal
+        osg::Quat rot;
+        rot.makeRotate( osg::Vec3f( 0.0f, 0.0f, 1.0f ), hitnormal );
+        _marker->setAttitude( rot );
+        // set marker's position
+        _marker->setPosition( hitpos );
+        _hitPosition = hitpos;
+        // enable rendering
+        _marker->setNodeMask( 0xffffffff );
+    }
+    else
+    {
+        // do not render
+        _marker->setNodeMask( 0 );
+    }
+
+    return didhit;
 }

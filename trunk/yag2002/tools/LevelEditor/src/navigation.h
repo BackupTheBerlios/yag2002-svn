@@ -37,15 +37,18 @@
 class GameInterface;
 
 //! Callback class used for notifying about picking results
-class CallbackPicking
+class CallbackNavigatorNotify
 {
     public:
-                                                        CallbackPicking() {}
+                                                        CallbackNavigatorNotify() {}
 
-                                                        ~CallbackPicking() {}
+                                                        ~CallbackNavigatorNotify() {}
 
         //! This method is called when an entity was picked. If no entity was picked then 'p_entity' will be NULL.
-        virtual void                                    onEntityPicked( yaf3d::BaseEntity* p_entity ) = 0;
+        virtual void                                    onEntityPicked( yaf3d::BaseEntity* /*p_entity*/ ) {}
+
+        //! This method is called when user uses left mouse btn when in arrow mode ( used for placing new entities ).
+        virtual void                                    onArrowClick( const osg::Vec3f& /*pos*/ ) {}
 };
 
 //! Game navigation class running in game thread context.
@@ -56,8 +59,9 @@ class GameNavigator : public osgGA::GUIEventHandler, public yaf3d::Singleton< Ga
         //! Navigation modes
         enum NavigationMode
         {
-            Fly        = 0x01,
-            Modelling  = 0x02
+            EntityPlace   = 0x01,
+            EntityPick    = 0x02,
+            ShowPickArrow = 0x04
         };
 
         //! Enable/disable navigation
@@ -108,11 +112,12 @@ class GameNavigator : public osgGA::GUIEventHandler, public yaf3d::Singleton< Ga
         //! Get camera background color.
         const osg::Vec3f&                               getBackgroundColor() const;
 
-        //! Highlight entity. If 'p_entity' is NULL then the highlight is removed from scene ( if any was active before ).
-        void                                            highlightEntity( yaf3d::BaseEntity* p_entity );
+        //! Select entity. What with given entity happends depends on the current mode.
+        //! If 'p_entity' is NULL then the highlight is removed from scene ( if any was active before ).
+        void                                            selectEntity( yaf3d::BaseEntity* p_entity );
 
-        //! Set picking callback
-        void                                            setPickingCallback( CallbackPicking* p_cb );
+        //! Set notification callback
+        void                                            setNotifyCallback( CallbackNavigatorNotify* p_cb );
 
     protected:
 
@@ -132,8 +137,14 @@ class GameNavigator : public osgGA::GUIEventHandler, public yaf3d::Singleton< Ga
         //! Input handler's callback
         bool                                            handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
 
-        //! Picking
-        void                                            pick( float x, float y );
+        //! Highlight given entity.
+        void                                            highlightEntity( yaf3d::BaseEntity* p_entity );
+
+        //! Picking entities. If p_entity is given then it is prefered by searching.
+        yaf3d::BaseEntity*                              pick( unsigned short xpos, unsigned short ypos, yaf3d::BaseEntity* p_entity = NULL );
+
+        //! Method checking for polygon hits
+        bool                                            hit( unsigned short xpos, unsigned short ypos );
 
         //! Enable/disable navigation
         bool                                            _enable;
@@ -190,7 +201,7 @@ class GameNavigator : public osgGA::GUIEventHandler, public yaf3d::Singleton< Ga
         unsigned int                                    _fps;
 
         //! Picking related stuff
-        bool                                            _pickingEnabled;
+        osg::ref_ptr< osg::PositionAttitudeTransform >  _marker;
 
         float                                           _iscreenWidth;
 
@@ -200,13 +211,19 @@ class GameNavigator : public osgGA::GUIEventHandler, public yaf3d::Singleton< Ga
 
         float                                           _lastX;
 
+        unsigned short                                  _currX;
+
         float                                           _lastY;
+
+        unsigned short                                  _currY;
 
         osg::ref_ptr< osg::Geode >                      _bboxGeode;
 
         osg::Geometry*                                  _p_linesGeom;
 
         osg::ref_ptr< osg::LineSegment >                _p_lineSegment;
+
+        osg::Vec3f                                      _hitPosition;
 
         //! Possible inputs
         enum InputCode
@@ -228,9 +245,11 @@ class GameNavigator : public osgGA::GUIEventHandler, public yaf3d::Singleton< Ga
         unsigned int                                    _inputCode;
 
         //! Picking callback
-        CallbackPicking*                                _p_cbPicking;
+        CallbackNavigatorNotify*                        _p_cbNotify;
 
         yaf3d::BaseEntity*                              _p_selEntity;
+
+//         yaf3d::BaseEntity*                             _p_placeEntity;
 
     friend class GameInterface;
     friend class yaf3d::Singleton< GameNavigator >;

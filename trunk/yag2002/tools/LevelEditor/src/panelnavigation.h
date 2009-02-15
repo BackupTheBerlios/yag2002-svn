@@ -74,8 +74,6 @@ class PanelNavigation: public wxPanel
 
         wxCheckBox*                                 _p_checkboxNavEnable;
 
-        wxChoice*                                   _p_choiceNavMode;
-
         wxTextCtrl*                                 _p_textNavSpeed;
 
         wxTextCtrl*                                 _p_textNavPosition;

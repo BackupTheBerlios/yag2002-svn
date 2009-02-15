@@ -31,6 +31,11 @@
 #include "logwindow.h"
 #include "editorutils.h"
 
+
+//! Log sink name
+#define LOG_WND_SINK_NAME   "leveleditor"
+
+
 IMPLEMENT_DYNAMIC_CLASS( LogWindow, wxDialog )
 
 BEGIN_EVENT_TABLE( LogWindow, wxDialog )
@@ -60,10 +65,32 @@ LogWindow::LogWindow() :
 
     // TODO: work out a better was to move the window top proper position
     Move( 0, 800 );
+
+    // add it as sink to yaf3d log system
+    yaf3d::yaf3dlog.addSink( LOG_WND_SINK_NAME, *this, yaf3d::Log::L_VERBOSE );
 }
 
 LogWindow::~LogWindow()
 {
+    // remove the sink
+    yaf3d::yaf3dlog.removeSink( LOG_WND_SINK_NAME );
+}
+
+void LogWindow::update()
+{
+    if ( !_p_textCtrl )
+        return;
+
+    while ( _logMutex.trylock() )
+        OpenThreads::Thread::microSleep( 10000 );
+
+    while ( _msgBuffer.size() )
+    {
+        _p_textCtrl->AppendText( _msgBuffer.front() );
+        _msgBuffer.pop();
+    }
+
+    _logMutex.unlock();
 }
 
 void LogWindow::addOutput( const std::string& msg )
@@ -71,7 +98,12 @@ void LogWindow::addOutput( const std::string& msg )
     if ( !_p_textCtrl )
         return;
 
-    _p_textCtrl->AppendText( msg );
+    while ( _logMutex.trylock() )
+        OpenThreads::Thread::microSleep( 1000 );
+
+    _msgBuffer.push( msg );
+
+    _logMutex.unlock();
 }
 
 void LogWindow::clearOutput()
@@ -81,6 +113,8 @@ void LogWindow::clearOutput()
 
 std::basic_ios< char >::int_type LogWindow::ConStreamBuf::overflow( int_type c )
 {
+    _p_win->_logMutex.lock();
+
     if( !std::char_traits< char >::eq_int_type( c, std::char_traits< char >::eof() ) )
     {
         _msg += c;
@@ -90,10 +124,15 @@ std::basic_ios< char >::int_type LogWindow::ConStreamBuf::overflow( int_type c )
             if ( _p_win->_enableTimeStamp )
                 ts = "[" + yaf3d::getFormatedTime() + "] ";
 
-            _p_win->addOutput( ts + _msg );
+            _p_win->_msgBuffer.push( ts + _msg );
+
             _msg = "";
         }
     }
 
-    return std::char_traits< char >::not_eof( c );
+    std::basic_ios< char >::int_type ret = std::char_traits< char >::not_eof( c );
+
+    _p_win->_logMutex.unlock();
+
+    return ret;
 }

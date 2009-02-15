@@ -532,7 +532,7 @@ osg::Node* LevelManager::loadMesh( const std::string& fileName, bool useCache )
         std::map< std::string, osg::ref_ptr< osg::Node > >::iterator p_mesh = _meshCache.find( fileName );
         if ( p_mesh != _meshCache.end() )
         {
-            log_debug << "LevelManager: using cached mesh '" << fileName << "'" << std::endl;
+            log_verbose << "LevelManager: using cached mesh '" << fileName << "'" << std::endl;
             return p_mesh->second.get();
         }
     }

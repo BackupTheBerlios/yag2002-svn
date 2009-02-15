@@ -54,8 +54,7 @@ _attenuation( 1.0f ),
 _updateTimer( 0.0f ),
 _soundGroup( "Music" ),
 _soundID( 0 ),
-_p_channel( NULL ),
-_p_player( NULL )
+_p_channel( NULL )
 {
     // register entity attributes
     getAttributeManager().addAttribute( "soundFile",    _soundFile   );
@@ -67,6 +66,7 @@ _p_player( NULL )
     getAttributeManager().addAttribute( "position",     _position    );
     getAttributeManager().addAttribute( "minDistance",  _minDistance );
     getAttributeManager().addAttribute( "maxDistance",  _maxDistance );
+    getAttributeManager().addAttribute( "meshFile",     _sourceMesh  );
 }
 
 En2DSound::~En2DSound()
@@ -113,6 +113,7 @@ void En2DSound::handleNotification( const yaf3d::EntityNotification& notificatio
                 {
                     stopPlaying( false );
                     yaf3d::SoundManager::get()->releaseSound( _soundID );
+                    _soundID = 0;
                 }
                 catch ( const yaf3d::SoundException& )
                 {
@@ -140,10 +141,6 @@ void En2DSound::initialize()
 
     // setup the sound
     setupSound();
-
-    // if the sound is ambient then we need no update
-    if ( !_ambient && _soundID )
-        yaf3d::EntityManager::get()->registerUpdate( this, true );
 }
 
 void En2DSound::updateEntity( float deltaTime )
@@ -163,23 +160,24 @@ void En2DSound::updateEntity( float deltaTime )
         return;
     }
 
-    // we need a valid player object for calculating the attenuation of non-ambient sound
-    if ( !_p_player )
+    // we need the position of camera for calculating the attenuation of non-ambient sound
+    osgUtil::SceneView* p_viewer = yaf3d::Application::get()->getSceneView();
+    if ( !_ambient && p_viewer )
     {
-        _p_player = gameutils::PlayerUtils::get()->getLocalPlayer();
-        if ( !_p_player )
-            return;
-    }
+        osg::Vec3f pos;
+        osg::Camera* p_cam = p_viewer->getCamera();
+        if ( p_cam )
+            pos = p_cam->getViewMatrix().getTrans();
 
-    const osg::Vec3f& playerpos = _p_player->getPosition();
-    float             distance  = ( playerpos - _position ).length();
-    if ( ( distance < _minDistance ) || ( distance > _maxDistance ) )
-    {
-        _attenuation = 0.0f;
-    }
-    else
-    {
-        _attenuation = 1.0f - ( ( distance - _minDistance ) / ( _maxDistance - _minDistance ) );
+        float distance  = ( pos - _position ).length();
+        if ( ( distance < _minDistance ) || ( distance > _maxDistance ) )
+        {
+            _attenuation = 0.0f;
+        }
+        else
+        {
+            _attenuation = 1.0f - ( ( distance - _minDistance ) / ( _maxDistance - _minDistance ) );
+        }
     }
 
     yaf3d::SoundManager::get()->setSoundVolume( _soundID, _attenuation * _volume );
@@ -250,13 +248,42 @@ void En2DSound::setupSound()
         else
             flags = yaf3d::SoundManager::fmodDefaultCreationFlags2D;
 
-        _soundID    = yaf3d::SoundManager::get()->createSound( soundgroup, _soundFile, _volume, _ambient ? _autoPlay : false, flags );
+        _soundID    = yaf3d::SoundManager::get()->createSound( soundgroup, _soundFile, _volume, _autoPlay, flags );
         _p_channel  = yaf3d::SoundManager::get()->getSoundResource( _soundID )->getChannel();
     }
     catch ( const yaf3d::SoundException& e )
     {
         log_error << ENTITY_NAME_2DSOUND << ":" << getInstanceName() << "  error loading sound file " << _soundFile << std::endl;
         log_error << "  reason: " << e.what() << std::endl;
+    }
+
+    // re-add the debug mesh if one exists
+    if ( getTransformationNode()->getNumChildren() )
+    {
+        // first remove the current mesh
+        osg::Node* p_currmesh = getTransformationNode()->getChild( 0 );
+        if ( p_currmesh )
+            removeFromTransformationNode( p_currmesh );
+    }
+    if ( _sourceMesh.length() )
+    {
+        osg::Node* p_mesh = yaf3d::LevelManager::get()->loadMesh( _sourceMesh );
+        if ( p_mesh )
+        {
+            addToTransformationNode( p_mesh );
+            setPosition( _position );
+        }
+        else
+        {
+            log_warning << "2DSound: error loading mesh file for sound source: " << _sourceMesh << std::endl;
+        }
+    }
+
+    // if the sound is ambient then we need no update
+    if ( !_ambient && _soundID )
+    {
+        if ( !yaf3d::EntityManager::get()->isRegisteredUpdate( this ) )
+            yaf3d::EntityManager::get()->registerUpdate( this, true );
     }
 }
 

@@ -32,6 +32,7 @@
 #include "entityproperties.h"
 #include "editorutils.h"
 #include "navigation.h"
+#include "editor.h"
 
 //! Property categories
 #define PROP_INSTANCE_NAME              "_$InstName$_"
@@ -120,11 +121,17 @@ void EntityProperties::updateProperties( yaf3d::BaseEntity* p_entity )
     for ( ; p_beg != p_end; ++p_beg )
     {
         std::string value;
-        // put the current camera position as default for position attribute
-        if ( ( *p_beg )[ 0 ] == "position" )
-            value = Conversion::vec3ToString( GameNavigator::get()->getCameraPosition() );
+        // set default mesh file as initial one
+        if ( ( *p_beg )[ 0 ] == "meshFile" )
+        {
+            yaf3d::SettingsPtr settings = yaf3d::SettingsManager::get()->getProfile( EDITOR_SETTINGS_PROFILE );
+            assert( settings.valid() && "invalid editor configuration!" );
+            settings->getValue( ES_DEFAULT_MESH, value );
+        }
         else
+        {
             value = ( *p_beg )[ 1 ];
+        }
 
         _p_entityProps->Append( new wxStringProperty( ( *p_beg )[ 0 ], wxPG_LABEL, value ) );
     }

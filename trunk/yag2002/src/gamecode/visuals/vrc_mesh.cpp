@@ -150,6 +150,13 @@ void EnMesh::handleNotification( const yaf3d::EntityNotification& notification )
 
             if ( _mesh.valid() && _enable )
                 addToTransformationNode( _mesh.get() );
+
+            // if the attribute changes then we enable rendering regardless of current state
+
+            // this method really removes the node from all its parents
+            yaf3d::EntityManager::get()->removeFromScene( this );
+            // now add it to scene graph again
+            addToSceneGraph();
         }
         break;
 

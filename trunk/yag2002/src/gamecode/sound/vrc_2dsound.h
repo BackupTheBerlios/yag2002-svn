@@ -47,9 +47,6 @@ class En2DSound : public yaf3d::BaseEntity
 
         virtual                                     ~En2DSound();
 
-        //! This entity does not need a transform node, which would be created by level manager on loading
-        const bool                                  isTransformable() const { return false; }
-
         //! Initialize 
         void                                        initialize();
 
@@ -100,6 +97,9 @@ class En2DSound : public yaf3d::BaseEntity
         //! Maximum distance
         float                                       _maxDistance;
 
+        //! Mesh file name sound source ( is usually used during level creation for debugging purpose )
+        std::string                                 _sourceMesh;
+
         //! Attenuation calculated for non-ambient sound basing on distance to player
         float                                       _attenuation;
 
@@ -114,9 +114,6 @@ class En2DSound : public yaf3d::BaseEntity
 
         //! Sound channel
         FMOD::Channel*                              _p_channel;
-
-        //! Player object needed for non-ambient sound
-        yaf3d::BaseEntity*                          _p_player;
 };
 
 //! Entity type definition used for type registry

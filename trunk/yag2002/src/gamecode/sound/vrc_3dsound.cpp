@@ -52,13 +52,13 @@ _p_channel( NULL )
     // register entity attributes
     getAttributeManager().addAttribute( "soundFile",        _soundFile   );
     getAttributeManager().addAttribute( "soundGroup",       _soundGroup  );
-    getAttributeManager().addAttribute( "sourceMesh",       _sourceMesh  );
     getAttributeManager().addAttribute( "position",         _position    );
     getAttributeManager().addAttribute( "loop",             _loop        );
     getAttributeManager().addAttribute( "autoPlay",         _autoPlay    );
     getAttributeManager().addAttribute( "volume",           _volume      );
     getAttributeManager().addAttribute( "minDistance",      _minDistance );
     getAttributeManager().addAttribute( "maxDistance",      _maxDistance );
+    getAttributeManager().addAttribute( "meshFile",         _sourceMesh  );
 }
 
 En3DSound::~En3DSound()
@@ -199,7 +199,14 @@ void En3DSound::setupSound()
         log_error << "  reason: " << e.what() << std::endl;
     }
 
-    // this is for debugging
+    // re-add the debug mesh if one exists
+    if ( getTransformationNode()->getNumChildren() )
+    {
+        // first remove the current mesh
+        osg::Node* p_currmesh = getTransformationNode()->getChild( 0 );
+        if ( p_currmesh )
+            removeFromTransformationNode( p_currmesh );
+    }
     if ( _sourceMesh.length() )
     {
         osg::Node* p_mesh = yaf3d::LevelManager::get()->loadMesh( _sourceMesh );
@@ -210,7 +217,7 @@ void En3DSound::setupSound()
         }
         else
         {
-            log_error << "3DSound: error loading mesh file for sound source: " << _sourceMesh << std::endl;
+            log_warning << "2DSound: error loading mesh file for sound source: " << _sourceMesh << std::endl;
         }
     }
 }

@@ -52,7 +52,6 @@ END_EVENT_TABLE()
 
 PanelNavigation::PanelNavigation( wxWindow* p_parent ) :
  _p_checkboxNavEnable( NULL ),
- _p_choiceNavMode( NULL ),
  _p_textNavSpeed( NULL ),
  _p_textNavPosition( NULL ),
  _p_textNavRotation( NULL ),
@@ -96,9 +95,6 @@ void PanelNavigation::createControls()
     wxBoxSizer* itemBoxSizer7 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer6->Add(itemBoxSizer7, 1, wxGROW|wxALL, 5);
 
-    wxStaticText* itemStaticText8 = new wxStaticText( itemPanel1, wxID_STATIC, _("Navigation Mode"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer7->Add(itemStaticText8, 0, wxALIGN_LEFT|wxALL, 6);
-
     wxStaticText* itemStaticText9 = new wxStaticText( itemPanel1, wxID_STATIC, _("Speed (units/s)"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer7->Add(itemStaticText9, 0, wxALIGN_LEFT|wxALL, 6);
 
@@ -110,14 +106,6 @@ void PanelNavigation::createControls()
 
     wxBoxSizer* itemBoxSizer12 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer6->Add(itemBoxSizer12, 1, wxGROW|wxALL, 5);
-
-    wxArrayString _p_choiceNavModeStrings;
-    _p_choiceNavModeStrings.Add(_("Fly"));
-    _p_choiceNavModeStrings.Add(_("Modelling"));
-    _p_choiceNavMode = new wxChoice( itemPanel1, ID_CHOICE_NAV_MODE, wxDefaultPosition, wxDefaultSize, _p_choiceNavModeStrings, 0 );
-    _p_choiceNavMode->SetStringSelection(_("Fly"));
-    _p_choiceNavMode->SetName(_T("Mode"));
-    itemBoxSizer12->Add(_p_choiceNavMode, 0, wxGROW|wxLEFT|wxRIGHT|wxBOTTOM, 5);
 
     _p_textNavSpeed = new wxTextCtrl( itemPanel1, ID_TEXTCTRL_NAV_SPEED, _("100"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer12->Add(_p_textNavSpeed, 0, wxGROW|wxLEFT|wxRIGHT|wxBOTTOM, 5);
@@ -179,7 +167,6 @@ void PanelNavigation::loadSettings()
     assert( settings.valid() && "invalid editor configuration!" );
 
     bool            navEnable = true;
-    std::string     navMode;
     unsigned int    navSpeed  = 100;
     osg::Vec3f      navPos;
     osg::Vec2f      navRot;
@@ -189,7 +176,6 @@ void PanelNavigation::loadSettings()
     osg::Vec3f      navBkgColor;
 
     settings->getValue( ES_NAV_ENABLE,   navEnable );
-    settings->getValue( ES_NAV_MODE,     navMode );
     settings->getValue( ES_NAV_SPEED,    navSpeed );
     settings->getValue( ES_NAV_POSITION, navPos );
     settings->getValue( ES_NAV_ROTATION, navRot );
@@ -198,13 +184,7 @@ void PanelNavigation::loadSettings()
     settings->getValue( ES_NAV_FARCLIP,  navFarClip );
     settings->getValue( ES_NAV_BKGCOLOR, navBkgColor );
 
-    int choice = 0;
-    if ( navMode == "Fly" )
-        choice = 0;
-    else if ( navMode == "Modelling" )
-        choice = 1;
     _p_checkboxNavEnable->SetValue( navEnable );
-    _p_choiceNavMode->SetSelection( choice );
     _p_textNavSpeed->SetValue( Conversion::floatToString( navSpeed ) );
     _p_textNavPosition->SetValue( Conversion::vec3ToString( navPos ) );
     _p_textNavRotation->SetValue( Conversion::vec2ToString( navRot ) );
@@ -215,13 +195,6 @@ void PanelNavigation::loadSettings()
 
     // update the navigator instance
     GameNavigator::get()->enable( navEnable );
-    unsigned int mode = 0;
-    if ( navMode == "Fly" )
-        mode = GameNavigator::Fly;
-    else if ( navMode == "Modelling" )
-        mode = GameNavigator::Modelling;
-
-    GameNavigator::get()->setMode( mode );
     GameNavigator::get()->setSpeed( navSpeed );
     GameNavigator::get()->setFOV( navFOV );
     GameNavigator::get()->setNearFarClip( navNearClip, navFarClip );
@@ -239,7 +212,6 @@ void PanelNavigation::onButtonNavApplyClick( wxCommandEvent& event )
     assert( settings.valid() && "invalid editor configuration!" );
 
     bool            navEnable   = _p_checkboxNavEnable->GetValue();
-    std::string     navMode     = _p_choiceNavMode->GetLabel().c_str();
     unsigned int    navSpeed    = Conversion::stringToUint( _p_textNavSpeed->GetValue().c_str() );
     osg::Vec3f      navPos      = Conversion::stringToVec3( _p_textNavPosition->GetValue().c_str() );
     osg::Vec2f      navRot      = Conversion::stringToVec2( _p_textNavRotation->GetValue().c_str() );;
@@ -249,7 +221,6 @@ void PanelNavigation::onButtonNavApplyClick( wxCommandEvent& event )
     osg::Vec3f      navBkgColor = Conversion::colorToVec( _p_textNavBkgColor->GetColour() );
 
     settings->setValue( ES_NAV_ENABLE,   navEnable );
-    settings->setValue( ES_NAV_MODE,     navMode );
     settings->setValue( ES_NAV_SPEED,    navSpeed );
     settings->setValue( ES_NAV_POSITION, navPos );
     settings->setValue( ES_NAV_ROTATION, navRot );
@@ -267,7 +238,6 @@ void PanelNavigation::onButtonNavDefaultsClick( wxCommandEvent& event )
     yaf3d::SettingsPtr settings = yaf3d::SettingsManager::get()->getProfile( EDITOR_SETTINGS_PROFILE );
     assert( settings.valid() && "invalid editor configuration!" );
 
-    std::string     navMode( "Fly" );
     unsigned int    navSpeed  = 100;
     osg::Vec3f      navPos;
     osg::Vec2f      navRot;
@@ -276,7 +246,6 @@ void PanelNavigation::onButtonNavDefaultsClick( wxCommandEvent& event )
     float           navFarClip  = 1000.0f;
     osg::Vec3f      navBkgColor;
 
-    settings->setValue( ES_NAV_MODE,     navMode );
     settings->setValue( ES_NAV_SPEED,    navSpeed );
     settings->setValue( ES_NAV_POSITION, navPos );
     settings->setValue( ES_NAV_ROTATION, navRot );

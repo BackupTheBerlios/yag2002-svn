@@ -38,7 +38,6 @@
 #include "statswindow.h"
 #include "editorutils.h"
 
-#include "entityproperties.h"
 
 IMPLEMENT_APP( EditorApp )
 
@@ -82,7 +81,6 @@ bool EditorApp::OnInit()
     {
         yaf3d::SettingsPtr settings = yaf3d::SettingsManager::get()->createProfile( EDITOR_SETTINGS_PROFILE, EDITOR_SETTINGS_PROFILE ".cfg" );
         bool            navEnable = true;
-        std::string     navMode( "Fly" );
         unsigned int    navSpeed  = 100;
         osg::Vec3f      navPos( 0.0f, 0.0f, 50.0f );
         osg::Vec2f      navRot( 0.0f, -90.0f );
@@ -90,9 +88,9 @@ bool EditorApp::OnInit()
         float           navNearClip = 0.5f;
         float           navFarClip  = 1000.0f;
         osg::Vec3f      navBkgColor( 0.0f, 0.0f, 0.0f );
+        std::string     defaultmesh( "mesh/defaultmesh.osg" );
 
         settings->registerSetting( ES_NAV_ENABLE,   navEnable );
-        settings->registerSetting( ES_NAV_MODE,     navMode );
         settings->registerSetting( ES_NAV_SPEED,    navSpeed );
         settings->registerSetting( ES_NAV_POSITION, navPos );
         settings->registerSetting( ES_NAV_ROTATION, navRot );
@@ -100,6 +98,7 @@ bool EditorApp::OnInit()
         settings->registerSetting( ES_NAV_NEARCLIP, navNearClip );
         settings->registerSetting( ES_NAV_FARCLIP,  navFarClip );
         settings->registerSetting( ES_NAV_BKGCOLOR, navBkgColor );
+        settings->registerSetting( ES_DEFAULT_MESH, defaultmesh );
 
         if ( !settings->load() )
         {
@@ -128,8 +127,6 @@ bool EditorApp::OnInit()
 
     // create the log window
     _p_logWindow = new LogWindow();
-    // add it as sink to yaf3d log system
-    yaf3d::yaf3dlog.addSink( "editor", *_p_logWindow );
     _p_logWindow->Show( true );
 
     // create the stats window

@@ -410,25 +410,15 @@ void PanelEntities::selectEntity( yaf3d::BaseEntity* p_entity )
         ScopedGameUpdateLock   lockupdate;
 
         // remove any selection
-        GameNavigator::get()->highlightEntity( NULL );
+        GameNavigator::get()->selectEntity( NULL );
 
         return;
     }
 
-    // find the entity in tree
-    wxTreeItemId item = _p_treeEntity->GetRootItem();
-    wxTreeItemIdValue cookie;
-    for ( item = _p_treeEntity->GetFirstChild( item, cookie ); item.IsOk(); item = _p_treeEntity->GetNextSibling( item ) )
+    wxTreeItemId item = findTreeEntity( p_entity );
+    if ( item.IsOk() )
     {
-        TreeItemData* p_info = dynamic_cast< TreeItemData* >( _p_treeEntity->GetItemData( item ) );
-        if ( !p_info )
-            continue;
-
-        if ( p_info->getEntity() == p_entity )
-        {
-            _p_treeEntity->SelectItem( item, true );
-            break;
-        }
+        _p_treeEntity->SelectItem( item, true );
     }
 }
 
@@ -501,6 +491,24 @@ yaf3d::BaseEntity* PanelEntities::findTreeEntity( wxTreeItemId item )
         return NULL;
 
     return p_entity;
+}
+
+wxTreeItemId PanelEntities::findTreeEntity( yaf3d::BaseEntity* p_entity )
+{
+    // find the entity in tree
+    wxTreeItemId item = _p_treeEntity->GetRootItem();
+    wxTreeItemIdValue cookie;
+    for ( item = _p_treeEntity->GetFirstChild( item, cookie ); item.IsOk(); item = _p_treeEntity->GetNextSibling( item ) )
+    {
+        TreeItemData* p_info = dynamic_cast< TreeItemData* >( _p_treeEntity->GetItemData( item ) );
+        if ( !p_info )
+            continue;
+
+        if ( p_info->getEntity() == p_entity )
+            return item;
+    }
+
+    return item;
 }
 
 void PanelEntities::swapEntities( wxTreeItemId item1, wxTreeItemId item2 )
@@ -640,8 +648,8 @@ void PanelEntities::onTreectrlSelChanged( wxTreeEvent& event )
 
         // update entity properties
         updateProperties( p_selentity );
-        // highlight the entity
-        GameNavigator::get()->highlightEntity( p_selentity );
+        // select the entity
+        GameNavigator::get()->selectEntity( p_selentity );
     }
 }
 
@@ -684,14 +692,15 @@ void PanelEntities::onButtonAddEntityClick( wxCommandEvent& event )
     }
 
     // create an entity using the entity manager and copy over the entity attributes
-    wxTreeItemId newitem = 0;
-
+    wxTreeItemId       newitem     = 0;
+    yaf3d::BaseEntity* p_newentity = NULL;
     {
         // lock game loop
         ScopedGameUpdateLock   lockupdate;
 
-        std::string        name        = p_entity->getInstanceName();
-        yaf3d::BaseEntity* p_newentity = yaf3d::EntityManager::get()->createEntity( enttype, name, true );
+        std::string name = p_entity->getInstanceName();
+
+        p_newentity = yaf3d::EntityManager::get()->createEntity( enttype, name, true );
 
         // set the entity attributes from properties
         p_dlg->updateEntity( p_newentity );
@@ -742,6 +751,10 @@ void PanelEntities::onButtonAddEntityClick( wxCommandEvent& event )
 
         // move the entity to proper place in entity manger's pool
         moveEntity( newitem, selection );
+
+        // place entity
+        GameNavigator::get()->setMode( GameNavigator::ShowPickArrow );
+        GameNavigator::get()->selectEntity( p_newentity );
     }
 
     // update tree
@@ -751,7 +764,10 @@ void PanelEntities::onButtonAddEntityClick( wxCommandEvent& event )
         wxMilliSleep( 100 );
         // update the tree
         updateEntityTree();
-        _p_treeEntity->SelectItem( newitem, true );
+
+        wxTreeItemId item = findTreeEntity( p_newentity );
+        if ( item.IsOk() )
+            _p_treeEntity->SelectItem( item, true );
     }
 
     // remove the prototype entity
@@ -1040,6 +1056,6 @@ void PanelEntities::onPropertyGridChange( wxPropertyGridEvent& event )
         yaf3d::EntityManager::get()->sendNotification( YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED, p_entity );
     }
 
-    // highlight the entity so that its bounding box gets updated
-    GameNavigator::get()->highlightEntity( p_entity );
+    // select the entity so that its bounding box gets updated
+    GameNavigator::get()->selectEntity( p_entity );
 }
