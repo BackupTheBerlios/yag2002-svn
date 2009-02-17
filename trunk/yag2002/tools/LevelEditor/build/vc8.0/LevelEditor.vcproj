@@ -278,14 +278,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\navigationinput.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\navigationinput.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\panelentities.cpp"
 				>
 			</File>
@@ -299,6 +291,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\panelnavigation.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\scenetools.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\scenetools.h"
 				>
 			</File>
 			<File

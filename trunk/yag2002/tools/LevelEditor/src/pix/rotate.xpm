@@ -2,7 +2,7 @@
 static char * rotate_xpm[] = {
 "16 16 9 1",
 " 	c None",
-".	c #FFFFFF",
+".	c None",
 "+	c #C0C0C0",
 "@	c #808080",
 "#	c #000000",

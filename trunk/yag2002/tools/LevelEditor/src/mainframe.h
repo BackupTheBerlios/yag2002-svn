@@ -36,7 +36,7 @@
 
 
 #define SYMBOL_MAINFRAME_STYLE      wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxMINIMIZE_BOX|/*wxMAXIMIZE_BOX|*/wxCLOSE_BOX
-#define SYMBOL_MAINFRAME_TITLE      _( "VRC Content Editor " CONTENT_EDITOR_VERSION )
+#define SYMBOL_MAINFRAME_TITLE      _( "VRC Level Editor " CONTENT_EDITOR_VERSION )
 #define SYMBOL_MAINFRAME_IDNAME     ID_MAINFRAME
 #define SYMBOL_MAINFRAME_SIZE       wxSize( 320, 800 )
 #define SYMBOL_MAINFRAME_POSITION   wxDefaultPosition
@@ -119,16 +119,19 @@ class MainFrame: public wxFrame
         void                                        onMenuitemHelpAboutClick( wxCommandEvent& event );
 
         //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_SEL
-        void                                        onToolSelectClickClick( wxCommandEvent& event );
+        void                                        onToolSelectClick( wxCommandEvent& event );
 
         //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_MOVE
-        void                                        onToolMoveClickClick( wxCommandEvent& event );
-
-        //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_AUTOPLACE
-        void                                        onToolAutoPlaceClickClick( wxCommandEvent& event );
+        void                                        onToolMoveClick( wxCommandEvent& event );
 
         //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_ROTATE
-        void                                        onToolRotateClickClick( wxCommandEvent& event );
+        void                                        onToolRotateClick( wxCommandEvent& event );
+
+        //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_AUTOPLACE
+        void                                        onToolAutoPlaceClick( wxCommandEvent& event );
+
+        //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_INSPECT
+        void                                        onToolInspectClick( wxCommandEvent& event );
 
         //! wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED event handler for ID_NOTEBOOK1
         void                                        onNotebookPageChanged( wxNotebookEvent& event );
@@ -167,8 +170,9 @@ class MainFrame: public wxFrame
             ID_TOOL_OPEN             = 10013,
             ID_TOOL_SEL              = 10014,
             ID_TOOL_MOVE             = 10015,
-            ID_TOOL_AUTOPLACE        = 10016,
-            ID_TOOL_ROTATE           = 10017,
+            ID_TOOL_ROTATE           = 10016,
+            ID_TOOL_AUTOPLACE        = 10017,
+            ID_TOOL_INSPECT          = 10018,
             ID_STATUSBAR             = 10020,
             ID_NOTEBOOK              = 10030
         };

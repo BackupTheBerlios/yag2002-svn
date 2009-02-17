@@ -33,7 +33,7 @@
 #include "gameinterface.h"
 #include "editor.h"
 #include "editorutils.h"
-#include <osg/ComputeBoundsVisitor>
+#include "scenetools.h"
 
 
 //! Some navigation constants
@@ -46,7 +46,7 @@ YAF3D_SINGLETON_IMPL( GameNavigator )
 
 GameNavigator::GameNavigator() :
  _enable( true ),
- _mode( ShowPickArrow ),
+ _mode( EntitySelect ),
  _moveSpeed( 100.0f ),
  _rotationSpeed( 5.0f ),
  _yaw( 0.0f ),
@@ -60,15 +60,11 @@ GameNavigator::GameNavigator() :
  _fpsTimer( 0.0f ),
  _fpsCnt( 0 ),
  _fps( 0 ),
- _iscreenWidth( 0.0f ),
- _iscreenHeight( 0.0f ),
- _pickClickCount( 0 ),
- _lastX( 0.0f ),
  _currX( 0 ),
- _lastY( 0.0f ),
  _currY( 0 ),
  _inputCode( NoCode ),
  _p_cbNotify( NULL ),
+ _p_sceneTools( NULL ),
  _p_selEntity( NULL )
 {
 }
@@ -90,14 +86,58 @@ void GameNavigator::setMode( unsigned int mode )
 
     _mode = mode;
 
-    if ( mode & ShowPickArrow )
+    _p_sceneTools->showHitMarker( false );
+    _p_sceneTools->showAxisMarker( false );
+
+    switch ( mode )
     {
-        if ( ( _marker.valid() ) && !yaf3d::Application::get()->getSceneRootNode()->containsNode( _marker.get() ) )
-            yaf3d::Application::get()->getSceneRootNode()->addChild( _marker.get() );
-    }
-    else
-    {
-        yaf3d::Application::get()->getSceneRootNode()->removeChild( _marker.get() );
+        case EntitySelect:
+        {
+             // activate the axis marker
+             _p_sceneTools->showAxisMarker( false );
+             _p_sceneTools->showHitMarker( false );
+        }
+        break;
+
+        case EntityMove:
+        {
+             // activate the axis marker
+             _p_sceneTools->showAxisMarker( true );
+             if ( _p_selEntity && _p_selEntity->getTransformationNode() )
+                 _p_sceneTools->setMarkerPosition( _p_selEntity->getTransformationNode()->getPosition() );
+        }
+        break;
+
+        case EntityRotate:
+        {
+             // activate the axis marker
+             _p_sceneTools->showAxisMarker( true );
+             if ( _p_selEntity && _p_selEntity->getTransformationNode() )
+                 _p_sceneTools->setMarkerPosition( _p_selEntity->getTransformationNode()->getPosition() );
+        }
+        break;
+
+        case EntityPlace:
+        {
+            // exclude the selected entity from hit tests, the selected entity can be also empty.
+             _p_sceneTools->excludeFromPicking( _p_selEntity );
+             // activate the axis marker
+             _p_sceneTools->showAxisMarker( false );
+             if ( _p_selEntity && _p_selEntity->getTransformationNode() )
+                 _p_sceneTools->setMarkerPosition( _p_selEntity->getTransformationNode()->getPosition() );
+        }
+        break;
+
+        case Inspect:
+        {
+            // remove any entity exclusion from picking
+            _p_sceneTools->excludeFromPicking( NULL );
+            _p_sceneTools->showHitMarker( true );
+        }
+        break;
+
+        default:
+            assert( NULL && "invalid navigator mode!" );
     }
 }
 
@@ -124,14 +164,13 @@ float GameNavigator::getSpeed() const
 
 void GameNavigator::setFOV( float fov )
 {
+    ScopedGameUpdateLock lock;
+
     _fov = fov;
 
-    {
-        ScopedGameUpdateLock lock;
-        unsigned int width, height;
-        yaf3d::Application::get()->getScreenSize( width, height );
-        yaf3d::Application::get()->getSceneView()->setProjectionMatrixAsPerspective( _fov, ( float( width ) / float( height ) ), _nearClip, _farClip );
-    }
+    unsigned int width, height;
+    yaf3d::Application::get()->getScreenSize( width, height );
+    yaf3d::Application::get()->getSceneView()->setProjectionMatrixAsPerspective( _fov, ( float( width ) / float( height ) ), _nearClip, _farClip );
 }
 
 float GameNavigator::getFOV() const
@@ -141,12 +180,11 @@ float GameNavigator::getFOV() const
 
 void GameNavigator::setBackgroundColor( const osg::Vec3f& color )
 {
+    ScopedGameUpdateLock lock;
+
     _backgroundColor = color;
 
-    {
-        ScopedGameUpdateLock lock;
-        yaf3d::Application::get()->getSceneView()->setClearColor( osg::Vec4f( _backgroundColor, 1.0f ) );
-    }
+     yaf3d::Application::get()->getSceneView()->setClearColor( osg::Vec4f( _backgroundColor, 1.0f ) );
 }
 
 const osg::Vec3f& GameNavigator::getBackgroundColor() const
@@ -157,8 +195,11 @@ const osg::Vec3f& GameNavigator::getBackgroundColor() const
 void GameNavigator::selectEntity( yaf3d::BaseEntity* p_entity )
 {
     ScopedGameUpdateLock lock;
+
     _p_selEntity = p_entity;
-    highlightEntity( _p_selEntity );
+
+    if ( _p_sceneTools )
+        _p_sceneTools->highlightEntity( _p_selEntity );
 }
 
 void GameNavigator::setNotifyCallback( CallbackNavigatorNotify* p_cb )
@@ -191,83 +232,15 @@ void GameNavigator::initialize()
     setCameraPosition( navPos );
     setCameraPitchYaw( -navRot._v[ 0 ], -navRot._v[ 1 ] );
 
-    // setup picking related stuff
+    // setup the scene tools
+    _p_sceneTools = new SceneTools;
+    if ( !_p_sceneTools->initialize( width, height ) )
     {
-        _p_lineSegment = new osg::LineSegment;
-        // store the window size, used for picking
-        _iscreenWidth  = 1.0f / static_cast< float >( width );
-        _iscreenHeight = 1.0f / static_cast< float >( height );
-
-        _bboxGeode = new osg::Geode;
-        _bboxGeode->setName( "_editorBBoxCube_" );
-        _p_linesGeom = new osg::Geometry;
-        _p_linesGeom->setSupportsDisplayList( false );
-        _p_linesGeom->setUseDisplayList( false );
-
-        osg::StateSet* p_stateSet = new osg::StateSet;
-        p_stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
-        _p_linesGeom->setStateSet( p_stateSet );
-
-        osg::Vec3Array* vertices = new osg::Vec3Array( 8 );
-
-        // pass the created vertex array to the points geometry object.
-        _p_linesGeom->setVertexArray( vertices );
-
-        // set the colors as before
-        osg::Vec4Array* colors = new osg::Vec4Array;
-        colors->push_back( osg::Vec4( 1.0f, 1.0f, 1.0f, 1.0f ) );
-        _p_linesGeom->setColorArray( colors );
-        _p_linesGeom->setColorBinding( osg::Geometry::BIND_OVERALL );
-
-        GLushort indices[] =
-        {
-            0,1,
-            0,4,
-            1,5,
-            0,2,
-
-            1,3,
-            3,7,
-            3,2,
-            2,6,
-
-            6,7,
-            4,5,
-            4,6,
-            5,7
-        };
-
-        // create the primitive set for bbox and append it to top root node
-        _p_linesGeom->addPrimitiveSet( new osg::DrawElementsUShort( osg::PrimitiveSet::LINES, 24, indices ) );
-        _bboxGeode->addDrawable( _p_linesGeom );
-        yaf3d::Application::get()->getSceneRootNode()->addChild( _bboxGeode.get() );
+        log_error << "[Editor] could not initialize scene tools" << std::endl;
+        assert( NULL && "cannot initialize scene tools!" );
     }
-
-    // create hit marker
-    {
-        _marker = new osg::PositionAttitudeTransform;
-
-        osg::ref_ptr< osg::Geode > geodepart1 = new osg::Geode;
-        osg::ref_ptr< osg::Geode > geodepart2 = new osg::Geode;
-
-        _marker->addChild( geodepart1.get() );
-        _marker->addChild( geodepart2.get() );
-
-        osg::ref_ptr< osg::TessellationHints > hints = new osg::TessellationHints;
-        hints->setDetailRatio( 1.0f );
-
-        osg::ref_ptr< osg::ShapeDrawable > shape;
-
-        shape = new osg::ShapeDrawable( new osg::Cylinder( osg::Vec3( 0.f, 0.0f, 0.25f ), 0.1f, 0.5f ), hints.get() );
-        shape->setColor(osg::Vec4( 1.0f, 1.0f, 0.5f, 1.0f ) );
-        geodepart1->addDrawable( shape.get() );
-
-        shape = new osg::ShapeDrawable( new osg::Cone(osg::Vec3( 0.0f, 0.0f, 0.5f ), 0.2f, 0.3f ), hints.get() );
-        shape->setColor( osg::Vec4( 1.0f, 1.0f, 0.0f, 1.0f ) );
-        geodepart2->addDrawable( shape.get() );
-
-        _marker->setScale( osg::Vec3f( 3.0f, 3.0f, 4.0f ) );
-    }
+    // set the top node as scene node in tools
+    _p_sceneTools->setSceneNode( yaf3d::Application::get()->getSceneRootNode() );
 }
 
 void GameNavigator::shutdown()
@@ -428,7 +401,6 @@ void GameNavigator::update( float deltatime )
     yaf3d::Application::get()->getSceneView()->setViewMatrix( osg::Matrixf( inv.ptr() ) * adjustZ_Up  );
 }
 
-
 bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
     if ( !_enable )
@@ -510,23 +482,24 @@ bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
     }
 
     // is there a picking callback?
-    if ( _mode & ShowPickArrow )
+    if ( _mode & Inspect )
     {
         if ( eventType == osgGA::GUIEventAdapter::MOVE )
         {
-            // this updates the marker transformation
-            hit( sdlevent.motion.x, sdlevent.motion.y );
+            // this updates also the marker transformation
+            _p_sceneTools->hitScene( sdlevent.motion.x, sdlevent.motion.y, _position );
         }
 
-        if ( _p_cbNotify && ( sdlevent.button.button == SDL_BUTTON_LEFT ) && ( eventType == osgGA::GUIEventAdapter::PUSH ) )
+        if ( ( sdlevent.button.button == SDL_BUTTON_LEFT ) && ( eventType == osgGA::GUIEventAdapter::PUSH ) )
         {
             if ( _p_selEntity && _p_selEntity->getTransformationNode() )
             {
-                _p_selEntity->getTransformationNode()->setPosition( _hitPosition );
-                highlightEntity( _p_selEntity );
+                _p_selEntity->getTransformationNode()->setPosition( _p_sceneTools->getHitPosition() );
+                _p_sceneTools->highlightEntity( _p_selEntity );
             }
 
-            _p_cbNotify->onArrowClick( _hitPosition );
+            if ( _p_cbNotify )
+                _p_cbNotify->onArrowClick( _p_sceneTools->getHitPosition() );
         }
     }
 
@@ -548,17 +521,23 @@ bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
                 _currX         = sdlevent.motion.x;
                 _currY         = sdlevent.motion.y;
 
-                _p_selEntity = pick( sdlevent.motion.x, sdlevent.motion.y, p_currsel );
+                _p_selEntity = _p_sceneTools->pickEntity( sdlevent.motion.x, sdlevent.motion.y, p_currsel );
+
+                // exclude the selected entity from hit tests
+                _p_sceneTools->excludeFromPicking( _p_selEntity );
+                 if ( _p_selEntity && _p_selEntity->getTransformationNode() )
+                     _p_sceneTools->setMarkerPosition( _p_selEntity->getTransformationNode()->getPosition() );
+
                 if ( _p_selEntity != p_currsel )
                 {
+                    // is there a picking callback?
+                    if ( _p_cbNotify )
+                        _p_cbNotify->onEntityPicked( _p_selEntity );
+
                     if ( _p_selEntity && _p_selEntity->getTransformationNode() )
                     {
-                        _hitPosition = _p_selEntity->getTransformationNode()->getPosition();
-                        if ( _marker.valid() )
-                        {
-                            _marker->setPosition( _hitPosition );
-                            _marker->setAttitude( osg::Quat() );
-                        }
+                        _p_sceneTools->setMarkerPosition( _p_selEntity->getTransformationNode()->getPosition() );
+                        _p_sceneTools->setMarkerOrientation( osg::Quat() );
                     }
                 }
             }
@@ -567,14 +546,14 @@ bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
                 btnleftpressed = false;
                 if ( p_currsel && entitymoved && _p_selEntity->getTransformationNode() )
                 {
-                    p_currsel->getTransformationNode()->setPosition( _hitPosition );
-                    highlightEntity( p_currsel );
+                    p_currsel->getTransformationNode()->setPosition( _p_sceneTools->getHitPosition() );
+                    _p_sceneTools->highlightEntity( p_currsel );
 
                     // update entity position attribute if one exists
                     osg::Vec3f pos;
                     if ( p_currsel->getAttributeManager().getAttributeValue( "position", pos ) )
                     {
-                        p_currsel->getAttributeManager().setAttributeValue( "position", _hitPosition );
+                        p_currsel->getAttributeManager().setAttributeValue( "position", _p_sceneTools->getHitPosition() );
                         yaf3d::EntityManager::get()->sendNotification( YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED, p_currsel );
 
                         if ( entitymoved && _p_cbNotify )
@@ -582,7 +561,8 @@ bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
 
                     }
 
-                    _marker->setAttitude( osg::Quat() );
+                    // reset the marker orientation
+                    _p_sceneTools->setMarkerOrientation( osg::Quat() );
                 }
 
                 // reset the moved flag
@@ -598,11 +578,14 @@ bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
                     _currX = sdlevent.motion.x;
                     _currY = sdlevent.motion.y;
 
-                    bool didhit = hit( sdlevent.motion.x, sdlevent.motion.y );
+                     if ( _p_selEntity && _p_selEntity->getTransformationNode() )
+                         _p_sceneTools->setMarkerPosition( _p_selEntity->getTransformationNode()->getPosition() );
+
+                    bool didhit = _p_sceneTools->hitScene( sdlevent.motion.x, sdlevent.motion.y, _position );
                     if ( entitymoved && didhit && _p_selEntity && _p_selEntity->getTransformationNode() )
                     {
-                        p_currsel->getTransformationNode()->setPosition( _hitPosition );
-                        highlightEntity( p_currsel );
+                        p_currsel->getTransformationNode()->setPosition( _p_sceneTools->getHitPosition() );
+                        _p_sceneTools->highlightEntity( p_currsel );
                     }
 
                     entitymoved = true;
@@ -610,12 +593,134 @@ bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
             }
         }
     }
-    else if ( _mode & EntityPick ) // pick an entity
+    else if ( _mode & EntitySelect ) // pick an entity
     {
         if ( ( sdlevent.button.button == SDL_BUTTON_LEFT ) && ( eventType == osgGA::GUIEventAdapter::PUSH ) )
         {
             // try to pick something
-            pick( sdlevent.motion.x, sdlevent.motion.y );
+            yaf3d::BaseEntity* p_sel = _p_sceneTools->pickEntity( sdlevent.motion.x, sdlevent.motion.y );
+
+             if ( p_sel && p_sel->getTransformationNode() )
+                 _p_sceneTools->setMarkerPosition( p_sel->getTransformationNode()->getPosition() );
+
+            // is there a picking callback?
+            if ( _p_cbNotify )
+                _p_cbNotify->onEntityPicked( p_sel );
+        }
+    }
+    else if ( _mode & EntityMove ) // move an entity
+    {
+        static unsigned int moveaxis = SceneTools::AxisNone;
+        static osg::Vec3f   dir;
+
+        if ( sdlevent.button.button == SDL_BUTTON_LEFT )
+        {
+            if ( eventType == osgGA::GUIEventAdapter::PUSH )
+            {
+                _currX = sdlevent.motion.x;
+                _currY = sdlevent.motion.y;
+
+                // was an axis handle hit?
+                _p_sceneTools->hitScene( sdlevent.motion.x, sdlevent.motion.y, _position );
+                if ( _p_sceneTools->getAxisHits() != SceneTools::AxisNone )
+                {
+                    moveaxis = _p_sceneTools->getAxisHits();
+                    // update the direction to entity
+                    if ( _p_selEntity && _p_selEntity->getTransformationNode() )
+                    {
+                        dir = _position - _p_selEntity->getTransformationNode()->getPosition();
+                        dir.normalize();
+                    }
+                }
+                else
+                {
+                    moveaxis = SceneTools::AxisNone;
+
+                    // try to pick something
+                    yaf3d::BaseEntity* p_sel = _p_sceneTools->pickEntity( sdlevent.motion.x, sdlevent.motion.y );
+
+                    if ( p_sel && p_sel->getTransformationNode() )
+                    {
+                        // update the direction to entity
+                        dir = _position - p_sel->getTransformationNode()->getPosition();
+                        dir.normalize();
+                        // update the marker position
+                        _p_sceneTools->setMarkerPosition( p_sel->getTransformationNode()->getPosition() );
+                    }
+
+                    // is there a picking callback?
+                    if ( _p_cbNotify )
+                        _p_cbNotify->onEntityPicked( p_sel );
+                }
+            }
+            else if ( eventType == osgGA::GUIEventAdapter::RELEASE )
+            {
+                    moveaxis = SceneTools::AxisNone;
+                    if ( _p_selEntity )
+                        _p_sceneTools->highlightEntity( _p_selEntity );
+            }
+            else if ( ( moveaxis != SceneTools::AxisNone ) && _p_selEntity && ( eventType == osgGA::GUIEventAdapter::DRAG ) )
+            {
+                if ( ( _currX != sdlevent.motion.x ) || ( _currY != sdlevent.motion.y ) )
+                {
+                    // now store the current x/y screen coords of pointer
+                    short xdiff = _currX - sdlevent.motion.x;
+                    short ydiff = _currY - sdlevent.motion.y;
+                    _currX = sdlevent.motion.x;
+                    _currY = sdlevent.motion.y;
+
+                    if ( _p_selEntity && _p_selEntity->getTransformationNode() )
+                    {
+                        //! TODO: implement a better way to move; track the projected mouse coords in 3d space
+                        osg::Vec3f currpos = _p_selEntity->getTransformationNode()->getPosition();
+
+                        // we have to track in which quadrant the camera is in order to move in right direction
+                        float& X      = dir._v[ 0 ];
+                        float& Y      = dir._v[ 1 ];
+                        float sign   = 1.0f;
+
+                        log_debug << "x " << dir._v[ 0 ] << " y " << dir._v[ 1 ] << " z " << dir._v[ 2 ] << std::endl;
+
+                        float dist = 0.0f;
+                        if ( moveaxis == SceneTools::AxisZ )
+                        {
+                            dist = ( ydiff > 0 ) ? dist : -dist;
+                            dist = 0.01f * float( ydiff );
+                        }
+                        else // we have to track in which quadrant the camera is in order to move in right direction
+                        {
+                            dist = ( xdiff < 0 ) ? dist : -dist;
+                            dist = 0.01f * float( xdiff );
+
+                            if ( moveaxis == SceneTools::AxisX )
+                            {
+                                if ( ( X < 0 ) && ( Y < 0 ) )
+                                    sign = -sign;
+                                else if ( ( X > 0 ) && ( Y < 0 ) )
+                                    sign = -sign;
+                            }
+                            else
+                            {
+                                if ( ( X > 0 ) && ( Y > 0 ) )
+                                    sign = -sign;
+                                else if ( ( X > 0 ) && ( Y < 0 ) )
+                                    sign = -sign;
+                            }
+
+                            dist *= sign;
+                        }
+
+                        osg::Vec3f movedist(
+                                            ( moveaxis == SceneTools::AxisX ) ? dist : 0.0f,
+                                            ( moveaxis == SceneTools::AxisY ) ? dist : 0.0f,
+                                            ( moveaxis == SceneTools::AxisZ ) ? dist : 0.0f
+                                            );
+
+                        _p_selEntity->getTransformationNode()->setPosition( currpos + movedist );
+                        _p_sceneTools->setMarkerPosition( _p_selEntity->getTransformationNode()->getPosition() );
+                    }
+                }
+            }
         }
     }
 
@@ -674,296 +779,4 @@ bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
     }
 
     return false;
-}
-
-void GameNavigator::highlightEntity( yaf3d::BaseEntity* p_entity )
-{
-    // set the current highlighted entity, used for zooming
-    _p_selEntity = p_entity;
-
-    if ( !p_entity || !p_entity->isTransformable() )
-    {
-        // let the box disappear when no entity given
-        osg::Vec3Array* p_vertices = static_cast< osg::Vec3Array* >( _p_linesGeom->getVertexArray() );
-        ( *p_vertices )[ 0 ] = osg::Vec3();
-        ( *p_vertices )[ 1 ] = osg::Vec3();
-        ( *p_vertices )[ 2 ] = osg::Vec3();
-        ( *p_vertices )[ 3 ] = osg::Vec3();
-        ( *p_vertices )[ 4 ] = osg::Vec3();
-        ( *p_vertices )[ 5 ] = osg::Vec3();
-        ( *p_vertices )[ 6 ] = osg::Vec3();
-        ( *p_vertices )[ 7 ] = osg::Vec3();
-        _p_linesGeom->setVertexArray( p_vertices );
-
-        return;
-    }
-
-    // get the world transformation matrix
-    osg::Matrix accumat;
-    osg::MatrixList wm = p_entity->getTransformationNode()->getWorldMatrices();
-    osg::MatrixList::iterator p_matbeg = wm.begin(), p_matend = wm.end();
-    for ( ; p_matbeg != p_matend; ++p_matbeg )
-        accumat = accumat * ( *p_matbeg );
-
-    // the entity may be transformable but currently withough transformation node
-    if ( !p_entity->getTransformationNode() )
-    {
-        osg::BoundingBox defaultbb( osg::Vec3f( -1.0f, -1.0f, -1.0f ), osg::Vec3f( 1.0f, 1.0f, 1.0f ) );
-
-        // let the box disappear when no entity given
-        osg::Vec3Array* p_vertices = static_cast< osg::Vec3Array* >( _p_linesGeom->getVertexArray() );
-        ( *p_vertices )[ 0 ] = defaultbb.corner( 0 ) * accumat;
-        ( *p_vertices )[ 1 ] = defaultbb.corner( 1 ) * accumat;
-        ( *p_vertices )[ 2 ] = defaultbb.corner( 2 ) * accumat;
-        ( *p_vertices )[ 3 ] = defaultbb.corner( 3 ) * accumat;
-        ( *p_vertices )[ 4 ] = defaultbb.corner( 4 ) * accumat;
-        ( *p_vertices )[ 5 ] = defaultbb.corner( 5 ) * accumat;
-        ( *p_vertices )[ 6 ] = defaultbb.corner( 6 ) * accumat;
-        ( *p_vertices )[ 7 ] = defaultbb.corner( 7 ) * accumat;
-        _p_linesGeom->setVertexArray( p_vertices );
-
-        // set the bbox color
-        osg::Vec4Array* colors = new osg::Vec4Array;
-        colors->push_back( osg::Vec4( 1.0f, 1.0f, 0.0f, 1.0f ) );
-        _p_linesGeom->setColorArray( colors );
-        _p_linesGeom->setColorBinding( osg::Geometry::BIND_OVERALL );
-        return;
-    }
-
-    // set the bbox color
-    osg::Vec4Array* colors = new osg::Vec4Array;
-    colors->push_back( osg::Vec4( 1.0f, 1.0f, 1.0f, 1.0f ) );
-    _p_linesGeom->setColorArray( colors );
-    _p_linesGeom->setColorBinding( osg::Geometry::BIND_OVERALL );
-
-    // get the bounds of selected entity
-    osg::Node* p_transnode = p_entity->getTransformationNode();
-    osg::ComputeBoundsVisitor cbv;
-    cbv.apply( *p_transnode );
-    osg::BoundingBox& bb = cbv.getBoundingBox();
-
-    // update the bbox lines
-    osg::Vec3Array* p_vertices = static_cast< osg::Vec3Array* >( _p_linesGeom->getVertexArray() );
-    ( *p_vertices )[ 0 ] = bb.corner( 0 ) * accumat;
-    ( *p_vertices )[ 1 ] = bb.corner( 1 ) * accumat;
-    ( *p_vertices )[ 2 ] = bb.corner( 2 ) * accumat;
-    ( *p_vertices )[ 3 ] = bb.corner( 3 ) * accumat;
-    ( *p_vertices )[ 4 ] = bb.corner( 4 ) * accumat;
-    ( *p_vertices )[ 5 ] = bb.corner( 5 ) * accumat;
-    ( *p_vertices )[ 6 ] = bb.corner( 6 ) * accumat;
-    ( *p_vertices )[ 7 ] = bb.corner( 7 ) * accumat;
-    _p_linesGeom->setVertexArray( p_vertices );
-}
-
-yaf3d::BaseEntity* GameNavigator::pick( unsigned short xpos, unsigned short ypos, yaf3d::BaseEntity* p_entity )
-{
-    float x =  xpos;
-    x = 2.0f * ( x * _iscreenWidth  ) - 1.0f;
-    float y = ypos;
-    y = 2.0f * ( y * _iscreenHeight ) - 1.0f;
-    y = -y;
-
-    // calculate start and end point of ray
-    osgUtil::SceneView* p_sv = yaf3d::Application::get()->getSceneView();
-    osg::Matrixd vum;
-    vum.set(
-            osg::Matrixd( p_sv->getViewMatrix() ) *
-            osg::Matrixd( p_sv->getProjectionMatrix() )
-            );
-    osg::Matrixd inverseMVPW;
-    inverseMVPW.invert( vum );
-    osg::Vec3 start = osg::Vec3( x, y, -1.0f ) * inverseMVPW;
-    osg::Vec3 end   = osg::Vec3( x, y,  1.0f ) * inverseMVPW;
-
-    // update line segment for intersection test
-    _p_lineSegment->set( start, end );
-
-    // reset multi-click checking if the mouse pointer moved too far since last picking
-    bool resetMultiClick = false;
-    if ( ( fabs( _lastX - x ) > 0.2f ) || ( fabs( _lastY - y ) > 0.2f ) )
-    {
-        resetMultiClick = true;
-    }
-    _lastX = x;
-    _lastY = y;
-
-    // we are going to test the complete scenegraph
-    osg::Group* p_grp = yaf3d::Application::get()->getSceneRootNode();
-    osgUtil::IntersectVisitor iv;
-    iv.addLineSegment( _p_lineSegment.get() );
-
-    // do not pick the marker!
-    if ( _marker.valid() )
-        _marker->setNodeMask( 0 );
-
-    // do the intesection test
-    iv.apply( *p_grp );
-
-    // do not pick the marker!
-    if ( _marker.valid() )
-        _marker->setNodeMask( 0xffffffff );
-
-    std::vector< EditorSGData* > pickedentities;
-    osgUtil::IntersectVisitor::HitList& hlist = iv.getHitList( _p_lineSegment.get() );
-    osgUtil::IntersectVisitor::HitList::iterator p_beg = hlist.begin(), p_end = hlist.end();
-    // collect all picked nodes
-    for( ; p_beg != p_end; ++p_beg )
-    {
-        osg::NodePath& nodepath = p_beg->getNodePath();
-        osg::NodePath::iterator p_ent = nodepath.begin(), p_entend = nodepath.end();
-        for( ; p_ent != p_entend; ++p_ent )
-        {
-            osg::Node* p_node = *p_ent;
-            EditorSGData* p_data = dynamic_cast< EditorSGData* >( p_node->getUserData() );
-            // take only nodes with user data including editor's scenegraph entity type
-            if ( !p_data )
-                continue;
-
-            // we want every entity only once in the list; note: the same entity may intersect several times with a ray
-            std::vector< EditorSGData* >::const_iterator p_ebeg = pickedentities.begin(), p_eend = pickedentities.end();
-            for ( ; p_ebeg != p_eend; ++p_ebeg )
-            {
-                // is there any preference for picked entities?
-                if ( ( *p_ebeg )->getEntity() == p_entity )
-                    return p_entity;
-
-                if ( ( *p_ebeg )->getEntity() == p_data->getEntity() )
-                    break;
-            }
-
-            // we have picked a new entity
-            if ( p_ebeg == p_eend )
-                pickedentities.push_back( p_data );
-        }
-    }
-
-    // set the picking click count, it is used for selecting occluded drawables
-    if ( !resetMultiClick )
-        ++_pickClickCount;
-    else
-        _pickClickCount = 0;
-
-    yaf3d::BaseEntity* p_selentity = NULL;
-    size_t numpickedents = pickedentities.size();
-    if ( numpickedents > 0 )
-    {
-        // if the mouse pointer moved too far from last position then we take the first entity
-        if ( resetMultiClick )
-        {
-            p_selentity = pickedentities[ 0 ]->getEntity();
-        }
-        else // otherwise take the next entity
-        {
-            p_selentity = pickedentities[ _pickClickCount % numpickedents ]->getEntity();
-        }
-    }
-
-    // is there a picking callback?
-    if ( _p_cbNotify )
-        _p_cbNotify->onEntityPicked( p_selentity );
-
-    return p_selentity;
-}
-
-bool GameNavigator::hit( unsigned short xpos, unsigned short ypos )
-{
-    float x =  xpos;
-    x = 2.0f * ( x * _iscreenWidth  ) - 1.0f;
-    float y = ypos;
-    y = 2.0f * ( y * _iscreenHeight ) - 1.0f;
-    y = -y;
-
-    // calculate start and end point of ray
-    osgUtil::SceneView* p_sv = yaf3d::Application::get()->getSceneView();
-    osg::Matrixd vum;
-    vum.set(
-            osg::Matrixd( p_sv->getViewMatrix() ) *
-            osg::Matrixd( p_sv->getProjectionMatrix() )
-            );
-    osg::Matrixd inverseMVPW;
-    inverseMVPW.invert( vum );
-    osg::Vec3 start = osg::Vec3( x, y, -1.0f ) * inverseMVPW;
-    osg::Vec3 end   = osg::Vec3( x, y,  1.0f ) * inverseMVPW;
-
-    // update line segment for intersection test
-    _p_lineSegment->set( start, end );
-
-    // we are going to test the complete scenegraph
-    osg::Group* p_grp = yaf3d::Application::get()->getSceneRootNode();
-    osgUtil::IntersectVisitor iv;
-    iv.addLineSegment( _p_lineSegment.get() );
-
-    // do not pick the marker!
-    if ( _marker.valid() )
-        _marker->setNodeMask( 0 );
-
-    // if an entity is placing then exclude it from intersection tests
-    unsigned int nodemask = 0;
-    osg::Node* p_transnode = NULL;
-    if ( _p_selEntity && _p_selEntity->getTransformationNode() )
-    {
-        p_transnode = _p_selEntity->getTransformationNode();
-        nodemask = p_transnode->getNodeMask();
-        p_transnode->setNodeMask( 0 );
-    }
-
-    // do the intesection test
-    iv.apply( *p_grp );
-
-    if ( _marker.valid() )
-        _marker->setNodeMask( 0xffffffff );
-
-    // restore entity's nodemask
-    if ( p_transnode )
-        p_transnode->setNodeMask( nodemask );
-
-    std::vector< EditorSGData* > pickedentities;
-    osgUtil::IntersectVisitor::HitList& hlist = iv.getHitList( _p_lineSegment.get() );
-    osgUtil::IntersectVisitor::HitList::iterator p_beg = hlist.begin(), p_end = hlist.end();
-
-    bool       didhit = false;
-    osg::Vec3f hitpos;
-    osg::Vec3f hitnormal;
-    float      mindist = 0xfffffff;
-
-    // traverse all hit positions and select the nearest one
-    for( ; p_beg != p_end; ++p_beg )
-    {
-        osg::Vec3f ip   = p_beg->getWorldIntersectPoint();
-        osg::Vec3f in   = p_beg->getWorldIntersectNormal();
-        osg::Vec3f hdist = _position - ip;
-
-        // ignore back-facing polygons
-        if ( ( hdist * in ) < 0.0f )
-            continue;
-
-        float currdist = hdist.length();
-        if ( currdist < mindist )
-        {
-            hitpos    = ip;
-            hitnormal = in;
-            mindist   = currdist;
-            didhit    = true;
-        }
-    }
-
-    if ( didhit )
-    {
-        // alight the marker with hit normal
-        osg::Quat rot;
-        rot.makeRotate( osg::Vec3f( 0.0f, 0.0f, 1.0f ), hitnormal );
-        _marker->setAttitude( rot );
-        // set marker's position
-        _marker->setPosition( hitpos );
-        _hitPosition = hitpos;
-        // enable rendering
-        _marker->setNodeMask( 0xffffffff );
-    }
-    else
-    {
-        // do not render
-        _marker->setNodeMask( 0 );
-    }
-
-    return didhit;
 }

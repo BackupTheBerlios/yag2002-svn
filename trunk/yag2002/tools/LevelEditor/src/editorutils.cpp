@@ -38,8 +38,9 @@
 #include "pix/fileopen.xpm"
 #include "pix/select.xpm"
 #include "pix/move.xpm"
-#include "pix/autoplace.xpm"
 #include "pix/rotate.xpm"
+#include "pix/autoplace.xpm"
+#include "pix/inspect.xpm"
 
 //! Bitmap resources
 #define BITMAP_ICON_MAINFRAME       mainframe_xpm
@@ -47,8 +48,9 @@
 #define BITMAP_FILE_OPEN            fileopen_xpm
 #define BITMAP_SELECT               select_xpm
 #define BITMAP_MOVE                 move_xpm
-#define BITMAP_AUTOPLACE            autoplace_xpm
 #define BITMAP_ROTATE               rotate_xpm
+#define BITMAP_AUTOPLACE            autoplace_xpm
+#define BITMAP_INSPECT              inspect_xpm
 
 
 YAF3D_SINGLETON_IMPL( BitmapResource )
@@ -186,10 +188,11 @@ void BitmapResource::initialize()
     _bitmaps[ EDITOR_RESID_BMP_FILEOPEN ] = wxBitmap( BITMAP_FILE_OPEN );
     _bitmaps[ EDITOR_RESID_BMP_FILESAVE ] = wxBitmap( BITMAP_FILE_SAVE );
 
-    _bitmaps[ EDITOR_RESID_BMP_ENT_SEL ]        = wxBitmap( BITMAP_SELECT );
-    _bitmaps[ EDITOR_RESID_BMP_ENT_MOVE ]       = wxBitmap( BITMAP_MOVE   );
-    _bitmaps[ EDITOR_RESID_BMP_ENT_AUTOPLACE ]  = wxBitmap( BITMAP_AUTOPLACE   );
-    _bitmaps[ EDITOR_RESID_BMP_ENT_ROTATE ]     = wxBitmap( BITMAP_ROTATE );
+    _bitmaps[ EDITOR_RESID_BMP_ENT_SEL ]       = wxBitmap( BITMAP_SELECT );
+    _bitmaps[ EDITOR_RESID_BMP_ENT_MOVE ]      = wxBitmap( BITMAP_MOVE );
+    _bitmaps[ EDITOR_RESID_BMP_ENT_ROTATE ]    = wxBitmap( BITMAP_ROTATE );
+    _bitmaps[ EDITOR_RESID_BMP_ENT_AUTOPLACE ] = wxBitmap( BITMAP_AUTOPLACE );
+    _bitmaps[ EDITOR_RESID_BMP_INSPECT ]       = wxBitmap( BITMAP_INSPECT );
 }
 
 void BitmapResource::shutdown()

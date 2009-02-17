@@ -753,7 +753,7 @@ void PanelEntities::onButtonAddEntityClick( wxCommandEvent& event )
         moveEntity( newitem, selection );
 
         // place entity
-        GameNavigator::get()->setMode( GameNavigator::ShowPickArrow );
+        GameNavigator::get()->setMode( GameNavigator::EntitySelect );
         GameNavigator::get()->selectEntity( p_newentity );
     }
 

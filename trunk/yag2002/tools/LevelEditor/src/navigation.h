@@ -31,9 +31,9 @@
 #define _NAVIGATION_H_
 
 #include <vrc_main.h>
-#include <osgUtil/IntersectVisitor>
 
 
+class SceneTools;
 class GameInterface;
 
 //! Callback class used for notifying about picking results
@@ -59,9 +59,11 @@ class GameNavigator : public osgGA::GUIEventHandler, public yaf3d::Singleton< Ga
         //! Navigation modes
         enum NavigationMode
         {
-            EntityPlace   = 0x01,
-            EntityPick    = 0x02,
-            ShowPickArrow = 0x04
+            EntitySelect  = 0x01,
+            EntityMove    = 0x02,
+            EntityRotate  = 0x04,
+            EntityPlace   = 0x08,
+            Inspect       = 0x10
         };
 
         //! Enable/disable navigation
@@ -137,15 +139,6 @@ class GameNavigator : public osgGA::GUIEventHandler, public yaf3d::Singleton< Ga
         //! Input handler's callback
         bool                                            handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa );
 
-        //! Highlight given entity.
-        void                                            highlightEntity( yaf3d::BaseEntity* p_entity );
-
-        //! Picking entities. If p_entity is given then it is prefered by searching.
-        yaf3d::BaseEntity*                              pick( unsigned short xpos, unsigned short ypos, yaf3d::BaseEntity* p_entity = NULL );
-
-        //! Method checking for polygon hits
-        bool                                            hit( unsigned short xpos, unsigned short ypos );
-
         //! Enable/disable navigation
         bool                                            _enable;
 
@@ -200,30 +193,9 @@ class GameNavigator : public osgGA::GUIEventHandler, public yaf3d::Singleton< Ga
         //! Current fps
         unsigned int                                    _fps;
 
-        //! Picking related stuff
-        osg::ref_ptr< osg::PositionAttitudeTransform >  _marker;
-
-        float                                           _iscreenWidth;
-
-        float                                           _iscreenHeight;
-
-        unsigned int                                    _pickClickCount;
-
-        float                                           _lastX;
-
         unsigned short                                  _currX;
 
-        float                                           _lastY;
-
         unsigned short                                  _currY;
-
-        osg::ref_ptr< osg::Geode >                      _bboxGeode;
-
-        osg::Geometry*                                  _p_linesGeom;
-
-        osg::ref_ptr< osg::LineSegment >                _p_lineSegment;
-
-        osg::Vec3f                                      _hitPosition;
 
         //! Possible inputs
         enum InputCode
@@ -247,9 +219,9 @@ class GameNavigator : public osgGA::GUIEventHandler, public yaf3d::Singleton< Ga
         //! Picking callback
         CallbackNavigatorNotify*                        _p_cbNotify;
 
-        yaf3d::BaseEntity*                              _p_selEntity;
+        SceneTools*                                     _p_sceneTools;
 
-//         yaf3d::BaseEntity*                             _p_placeEntity;
+        yaf3d::BaseEntity*                              _p_selEntity;
 
     friend class GameInterface;
     friend class yaf3d::Singleton< GameNavigator >;

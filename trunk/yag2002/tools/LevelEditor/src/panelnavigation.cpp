@@ -231,6 +231,8 @@ void PanelNavigation::onButtonNavApplyClick( wxCommandEvent& event )
 
     // store the settings
     settings->store();
+    // let the settings take place
+    loadSettings();
 }
 
 void PanelNavigation::onButtonNavDefaultsClick( wxCommandEvent& event )
@@ -254,6 +256,6 @@ void PanelNavigation::onButtonNavDefaultsClick( wxCommandEvent& event )
     settings->setValue( ES_NAV_FARCLIP,  navFarClip );
     settings->setValue( ES_NAV_BKGCOLOR, navBkgColor );
 
-    if ( _p_checkboxNavEnable->GetValue() )
-        loadSettings();
+    // let the settings take place
+    loadSettings();
 }

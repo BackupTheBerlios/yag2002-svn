@@ -71,13 +71,15 @@ BEGIN_EVENT_TABLE( MainFrame, wxFrame )
 
     EVT_MENU( ID_TOOL_OPEN, MainFrame::onMenuitemFileOpenClick )
 
-    EVT_MENU( ID_TOOL_SEL, MainFrame::onToolSelectClickClick )
+    EVT_MENU( ID_TOOL_SEL, MainFrame::onToolSelectClick )
 
-    EVT_MENU( ID_TOOL_MOVE, MainFrame::onToolMoveClickClick )
+    EVT_MENU( ID_TOOL_MOVE, MainFrame::onToolMoveClick )
 
-    EVT_MENU( ID_TOOL_AUTOPLACE, MainFrame::onToolAutoPlaceClickClick )
+    EVT_MENU( ID_TOOL_ROTATE, MainFrame::onToolRotateClick )
 
-    EVT_MENU( ID_TOOL_ROTATE, MainFrame::onToolRotateClickClick )
+    EVT_MENU( ID_TOOL_AUTOPLACE, MainFrame::onToolAutoPlaceClick )
+
+    EVT_MENU( ID_TOOL_INSPECT, MainFrame::onToolInspectClick )
 
     EVT_NOTEBOOK_PAGE_CHANGED( ID_NOTEBOOK, MainFrame::onNotebookPageChanged )
 
@@ -152,7 +154,7 @@ void MainFrame::notify( unsigned int id )
             _p_menuFile->Enable( ID_MENUITEM_FILE_CLOSE, true );
 
             // set proper mode
-            GameNavigator::get()->setMode( GameNavigator::EntityPick );
+            GameNavigator::get()->setMode( GameNavigator::EntitySelect );
         }
         break;
 
@@ -181,7 +183,7 @@ void MainFrame::notify( unsigned int id )
                 GetToolBar()->ToggleTool( ID_TOOL_SEL, true );
 
             // restore picking mode
-            GameNavigator::get()->setMode( GameNavigator::EntityPick );
+            GameNavigator::get()->setMode( GameNavigator::EntitySelect );
         }
         break;
 
@@ -246,8 +248,9 @@ void MainFrame::createControls()
     p_toolbar->AddSeparator();
     p_toolbar->AddTool(ID_TOOL_SEL, _T(""), BitmapResource::get()->getBitmap( EDITOR_RESID_BMP_ENT_SEL ), itemtoolBitmapDisabled, wxITEM_RADIO, _("Select Entity"), wxEmptyString);
     p_toolbar->AddTool(ID_TOOL_MOVE, _T(""), BitmapResource::get()->getBitmap( EDITOR_RESID_BMP_ENT_MOVE ), itemtoolBitmapDisabled, wxITEM_RADIO, _("Move Entity"), wxEmptyString);
-    p_toolbar->AddTool(ID_TOOL_AUTOPLACE, _T(""), BitmapResource::get()->getBitmap( EDITOR_RESID_BMP_ENT_AUTOPLACE ), itemtoolBitmapDisabled, wxITEM_RADIO, _("Auto-place Entity"), wxEmptyString);
     p_toolbar->AddTool(ID_TOOL_ROTATE, _T(""), BitmapResource::get()->getBitmap( EDITOR_RESID_BMP_ENT_ROTATE ), itemtoolBitmapDisabled, wxITEM_RADIO, _("Rotate Entity"), wxEmptyString);
+    p_toolbar->AddTool(ID_TOOL_AUTOPLACE, _T(""), BitmapResource::get()->getBitmap( EDITOR_RESID_BMP_ENT_AUTOPLACE ), itemtoolBitmapDisabled, wxITEM_RADIO, _("Auto-place Entity"), wxEmptyString);
+    p_toolbar->AddTool(ID_TOOL_INSPECT, _T(""), BitmapResource::get()->getBitmap( EDITOR_RESID_BMP_INSPECT ), itemtoolBitmapDisabled, wxITEM_RADIO, _("Inspect"), wxEmptyString);
     p_toolbar->Realize();
     SetToolBar(p_toolbar);
 
@@ -501,7 +504,7 @@ void MainFrame::onMenuitemFileCloseClick( wxCommandEvent& event )
     }
 
     GameNavigator::get()->selectEntity( NULL );
-    GameNavigator::get()->setMode( GameNavigator::EntityPick );
+    GameNavigator::get()->setMode( GameNavigator::EntitySelect );
 
     // unload the level
     _p_editorApp->unloadLevel();
@@ -571,26 +574,30 @@ void MainFrame::onMenuitemHelpAboutClick( wxCommandEvent& event )
     wxMessageBox( text, "About", wxOK | wxICON_INFORMATION );
 }
 
-void MainFrame::onToolSelectClickClick( wxCommandEvent& event )
+void MainFrame::onToolSelectClick( wxCommandEvent& event )
 {
-    GameNavigator::get()->setMode( GameNavigator::EntityPick );
+    GameNavigator::get()->setMode( GameNavigator::EntitySelect );
 }
 
-void MainFrame::onToolMoveClickClick( wxCommandEvent& event )
+void MainFrame::onToolMoveClick( wxCommandEvent& event )
 {
-    //! TODO ...
-    GameNavigator::get()->selectEntity( NULL );
-    GameNavigator::get()->setMode( GameNavigator::ShowPickArrow );
+    GameNavigator::get()->setMode( GameNavigator::EntityMove );
 }
 
-void MainFrame::onToolAutoPlaceClickClick( wxCommandEvent& event )
+void MainFrame::onToolRotateClick( wxCommandEvent& event )
+{
+    //! TODO
+    wxMessageBox( "Yet not implemented", "Attention" );
+}
+
+void MainFrame::onToolAutoPlaceClick( wxCommandEvent& event )
 {
     GameNavigator::get()->setMode( GameNavigator::EntityPlace );
 }
 
-void MainFrame::onToolRotateClickClick( wxCommandEvent& event )
+void MainFrame::onToolInspectClick( wxCommandEvent& event )
 {
-    //! TODO
+    GameNavigator::get()->setMode( GameNavigator::Inspect );
 }
 
 void MainFrame::onNotebookPageChanged( wxNotebookEvent& event )
