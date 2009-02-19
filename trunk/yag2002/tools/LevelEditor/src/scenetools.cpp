@@ -31,6 +31,9 @@
 #include <vrc_main.h>
 #include "scenetools.h"
 #include "editorutils.h"
+
+  #include "navigation.h"
+
 #include <osg/ComputeBoundsVisitor>
 
 //! Scene graph node data used by editor for picking axis handles
@@ -63,6 +66,7 @@ SceneTools::SceneTools() :
  _pickClickCount( 0 ),
  _lastX( 0.0f ),
  _lastY( 0.0f ),
+ _markerScale( 1.0f ),
  _p_entityNoPick( NULL )
 {
 }
@@ -636,3 +640,35 @@ const osg::Vec3f& SceneTools::getHitNormal() const
 {
     return _hitNormal;
 }
+
+void SceneTools::updateMarkerScale( const osg::Vec3f& viewerposition )
+{
+    if ( !_marker.valid() )
+        return;
+
+    // we scale linear to viewer distance
+    osg::Vec3f dist = _marker->getPosition() - viewerposition;
+    float scale = dist.length();
+    // avoid too small scaling when viewer is too close to axis
+    if ( scale < 1.0f )
+        scale = 1.0f;
+
+    scale *= 0.15f; // factor of 0.15 means about 1/3 of screen space
+    _marker->setScale( osg::Vec3f( scale, scale, scale ) );
+
+    _markerScale = scale;
+}
+
+float SceneTools::getMarkerScale() const
+{
+    return _markerScale;
+}
+
+void SceneTools::setMarkerScale( float scale )
+{
+    _markerScale = scale;
+
+    if ( _marker.valid() )
+        _marker->setScale( osg::Vec3f( scale, scale, scale ) );
+}
+

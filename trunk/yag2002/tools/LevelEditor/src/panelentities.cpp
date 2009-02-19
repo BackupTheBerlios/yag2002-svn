@@ -978,6 +978,8 @@ void PanelEntities::onButtonEntityDeleteClick( wxCommandEvent& event )
             return;
 
         yaf3d::EntityManager::get()->deleteEntity( p_entity );
+
+        GameNavigator::get()->selectEntity( NULL );
     }
 
     _p_treeEntity->Delete( sel );

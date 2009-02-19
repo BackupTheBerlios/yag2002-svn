@@ -173,6 +173,9 @@ void MainFrame::notify( unsigned int id )
             _p_menuFile->Enable( ID_MENUITEM_FILE_SAVE, false );
             _p_menuFile->Enable( ID_MENUITEM_FILE_SAVE_AS, false );
             _p_menuFile->Enable( ID_MENUITEM_FILE_CLOSE, false );
+
+            // set proper mode
+            GameNavigator::get()->setMode( GameNavigator::EntitySelect );
         }
         break;
 
@@ -489,6 +492,8 @@ void MainFrame::onMenuitemFileSaveAsClick( wxCommandEvent& event )
         FileOutputLevel out;
         out.write( levelentities, levelfile, levelname, false );
     }
+
+    _p_panelEntities->setupControls( true, _levelFileName );
 }
 
 void MainFrame::onMenuitemFileCloseClick( wxCommandEvent& event )
@@ -586,8 +591,7 @@ void MainFrame::onToolMoveClick( wxCommandEvent& event )
 
 void MainFrame::onToolRotateClick( wxCommandEvent& event )
 {
-    //! TODO
-    wxMessageBox( "Yet not implemented", "Attention" );
+    GameNavigator::get()->setMode( GameNavigator::EntityRotate );
 }
 
 void MainFrame::onToolAutoPlaceClick( wxCommandEvent& event )

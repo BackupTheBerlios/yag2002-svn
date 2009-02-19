@@ -37,9 +37,13 @@
 
 
 //! Some navigation constants
-#define MOVE_SPEED_STEP     10.0f
-#define MOVE_WHEEL_STEP    ( _moveSpeed * 0.5f )
+#define MOVE_SPEED_STEP         10.0f
+#define MOVE_WHEEL_STEP         ( _moveSpeed * 0.5f )
 
+//! Entity attribute names for position and rotation; these names are assumed for updating the 
+//  entity attributes when moving and rotating.
+#define ENTITY_ATTR_POSITION    "position"
+#define ENTITY_ATTR_ROTATION    "rotation"
 
 YAF3D_SINGLETON_IMPL( GameNavigator )
 
@@ -88,6 +92,7 @@ void GameNavigator::setMode( unsigned int mode )
 
     _p_sceneTools->showHitMarker( false );
     _p_sceneTools->showAxisMarker( false );
+    _p_sceneTools->setMarkerOrientation( osg::Quat() );
 
     switch ( mode )
     {
@@ -399,6 +404,9 @@ void GameNavigator::update( float deltatime )
 
     // set view matrix
     yaf3d::Application::get()->getSceneView()->setViewMatrix( osg::Matrixf( inv.ptr() ) * adjustZ_Up  );
+
+    // update the scene tools
+    _p_sceneTools->updateMarkerScale( _position );
 }
 
 bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
@@ -551,9 +559,9 @@ bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
 
                     // update entity position attribute if one exists
                     osg::Vec3f pos;
-                    if ( p_currsel->getAttributeManager().getAttributeValue( "position", pos ) )
+                    if ( p_currsel->getAttributeManager().getAttributeValue( ENTITY_ATTR_POSITION, pos ) )
                     {
-                        p_currsel->getAttributeManager().setAttributeValue( "position", _p_sceneTools->getHitPosition() );
+                        p_currsel->getAttributeManager().setAttributeValue( ENTITY_ATTR_POSITION, _p_sceneTools->getHitPosition() );
                         yaf3d::EntityManager::get()->sendNotification( YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED, p_currsel );
 
                         if ( entitymoved && _p_cbNotify )
@@ -608,9 +616,9 @@ bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
                 _p_cbNotify->onEntityPicked( p_sel );
         }
     }
-    else if ( _mode & EntityMove ) // move an entity
+    else if ( _mode & ( EntityMove | EntityRotate ) ) // move or rotate an entity
     {
-        static unsigned int moveaxis = SceneTools::AxisNone;
+        static unsigned int selectedaxis = SceneTools::AxisNone;
         static osg::Vec3f   dir;
 
         if ( sdlevent.button.button == SDL_BUTTON_LEFT )
@@ -624,7 +632,7 @@ bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
                 _p_sceneTools->hitScene( sdlevent.motion.x, sdlevent.motion.y, _position );
                 if ( _p_sceneTools->getAxisHits() != SceneTools::AxisNone )
                 {
-                    moveaxis = _p_sceneTools->getAxisHits();
+                    selectedaxis = _p_sceneTools->getAxisHits();
                     // update the direction to entity
                     if ( _p_selEntity && _p_selEntity->getTransformationNode() )
                     {
@@ -634,7 +642,7 @@ bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
                 }
                 else
                 {
-                    moveaxis = SceneTools::AxisNone;
+                    selectedaxis = SceneTools::AxisNone;
 
                     // try to pick something
                     yaf3d::BaseEntity* p_sel = _p_sceneTools->pickEntity( sdlevent.motion.x, sdlevent.motion.y );
@@ -655,11 +663,15 @@ bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
             }
             else if ( eventType == osgGA::GUIEventAdapter::RELEASE )
             {
-                    moveaxis = SceneTools::AxisNone;
+                    selectedaxis = SceneTools::AxisNone;
                     if ( _p_selEntity )
                         _p_sceneTools->highlightEntity( _p_selEntity );
+
+                    // is there a picking callback?
+                    if ( _p_cbNotify )
+                        _p_cbNotify->onEntityPicked( _p_selEntity );
             }
-            else if ( ( moveaxis != SceneTools::AxisNone ) && _p_selEntity && ( eventType == osgGA::GUIEventAdapter::DRAG ) )
+            else if ( ( selectedaxis != SceneTools::AxisNone ) && _p_selEntity && ( eventType == osgGA::GUIEventAdapter::DRAG ) )
             {
                 if ( ( _currX != sdlevent.motion.x ) || ( _currY != sdlevent.motion.y ) )
                 {
@@ -671,53 +683,95 @@ bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
 
                     if ( _p_selEntity && _p_selEntity->getTransformationNode() )
                     {
-                        //! TODO: implement a better way to move; track the projected mouse coords in 3d space
-                        osg::Vec3f currpos = _p_selEntity->getTransformationNode()->getPosition();
-
-                        // we have to track in which quadrant the camera is in order to move in right direction
-                        float& X      = dir._v[ 0 ];
-                        float& Y      = dir._v[ 1 ];
-                        float sign   = 1.0f;
-
-                        log_debug << "x " << dir._v[ 0 ] << " y " << dir._v[ 1 ] << " z " << dir._v[ 2 ] << std::endl;
-
-                        float dist = 0.0f;
-                        if ( moveaxis == SceneTools::AxisZ )
+                        if ( _mode & EntityMove )
                         {
-                            dist = ( ydiff > 0 ) ? dist : -dist;
-                            dist = 0.01f * float( ydiff );
+                            osg::Vec3f position;
+                            if ( _p_selEntity->getAttributeManager().getAttributeValue( ENTITY_ATTR_POSITION, position ) )
+                            {
+                                // we have to track in which quadrant the camera is in order to move in right direction
+                                float& X   = dir._v[ 0 ];
+                                float& Y   = dir._v[ 1 ];
+                                float sign = 1.0f;
+                                float delta = 0.0f;
+
+                                if ( selectedaxis == SceneTools::AxisZ )
+                                {
+                                    delta = ( ydiff > 0 ) ? delta : -delta;
+                                    delta = 0.01f * float( ydiff );
+                                }
+                                else // we have to track in which quadrant the camera is in order to move in right direction
+                                {
+                                    delta = ( xdiff < 0 ) ? delta : -delta;
+                                    delta = 0.01f * float( xdiff );
+
+                                    if ( selectedaxis == SceneTools::AxisX )
+                                    {
+                                        if ( ( X < 0 ) && ( Y < 0 ) )
+                                            sign = -sign;
+                                        else if ( ( X > 0 ) && ( Y < 0 ) )
+                                            sign = -sign;
+                                    }
+                                    else
+                                    {
+                                        if ( ( X > 0 ) && ( Y > 0 ) )
+                                            sign = -sign;
+                                        else if ( ( X > 0 ) && ( Y < 0 ) )
+                                            sign = -sign;
+                                    }
+
+                                    delta *= sign;
+                                }
+
+                                delta *= _p_sceneTools->getMarkerScale();
+                                osg::Vec3f offset(
+                                                  ( selectedaxis == SceneTools::AxisX ) ? delta : 0.0f,
+                                                  ( selectedaxis == SceneTools::AxisY ) ? delta : 0.0f,
+                                                  ( selectedaxis == SceneTools::AxisZ ) ? delta : 0.0f
+                                                 );
+
+                                osg::Vec3f currpos = _p_selEntity->getTransformationNode()->getPosition();
+
+                                // update the entity position attribute
+                                _p_selEntity->getAttributeManager().setAttributeValue( ENTITY_ATTR_POSITION, currpos + offset );
+                                yaf3d::EntityManager::get()->sendNotification( YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED, _p_selEntity );
+
+                                //_p_selEntity->getTransformationNode()->setPosition( currpos + offset );
+                                _p_sceneTools->setMarkerPosition( currpos + offset/*_p_selEntity->getTransformationNode()->getPosition()*/ );
+                            }
                         }
-                        else // we have to track in which quadrant the camera is in order to move in right direction
+                        else // EntityRotate
                         {
-                            dist = ( xdiff < 0 ) ? dist : -dist;
-                            dist = 0.01f * float( xdiff );
-
-                            if ( moveaxis == SceneTools::AxisX )
+                            // update entity rotation attribute if one exists
+                            osg::Vec3f rot;
+                            if ( _p_selEntity->getAttributeManager().getAttributeValue( ENTITY_ATTR_ROTATION, rot ) )
                             {
-                                if ( ( X < 0 ) && ( Y < 0 ) )
-                                    sign = -sign;
-                                else if ( ( X > 0 ) && ( Y < 0 ) )
-                                    sign = -sign;
-                            }
-                            else
-                            {
-                                if ( ( X > 0 ) && ( Y > 0 ) )
-                                    sign = -sign;
-                                else if ( ( X > 0 ) && ( Y < 0 ) )
-                                    sign = -sign;
-                            }
+                                osg::Vec3f offset(
+                                                  ( selectedaxis == SceneTools::AxisX ) ? ydiff : 0.0f,
+                                                  ( selectedaxis == SceneTools::AxisY ) ? ydiff : 0.0f,
+                                                  ( selectedaxis == SceneTools::AxisZ ) ? xdiff : 0.0f
+                                                 );
 
-                            dist *= sign;
+                                // wrap around 360 and 0 degree
+                                rot += offset;
+                                if ( rot._v[ 0 ] > 360.0f )
+                                    rot._v[ 0 ] -= 360.0f;
+                                if ( rot._v[ 0 ] < 0.0f )
+                                    rot._v[ 0 ] += 360.0f;
+
+                                if ( rot._v[ 1 ] > 360.0f )
+                                    rot._v[ 1 ] -= 360.0f;
+                                if ( rot._v[ 1 ] < 0.0f )
+                                    rot._v[ 1 ] += 360.0f;
+
+                                if ( rot._v[ 2 ] > 360.0f )
+                                    rot._v[ 2 ] -= 360.0f;
+                                if ( rot._v[ 2 ] < 0.0f )
+                                    rot._v[ 2 ] += 360.0f;
+
+                                _p_selEntity->getAttributeManager().setAttributeValue( ENTITY_ATTR_ROTATION, rot + offset );
+                                yaf3d::EntityManager::get()->sendNotification( YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED, _p_selEntity );
+                            }
                         }
-
-                        osg::Vec3f movedist(
-                                            ( moveaxis == SceneTools::AxisX ) ? dist : 0.0f,
-                                            ( moveaxis == SceneTools::AxisY ) ? dist : 0.0f,
-                                            ( moveaxis == SceneTools::AxisZ ) ? dist : 0.0f
-                                            );
-
-                        _p_selEntity->getTransformationNode()->setPosition( currpos + movedist );
-                        _p_sceneTools->setMarkerPosition( _p_selEntity->getTransformationNode()->getPosition() );
                     }
                 }
             }

@@ -96,6 +96,15 @@ class SceneTools
         //! Get the normal at last hit position.
         const osg::Vec3f&                               getHitNormal() const;
 
+        //! Update the marker scale depending on current distance from camera.
+        void                                            updateMarkerScale( const osg::Vec3f& viewerposition );
+
+        //! Get the current marker scale which is updated in 'updateMarkerScale'.
+        float                                           getMarkerScale() const;
+
+        //! Set marker scale.
+        void                                            setMarkerScale( float scale );
+
     protected:
 
         //! Scene node which is used for all operations
@@ -119,6 +128,8 @@ class SceneTools
         float                                           _lastX;
 
         float                                           _lastY;
+
+        float                                           _markerScale;
 
         osg::ref_ptr< osg::Geode >                      _bboxGeode;
 
