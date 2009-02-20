@@ -96,6 +96,9 @@ class SceneTools
         //! Get the normal at last hit position.
         const osg::Vec3f&                               getHitNormal() const;
 
+        //! Get the object name of last hit.
+        const std::string&                              getHitObject() const;
+
         //! Update the marker scale depending on current distance from camera.
         void                                            updateMarkerScale( const osg::Vec3f& viewerposition );
 
@@ -106,6 +109,9 @@ class SceneTools
         void                                            setMarkerScale( float scale );
 
     protected:
+
+        //! Used for getting node name which is hit.
+        std::string                                     extractNodeName( osg::NodePath& nodepath );
 
         //! Scene node which is used for all operations
         osg::ref_ptr< osg::Group >                      _sceneNode;
@@ -140,6 +146,8 @@ class SceneTools
         osg::Vec3f                                      _hitPosition;
 
         osg::Vec3f                                      _hitNormal;
+
+        std::string                                     _hitObject;
 
         yaf3d::BaseEntity*                              _p_entityNoPick;
 };

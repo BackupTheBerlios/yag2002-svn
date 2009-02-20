@@ -60,30 +60,55 @@ class StatsWindow: public wxDialog
         void                                        setCameraSpeed( float speed );
 
         //! Set position
-        void                                        setPosition( const osg::Vec3f& pos );
+        void                                        setCameraPosition( const osg::Vec3f& pos );
 
         //! Set rotation
-        void                                        setPitchYaw( float pitch, float yaw );
+        void                                        setCameraPitchYaw( float pitch, float yaw );
+
+        //! Enable/disable the inspector view
+        void                                        enableInspectorDisplay( bool en );
+
+        //! Set the inspector position.
+        void                                        setInspectorPosition( const osg::Vec3f& pos );
+
+        //! Set the inspector normal.
+        void                                        setInspectorNormal( const osg::Vec3f& norm );
+
+        //! Set the inspector object.
+        void                                        setInspectorObject( const std::string& object );
 
     protected:
 
-        wxStaticText*                               _p_textFPS;
+        //! Create the window controls.
+        void                                        createControls();
 
-        wxStaticText*                               _p_texCameraSpeed;
+        wxStaticText*                               _p_textCamSpeed;
 
-        wxTextCtrl*                                 _p_textPosition;
+        wxTextCtrl*                                 _p_textCamPosition;
 
-        wxTextCtrl*                                 _p_textRotation;
+        wxTextCtrl*                                 _p_textCamRotation;
+
+        wxStaticBox*                                _p_sizerInspector;
+
+        wxTextCtrl*                                 _p_textInspPosition;
+
+        wxTextCtrl*                                 _p_textInspNormal;
+
+        wxTextCtrl*                                 _p_textInspObject;
+
+        float                                       _currSpeed;
 
         //! Control IDs
         enum
         {
-            ID_STATS         = 10500,
-            ID_PANEL         = 10501,
-            ID_TEXT_FPS      = 10502,
-            ID_TEXT_CAMSPEED = 10503,
-            ID_TEXTCTRL_POS  = 10504,
-            ID_TEXTCTRL_ROT  = 10505
+            ID_STATS                = 10500,
+            ID_PANEL                = 10501,
+            ID_TEXT_CAM_SPEED       = 10502,
+            ID_TEXTCTRL_CAM_POS     = 10503,
+            ID_TEXTCTRL_CAM_ROT     = 10504,
+            ID_TEXTCTRL_INSP_POS    = 10505,
+            ID_TEXTCTRL_INSP_NORMAL = 10506,
+            ID_TEXTCTRL_INSP_OBJECT = 10507
         };
 };
 

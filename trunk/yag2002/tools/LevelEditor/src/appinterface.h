@@ -51,7 +51,7 @@ class AppInterface: public wxTimer, public CallbackNavigatorNotify
             CMD_LEVEL_LOADED    = 0x1004,
             CMD_LEVEL_UNLOADED  = 0x1008,
             CMD_PICKING         = 0x1010,
-            CMD_ARROW_CLICK     = 0x1020
+            CMD_INSPECT_CLICK   = 0x1020
         };
 
         explicit                                        AppInterface( MainFrame* p_frame );
@@ -76,7 +76,7 @@ class AppInterface: public wxTimer, public CallbackNavigatorNotify
         virtual void                                    onEntityPicked( yaf3d::BaseEntity* p_entity );
 
         //! Called when the picker delivers results.
-        virtual void                                    onArrowClick( const osg::Vec3f& pos );
+        virtual void                                    onInspectorClick( const osg::Vec3f& pos );
 
         //! Dispatch command, returns the count of remaining commands in queue.
         unsigned int                                    dispatchCmd();

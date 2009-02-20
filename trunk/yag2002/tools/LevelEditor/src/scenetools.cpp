@@ -562,10 +562,11 @@ bool SceneTools::hitScene( unsigned short xpos, unsigned short ypos, const osg::
     osgUtil::IntersectVisitor::HitList& hlist = iv.getHitList( _lineSegment.get() );
     osgUtil::IntersectVisitor::HitList::iterator p_beg = hlist.begin(), p_end = hlist.end();
 
-    bool       didhit = false;
-    osg::Vec3f hitpos;
-    osg::Vec3f hitnormal;
-    float      mindist = 0xfffffff;
+    bool        didhit = false;
+    osg::Vec3f  hitpos;
+    osg::Vec3f  hitnormal;
+    std::string hitobject;
+    float       mindist = 0xfffffff;
 
     // traverse all hit positions and select the nearest one
     for( ; p_beg != p_end; ++p_beg )
@@ -585,6 +586,7 @@ bool SceneTools::hitScene( unsigned short xpos, unsigned short ypos, const osg::
             hitnormal = in;
             mindist   = currdist;
             didhit    = true;
+            hitobject = extractNodeName( p_beg->getNodePath() );
         }
 
         // if axis marker is active then determine which axis was hit
@@ -602,6 +604,7 @@ bool SceneTools::hitScene( unsigned short xpos, unsigned short ypos, const osg::
     {
         _hitPosition = hitpos;
         _hitNormal   = hitnormal;
+        _hitObject   = hitobject;
 
         // do not rotate and position the axis marker
         if ( _marker.get() == _hitMarker.get() )
@@ -626,6 +629,40 @@ bool SceneTools::hitScene( unsigned short xpos, unsigned short ypos, const osg::
     return didhit;
 }
 
+std::string SceneTools::extractNodeName( osg::NodePath& nodepath )
+{
+    std::string nodename;
+    if ( nodepath.size() )
+    {
+        osg::MatrixTransform* p_mtNode = NULL;
+        osg::NodePath::iterator p_nbeg = nodepath.end(), p_nend = nodepath.begin();
+        p_nbeg--;
+        for ( ; p_nbeg != p_nend; --p_nbeg )
+        {
+            osg::MatrixTransform* p_mt  = dynamic_cast< osg::MatrixTransform* >( *p_nbeg );
+            osg::Group*           p_grp = dynamic_cast< osg::Group* >( *p_nbeg );
+
+            if ( !nodename.length() )
+            {
+                if ( p_mt )
+                {
+                    nodename = p_mt->getName();
+                    if ( !p_mtNode ) // we need only the first embedding transform node
+                        p_mtNode = p_mt;
+                }
+                else if ( p_grp )
+                {
+                    nodename = p_grp->getName();
+                }
+            }
+            else
+                break;
+        }
+    }
+
+    return nodename;
+}
+
 unsigned int SceneTools::getAxisHits() const
 {
     return _hitAxis;
@@ -639,6 +676,11 @@ const osg::Vec3f& SceneTools::getHitPosition() const
 const osg::Vec3f& SceneTools::getHitNormal() const
 {
     return _hitNormal;
+}
+
+const std::string& SceneTools::getHitObject() const
+{
+    return _hitObject;
 }
 
 void SceneTools::updateMarkerScale( const osg::Vec3f& viewerposition )

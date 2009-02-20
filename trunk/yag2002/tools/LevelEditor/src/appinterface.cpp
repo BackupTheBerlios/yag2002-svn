@@ -71,24 +71,41 @@ void AppInterface::terminate()
 void AppInterface::sendCmd( unsigned int cmd, void* p_data )
 {
     //! TODO: figure out why this mutex lock can causes a dead-lock!
-    //while ( _cmdMutex.trylock() )
-    //    OpenThreads::Thread::microSleep( 1000 );
+    _cmdMutex.lock();
 
     _cmds.push( std::make_pair( cmd, p_data ) );
 
-    //_cmdMutex.unlock();
+    _cmdMutex.unlock();
 }
 
 void AppInterface::Notify()
 {
     dispatchCmd();
 
-    // update the stats window
-    unsigned int fps = GameNavigator::get()->getFPS();
-    const osg::Vec3f& pos = GameNavigator::get()->getCameraPosition();
-    osg::Vec2f rot;
-    GameNavigator::get()->getCameraPitchYaw( rot._v[ 0 ], rot._v[ 1 ] );
-    _p_mainFrame->updateStatsWindow( fps, pos, rot );
+    // update the camera stats
+    {
+        unsigned int fps = GameNavigator::get()->getFPS();
+        const osg::Vec3f& pos = GameNavigator::get()->getCameraPosition();
+        osg::Vec2f rot;
+        GameNavigator::get()->getCameraPitchYaw( rot._v[ 0 ], rot._v[ 1 ] );
+        _p_mainFrame->updateStatsWindowCamera( fps, pos, rot );
+    }
+    // update inspector stats
+    {
+        if ( GameNavigator::get()->getMode() == GameNavigator::Inspect )
+        {
+            
+            const osg::Vec3f&  pos = GameNavigator::get()->getHitPosition();
+            const osg::Vec3f&  nor = GameNavigator::get()->getHitNormal();
+            const std::string& obj = GameNavigator::get()->getHitObject();
+            _p_mainFrame->enableStatsWindowInspector( true );
+            _p_mainFrame->updateStatsWindowInspector( pos, nor, obj );
+        }
+        else
+        {
+            _p_mainFrame->enableStatsWindowInspector( false );
+        }
+    }
 
     // update the log window
     _p_mainFrame->updateLogWindow();
@@ -100,9 +117,9 @@ void AppInterface::onEntityPicked( yaf3d::BaseEntity* p_entity )
     sendCmd( CMD_PICKING, p_entity );
 }
 
-void AppInterface::onArrowClick( const osg::Vec3f& /*pos*/ )
+void AppInterface::onInspectorClick( const osg::Vec3f& /*pos*/ )
 {
-    sendCmd( CMD_ARROW_CLICK, NULL );
+    sendCmd( CMD_INSPECT_CLICK, NULL );
 }
 
 unsigned int AppInterface::dispatchCmd()
@@ -146,9 +163,9 @@ unsigned int AppInterface::dispatchCmd()
         }
         break;
 
-        case CMD_ARROW_CLICK:
+        case CMD_INSPECT_CLICK:
         {
-            _p_mainFrame->notify( MainFrame::NOTIFY_ARROW_CLICK );
+            _p_mainFrame->notify( MainFrame::NOTIFY_INSPECT_CLICK );
         }
         break;
 

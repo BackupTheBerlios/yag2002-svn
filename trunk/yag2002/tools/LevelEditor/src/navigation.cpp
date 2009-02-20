@@ -197,6 +197,21 @@ const osg::Vec3f& GameNavigator::getBackgroundColor() const
     return _backgroundColor;
 }
 
+const osg::Vec3f& GameNavigator::getHitPosition() const
+{
+    return _p_sceneTools->getHitPosition();
+}
+
+const osg::Vec3f& GameNavigator::getHitNormal() const
+{
+    return _p_sceneTools->getHitNormal();
+}
+
+const std::string& GameNavigator::getHitObject() const
+{
+    return _p_sceneTools->getHitObject();
+}
+
 void GameNavigator::selectEntity( yaf3d::BaseEntity* p_entity )
 {
     ScopedGameUpdateLock lock;
@@ -507,7 +522,7 @@ bool GameNavigator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
             }
 
             if ( _p_cbNotify )
-                _p_cbNotify->onArrowClick( _p_sceneTools->getHitPosition() );
+                _p_cbNotify->onInspectorClick( _p_sceneTools->getHitPosition() );
         }
     }
 

@@ -155,6 +155,8 @@ void MainFrame::notify( unsigned int id )
 
             // set proper mode
             GameNavigator::get()->setMode( GameNavigator::EntitySelect );
+            if ( GetToolBar() )
+                GetToolBar()->ToggleTool( ID_TOOL_SEL, true );
         }
         break;
 
@@ -179,7 +181,7 @@ void MainFrame::notify( unsigned int id )
         }
         break;
 
-        case MainFrame::NOTIFY_ARROW_CLICK:
+        case MainFrame::NOTIFY_INSPECT_CLICK:
         {
             // this is called when in arrow mode mouse button was clicked
             if ( GetToolBar() )
@@ -193,10 +195,9 @@ void MainFrame::notify( unsigned int id )
         default:
             assert( NULL && "invalid main frame notification!" );
     }
-
 }
 
-void MainFrame::updateStatsWindow( unsigned int fps, const osg::Vec3f& pos, const osg::Vec2f& rot )
+void MainFrame::updateStatsWindowCamera( unsigned int fps, const osg::Vec3f& pos, const osg::Vec2f& pitchyaw )
 {
     StatsWindow* p_stats = _p_editorApp->getStatsWindow();
     if ( !p_stats )
@@ -204,8 +205,28 @@ void MainFrame::updateStatsWindow( unsigned int fps, const osg::Vec3f& pos, cons
 
     p_stats->setFPS( fps );
     p_stats->setCameraSpeed( GameNavigator::get()->getSpeed() );
-    p_stats->setPosition( pos );
-    p_stats->setPitchYaw( rot._v[ 0 ], rot._v[ 1 ] );
+    p_stats->setCameraPosition( pos );
+    p_stats->setCameraPitchYaw( pitchyaw._v[ 0 ], pitchyaw._v[ 1 ] );
+}
+
+void MainFrame::enableStatsWindowInspector( bool en )
+{
+    StatsWindow* p_stats = _p_editorApp->getStatsWindow();
+    if ( !p_stats )
+        return;
+
+    p_stats->enableInspectorDisplay( en );
+}
+
+void MainFrame::updateStatsWindowInspector( const osg::Vec3f& pos, const osg::Vec3f& normal, const std::string& object )
+{
+    StatsWindow* p_stats = _p_editorApp->getStatsWindow();
+    if ( !p_stats )
+        return;
+
+    p_stats->setInspectorPosition( pos );
+    p_stats->setInspectorNormal( normal );
+    p_stats->setInspectorObject( object );
 }
 
 void MainFrame::updateLogWindow()

@@ -61,7 +61,7 @@ class MainFrame: public wxFrame
             NOTIFY_GAME_STARTED   = 0x01,
             NOTIFY_LEVEL_LOADED   = 0x02,
             NOTIFY_LEVEL_UNLOADED = 0x04,
-            NOTIFY_ARROW_CLICK    = 0x08
+            NOTIFY_INSPECT_CLICK  = 0x08
         };
 
         explicit                                    MainFrame( EditorApp* p_app );
@@ -77,8 +77,14 @@ class MainFrame: public wxFrame
         //! Notify the main frame about relevant game events, one of Notify enums.
         void                                        notify( unsigned int id );
 
-        //! Update statistics
-        void                                        updateStatsWindow( unsigned int fps, const osg::Vec3f& pos, const osg::Vec2f& rot );
+        //! Update statistics for camera
+        void                                        updateStatsWindowCamera( unsigned int fps, const osg::Vec3f& pos, const osg::Vec2f& pitchyaw );
+
+        //! Enable/disable inspector information in stats window.
+        void                                        enableStatsWindowInspector( bool en );
+
+        //! Update statistics for inspector
+        void                                        updateStatsWindowInspector( const osg::Vec3f& pos, const osg::Vec3f& normal, const std::string& object );
 
         //! Update log window content
         void                                        updateLogWindow();

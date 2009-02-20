@@ -47,8 +47,8 @@ class CallbackNavigatorNotify
         //! This method is called when an entity was picked. If no entity was picked then 'p_entity' will be NULL.
         virtual void                                    onEntityPicked( yaf3d::BaseEntity* /*p_entity*/ ) {}
 
-        //! This method is called when user uses left mouse btn when in arrow mode ( used for placing new entities ).
-        virtual void                                    onArrowClick( const osg::Vec3f& /*pos*/ ) {}
+        //! This method is called when user clicks left mouse btn when in inspector mode ( used for placing new entities ).
+        virtual void                                    onInspectorClick( const osg::Vec3f& /*pos*/ ) {}
 };
 
 //! Game navigation class running in game thread context.
@@ -113,6 +113,15 @@ class GameNavigator : public osgGA::GUIEventHandler, public yaf3d::Singleton< Ga
 
         //! Get camera background color.
         const osg::Vec3f&                               getBackgroundColor() const;
+
+        //! Get current hit position, use only in Inspect mode.
+        const osg::Vec3f&                               getHitPosition() const;
+
+        //! Get current hit normal, use only in Inspect mode.
+        const osg::Vec3f&                               getHitNormal() const;
+
+        //! Get current hit object, use only in Inspect mode.
+        const std::string&                              getHitObject() const;
 
         //! Select entity. What with given entity happends depends on the current mode.
         //! If 'p_entity' is NULL then the highlight is removed from scene ( if any was active before ).
