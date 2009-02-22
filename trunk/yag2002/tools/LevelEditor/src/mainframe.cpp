@@ -188,6 +188,7 @@ void MainFrame::notify( unsigned int id )
                 GetToolBar()->ToggleTool( ID_TOOL_SEL, true );
 
             // restore picking mode
+            GameNavigator::get()->selectEntity( NULL );
             GameNavigator::get()->setMode( GameNavigator::EntitySelect );
         }
         break;
@@ -622,6 +623,7 @@ void MainFrame::onToolAutoPlaceClick( wxCommandEvent& event )
 
 void MainFrame::onToolInspectClick( wxCommandEvent& event )
 {
+    GameNavigator::get()->selectEntity( NULL );
     GameNavigator::get()->setMode( GameNavigator::Inspect );
 }
 

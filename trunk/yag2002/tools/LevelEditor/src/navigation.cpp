@@ -106,19 +106,23 @@ void GameNavigator::setMode( unsigned int mode )
 
         case EntityMove:
         {
-             // activate the axis marker
-             _p_sceneTools->showAxisMarker( true );
              if ( _p_selEntity && _p_selEntity->getTransformationNode() )
+             {
+                 // activate the axis marker
+                 _p_sceneTools->showAxisMarker( true );
                  _p_sceneTools->setMarkerPosition( _p_selEntity->getTransformationNode()->getPosition() );
+             }
         }
         break;
 
         case EntityRotate:
         {
-             // activate the axis marker
-             _p_sceneTools->showAxisMarker( true );
              if ( _p_selEntity && _p_selEntity->getTransformationNode() )
+             {
+                 // activate the axis marker
+                 _p_sceneTools->showAxisMarker( true );
                  _p_sceneTools->setMarkerPosition( _p_selEntity->getTransformationNode()->getPosition() );
+             }
         }
         break;
 
@@ -126,8 +130,6 @@ void GameNavigator::setMode( unsigned int mode )
         {
             // exclude the selected entity from hit tests, the selected entity can be also empty.
              _p_sceneTools->excludeFromPicking( _p_selEntity );
-             // activate the axis marker
-             _p_sceneTools->showAxisMarker( false );
              if ( _p_selEntity && _p_selEntity->getTransformationNode() )
                  _p_sceneTools->setMarkerPosition( _p_selEntity->getTransformationNode()->getPosition() );
         }
@@ -219,7 +221,23 @@ void GameNavigator::selectEntity( yaf3d::BaseEntity* p_entity )
     _p_selEntity = p_entity;
 
     if ( _p_sceneTools )
+    {
         _p_sceneTools->highlightEntity( _p_selEntity );
+        if ( _mode & ( EntityMove | EntityRotate ) )
+        {
+             if ( _p_selEntity && _p_selEntity->getTransformationNode() )
+             {
+                 // activate the axis marker
+                 _p_sceneTools->showAxisMarker( true );
+                 _p_sceneTools->setMarkerPosition( _p_selEntity->getTransformationNode()->getPosition() );
+             }
+             else
+             {
+                 // deactivate the axis marker
+                 _p_sceneTools->showAxisMarker( false );
+             }
+        }
+    }
 }
 
 void GameNavigator::setNotifyCallback( CallbackNavigatorNotify* p_cb )
@@ -266,6 +284,7 @@ void GameNavigator::initialize()
 void GameNavigator::shutdown()
 {
     // deregister in viewer from getting event callbacks
+    //! NOTE: on removal, osgSDL will delete this instance, so no need for calling destroy here.
     yaf3d::Application::get()->getViewer()->removeEventHandler( this );
 }
 

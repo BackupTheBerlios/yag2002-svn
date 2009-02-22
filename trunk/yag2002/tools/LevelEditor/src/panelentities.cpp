@@ -635,6 +635,8 @@ void PanelEntities::onTreectrlSelChanged( wxTreeEvent& event )
     if ( sel == _p_treeEntity->GetRootItem() )
     {
         updateProperties( NULL );
+        // remove current selection
+        GameNavigator::get()->selectEntity( NULL );
         return;
     }
 

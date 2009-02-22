@@ -61,8 +61,8 @@ class AxisSGData: public osg::Referenced
 
 SceneTools::SceneTools() :
  _hitAxis( 0 ),
- _screenWidth( NULL ),
- _screenHeight( NULL ),
+ _screenWidth( 0.0f ),
+ _screenHeight( 0.0f ),
  _pickClickCount( 0 ),
  _lastX( 0.0f ),
  _lastY( 0.0f ),
@@ -342,7 +342,7 @@ void SceneTools::highlightEntity( yaf3d::BaseEntity* p_entity )
 
     // get the world transformation matrix
     osg::Matrix accumat;
-    osg::MatrixList wm = p_entity->getTransformationNode()->getWorldMatrices();
+    osg::MatrixList wm = p_entity->getTransformationNode()->getWorldMatrices( p_entity->getTransformationNode() );
     osg::MatrixList::iterator p_matbeg = wm.begin(), p_matend = wm.end();
     for ( ; p_matbeg != p_matend; ++p_matbeg )
         accumat = accumat * ( *p_matbeg );
@@ -411,7 +411,7 @@ yaf3d::BaseEntity* SceneTools::pickEntity( unsigned short xpos, unsigned short y
     // calculate start and end point of ray
     osgUtil::SceneView* p_sv = yaf3d::Application::get()->getSceneView();
     osg::Matrixd vum;
-    vum.set( osg::Matrixd( p_sv->getViewMatrix() ) * osg::Matrixd( p_sv->getProjectionMatrix() ) );
+    vum.set( p_sv->getViewMatrix() * p_sv->getProjectionMatrix() );
 
     osg::Matrixd inverseMVPW;
     inverseMVPW.invert( vum );

@@ -70,12 +70,7 @@ void AppInterface::terminate()
 
 void AppInterface::sendCmd( unsigned int cmd, void* p_data )
 {
-    //! TODO: figure out why this mutex lock can causes a dead-lock!
-    _cmdMutex.lock();
-
     _cmds.push( std::make_pair( cmd, p_data ) );
-
-    _cmdMutex.unlock();
 }
 
 void AppInterface::Notify()

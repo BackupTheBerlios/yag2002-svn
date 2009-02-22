@@ -87,6 +87,9 @@ void GameInterface::run()
             p_argv[ 0 ] = p_arg0;
             p_argv[ 1 ] = p_arg1;
 
+            // initialize threading
+            OpenThreads::Thread::Init();
+
             // initialize
             if ( !_p_game->initialize( 2, p_argv ) )
             {
@@ -157,8 +160,8 @@ void GameInterface::run()
                 // dispatch commands
                 while ( dispatchCmd() ) {}
 
-                // update the simulation, lock it in order to give a chance to asynchronous threads for accessing resources
-                if ( !yaf3d::Application::get()->getUpdateMutex().trylock() )
+                // update the simulation
+                if ( !yaf3d::Application::get()->getUpdateMutex().lock() )
                 {
                     // update the navigator
                     if ( _p_navigation )
@@ -180,7 +183,6 @@ void GameInterface::run()
                     if ( _terminate )
                     {
                         _p_navigation->shutdown();
-                        delete _p_navigation;
                         _p_navigation = NULL;
 
                         yaf3d::GameState::get()->setState( yaf3d::GameState::Quitting );
@@ -196,7 +198,7 @@ void GameInterface::run()
             }
 
             // shutdown the game
-            //_p_game->shutdown();
+            _p_game->shutdown();
 
             // leave the main loop
             break;
@@ -254,6 +256,8 @@ unsigned int GameInterface::dispatchCmd()
     {
         case CMD_LOAD_LEVEL:
         {
+            log_info << "[Editor] loading level ..." << std::endl;
+
             yaf3d::Application::get()->getUpdateMutex().lock();
 
             // set the proper game state
@@ -286,6 +290,8 @@ unsigned int GameInterface::dispatchCmd()
             yaf3d::Application::get()->getUpdateMutex().unlock();
 
             delete[] p_filename;
+
+            log_info << "[Editor] level loading completed" << std::endl;
 
             // notify the application interface
             _p_appIface->sendCmd( AppInterface::CMD_LEVEL_LOADED, NULL );
