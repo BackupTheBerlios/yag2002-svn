@@ -104,8 +104,8 @@ void LightCallback::operator()( osg::Node* /*node*/, osg::NodeVisitor* nv )
     if ( !p_cv )
         return;
 
-    if ( !p_cv->isCulled( _lightEntity->getBoundingSphere() ) )
-        LightManager::get()->addLight( _lightEntity );
+    if ( !p_cv->isCulled( _p_lightEntity->getBoundingSphere() ) )
+        LightManager::get()->addLight( _p_lightEntity );
 }
 
 } // namespace vrc

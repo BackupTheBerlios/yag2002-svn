@@ -37,7 +37,7 @@ namespace vrc
 YAF3D_IMPL_ENTITYFACTORY( SpotLightEntityFactory )
 
 EnSpotLight::EnSpotLight() :
-_direction( osg::Vec3f( 0.0f, 0.0f, -1.0f ) ),
+_direction( osg::Vec3f( 0.0f, 0.0f, 0.0f ) ),
 _spotCutOff( 50.0 ),
 _spotExponent( 32.0f ),
 _maxDistance( 10.0f ),
@@ -48,6 +48,7 @@ _enable( true )
     getAttributeManager().addAttribute( "usedInMenu"           , _usedInMenu           );
     getAttributeManager().addAttribute( "enable"               , _enable               );
     getAttributeManager().addAttribute( "position"             , _position             );
+    getAttributeManager().addAttribute( "targetPosition"       , _direction            );
     getAttributeManager().addAttribute( "maxDistance"          , _maxDistance          );
     getAttributeManager().addAttribute( "meshFile"             , _meshFile             );
     getAttributeManager().addAttribute( "ambientColor"         , _ambientColor         );
@@ -56,7 +57,6 @@ _enable( true )
     getAttributeManager().addAttribute( "constantAttenuation"  , _constAttenuation     );
     getAttributeManager().addAttribute( "linearAttenuation"    , _linearAttenuation    );
     getAttributeManager().addAttribute( "quadraticAttenuation" , _quadraticAttenuation );
-    getAttributeManager().addAttribute( "direction"            , _direction            );
     getAttributeManager().addAttribute( "spotCutOff"           , _spotCutOff           );
     getAttributeManager().addAttribute( "spotExponent"         , _spotExponent         );
 }
@@ -148,12 +148,12 @@ osg::ref_ptr< osg::Light > EnSpotLight::setupLight()
     osg::ref_ptr< osg::Light > light = new osg::Light;
 
     // setup bounding sphere used for culling
-    _bSphere.set( _position, _maxDistance );
+    _bSphere.set( osg::Vec3f( 0, 0, 0 ), _maxDistance );
 
     // the actual id will be set by light manager
     light->setLightNum( _lightId );
 
-    osg::Vec3f dir = _direction;
+    osg::Vec3f dir = _direction - _position;
     dir.normalize();
 
     light->setPosition( osg::Vec4( 0.0f, 0.0f, 0.0f, 1.0f ) );

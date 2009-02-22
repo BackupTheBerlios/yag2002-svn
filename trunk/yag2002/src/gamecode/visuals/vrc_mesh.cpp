@@ -242,6 +242,8 @@ void EnMesh::addToSceneGraph()
         if ( _receiveShadow )
             shadowmode |= yaf3d::ShadowManager::eReceiveShadow;
 
+        // first remove it for the case that this method is called on modification of entity attributes
+        yaf3d::ShadowManager::get()->removeShadowNode( p_shadernode ? p_shadernode : getTransformationNode() );
         yaf3d::ShadowManager::get()->addShadowNode( p_shadernode ? p_shadernode : getTransformationNode(), shadowmode, _shadowCullDist );
 
         // the mesh needs at least one subgraph for getting rendered; the shadow throwing subgraph does not render the mesh (but only its shadow)
@@ -257,7 +259,9 @@ void EnMesh::addToSceneGraph()
     // if the node has a shader append it also to the shader node
     if ( p_shadernode )
     {
-        p_shadernode->addChild( getTransformationNode() );
+        // if not already added then add it now ( this method is called on every modification of entity attributes! )
+        if ( !p_shadernode->containsNode( getTransformationNode() ) )
+            p_shadernode->addChild( getTransformationNode() );
     }
 }
 

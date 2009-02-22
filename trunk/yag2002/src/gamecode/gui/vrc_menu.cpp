@@ -268,8 +268,10 @@ void EnMenu::handleNotification( const yaf3d::EntityNotification& notification )
         case YAF3D_NOTIFY_SHUTDOWN:
             yaf3d::EntityManager::get()->deleteEntity( this );
             if ( _p_cameraControl )
-                delete _p_cameraControl;
-            _p_cameraControl = NULL;
+            {
+                yaf3d::EntityManager::get()->deleteEntity( _p_cameraControl );
+                _p_cameraControl = NULL;
+            }
             break;
 
         default:

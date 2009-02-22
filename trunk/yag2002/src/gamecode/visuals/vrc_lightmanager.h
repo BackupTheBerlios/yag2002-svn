@@ -149,14 +149,14 @@ class LightCallback : public osg::NodeCallback
     public:
 
         explicit                                    LightCallback( BaseLight* p_lightentity ) :
-                                                    _lightEntity( p_lightentity )
+                                                    _p_lightEntity( p_lightentity )
                                                     {}
 
         virtual                                     ~LightCallback() {}
 
         void                                        operator()( osg::Node* node, osg::NodeVisitor* nv );
 
-        BaseLight*                                  _lightEntity;
+        BaseLight*                                  _p_lightEntity;
 };
 
 }
