@@ -611,7 +611,22 @@ void ShadowManager::removeShadowNode( osg::Node* p_node )
         return;
 
     _shadowedGroup->removeChild( p_node );
-    _shadowCameraGroup->removeChild( p_node );
+
+    // search for the node in cam group and remove it
+    unsigned int children = _shadowCameraGroup->getNumChildren();
+    for ( unsigned int cnt = 0; cnt < children; cnt++ )
+    {
+        osg::Group* p_grp = dynamic_cast< osg::Group* >( _shadowCameraGroup->getChild( cnt ) );
+        if ( p_grp )
+        {
+            if ( p_grp->getNumChildren() && p_grp->getChild( 0 ) == p_node )
+            {
+                _shadowCameraGroup->removeChild( p_grp );
+                break;
+            }
+        }
+    }
+
     // force updating shadow nodes in next callback
     _p_cullCallback->updateNodes();
 }

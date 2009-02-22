@@ -147,6 +147,10 @@ void Application::shutdown()
     // set the game state to shutdown so game code specific singletons get the chance for destruction
     _p_gameState->setState( GameState::Shutdown );
 
+    // give the entity manager to empty the queue of deleted entities
+    for ( unsigned int cnt = 0; cnt < 10; cnt++ )
+        _p_entityManager->update( 0.02f );
+
     LevelManager::get()->shutdown();
 
     if ( _p_networkDevice )
@@ -214,17 +218,17 @@ bool Application::initialize( int argc, char **argv )
     int   argpos;
     // set proper game mode
     GameState::get()->setMode( GameState::Standalone );
-    if ( ( argpos = arguments.find( "-server" ) ) != 0 )
+    if ( ( argpos = arguments.find( "-server" ) ) > 0 )
     {
         GameState::get()->setMode( GameState::Server );
         arguments.remove( argpos );
     }
-    else if ( ( argpos = arguments.find( "-client" ) ) != 0 )
+    else if ( ( argpos = arguments.find( "-client" ) ) > 0 )
     {
         GameState::get()->setMode( GameState::Client );
         arguments.remove( argpos );
     }
-    if ( ( argpos = arguments.find( "-nodefaultlevel" ) ) != 0 )
+    if ( ( argpos = arguments.find( "-nodefaultlevel" ) ) > 0 )
     {
         arg_nodefaultlvl = true;
         arguments.remove( argpos );
@@ -692,7 +696,7 @@ void Application::run()
 void Application::updateStandalone( float deltaTime )
 {
     // update entities
-    _p_entityManager->update( deltaTime  );
+    _p_entityManager->update( deltaTime );
 
     // update physics
     _p_physics->update( deltaTime );
