@@ -139,7 +139,7 @@ void TerrainManager::shutdown()
 
 unsigned int TerrainManager::addSection( const TerrainConfig& config ) throw ( TerrainException )
 {
-    std::string mediapath = Application::get()->getMediaPath();
+    std::string mediapath = "/";
 
     _tilesX = config._tilesX;
     _tilesY = config._tilesY;

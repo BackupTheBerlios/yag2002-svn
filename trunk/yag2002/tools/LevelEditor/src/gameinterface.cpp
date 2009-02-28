@@ -345,6 +345,14 @@ unsigned int GameInterface::dispatchCmd()
         }
         break;
 
+        case CMD_UPDATE_ENTITY:
+        {
+            yaf3d::BaseEntity* p_entity = reinterpret_cast< yaf3d::BaseEntity* >( cmd.second );
+            assert( dynamic_cast< yaf3d::BaseEntity* >( p_entity ) );
+            yaf3d::EntityManager::get()->sendNotification( YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED, p_entity );
+        }
+        break;
+
         default:
             ;
     }

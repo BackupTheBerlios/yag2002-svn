@@ -50,6 +50,49 @@ namespace vrc
 //! Implement and register the mesh entity factory
 YAF3D_IMPL_ENTITYFACTORY( MeshEntityFactory )
 
+//! Visitor for getting animation path node out of a loaded node
+class FindAnimPathVisitor : public osg::NodeVisitor
+{
+    public:
+                                            FindAnimPathVisitor( osg::NodeVisitor::TraversalMode tmode = osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ) :
+                                                osg::NodeVisitor( tmode ), _p_animPath( NULL )
+                                            {
+                                                // we take all nodes
+                                                setTraversalMask( 0xffffffff );
+                                            }
+
+        virtual                             ~FindAnimPathVisitor() {}
+
+        void                                apply( osg::Group& grp )
+                                            {
+                                                grp.traverse( *this );
+                                            }
+
+        void                                apply( osg::MatrixTransform& mt )
+                                            {
+                                                if ( !mt.getUpdateCallback() )
+                                                    mt.traverse( *this );
+
+                                                osg::AnimationPathCallback* p_ncb = dynamic_cast< osg::AnimationPathCallback* >( mt.getUpdateCallback() );
+                                                if ( !p_ncb )
+                                                    mt.traverse( *this );
+
+                                                _p_animPath = p_ncb->getAnimationPath();
+                                                if ( !_p_animPath )
+                                                    mt.traverse( *this );
+                                            }
+
+        osg::AnimationPath*                 getAnimPath()
+                                            {
+                                                return _p_animPath;
+                                            }
+
+    protected:
+
+        osg::AnimationPath*                 _p_animPath;
+};
+
+
 EnMesh::EnMesh() :
 _scale( osg::Vec3f( 1.0f, 1.0f, 1.0f ) ),
 _enable( true ),
@@ -60,18 +103,32 @@ _useLOD( false ),
 _lodErrorThreshold( 0.05f ),
 _cgfShadow( false ),
 _shadowEnable( false ),
-_shadowCullDist( 200.0f )
+_shadowCullDist( 200.0f ),
+_animPosition( true ),
+_animRotation( true ),
+_animRelative( true ),
+_animDelay( 0.0f ),
+_animTimeScale( 1.0f ),
+_animLoop( true ),
+_animTime( 0.0f )
 {
     // register entity attributes
-    getAttributeManager().addAttribute( "enable"         , _enable        );
-    getAttributeManager().addAttribute( "usedInMenu"     , _usedInMenu    );
-    getAttributeManager().addAttribute( "meshFile"       , _meshFile      );
-    getAttributeManager().addAttribute( "shaderName"     , _shaderName    );
-    getAttributeManager().addAttribute( "position"       , _position      );
-    getAttributeManager().addAttribute( "rotation"       , _rotation      );
-    getAttributeManager().addAttribute( "scale"          , _scale         );
-    getAttributeManager().addAttribute( "throwShadow"    , _throwShadow   );
-    getAttributeManager().addAttribute( "receiveShadow"  , _receiveShadow );
+    getAttributeManager().addAttribute( "enable"         , _enable         );
+    getAttributeManager().addAttribute( "usedInMenu"     , _usedInMenu     );
+    getAttributeManager().addAttribute( "meshFile"       , _meshFile       );
+    getAttributeManager().addAttribute( "shaderName"     , _shaderName     );
+    getAttributeManager().addAttribute( "position"       , _position       );
+    getAttributeManager().addAttribute( "rotation"       , _rotation       );
+    getAttributeManager().addAttribute( "scale"          , _scale          );
+    getAttributeManager().addAttribute( "animFile"       , _animFile       );
+    getAttributeManager().addAttribute( "animPostion"    , _animPosition   );
+    getAttributeManager().addAttribute( "animRotation"   , _animRotation   );
+    getAttributeManager().addAttribute( "animRelative"   , _animRelative   );
+    getAttributeManager().addAttribute( "animDelay"      , _animDelay      );
+    getAttributeManager().addAttribute( "animTimeScale"  , _animTimeScale  );
+    getAttributeManager().addAttribute( "animLoop"       , _animLoop       );
+    getAttributeManager().addAttribute( "throwShadow"    , _throwShadow    );
+    getAttributeManager().addAttribute( "receiveShadow"  , _receiveShadow  );
     getAttributeManager().addAttribute( "shadowCullDist" , _shadowCullDist );
 
 #ifndef DONT_USE_GLOD
@@ -204,6 +261,35 @@ void EnMesh::initialize()
     yaf3d::EntityManager::get()->registerNotification( this, true );
 }
 
+void EnMesh::updateEntity( float deltaTime )
+{
+    // animate position and rotation if an animation is defined
+    if ( !_animPath.get() )
+        return;
+
+    //! TODO: get the animation length and handle Loop option
+    _animTime += deltaTime;
+    if ( _animTime > _animDelay )
+    {
+        osg::AnimationPath::ControlPoint cp;
+        _animPath->getInterpolatedControlPoint( _animTime * _animTimeScale, cp );
+        if ( _animRelative )
+        {
+            if ( _animPosition )
+                getTransformationNode()->setPosition( cp.getPosition() + _orgPostition );
+            if ( _animRotation )
+                getTransformationNode()->setAttitude( cp.getRotation() * _orgRotation );
+        }
+        else
+        {
+            if ( _animPosition )
+                getTransformationNode()->setPosition( cp.getPosition() );
+            if ( _animRotation )
+                getTransformationNode()->setAttitude( cp.getRotation() );
+        }
+    }
+}
+
 void EnMesh::removeFromSceneGraph()
 {
     if ( !_mesh.valid() )
@@ -228,7 +314,7 @@ void EnMesh::addToSceneGraph()
         p_shadernode = yaf3d::ShaderContainer::get()->getShaderNode( _shaderName ).get();
         if ( !p_shadernode )
         {
-            log_error << "*** invalid shader name: " << _shaderName << " in mesh instance " << getInstanceName() << std::endl;
+            log_error << "EnMesh: invalid shader name: " << _shaderName << " in mesh instance " << getInstanceName() << std::endl;
         }
     }
 
@@ -277,7 +363,7 @@ osg::Node* EnMesh::setupMesh()
 
     if ( !p_node )
     {
-        log_error << "*** could not load mesh file: " << _meshFile << ", in '" << getInstanceName() << "'" << std::endl;
+        log_error << "EnMesh: could not load mesh file: " << _meshFile << ", in '" << getInstanceName() << "'" << std::endl;
         return NULL;
     }
 
@@ -289,6 +375,48 @@ osg::Node* EnMesh::setupMesh()
                     );
     setRotation( rot );
     setScale( _scale );
+
+    // store the original position and rotation for animation in relative mode
+    _orgPostition = _position;
+    _orgRotation  = rot;
+
+    // invalidate a previously loaded animation
+    if ( _animPath.valid() )
+        _animPath = NULL;
+
+    // is an animation file defined?
+    if ( _animFile.length() )
+    {
+        osg::Node* p_animnode = yaf3d::LevelManager::get()->loadMesh( _animFile, true );
+        if ( !p_animnode )
+        {
+            log_warning << "EnMesh: invalid animation mesh file (only osg and ive file formats are accepted)" << _animFile << std::endl;
+
+            // remove update registration, it is needed only for animation
+            if ( yaf3d::EntityManager::get()->isRegisteredUpdate( this ) )
+                yaf3d::EntityManager::get()->registerUpdate( this, false );
+        }
+        else
+        {
+            osg::AnimationPath* p_path   = NULL;
+            osg::Group*         p_topgrp = dynamic_cast< osg::Group* >( p_animnode );
+
+            // find the animation callback in loaded mesh
+            FindAnimPathVisitor v;
+            v.apply( *p_topgrp );
+            p_path = v.getAnimPath();
+            // any animation path found?
+            if ( p_path )
+            {
+                _animPath = p_path;
+                // if a valid animation is defined then we need the update function
+                yaf3d::EntityManager::get()->registerUpdate( this, true );
+
+                // reset animation time
+                _animTime = 0.0f;
+            }
+        }
+    }
 
 #ifndef DONT_USE_GLOD
     if ( _useLOD )

@@ -62,6 +62,8 @@
 #define YAF3D_ENTITY_GROUP_NAME               "_entityGrp_"
 #define YAF3D_NODE_GROUP_NAME                 "_nodeGrp_"
 
+//! The file type extension for osg's plugin reading from physfs (see filesystem.cpp)
+#define VRC_OSGVFS_EXT                        ".physfs"
 
 namespace yaf3d
 {
@@ -537,8 +539,8 @@ osg::Node* LevelManager::loadMesh( const std::string& fileName, bool useCache )
         }
     }
 
-    // read given file
-    osg::Node* p_loadedModel = osgDB::readNodeFile( Application::get()->getMediaPath() + fileName );
+    // read given file from virtual file system loader
+    osg::Node* p_loadedModel = osgDB::readNodeFile( fileName + VRC_OSGVFS_EXT );
 
     // if no model has been successfully loaded report failure.
     if ( !p_loadedModel )

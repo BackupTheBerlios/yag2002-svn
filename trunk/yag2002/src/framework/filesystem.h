@@ -124,6 +124,73 @@ class File : public RefCount< File >
 typedef SmartPtr< File >   FilePtr;
 
 
+//! A class containing the content of a file as std::streambuf
+/** Use following struct for making an istream out of it:
+
+    StreambufPtr ibuf( a vfs path );
+    if ( !ibuf->ok() )
+        return file could not be found;
+
+    std::istream input( ibuf.getRef() );
+    ...
+*/
+class Streambuf : public std::streambuf, public RefCount< File >
+{
+    //! Set the smart pointer class as friend
+    DECLARE_SMARTPTR_ACCESS( Streambuf )
+
+    public:
+
+        typedef std::streambuf::pos_type        pos_type;
+        typedef std::streambuf::off_type        off_type;
+        typedef std::ios::seekdir               seekdir;
+        typedef std::ios::openmode              openmode;
+
+        explicit                                Streambuf( const std::string& filename );
+
+                                                ~Streambuf();
+
+        bool                                    ok() const;
+
+    protected:
+
+        // Avoid copy and assignment
+                                                Streambuf( const Streambuf& );
+
+                                                Streambuf &operator = ( const Streambuf& );
+
+        bool                                    readVFSFile( const std::string& filename );
+
+        // Overridden methods
+        int_type                                uflow();
+
+        int_type                                underflow();
+
+        int_type                                pbackfail( int_type ch );
+
+        std::streamsize                         showmanyc();
+
+        Streambuf::pos_type                     seekoff( Streambuf::off_type off, Streambuf::seekdir way, Streambuf::openmode = ( std::ios_base::in | std::ios_base::out ) );
+
+        Streambuf::pos_type                     seekpos( Streambuf::pos_type pos, Streambuf::openmode = ( std::ios_base::in | std::ios_base::out ) );
+
+        char*                                   _p_begin;
+
+        char *                                  _p_end;
+
+        char *                                  _p_current;
+
+        bool                                    _ok;
+
+        std::streamsize                         _buffSize;
+
+    friend class FileSystem;
+};
+
+//! Typedef for the streambuf smart pointer
+typedef SmartPtr< Streambuf >   StreambufPtr;
+
+
 //! File system providing access to application media resources
 class FileSystem : public Singleton< FileSystem >
 {
@@ -131,6 +198,9 @@ class FileSystem : public Singleton< FileSystem >
 
         //! Get the file with given name. If the file could not be loaded then the file pointer object will be invalid ( use the function valid() of smart pointer to check ).
         FilePtr                                     getFile( const std::string& filename );
+
+        //! Get a streambuf containing given file.
+        StreambufPtr                                getStream( const std::string& filename );
 
         //! Get a list of files in given directory. Filter the files with given extension, if ext is not empty. Return the count of files.
         unsigned int                                listFiles( std::vector< std::string >& files, const std::string& dir, const std::string& ext = "" ) const;

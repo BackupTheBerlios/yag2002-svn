@@ -181,23 +181,37 @@ void EnMapView::setupMapView()
         _p_wnd->subscribeEvent( CEGUI::Window::EventMouseButtonUp,   CEGUI::Event::Subscriber( &vrc::EnMapView::onMouseUp,   this ) );
         _p_wnd->subscribeEvent( CEGUI::Window::EventMouseMove,       CEGUI::Event::Subscriber( &vrc::EnMapView::onMouseMove, this ) );
 
-        // put the map picture into a static image element
-        CEGUI::StaticImage* p_staticimg = static_cast< CEGUI::StaticImage* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticImage", MAPVIEW_WND "image" ) );
-        p_staticimg->setSize( CEGUI::Size( 1.0f, 1.0f ) );
-        p_staticimg->setPosition( CEGUI::Point( 0.0f, 0.0f ) );
-        p_staticimg->setBackgroundEnabled( false );
-        p_staticimg->setFrameEnabled( false );
-        p_staticimg->setAlpha( _alpha );
-        // create a new imageset for map picture
+        if ( _minMapFile.length() )
         {
-            CEGUI::Texture*  p_texture = yaf3d::GuiManager::get()->getGuiRenderer()->createTexture( _minMapFile, std::string( MAPVIEW_WND ) + _minMapFile );
-            CEGUI::Imageset* p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( std::string( MAPVIEW_WND ) + _minMapFile, p_texture );
-            if ( !p_imageSet->isImageDefined( _minMapFile ) )
-                p_imageSet->defineImage( std::string( MAPVIEW_WND ) + _minMapFile, CEGUI::Point( 0.0f, 0.0f ), CEGUI::Size( p_texture->getWidth(), p_texture->getHeight() ), CEGUI::Point( 0.0f,0.0f ) );
+            // put the map picture into a static image element
+            CEGUI::StaticImage* p_staticimg = static_cast< CEGUI::StaticImage* >( CEGUI::WindowManager::getSingleton().createWindow( "TaharezLook/StaticImage", MAPVIEW_WND "image" ) );
+            p_staticimg->setSize( CEGUI::Size( 1.0f, 1.0f ) );
+            p_staticimg->setPosition( CEGUI::Point( 0.0f, 0.0f ) );
+            p_staticimg->setBackgroundEnabled( false );
+            p_staticimg->setFrameEnabled( false );
+            p_staticimg->setAlpha( _alpha );
 
-            CEGUI::Image* p_image = &const_cast< CEGUI::Image& >( p_imageSet->getImage( std::string( MAPVIEW_WND ) + _minMapFile ) );
-            p_staticimg->setImage( p_image );
-            _p_wnd->addChildWindow( p_staticimg );
+            // create a new imageset for map picture
+            CEGUI::Texture*  p_texture = yaf3d::GuiManager::get()->getGuiRenderer()->createTexture( _minMapFile, std::string( MAPVIEW_WND ) + _minMapFile );
+            if ( p_texture->getWidth() && p_texture->getHeight() )
+            {
+                CEGUI::Imageset* p_imageSet = CEGUI::ImagesetManager::getSingleton().createImageset( std::string( MAPVIEW_WND ) + _minMapFile, p_texture );
+                if ( !p_imageSet->isImageDefined( _minMapFile ) )
+                    p_imageSet->defineImage( std::string( MAPVIEW_WND ) + _minMapFile, CEGUI::Point( 0.0f, 0.0f ), CEGUI::Size( p_texture->getWidth(), p_texture->getHeight() ), CEGUI::Point( 0.0f,0.0f ) );
+
+                CEGUI::Image* p_image = &const_cast< CEGUI::Image& >( p_imageSet->getImage( std::string( MAPVIEW_WND ) + _minMapFile ) );
+                p_staticimg->setImage( p_image );
+                _p_wnd->addChildWindow( p_staticimg );
+            }
+            else
+            {
+                log_error << "EnMapView: problem setting up map image " << _minMapFile << std::endl;
+                CEGUI::WindowManager::getSingleton().destroyWindow( p_staticimg );
+            }
+        }
+        else
+        {
+            log_warning << "EnMapView: no map image defined" << std::endl;
         }
 
         // create a static text for displaying player name when mouse is over its point on map

@@ -57,6 +57,9 @@ class EnMesh :  public yaf3d::BaseEntity
 
     protected:
 
+        //! Update entity
+        void                                        updateEntity( float deltaTime );
+
         //! Handle system notifications
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
@@ -103,6 +106,28 @@ class EnMesh :  public yaf3d::BaseEntity
         bool                                        _shadowEnable;
 
         float                                       _shadowCullDist;
+
+        std::string                                 _animFile;
+
+        bool                                        _animPosition;
+
+        bool                                        _animRotation;
+
+        bool                                        _animRelative;
+
+        float                                       _animDelay;
+
+        float                                       _animTimeScale;
+
+        bool                                        _animLoop;
+
+        float                                       _animTime;
+
+        osg::Vec3f                                  _orgPostition;
+
+        osg::Quat                                   _orgRotation;
+
+        osg::ref_ptr< osg::AnimationPath >          _animPath;
 
         osg::ref_ptr< osg::Node >                   _mesh;
 };

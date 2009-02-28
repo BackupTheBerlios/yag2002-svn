@@ -47,7 +47,8 @@ class GameInterface: public OpenThreads::Thread
             CMD_UNKNOWN         = 0x00,
             CMD_LOAD_LEVEL      = 0x01,
             CMD_UNLOAD_LEVEL    = 0x02,
-            CMD_INIT_ENTITY     = 0x04
+            CMD_INIT_ENTITY     = 0x04,
+            CMD_UPDATE_ENTITY   = 0x08
         };
 
         //! Initialize the interface, pass the first application's main function argument ( argv[ 0 ] )

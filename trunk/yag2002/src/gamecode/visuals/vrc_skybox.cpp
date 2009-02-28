@@ -269,7 +269,7 @@ osg::Node* EnSkyBox::makeBox()
         //   dstate->setAttributeAndModes(polymode, osg::StateAttribute::OVERRIDE|osg::StateAttribute::ON);
         if ( !_textureFilenameMap[ side ].empty() )
         {
-            std::string filename = yaf3d::Application::get()->getMediaPath() + _textureFilenameMap[ side ].c_str();
+            std::string filename = _textureFilenameMap[ side ].c_str();
             image[ side ] = osgDB::readImageFile( filename );
 
             if ( image[ side ])

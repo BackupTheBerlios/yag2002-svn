@@ -1056,7 +1056,7 @@ void PanelEntities::onPropertyGridChange( wxPropertyGridEvent& event )
             return;
         }
 
-        yaf3d::EntityManager::get()->sendNotification( YAF3D_NOTIFY_ENTITY_ATTRIBUTE_CHANGED, p_entity );
+        _p_gameInterface->sendCmd( GameInterface::CMD_UPDATE_ENTITY, p_entity );
     }
 
     // select the entity so that its bounding box gets updated

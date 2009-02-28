@@ -623,12 +623,20 @@ bool EnPlayerAnimation::setupAnimation( const std::string& rootDir, const std::s
 osg::ref_ptr< osgText::Text > EnPlayerAnimation::createTextNode()
 {
     osg::Vec3 pos( 0.0f, 0.0f, 1.0f );
-    std::string fontpath = yaf3d::Application::get()->getMediaPath() + _font;
-    osg::ref_ptr < osgText::Font > font = osgText::readFontFile( fontpath );
-    
-    if ( !font.get() )
+    std::string fontpath = _font;
+
+    yaf3d::StreambufPtr streambuf = yaf3d::FileSystem::get()->getStream( fontpath );
+    if ( !streambuf.valid() )
     {
         log_warning << "could not find font " << fontpath << " for player's floating text" << std::endl;
+    }
+
+    std::istream is( streambuf.getRef() );
+    osg::ref_ptr < osgText::Font > font = osgText::readFontStream( is );
+    
+    if ( streambuf.valid() && !font.get() )
+    {
+        log_warning << "could not load font " << fontpath << " for player's floating text" << std::endl;
         log_warning << " using built-in font" << std::endl;
     }
     osg::ref_ptr < osgText::Text > text = new osgText::Text;
