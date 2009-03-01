@@ -134,7 +134,7 @@ typedef SmartPtr< File >   FilePtr;
     std::istream input( ibuf.getRef() );
     ...
 */
-class Streambuf : public std::streambuf, public RefCount< File >
+class Streambuf : public std::streambuf, public RefCount< Streambuf >
 {
     //! Set the smart pointer class as friend
     DECLARE_SMARTPTR_ACCESS( Streambuf )
@@ -183,8 +183,6 @@ class Streambuf : public std::streambuf, public RefCount< File >
         bool                                    _ok;
 
         std::streamsize                         _buffSize;
-
-    friend class FileSystem;
 };
 
 //! Typedef for the streambuf smart pointer
