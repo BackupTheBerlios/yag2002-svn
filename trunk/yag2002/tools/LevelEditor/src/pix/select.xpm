@@ -2,8 +2,8 @@
 static char * select_xpm[] = {
 "16 15 3 1",
 " 	c None",
-".	c #7F7FD3",
-"+	c #FFFFFF",
+".	c #3434FC",
+"+	c #E6E6E6",
 "                ",
 "                ",
 "    ..          ",

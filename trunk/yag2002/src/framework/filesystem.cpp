@@ -123,14 +123,14 @@ Streambuf::pos_type Streambuf::seekpos( Streambuf::pos_type pos, Streambuf::open
 
 bool Streambuf::readVFSFile( const std::string& filename )
 {
-    PHYSFS_File* handle = PHYSFS_openRead( filename.c_str() );
-    if ( !handle )
+    PHYSFS_File* p_handle = PHYSFS_openRead( filename.c_str() );
+    if ( !p_handle )
     {
         log_warning << "VFS: cannot open requested file: " << filename << std::endl;
         return false;
     }
 
-    PHYSFS_sint64 filesize = PHYSFS_fileLength( handle );
+    PHYSFS_sint64 filesize = PHYSFS_fileLength( p_handle );
     if ( filesize < 0 )
     {
         log_warning << "VFS: cannot determine file size: " << filename << std::endl;
@@ -138,8 +138,8 @@ bool Streambuf::readVFSFile( const std::string& filename )
     }
 
     char* buffer = new char[ filesize + 1 ];
-    PHYSFS_sint64 cnt = PHYSFS_read( handle, buffer, filesize, 1 );
-    PHYSFS_close( handle );
+    PHYSFS_sint64 cnt = PHYSFS_read( p_handle, buffer, filesize, 1 );
+    PHYSFS_close( p_handle );
 
     if ( cnt < 0 )
     {
@@ -147,8 +147,8 @@ bool Streambuf::readVFSFile( const std::string& filename )
         return false;
     }
 
-    _p_begin = buffer;
-    _p_end   = &buffer[ filesize ];
+    _p_begin   = buffer;
+    _p_end     = &buffer[ filesize ];
     _p_current = _p_begin;
     _buffSize  = filesize;
 
