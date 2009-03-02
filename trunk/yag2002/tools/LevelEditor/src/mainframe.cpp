@@ -587,7 +587,7 @@ void MainFrame::onMenuitemViewLogClick( wxCommandEvent& event )
 void MainFrame::onMenuitemHelpAboutClick( wxCommandEvent& event )
 {
     std::string text;
-    text += "Yaf3D Content Editor " CONTENT_EDITOR_VERSION "\n";
+    text += "VRC Level Editor " CONTENT_EDITOR_VERSION "\n";
     text += "\n";
     text += "Yaf3D Framework Version: " YAF3D_VERSION "\n";
     text += "Virtual Reality Chat Version: " VRC_VERSION "\n";
