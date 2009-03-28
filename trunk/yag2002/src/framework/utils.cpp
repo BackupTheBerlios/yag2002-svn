@@ -1058,15 +1058,17 @@ void enumerateDisplaySettings( std::vector< std::string >& settings, unsigned in
 void checkHeap()
 {
     // go through all heaps and validate them, trigger a user breakpoint if one of the heaps is corrupt
-    HANDLE heaps[ 20 ];  // a max size of 20 heaps should suffice
-    DWORD numHeaps = GetProcessHeaps( 20, heaps );
-    for ( DWORD i = 0; i < numHeaps; ++i )
+    DWORD numheaps = GetProcessHeaps( 0, NULL );
+    HANDLE* p_heaps = new HANDLE[ numheaps + 1 ];
+    numheaps = GetProcessHeaps( numheaps, p_heaps );
+    for ( DWORD i = 0; i < numheaps; i++ )
     {
-        if ( HeapValidate( heaps[ i ], 0, NULL ) == FALSE )
+        if ( HeapValidate( p_heaps[ i ], 0, NULL ) == FALSE )
         {
             __asm int 3;    // trigger user break point
         }
     }
+    delete[] p_heaps;
 }
 #endif
 #endif
