@@ -559,6 +559,13 @@ void MainFrame::onMenuitemFileQuitClick( wxCommandEvent& event )
         }
     }
 
+    GameNavigator::get()->selectEntity( NULL );
+    GameNavigator::get()->setMode( GameNavigator::EntitySelect );
+
+    // unload the level before closing application
+    _p_editorApp->unloadLevel();
+    wxSleep( 2 );
+
     wxCloseEvent ev;
     ev.SetCanVeto( false );
     onCloseWindow( ev );
