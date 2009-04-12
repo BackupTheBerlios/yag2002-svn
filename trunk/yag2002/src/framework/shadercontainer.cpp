@@ -78,6 +78,29 @@ static const char _glslCommonV[] =
     "}\n"
 ;
 
+// Default vertex shader supporting 1 light and 1 tex channels. It needs the common vertex functions.
+static char _glslDefaultV[] =
+    "/*\n"
+    "* Vertex shader for default lighting and texture mapping\n"
+    "* http://yag2002.sf.net\n"
+    "* 02/21/2009\n"
+    "*/\n"
+    "varying vec4 diffuse0, ambient0;\n"
+    "varying vec3 normal0, lightDir0, halfVector0;\n"
+    "varying vec2 texCoords0;\n"
+    "\n"
+    "// declarations for common functions\n"
+    "void calcLightingParams( in int lightnum, out vec3 normal, out vec3 lightdir, out vec3 halfvec, out vec4 ambient, out vec4 diffuse );\n"
+    "\n"
+    "void main( void )\n"
+    "{\n"
+    "   // calcualte the lighting parameters\n"
+    "   calcLightingParams( 0, normal0, lightDir0, halfVector0, ambient0, diffuse0 );\n"
+    "   vec4 pos    =  gl_ModelViewMatrix * gl_Vertex;\n"
+    "   gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
+    "   texCoords0  = gl_MultiTexCoord0.st;\n"
+    "}\n"
+;
 
 // Shadow map shader. It needs the common vertex functions.
 static char _glslShadowMapV[] =
@@ -226,7 +249,7 @@ static char _glslCommonF[] =
     "   {\n"
     "       color += diffuse * NdotL;\n"
     "       halfV = normalize( halfvector );\n"
-    "       NdotHV = max( dot( n,halfV ), 0.0 );\n"
+    "//     NdotHV = max( dot( n,halfV ), 0.0 );\n"
     "//     color += gl_FrontMaterial.specular *\n"
     "//              gl_LightSource[0].specular *\n"
     "//              pow( NdotHV, gl_FrontMaterial.shininess );\n"
@@ -266,6 +289,35 @@ static char _glslCommonF[] =
     "                       shadow2D( shadowTexture, shadowCoord8 ).rgb * cells;  \n"
     "   return shadowColor;\n"
     "   //return shadow2D( shadowTexture, shadowCoord0 ).rgb;\n"
+    "}\n"
+;
+
+// Default fragment shader. It needs the common fragment functions.
+static char _glslDefaultF[] =
+    "/*\n"
+    "* Fragment shader for pixel shading\n"
+    "* http://yag2002.sf.net\n"
+    "* 02/21/2009\n"
+    "*/\n"
+    "uniform sampler2D      texture0;\n"
+    "varying vec4 diffuse0, ambient0;\n"
+    "varying vec3 normal0, lightDir0, halfVector0;\n"
+    "varying vec2 texCoords0;\n"
+    "\n"
+    "// declarations for common functions\n"
+    "vec4 calcLighting( in vec4 diffuse, in vec4 ambient, in vec3 normal, in vec3 lightdir, in vec3 halfvector ); \n"
+    "\n"
+    "void main( void )\n"
+    "{\n"
+    "   vec4 color0 = calcLighting( diffuse0, ambient0, normal0, lightDir0, halfVector0 );\n"
+    "\n"
+    "  vec4 texcolor0  = texture2D( texture0, texCoords0 );\n"
+    "  vec4 lightcolor = color0;\n"
+    "  //lightcolor      = min( lightcolor, vec4( 1.0, 1.0, 1.0, 1.0 ) );\n"
+    "  gl_FragColor    = vec4(\n"
+    "                         texcolor0.rgb * lightcolor.rgb,\n"
+    "                         step( 0.5, texcolor0.a )\n"
+    "                        );\n"
     "}\n"
 ;
 
@@ -418,6 +470,10 @@ osg::Shader* ShaderContainer::getVertexShader( unsigned int type )
             code = _glslCommonV;
             break;
 
+        case eDefaultV:
+            code = _glslDefaultV;
+            break;
+
         case eShadowMapV:
             code = _glslShadowMapV;
             break;
@@ -456,6 +512,10 @@ osg::Shader* ShaderContainer::getFragmentShader( unsigned int type )
     {
         case eCommonF:
             code = _glslCommonF;
+            break;
+
+        case eDefaultF:
+            code = _glslDefaultF;
             break;
 
         case eShadowMapF:

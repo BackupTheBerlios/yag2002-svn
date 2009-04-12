@@ -48,6 +48,7 @@ class ShaderContainer : public yaf3d::Singleton< yaf3d::ShaderContainer >
         enum VertexShaderType
         {
             eCommonV                  = 0x10, // common shader functions to be used in main()
+            eDefaultV,
             eShadowMapV,
             eTerrainV,
             eTerrainShadowMapV,
@@ -58,6 +59,7 @@ class ShaderContainer : public yaf3d::Singleton< yaf3d::ShaderContainer >
         enum FragmentShaderType
         {
             eCommonF                  = 0x100, // common shader functions to be used in main()
+            eDefaultF,
             eShadowMapF,
             eTerrainF,
             eTerrainShadowMapF,
