@@ -154,19 +154,43 @@ void VRCStateHandler::onStateChange( unsigned int state )
             // setup the shader container with necessary shader nodes
             if ( yaf3d::GameState::get()->getMode() != yaf3d::GameState::Server )
             {
-                osg::ref_ptr< osg::Group > vegetationnode = new osg::Group;
-                vegetationnode->setName( "_vegetationShaderGroup_" );
-                osg::StateSet* p_stateset = vegetationnode->getOrCreateStateSet();
-                osg::Program* p_program = new osg::Program;
-                p_stateset->setAttribute( p_program );
-                // setup the vertex shader
-                osg::Shader* p_vert = yaf3d::ShaderContainer::get()->getVertexShader( yaf3d::ShaderContainer::eVegetationV );
-                p_program->addShader( p_vert );
-                // setup the fragment shader
-                osg::Shader* p_frag = yaf3d::ShaderContainer::get()->getFragmentShader( yaf3d::ShaderContainer::eVegetationF );
-                p_program->addShader( p_frag );
-                // add the vegetation shader to shader container
-                yaf3d::ShaderContainer::get()->addShaderNode( "vegetation", vegetationnode, yaf3d::LevelManager::get()->getTopNodeGroup().get() );
+                // define the default shader
+                {
+                    osg::ref_ptr< osg::Group > defaultnode = new osg::Group;
+                    defaultnode->setName( "_defaultShaderGroup_" );
+                    osg::StateSet* p_stateset = defaultnode->getOrCreateStateSet();
+                    osg::Program* p_program = new osg::Program;
+                    p_stateset->setAttribute( p_program );
+                    // setup the vertex shader
+                    osg::Shader* p_vcommon = yaf3d::ShaderContainer::get()->getVertexShader( yaf3d::ShaderContainer::eCommonV );
+                    p_program->addShader( p_vcommon );
+                    osg::Shader* p_vert = yaf3d::ShaderContainer::get()->getVertexShader( yaf3d::ShaderContainer::eDefaultV );
+                    p_program->addShader( p_vert );
+                    // setup the fragment shader
+                    osg::Shader* p_fcommon = yaf3d::ShaderContainer::get()->getFragmentShader( yaf3d::ShaderContainer::eCommonF );
+                    p_program->addShader( p_fcommon );
+                    osg::Shader* p_frag = yaf3d::ShaderContainer::get()->getFragmentShader( yaf3d::ShaderContainer::eDefaultF );
+                    p_program->addShader( p_frag );
+                    // add the default shader to shader container
+                    yaf3d::ShaderContainer::get()->addShaderNode( "default", defaultnode, yaf3d::LevelManager::get()->getTopNodeGroup().get() );
+                }
+
+                // define the vegetation shader
+                {
+                    osg::ref_ptr< osg::Group > vegetationnode = new osg::Group;
+                    vegetationnode->setName( "_vegetationShaderGroup_" );
+                    osg::StateSet* p_stateset = vegetationnode->getOrCreateStateSet();
+                    osg::Program* p_program = new osg::Program;
+                    p_stateset->setAttribute( p_program );
+                    // setup the vertex shader
+                    osg::Shader* p_vert = yaf3d::ShaderContainer::get()->getVertexShader( yaf3d::ShaderContainer::eVegetationV );
+                    p_program->addShader( p_vert );
+                    // setup the fragment shader
+                    osg::Shader* p_frag = yaf3d::ShaderContainer::get()->getFragmentShader( yaf3d::ShaderContainer::eVegetationF );
+                    p_program->addShader( p_frag );
+                    // add the vegetation shader to shader container
+                    yaf3d::ShaderContainer::get()->addShaderNode( "vegetation", vegetationnode, yaf3d::LevelManager::get()->getTopNodeGroup().get() );
+                }
             }
         }
         break;
@@ -838,7 +862,7 @@ osg::ref_ptr< osg::TextureCubeMap > readCubeMap( const std::vector< std::string 
     }
 
     osg::TextureCubeMap* p_cubemap = new osg::TextureCubeMap;
-    std::string mediapath = yaf3d::Application::get()->getMediaPath();
+    std::string mediapath;
     osg::Image* imagePosX = osgDB::readImageFile( mediapath + texfiles[ 0 ] );
     osg::Image* imageNegX = osgDB::readImageFile( mediapath + texfiles[ 1 ] );
     osg::Image* imagePosY = osgDB::readImageFile( mediapath + texfiles[ 2 ] );
