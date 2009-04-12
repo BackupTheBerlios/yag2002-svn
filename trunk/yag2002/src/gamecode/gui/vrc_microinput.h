@@ -89,6 +89,9 @@ class MicrophoneInput
         //! Sound channel
         FMOD::Channel*                              _p_channel;
 
+        //! Input device ID
+        int                                         _deviceID;
+
         //! Used for internal housekeeping
         bool                                        _microTestRunning;
 

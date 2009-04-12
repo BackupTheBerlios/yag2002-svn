@@ -43,6 +43,7 @@ MicrophoneInput::MicrophoneInput() :
 _p_soundSystem( NULL ),
 _p_sound( NULL ),
 _p_channel( NULL ),
+_deviceID( 0 ),
 _microTestRunning( false ),
 _inputGain( 1.0f ),
 _outputGain( 1.0f )
@@ -154,7 +155,8 @@ bool MicrophoneInput::setupInputCapturing( unsigned int deviceid )
         return false;
     }
 
-    _p_soundSystem->setRecordDriver( deviceid );
+    // obsolete record driver function in fmod
+    //_p_soundSystem->setRecordDriver( deviceid );
 
     // we need only one single channel in sound system
     result = _p_soundSystem->init( 1, FMOD_INIT_NORMAL, 0 );
@@ -163,6 +165,8 @@ bool MicrophoneInput::setupInputCapturing( unsigned int deviceid )
         log_error << "gui MicrophoneInput: cannot initialize sound system" << std::endl;
         return false;
     }
+
+    _deviceID = static_cast< int >( deviceid );
 
     return true;
 }
@@ -246,7 +250,7 @@ void MicrophoneInput::beginMicroTest()
     _p_soundSystem->playSound( FMOD_CHANNEL_FREE, _p_sound, false, &_p_channel );
 
     // start recording
-    _p_soundSystem->recordStart( _p_sound, true );
+    _p_soundSystem->recordStart( _deviceID, _p_sound, true );
 }
 
 void MicrophoneInput::endMicroTest()
@@ -255,7 +259,7 @@ void MicrophoneInput::endMicroTest()
         return;
 
     // stop recording
-    _p_soundSystem->recordStop();
+    _p_soundSystem->recordStop( _deviceID );
     _p_soundSystem->release();
     _p_soundSystem = NULL;
     _p_channel     = NULL;

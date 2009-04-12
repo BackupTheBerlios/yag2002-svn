@@ -107,6 +107,9 @@ class BaseVoiceInput
         //! Sound channel
         FMOD::Channel*                              _p_channel;
 
+        //! Input device ID
+        int                                         _deviceID;
+
         //! Input grabber thread
         InputGrabber*                               _p_grabber;
 

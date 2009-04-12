@@ -79,6 +79,7 @@ _p_soundSystem( p_sndsystem ),
 _p_codec( p_codec ),
 _p_sound( NULL ),
 _p_channel( NULL ),
+_deviceID( -1 ),
 _p_grabber( NULL ),
 _inputGain( 1.0f ),
 _createSoundSystem( true ),
@@ -214,7 +215,7 @@ VoiceMicrophoneInput::~VoiceMicrophoneInput()
 
     if ( _p_sound )
     {
-        _p_soundSystem->recordStop();
+        _p_soundSystem->recordStop( _deviceID );
         _p_channel->stop();
         _p_sound->release();
         _p_sound   = NULL;
@@ -243,7 +244,7 @@ void VoiceMicrophoneInput::initialize() throw( NetworkSoundException )
     createsoundexinfo.defaultfrequency  = VOICE_SAMPLE_RATE;
     createsoundexinfo.format            = VOICE_SOUND_FORMAT;
 
-    _p_soundSystem->recordStop();
+    _p_soundSystem->recordStop( _deviceID );
 
     result = _p_soundSystem->createSound( NULL, mode, &createsoundexinfo, &_p_sound );
     if ( result != FMOD_OK )
@@ -268,12 +269,7 @@ void VoiceMicrophoneInput::initialize() throw( NetworkSoundException )
         inputdevice = VRC_GS_VOICECHAT_INPUT_DEVICE_NA;
     }
 
-    result = _p_soundSystem->setRecordDriver( inputdevice );
-    if ( result != FMOD_OK )
-    {
-        _inputDeviceReady = false;
-        throw NetworkSoundException( "VoiceMicrophoneInput: error setting input device: " + std::string( FMOD_ErrorString( result ) ) );
-    }
+    _deviceID = static_cast< int >( inputdevice );
 
     result = _p_sound->getLength( &_chunkLength, FMOD_TIMEUNIT_PCM );
     if ( result != FMOD_OK )
@@ -296,7 +292,7 @@ void VoiceMicrophoneInput::update()
     // get access to sound's raw data, encode and distribute
     {
         unsigned int currentSoundTrackPos;
-        _p_soundSystem->getRecordPosition( &currentSoundTrackPos );
+        _p_soundSystem->getRecordPosition( _deviceID, &currentSoundTrackPos );
 
         if ( _lastSoundTrackPos != currentSoundTrackPos )
         {
@@ -343,9 +339,9 @@ void VoiceMicrophoneInput::stop( bool st )
     assert( _p_sound && "input is not initialized!" );
 
     if ( st )
-        _p_soundSystem->recordStop();
+        _p_soundSystem->recordStop( _deviceID );
     else
-        _p_soundSystem->recordStart( _p_sound, true );
+        _p_soundSystem->recordStart( _deviceID, _p_sound, true );
 
     // set active flag
     _active = !st;
@@ -353,9 +349,12 @@ void VoiceMicrophoneInput::stop( bool st )
 
 void VoiceMicrophoneInput::setInputDevice( unsigned int deviceid )
 {
-    _p_soundSystem->recordStop();
-    _p_soundSystem->setRecordDriver( deviceid );
-    _p_soundSystem->recordStart( _p_sound, true );
+    if ( _deviceID < 0 )
+        return;
+
+    _p_soundSystem->recordStop( _deviceID );
+    _deviceID = static_cast< int >( deviceid );
+    _p_soundSystem->recordStart( _deviceID, _p_sound, true );
 }
 
 
