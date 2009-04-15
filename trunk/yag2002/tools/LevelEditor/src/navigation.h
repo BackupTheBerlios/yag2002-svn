@@ -36,6 +36,11 @@
 class SceneTools;
 class GameInterface;
 
+//! Entity attribute names for position and rotation; these names are assumed for updating the entity attributes when moving and rotating.
+#define ENTITY_ATTR_POSITION    "position"
+#define ENTITY_ATTR_ROTATION    "rotation"
+
+
 //! Callback class used for notifying about picking results
 class CallbackNavigatorNotify
 {

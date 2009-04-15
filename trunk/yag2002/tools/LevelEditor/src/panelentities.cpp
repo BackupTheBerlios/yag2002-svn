@@ -50,7 +50,6 @@
 #define PROP_INSTANCE_NAME      "_$InstName$_"
 
 
-
 //! Class holding entity related data in tree items
 class TreeItemData : public wxTreeItemData
 {
@@ -145,7 +144,8 @@ PanelEntities::PanelEntities( wxWindow* parent, GameInterface* p_interface ) :
  _p_treeEntity( NULL ),
  _p_entityProps( NULL ),
  _stateSetupTree( false ),
- _copyOperation( false )
+ _copyOperation( false ),
+ _placeEntity( false )
 {
     wxPanel::Create( parent, ID_PANEL_ENTITIES, wxDefaultPosition, wxDefaultSize, SYMBOL_PANELENTITIES_STYLE );
 
@@ -420,6 +420,35 @@ void PanelEntities::selectEntity( yaf3d::BaseEntity* p_entity )
     {
         _p_treeEntity->SelectItem( item, true );
     }
+}
+
+bool PanelEntities::isCreatingEntity() const
+{
+    return _placeEntity;
+}
+
+void PanelEntities::placeEntity( const osg::Vec3f& pos )
+{
+    _placeEntity = false;
+
+    wxTreeItemId sel = _p_treeEntity->GetSelection();
+    if ( !sel.IsOk() || ( sel == _p_treeEntity->GetRootItem() ) )
+        return;
+
+    yaf3d::BaseEntity* p_entity = NULL;
+
+    TreeItemData* p_info = dynamic_cast< TreeItemData* >( _p_treeEntity->GetItemData( sel ) );
+    if ( !p_info || !p_info->getEntity() )
+        return;
+
+    p_entity = p_info->getEntity();
+
+    // update the entity position
+    osg::Vec3f currpos;
+    if ( p_entity->getAttributeManager().getAttributeValue( ENTITY_ATTR_POSITION, currpos ) )
+        p_entity->getAttributeManager().setAttributeValue( ENTITY_ATTR_POSITION, pos );
+
+    updateProperties( p_entity );
 }
 
 void PanelEntities::updateEntityTree()
@@ -770,6 +799,9 @@ void PanelEntities::onButtonAddEntityClick( wxCommandEvent& event )
         if ( item.IsOk() )
             _p_treeEntity->SelectItem( item, true );
     }
+
+    // set the placing flag so we will 
+    _placeEntity = true;
 
     // remove the prototype entity
     delete p_entity;

@@ -40,10 +40,6 @@
 #define MOVE_SPEED_STEP         10.0f
 #define MOVE_WHEEL_STEP         ( _moveSpeed * 0.5f )
 
-//! Entity attribute names for position and rotation; these names are assumed for updating the 
-//  entity attributes when moving and rotating.
-#define ENTITY_ATTR_POSITION    "position"
-#define ENTITY_ATTR_ROTATION    "rotation"
 
 YAF3D_SINGLETON_IMPL( GameNavigator )
 

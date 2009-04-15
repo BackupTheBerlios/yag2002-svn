@@ -32,7 +32,7 @@
 #define _GUIBASE_H_
 
 //! The version information
-#define CONTENT_EDITOR_VERSION      "0.7.0"
+#define CONTENT_EDITOR_VERSION      "0.7.1"
 
 
 //! Include wx headers

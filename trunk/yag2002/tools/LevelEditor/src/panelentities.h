@@ -62,6 +62,12 @@ class PanelEntities: public wxPanel
         //! Select given entity in tree.
         void                                        selectEntity( yaf3d::BaseEntity* p_entity );
 
+        //! Returns true while in entity creation process.
+        bool                                        isCreatingEntity() const;
+
+        //! Place the entity at given position.
+        void                                        placeEntity( const osg::Vec3f& pos );
+
     protected:
 
         //! Make wx happy
@@ -146,6 +152,8 @@ class PanelEntities: public wxPanel
         wxTreeItemId                                _cutCopySelection;
 
         bool                                        _copyOperation;
+
+        bool                                        _placeEntity;
 
         enum
         {

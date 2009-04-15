@@ -187,6 +187,12 @@ void MainFrame::notify( unsigned int id )
             if ( GetToolBar() )
                 GetToolBar()->ToggleTool( ID_TOOL_SEL, true );
 
+            // when in entity creation process then place the entity
+            if ( _p_panelEntities->isCreatingEntity() )
+            {
+                _p_panelEntities->placeEntity( GameNavigator::get()->getHitPosition() );
+            }
+
             // restore picking mode
             GameNavigator::get()->selectEntity( NULL );
             GameNavigator::get()->setMode( GameNavigator::EntitySelect );
