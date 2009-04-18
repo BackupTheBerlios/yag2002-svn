@@ -115,6 +115,9 @@ class MainFrame: public wxFrame
         //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_FILE_QUIT
         void                                        onMenuitemFileQuitClick( wxCommandEvent& event );
 
+        //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_PUBLISH_PUB
+        void                                        onMenuitemPublishPubClick( wxCommandEvent& event );
+
         //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VIEW_STATS
         void                                        onMenuitemViewStatsClick( wxCommandEvent& event );
 
@@ -139,12 +142,14 @@ class MainFrame: public wxFrame
         //! wxEVT_COMMAND_MENU_SELECTED event handler for ID_TOOL_INSPECT
         void                                        onToolInspectClick( wxCommandEvent& event );
 
-        //! wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED event handler for ID_NOTEBOOK1
+        //! wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED event handler for ID_NOTEBOOK
         void                                        onNotebookPageChanged( wxNotebookEvent& event );
 
         EditorApp*                                  _p_editorApp;
 
         wxMenu*                                     _p_menuFile;
+
+        wxMenu*                                     _p_menuPublish;
 
         wxMenu*                                     _p_menuView;
 
@@ -168,6 +173,7 @@ class MainFrame: public wxFrame
             ID_MENUITEM_FILE_SAVE_AS = 10004,
             ID_MENUITEM_FILE_CLOSE   = 10005,
             ID_MENUITEM_FILE_QUIT    = 10006,
+            ID_MENUITEM_PUBLISH_PUB  = 10050,
             ID_MENUITEM_VIEW_STATS   = 10007,
             ID_MENUITEM_VIEW_LOG     = 10008,
             ID_MENUITEM_HELP_ABOUT   = 10010,

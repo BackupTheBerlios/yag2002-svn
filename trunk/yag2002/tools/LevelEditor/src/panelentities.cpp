@@ -32,12 +32,14 @@
 #include "guibase.h"
 #include "panelentities.h"
 #include "entityproperties.h"
+#include "gameinterface.h"
+#include "navigation.h"
+#include "physicsstaticgeom.h"
 #include "pix/treeroot.xpm"
 #include "pix/treehidden.xpm"
 #include "pix/treeent.xpm"
 #include "pix/treehiddenent.xpm"
-#include "gameinterface.h"
-#include "navigation.h"
+#include "pix/treephysicsent.xpm"
 
 
 //! Tree's icon identifiers
@@ -45,6 +47,7 @@
 #define TREE_ICON_HIDDEN        1
 #define TREE_ICON_ENTITY        2
 #define TREE_ICON_HIDDEN_ENTITY 3
+#define TREE_ICON_PHYS_ENTITY   4
 
 //! Property name for "InstanceName"
 #define PROP_INSTANCE_NAME      "_$InstName$_"
@@ -58,7 +61,8 @@ class TreeItemData : public wxTreeItemData
                                                     TreeItemData( const std::string& entitytype, const std::string& instancename ) :
                                                      _entityType( entitytype ),
                                                      _entityInstName( instancename ),
-                                                     _p_entity( NULL )
+                                                     _p_entity( NULL ),
+                                                     _isPhysGeom( false )
                                                     {
                                                     }
 
@@ -95,6 +99,17 @@ class TreeItemData : public wxTreeItemData
                                                     {
                                                         _entityInstName  = instname;
                                                     }
+
+        void                                        setIsPhysicsGeom( bool phys )
+                                                    {
+                                                        _isPhysGeom = phys;
+                                                    }
+
+        bool                                        isPhysicsGeom() const
+                                                    {
+                                                        return _isPhysGeom;
+                                                    }
+
     protected:
 
         //! Entity type
@@ -104,6 +119,8 @@ class TreeItemData : public wxTreeItemData
         std::string                                 _entityInstName;
 
         yaf3d::BaseEntity*                          _p_entity;
+
+        bool                                        _isPhysGeom;
 };
 
 
@@ -127,9 +144,9 @@ BEGIN_EVENT_TABLE( PanelEntities, wxPanel )
 
     EVT_BUTTON( ID_BUTTON_ENTITY_DELETE, PanelEntities::onButtonEntityDeleteClick )
 
-    EVT_BUTTON( ID_BUTTON_ENTITY_UPDATE, PanelEntities::onButtonEntityUpdateClick )
+    EVT_BUTTON( ID_BUTTON_ADD_PHYS_ENT, PanelEntities::onButtonAddPhysicsEntityClick )
 
-    EVT_CHECKBOX( ID_CHECKBOX_ENTITY_AUTO_UPDATE, PanelEntities::onCheckboxEntityAutoUpdateClick )
+    EVT_CHECKBOX( ID_CHECKBOX_SHOW_PHYS_ENT, PanelEntities::onCheckboxShowPhysicsEntitiesClick )
 
     EVT_PG_CHANGED( ID_PROPGRID_PROPS, PanelEntities::onPropertyGridChange )
 
@@ -139,8 +156,8 @@ END_EVENT_TABLE()
 PanelEntities::PanelEntities( wxWindow* parent, GameInterface* p_interface ) :
  _p_gameInterface( p_interface ),
  _p_comboEntityTypes( NULL ),
- _p_btnEntityUpdate( NULL ),
- _p_checkEntityAutoUpdate( NULL ),
+ _p_btnAddPhysEntity( NULL ),
+ _p_checkShowPhysEntities( NULL ),
  _p_treeEntity( NULL ),
  _p_entityProps( NULL ),
  _stateSetupTree( false ),
@@ -235,8 +252,7 @@ void PanelEntities::createControls()
         itemButton16->SetToolTip(_("Delete selection entity"));
     itemBoxSizer13->Add(itemButton16, 1, wxALIGN_CENTER_VERTICAL|wxLEFT, 5);
 
-    //! NOTE: we currently do not need this, all property changes take immediately place
-#if 0
+    // controls for physics geometry
     wxStaticBox* itemStaticBoxSizer17Static = new wxStaticBox(itemPanel1, wxID_ANY, _T(""));
     wxStaticBoxSizer* itemStaticBoxSizer17 = new wxStaticBoxSizer(itemStaticBoxSizer17Static, wxVERTICAL);
     itemStaticBoxSizer3->Add(itemStaticBoxSizer17, 0, wxGROW|wxALL, 5);
@@ -244,20 +260,20 @@ void PanelEntities::createControls()
     wxBoxSizer* itemBoxSizer18 = new wxBoxSizer(wxHORIZONTAL);
     itemStaticBoxSizer17->Add(itemBoxSizer18, 0, wxGROW|wxTOP|wxBOTTOM, 5);
 
-    _p_btnEntityUpdate = new wxButton( itemPanel1, ID_BUTTON_ENTITY_UPDATE, _("Update"), wxDefaultPosition, wxDefaultSize, 0 );
-    _p_btnEntityUpdate->SetHelpText(_("Update entity parameters, e.g. after changing them"));
+    _p_btnAddPhysEntity = new wxButton( itemPanel1, ID_BUTTON_ADD_PHYS_ENT, _("Add Physics Geometry"), wxDefaultPosition, wxDefaultSize, 0 );
+    _p_btnAddPhysEntity->SetHelpText(_("Add static geometry for physics"));
     if (PanelEntities::ShowToolTips())
-        _p_btnEntityUpdate->SetToolTip(_("Update entity parameters, e.g. after changing them"));
-    _p_btnEntityUpdate->Enable(false);
-    itemBoxSizer18->Add(_p_btnEntityUpdate, 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 5);
+        _p_btnAddPhysEntity->SetToolTip(_("Add static geometry for physics"));
+    _p_btnAddPhysEntity->Enable( true );
+    itemBoxSizer18->Add(_p_btnAddPhysEntity, 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 5);
 
-    _p_checkEntityAutoUpdate = new wxCheckBox( itemPanel1, ID_CHECKBOX_ENTITY_AUTO_UPDATE, _("Auto update"), wxDefaultPosition, wxDefaultSize, 0 );
-    _p_checkEntityAutoUpdate->SetValue(true);
-    _p_checkEntityAutoUpdate->SetHelpText(_("Update entity parameter immediately after editing"));
+    _p_checkShowPhysEntities = new wxCheckBox( itemPanel1, ID_CHECKBOX_SHOW_PHYS_ENT, _("Show Physics Entities"), wxDefaultPosition, wxDefaultSize, 0 );
+    _p_checkShowPhysEntities->SetValue(true);
+    _p_checkShowPhysEntities->SetHelpText(_("Show entities for physics geometry definition"));
     if (PanelEntities::ShowToolTips())
-        _p_checkEntityAutoUpdate->SetToolTip(_("Update entity parameter immediately after editing"));
-    itemBoxSizer18->Add(_p_checkEntityAutoUpdate, 0, wxALIGN_CENTER_VERTICAL|wxLEFT, 5);
-#endif
+        _p_checkShowPhysEntities->SetToolTip(_("Show entities for physics geometry definition"));
+    itemBoxSizer18->Add(_p_checkShowPhysEntities, 0, wxALIGN_CENTER_VERTICAL|wxLEFT, 5);
+    //---
 
     _p_treeEntity = new wxTreeCtrl( itemPanel1, ID_TREECTRL, wxDefaultPosition, wxSize(100, 100), wxTR_SINGLE );
     itemBoxSizer2->Add(_p_treeEntity, 2, wxGROW|wxALL, 2);
@@ -267,11 +283,14 @@ void PanelEntities::createControls()
     wxBitmap iconhidden( treehidden_xpm );
     wxBitmap iconentity( treeent_xpm );
     wxBitmap iconhiddenentity( treehiddenent_xpm );
+    wxBitmap iconphysicsentity( treephysicsent_xpm );
     wxImageList* p_imageList = new wxImageList( 16, 16, true );
     p_imageList->Add( wxBitmap( iconroot ) );
     p_imageList->Add( wxBitmap( iconhidden ) );
     p_imageList->Add( wxBitmap( iconentity ) );
     p_imageList->Add( wxBitmap( iconhiddenentity ) );
+    p_imageList->Add( wxBitmap( iconphysicsentity ) );
+
     _p_treeEntity->AssignImageList( p_imageList);
 
     // setup the entity property grid
@@ -389,8 +408,12 @@ void PanelEntities::setupControls( bool enable, const std::string& levelfilename
 
         for ( ; p_beg != p_end; ++p_beg )
         {
-            // filter out server entities
-            if ( ( *p_beg )->getCreationPolicy() & ( yaf3d::BaseEntityFactory::Standalone | yaf3d::BaseEntityFactory::Client ) )
+            // skip physics entity which is editor specific
+            if ( ( *p_beg )->getType() == ENTITY_NAME_PHYSSTATGEOM )
+                continue;
+
+            // filter out editor specific entities
+            if ( ( *p_beg )->getCreationPolicy() )
                 _p_comboEntityTypes->Append( ( *p_beg )->getType() );
         }
 
@@ -476,17 +499,26 @@ void PanelEntities::updateEntityTree()
 
         for ( ; p_beg != p_end; ++p_beg )
         {
+            bool physgeom = ( *p_beg )->getTypeName() == ENTITY_NAME_PHYSSTATGEOM;
+
+            if ( !_p_checkShowPhysEntities->GetValue() && physgeom )
+                continue;
+
             entityname = ( *p_beg )->getInstanceName();
             if ( !entityname.length() || ( entityname[ 0 ] == '_' ) )
                 icon = TREE_ICON_HIDDEN_ENTITY;
             else
                 icon = TREE_ICON_ENTITY;
 
+            if ( physgeom )
+                icon = TREE_ICON_PHYS_ENTITY;
+
             item = _p_treeEntity->AppendItem( treeroot, createTreeItemLabel( ( *p_beg )->getTypeName(), ( *p_beg )->getInstanceName() ), icon );
 
-            // the the tree item data containing information about the entity
+            // the tree item data containing information about the entity
             TreeItemData* p_info = new TreeItemData( ( *p_beg )->getTypeName(), ( *p_beg )->getInstanceName() );
             p_info->setEntity( *p_beg );
+            p_info->setIsPhysicsGeom( physgeom );
             _p_treeEntity->SetItemData( item, p_info );
         }
 
@@ -690,7 +722,7 @@ void PanelEntities::onButtonAddEntityClick( wxCommandEvent& event )
     if ( sel < 0 )
         return;
 
-    EntityProperties* p_dlg = new EntityProperties();
+    std::auto_ptr< EntityProperties > p_dlg( new EntityProperties );
     p_dlg->createFrame( this );
 
     std::string enttype = _p_comboEntityTypes->GetString( sel );
@@ -1029,16 +1061,151 @@ void PanelEntities::onButtonEntityDeleteClick( wxCommandEvent& event )
     }
 }
 
-void PanelEntities::onButtonEntityUpdateClick( wxCommandEvent& event )
+void PanelEntities::onButtonAddPhysicsEntityClick( wxCommandEvent& event )
 {
+    std::auto_ptr< EntityProperties > p_dlg( new EntityProperties );
+    p_dlg->createFrame( this );
+
+    std::string enttype( ENTITY_NAME_PHYSSTATGEOM );
+
+    // prototype entity for used for creating and initializing a new entiy
+    yaf3d::BaseEntity* p_entity = NULL;
+
+    {
+        // lock game loop
+        ScopedGameUpdateLock   lockupdate;
+
+        std::string instname( enttype );
+        std::transform( instname.begin(), instname.end(), instname.begin(), tolower );
+        p_entity = yaf3d::EntityManager::get()->createEntity( enttype, instname, false );
+    }
+
+    if ( !p_entity )
+    {
+        log_error << "[Editor] could not create physics geometry entity of type " << enttype << std::endl;
+        return;
+    }
+
+    // fill the property dialog with entity properties
+    p_dlg->updateProperties( p_entity );
+
+    if ( p_dlg->ShowModal() != EntityProperties::ID_BUTTON_ENTITIY_PROPS_OK )
+    {
+        delete p_entity;
+        return;
+    }
+
+    // create an entity using the entity manager and copy over the entity attributes
+    wxTreeItemId       newitem     = 0;
+    yaf3d::BaseEntity* p_newentity = NULL;
+    {
+        // lock game loop
+        ScopedGameUpdateLock   lockupdate;
+
+        std::string name = p_entity->getInstanceName();
+
+        p_newentity = yaf3d::EntityManager::get()->createEntity( enttype, name, true );
+
+        // set the entity attributes from properties
+        p_dlg->updateEntity( p_newentity );
+
+        // initialize the entity considering its init policy
+        yaf3d::BaseEntityFactory* p_factory = yaf3d::EntityManager::get()->getEntityFactory( p_entity->getTypeName() );
+        assert( p_factory && "entity factory could not be found!" );
+
+        // setup transformation node
+        if ( p_newentity->isTransformable() )
+        {
+            if ( name.length() )
+                p_newentity->getTransformationNode()->setName( name );
+
+            yaf3d::LevelManager::get()->getEntityNodeGroup()->addChild( p_newentity->getTransformationNode() );
+        }
+
+        // some entities can be initialized only on level loading!
+        unsigned int initpolicy = p_factory->getInitializationPolicy();
+
+        if ( ( initpolicy == yaf3d::BaseEntityFactory::AnyTime ) ||
+             ( ( initpolicy == yaf3d::BaseEntityFactory::OnRunningLevel ) && ( yaf3d::GameState::get()->getState() == yaf3d::GameState::MainLoop ) )
+           )
+        {
+            // initialization of entity must happen in game thread
+            _p_gameInterface->sendCmd( GameInterface::CMD_INIT_ENTITY, p_newentity );
+        }
+
+        // add a tree item for new entity
+        int         icon       = TREE_ICON_ENTITY;
+        std::string entityname = p_newentity->getInstanceName();
+
+        wxTreeItemId selection = _p_treeEntity->GetSelection();
+        if ( selection.IsOk() )
+            newitem = _p_treeEntity->InsertItem( _p_treeEntity->GetRootItem(), selection, createTreeItemLabel( p_newentity->getTypeName(), entityname ), icon );
+        else
+            newitem = _p_treeEntity->AppendItem( _p_treeEntity->GetRootItem(), createTreeItemLabel( p_newentity->getTypeName(), entityname ), icon );
+
+        // the tree item data containing information about the entity
+        TreeItemData* p_info = new TreeItemData( entityname, p_newentity->getTypeName() );
+        p_info->setEntity( p_newentity );
+        p_info->setIsPhysicsGeom( true );
+        _p_treeEntity->SetItemData( newitem, p_info );
+
+        // move the entity to proper place in entity manger's pool
+        moveEntity( newitem, selection );
+
+        // place entity
+        GameNavigator::get()->setMode( GameNavigator::Inspect );
+    }
+
+    // update tree
+    {
+        // sleep a while in order to get a fresh list of entities after creating a new one
+        //  some entities create dependant entities
+        wxMilliSleep( 100 );
+        // update the tree
+        updateEntityTree();
+
+        wxTreeItemId item = findTreeEntity( p_newentity );
+        if ( item.IsOk() )
+            _p_treeEntity->SelectItem( item, true );
+    }
+
+    // set the placing flag so we will 
+    _placeEntity = true;
+
+    // remove the prototype entity
+    delete p_entity;
 }
 
-void PanelEntities::onCheckboxEntityAutoUpdateClick( wxCommandEvent& event )
+void PanelEntities::onCheckboxShowPhysicsEntitiesClick( wxCommandEvent& event )
 {
-    if ( _p_checkEntityAutoUpdate->GetValue() )
-        _p_btnEntityUpdate->Enable( false );
+    // store the currently selected entity, we will restore the selction after tree update
+    yaf3d::BaseEntity* p_selentity = NULL;
+    wxTreeItemId sel = _p_treeEntity->GetSelection();
+    if ( sel.IsOk() || ( sel != _p_treeEntity->GetRootItem() ) )
+    {
+        TreeItemData* p_info = dynamic_cast< TreeItemData* >( _p_treeEntity->GetItemData( sel ) );
+        assert( p_info && "invalid tree item data!" );
+
+        if ( !p_info->isPhysicsGeom() )
+            p_selentity = p_info->getEntity();
+    }
+
+    updateEntityTree();
+
+    // restore the entity selection
+    if ( p_selentity )
+    {
+        sel = findTreeEntity( p_selentity );
+
+        if ( sel.IsOk() )
+            _p_treeEntity->SelectItem( sel );
+        else
+            GameNavigator::get()->selectEntity( NULL );
+    }
     else
-        _p_btnEntityUpdate->Enable( true );
+    {
+        GameNavigator::get()->selectEntity( NULL );
+    }
 }
 
 void PanelEntities::onPropertyGridChange( wxPropertyGridEvent& event )

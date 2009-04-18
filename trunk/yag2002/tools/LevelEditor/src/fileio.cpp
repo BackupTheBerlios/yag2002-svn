@@ -43,7 +43,10 @@ bool FileOutputLevel::write( const std::vector< yaf3d::BaseEntity* >& level, con
 {
     std::ofstream out( filename.c_str(), std::ios_base::binary | std::ios_base::out );
     if ( !out )
+    {
+        log_error << "[Editor]: cannot create level file '" << filename << "'" << std::endl;
         return false;
+    }
 
     out << "<?xml version=\"1.0\" standalone=no>\r" << std::endl;
     out << "<!-- Yaf3d level configuration file -->\r" << std::endl;

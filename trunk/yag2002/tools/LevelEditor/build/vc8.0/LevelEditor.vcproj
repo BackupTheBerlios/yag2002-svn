@@ -294,6 +294,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\physicsstaticgeom.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\physicsstaticgeom.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\scenetools.cpp"
 				>
 			</File>

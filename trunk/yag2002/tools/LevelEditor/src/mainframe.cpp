@@ -40,7 +40,9 @@
 #include "logwindow.h"
 #include "fileio.h"
 #include "editor.h"
-
+#include "physicsstaticgeom.h"
+#include <osgDB/WriteFile>
+#include <physics_helpers.h>
 
 IMPLEMENT_CLASS( MainFrame, wxFrame )
 
@@ -60,6 +62,8 @@ BEGIN_EVENT_TABLE( MainFrame, wxFrame )
     EVT_MENU( ID_MENUITEM_FILE_CLOSE, MainFrame::onMenuitemFileCloseClick )
 
     EVT_MENU( ID_MENUITEM_FILE_QUIT, MainFrame::onMenuitemFileQuitClick )
+
+    EVT_MENU( ID_MENUITEM_PUBLISH_PUB, MainFrame::onMenuitemPublishPubClick )
 
     EVT_MENU( ID_MENUITEM_VIEW_STATS, MainFrame::onMenuitemViewStatsClick )
 
@@ -89,6 +93,7 @@ END_EVENT_TABLE()
 MainFrame::MainFrame( EditorApp* p_app ) :
  _p_editorApp( p_app ),
  _p_menuFile( NULL ),
+ _p_menuPublish( NULL ),
  _p_menuView( NULL ),
  _p_notebook( NULL ),
  _p_panelEntities( NULL ),
@@ -149,9 +154,12 @@ void MainFrame::notify( unsigned int id )
 
             assert( _p_menuFile );
             assert( _p_menuView );
+            assert( _p_menuPublish );
+
             _p_menuFile->Enable( ID_MENUITEM_FILE_SAVE, true );
             _p_menuFile->Enable( ID_MENUITEM_FILE_SAVE_AS, true );
             _p_menuFile->Enable( ID_MENUITEM_FILE_CLOSE, true );
+            _p_menuPublish->Enable( ID_MENUITEM_PUBLISH_PUB, true );
 
             // set proper mode
             GameNavigator::get()->setMode( GameNavigator::EntitySelect );
@@ -175,6 +183,7 @@ void MainFrame::notify( unsigned int id )
             _p_menuFile->Enable( ID_MENUITEM_FILE_SAVE, false );
             _p_menuFile->Enable( ID_MENUITEM_FILE_SAVE_AS, false );
             _p_menuFile->Enable( ID_MENUITEM_FILE_CLOSE, false );
+            _p_menuPublish->Enable( ID_MENUITEM_PUBLISH_PUB, false );
 
             // set proper mode
             GameNavigator::get()->setMode( GameNavigator::EntitySelect );
@@ -261,15 +270,23 @@ void MainFrame::createControls()
     _p_menuFile->AppendSeparator();
     _p_menuFile->Append(ID_MENUITEM_FILE_QUIT, _("Quit"), _T(""), wxITEM_NORMAL);
     menuBar->Append(_p_menuFile, _("File"));
+
+    _p_menuPublish = new wxMenu;
+    _p_menuPublish->Append(ID_MENUITEM_PUBLISH_PUB, _("Publish Level"), _T(""), wxITEM_NORMAL);
+    _p_menuPublish->Enable(ID_MENUITEM_PUBLISH_PUB, false);
+    menuBar->Append(_p_menuPublish, _("Publish"));
+
     _p_menuView = new wxMenu;
     _p_menuView->Append(ID_MENUITEM_VIEW_STATS, _("Statistics"), _T(""), wxITEM_CHECK);
     _p_menuView->Check(ID_MENUITEM_VIEW_STATS, true);
     _p_menuView->Append(ID_MENUITEM_VIEW_LOG, _("Log Console"), _T(""), wxITEM_CHECK);
     _p_menuView->Check(ID_MENUITEM_VIEW_LOG, true);
     menuBar->Append(_p_menuView, _("View"));
+
     wxMenu* p_menuabout = new wxMenu;
     p_menuabout->Append(ID_MENUITEM_HELP_ABOUT, _("About"), _T(""), wxITEM_NORMAL);
     menuBar->Append(p_menuabout, _("Help"));
+
     SetMenuBar(menuBar);
 
     wxToolBar* p_toolbar = CreateToolBar( wxTB_FLAT|wxTB_HORIZONTAL, ID_TOOLBAR );
@@ -577,6 +594,175 @@ void MainFrame::onMenuitemFileQuitClick( wxCommandEvent& event )
     onCloseWindow( ev );
 
     Destroy();
+}
+
+void physSerializationCallback( void* p_serializeHandle, const void* p_buffer, size_t size )
+{
+    std::ofstream* p_stream  = static_cast< std::ofstream* >( p_serializeHandle );
+    const char*    p_charbuf = static_cast< const char* >( p_buffer );
+    for ( size_t cnt = 0; cnt < size; ++cnt )
+        p_stream->put( p_charbuf[ cnt ] );
+}
+
+void MainFrame::onMenuitemPublishPubClick( wxCommandEvent& event )
+{
+    std::string levelfile = _levelFileName;
+    std::string levelname = levelfile;
+    if ( levelname.substr( levelname.length() - 4 ) == ".lvl" )
+        levelname = levelname.substr( 0, levelname.length() - 4 );
+
+    // create the physics serialization file
+    {
+        ScopedGameUpdateLock lock;
+
+        log_info << "[Editor]: exporting physics data ..." << std::endl;
+
+        std::string physfolder = yaf3d::Application::get()->getMediaPath() + "physics/";
+
+        // get the entities
+        std::vector< yaf3d::BaseEntity* > levelentities;
+        yaf3d::EntityManager::get()->getAllEntities( levelentities );
+
+        {
+            std::vector< yaf3d::BaseEntity* > entities;
+            for ( std::size_t cnt = 0; cnt < levelentities.size(); cnt++ )
+            {
+                std::string type = levelentities[ cnt ]->getTypeName();
+
+                // collect only physics entities
+                if ( type != ENTITY_NAME_PHYSSTATGEOM )
+                    continue;
+
+                entities.push_back( levelentities[ cnt ] );
+            }
+
+            osg::ref_ptr< osg::Group > physnode = new osg::Group;
+            physnode->setName( "Physics Node - " + levelname );
+            for ( std::size_t cnt = 0; cnt < entities.size(); cnt++ )
+            {
+                EnPhysicsStaticGeom* p_physentity = dynamic_cast< EnPhysicsStaticGeom* >( entities[ cnt ] );
+                assert( p_physentity && "invalid physics geometry entity!" );
+
+                if ( p_physentity->isEnabled() )
+                    physnode->addChild( p_physentity->getTransformationNode() );
+            }
+
+            {
+                NewtonWorld* p_world = yaf3d::Physics::get()->getWorld();
+                NewtonCollision* p_collision = NewtonCreateTreeCollision( p_world, NULL );
+                NewtonTreeCollisionBeginBuild( p_collision );
+
+                // start timer
+                osg::Timer_t start_tick = osg::Timer::instance()->tick();
+                // iterate through all geometries and create their collision faces
+                yaf3d::PhysicsVisitor physVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN, p_collision );
+                physnode->accept( physVisitor );
+                // stop timer and give out the time messure
+                osg::Timer_t end_tick = osg::Timer::instance()->tick();
+                log_debug << "[Editor]: elapsed time for building physics collision faces = "<< osg::Timer::instance()->delta_s( start_tick, end_tick ) << std::endl;
+
+                //--------------------------
+                // finalize tree building
+                NewtonTreeCollisionEndBuild( p_collision, 0 );
+
+                // write out the serialization data
+                std::string file( physfolder + levelfile + YAF3DPHYSICS_SERIALIZE_POSTFIX );
+                log_debug << "[Editor]: write to serialization file 'media/physics/" << levelfile + YAF3DPHYSICS_SERIALIZE_POSTFIX << "'" << std::endl;
+                std::ofstream serializationoutput;
+                serializationoutput.open( file.c_str(), std::ios_base::binary | std::ios_base::out );
+                if ( !serializationoutput )
+                {
+                    log_error << "[Editor]: cannot write to serialization file '" << file << "'" << std::endl;
+                    serializationoutput.close();
+                    NewtonReleaseCollision( p_world, p_collision );
+                }
+
+                NewtonTreeCollisionSerialize( p_collision, physSerializationCallback, &serializationoutput );
+                serializationoutput.close();
+                NewtonReleaseCollision( p_world, p_collision );
+            }
+        }
+    }
+
+    // write out the level file
+    {
+        ScopedGameUpdateLock lock;
+
+        log_info << "[Editor]: exporting level  files ..." << std::endl;
+
+        std::string levelfolder = yaf3d::Application::get()->getMediaPath() + "level/";
+
+        // get the entities
+        std::vector< yaf3d::BaseEntity* > levelentities;
+        yaf3d::EntityManager::get()->getAllEntities( levelentities );
+
+        // standalone mode
+        {
+            std::vector< yaf3d::BaseEntity* > entities;
+            for ( std::size_t cnt = 0; cnt < levelentities.size(); cnt++ )
+            {
+                std::string type = levelentities[ cnt ]->getTypeName();
+
+                // skip physics entities, they are editor internal entities
+                if ( type == ENTITY_NAME_PHYSSTATGEOM )
+                    continue;
+
+                yaf3d::BaseEntityFactory* p_factory = yaf3d::EntityManager::get()->getEntityFactory( type );
+                assert( p_factory && "invalid entity factory!" );
+
+                if ( p_factory->getCreationPolicy() & yaf3d::BaseEntityFactory::Standalone )
+                    entities.push_back( levelentities[ cnt ] );
+            }
+            FileOutputLevel out;
+            out.write( entities, levelfolder + "standalone/" + levelfile, levelname, false );
+        }
+
+        // client mode
+        {
+            std::vector< yaf3d::BaseEntity* > entities;
+            for ( std::size_t cnt = 0; cnt < levelentities.size(); cnt++ )
+            {
+                std::string type = levelentities[ cnt ]->getTypeName();
+
+                // skip physics entities, they are editor internal entities
+                if ( type == ENTITY_NAME_PHYSSTATGEOM )
+                    continue;
+
+                yaf3d::BaseEntityFactory* p_factory = yaf3d::EntityManager::get()->getEntityFactory( type );
+                assert( p_factory && "invalid entity factory!" );
+
+                if ( p_factory->getCreationPolicy() & yaf3d::BaseEntityFactory::Client )
+                    entities.push_back( levelentities[ cnt ] );
+            }
+            FileOutputLevel out;
+            out.write( entities, levelfolder + "client/" + levelfile, levelname, false );
+        }
+
+        // server mode
+        {
+            std::vector< yaf3d::BaseEntity* > entities;
+            for ( std::size_t cnt = 0; cnt < levelentities.size(); cnt++ )
+            {
+                std::string type = levelentities[ cnt ]->getTypeName();
+
+                // skip physics entities, they are editor internal entities
+                if ( type == ENTITY_NAME_PHYSSTATGEOM )
+                    continue;
+
+                yaf3d::BaseEntityFactory* p_factory = yaf3d::EntityManager::get()->getEntityFactory( type );
+                assert( p_factory && "invalid entity factory!" );
+
+                if ( p_factory->getCreationPolicy() & yaf3d::BaseEntityFactory::Server )
+                    entities.push_back( levelentities[ cnt ] );
+            }
+            FileOutputLevel out;
+            out.write( entities, levelfolder + "server/" + levelfile, levelname, false );
+        }
+    }
+
+    log_info << "[Editor]: level " << levelname << " successfully published" << std::endl;
+
+    wxMessageBox( "Level successfully published.", "Publish Level" );
 }
 
 void MainFrame::onMenuitemViewStatsClick( wxCommandEvent& event )

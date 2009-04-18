@@ -121,11 +121,11 @@ class PanelEntities: public wxPanel
         //! wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_ENTITY_DELETE
         void                                        onButtonEntityDeleteClick( wxCommandEvent& event );
 
-        //! wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_ENTITY_UPDATE
-        void                                        onButtonEntityUpdateClick( wxCommandEvent& event );
+        //! wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_ADD_PHYS_ENT
+        void                                        onButtonAddPhysicsEntityClick( wxCommandEvent& event );
 
-        //! wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_CHECKBOX_ENTITY_AUTO_UPDATE
-        void                                        onCheckboxEntityAutoUpdateClick( wxCommandEvent& event );
+        //! wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_CHECKBOX_SHOW_PHYS_ENT
+        void                                        onCheckboxShowPhysicsEntitiesClick( wxCommandEvent& event );
 
         //! wxEVT_PG_CHANGED event handler for ID_PROPGRID_ENTITY_PROPS
         void                                        onPropertyGridChange( wxPropertyGridEvent& event );
@@ -137,9 +137,9 @@ class PanelEntities: public wxPanel
 
         wxComboBox*                                 _p_comboEntityTypes;
 
-        wxButton*                                   _p_btnEntityUpdate;
+        wxButton*                                   _p_btnAddPhysEntity;
 
-        wxCheckBox*                                 _p_checkEntityAutoUpdate;
+        wxCheckBox*                                 _p_checkShowPhysEntities;
 
         wxTreeCtrl*                                 _p_treeEntity;
 
@@ -166,8 +166,8 @@ class PanelEntities: public wxPanel
             ID_BUTTON_ENTITY_MOVE_UP        = 10024,
             ID_BUTTON_ENTITY_MOVE_DOWN      = 10025,
             ID_BUTTON_ENTITY_DELETE         = 10026,
-            ID_BUTTON_ENTITY_UPDATE         = 10027,
-            ID_CHECKBOX_ENTITY_AUTO_UPDATE  = 10028,
+            ID_BUTTON_ADD_PHYS_ENT          = 10027,
+            ID_CHECKBOX_SHOW_PHYS_ENT       = 10028,
             ID_TREECTRL                     = 10029,
             ID_LISTCTRL                     = 10030,
             ID_PROPGRID_PROPS               = 10031
