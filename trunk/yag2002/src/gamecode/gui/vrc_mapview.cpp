@@ -130,7 +130,8 @@ void EnMapView::destroyMapView()
         {
             // destroy imageset
             CEGUI::ImagesetManager::getSingleton().destroyImageset( std::string( MAPVIEW_WND ) + _minMapFile );
-            vrc::gameutils::GuiUtils::get()->getMainGuiWindow()->removeChildWindow( _p_wnd );
+            if ( vrc::gameutils::GuiUtils::get()->getMainGuiWindow() )
+                vrc::gameutils::GuiUtils::get()->getMainGuiWindow()->removeChildWindow( _p_wnd );
             CEGUI::WindowManager::getSingleton().destroyWindow( _p_wnd );
         }
         catch ( const CEGUI::Exception& e )

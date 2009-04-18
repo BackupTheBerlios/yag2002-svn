@@ -132,7 +132,7 @@ void PhysicsVisitor::apply( osg::Geode& node )
                         case osg::PrimitiveSet::POLYGON:
 
                         default:
-                            assert( NULL && "*** unsupported primitive set for physics! currently only TRIANGLE and TRIANGLE_STRIP types are supported." );
+                            log_error << "Physics Serializer: unsupported primitive set for physics geometry! currently only TRIANGLES and TRIANGLE_STRIP types are supported." << std::endl;
                     }
                 }
             }
@@ -182,27 +182,24 @@ void PhysicsVisitor::buildTrianlgeStrip( const osg::PrimitiveSet* p_set, osg::Ar
     osg::Vec3Array*   p_vertVecs  = static_cast< osg::Vec3Array* >( p_verts );
     unsigned int      numIndices = p_set->getNumIndices();
     osg::Vec3f        triVerts[ 3 ];
-    unsigned int odd, even;
     // destripify the mesh and build triangle faces
     for( unsigned int vindex = 0; vindex < numIndices - 2; ++vindex )
     {
-        if ( vindex % 2 )
-        {
-            odd  = 1; even = 0;
-        }
+        unsigned int v1, v2, v3;
+        v3 = vindex + 2;
+        if ( ( vindex % 2 ) == 0)
+            v1 = vindex + 0, v2 = vindex + 1;
         else
-        {
-            odd  = 0; even = 1;
-        }
+            v1 = vindex + 1, v2 = vindex + 0;
 
-        triVerts[ 2 ] = ( *p_vertVecs )[ p_indices ? p_indices->index( vindex + ( 1 * odd ) + ( 0 * even ) ) : p_set->index( vindex + ( 1 * odd ) + ( 0 * even ) ) ];
-        triVerts[ 2 ] = triVerts[ 2 ] * mat;
+        triVerts[ 0 ] = ( *p_vertVecs )[ p_indices ? p_indices->index( v1 ) : p_set->index( v1 ) ];
+        triVerts[ 0 ] = triVerts[ 0 ] * mat;
 
-        triVerts[ 1 ] = ( *p_vertVecs )[ p_indices ? p_indices->index( vindex + ( 0 * odd ) + ( 2 * even ) ) : p_set->index( vindex + ( 0 * odd ) + ( 2 * even ) ) ];
+        triVerts[ 1 ] = ( *p_vertVecs )[ p_indices ? p_indices->index( v2 ) : p_set->index( v2 ) ];
         triVerts[ 1 ] = triVerts[ 1 ] * mat;
 
-        triVerts[ 0 ] = ( *p_vertVecs )[ p_indices ? p_indices->index( vindex + ( 2 * odd ) + ( 1 * even ) ) : p_set->index( vindex + ( 2 * odd ) + ( 1 * even ) ) ];
-        triVerts[ 0 ] = triVerts[ 0 ] * mat;
+        triVerts[ 2 ] = ( *p_vertVecs )[ p_indices ? p_indices->index( v3 ) : p_set->index( v3 ) ];
+        triVerts[ 2 ] = triVerts[ 2 ] * mat;
 
         // create collision face
         NewtonTreeCollisionAddFace( _p_collision, 3, ( float* )triVerts, 12, _attribute );
