@@ -40,7 +40,8 @@ YAF3D_IMPL_ENTITYFACTORY( PhysicsStaticGeomEntityFactory )
 class GeodeVisitor : public osg::NodeVisitor
 {
     public:
-                                        GeodeVisitor( unsigned int geodemask ) :
+                                        GeodeVisitor( osg::NodeVisitor::TraversalMode tm, unsigned int geodemask ) :
+                                         osg::NodeVisitor( tm ),
                                          _nodeMask( geodemask )
                                         {
                                         }
@@ -118,7 +119,7 @@ void EnPhysicsStaticGeom::handleNotification( const yaf3d::EntityNotification& n
             setTransformation();
 
             // set node mask
-            GeodeVisitor gvis( _materialID );
+            GeodeVisitor gvis( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN, _materialID );
             gvis.apply( *getTransformationNode() );
         }
         break;
@@ -146,7 +147,7 @@ void EnPhysicsStaticGeom::initialize()
     if ( _mesh.valid() )
         getTransformationNode()->addChild( _mesh );
 
-    GeodeVisitor gvis( _materialID );
+    GeodeVisitor gvis( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN, _materialID );
     gvis.apply( *getTransformationNode() );
 
     yaf3d::EntityManager::get()->registerNotification( this, true );
@@ -158,7 +159,8 @@ osg::Node* EnPhysicsStaticGeom::setupMesh()
 {
     osg::Node* p_node;
 
-    p_node = yaf3d::LevelManager::get()->loadMesh( _meshFile, true );
+    // do not cache the geoms, every geom has an own node mask!
+    p_node = yaf3d::LevelManager::get()->loadMesh( _meshFile, false );
 
     if ( !p_node )
     {
