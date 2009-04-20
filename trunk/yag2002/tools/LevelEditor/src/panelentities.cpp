@@ -907,7 +907,7 @@ void PanelEntities::onButtonEntityPasteClick( wxCommandEvent& event )
                 return;
 
             // clone it now
-            p_entity = p_entity->clone( p_info->getEntityInstanceName() + "_new", yaf3d::LevelManager::get()->getEntityNodeGroup().get() );
+            p_entity = p_entity->clone( p_info->getEntityInstanceName() + "_new" );
             // initialization of entity must happen in game thread
             _p_gameInterface->sendCmd( GameInterface::CMD_INIT_ENTITY, p_entity );
 
@@ -1134,8 +1134,8 @@ void PanelEntities::onButtonAddPhysicsEntityClick( wxCommandEvent& event )
         }
 
         // add a tree item for new entity
-        int         icon       = TREE_ICON_ENTITY;
         std::string entityname = p_newentity->getInstanceName();
+        int         icon       = TREE_ICON_PHYS_ENTITY;
 
         wxTreeItemId selection = _p_treeEntity->GetSelection();
         if ( selection.IsOk() )
