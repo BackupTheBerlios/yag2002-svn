@@ -169,16 +169,14 @@ class BaseEntity
 
         /**
         * Clone this entity and name it instanceName.
-        * Cloning an entity means that also the accociated scenegraph node is cloned.
-        * If p_scenegroup is not NULL then the cloned scene node will be added to this group.
-        * If p_scenegroup is NULL then the cloned scene node will be added to clonee's parent group thus getting a sibling.
+        * Cloning an entity does not clone the accociated scenegraph node!
         */
-        virtual BaseEntity*                         clone( const std::string& instanceName, osg::Group* p_scenegroup = NULL );
+        virtual BaseEntity*                         clone( const std::string& instanceName );
 
         /**
         * A convenient way to clone and initialize / post-initialize an entity.
         */
-        virtual BaseEntity*                         cloneAndInitialize( const std::string& instanceName, osg::Group* p_scenegroup = NULL );
+        virtual BaseEntity*                         cloneAndInitialize( const std::string& instanceName );
 
         /**
         * Override and return false if the entitiy does not need transformation.

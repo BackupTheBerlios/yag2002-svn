@@ -94,7 +94,7 @@ void EnGeomEmitter::updateEntity( float deltaTime )
         // clone the found geom
         std::stringstream geomcnt;
         geomcnt << _geomCount;
-        p_entity = p_entity->clone( p_entity->getInstanceName() + geomcnt.str(), yaf3d::Application::get()->getSceneRootNode() );
+        p_entity = p_entity->clone( p_entity->getInstanceName() + geomcnt.str() );
 
         // set a random position before entity gets initialized
         osg::Vec3f randPos( ( float )( ( rand() % ( int ) _dimensions.x() ) - _dimensions.x() ), ( float )( ( rand() % ( int )_dimensions.y() ) - _dimensions.y() ), ( float )( ( rand() % ( int )_dimensions.z() ) - _dimensions.z() ) );

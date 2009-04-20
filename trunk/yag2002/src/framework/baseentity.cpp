@@ -72,7 +72,7 @@ BaseEntity::~BaseEntity()
     delete _p_attributeManager;
 }
 
-BaseEntity* BaseEntity::clone( const std::string& instanceName, osg::Group* p_scenegroup )
+BaseEntity* BaseEntity::clone( const std::string& instanceName )
 {
     BaseEntity* p_entity = EntityManager ::get()->createEntity( _typeName, instanceName );
     assert( p_entity );
@@ -80,30 +80,12 @@ BaseEntity* BaseEntity::clone( const std::string& instanceName, osg::Group* p_sc
     // copy attribute values
     p_entity->getAttributeManager() = getAttributeManager();
 
-    // copy transform node if one exists
-    if ( _p_transformNode.valid() )
-    {
-        osg::PositionAttitudeTransform* p_trans = new osg::PositionAttitudeTransform( *_p_transformNode /*, osg::CopyOp::DEEP_COPY_ALL*/ );
-        p_entity->setTransformationNode( p_trans );
-        if ( !p_scenegroup )
-        {
-            if ( _p_transformNode->getParents().size() )
-                EntityManager::get()->addToScene( p_entity, _p_transformNode->getParent( 0 ) );
-            else
-                log_warning << "BaseEntity: clonee has no transformation node parent" << std::endl;
-        }
-        else
-        {
-            p_scenegroup->addChild( p_trans );
-        }
-    }
-
     return p_entity;
 }
 
-BaseEntity* BaseEntity::cloneAndInitialize( const std::string& instanceName, osg::Group* p_scenegroup )
+BaseEntity* BaseEntity::cloneAndInitialize( const std::string& instanceName )
 {
-    BaseEntity* p_entity = clone( instanceName, p_scenegroup );
+    BaseEntity* p_entity = clone( instanceName );
     if ( !p_entity )
         return NULL;
 
