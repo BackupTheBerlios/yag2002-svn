@@ -129,10 +129,13 @@ void EnPlayer::initialize()
             _p_playerImpl = new PlayerImplStandalone( this );
             _p_playerImpl->initialize();
 
+//! NOTE: the inventory functionality is not available in standalone mode! this code is only for development.
+#if 0
             // create the player inventory for standalone mode
             _p_userInventory = new UserInventory( 0 );
             // create the property gui
             _p_propertyGui = new PropertyGui( _p_userInventory );
+#endif
             // set the inventory in player utils
             gameutils::PlayerUtils::get()->setPlayerInventory( _p_userInventory );
         }
