@@ -89,7 +89,7 @@ void MailboxGui::setupGui()
             _p_btnOpenMailbox->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::MailboxGui::onClickedOpenMailbox, this ) );
             _p_btnOpenMailbox->subscribeEvent( CEGUI::PushButton::EventMouseEnters, CEGUI::Event::Subscriber( &vrc::MailboxGui::onHoverOpenMailbox, this ) );
             _p_btnOpenMailbox->setStandardImageryEnabled( false );
-            _p_btnOpenMailbox->setPosition( CEGUI::Point( 0.005f, 0.5f ) );
+            _p_btnOpenMailbox->setPosition( CEGUI::Point( 0.005f, 0.6f ) );
             // get the imageset with the images and set the button size
             CEGUI::Imageset* p_iset = vrc::gameutils::GuiUtils::get()->getCustomImageSet();
             float pixwidth  = p_iset->getImageWidth( IMAGE_NAME_MAILBOX_NORMAL );

@@ -163,8 +163,11 @@ void EnPlayer::initialize()
                     // set the inventory in player utils
                     gameutils::PlayerUtils::get()->setPlayerInventory( _p_userInventory );
 
+//! NOTE: temporarily disable the propery gui in client mode, we will enable it later.
+#if 0
                     // create the property gui with given user inventory
                     _p_propertyGui = new PropertyGui( _p_userInventory );
+#endif
 
                     // create the mailbox gui
                     _p_mailboxGui = new MailboxGui;
