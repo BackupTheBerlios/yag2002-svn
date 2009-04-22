@@ -346,6 +346,10 @@ void ImplChatNetworkingVRC::leave()
 
 void ImplChatNetworkingVRC::postChatText( const CEGUI::String& text, const std::string& recipient )
 {
+    // /nick command is only available if the server has no account management enabled!
+    bool auth = true;
+    yaf3d::Configuration::get()->getSettingValue( YAF3D_GS_SERVER_AUTH, auth );
+
     // check for commands
     if ( !text.compare( 0, 1, "/" ) )
     {
@@ -370,7 +374,7 @@ void ImplChatNetworkingVRC::postChatText( const CEGUI::String& text, const std::
 
         }
         // all commands with one single argument go here
-        else if ( ( args.size() > 1 ) && ( ( args[ 0 ] == "/nick" ) || ( args[ 0 ] == "/NICK" ) ) )
+        else if ( ( !auth ) && ( args.size() > 1 ) && ( ( args[ 0 ] == "/nick" ) || ( args[ 0 ] == "/NICK" ) ) )
         {
             tChatData chatdata;
             chatdata._sessionID = _clientSID;

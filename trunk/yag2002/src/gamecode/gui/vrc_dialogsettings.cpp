@@ -165,8 +165,8 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
             _p_keyJump         = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_jump" ) );
 
             _p_keyCameraMode   = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_camera" ) );
-            _p_keyCameraMode->setVisible( false );
-            _p_keyCameraMode->disable();
+            //_p_keyCameraMode->setVisible( false );
+            //_p_keyCameraMode->disable();
 
             _p_keyChatMode     = static_cast< CEGUI::PushButton* >( p_paneControl->getChild( SDLG_PREFIX "btn_chatmode" ) );
 
@@ -270,8 +270,7 @@ bool DialogGameSettings::initialize( const std::string& layoutfile )
     _p_keyMoveLeft->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedLeft, this ) );
     _p_keyMoveRight->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedRight, this ) );
     _p_keyJump->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedJump, this ) );
-    //! NOTE: the camera switch mode is disabled until we have implemented a camera physics in order to avoid going through meshes!
-    //_p_keyCameraMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedCameraMode, this ) );
+    _p_keyCameraMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedCameraMode, this ) );
     _p_keyChatMode->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onClickedChatMode, this ) );
     _p_mouseSensivity->subscribeEvent( CEGUI::Scrollbar::EventScrollPositionChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onMouseSensitivityChanged, this ) );
     _p_enableFullscreen->subscribeEvent( CEGUI::Checkbox::EventCheckStateChanged, CEGUI::Event::Subscriber( &vrc::DialogGameSettings::onFullscreenChanged, this ) );

@@ -29,10 +29,11 @@
  ################################################################*/
 
 //! Camera switch functionality is currently only available in development build
+//! NOTE (04/22/2009) uppon many requests, the camera mode was re-enabled, although no cam physics exists!
 #ifndef VRC_BUILD_PUBLISH
     #define ENABLE_CAM_SWITCH   1
 #else
-    #define ENABLE_CAM_SWITCH   0
+    #define ENABLE_CAM_SWITCH   1
 #endif
 
 
@@ -202,7 +203,6 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     //--------
     if ( keyDown || mouseButtonPush )
     {
-//! NOTE the camera switch function is in publish build disabled until we have implemented camera physics
 #if ENABLE_CAM_SWITCH
         // change camera mode
         if ( key == _keyCodeCameraMode )
@@ -248,7 +248,6 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
     }
     else if ( keyUp || mouseButtonRelease )
     {
-//! NOTE the camera switch function is in publish build disabled until we have implemented camera physics
 #if ENABLE_CAM_SWITCH
         if ( key == _keyCodeCameraMode )
             _camSwitch = false;
