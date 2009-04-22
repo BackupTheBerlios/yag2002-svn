@@ -320,19 +320,19 @@ osgDB::ReaderWriter::ReadResult ReaderPhysFS::readNode( const std::string& file,
     return p_reader->readNode( input, lopt );
 }
 
-osgDB::ReaderWriter::ReadResult ReaderPhysFS::readObject( std::istream& fin, const osgDB::ReaderWriter::Options* options ) const
+osgDB::ReaderWriter::ReadResult ReaderPhysFS::readObject( std::istream& /*fin*/, const osgDB::ReaderWriter::Options* /*options*/ ) const
 {
     assert( NULL && "not supported!" );
     return osgDB::ReaderWriter::ReadResult::ERROR_IN_READING_FILE;
 }
 
-osgDB::ReaderWriter::ReadResult ReaderPhysFS::readImage( std::istream& fin, const osgDB::ReaderWriter::Options* options ) const
+osgDB::ReaderWriter::ReadResult ReaderPhysFS::readImage( std::istream& /*fin*/, const osgDB::ReaderWriter::Options* /*options*/ ) const
 {
     assert( NULL && "not supported!" );
     return osgDB::ReaderWriter::ReadResult::ERROR_IN_READING_FILE;
 }
 
-osgDB::ReaderWriter::ReadResult ReaderPhysFS::readNode( std::istream& fin, const osgDB::ReaderWriter::Options* options ) const
+osgDB::ReaderWriter::ReadResult ReaderPhysFS::readNode( std::istream& /*fin*/, const osgDB::ReaderWriter::Options* /*options*/ ) const
 {
     assert( NULL && "not supported!" );
     return osgDB::ReaderWriter::ReadResult::ERROR_IN_READING_FILE;

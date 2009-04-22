@@ -57,7 +57,7 @@ typedef struct _VFSInfo
 
 } VFSInfo;
 
-FMOD_RESULT F_CALLBACK fileOpenCallback( const char* p_name, int unicode, unsigned int* p_filesize, void** pp_handle, void** pp_userdata )
+FMOD_RESULT F_CALLBACK fileOpenCallback( const char* p_name, int /*unicode*/, unsigned int* p_filesize, void** pp_handle, void** pp_userdata )
 {
     if ( !p_name )
         return FMOD_ERR_INVALID_PARAM;
@@ -79,7 +79,7 @@ FMOD_RESULT F_CALLBACK fileOpenCallback( const char* p_name, int unicode, unsign
     return FMOD_OK;
 }
 
-FMOD_RESULT F_CALLBACK fileCloseCallback( void* p_handle, void* p_userdata )
+FMOD_RESULT F_CALLBACK fileCloseCallback( void* p_handle, void* /*p_userdata*/ )
 {
     if ( !p_handle )
         return FMOD_ERR_INVALID_PARAM;
@@ -91,7 +91,7 @@ FMOD_RESULT F_CALLBACK fileCloseCallback( void* p_handle, void* p_userdata )
     return FMOD_OK;
 }
 
-FMOD_RESULT F_CALLBACK fileReadCallback( void* p_handle, void* p_buffer, unsigned int sizebytes, unsigned int* p_bytesread, void* p_userdata )
+FMOD_RESULT F_CALLBACK fileReadCallback( void* p_handle, void* p_buffer, unsigned int sizebytes, unsigned int* p_bytesread, void* /*p_userdata*/ )
 {
     if ( !p_handle )
         return FMOD_ERR_INVALID_PARAM;
@@ -117,7 +117,7 @@ FMOD_RESULT F_CALLBACK fileReadCallback( void* p_handle, void* p_buffer, unsigne
     return FMOD_OK;
 }
 
-FMOD_RESULT F_CALLBACK fileSeekCallback( void* p_handle, unsigned int pos, void* p_userdata )
+FMOD_RESULT F_CALLBACK fileSeekCallback( void* p_handle, unsigned int pos, void* /*p_userdata*/ )
 {
     if ( !p_handle )
         return FMOD_ERR_INVALID_PARAM;

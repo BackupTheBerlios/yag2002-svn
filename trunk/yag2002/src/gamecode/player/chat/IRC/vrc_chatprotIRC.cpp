@@ -102,7 +102,7 @@ void event_join( irc_session_t * session, const char * /*event*/, const char * o
     p_ctx->_p_handler->joined( params[ 0 ], origin );
 }
 
-void event_quit( irc_session_t * session, const char * /*event*/, const char * origin, const char ** params, unsigned int /*count*/ )
+void event_quit( irc_session_t * session, const char * /*event*/, const char * origin, const char ** /*params*/, unsigned int /*count*/ )
 {
     if ( !origin )
         return;
@@ -233,7 +233,7 @@ void event_channel( irc_session_t * session, const char * /*event*/, const char 
 
     std::string sender( origin ? origin : "{someone}" );
     IRCSessionContext* p_ctx = static_cast< IRCSessionContext* >( irc_get_ctx( session ) );
-    
+
     // the string conversion in CEGUI can fail, we skip the message in this situation
     try
     {

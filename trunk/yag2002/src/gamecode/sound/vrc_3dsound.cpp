@@ -2,8 +2,8 @@
  *  YAG2002 (http://yag2002.sourceforge.net)
  *  Copyright (C) 2005-2006, A. Botorabi
  *
- *  This program is free software; you can redistribute it and/or 
- *  modify it under the terms of the GNU Lesser General Public 
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
  *  License version 2.1 as published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -11,11 +11,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public 
- *  License along with this program; if not, write to the Free 
- *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA  02111-1307  USA
- * 
+ *
  ****************************************************************/
 
 /*###############################################################
@@ -23,7 +23,7 @@
  #
  #   date of creation:  03/06/2005
  #
- #   author:            boto (botorabi at users.sourceforge.net) 
+ #   author:            boto (botorabi at users.sourceforge.net)
  #
  #
  ################################################################*/
@@ -83,7 +83,7 @@ void En3DSound::handleNotification( const yaf3d::EntityNotification& notificatio
     switch( notification.getId() )
     {
         case YAF3D_NOTIFY_MENU_ENTER:
-        {   
+        {
             stopPlaying( true );
         }
         break;
@@ -133,7 +133,6 @@ void En3DSound::setupSound()
     // check if sound is enabled in menu system
     bool skiptypecheck = false;
     unsigned int soundgroup = yaf3d::SoundManager::get()->getSoundGroupIdFromString( _soundGroup );
-    bool sndenable;
     std::string settingskey;
     if ( soundgroup == yaf3d::SoundManager::SoundGroupMusic )
         settingskey = VRC_GS_MUSIC_ENABLE;
@@ -146,6 +145,7 @@ void En3DSound::setupSound()
 
     if ( !skiptypecheck )
     {
+        bool sndenable = false;
         yaf3d::Configuration::get()->getSettingValue( settingskey, sndenable );
         if ( _soundID > 0 )
         {
@@ -172,7 +172,7 @@ void En3DSound::setupSound()
     else if ( _soundID > 0 )
         return;
 
-    try 
+    try
     {
         unsigned int flags = 0;
         if ( _loop )
@@ -192,7 +192,7 @@ void En3DSound::setupSound()
         pos.z = _position.z();
         _p_channel->set3DAttributes( &pos, NULL );
         _p_channel->set3DMinMaxDistance( _minDistance, _maxDistance );
-    } 
+    }
     catch ( const yaf3d::SoundException& e )
     {
         log_error << ENTITY_NAME_3DSOUND << ":" << getInstanceName() << "  error loading sound file " << _soundFile << std::endl;

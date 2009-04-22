@@ -247,7 +247,7 @@ bool Physics::serialize( const std::string& meshFile, const std::string& outputF
     NewtonTreeCollisionSerialize( p_collision, serializationCallback, &serializationoutput );
     serializationoutput.close();
     NewtonReleaseCollision( _p_world, p_collision );
-    
+
     return true;
 }
 
@@ -329,7 +329,7 @@ bool Physics::buildStaticGeometry( osg::Group* p_root, const std::string& levelF
     NewtonSetWorldSize( _p_world, bmin, bmax );
 
     // set the leave callback
-    NewtonSetBodyLeaveWorldEvent ( _p_world, Physics::bodyLeftPhyiscsWorld ); 
+    NewtonSetBodyLeaveWorldEvent ( _p_world, Physics::bodyLeftPhyiscsWorld );
 
     return true;
 }
@@ -665,7 +665,7 @@ int Physics::levelContactProcess( const NewtonMaterial* p_material, const Newton
     return 1;
 }
 
-void Physics::bodyLeftPhyiscsWorld( const NewtonBody* body )
+void Physics::bodyLeftPhyiscsWorld( const NewtonBody* /*body*/ )
 {
     log_warning << "Physics: body left the physics world!" << std::endl;
 }
