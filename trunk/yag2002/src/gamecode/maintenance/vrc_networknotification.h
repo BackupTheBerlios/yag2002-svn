@@ -55,7 +55,7 @@ class EnNetworkNotification :  public yaf3d::BaseEntity
         void                                        initialize();
 
         //! This entity needs no transformation
-        inline const bool                           isTransformable() const;
+        inline bool                                 isTransformable() const;
 
         //! Return the version string
         inline const std::string&                   getVersionInfo();
@@ -140,7 +140,7 @@ class NetworkNotificationEntityFactory : public yaf3d::BaseEntityFactory
 };
 
 //! Inline methods
-inline const bool EnNetworkNotification::isTransformable() const 
+inline bool EnNetworkNotification::isTransformable() const
 { 
     return false; 
 }

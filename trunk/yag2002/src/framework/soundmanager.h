@@ -97,19 +97,19 @@ class SoundManager : public Singleton< SoundManager >
             public:
 
                 //! Get sound object
-                FMOD::Sound* const                      getSound() const
+                FMOD::Sound*                            getSound() const
                                                         {
                                                             return _p_sound;
                                                         }
 
                 //! Get sound channel
-                FMOD::Channel* const                    getChannel() const
+                FMOD::Channel*                          getChannel() const
                                                         {
                                                             return _p_channel;
                                                         }
 
                 //! Get channel group
-                FMOD::ChannelGroup* const               getChannelGroup() const
+                FMOD::ChannelGroup*                     getChannelGroup() const
                                                         {
                                                             return _p_channelGroup;
                                                         }

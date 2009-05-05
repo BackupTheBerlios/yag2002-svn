@@ -55,7 +55,7 @@ class EnCamera :  public yaf3d::BaseEntity
         void                                        initialize();
 
         //! This entity does not need a transformation node.
-        const bool                                  isTransformable() const { return false; }
+        bool                                        isTransformable() const { return false; }
 
         //! Set the persistence flag. 
         //! Note: this flag is checked by framework on destruction of a level.
@@ -129,7 +129,7 @@ class EnCamera :  public yaf3d::BaseEntity
         void                                        updateCameraView( bool forceupdate = false );
 
         //! This entity can be either persistent or not!
-        const bool                                  isPersistent() const { return _isPersistent; }
+        bool                                        isPersistent() const { return _isPersistent; }
 
     protected:
 

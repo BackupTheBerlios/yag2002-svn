@@ -132,15 +132,17 @@ void MailboxGui::mainOnClose()
     _p_mailboxMain->getFrame()->hide();
     _p_btnOpenMailbox->enable();
 
-    // unlock the player control
-    unsigned int ctrlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
-    ctrlmodes &= ~( gameutils::PlayerUtils::eLockPicking | gameutils::PlayerUtils::eLockCameraSwitch | gameutils::PlayerUtils::eLockLooking | gameutils::PlayerUtils::eLockMovement );
-    gameutils::PlayerUtils::get()->setPlayerControlModes( ctrlmodes );
+    // update the player control modes
+    unsigned int controlmodes = gameutils::PlayerUtils::get()->resetPlayerControlMode( gameutils::PlayerUtils::eMailBoxOpen );
 }
 
 bool MailboxGui::onClickedOpenMailbox( const CEGUI::EventArgs& /*arg*/ )
 {
     if ( !_p_mailboxMain->getFrame() )
+        return true;
+
+    unsigned int ctrlmodes = gameutils::PlayerUtils::get()->setPlayerControlMode( gameutils::PlayerUtils::eMailBoxOpen );
+    if ( !( ctrlmodes & gameutils::PlayerUtils::eMailBoxOpen ) )
         return true;
 
     // play click sound

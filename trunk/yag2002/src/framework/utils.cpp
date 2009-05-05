@@ -43,6 +43,7 @@
  #include <dirent.h>
  #include <spawn.h>
  #include <signal.h>
+ #include <limits.h>
 #endif
 
 

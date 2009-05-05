@@ -97,27 +97,28 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
 
     float deltaTime         = getPlayerEntity()->getDeltaTime();
     unsigned int key        = 0;
+    unsigned int orgkey     = 0;
 
     if ( keyDown || keyUp )
         key = kcode;
     else if ( mouseButtonPush || mouseButtonRelease )
         key = mouseBtn;
 
-    // check the control locks
-    if ( controlmodes & gameutils::PlayerUtils::eLockCameraSwitch )
-    {
-        if ( key == _keyCodeChatMode )
-            key = 0;
-    }
+    // unfiltered key code
+    orgkey = key;
 
-    if ( controlmodes & gameutils::PlayerUtils::eLockMovement )
+    // check the control mode and filter the key
+    if ( controlmodes & ( gameutils::PlayerUtils::eMailBoxOpen | gameutils::PlayerUtils::eInventoryOpen ) )
     {
         if ( 
+            ( key == _keyCodeChatMode     ) ||
             ( key == _keyCodeMoveForward  ) ||
             ( key == _keyCodeMoveBackward ) ||
             ( key == _keyCodeMoveRight    ) ||
             ( key == _keyCodeMoveLeft     ) ||
-            ( key == _keyCodeJump         )
+            ( key == _keyCodeJump         ) ||
+            ( key == SDLK_RETURN          ) ||
+            ( key == SDLK_KP_ENTER        )
             )
             key = 0;
     }
@@ -128,13 +129,10 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         getPlayerImpl()->getChatManager()->activateBox( true, true );
         enable( false );
         _toggleChatMode = true;
-        // stop player and sound
-        getPlayerImpl()->getPlayerAnimation()->animIdle();
-        getPlayerImpl()->getPlayerPhysics()->stopMovement();
     }
 
     // show up the fps display
-    if ( keyDown && ( key == SDLK_F9 ) )
+    if ( keyDown && ( orgkey == SDLK_F9 ) )
     {
         // first check if the fps entity already exists
         EnFPSDisplay* p_fps = static_cast< EnFPSDisplay* >( yaf3d::EntityManager::get()->findEntity( ENTITY_NAME_FPSDISPLAY ) );
@@ -161,30 +159,35 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
         {
             if ( !_chatSwitch )
             {
-                // set the picking lock
-                unsigned int ctrlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
-                if ( !_toggleChatMode )
-                    ctrlmodes |= gameutils::PlayerUtils::eLockPicking;
-                else
-                    ctrlmodes &= ~( gameutils::PlayerUtils::eLockPicking );
-                gameutils::PlayerUtils::get()->setPlayerControlModes( ctrlmodes );
-
-                // this method has an side effect on _enable (see below)
-                enable( _toggleChatMode );
-                _toggleChatMode = !_toggleChatMode;
-                _chatSwitch = true;
-
-                // let the chat control know that we are in edit mode now
-                getPlayerImpl()->getChatManager()->activateBox( _toggleChatMode );
-
-                // continue the current movement when toggling from walk to edit mode
-                //  so allowing chatting during moving ( it was requested by the community )
                 if ( !_toggleChatMode )
                 {
+                    _chatSwitch = true;
+
+                    // check if we are allowed to change to chat mode
+                    unsigned int newmode = gameutils::PlayerUtils::get()->setPlayerControlMode( gameutils::PlayerUtils::eEditting );
+                    if ( newmode & gameutils::PlayerUtils::eEditting )
+                    {
+                        // let the chat control know that we are in edit mode now
+                        getPlayerImpl()->getChatManager()->activateBox( !_toggleChatMode );
+                    }
+                }
+                else
+                {
+                    // reset editting mode
+                    gameutils::PlayerUtils::get()->resetPlayerControlMode( gameutils::PlayerUtils::eEditting );
+                    getPlayerImpl()->getChatManager()->activateBox( !_toggleChatMode );
+
+                    // ensures continue the current movement when toggling from walk to edit mode
+                    //  so allowing chatting during moving ( it was requested by the community ), but toggling back stops movement
                     // stop player and sound
                     getPlayerImpl()->getPlayerAnimation()->animIdle();
                     getPlayerImpl()->getPlayerPhysics()->stopMovement();
                 }
+
+                // this method has an side effect on _enable (see below)
+                enable( _toggleChatMode );
+
+                _toggleChatMode = !_toggleChatMode;
             }
         }
     }
@@ -372,8 +375,8 @@ bool PlayerIHCharacterCameraCtrl< PlayerImplT >::handle( const osgGA::GUIEventAd
             getPlayerImpl()->getPlayerAnimation()->animIdle();
     }
 
-    // check if looking is locked
-    if ( !( controlmodes & gameutils::PlayerUtils::eLockLooking ) )
+    // check if looking is allowed
+    if ( !( controlmodes & ( gameutils::PlayerUtils::ePropertyBoxOpen | gameutils::PlayerUtils::eEditting ) ) )
     {
         // get the SDL event in order to extract mouse button and absolute / relative mouse movement coordinates out of it
         const SDL_Event& sdlevent = p_eventAdapter->getSDLEvent();

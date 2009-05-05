@@ -62,7 +62,7 @@ class EntityNotification
         virtual                                     ~EntityNotification() {}
 
         //! Return the notification id
-        const unsigned int                          getId() const
+        unsigned int                                getId() const
                                                     {
                                                         return _id;
                                                     }
@@ -182,14 +182,14 @@ class BaseEntity
         * Override and return false if the entitiy does not need transformation.
         * This method is called during entity creation e.g. by the level loader.
         */
-        virtual const bool                          isTransformable() const { return true; }
+        virtual bool                                isTransformable() const { return true; }
 
         /**
         * Override and return true if your entity must resist loading of new levels.
         * A persistent entity keeps its update and notification registration and is not deleted
         * by EntityManager when a new level is loaded.
         */
-        virtual const bool                          isPersistent() const { return false; }
+        virtual bool                                isPersistent() const { return false; }
 
     protected:
 

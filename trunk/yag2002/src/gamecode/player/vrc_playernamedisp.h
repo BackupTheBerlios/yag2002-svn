@@ -54,7 +54,7 @@ class EnPlayerNameDisplay : public yaf3d::BaseEntity
 
 
         //! This entity does not need a transform node
-        const bool                                  isTransformable() const { return false; }
+        bool                                        isTransformable() const { return false; }
 
         
         //! Initializing function, this is called after all engine modules are initialized and a map is loaded.

@@ -63,11 +63,11 @@ class EnMenu :  public yaf3d::BaseEntity
         void                                        initialize();
 
         //! This entity does not need a transform node, which would be created by level manager on loading
-        const bool                                  isTransformable() const { return false; }
+        bool                                        isTransformable() const { return false; }
 
         //! Make this entity persistent, thus on level changing this entity will not be deleted by entity manager
         //  and update and notification registries will be kept.
-        const bool                                  isPersistent() const { return true; }
+        bool                                        isPersistent() const { return true; }
 
     protected:
 

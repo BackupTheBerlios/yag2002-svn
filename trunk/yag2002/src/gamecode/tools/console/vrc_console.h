@@ -52,10 +52,10 @@ class EnConsole :  public yaf3d::BaseEntity
         void                                        initialize();
 
         //! Override this method and return true to get a persisten entity
-        const bool                                  isPersistent() const { return true; }
+        bool                                        isPersistent() const { return true; }
 
         //! This entity needs no transformation node is scenegraph
-        const bool                                  isTransformable() const { return false; }
+        bool                                        isTransformable() const { return false; }
 
         // Console specific public methods
         // -------------------------------

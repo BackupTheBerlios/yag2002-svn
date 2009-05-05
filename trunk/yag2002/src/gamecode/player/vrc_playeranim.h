@@ -100,7 +100,7 @@ class EnPlayerAnimation  : public yaf3d::BaseEntity
 
         //! This entity does not need a transform node, which would be created by level manager on loading
         //!   We create an own one which is given to player after initialization ( see setPlayer ).
-        const bool                                  isTransformable() const { return false; }
+        bool                                        isTransformable() const { return false; }
 
         //! Animation flags
         enum AnimationFlag

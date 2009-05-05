@@ -551,6 +551,75 @@ _playerControlModes( 0 )
 {
 }
 
+unsigned int PlayerUtils::setPlayerControlMode( unsigned int mode )
+{
+    unsigned int newmode = _playerControlModes;
+
+    if ( mode & _playerControlModes )
+        return _playerControlModes;
+
+    switch( mode )
+    {
+        case eChatBoxOpen:
+        {
+            if ( _playerControlModes & ( eMailBoxOpen | eInventoryOpen ) )
+                return _playerControlModes;
+
+            newmode |= eChatBoxOpen;
+        }
+        break;
+
+        case eMailBoxOpen:
+        {
+            if ( _playerControlModes & eInventoryOpen )
+                return _playerControlModes;
+
+            newmode |= eMailBoxOpen;
+        }
+        break;
+
+        case ePropertyBoxOpen:
+        {
+            if ( _playerControlModes & eEditting )
+                return _playerControlModes;
+
+            newmode |= ePropertyBoxOpen;
+        }
+        break;
+
+        case eInventoryOpen:
+        {
+            if ( _playerControlModes & eMailBoxOpen )
+                return _playerControlModes;
+
+            newmode |= eInventoryOpen;
+        }
+        break;
+
+        case eEditting:
+        {
+            if ( _playerControlModes & ( eMailBoxOpen | eInventoryOpen ) )
+                return _playerControlModes;
+
+            newmode |= eEditting;
+        }
+        break;
+
+        default:
+            assert( NULL && "invalid player control mode" );
+    }
+
+    _playerControlModes = newmode;
+
+    return newmode;
+}
+
+unsigned int PlayerUtils::resetPlayerControlMode( unsigned int mode )
+{
+    _playerControlModes &= ~( mode );
+    return _playerControlModes ;
+}
+
 bool PlayerUtils::getPlayerConfig( unsigned int mode, bool remote, std::string& levelfile, const std::string& cfgfile )
 {
     std::string cfg;

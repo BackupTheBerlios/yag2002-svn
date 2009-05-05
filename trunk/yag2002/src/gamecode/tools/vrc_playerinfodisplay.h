@@ -64,10 +64,10 @@ class EnPlayerInfoDisplay :  public yaf3d::BaseEntity, public gameutils::PlayerU
         void                                        handleNotification( const yaf3d::EntityNotification& notification );
 
         //! Override this method and return true to get a persisten entity
-        const bool                                  isPersistent() const { return true; }
+        bool                                        isPersistent() const { return true; }
 
         //! This entity needs no transformation
-        const bool                                  isTransformable() const { return false; }
+        bool                                        isTransformable() const { return false; }
 
         //! Internal usage
         bool                                        getPlayerEntity();

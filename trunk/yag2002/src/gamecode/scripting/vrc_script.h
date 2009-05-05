@@ -166,7 +166,7 @@ class Params: protected std::vector< BaseParam* >
         inline const std::type_info&            getTypeInfo( unsigned int index );
 
         //! Get count of parameters
-        inline const std::size_t                size() const;
+        inline std::size_t                      size() const;
 
         //! Return the number of passed parameters, this is used in exposed methods in order to support optional or default parameters.
         inline unsigned int                     getNumPassedParameters() const;

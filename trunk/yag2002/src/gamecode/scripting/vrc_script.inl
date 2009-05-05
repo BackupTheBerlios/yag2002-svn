@@ -73,7 +73,7 @@ const std::type_info& Params::getTypeInfo( unsigned int index )
     return at( index )->getTypeInfo();
 }
 
-const std::size_t Params::size() const
+std::size_t Params::size() const
 {
     return std::vector< BaseParam* >::size();
 }

@@ -44,7 +44,10 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <memory>
+#include <list>
 #include <map>
+#include <set>
 
 // ms windows stuff
 #ifdef WIN32

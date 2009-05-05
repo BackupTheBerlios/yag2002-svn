@@ -268,9 +268,9 @@ bool PropertyGui::onHoverOpen( const CEGUI::EventArgs& /*arg*/ )
 
 bool PropertyGui::onClickedOpen( const CEGUI::EventArgs& /*arg*/ )
 {
-    // check the player control mode, skip the open request if another gui is open
-    unsigned int ctrlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
-    if ( ctrlmodes & gameutils::PlayerUtils::eLockLooking )
+    // check the player control mode, skip the open request if not allowed
+    unsigned int ctrlmodes = gameutils::PlayerUtils::get()->setPlayerControlMode( gameutils::PlayerUtils::ePropertyBoxOpen );
+    if ( !( ctrlmodes & gameutils::PlayerUtils::ePropertyBoxOpen ) )
         return true;
 
     // update inventory
@@ -284,10 +284,6 @@ bool PropertyGui::onClickedOpen( const CEGUI::EventArgs& /*arg*/ )
     _p_frame->show();
     _p_btnOpen->hide();
 
-    // lock the player control
-    ctrlmodes |= ( gameutils::PlayerUtils::eLockPicking | gameutils::PlayerUtils::eLockCameraSwitch | gameutils::PlayerUtils::eLockLooking | gameutils::PlayerUtils::eLockMovement );
-    gameutils::PlayerUtils::get()->setPlayerControlModes( ctrlmodes );
-
     return true;
 }
 
@@ -296,10 +292,8 @@ bool PropertyGui::onClickedClose( const CEGUI::EventArgs& /*arg*/ )
     _p_frame->hide();
     _p_btnOpen->show();
 
-    // unlock the player control
-    unsigned int ctrlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
-    ctrlmodes &= ~( gameutils::PlayerUtils::eLockPicking | gameutils::PlayerUtils::eLockCameraSwitch | gameutils::PlayerUtils::eLockLooking | gameutils::PlayerUtils::eLockMovement );
-    gameutils::PlayerUtils::get()->setPlayerControlModes( ctrlmodes );
+    // update control modes
+    unsigned int ctrlmodes = gameutils::PlayerUtils::get()->resetPlayerControlMode( gameutils::PlayerUtils::ePropertyBoxOpen );
 
     return true;
 }

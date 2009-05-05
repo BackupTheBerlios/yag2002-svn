@@ -200,20 +200,22 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
 
         enum PlayerControlModes
         {
-            eLockMovement       = 0x0001,
-            eLockLooking        = 0x0002,
-            eLockCameraSwitch   = 0x0004,
-            eLockPicking        = 0x0008
+            eChatBoxOpen        = 0x0001,
+            eMailBoxOpen        = 0x0002,
+            ePropertyBoxOpen    = 0x0004,
+            eInventoryOpen      = 0x0008,
+            eEditting           = 0x0010
         };
 
-        //! Set the player input control modes, a combination of PlayerControlModes flags.
-        inline void                                 setPlayerControlModes( unsigned int modes );
+        //! Try to set the player input control mode, one of the PlayerControlModes enums.
+        //! If the control logic allows then the returned new control mode flags will contain the new mode.
+        unsigned int                                setPlayerControlMode( unsigned int mode );
+
+        //! Reset the player input control mode, one of the PlayerControlModes enums. Return the new control mode flags.
+        unsigned int                                resetPlayerControlMode( unsigned int mode );
 
         //! Get the player input control modes, a combination of PlayerControlModes flags.
         inline unsigned int                         getPlayerControlModes() const;
-
-        //! Is the interaction lock set?
-        bool                                        isLockInteraction() const;
 
         //! Retrieve player configuration file path depending on game settings and given game mode ( Server, Client, Standalone ) and
         //! in case of Client the remote flag determines local or remote client. If 'cfgfile' is not empty then that file is used for getting the names of the palyer config files.
@@ -296,11 +298,6 @@ class PlayerUtils : public yaf3d::Singleton< vrc::gameutils::PlayerUtils >
 
     friend class yaf3d::Singleton< vrc::gameutils::PlayerUtils >;
 };
-
-inline void PlayerUtils::setPlayerControlModes( unsigned int modes )
-{
-    _playerControlModes = modes;
-}
 
 inline unsigned int PlayerUtils::getPlayerControlModes() const
 {

@@ -66,7 +66,7 @@ class EnPlayerSound  : public yaf3d::BaseEntity
         virtual                                     ~EnPlayerSound();
 
         //! This entity does not need a transform node.
-        const bool                                  isTransformable() const { return false; }
+        bool                                        isTransformable() const { return false; }
 
         //! Set player association, player must call this in post-initialize phase
         void                                        setPlayer( BasePlayerImplementation* p_player );

@@ -63,7 +63,12 @@ bool EnPlayerPicker::PickerInputHandler::handle( const osgGA::GUIEventAdapter& e
 {
     // first check if picking is locked
     unsigned int ctrlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
-    if ( ctrlmodes & gameutils::PlayerUtils::eLockPicking )
+    unsigned int  modefilter = gameutils::PlayerUtils::ePropertyBoxOpen |
+                               gameutils::PlayerUtils::eInventoryOpen   |
+                               gameutils::PlayerUtils::eMailBoxOpen     |
+                               gameutils::PlayerUtils::eEditting;
+
+    if ( !( ctrlmodes & modefilter ) )
         return false;
 
     if ( !_p_entity->_p_pickedPlayer || !_enable )
@@ -228,9 +233,14 @@ void EnPlayerPicker::checkPicking()
         return;
 
     // check for ego and player control mode
-    unsigned int ctrlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
+    unsigned int ctrlmodes  = gameutils::PlayerUtils::get()->getPlayerControlModes();
+    unsigned int modefilter = gameutils::PlayerUtils::ePropertyBoxOpen |
+                              gameutils::PlayerUtils::eInventoryOpen   |
+                              gameutils::PlayerUtils::eMailBoxOpen     |
+                              gameutils::PlayerUtils::eEditting;
+
     if ( ( p_player->getPlayerImplementation()->getCameraMode() != BasePlayerImplementation::Ego ) ||
-         ( ctrlmodes & gameutils::PlayerUtils::eLockPicking ) )
+         ( ctrlmodes & modefilter ) )
     {
         if ( _p_pickedPlayer )
         {
@@ -380,6 +390,11 @@ void EnPlayerPicker::updateGui( tAccountInfoData& info )
     assert( _p_editboxOnlineTime );
     assert( _p_editboxAboutMe );
 
+    // first check if we are allowed to open the property gui
+    unsigned int newmodes = gameutils::PlayerUtils::get()->setPlayerControlMode( gameutils::PlayerUtils::ePropertyBoxOpen );
+    if ( !( newmodes & gameutils::PlayerUtils::ePropertyBoxOpen ) )
+        return;
+
     // format the online time and registration date
     std::vector< std::string > fields;
     std::string regdate, onlinetime, status;
@@ -421,12 +436,6 @@ void EnPlayerPicker::updateGui( tAccountInfoData& info )
     _p_editboxStatus->setText( status );
     _p_editboxAboutMe->setText( info._p_userDescription );
 
-
-    // lock the player control
-    unsigned int ctrlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
-    ctrlmodes |= ( gameutils::PlayerUtils::eLockPicking | gameutils::PlayerUtils::eLockCameraSwitch | gameutils::PlayerUtils::eLockLooking | gameutils::PlayerUtils::eLockMovement );
-    gameutils::PlayerUtils::get()->setPlayerControlModes( ctrlmodes );
-
     // make the mouse pointer visible
     gameutils::GuiUtils::get()->showMousePointer( true );
 
@@ -438,10 +447,8 @@ bool EnPlayerPicker::onClickedClose( const CEGUI::EventArgs& /*arg*/ )
 {
     _p_frame->hide();
 
-    // unlock the player control
-    unsigned int ctrlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
-    ctrlmodes &= ~( gameutils::PlayerUtils::eLockPicking | gameutils::PlayerUtils::eLockCameraSwitch | gameutils::PlayerUtils::eLockLooking | gameutils::PlayerUtils::eLockMovement );
-    gameutils::PlayerUtils::get()->setPlayerControlModes( ctrlmodes );
+    // reset the prop gui open mode
+    gameutils::PlayerUtils::get()->resetPlayerControlMode( gameutils::PlayerUtils::ePropertyBoxOpen );
 
     // hide the mouse pointer
     gameutils::GuiUtils::get()->showMousePointer( false );

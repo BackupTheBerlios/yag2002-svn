@@ -59,7 +59,7 @@ class EnNATServer : public yaf3d::BaseEntity, public yaf3d::SessionNotifyCallbac
     protected:
 
         //! This entity needs no transformation.
-        const bool                                  isTransformable() const { return false; }
+        bool                                        isTransformable() const { return false; }
 
         //! Override of method for getting notification when a client leaves the network
         void                                        onSessionLeft( int sessionID );

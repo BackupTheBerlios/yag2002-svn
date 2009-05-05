@@ -62,7 +62,7 @@ class EnSpawnPoint :  public yaf3d::BaseEntity
         const osg::Quat&                            getSpawnRotation() const { return _quat; }
 
         //! This entity needs not transformation
-        const bool                                  isTransformable() const { return false; }
+        bool                                        isTransformable() const { return false; }
 
     protected:
 

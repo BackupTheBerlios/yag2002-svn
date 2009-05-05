@@ -109,12 +109,12 @@ class NodeInfo
         * Connection to server needs an authentification. Use this method on client.
         * \return                                   If true then the server requests for authentification.
         */
-        const bool                                  needAuthentification() const { return _needAuthenfication; }
+        bool                                        needAuthentification() const { return _needAuthenfication; }
 
         /**
         * Returns true if server grants access, otherwise false. Use this method on client.
         */
-        const bool                                  getAccessGranted() const { return _accessGranted; }
+        bool                                        getAccessGranted() const { return _accessGranted; }
 
     protected:
 
@@ -263,7 +263,7 @@ class NetworkDevice : public Singleton< NetworkDevice >
     public:
 
         //! Networking modes
-        typedef enum NetworkingMode
+        enum NetworkingMode
         {
             NONE = 0x0,
             CLIENT,

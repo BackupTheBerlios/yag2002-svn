@@ -67,8 +67,13 @@ _keyCodePick( 1 )
 bool BaseObject::ObjectInputHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& /*aa*/ )
 {
     // first check if picking is locked
-    unsigned int ctrlmodes = gameutils::PlayerUtils::get()->getPlayerControlModes();
-    if ( ctrlmodes & gameutils::PlayerUtils::eLockPicking )
+    unsigned int ctrlmodes  = gameutils::PlayerUtils::get()->getPlayerControlModes();
+    unsigned int modefilter = gameutils::PlayerUtils::ePropertyBoxOpen |
+                              gameutils::PlayerUtils::eInventoryOpen   |
+                              gameutils::PlayerUtils::eMailBoxOpen     |
+                              gameutils::PlayerUtils::eEditting;
+
+    if ( ctrlmodes & modefilter )
         return false;
 
     if ( !_p_highlightedObject || !_enable )

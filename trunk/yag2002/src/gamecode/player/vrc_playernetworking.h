@@ -46,7 +46,6 @@
 namespace vrc
 {
     class EnPlayer;
-    class yaf3d::BaseEntity;
     class BasePlayerImplementation;
 }
 

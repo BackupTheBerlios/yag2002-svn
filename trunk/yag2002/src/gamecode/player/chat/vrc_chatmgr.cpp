@@ -137,6 +137,11 @@ void ChatManager::activateBox( bool en, bool openbox )
 {
     assert( !_serverMode && "don't call this method in server mode!" );
 
+    // check permission for opening the chat box
+    unsigned int newmode = gameutils::PlayerUtils::get()->setPlayerControlMode( gameutils::PlayerUtils::eChatBoxOpen );
+    if ( openbox && !( newmode & gameutils::PlayerUtils::eChatBoxOpen ) )
+        return;
+
     if ( ( _activeBox == en ) && ( !openbox ) )
         return;
 
@@ -159,6 +164,17 @@ void ChatManager::activateBox( bool en, bool openbox )
 void ChatManager::show( bool en )
 {
     assert( !_serverMode && "don't call this method in server mode!" );
+
+    if ( en )
+    {
+        unsigned int newmode = gameutils::PlayerUtils::get()->setPlayerControlMode( gameutils::PlayerUtils::eChatBoxOpen );
+        if ( !( newmode & gameutils::PlayerUtils::eChatBoxOpen ) )
+            return;
+    }
+    else
+    {
+        gameutils::PlayerUtils::get()->resetPlayerControlMode( gameutils::PlayerUtils::eChatBoxOpen );
+    }
 
     _p_chatGuiCtrl->show( en );
     _p_chatGuiBox->show( en );

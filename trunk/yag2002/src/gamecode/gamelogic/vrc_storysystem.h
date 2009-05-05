@@ -126,7 +126,7 @@ class StorySystem : public yaf3d::Singleton< StorySystem >, public yaf3d::BaseEn
         void                                        updateEntity( float deltaTime );
 
         //! No need for transformation node
-        const bool                                  isTransformable() const { return false; }
+        bool                                        isTransformable() const { return false; }
 
         //  ###############################
 

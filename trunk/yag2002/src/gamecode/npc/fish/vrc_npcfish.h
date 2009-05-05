@@ -56,7 +56,7 @@ class EnNPCFish : public BaseScript< EnNPCFish >, public yaf3d::BaseEntity
 
         //! Let the fishes be persistent so we can use them in menu and level
         //! This may be changed in future.
-        const bool                                  isPersistent() const { return true; }
+        bool                                    isPersistent() const { return true; }
 
         // Exposed methods to Lua
         // ######################

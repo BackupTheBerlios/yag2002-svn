@@ -54,7 +54,7 @@ class EnTerrainSection :  public yaf3d::BaseEntity
         void                                        initialize();
 
         //! If this entity is used in menu system then we want it to be persistent
-        const bool                                  isPersistent() const { return _usedInMenu; }
+        bool                                        isPersistent() const { return _usedInMenu; }
 
         //! Enable / disable terrain rendering
         void                                        enable( bool en );

@@ -84,7 +84,7 @@ class EnPlayerPhysics : public yaf3d::BaseEntity
         /**
         * This entity needs no transformation node.
         */
-        const bool                                  isTransformable() const { return false; }
+        bool                                        isTransformable() const { return false; }
 
         /**
         * Initialize the physics translation and rotation. Call this before the first update.

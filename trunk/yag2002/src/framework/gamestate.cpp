@@ -112,7 +112,7 @@ void GameState::shutdown()
 //! Set new state
 void GameState::setState( unsigned int state )
 {
-    assert(
+    assert( (
             ( state == GameState::UnknownState        ) ||
             ( state == GameState::Initializing        ) ||
             ( state == GameState::GraphicsInitialized ) ||
@@ -122,8 +122,9 @@ void GameState::setState( unsigned int state )
             ( state == GameState::StartingLevel       ) ||
             ( state == GameState::LeavingLevel        ) ||
             ( state == GameState::Quitting            ) ||
-            ( state == GameState::Shutdown            ) &&
-            "GameState: trying to set an invalid game state!"
+            ( state == GameState::Shutdown            )
+            ) &&
+            ( "GameState: trying to set an invalid game state!" )
           );
 
     if ( _curState == state )
@@ -165,11 +166,12 @@ void GameState::registerCallbackStateChange( CallbackStateChange* p_cb, bool reg
 
 void GameState::setMode( unsigned int mode )
 {
-    assert(
+    assert( (
             ( mode == GameState::UnknownMode ) ||
             ( mode == GameState::Standalone  ) ||
             ( mode == GameState::Client      ) ||
-            ( mode == GameState::Server      ) &&
+            ( mode == GameState::Server      )
+            ) &&
             "GameState: invalid game mode!"
           );
 
@@ -212,12 +214,13 @@ void GameState::registerCallbackModeChange( CallbackModeChange* p_cb, bool reg )
 
 void GameState::setAppWindowState( unsigned int state )
 {
-    assert(
+    assert( (
             ( state == GameState::UnknownAppWindowState ) ||
             ( state == GameState::Minimized             ) ||
             ( state == GameState::Restored              ) ||
             ( state == GameState::GainedFocus           ) ||
-            ( state == GameState::LostFocus             ) &&
+            ( state == GameState::LostFocus             )
+            ) &&
             "GameState: invalid application window state!"
           );
 

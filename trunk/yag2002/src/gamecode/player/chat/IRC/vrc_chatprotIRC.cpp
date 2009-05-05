@@ -623,7 +623,7 @@ void ChatNetworkingIRC::destroyConnection()
 {
     irc_disconnect( _p_session );
     // wait until thread is shut down
-    while( isRunning() );
+    while( isRunning() ) {}
 }
 
 } // namespace vrc
